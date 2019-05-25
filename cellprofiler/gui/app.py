@@ -22,21 +22,19 @@ transport = raven.transport.threaded_requests.ThreadedRequestsHTTPTransport
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
-sentry = raven.Client(
-    dsn=dsn,
-    transport=transport,
-    install_sys_hook=False
-)
+sentry = raven.Client(dsn=dsn, transport=transport, install_sys_hook=False)
 
-sentry.user_context({
-    "machine": platform.machine(),
-    "processor": platform.processor(),
-    "python_implementation": platform.python_implementation(),
-    "python_version": platform.python_version(),
-    "release": platform.release(),
-    "system": platform.system(),
-    "version": platform.version()
-})
+sentry.user_context(
+    {
+        "machine": platform.machine(),
+        "processor": platform.processor(),
+        "python_implementation": platform.python_implementation(),
+        "python_version": platform.python_version(),
+        "release": platform.release(),
+        "system": platform.system(),
+        "version": platform.version(),
+    }
+)
 
 
 class App(wx.App):

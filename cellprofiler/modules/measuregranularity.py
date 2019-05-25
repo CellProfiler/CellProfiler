@@ -55,7 +55,7 @@ import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
-'Granularity category'
+"Granularity category"
 C_GRANULARITY = "Granularity_%s_%s"
 
 IMAGE_SETTING_COUNT_V2 = 5
@@ -67,7 +67,7 @@ OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
 
 class MeasureGranularity(cpm.Module):
-    module_name = 'MeasureGranularity'
+    module_name = "MeasureGranularity"
     category = "Measurement"
     variable_revision_number = 3
 
@@ -85,12 +85,23 @@ class MeasureGranularity(cpm.Module):
         if can_remove:
             group.append("divider", cps.Divider(line=True))
 
-        group.append("image_name", cps.ImageNameSubscriber(
-                "Select an image to measure", cps.NONE, doc="Select the grayscale images whose granularity you want to measure."))
+        group.append(
+            "image_name",
+            cps.ImageNameSubscriber(
+                "Select an image to measure",
+                cps.NONE,
+                doc="Select the grayscale images whose granularity you want to measure.",
+            ),
+        )
 
-        group.append("subsample_size", cps.Float(
+        group.append(
+            "subsample_size",
+            cps.Float(
                 "Subsampling factor for granularity measurements",
-                0.25, minval=np.finfo(float).eps, maxval=1, doc="""\
+                0.25,
+                minval=np.finfo(float).eps,
+                maxval=1,
+                doc="""\
 If the textures of interest are larger than a few pixels, we recommend
 you subsample the image with a factor <1 to speed up the processing.
 Down sampling the image will let you detect larger structures with a
@@ -110,11 +121,18 @@ numerical value cannot be determined in advance; an analysis as in this
 reference may be required before running the whole set. See this `pdf`_,
 slides 27-31, 49-50.
 
-.. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf"""))
+.. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf""",
+            ),
+        )
 
-        group.append("image_sample_size", cps.Float(
+        group.append(
+            "image_sample_size",
+            cps.Float(
                 "Subsampling factor for background reduction",
-                .25, minval=np.finfo(float).eps, maxval=1, doc="""\
+                0.25,
+                minval=np.finfo(float).eps,
+                maxval=1,
+                doc="""\
 It is important to remove low frequency image background variations as
 they will affect the final granularity measurement. Any method can be
 used as a pre-processing step prior to this module; we have chosen to
@@ -124,43 +142,69 @@ image first. The subsampling factor for background reduction is usually
 used if the structures of interest are large. The significance of
 background removal in the context of granulometry is that image volume
 at certain granular size is normalized by total image volume, which
-depends on how the background was removed."""))
+depends on how the background was removed.""",
+            ),
+        )
 
-        group.append("element_size", cps.Integer(
+        group.append(
+            "element_size",
+            cps.Integer(
                 "Radius of structuring element",
-                10, minval=1, doc="""\
+                10,
+                minval=1,
+                doc="""\
 This radius should correspond to the radius of the textures of interest
 *after* subsampling; i.e., if textures in the original image scale have
 a radius of 40 pixels, and a subsampling factor of 0.25 is used, the
 structuring element size should be 10 or slightly smaller, and the range
-of the spectrum defined below will cover more sizes."""))
+of the spectrum defined below will cover more sizes.""",
+            ),
+        )
 
-        group.append("granular_spectrum_length", cps.Integer(
+        group.append(
+            "granular_spectrum_length",
+            cps.Integer(
                 "Range of the granular spectrum",
-                16, minval=1, doc="""\
+                16,
+                minval=1,
+                doc="""\
 You may need a trial run to see which granular
 spectrum range yields informative measurements. Start by using a wide spectrum and
-narrow it down to the informative range to save time."""))
+narrow it down to the informative range to save time.""",
+            ),
+        )
 
-        group.append("add_objects_button", cps.DoSomething(
-                "", "Add another object", group.add_objects, doc="""\
+        group.append(
+            "add_objects_button",
+            cps.DoSomething(
+                "",
+                "Add another object",
+                group.add_objects,
+                doc="""\
 Press this button to add granularity measurements for objects, such as
 those identified by a prior **IdentifyPrimaryObjects** module.
 **MeasureGranularity** will measure the image’s granularity within each
-object at the requested scales."""))
+object at the requested scales.""",
+            ),
+        )
 
         group.objects = []
 
         group.object_count = cps.HiddenCount(group.objects, "Object count")
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
+            group.append(
+                "remover",
+                cps.RemoveSettingButton("", "Remove this image", self.images, group),
+            )
         self.images.append(group)
         return group
 
     def validate_module(self, pipeline):
-        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
-        measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
+        measurements, sources = self.get_measurement_columns(
+            pipeline, return_sources=True
+        )
         d = {}
         for m, s in zip(measurements, sources):
             if m in d:
@@ -171,14 +215,18 @@ object at the requested scales."""))
         result = [self.image_count]
         for image in self.images:
             result += [
-                image.object_count, image.image_name, image.subsample_size,
-                image.image_sample_size, image.element_size,
-                image.granular_spectrum_length]
+                image.object_count,
+                image.image_name,
+                image.subsample_size,
+                image.image_sample_size,
+                image.element_size,
+                image.granular_spectrum_length,
+            ]
             result += [ob.objects_name for ob in image.objects]
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust self.images to account for the expected # of images'''
+        """Adjust self.images to account for the expected # of images"""
         image_count = int(setting_values[0])
         idx = 1
         del self.images[:]
@@ -198,10 +246,10 @@ object at the requested scales."""))
         return result
 
     def run(self, workspace):
-        max_scale = np.max([image.granular_spectrum_length.value
-                            for image in self.images])
-        col_labels = (["Image name"] +
-                      ["GS%d" % n for n in range(1, max_scale + 1)])
+        max_scale = np.max(
+            [image.granular_spectrum_length.value for image in self.images]
+        )
+        col_labels = ["Image name"] + ["GS%d" % n for n in range(1, max_scale + 1)]
         statistics = []
         for image in self.images:
             statistic = self.run_on_image_setting(workspace, image)
@@ -221,8 +269,7 @@ object at the requested scales."""))
         assert isinstance(workspace, cpw.Workspace)
         image_set = workspace.image_set
         measurements = workspace.measurements
-        im = image_set.get_image(image.image_name.value,
-                                 must_be_grayscale=True)
+        im = image_set.get_image(image.image_name.value, must_be_grayscale=True)
         #
         # Downsample the image and mask
         #
@@ -230,13 +277,21 @@ object at the requested scales."""))
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
             if im.dimensions is 2:
-                i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) / image.subsample_size.value)
+                i, j = (
+                    np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
+                    / image.subsample_size.value
+                )
                 pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
-                mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
+                mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > 0.9
             else:
-                k, i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1], 0:new_shape[2]].astype(float) / image.subsample_size.value)
+                k, i, j = (
+                    np.mgrid[
+                        0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
+                    ].astype(float)
+                    / image.subsample_size.value
+                )
                 pixels = scind.map_coordinates(im.pixel_data, (k, i, j), order=1)
-                mask = scind.map_coordinates(im.mask.astype(float), (k, i, j)) > .9
+                mask = scind.map_coordinates(im.mask.astype(float), (k, i, j)) > 0.9
         else:
             pixels = im.pixel_data
             mask = im.mask
@@ -246,13 +301,21 @@ object at the requested scales."""))
         if image.image_sample_size.value < 1:
             back_shape = new_shape * image.image_sample_size.value
             if im.dimensions is 2:
-                i, j = (np.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float) / image.image_sample_size.value)
+                i, j = (
+                    np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
+                    / image.image_sample_size.value
+                )
                 back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
-                back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > .9
+                back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > 0.9
             else:
-                k, i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1], 0:new_shape[2]].astype(float) / image.subsample_size.value)
+                k, i, j = (
+                    np.mgrid[
+                        0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
+                    ].astype(float)
+                    / image.subsample_size.value
+                )
                 back_pixels = scind.map_coordinates(pixels, (k, i, j), order=1)
-                back_mask = scind.map_coordinates(mask.astype(float), (k, i, j)) > .9
+                back_mask = scind.map_coordinates(mask.astype(float), (k, i, j)) > 0.9
         else:
             back_pixels = pixels
             back_mask = mask
@@ -270,7 +333,7 @@ object at the requested scales."""))
         back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
         if image.image_sample_size.value < 1:
             if im.dimensions is 2:
-                i, j = np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float)
+                i, j = np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
                 # back_pixels.
@@ -279,7 +342,9 @@ object at the requested scales."""))
                 j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
                 back_pixels = scind.map_coordinates(back_pixels, (i, j), order=1)
             else:
-                k, i, j = np.mgrid[0:new_shape[0], 0:new_shape[1], 0:new_shape[2]].astype(float)
+                k, i, j = np.mgrid[
+                    0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
+                ].astype(float)
                 k *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
                 i *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
                 j *= float(back_shape[2] - 1) / float(new_shape[2] - 1)
@@ -298,16 +363,13 @@ object at the requested scales."""))
                 if self.nobjects != 0:
                     self.range = np.arange(1, np.max(self.labels) + 1)
                     self.labels = self.labels.copy()
-                    self.labels[~ im.mask] = 0
+                    self.labels[~im.mask] = 0
                     self.current_mean = fix(
-                            scind.mean(im.pixel_data,
-                                       self.labels,
-                                       self.range))
-                    self.start_mean = np.maximum(
-                            self.current_mean, np.finfo(float).eps)
+                        scind.mean(im.pixel_data, self.labels, self.range)
+                    )
+                    self.start_mean = np.maximum(self.current_mean, np.finfo(float).eps)
 
-        object_records = [ObjectRecord(ob.objects_name.value)
-                          for ob in image.objects]
+        object_records = [ObjectRecord(ob.objects_name.value) for ob in image.objects]
         #
         # Transcribed from the Matlab module: granspectr function
         #
@@ -352,7 +414,7 @@ object at the requested scales."""))
             #
             orig_shape = im.pixel_data.shape
             if im.dimensions is 2:
-                i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
+                i, j = np.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
                 # back_pixels.
@@ -361,7 +423,9 @@ object at the requested scales."""))
                 j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
                 rec = scind.map_coordinates(rec, (i, j), order=1)
             else:
-                k, i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1], 0:orig_shape[2]].astype(float)
+                k, i, j = np.mgrid[
+                    0 : orig_shape[0], 0 : orig_shape[1], 0 : orig_shape[2]
+                ].astype(float)
                 k *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
                 i *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
                 j *= float(new_shape[2] - 1) / float(orig_shape[2] - 1)
@@ -372,10 +436,14 @@ object at the requested scales."""))
             for object_record in object_records:
                 assert isinstance(object_record, ObjectRecord)
                 if object_record.nobjects > 0:
-                    new_mean = fix(scind.mean(rec, object_record.labels,
-                                              object_record.range))
-                    gss = ((object_record.current_mean - new_mean) * 100 /
-                           object_record.start_mean)
+                    new_mean = fix(
+                        scind.mean(rec, object_record.labels, object_record.range)
+                    )
+                    gss = (
+                        (object_record.current_mean - new_mean)
+                        * 100
+                        / object_record.start_mean
+                    )
                     object_record.current_mean = new_mean
                 else:
                     gss = np.zeros((0,))
@@ -388,15 +456,19 @@ object at the requested scales."""))
         for image in self.images:
             gslength = image.granular_spectrum_length.value
             for i in range(1, gslength + 1):
-                result += [(cpmeas.IMAGE,
-                            image.granularity_feature(i),
-                            cpmeas.COLTYPE_FLOAT)]
+                result += [
+                    (cpmeas.IMAGE, image.granularity_feature(i), cpmeas.COLTYPE_FLOAT)
+                ]
                 sources += [(image.image_name, image.granularity_feature(i))]
             for ob in image.objects:
                 for i in range(1, gslength + 1):
-                    result += [(ob.objects_name.value,
-                                image.granularity_feature(i),
-                                cpmeas.COLTYPE_FLOAT)]
+                    result += [
+                        (
+                            ob.objects_name.value,
+                            image.granularity_feature(i),
+                            cpmeas.COLTYPE_FLOAT,
+                        )
+                    ]
                     sources += [(ob.objects_name.value, image.granularity_feature(i))]
 
         if return_sources:
@@ -411,27 +483,28 @@ object at the requested scales."""))
         """
         if object_name == cpmeas.IMAGE:
             return self.images
-        return [image for image in self.images
-                if object_name in [ob.objects_name.value
-                                   for ob in image.objects]]
+        return [
+            image
+            for image in self.images
+            if object_name in [ob.objects_name.value for ob in image.objects]
+        ]
 
     def get_categories(self, pipeline, object_name):
         if len(self.get_matching_images(object_name)) > 0:
-            return ['Granularity']
+            return ["Granularity"]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
         max_length = 0
-        if category == 'Granularity':
+        if category == "Granularity":
             for image in self.get_matching_images(object_name):
                 max_length = max(max_length, image.granular_spectrum_length.value)
         return [str(i) for i in range(1, max_length + 1)]
 
-    def get_measurement_images(self, pipeline, object_name, category,
-                               measurement):
+    def get_measurement_images(self, pipeline, object_name, category, measurement):
         result = []
-        if category == 'Granularity':
+        if category == "Granularity":
             try:
                 length = int(measurement)
                 if length <= 0:
@@ -443,8 +516,9 @@ object at the requested scales."""))
                     result.append(image.image_name.value)
         return result
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab and variable_revision_number == 1:
             # Matlab and pyCP v1 are identical
             from_matlab = False
@@ -476,23 +550,36 @@ class GranularitySettingsGroup(cps.SettingsGroup):
 
     def add_objects(self):
         og = cps.SettingsGroup()
-        og.append("objects_name", cps.ObjectNameSubscriber(
-                "Select objects to measure", cps.NONE, doc="""\
+        og.append(
+            "objects_name",
+            cps.ObjectNameSubscriber(
+                "Select objects to measure",
+                cps.NONE,
+                doc="""\
 Select the objects whose granularity will be measured. You can select
 objects from prior modules that identify objects, such as
 **IdentifyPrimaryObjects**. If you only want to measure the granularity
 for the image overall, you can remove all objects using the “Remove this
-object” button."""))
-        og.append("remover", cps.RemoveSettingButton(
-                "", "Remove this object", self.objects, og))
+object” button.""",
+            ),
+        )
+        og.append(
+            "remover",
+            cps.RemoveSettingButton("", "Remove this object", self.objects, og),
+        )
         self.objects.append(og)
 
     def visible_settings(self):
         result = []
         if self.can_remove:
             result += [self.divider]
-        result += [self.image_name, self.subsample_size, self.image_sample_size,
-                   self.element_size, self.granular_spectrum_length]
+        result += [
+            self.image_name,
+            self.subsample_size,
+            self.image_sample_size,
+            self.element_size,
+            self.granular_spectrum_length,
+        ]
         for ob in self.objects:
             result += [ob.objects_name, ob.remover]
         result += [self.add_objects_button]

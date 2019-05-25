@@ -41,22 +41,19 @@ class DilateObjects(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(DilateObjects, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(allow_planewise=True,
-                                                                           doc=HELP_FOR_STREL)
+        self.structuring_element = cellprofiler.setting.StructuringElement(
+            allow_planewise=True, doc=HELP_FOR_STREL
+        )
 
     def settings(self):
         __settings__ = super(DilateObjects, self).settings()
 
-        return __settings__ + [
-            self.structuring_element
-        ]
+        return __settings__ + [self.structuring_element]
 
     def visible_settings(self):
         __settings__ = super(DilateObjects, self).visible_settings()
 
-        return __settings__ + [
-            self.structuring_element
-        ]
+        return __settings__ + [self.structuring_element]
 
     def run(self, workspace):
         self.function = cellprofiler.utilities.morphology.dilation

@@ -40,21 +40,18 @@ class MedianFilter(cellprofiler.module.ImageProcessing):
 Dimension in each direction for computing the median filter. Must be odd. Use a window with a small size to
 remove noise that's small in size. A larger window will remove larger scales of noise at the
 risk of blurring other features.
-""")
+""",
+        )
 
     def settings(self):
         __settings__ = super(MedianFilter, self).settings()
 
-        return __settings__ + [
-            self.window
-        ]
+        return __settings__ + [self.window]
 
     def visible_settings(self):
         __settings__ = super(MedianFilter, self).visible_settings()
 
-        return __settings__ + [
-            self.window
-        ]
+        return __settings__ + [self.window]
 
     def run(self, workspace):
         self.function = scipy.signal.medfilt

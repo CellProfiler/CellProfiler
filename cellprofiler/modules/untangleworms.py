@@ -126,9 +126,9 @@ in the pipeline. For example, a common use is for quality control
 purposes by overlaying them on your image of choice using the
 **OverlayOutlines** module and then saving the overlay image with the
 **SaveImages** module.
-""".format(**{
-    "YES": cps.YES
-})
+""".format(
+    **{"YES": cps.YES}
+)
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -137,18 +137,18 @@ OO_BOTH = "Both"
 MODE_TRAIN = "Train"
 MODE_UNTANGLE = "Untangle"
 
-'''Shape cost method = angle shape model for cluster paths selection'''
-SCM_ANGLE_SHAPE_MODEL = 'angle_shape_model'
+"""Shape cost method = angle shape model for cluster paths selection"""
+SCM_ANGLE_SHAPE_MODEL = "angle_shape_model"
 
-'''Maximum # of sets of paths considered at any level'''
+"""Maximum # of sets of paths considered at any level"""
 MAX_CONSIDERED = 50000
-'''Maximum # of different paths considered for input'''
+"""Maximum # of different paths considered for input"""
 MAX_PATHS = 400
 
-'''Name of the worm training data list inside the image set'''
+"""Name of the worm training data list inside the image set"""
 TRAINING_DATA = "TrainingData"
 
-'''An attribute on the object names that tags them as worm objects'''
+"""An attribute on the object names that tags them as worm objects"""
 ATTR_WORM_MEASUREMENTS = "WormMeasurements"
 ######################################################
 #
@@ -156,19 +156,19 @@ ATTR_WORM_MEASUREMENTS = "WormMeasurements"
 #
 ######################################################
 
-'''Worm untangling measurement category'''
+"""Worm untangling measurement category"""
 C_WORM = "Worm"
 
-'''The length of the worm skeleton'''
+"""The length of the worm skeleton"""
 F_LENGTH = "Length"
 
-'''The angle at each of the control points (Worm_Angle_1 for example)'''
+"""The angle at each of the control points (Worm_Angle_1 for example)"""
 F_ANGLE = "Angle"
 
-'''The X coordinate of a control point (Worm_ControlPointX_14 for example)'''
+"""The X coordinate of a control point (Worm_ControlPointX_14 for example)"""
 F_CONTROL_POINT_X = "ControlPointX"
 
-'''The Y coordinate of a control point (Worm_ControlPointY_14 for example)'''
+"""The Y coordinate of a control point (Worm_ControlPointY_14 for example)"""
 F_CONTROL_POINT_Y = "ControlPointY"
 
 ######################################################
@@ -212,7 +212,7 @@ complexity_limits = {
     C_ALL: C_ALL_VALUE,
     C_MEDIUM: C_MEDIUM_VALUE,
     C_HIGH: C_HIGH_VALUE,
-    C_VERY_HIGH: C_VERY_HIGH_VALUE
+    C_VERY_HIGH: C_VERY_HIGH_VALUE,
 }
 
 
@@ -222,9 +222,11 @@ class UntangleWorms(cpm.Module):
     module_name = "UntangleWorms"
 
     def create_settings(self):
-        '''Create the settings that parameterize the module'''
+        """Create the settings that parameterize the module"""
         self.mode = cps.Choice(
-                "Train or untangle worms?", [MODE_UNTANGLE, MODE_TRAIN], doc="""\
+            "Train or untangle worms?",
+            [MODE_UNTANGLE, MODE_TRAIN],
+            doc="""\
 **UntangleWorms** has two modes:
 
 -  *%(MODE_TRAIN)s* creates one training set per image group, using all
@@ -234,16 +236,23 @@ class UntangleWorms(cpm.Module):
    worms.
 
 %(USING_METADATA_GROUPING_HELP_REF)s
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input binary image", cps.NONE, doc="""\
+            "Select the input binary image",
+            cps.NONE,
+            doc="""\
 A binary image where the foreground indicates the worm
 shapes. The binary image can be produced by the **ApplyThreshold**
-module.""")
+module.""",
+        )
 
         self.overlap = cps.Choice(
-                "Overlap style", [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP], doc="""\
+            "Overlap style",
+            [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP],
+            doc="""\
 This setting determines which style objects are output. If two worms
 overlap, you have a choice of including the overlapping regions in both
 worms or excluding the overlapping regions from both worms.
@@ -252,11 +261,15 @@ worms or excluding the overlapping regions from both worms.
 -  *%(OO_WITHOUT_OVERLAP)s:* Save only the portions of objects that do
    not overlap.
 -  *%(OO_BOTH)s:* Save two versions: with and without overlap.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.overlap_objects = cps.ObjectNameProvider(
-                "Name the output overlapping worm objects", "OverlappingWorms",
-                provided_attributes={ATTR_WORM_MEASUREMENTS: True}, doc="""\
+            "Name the output overlapping worm objects",
+            "OverlappingWorms",
+            provided_attributes={ATTR_WORM_MEASUREMENTS: True},
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style are selected)*
 
@@ -265,18 +278,25 @@ worms cross, they overlap and pixels are shared by both of the
 overlapping worms. The overlapping worm objects share these pixels and
 measurements of both overlapping worms will include these pixels in the
 measurements of both worms.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.wants_overlapping_outlines = cps.Binary(
-                "Retain outlines of the overlapping objects?", False, doc="""\
+            "Retain outlines of the overlapping objects?",
+            False,
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style are selected)*
 
 %(RETAINING_OUTLINES_HELP)s
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.overlapping_outlines_colormap = cps.Colormap(
-                "Outline colormap?", doc="""\
+            "Outline colormap?",
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode, “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style and retaining outlines are
 selected )*
@@ -284,20 +304,27 @@ selected )*
 This setting controls the colormap used when drawing outlines. The
 outlines are drawn in color to highlight the shapes of each worm in a
 group of overlapping worms
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.overlapping_outlines_name = cps.OutlineNameProvider(
-                "Name the overlapped outline image",
-                "OverlappedWormOutlines", doc="""\
+            "Name the overlapped outline image",
+            "OverlappedWormOutlines",
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style are selected)*
 
 This is the name of the outlines of the overlapped worms.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.nonoverlapping_objects = cps.ObjectNameProvider(
-                "Name the output non-overlapping worm objects", "NonOverlappingWorms",
-                provided_attributes={ATTR_WORM_MEASUREMENTS: True}, doc="""\
+            "Name the output non-overlapping worm objects",
+            "NonOverlappingWorms",
+            provided_attributes={ATTR_WORM_MEASUREMENTS: True},
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style are selected)*
 
@@ -306,30 +333,40 @@ regions where the worms overlap. When worms cross, there are pixels that
 cannot be unambiguously assigned to one worm or the other. These pixels
 are excluded from both worms in the non-overlapping objects and will not
 be a part of the measurements of either worm.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.wants_nonoverlapping_outlines = cps.Binary(
-                "Retain outlines of the non-overlapping worms?", False, doc="""\
+            "Retain outlines of the non-overlapping worms?",
+            False,
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style are selected)*
 
 %(RETAINING_OUTLINES_HELP)s
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.nonoverlapping_outlines_name = cps.OutlineNameProvider(
-                "Name the non-overlapped outlines image",
-                "NonoverlappedWormOutlines", doc="""\
+            "Name the non-overlapped outlines image",
+            "NonoverlappedWormOutlines",
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
 “%(OO_WITH_OVERLAP)s” overlap style are selected)*
 
 This is the name of the of the outlines of the worms with the
 overlapping sections removed.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.training_set_directory = cps.DirectoryPath(
-                "Training set file location",
-                support_urls=True,
-                allow_metadata=False, doc="""\
+            "Training set file location",
+            support_urls=True,
+            allow_metadata=False,
+            doc="""\
 Select the folder containing the training set to be loaded.
 %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
@@ -341,36 +378,48 @@ An additional option is the following:
    access this file, you would choose *URL* and enter
    ``http://my_institution.edu/server/my_username/`` as the path
    location.
-""" % globals())
+"""
+            % globals(),
+        )
         self.training_set_directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.training_set_directory.get_absolute_path()
 
         def set_directory_fn(path):
-            dir_choice, custom_path = self.training_set_directory.get_parts_from_path(path)
+            dir_choice, custom_path = self.training_set_directory.get_parts_from_path(
+                path
+            )
             self.training_set_directory.join_parts(dir_choice, custom_path)
 
         self.training_set_file_name = cps.FilenameText(
-                "Training set file name", "TrainingSet.xml",
-                doc="""This is the name of the training set file.""",
-                get_directory_fn=get_directory_fn,
-                set_directory_fn=set_directory_fn,
-                browse_msg="Choose training set",
-                exts=[("Worm training set (*.xml)", "*.xml"),
-                      ("All files (*.*)", "*.*")])
+            "Training set file name",
+            "TrainingSet.xml",
+            doc="""This is the name of the training set file.""",
+            get_directory_fn=get_directory_fn,
+            set_directory_fn=set_directory_fn,
+            browse_msg="Choose training set",
+            exts=[("Worm training set (*.xml)", "*.xml"), ("All files (*.*)", "*.*")],
+        )
 
         self.wants_training_set_weights = cps.Binary(
-                "Use training set weights?", True, doc="""\
+            "Use training set weights?",
+            True,
+            doc="""\
 Select "*%(YES)s*" to use the overlap and leftover weights from the
 training set.
 
 Select "*%(NO)s*" to override these weights with user-specified values.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.override_overlap_weight = cps.Float(
-                "Overlap weight", 5, 0, doc="""\
+            "Overlap weight",
+            5,
+            0,
+            doc="""\
 *(Used only if not using training set weights)*
 
 This setting controls how much weight is given to overlaps between
@@ -382,10 +431,14 @@ region times the overlap weight.
    overlapping portions of worms.
 -  Decrease the overlap weight to make **UntangleWorms** ignore
    overlapping portions of worms.
-""")
+""",
+        )
 
         self.override_leftover_weight = cps.Float(
-                "Leftover weight", 10, 0, doc="""\
+            "Leftover weight",
+            10,
+            0,
+            doc="""\
 *(Used only if not using training set weights)*
 
 This setting controls how much weight is given to areas not covered by
@@ -398,29 +451,45 @@ times the leftover weight.
    foreground with worms.
 -  Decrease the overlap weight to make **UntangleWorms** ignore
    uncovered foreground.
-""")
+""",
+        )
 
         self.min_area_percentile = cps.Float(
-                "Minimum area percentile", 1, 0, 100, doc="""\
+            "Minimum area percentile",
+            1,
+            0,
+            100,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** will discard single worms whose area is less than a
 certain minimum. It ranks all worms in the training set according to
 area and then picks the worm at this percentile. It then computes the
 minimum area allowed as this worm’s area times the minimum area factor.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.min_area_factor = cps.Float(
-                "Minimum area factor", .85, 0, doc="""\
+            "Minimum area factor",
+            0.85,
+            0,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 This setting is a multiplier that is applied to the area of the worm,
 selected as described in the documentation for *Minimum area
 percentile*.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_area_percentile = cps.Float(
-                "Maximum area percentile", 90, 0, 100, doc="""\
+            "Maximum area percentile",
+            90,
+            0,
+            100,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses a maximum area to distinguish between single
@@ -430,18 +499,29 @@ greater is considered to be two or more worms. **UntangleWorms** orders
 all worms in the training set by area and picks the worm at the
 percentile given by this setting. It then multiplies this worm’s area by
 the *Maximum area factor* (see below) to get the maximum area
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_area_factor = cps.Float(
-                "Maximum area factor", 1.0, 0, doc="""\
+            "Maximum area factor",
+            1.0,
+            0,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 The *Maximum area factor* setting is used to compute the maximum area as
 described above in *Maximum area percentile*.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.min_length_percentile = cps.Float(
-                "Minimum length percentile", 1, 0, 100, doc="""\
+            "Minimum length percentile",
+            1,
+            0,
+            100,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses the minimum length to restrict its search for
@@ -450,19 +530,30 @@ worms in a clump to worms of at least the minimum length.
 percentile indicated by this setting. It then multiplies the length of
 this worm by the *Minimum length factor* (see below) to get the minimum
 length.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.min_length_factor = cps.Float(
-                "Minimum length factor", 0.9, 0, doc="""\
+            "Minimum length factor",
+            0.9,
+            0,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses the *Minimum length factor* to compute the
 minimum length from the training set as described in the documentation
 above for *Minimum length percentile*
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_length_percentile = cps.Float(
-                "Maximum length percentile", 99, 0, 100, doc="""\
+            "Maximum length percentile",
+            99,
+            0,
+            100,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses the maximum length to restrict its search for
@@ -470,18 +561,29 @@ worms in a clump to worms of at least the maximum length. It computes
 this length by sorting all of the training worms by length. It then
 selects the worm at the *Maximum length percentile* and multiplies that
 worm’s length by the *Maximum length factor* to get the maximum length
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_length_factor = cps.Float(
-                "Maximum length factor", 1.1, 0, doc="""\
+            "Maximum length factor",
+            1.1,
+            0,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses this setting to compute the maximum length as
 described in *Maximum length percentile* above
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_cost_percentile = cps.Float(
-                "Maximum cost percentile", 90, 0, 100, doc="""\
+            "Maximum cost percentile",
+            90,
+            0,
+            100,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** computes a shape-based cost for each worm it
@@ -491,26 +593,43 @@ every worm in the training set. It then orders them by cost and uses
 *Maximum cost percentile* to pick the worm at the given percentile. It
 them multiplies this worm’s cost by the *Maximum cost factor* to compute
 the cost threshold.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_cost_factor = cps.Float(
-                "Maximum cost factor", 1.9, 0, doc="""\
+            "Maximum cost factor",
+            1.9,
+            0,
+            doc="""\
 *(Used only “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses this setting to compute the cost threshold as
 described in *Maximum cost percentile* above.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.num_control_points = cps.Integer(
-                "Number of control points", 21, 3, 50, doc="""\
+            "Number of control points",
+            21,
+            3,
+            50,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 This setting controls the number of control points that will be sampled
 when constructing a worm shape from its skeleton.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_radius_percentile = cps.Float(
-                "Maximum radius percentile", 90, 0, 100, doc="""\
+            "Maximum radius percentile",
+            90,
+            0,
+            100,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses the maximum worm radius during worm
@@ -518,20 +637,28 @@ skeletonization. **UntangleWorms** sorts the radii of worms in
 increasing size and selects the worm at this percentile. It then
 multiplies this worm’s radius by the *Maximum radius factor* (see below)
 to compute the maximum radius.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.max_radius_factor = cps.Float(
-                "Maximum radius factor", 1, 0, doc="""\
+            "Maximum radius factor",
+            1,
+            0,
+            doc="""\
 *(Used only if “%(MODE_TRAIN)s” mode is selected)*
 
 **UntangleWorms** uses this setting to compute the maximum radius as
 described in *Maximum radius percentile* above.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.complexity = cps.Choice(
-                "Maximum complexity",
-                [C_MEDIUM, C_HIGH, C_VERY_HIGH, C_ALL, C_CUSTOM],
-                value=C_HIGH, doc="""\
+            "Maximum complexity",
+            [C_MEDIUM, C_HIGH, C_VERY_HIGH, C_ALL, C_CUSTOM],
+            value=C_HIGH,
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode is selected)*
 
 This setting controls which clusters of worms are rejected as being
@@ -548,55 +675,91 @@ the first or last crossing point. The choices are:
    hours to process)
 -  *%(C_CUSTOM)s*: allows you to enter a custom number of segments.
 -  *%(C_ALL)s*: Process all worms, regardless of complexity
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.custom_complexity = cps.Integer(
-                "Custom complexity", 400, 20, doc="""\
+            "Custom complexity",
+            400,
+            20,
+            doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode and “%(C_CUSTOM)s” complexity
 are selected )*
 
 Enter the maximum number of segments of any cluster that
 should be processed.
-""" % globals())
+"""
+            % globals(),
+        )
 
     def settings(self):
-        return [self.image_name, self.overlap, self.overlap_objects,
-                self.nonoverlapping_objects, self.training_set_directory,
-                self.training_set_file_name, self.wants_training_set_weights,
-                self.override_overlap_weight, self.override_leftover_weight,
-                self.wants_overlapping_outlines,
-                self.overlapping_outlines_colormap,
-                self.overlapping_outlines_name,
-                self.wants_nonoverlapping_outlines,
-                self.nonoverlapping_outlines_name,
-                self.mode, self.min_area_percentile, self.min_area_factor,
-                self.max_area_percentile, self.max_area_factor,
-                self.min_length_percentile, self.min_length_factor,
-                self.max_length_percentile, self.max_length_factor,
-                self.max_cost_percentile, self.max_cost_factor,
-                self.num_control_points, self.max_radius_percentile,
-                self.max_radius_factor,
-                self.complexity, self.custom_complexity]
+        return [
+            self.image_name,
+            self.overlap,
+            self.overlap_objects,
+            self.nonoverlapping_objects,
+            self.training_set_directory,
+            self.training_set_file_name,
+            self.wants_training_set_weights,
+            self.override_overlap_weight,
+            self.override_leftover_weight,
+            self.wants_overlapping_outlines,
+            self.overlapping_outlines_colormap,
+            self.overlapping_outlines_name,
+            self.wants_nonoverlapping_outlines,
+            self.nonoverlapping_outlines_name,
+            self.mode,
+            self.min_area_percentile,
+            self.min_area_factor,
+            self.max_area_percentile,
+            self.max_area_factor,
+            self.min_length_percentile,
+            self.min_length_factor,
+            self.max_length_percentile,
+            self.max_length_factor,
+            self.max_cost_percentile,
+            self.max_cost_factor,
+            self.num_control_points,
+            self.max_radius_percentile,
+            self.max_radius_factor,
+            self.complexity,
+            self.custom_complexity,
+        ]
 
     def help_settings(self):
-        return [self.mode, self.image_name, self.overlap, self.overlap_objects,
-                self.nonoverlapping_objects,
-                self.complexity, self.custom_complexity,
-                self.training_set_directory,
-                self.training_set_file_name, self.wants_training_set_weights,
-                self.override_overlap_weight, self.override_leftover_weight,
-                self.wants_overlapping_outlines,
-                self.overlapping_outlines_colormap,
-                self.overlapping_outlines_name,
-                self.wants_nonoverlapping_outlines,
-                self.nonoverlapping_outlines_name,
-                self.min_area_percentile, self.min_area_factor,
-                self.max_area_percentile, self.max_area_factor,
-                self.min_length_percentile, self.min_length_factor,
-                self.max_length_percentile, self.max_length_factor,
-                self.max_cost_percentile, self.max_cost_factor,
-                self.num_control_points, self.max_radius_percentile,
-                self.max_radius_factor]
+        return [
+            self.mode,
+            self.image_name,
+            self.overlap,
+            self.overlap_objects,
+            self.nonoverlapping_objects,
+            self.complexity,
+            self.custom_complexity,
+            self.training_set_directory,
+            self.training_set_file_name,
+            self.wants_training_set_weights,
+            self.override_overlap_weight,
+            self.override_leftover_weight,
+            self.wants_overlapping_outlines,
+            self.overlapping_outlines_colormap,
+            self.overlapping_outlines_name,
+            self.wants_nonoverlapping_outlines,
+            self.nonoverlapping_outlines_name,
+            self.min_area_percentile,
+            self.min_area_factor,
+            self.max_area_percentile,
+            self.max_area_factor,
+            self.min_length_percentile,
+            self.min_length_factor,
+            self.max_length_percentile,
+            self.max_length_factor,
+            self.max_cost_percentile,
+            self.max_cost_factor,
+            self.num_control_points,
+            self.max_radius_percentile,
+            self.max_radius_factor,
+        ]
 
     def visible_settings(self):
         result = [self.mode, self.image_name]
@@ -605,34 +768,47 @@ should be processed.
             if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
                 result += [self.overlap_objects, self.wants_overlapping_outlines]
                 if self.wants_overlapping_outlines:
-                    result += [self.overlapping_outlines_colormap,
-                               self.overlapping_outlines_name]
+                    result += [
+                        self.overlapping_outlines_colormap,
+                        self.overlapping_outlines_name,
+                    ]
             if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
-                result += [self.nonoverlapping_objects,
-                           self.wants_nonoverlapping_outlines]
+                result += [
+                    self.nonoverlapping_objects,
+                    self.wants_nonoverlapping_outlines,
+                ]
                 if self.wants_nonoverlapping_outlines:
                     result += [self.nonoverlapping_outlines_name]
                 result += [self.complexity]
                 if self.complexity == C_CUSTOM:
                     result += [self.custom_complexity]
-        result += [self.training_set_directory, self.training_set_file_name,
-                   self.wants_training_set_weights]
+        result += [
+            self.training_set_directory,
+            self.training_set_file_name,
+            self.wants_training_set_weights,
+        ]
         if not self.wants_training_set_weights:
-            result += [self.override_overlap_weight,
-                       self.override_leftover_weight]
+            result += [self.override_overlap_weight, self.override_leftover_weight]
             if self.mode == MODE_TRAIN:
                 result += [
-                    self.min_area_percentile, self.min_area_factor,
-                    self.max_area_percentile, self.max_area_factor,
-                    self.min_length_percentile, self.min_length_factor,
-                    self.max_length_percentile, self.max_length_factor,
-                    self.max_cost_percentile, self.max_cost_factor,
-                    self.num_control_points, self.max_radius_percentile,
-                    self.max_radius_factor]
+                    self.min_area_percentile,
+                    self.min_area_factor,
+                    self.max_area_percentile,
+                    self.max_area_factor,
+                    self.min_length_percentile,
+                    self.min_length_factor,
+                    self.max_length_percentile,
+                    self.max_length_factor,
+                    self.max_cost_percentile,
+                    self.max_cost_factor,
+                    self.num_control_points,
+                    self.max_radius_percentile,
+                    self.max_radius_factor,
+                ]
         return result
 
     def overlap_weight(self, params):
-        '''The overlap weight to use in the cost calculation'''
+        """The overlap weight to use in the cost calculation"""
         if not self.wants_training_set_weights:
             return self.override_overlap_weight.value
         elif params is None:
@@ -641,7 +817,7 @@ should be processed.
             return params.overlap_weight
 
     def leftover_weight(self, params):
-        '''The leftover weight to use in the cost calculation'''
+        """The leftover weight to use in the cost calculation"""
         if not self.wants_training_set_weights:
             return self.override_leftover_weight.value
         elif params is None:
@@ -650,7 +826,7 @@ should be processed.
             return params.leftover_weight
 
     def ncontrol_points(self):
-        '''# of control points when making a training set'''
+        """# of control points when making a training set"""
         if self.mode == MODE_UNTANGLE:
             params = self.read_params()
             return params.num_control_points
@@ -666,23 +842,23 @@ should be processed.
         return self.custom_complexity.value
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to process a group of worms'''
+        """Prepare to process a group of worms"""
         d = self.get_dictionary(workspace.image_set_list)
         d[TRAINING_DATA] = []
 
     def get_dictionary_for_worker(self):
-        '''Don't share the training data dictionary between workers'''
+        """Don't share the training data dictionary between workers"""
         return {TRAINING_DATA: []}
 
     def run(self, workspace):
-        '''Run the module on the current image set'''
+        """Run the module on the current image set"""
         if self.mode == MODE_TRAIN:
             self.run_train(workspace)
         else:
             self.run_untangle(workspace)
 
     class TrainingData(object):
-        '''One worm's training data'''
+        """One worm's training data"""
 
         def __init__(self, area, skel_length, angles, radial_profile):
             self.area = area
@@ -691,12 +867,11 @@ should be processed.
             self.radial_profile = radial_profile
 
     def run_train(self, workspace):
-        '''Train based on the current image set'''
+        """Train based on the current image set"""
 
         image_name = self.image_name.value
         image_set = workspace.image_set
-        image = image_set.get_image(image_name,
-                                    must_be_binary=True)
+        image = image_set.get_image(image_name, must_be_binary=True)
         num_control_points = self.ncontrol_points()
         labels, count = scind.label(image.pixel_data, morph.eight_connect)
         skeleton = morph.skeletonize(image.pixel_data)
@@ -708,17 +883,16 @@ should be processed.
             workspace.display_data.input_image = image.pixel_data
         for i in range(1, count + 1):
             mask = labels == i
-            graph = self.get_graph_from_binary(
-                    image.pixel_data & mask, skeleton & mask)
-            path_coords, path = self.get_longest_path_coords(
-                    graph, np.iinfo(int).max)
+            graph = self.get_graph_from_binary(image.pixel_data & mask, skeleton & mask)
+            path_coords, path = self.get_longest_path_coords(graph, np.iinfo(int).max)
             if len(path_coords) == 0:
                 continue
             cumul_lengths = self.calculate_cumulative_lengths(path_coords)
             if cumul_lengths[-1] == 0:
                 continue
-            control_points = self.sample_control_points(path_coords, cumul_lengths,
-                                                        num_control_points)
+            control_points = self.sample_control_points(
+                path_coords, cumul_lengths, num_control_points
+            )
             angles = self.get_angles(control_points)
             #
             # Interpolate in 2-d when looking up the distances
@@ -728,22 +902,25 @@ should be processed.
             ci1 = np.minimum(ci + 1, labels.shape[0] - 1)
             cj1 = np.minimum(cj + 1, labels.shape[1] - 1)
             radial_profile = np.zeros(num_control_points)
-            for ii, jj, f in ((ci, cj, (1 - fi) * (1 - fj)),
-                              (ci1, cj, fi * (1 - fj)),
-                              (ci, cj1, (1 - fi) * fj),
-                              (ci1, cj1, fi * fj)):
+            for ii, jj, f in (
+                (ci, cj, (1 - fi) * (1 - fj)),
+                (ci1, cj, fi * (1 - fj)),
+                (ci, cj1, (1 - fi) * fj),
+                (ci1, cj1, fi * fj),
+            ):
                 radial_profile += distances[ii, jj] * f
-            worms.append(self.TrainingData(areas[i], cumul_lengths[-1],
-                                           angles, radial_profile))
+            worms.append(
+                self.TrainingData(areas[i], cumul_lengths[-1], angles, radial_profile)
+            )
             if self.show_window:
                 dworms.append(control_points)
 
     def is_aggregation_module(self):
-        '''Building the model requires aggregation across image sets'''
+        """Building the model requires aggregation across image sets"""
         return self.mode == MODE_TRAIN
 
     def post_group(self, workspace, grouping):
-        '''Write the training data file as we finish grouping.'''
+        """Write the training data file as we finish grouping."""
         if self.mode == MODE_TRAIN:
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
             #
@@ -768,37 +945,41 @@ should be processed.
             areas.sort()
             lengths.sort()
             min_area = this.min_area_factor.value * mlab.prctile(
-                    areas, this.min_area_percentile.value)
+                areas, this.min_area_percentile.value
+            )
             max_area = this.max_area_factor.value * mlab.prctile(
-                    areas, this.max_area_percentile.value)
+                areas, this.max_area_percentile.value
+            )
             median_area = np.median(areas)
             min_length = this.min_length_factor.value * mlab.prctile(
-                    lengths, this.min_length_percentile.value)
+                lengths, this.min_length_percentile.value
+            )
             max_length = this.max_length_factor.value * mlab.prctile(
-                    lengths, this.max_length_percentile.value)
+                lengths, this.max_length_percentile.value
+            )
             max_skel_length = mlab.prctile(lengths, this.max_length_percentile.value)
             max_radius = this.max_radius_factor.value * mlab.prctile(
-                    radial_profiles.flatten(), this.max_radius_percentile.value)
+                radial_profiles.flatten(), this.max_radius_percentile.value
+            )
             mean_radial_profile = np.mean(radial_profiles, 1)
             #
             # Mirror the angles by negating them. Flip heads and tails
             # because they are arbitrary.
             #
-            angles = np.hstack((
-                angles,
-                -angles,
-                angles[::-1, :],
-                -angles[::-1, :]))
+            angles = np.hstack((angles, -angles, angles[::-1, :], -angles[::-1, :]))
             lengths = np.hstack([lengths] * 4)
             feat_vectors = np.vstack((angles, lengths[np.newaxis, :]))
             mean_angles_length = np.mean(feat_vectors, 1)
             fv_adjusted = feat_vectors - mean_angles_length[:, np.newaxis]
             angles_covariance_matrix = np.cov(fv_adjusted)
             inv_angles_covariance_matrix = np.linalg.inv(angles_covariance_matrix)
-            angle_costs = [np.dot(np.dot(fv, inv_angles_covariance_matrix), fv)
-                           for fv in fv_adjusted.transpose()]
+            angle_costs = [
+                np.dot(np.dot(fv, inv_angles_covariance_matrix), fv)
+                for fv in fv_adjusted.transpose()
+            ]
             max_cost = this.max_cost_factor.value * mlab.prctile(
-                    angle_costs, this.max_cost_percentile.value)
+                angle_costs, this.max_cost_percentile.value
+            )
             #
             # Write it to disk
             #
@@ -810,29 +991,33 @@ should be processed.
             file_name = m.apply_metadata(self.training_set_file_name.value)
             fd = open(os.path.join(path, file_name), "w")
             doc = DOM.getDOMImplementation().createDocument(
-                    T_NAMESPACE, T_TRAINING_DATA, None)
+                T_NAMESPACE, T_TRAINING_DATA, None
+            )
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
             for tag, value in (
-                    (T_VERSION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))),
-                    (T_MIN_AREA, min_area),
-                    (T_MAX_AREA, max_area),
-                    (T_COST_THRESHOLD, max_cost),
-                    (T_NUM_CONTROL_POINTS, num_control_points),
-                    (T_MAX_SKEL_LENGTH, max_skel_length),
-                    (T_MIN_PATH_LENGTH, min_length),
-                    (T_MAX_PATH_LENGTH, max_length),
-                    (T_MEDIAN_WORM_AREA, median_area),
-                    (T_MAX_RADIUS, max_radius),
-                    (T_OVERLAP_WEIGHT, this.override_overlap_weight.value),
-                    (T_LEFTOVER_WEIGHT, this.override_leftover_weight.value),
-                    (T_TRAINING_SET_SIZE, nworms)):
+                (T_VERSION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))),
+                (T_MIN_AREA, min_area),
+                (T_MAX_AREA, max_area),
+                (T_COST_THRESHOLD, max_cost),
+                (T_NUM_CONTROL_POINTS, num_control_points),
+                (T_MAX_SKEL_LENGTH, max_skel_length),
+                (T_MIN_PATH_LENGTH, min_length),
+                (T_MAX_PATH_LENGTH, max_length),
+                (T_MEDIAN_WORM_AREA, median_area),
+                (T_MAX_RADIUS, max_radius),
+                (T_OVERLAP_WEIGHT, this.override_overlap_weight.value),
+                (T_LEFTOVER_WEIGHT, this.override_leftover_weight.value),
+                (T_TRAINING_SET_SIZE, nworms),
+            ):
                 element = doc.createElement(tag)
                 content = doc.createTextNode(str(value))
                 element.appendChild(content)
                 top.appendChild(element)
-            for tag, values in ((T_MEAN_ANGLES, mean_angles_length),
-                                (T_RADII_FROM_TRAINING, mean_radial_profile)):
+            for tag, values in (
+                (T_MEAN_ANGLES, mean_angles_length),
+                (T_RADII_FROM_TRAINING, mean_radial_profile),
+            ):
                 element = doc.createElement(tag)
                 top.appendChild(element)
                 for value in values:
@@ -855,16 +1040,16 @@ should be processed.
             if self.show_window:
                 workspace.display_data.angle_costs = angle_costs
                 workspace.display_data.feat_vectors = feat_vectors
-                workspace.display_data.angles_covariance_matrix = \
+                workspace.display_data.angles_covariance_matrix = (
                     angles_covariance_matrix
+                )
 
     def run_untangle(self, workspace):
-        '''Untangle based on the current image set'''
+        """Untangle based on the current image set"""
         params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
-        image = image_set.get_image(image_name,
-                                    must_be_binary=True)
+        image = image_set.get_image(image_name, must_be_binary=True)
         labels, count = scind.label(image.pixel_data, morph.eight_connect)
         #
         # Skeletonize once, then remove any points in the skeleton
@@ -888,35 +1073,43 @@ should be processed.
             skeleton_areas = np.bincount(labels[skeleton])
             current_index = 1
             for i in range(1, count + 1):
-                if (areas[i] < params.min_worm_area or
-                            i >= skeleton_areas.shape[0] or
-                            skeleton_areas[i] == 0):
+                if (
+                    areas[i] < params.min_worm_area
+                    or i >= skeleton_areas.shape[0]
+                    or skeleton_areas[i] == 0
+                ):
                     # Completely exclude the worm
                     continue
                 elif areas[i] <= params.max_area:
                     path_coords, path_struct = self.single_worm_find_path(
-                            workspace, labels, i, skeleton, params)
+                        workspace, labels, i, skeleton, params
+                    )
                     if len(path_coords) > 0 and self.single_worm_filter(
-                            workspace, path_coords, params):
+                        workspace, path_coords, params
+                    ):
                         all_path_coords.append(path_coords)
                 else:
                     graph = self.cluster_graph_building(
-                            workspace, labels, i, skeleton, params)
+                        workspace, labels, i, skeleton, params
+                    )
                     if len(graph.segments) > self.max_complexity:
                         logger.warning(
-                                "Warning: rejecting cluster of %d segments.\n" %
-                                len(graph.segments))
+                            "Warning: rejecting cluster of %d segments.\n"
+                            % len(graph.segments)
+                        )
                         continue
                     paths = self.get_all_paths(
-                            graph, params.min_path_length, params.max_path_length)
+                        graph, params.min_path_length, params.max_path_length
+                    )
                     paths_selected = self.cluster_paths_selection(
-                            graph, paths, labels, i, params)
+                        graph, paths, labels, i, params
+                    )
                     del graph
                     del paths
                     all_path_coords += paths_selected
-        ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y = \
-            self.worm_descriptor_building(all_path_coords, params,
-                                          labels.shape)
+        ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y = self.worm_descriptor_building(
+            all_path_coords, params, labels.shape
+        )
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
         object_set = workspace.object_set
@@ -935,7 +1128,8 @@ should be processed.
             I.add_object_count_measurements(measurements, name, o.count)
             if self.show_window:
                 workspace.display_data.overlapping_labels = [
-                    l for l, idx in o.get_labels()]
+                    l for l, idx in o.get_labels()
+                ]
 
             if o.count == 0:
                 center_x = np.zeros(0)
@@ -943,14 +1137,21 @@ should be processed.
             else:
                 center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
-            measurements.add_measurement(name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x)
-            measurements.add_measurement(name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y)
-            measurements.add_measurement(name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, o.indices)
+            measurements.add_measurement(
+                name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x
+            )
+            measurements.add_measurement(
+                name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y
+            )
+            measurements.add_measurement(
+                name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, o.indices
+            )
             #
             # Save outlines
             #
             if self.wants_overlapping_outlines:
                 from matplotlib.cm import ScalarMappable
+
                 colormap = self.overlapping_outlines_colormap.value
                 if colormap == cps.DEFAULT:
                     colormap = cpprefs.get_default_colormap()
@@ -962,21 +1163,20 @@ should be processed.
                     colors = my_map.to_rgba(np.unique(ijv[:, 2]))
                     outline_pixels = o.make_ijv_outlines(colors[:, :3])
                 outline_image = cpi.Image(outline_pixels, parent_image=image)
-                image_set.add(self.overlapping_outlines_name.value,
-                              outline_image)
+                image_set.add(self.overlapping_outlines_name.value, outline_image)
 
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #
             # Sum up the number of overlaps using a sparse matrix
             #
             overlap_hits = coo.coo_matrix(
-                    (np.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])),
-                    image.pixel_data.shape)
+                (np.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image.pixel_data.shape
+            )
             overlap_hits = overlap_hits.toarray()
             mask = overlap_hits == 1
             labels = coo.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
             labels = labels.toarray()
-            labels[~ mask] = 0
+            labels[~mask] = 0
             o = cpo.Objects()
             o.segmented = labels
             o.parent_image = image
@@ -987,53 +1187,65 @@ should be processed.
             I.add_object_location_measurements(measurements, name, labels, o.count)
             if self.show_window:
                 workspace.display_data.nonoverlapping_labels = [
-                    l for l, idx in o.get_labels()]
+                    l for l, idx in o.get_labels()
+                ]
 
             if self.wants_nonoverlapping_outlines:
                 outline_pixels = outline(labels) > 0
                 outline_image = cpi.Image(outline_pixels, parent_image=image)
-                image_set.add(self.nonoverlapping_outlines_name.value,
-                              outline_image)
+                image_set.add(self.nonoverlapping_outlines_name.value, outline_image)
         for name in object_names:
-            measurements.add_measurement(name, "_".join((C_WORM, F_LENGTH)),
-                                         all_lengths)
-            for values, ftr in ((all_angles, F_ANGLE),
-                                (all_control_coords_x, F_CONTROL_POINT_X),
-                                (all_control_coords_y, F_CONTROL_POINT_Y)):
+            measurements.add_measurement(
+                name, "_".join((C_WORM, F_LENGTH)), all_lengths
+            )
+            for values, ftr in (
+                (all_angles, F_ANGLE),
+                (all_control_coords_x, F_CONTROL_POINT_X),
+                (all_control_coords_y, F_CONTROL_POINT_Y),
+            ):
                 for i in range(values.shape[1]):
                     feature = "_".join((C_WORM, ftr, str(i + 1)))
                     measurements.add_measurement(name, feature, values[:, i])
 
     def display(self, workspace, figure):
         from cellprofiler.gui.figure import CPLDM_ALPHA
+
         if self.mode == MODE_UNTANGLE:
             figure.set_subplots((1, 1))
             cplabels = []
             if self.overlap in (OO_BOTH, OO_WITH_OVERLAP):
                 title = self.overlap_objects.value
                 cplabels.append(
-                        dict(name=self.overlap_objects.value,
-                             labels=workspace.display_data.overlapping_labels,
-                             mode=CPLDM_ALPHA))
+                    dict(
+                        name=self.overlap_objects.value,
+                        labels=workspace.display_data.overlapping_labels,
+                        mode=CPLDM_ALPHA,
+                    )
+                )
             else:
                 title = self.nonoverlapping_objects.value
             if self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP):
                 cplabels.append(
-                        dict(name=self.nonoverlapping_objects.value,
-                             labels=workspace.display_data.nonoverlapping_labels))
+                    dict(
+                        name=self.nonoverlapping_objects.value,
+                        labels=workspace.display_data.nonoverlapping_labels,
+                    )
+                )
             image = workspace.display_data.input_image
             if image.ndim == 2:
                 figure.subplot_imshow_grayscale(
-                        0, 0, image, title=title, cplabels=cplabels)
+                    0, 0, image, title=title, cplabels=cplabels
+                )
         else:
             figure.set_subplots((1, 1))
-            figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
-                                     title=self.image_name.value)
+            figure.subplot_imshow_bw(
+                0, 0, workspace.display_data.input_image, title=self.image_name.value
+            )
             axes = figure.subplot(0, 0)
             for control_points in workspace.display_data.worms:
-                axes.plot(control_points[:, 1],
-                          control_points[:, 0], "ro-",
-                          markersize=4)
+                axes.plot(
+                    control_points[:, 1], control_points[:, 0], "ro-", markersize=4
+                )
 
     def display_post_group(self, workspace, figure):
         """Display some statistical information about training, post-group
@@ -1049,32 +1261,31 @@ should be processed.
             feat_vectors = workspace.display_data.feat_vectors
             angles_covariance_matrix = workspace.display_data.angles_covariance_matrix
             figure = workspace.create_or_find_figure(
-                    subplots=(4, 1),
-                    window_name="UntangleWorms_PostGroup")
+                subplots=(4, 1), window_name="UntangleWorms_PostGroup"
+            )
             f = figure.figure
             f.clf()
             a = f.add_subplot(1, 4, 1)
-            a.set_position((Bbox([[.1, .1], [.15, .9]])))
+            a.set_position((Bbox([[0.1, 0.1], [0.15, 0.9]])))
             a.boxplot(angle_costs)
             a.set_title("Costs")
             a = f.add_subplot(1, 4, 2)
-            a.set_position((Bbox([[.2, .1], [.25, .9]])))
+            a.set_position((Bbox([[0.2, 0.1], [0.25, 0.9]])))
             a.boxplot(feat_vectors[-1, :])
             a.set_title("Lengths")
             a = f.add_subplot(1, 4, 3)
-            a.set_position((Bbox([[.30, .1], [.60, .9]])))
+            a.set_position((Bbox([[0.30, 0.1], [0.60, 0.9]])))
             a.boxplot(feat_vectors[:-1, :].transpose() * 180 / np.pi)
             a.set_title("Angles")
             a = f.add_subplot(1, 4, 4)
-            a.set_position((Bbox([[.65, .1], [1, .45]])))
-            a.imshow(angles_covariance_matrix[:-1, :-1],
-                     interpolation="nearest")
+            a.set_position((Bbox([[0.65, 0.1], [1, 0.45]])))
+            a.imshow(angles_covariance_matrix[:-1, :-1], interpolation="nearest")
             a.set_title("Covariance")
             f.canvas.draw()
             figure.Refresh()
 
     def single_worm_find_path(self, workspace, labels, i, skeleton, params):
-        '''Finds the worm's skeleton  as a path.
+        """Finds the worm's skeleton  as a path.
 
         labels - the labels matrix, labeling single and clusters of worms
 
@@ -1089,16 +1300,16 @@ should be processed.
               i coordinates in the first row and j coordinates in the second.)
 
         path_struct: a structure describing the path
-        '''
+        """
         binary_im = labels == i
         skeleton = skeleton & binary_im
         graph_struct = self.get_graph_from_binary(binary_im, skeleton)
-        return self.get_longest_path_coords(
-                graph_struct, params.max_path_length)
+        return self.get_longest_path_coords(graph_struct, params.max_path_length)
 
-    def get_graph_from_binary(self, binary_im, skeleton, max_radius=None,
-                              max_skel_length=None):
-        '''Manufacture a graph of the skeleton of the worm
+    def get_graph_from_binary(
+        self, binary_im, skeleton, max_radius=None, max_skel_length=None
+    ):
+        """Manufacture a graph of the skeleton of the worm
 
         Given a binary image containing a cluster of worms, returns a structure
         describing the graph structure of the skeleton of the cluster. This graph
@@ -1157,7 +1368,7 @@ should be processed.
            two branch areas), its orientation is well-defined, i.e., one branch
            area will be chosen as starting end. (Even though in this case, the
            "positive direction" of the segment cannot be determined from the
-           information in graph_struct.segments.)'''
+           information in graph_struct.segments.)"""
         branch_areas_binary = morph.branchpoints(skeleton)
         if max_radius is not None:
             #
@@ -1178,43 +1389,49 @@ should be processed.
             far = scind.binary_erosion(binary_im, strel)
             far = scind.binary_opening(far, structure=morph.eight_connect)
             far_labels, count = scind.label(far)
-            far_counts = np.bincount(far_labels.ravel(),
-                                     branch_areas_binary.ravel())
+            far_counts = np.bincount(far_labels.ravel(), branch_areas_binary.ravel())
             far[far_counts[far_labels] < 2] = False
             branch_areas_binary |= far
             del far
             del far_labels
         branch_areas_binary = scind.binary_dilation(
-                branch_areas_binary, structure=morph.eight_connect)
-        segments_binary = skeleton & ~ branch_areas_binary
+            branch_areas_binary, structure=morph.eight_connect
+        )
+        segments_binary = skeleton & ~branch_areas_binary
         if max_skel_length is not None and np.sum(segments_binary) > 0:
             max_skel_length = max(int(max_skel_length), 2)  # paranoia
-            i, j, labels, order, distance, num_segments = \
-                self.trace_segments(segments_binary)
+            i, j, labels, order, distance, num_segments = self.trace_segments(
+                segments_binary
+            )
             #
             # Put breakpoints every max_skel_length, but not at end
             #
-            max_order = np.array(scind.maximum(order, labels,
-                                               np.arange(num_segments + 1)))
+            max_order = np.array(
+                scind.maximum(order, labels, np.arange(num_segments + 1))
+            )
             big_segment = max_order >= max_skel_length
-            segment_count = np.maximum((max_order + max_skel_length - 1) /
-                                       max_skel_length, 1).astype(int)
+            segment_count = np.maximum(
+                (max_order + max_skel_length - 1) / max_skel_length, 1
+            ).astype(int)
             segment_length = ((max_order + 1) / segment_count).astype(int)
-            new_bp_mask = ((order % segment_length[labels] ==
-                            segment_length[labels] - 1) &
-                           (order != max_order[labels]) &
-                           (big_segment[labels]))
+            new_bp_mask = (
+                (order % segment_length[labels] == segment_length[labels] - 1)
+                & (order != max_order[labels])
+                & (big_segment[labels])
+            )
             new_branch_areas_binary = np.zeros(segments_binary.shape, bool)
             new_branch_areas_binary[i[new_bp_mask], j[new_bp_mask]] = True
             new_branch_areas_binary = scind.binary_dilation(
-                    new_branch_areas_binary, structure=morph.eight_connect)
+                new_branch_areas_binary, structure=morph.eight_connect
+            )
             branch_areas_binary |= new_branch_areas_binary
             segments_binary &= ~new_branch_areas_binary
         return self.get_graph_from_branching_areas_and_segments(
-                branch_areas_binary, segments_binary)
+            branch_areas_binary, segments_binary
+        )
 
     def trace_segments(self, segments_binary):
-        '''Find distance of every point in a segment from a segment endpoint
+        """Find distance of every point in a segment from a segment endpoint
 
         segments_binary - a binary mask of the segments in an image.
 
@@ -1226,16 +1443,23 @@ should be processed.
                 the segment.)
         distance - the propagation distance of the point from the endpoint
         num_segments - the # of labelled segments
-        '''
+        """
         #
         # Break long skeletons into pieces whose maximum length
         # is max_skel_length.
         #
         segments_labeled, num_segments = scind.label(
-                segments_binary, structure=morph.eight_connect)
+            segments_binary, structure=morph.eight_connect
+        )
         if num_segments == 0:
-            return (np.array([], int), np.array([], int), np.array([], int),
-                    np.array([], int), np.array([]), 0)
+            return (
+                np.array([], int),
+                np.array([], int),
+                np.array([], int),
+                np.array([], int),
+                np.array([]),
+                0,
+            )
         #
         # Get one endpoint per segment
         #
@@ -1246,28 +1470,30 @@ should be processed.
         #
         order = np.arange(np.prod(segments_binary.shape))
         order.shape = segments_binary.shape
-        order[~ endpoints] += np.prod(segments_binary.shape)
+        order[~endpoints] += np.prod(segments_binary.shape)
         labelrange = np.arange(num_segments + 1).astype(int)
-        endpoint_loc = scind.minimum_position(order, segments_labeled,
-                                              labelrange)
+        endpoint_loc = scind.minimum_position(order, segments_labeled, labelrange)
         endpoint_loc = np.array(endpoint_loc, int)
         endpoint_labels = np.zeros(segments_labeled.shape, np.int16)
-        endpoint_labels[endpoint_loc[:, 0], endpoint_loc[:, 1]] = \
-            segments_labeled[endpoint_loc[:, 0], endpoint_loc[:, 1]]
+        endpoint_labels[endpoint_loc[:, 0], endpoint_loc[:, 1]] = segments_labeled[
+            endpoint_loc[:, 0], endpoint_loc[:, 1]
+        ]
         #
         # A corner case - propagate will trace a loop around both ways. So
         # we have to find that last point and remove it so
         # it won't trace in that direction
         #
-        loops = ~ endpoints[endpoint_loc[1:, 0], endpoint_loc[1:, 1]]
+        loops = ~endpoints[endpoint_loc[1:, 0], endpoint_loc[1:, 1]]
         if np.any(loops):
             # Consider all points around the endpoint, finding the one
             # which is numbered last
             dilated_ep_labels = morph.grey_dilation(
-                    endpoint_labels, footprint=np.ones((3, 3), bool))
+                endpoint_labels, footprint=np.ones((3, 3), bool)
+            )
             dilated_ep_labels[dilated_ep_labels != segments_labeled] = 0
             loop_endpoints = scind.maximum_position(
-                    order, dilated_ep_labels.astype(int), labelrange[1:][loops])
+                order, dilated_ep_labels.astype(int), labelrange[1:][loops]
+            )
             loop_endpoints = np.array(loop_endpoints, int)
             segments_binary_temp = segments_binary.copy()
             segments_binary_temp[loop_endpoints[:, 0], loop_endpoints[:, 1]] = False
@@ -1276,17 +1502,16 @@ should be processed.
         #
         # Now propagate from the endpoints to get distances
         #
-        _, distances = propagate(np.zeros(segments_binary.shape),
-                                 endpoint_labels,
-                                 segments_binary_temp, 1)
+        _, distances = propagate(
+            np.zeros(segments_binary.shape), endpoint_labels, segments_binary_temp, 1
+        )
         if np.any(loops):
             # set the end-of-loop distances to be very large
             distances[loop_endpoints[:, 0], loop_endpoints[:, 1]] = np.inf
         #
         # Order points by label # and distance
         #
-        i, j = np.mgrid[0:segments_binary.shape[0],
-               0:segments_binary.shape[1]]
+        i, j = np.mgrid[0 : segments_binary.shape[0], 0 : segments_binary.shape[1]]
         i = i[segments_binary]
         j = j[segments_binary]
         labels = segments_labeled[segments_binary]
@@ -1309,8 +1534,9 @@ should be processed.
         return i, j, labels, segment_order, distances, num_segments
 
     def get_graph_from_branching_areas_and_segments(
-            self, branch_areas_binary, segments_binary):
-        '''Turn branches + segments into a graph
+        self, branch_areas_binary, segments_binary
+    ):
+        """Turn branches + segments into a graph
 
         branch_areas_binary - binary mask of branch areas
 
@@ -1322,12 +1548,14 @@ should be processed.
 
         Output is same format as get_graph_from_binary(), so for details, see
         get_graph_from_binary
-        '''
+        """
         branch_areas_labeled, num_branch_areas = scind.label(
-                branch_areas_binary, morph.eight_connect)
+            branch_areas_binary, morph.eight_connect
+        )
 
         i, j, labels, order, distance, num_segments = self.trace_segments(
-                segments_binary)
+            segments_binary
+        )
 
         ooo = np.lexsort((order, labels))
         i = i[ooo]
@@ -1335,14 +1563,19 @@ should be processed.
         labels = labels[ooo]
         order = order[ooo]
         distance = distance[ooo]
-        counts = (np.zeros(0, int) if len(labels) == 0
-                  else np.bincount(labels.flatten())[1:])
+        counts = (
+            np.zeros(0, int) if len(labels) == 0 else np.bincount(labels.flatten())[1:]
+        )
 
         branch_ij = np.argwhere(branch_areas_binary)
         if len(branch_ij) > 0:
-            ooo = np.lexsort([
-                branch_ij[:, 0], branch_ij[:, 1],
-                branch_areas_labeled[branch_ij[:, 0], branch_ij[:, 1]]])
+            ooo = np.lexsort(
+                [
+                    branch_ij[:, 0],
+                    branch_ij[:, 1],
+                    branch_areas_labeled[branch_ij[:, 0], branch_ij[:, 1]],
+                ]
+            )
             branch_ij = branch_ij[ooo]
             branch_labels = branch_areas_labeled[branch_ij[:, 0], branch_ij[:, 1]]
             branch_counts = np.bincount(branch_areas_labeled.flatten())[1:]
@@ -1359,7 +1592,8 @@ should be processed.
         # incidence_directions = True for starts
         #
         incidence_directions = self.make_incidence_matrix(
-                branch_areas_labeled, num_branch_areas, start_labels, num_segments)
+            branch_areas_labeled, num_branch_areas, start_labels, num_segments
+        )
         #
         # Get the incidence matrix for the ends
         #
@@ -1367,11 +1601,12 @@ should be processed.
         end_labels = np.zeros(segments_binary.shape, int)
         end_labels[i[ends], j[ends]] = labels[ends]
         incidence_matrix = self.make_incidence_matrix(
-                branch_areas_labeled, num_branch_areas, end_labels, num_segments)
+            branch_areas_labeled, num_branch_areas, end_labels, num_segments
+        )
         incidence_matrix |= incidence_directions
 
         class Result(object):
-            '''A result graph:
+            """A result graph:
 
             image_size: size of input image
 
@@ -1393,24 +1628,39 @@ should be processed.
             incidence_matrix: matrix of areas x segments indicating connections
 
             incidence_directions: direction of each connection
-            '''
+            """
 
-            def __init__(self, branch_areas_binary, counts, i, j,
-                         branch_ij, branch_counts, incidence_matrix,
-                         incidence_directions):
+            def __init__(
+                self,
+                branch_areas_binary,
+                counts,
+                i,
+                j,
+                branch_ij,
+                branch_counts,
+                incidence_matrix,
+                incidence_directions,
+            ):
                 self.image_size = tuple(branch_areas_binary.shape)
                 self.segment_coords = np.column_stack((i, j))
                 self.segment_indexes = np.cumsum(counts) - counts
                 self.segment_counts = counts
                 self.segment_order = order
                 self.segments = [
-                    (self.segment_coords[self.segment_indexes[i]:
-                    (self.segment_indexes[i] +
-                     self.segment_counts[i])],
-                     self.segment_coords[self.segment_indexes[i]:
-                     (self.segment_indexes[i] +
-                      self.segment_counts[i])][::-1])
-                    for i in range(len(counts))]
+                    (
+                        self.segment_coords[
+                            self.segment_indexes[i] : (
+                                self.segment_indexes[i] + self.segment_counts[i]
+                            )
+                        ],
+                        self.segment_coords[
+                            self.segment_indexes[i] : (
+                                self.segment_indexes[i] + self.segment_counts[i]
+                            )
+                        ][::-1],
+                    )
+                    for i in range(len(counts))
+                ]
 
                 self.branch_areas = branch_ij
                 self.branch_area_indexes = np.cumsum(branch_counts) - branch_counts
@@ -1418,11 +1668,19 @@ should be processed.
                 self.incidence_matrix = incidence_matrix
                 self.incidence_directions = incidence_directions
 
-        return Result(branch_areas_binary, counts, i, j, branch_ij, branch_counts,
-                      incidence_matrix, incidence_directions)
+        return Result(
+            branch_areas_binary,
+            counts,
+            i,
+            j,
+            branch_ij,
+            branch_counts,
+            incidence_matrix,
+            incidence_directions,
+        )
 
     def make_incidence_matrix(self, L1, N1, L2, N2):
-        '''Return an N1+1 x N2+1 matrix that marks all L1 and L2 that are 8-connected
+        """Return an N1+1 x N2+1 matrix that marks all L1 and L2 that are 8-connected
 
         L1 - a labels matrix
         N1 - # of labels in L1
@@ -1433,14 +1691,13 @@ should be processed.
 
         Returns a matrix where M[n,m] is true if there is some pixel in
         L1 with value n that is 8-connected to a pixel in L2 with value m
-        '''
+        """
         #
         # Overlay the two labels matrix
         #
         L = L1.copy()
         L[L2 != 0] = L2[L2 != 0] + N1
-        neighbor_count, neighbor_index, n2 = \
-            morph.find_neighbors(L)
+        neighbor_count, neighbor_index, n2 = morph.find_neighbors(L)
         if np.all(neighbor_count == 0):
             return np.zeros((N1, N2), bool)
         #
@@ -1448,7 +1705,7 @@ should be processed.
         #
         neighbor_count = neighbor_count[:N1]
         neighbor_index = neighbor_index[:N1]
-        n2 = n2[:(neighbor_index[-1] + neighbor_count[-1])]
+        n2 = n2[: (neighbor_index[-1] + neighbor_count[-1])]
         #
         # Get rid of blanks
         #
@@ -1467,12 +1724,13 @@ should be processed.
         n1[0] = label[0]
         n1[neighbor_index[1:]] = label[1:] - label[:-1]
         n1 = np.cumsum(n1)
-        incidence = coo.coo_matrix((np.ones(n1.shape), (n1, n2)),
-                                   shape=(N1, N2)).toarray()
+        incidence = coo.coo_matrix(
+            (np.ones(n1.shape), (n1, n2)), shape=(N1, N2)
+        ).toarray()
         return incidence != 0
 
     def get_longest_path_coords(self, graph_struct, max_length):
-        '''Given a graph describing the structure of the skeleton of an image,
+        """Given a graph describing the structure of the skeleton of an image,
         returns the longest non-self-intersecting (with some caveats, see
         get_all_paths.m) path through that graph, specified as a polyline.
 
@@ -1489,7 +1747,7 @@ should be processed.
 
         path_struct: A structure, with entries 'segments' and 'branch_areas',
         describing the path found, in relation to graph_struct. See
-        get_all_paths.m for details.'''
+        get_all_paths.m for details."""
 
         path_list = self.get_all_paths(graph_struct, 0, max_length)
         current_longest_path_coords = []
@@ -1505,7 +1763,7 @@ should be processed.
         return current_longest_path_coords, current_path
 
     def path_to_pixel_coords(self, graph_struct, path):
-        '''Given a structure describing paths in a graph, converts those to a
+        """Given a structure describing paths in a graph, converts those to a
         polyline (i.e., successive coordinates) representation of the same graph.
 
         (This is possible because the graph_struct descriptor contains
@@ -1531,35 +1789,41 @@ should be processed.
         likely to contain segments consisting of runs of pixels where each is
         close to the next (in its 8-neighbourhood), but interleaved with
         reasonably long "jumps", where there is some distance between the end
-        of one segment and the beginning of the next.'''
+        of one segment and the beginning of the next."""
 
         if len(path.segments) == 1:
             return graph_struct.segments[path.segments[0]][0]
 
-        direction = graph_struct.incidence_directions[path.branch_areas[0],
-                                                      path.segments[0]]
+        direction = graph_struct.incidence_directions[
+            path.branch_areas[0], path.segments[0]
+        ]
         result = [graph_struct.segments[path.segments[0]][direction]]
         for branch_area, segment in zip(path.branch_areas, path.segments[1:]):
-            direction = not graph_struct.incidence_directions[branch_area,
-                                                              segment]
+            direction = not graph_struct.incidence_directions[branch_area, segment]
             result.append(graph_struct.segments[segment][direction])
         return np.vstack(result)
 
     def calculate_path_length(self, path_coords):
-        '''Return the path length, given path coordinates as Nx2'''
+        """Return the path length, given path coordinates as Nx2"""
         if len(path_coords) < 2:
             return 0
         return np.sum(np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))
 
     def calculate_cumulative_lengths(self, path_coords):
-        '''return a cumulative length vector given Nx2 path coordinates'''
+        """return a cumulative length vector given Nx2 path coordinates"""
         if len(path_coords) < 2:
             return np.array([0] * len(path_coords))
-        return np.hstack(([0],
-                          np.cumsum(np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))))
+        return np.hstack(
+            (
+                [0],
+                np.cumsum(
+                    np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1))
+                ),
+            )
+        )
 
     def single_worm_filter(self, workspace, path_coords, params):
-        '''Given a path representing a single worm, calculates its shape cost, and
+        """Given a path representing a single worm, calculates its shape cost, and
         either accepts it as a worm or rejects it, depending on whether or not
         the shape cost is higher than some threshold.
 
@@ -1584,20 +1848,24 @@ should be processed.
             (num_control_points-1)x(num_control_points-1) double matrix. See
             calculate_angle_shape_cost() for how this is used.
 
-         Returns true if worm passes filter'''
+         Returns true if worm passes filter"""
         if len(path_coords) < 2:
             return False
         cumul_lengths = self.calculate_cumulative_lengths(path_coords)
         total_length = cumul_lengths[-1]
         control_coords = self.sample_control_points(
-                path_coords, cumul_lengths, params.num_control_points)
+            path_coords, cumul_lengths, params.num_control_points
+        )
         cost = self.calculate_angle_shape_cost(
-                control_coords, total_length, params.mean_angles,
-                params.inv_angles_covariance_matrix)
+            control_coords,
+            total_length,
+            params.mean_angles,
+            params.inv_angles_covariance_matrix,
+        )
         return cost < params.cost_threshold
 
     def sample_control_points(self, path_coords, cumul_lengths, num_control_points):
-        '''Sample equally-spaced control points from the Nx2 path coordinates
+        """Sample equally-spaced control points from the Nx2 path coordinates
 
         Inputs:
 
@@ -1618,7 +1886,7 @@ should be processed.
         jth control point, sampled along the path. The first and last control
         points are equal to the first and last points of the path (i.e., the
         points whose coordinates are the first and last columns of
-        path_coords), respectively.'''
+        path_coords), respectively."""
         assert num_control_points > 2
         #
         # Paranoia - eliminate any coordinates with length = 0, esp the last.
@@ -1642,17 +1910,20 @@ should be processed.
         indices = findices.astype(int)
         assert indices[-1] < ncoords - 1
         fracs = findices - indices
-        sampled = (path_coords[indices, :] * (1 - fracs[:, np.newaxis]) +
-                   path_coords[(indices + 1), :] * fracs[:, np.newaxis])
+        sampled = (
+            path_coords[indices, :] * (1 - fracs[:, np.newaxis])
+            + path_coords[(indices + 1), :] * fracs[:, np.newaxis]
+        )
         #
         # Tack on first and last
         #
         sampled = np.vstack((path_coords[:1, :], sampled, path_coords[-1:, :]))
         return sampled
 
-    def calculate_angle_shape_cost(self, control_coords, total_length,
-                                   mean_angles, inv_angles_covariance_matrix):
-        '''% Calculates a shape cost based on the angle shape cost model.
+    def calculate_angle_shape_cost(
+        self, control_coords, total_length, mean_angles, inv_angles_covariance_matrix
+    ):
+        """% Calculates a shape cost based on the angle shape cost model.
 
         Given a set of N control points, calculates the N-2 angles between
         lines joining consecutive control points, forming them into a vector.
@@ -1700,19 +1971,19 @@ should be processed.
         the case when two adjacnet line segments are parallel (and thus
         belong to the same line); the angles can be thought of as the
         (signed) angles through which the path "turns", and are thus not the
-        angles between the line segments as such.'''
+        angles between the line segments as such."""
 
         angles = self.get_angles(control_coords)
         feat_vec = np.hstack((angles, [total_length])) - mean_angles
         return np.dot(np.dot(feat_vec, inv_angles_covariance_matrix), feat_vec)
 
     def get_angles(self, control_coords):
-        '''Extract the angles at each interior control point
+        """Extract the angles at each interior control point
 
         control_coords - an Nx2 array of coordinates of control points
 
         returns an N-2 vector of angles between -pi and pi
-        '''
+        """
         segments_delta = control_coords[1:] - control_coords[:-1]
         segment_bearings = np.arctan2(segments_delta[:, 0], segments_delta[:, 1])
         angles = segment_bearings[1:] - segment_bearings[:-1]
@@ -1728,8 +1999,8 @@ should be processed.
         skeleton = skeleton & binary_im
 
         return self.get_graph_from_binary(
-                binary_im, skeleton, params.max_radius,
-                params.max_skel_length)
+            binary_im, skeleton, params.max_radius, params.max_skel_length
+        )
 
     class Path(object):
         def __init__(self, segments, branch_areas):
@@ -1737,10 +2008,16 @@ should be processed.
             self.branch_areas = branch_areas
 
         def __repr__(self):
-            return "{ segments=" + repr(self.segments) + " branch_areas=" + repr(self.branch_areas) + " }"
+            return (
+                "{ segments="
+                + repr(self.segments)
+                + " branch_areas="
+                + repr(self.branch_areas)
+                + " }"
+            )
 
     def get_all_paths(self, graph_struct, min_length, max_length):
-        '''Given a structure describing a graph, returns a cell array containing
+        """Given a structure describing a graph, returns a cell array containing
         a list of all paths through the graph.
 
         The format of graph_struct is exactly that outputted by
@@ -1797,14 +2074,16 @@ should be processed.
          The output is a list of objects, "o" of the form
 
          o.segments - segment indices of the path
-         o.branch_areas - branch area indices of the path'''
+         o.branch_areas - branch area indices of the path"""
 
-        graph_struct.incident_branch_areas, graph_struct.incident_segments = \
-            self.build_incidence_lists(graph_struct)
+        graph_struct.incident_branch_areas, graph_struct.incident_segments = self.build_incidence_lists(
+            graph_struct
+        )
         n = len(graph_struct.segments)
 
-        graph_struct.segment_lengths = np.array([
-                                                    self.calculate_path_length(x[0]) for x in graph_struct.segments])
+        graph_struct.segment_lengths = np.array(
+            [self.calculate_path_length(x[0]) for x in graph_struct.segments]
+        )
         for j in range(n):
             current_length = graph_struct.segment_lengths[j]
             # Add all finished paths of length 1
@@ -1815,40 +2094,50 @@ should be processed.
             # a segment with the segment.
             #
             segment_list = [j]
-            branch_areas_list = [
-                [k] for k in graph_struct.incident_branch_areas[j]]
+            branch_areas_list = [[k] for k in graph_struct.incident_branch_areas[j]]
 
-            paths_list = self.get_all_paths_recur(graph_struct,
-                                                  segment_list, branch_areas_list,
-                                                  current_length, min_length, max_length)
+            paths_list = self.get_all_paths_recur(
+                graph_struct,
+                segment_list,
+                branch_areas_list,
+                current_length,
+                min_length,
+                max_length,
+            )
             for path in paths_list:
                 yield path
 
     def build_incidence_lists(self, graph_struct):
-        '''Return a list of all branch areas incident to j for each segment
+        """Return a list of all branch areas incident to j for each segment
 
         incident_branch_areas{j} is a row array containing a list of all those
         branch areas incident to segment j; similarly, incident_segments{i} is a
         row array containing a list of all those segments incident to branch area
-        i.'''
+        i."""
         m = graph_struct.incidence_matrix.shape[1]
         n = graph_struct.incidence_matrix.shape[0]
         incident_segments = [
-            np.arange(m)[graph_struct.incidence_matrix[i, :]]
-            for i in range(n)]
+            np.arange(m)[graph_struct.incidence_matrix[i, :]] for i in range(n)
+        ]
         incident_branch_areas = [
-            np.arange(n)[graph_struct.incidence_matrix[:, i]]
-            for i in range(m)]
+            np.arange(n)[graph_struct.incidence_matrix[:, i]] for i in range(m)
+        ]
         return incident_branch_areas, incident_segments
 
-    def get_all_paths_recur(self, graph,
-                            unfinished_segment, unfinished_branch_areas,
-                            current_length, min_length, max_length):
-        '''Recursively find paths
+    def get_all_paths_recur(
+        self,
+        graph,
+        unfinished_segment,
+        unfinished_branch_areas,
+        current_length,
+        min_length,
+        max_length,
+    ):
+        """Recursively find paths
 
         incident_branch_areas - list of all branch areas incident on a segment
         incident_segments - list of all segments incident on a branch
-        '''
+        """
         if len(unfinished_segment) == 0:
             return
         last_segment = unfinished_segment[-1]
@@ -1878,13 +2167,19 @@ should be processed.
                 # Can't loop back to "end_branch_area". Construct all of
                 # possible branches otherwise
                 #
-                next_branch_areas = [unfinished_branch + [k]
-                                     for k in graph.incident_branch_areas[j]
-                                     if (k != end_branch_area) and
-                                     (k not in unfinished_branch)]
+                next_branch_areas = [
+                    unfinished_branch + [k]
+                    for k in graph.incident_branch_areas[j]
+                    if (k != end_branch_area) and (k not in unfinished_branch)
+                ]
                 for path in self.get_all_paths_recur(
-                        graph, next_segment, next_branch_areas,
-                        next_length, min_length, max_length):
+                    graph,
+                    next_segment,
+                    next_branch_areas,
+                    next_length,
+                    min_length,
+                    max_length,
+                ):
                     yield path
 
     def cluster_paths_selection(self, graph, paths, labels, i, params):
@@ -2022,13 +2317,14 @@ should be processed.
             if total_length > max_path_length or total_length < min_path_length:
                 continue
             control_coords = self.sample_control_points(
-                    current_path_coords, cumul_lengths, num_control_points)
+                current_path_coords, cumul_lengths, num_control_points
+            )
             #
             # Calculate the shape cost
             #
             current_shape_cost = self.calculate_angle_shape_cost(
-                    control_coords, total_length, mean_angles,
-                    inv_angles_covariance_matrix)
+                control_coords, total_length, mean_angles, inv_angles_covariance_matrix
+            )
             if current_shape_cost < params.cost_threshold:
                 paths_and_costs.append((path, current_shape_cost))
 
@@ -2036,7 +2332,8 @@ should be processed.
             return []
 
         path_segment_matrix = np.zeros(
-                (len(graph.segments), len(paths_and_costs)), bool)
+            (len(graph.segments), len(paths_and_costs)), bool
+        )
         for i, (path, cost) in enumerate(paths_and_costs):
             path_segment_matrix[path.segments, i] = True
         overlap_weight = self.overlap_weight(params)
@@ -2052,17 +2349,29 @@ should be processed.
         path_segment_matrix = path_segment_matrix[:, order]
 
         current_best_subset, current_best_cost = self.fast_selection(
-                costs, path_segment_matrix, graph.segment_lengths,
-                overlap_weight, leftover_weight, max_num_worms)
-        selected_paths = [paths_and_costs[order[i]][0]
-                          for i in current_best_subset]
-        path_coords_selected = [self.path_to_pixel_coords(graph, path)
-                                for path in selected_paths]
+            costs,
+            path_segment_matrix,
+            graph.segment_lengths,
+            overlap_weight,
+            leftover_weight,
+            max_num_worms,
+        )
+        selected_paths = [paths_and_costs[order[i]][0] for i in current_best_subset]
+        path_coords_selected = [
+            self.path_to_pixel_coords(graph, path) for path in selected_paths
+        ]
         return path_coords_selected
 
-    def fast_selection(self, costs, path_segment_matrix, segment_lengths,
-                       overlap_weight, leftover_weight, max_num_worms):
-        '''Select the best subset of paths using a breadth-first search
+    def fast_selection(
+        self,
+        costs,
+        path_segment_matrix,
+        segment_lengths,
+        overlap_weight,
+        leftover_weight,
+        max_num_worms,
+    ):
+        """Select the best subset of paths using a breadth-first search
 
         costs - the shape costs of every path
 
@@ -2076,29 +2385,41 @@ should be processed.
         leftover_weight - the penalty per pixel of an excluded segment
 
         max_num_worms - maximum # of worms allowed in returned match.
-        '''
+        """
         current_best_subset = []
         current_best_cost = np.sum(segment_lengths) * leftover_weight
         current_costs = costs
         current_path_segment_matrix = path_segment_matrix.astype(int)
         current_path_choices = np.eye(len(costs), dtype=bool)
         for i in range(min(max_num_worms, len(costs))):
-            current_best_subset, current_best_cost, \
-            current_path_segment_matrix, current_path_choices = \
-                self.select_one_level(
-                        costs, path_segment_matrix, segment_lengths,
-                        current_best_subset, current_best_cost,
-                        current_path_segment_matrix, current_path_choices,
-                        overlap_weight, leftover_weight)
+            current_best_subset, current_best_cost, current_path_segment_matrix, current_path_choices = self.select_one_level(
+                costs,
+                path_segment_matrix,
+                segment_lengths,
+                current_best_subset,
+                current_best_cost,
+                current_path_segment_matrix,
+                current_path_choices,
+                overlap_weight,
+                leftover_weight,
+            )
             if np.prod(current_path_choices.shape) == 0:
                 break
         return current_best_subset, current_best_cost
 
-    def select_one_level(self, costs, path_segment_matrix, segment_lengths,
-                         current_best_subset, current_best_cost,
-                         current_path_segment_matrix, current_path_choices,
-                         overlap_weight, leftover_weight):
-        '''Select from among sets of N paths
+    def select_one_level(
+        self,
+        costs,
+        path_segment_matrix,
+        segment_lengths,
+        current_best_subset,
+        current_best_cost,
+        current_path_segment_matrix,
+        current_path_choices,
+        overlap_weight,
+        leftover_weight,
+    ):
+        """Select from among sets of N paths
 
         Select the best subset from among all possible sets of N paths,
         then create the list of all sets of N+1 paths
@@ -2124,7 +2445,7 @@ should be processed.
         returns the current best subset, the current best cost and
         the current_path_segment_matrix and current_path_choices for the
         next round.
-        '''
+        """
         #
         # Compute the cost, not considering uncovered segments
         #
@@ -2132,61 +2453,101 @@ should be processed.
             #
             # The sum of the individual costs of the chosen paths
             #
-            np.sum(costs[:, np.newaxis] * current_path_choices, 0) +
+            np.sum(costs[:, np.newaxis] * current_path_choices, 0)
+            +
             #
             # The sum of the multiply-covered segment lengths * penalty
             #
-            np.sum(np.maximum(current_path_segment_matrix - 1, 0) *
-                   segment_lengths[:, np.newaxis], 0) * overlap_weight)
-        total_costs = (partial_costs +
-                       #
-                       # The sum of the uncovered segments * the penalty
-                       #
-                       np.sum((current_path_segment_matrix[:, :] == 0) *
-                              segment_lengths[:, np.newaxis], 0) * leftover_weight)
+            np.sum(
+                np.maximum(current_path_segment_matrix - 1, 0)
+                * segment_lengths[:, np.newaxis],
+                0,
+            )
+            * overlap_weight
+        )
+        total_costs = (
+            partial_costs
+            +
+            #
+            # The sum of the uncovered segments * the penalty
+            #
+            np.sum(
+                (current_path_segment_matrix[:, :] == 0)
+                * segment_lengths[:, np.newaxis],
+                0,
+            )
+            * leftover_weight
+        )
 
         order = np.lexsort([total_costs])
         if total_costs[order[0]] < current_best_cost:
-            current_best_subset = np.argwhere(current_path_choices[:, order[0]]).flatten().tolist()
+            current_best_subset = (
+                np.argwhere(current_path_choices[:, order[0]]).flatten().tolist()
+            )
             current_best_cost = total_costs[order[0]]
         #
         # Weed out any that can't possibly be better
         #
         mask = partial_costs < current_best_cost
         if not np.any(mask):
-            return current_best_subset, current_best_cost, \
-                   np.zeros((len(costs), 0), int), np.zeros((len(costs), 0), bool)
+            return (
+                current_best_subset,
+                current_best_cost,
+                np.zeros((len(costs), 0), int),
+                np.zeros((len(costs), 0), bool),
+            )
         order = order[mask[order]]
         if len(order) * len(costs) > MAX_CONSIDERED:
             # Limit # to consider at next level
-            order = order[:(1 + MAX_CONSIDERED / len(costs))]
+            order = order[: (1 + MAX_CONSIDERED / len(costs))]
         current_path_segment_matrix = current_path_segment_matrix[:, order]
         current_path_choices = current_path_choices[:, order]
         #
         # Create a matrix of disallowance - you can only add a path
         # that's higher than any existing path
         #
-        i, j = np.mgrid[0:len(costs), 0:len(costs)]
+        i, j = np.mgrid[0 : len(costs), 0 : len(costs)]
         disallow = i >= j
         allowed = np.dot(disallow, current_path_choices) == 0
         if np.any(allowed):
             i, j = np.argwhere(allowed).transpose()
-            current_path_choices = (np.eye(len(costs), dtype=bool)[:, i] |
-                                    current_path_choices[:, j])
-            current_path_segment_matrix = \
+            current_path_choices = (
+                np.eye(len(costs), dtype=bool)[:, i] | current_path_choices[:, j]
+            )
+            current_path_segment_matrix = (
                 path_segment_matrix[:, i] + current_path_segment_matrix[:, j]
-            return current_best_subset, current_best_cost, \
-                   current_path_segment_matrix, current_path_choices
+            )
+            return (
+                current_best_subset,
+                current_best_cost,
+                current_path_segment_matrix,
+                current_path_choices,
+            )
         else:
-            return current_best_subset, current_best_cost, \
-                   np.zeros((len(costs), 0), int), np.zeros((len(costs), 0), bool)
+            return (
+                current_best_subset,
+                current_best_cost,
+                np.zeros((len(costs), 0), int),
+                np.zeros((len(costs), 0), bool),
+            )
 
-    def search_recur(self, path_segment_matrix, segment_lengths,
-                     path_raw_costs, overlap_weight, leftover_weight,
-                     current_subset, last_chosen, current_cost,
-                     current_segment_coverings, current_best_subset,
-                     current_best_cost, branching_factors, current_level):
-        '''Perform a recursive depth-first search on sets of paths
+    def search_recur(
+        self,
+        path_segment_matrix,
+        segment_lengths,
+        path_raw_costs,
+        overlap_weight,
+        leftover_weight,
+        current_subset,
+        last_chosen,
+        current_cost,
+        current_segment_coverings,
+        current_best_subset,
+        current_best_cost,
+        branching_factors,
+        current_level,
+    ):
+        """Perform a recursive depth-first search on sets of paths
 
         Perform a depth-first search recursively,  keeping the best (so far)
         found subset of paths in current_best_subset, current_cost.
@@ -2207,11 +2568,12 @@ should be processed.
 
         current_segments_coverings, meanwhile, is a logical array of length equal
         to the number of segments in the graph, keeping track of the segments
-        covered by paths in current_subset.'''
+        covered by paths in current_subset."""
 
         # The cost of current_subset, including the leftover cost term
         this_cost = current_cost + leftover_weight * np.sum(
-                segment_lengths[~ current_segment_coverings])
+            segment_lengths[~current_segment_coverings]
+        )
         if this_cost < current_best_cost:
             current_best_cost = this_cost
             current_best_subset = current_subset
@@ -2222,10 +2584,15 @@ should be processed.
         # Calculate, for each path after last_chosen, how much cost would be added
         # to current_cost upon adding that path to the current_subset.
         current_overlapped_costs = (
-            path_raw_costs[last_chosen:] +
-            np.sum(current_segment_coverings[:, np.newaxis] *
-                   segment_lengths[:, np.newaxis] *
-                   path_segment_matrix[:, last_chosen:], 0) * overlap_weight)
+            path_raw_costs[last_chosen:]
+            + np.sum(
+                current_segment_coverings[:, np.newaxis]
+                * segment_lengths[:, np.newaxis]
+                * path_segment_matrix[:, last_chosen:],
+                0,
+            )
+            * overlap_weight
+        )
         order = np.lexsort([current_overlapped_costs])
         #
         # limit to number of branches allowed at this level
@@ -2237,20 +2604,24 @@ should be processed.
                 break  # No chance of subsequent better cost
             path_index = last_chosen + index
             current_best_subset, current_best_cost = self.search_recur(
-                    path_segment_matrix, segment_lengths, path_raw_costs,
-                    overlap_weight, leftover_weight,
-                    current_subset + [path_index],
-                    path_index,
-                    new_cost,
-                    current_segment_coverings | path_segment_matrix[:, path_index],
-                    current_best_subset,
-                    current_best_cost,
-                    branching_factors,
-                    current_level + 1)
+                path_segment_matrix,
+                segment_lengths,
+                path_raw_costs,
+                overlap_weight,
+                leftover_weight,
+                current_subset + [path_index],
+                path_index,
+                new_cost,
+                current_segment_coverings | path_segment_matrix[:, path_index],
+                current_best_subset,
+                current_best_cost,
+                branching_factors,
+                current_level + 1,
+            )
         return current_best_subset, current_best_cost
 
     def worm_descriptor_building(self, all_path_coords, params, shape):
-        '''Return the coordinates of reconstructed worms in i,j,v form
+        """Return the coordinates of reconstructed worms in i,j,v form
 
         Given a list of paths found in an image, reconstructs labeled
         worms.
@@ -2270,13 +2641,16 @@ should be processed.
         * the lengths of each worm
         * the angles for control points other than the ends
         * the coordinates of the control points
-        '''
+        """
         num_control_points = params.num_control_points
         if len(all_path_coords) == 0:
-            return (np.zeros((0, 3), int), np.zeros(0),
-                    np.zeros((0, num_control_points - 2)),
-                    np.zeros((0, num_control_points)),
-                    np.zeros((0, num_control_points)))
+            return (
+                np.zeros((0, 3), int),
+                np.zeros(0),
+                np.zeros((0, num_control_points - 2)),
+                np.zeros((0, num_control_points)),
+                np.zeros((0, num_control_points)),
+            )
 
         worm_radii = params.radii_from_training
         all_i = []
@@ -2288,29 +2662,36 @@ should be processed.
         for path in all_path_coords:
             cumul_lengths = self.calculate_cumulative_lengths(path)
             control_coords = self.sample_control_points(
-                    path, cumul_lengths, num_control_points)
+                path, cumul_lengths, num_control_points
+            )
             ii, jj = self.rebuild_worm_from_control_points_approx(
-                    control_coords, worm_radii, shape)
+                control_coords, worm_radii, shape
+            )
             all_i.append(ii)
             all_j.append(jj)
             all_lengths.append(cumul_lengths[-1])
             all_angles.append(self.get_angles(control_coords))
             all_control_coords_x.append(control_coords[:, 1])
             all_control_coords_y.append(control_coords[:, 0])
-        ijv = np.column_stack((
-            np.hstack(all_i),
-            np.hstack(all_j),
-            np.hstack([np.ones(len(ii), int) * (i + 1)
-                       for i, ii in enumerate(all_i)])))
+        ijv = np.column_stack(
+            (
+                np.hstack(all_i),
+                np.hstack(all_j),
+                np.hstack(
+                    [np.ones(len(ii), int) * (i + 1) for i, ii in enumerate(all_i)]
+                ),
+            )
+        )
         all_lengths = np.array(all_lengths)
         all_angles = np.vstack(all_angles)
         all_control_coords_x = np.vstack(all_control_coords_x)
         all_control_coords_y = np.vstack(all_control_coords_y)
         return ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y
 
-    def rebuild_worm_from_control_points_approx(self, control_coords,
-                                                worm_radii, shape):
-        '''Rebuild a worm from its control coordinates
+    def rebuild_worm_from_control_points_approx(
+        self, control_coords, worm_radii, shape
+    ):
+        """Rebuild a worm from its control coordinates
 
         Given a worm specified by some control points along its spline,
         reconstructs an approximate binary image representing the worm.
@@ -2329,11 +2710,13 @@ should be processed.
         final worm.
 
         Outputs:
-        The coordinates of all pixels in the worm in an N x 2 array'''
-        index, count, i, j = morph.get_line_pts(control_coords[:-1, 0],
-                                                control_coords[:-1, 1],
-                                                control_coords[1:, 0],
-                                                control_coords[1:, 1])
+        The coordinates of all pixels in the worm in an N x 2 array"""
+        index, count, i, j = morph.get_line_pts(
+            control_coords[:-1, 0],
+            control_coords[:-1, 1],
+            control_coords[1:, 0],
+            control_coords[1:, 1],
+        )
         #
         # Get rid of the last point for the middle elements - these are
         # duplicated by the first point in the next line
@@ -2355,14 +2738,14 @@ should be processed.
         label = np.cumsum(label)
         order = np.arange(len(i)) - index[label]
         frac = order.astype(float) / count[label].astype(float)
-        radius = (worm_radii[label] * (1 - frac) +
-                  worm_radii[label + 1] * frac)
+        radius = worm_radii[label] * (1 - frac) + worm_radii[label + 1] * frac
         iworm_radius = int(np.max(np.ceil(radius)))
         #
         # Get dilation coordinates
         #
-        ii, jj = np.mgrid[-iworm_radius:iworm_radius + 1,
-                 -iworm_radius:iworm_radius + 1]
+        ii, jj = np.mgrid[
+            -iworm_radius : iworm_radius + 1, -iworm_radius : iworm_radius + 1
+        ]
         dd = np.sqrt((ii * ii + jj * jj).astype(float))
         mask = ii * ii + jj * jj <= iworm_radius * iworm_radius
         ii = ii[mask]
@@ -2393,33 +2776,38 @@ should be processed.
         return i[mask], j[mask]
 
     def read_params(self):
-        '''Read the parameters file'''
+        """Read the parameters file"""
         if not hasattr(self, "training_params"):
             self.training_params = {}
-        return read_params(self.training_set_directory,
-                           self.training_set_file_name,
-                           self.training_params)
+        return read_params(
+            self.training_set_directory,
+            self.training_set_file_name,
+            self.training_params,
+        )
 
     def validate_module(self, pipeline):
         if self.mode == MODE_UNTANGLE:
             if self.training_set_directory.dir_choice != cpprefs.URL_FOLDER_NAME:
                 path = os.path.join(
-                        self.training_set_directory.get_absolute_path(),
-                        self.training_set_file_name.value)
+                    self.training_set_directory.get_absolute_path(),
+                    self.training_set_file_name.value,
+                )
                 if not os.path.exists(path):
                     raise cps.ValidationError(
-                            "Can't find file %s" %
-                            self.training_set_file_name.value,
-                            self.training_set_file_name)
+                        "Can't find file %s" % self.training_set_file_name.value,
+                        self.training_set_file_name,
+                    )
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode and self.mode == MODE_TRAIN:
-            raise cps.ValidationError("UntangleWorms will not produce training set output in Test Mode",
-                                      self.training_set_file_name)
+            raise cps.ValidationError(
+                "UntangleWorms will not produce training set output in Test Mode",
+                self.training_set_file_name,
+            )
 
     def get_measurement_columns(self, pipeline):
-        '''Return a column of information for each measurement feature'''
+        """Return a column of information for each measurement feature"""
         result = []
         if self.mode == MODE_UNTANGLE:
             object_names = []
@@ -2429,46 +2817,64 @@ should be processed.
                 object_names.append(self.nonoverlapping_objects.value)
             for object_name in object_names:
                 result += I.get_object_measurement_columns(object_name)
-                all_features = ([F_LENGTH] + self.angle_features() +
-                                self.control_point_features(True) +
-                                self.control_point_features(False))
+                all_features = (
+                    [F_LENGTH]
+                    + self.angle_features()
+                    + self.control_point_features(True)
+                    + self.control_point_features(False)
+                )
                 result += [
                     (object_name, "_".join((C_WORM, f)), cpmeas.COLTYPE_FLOAT)
-                    for f in all_features]
+                    for f in all_features
+                ]
         return result
 
     def angle_features(self):
-        '''Return a list of angle feature names'''
+        """Return a list of angle feature names"""
         try:
-            return ["_".join((F_ANGLE, str(n)))
-                    for n in range(1, self.ncontrol_points() - 1)]
+            return [
+                "_".join((F_ANGLE, str(n)))
+                for n in range(1, self.ncontrol_points() - 1)
+            ]
         except:
-            logger.error("Failed to get # of control points from training file. Unknown number of angle measurements",
-                         exc_info=True)
+            logger.error(
+                "Failed to get # of control points from training file. Unknown number of angle measurements",
+                exc_info=True,
+            )
             return []
 
     def control_point_features(self, get_x):
-        '''Return a list of control point feature names
+        """Return a list of control point feature names
 
         get_x - return the X coordinate control point features if true, else y
-        '''
+        """
         try:
-            return ["_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
-                    for n in range(1, self.ncontrol_points() + 1)]
+            return [
+                "_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
+                for n in range(1, self.ncontrol_points() + 1)
+            ]
         except:
             logger.error(
-                    "Failed to get # of control points from training file. Unknown number of control point features",
-                    exc_info=True)
+                "Failed to get # of control points from training file. Unknown number of control point features",
+                exc_info=True,
+            )
             return []
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [cellprofiler.measurement.C_COUNT]
-        if ((object_name == self.overlap_objects.value and
-                     self.overlap in (OO_BOTH, OO_WITH_OVERLAP)) or
-                (object_name == self.nonoverlapping_objects.value and
-                         self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP))):
-            return [cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER, C_WORM]
+        if (
+            object_name == self.overlap_objects.value
+            and self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
+        ) or (
+            object_name == self.nonoverlapping_objects.value
+            and self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
+        ):
+            return [
+                cellprofiler.measurement.C_LOCATION,
+                cellprofiler.measurement.C_NUMBER,
+                C_WORM,
+            ]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
@@ -2480,24 +2886,30 @@ should be processed.
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
                 result += [self.nonoverlapping_objects.value]
-        if ((wants_overlapping and object_name == self.overlap_objects) or
-                (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
+        if (wants_overlapping and object_name == self.overlap_objects) or (
+            wants_nonoverlapping and object_name == self.nonoverlapping_objects
+        ):
             if category == cellprofiler.measurement.C_LOCATION:
-                result += [cellprofiler.measurement.FTR_CENTER_X, cellprofiler.measurement.FTR_CENTER_Y]
+                result += [
+                    cellprofiler.measurement.FTR_CENTER_X,
+                    cellprofiler.measurement.FTR_CENTER_Y,
+                ]
             elif category == cellprofiler.measurement.C_NUMBER:
                 result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result
 
-    def get_measurement_scales(self, pipeline, object_name, category,
-                               measurement, image_name):
+    def get_measurement_scales(
+        self, pipeline, object_name, category, measurement, image_name
+    ):
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         scales = []
-        if (((wants_overlapping and object_name == self.overlap_objects) or
-                 (wants_nonoverlapping and object_name == self.nonoverlapping_objects)) and
-                (category == C_WORM)):
+        if (
+            (wants_overlapping and object_name == self.overlap_objects)
+            or (wants_nonoverlapping and object_name == self.nonoverlapping_objects)
+        ) and (category == C_WORM):
             if measurement == F_ANGLE:
                 scales += [str(n) for n in range(1, self.ncontrol_points() - 1)]
             elif measurement in [F_CONTROL_POINT_X, F_CONTROL_POINT_Y]:
@@ -2505,7 +2917,7 @@ should be processed.
         return scales
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -2519,12 +2931,13 @@ should be processed.
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1:
             # Added complexity
             setting_values = setting_values + [C_ALL, "400"]
@@ -2533,14 +2946,14 @@ should be processed.
 
 
 def read_params(training_set_directory, training_set_file_name, d):
-    '''Read a training set parameters  file
+    """Read a training set parameters  file
 
     training_set_directory - the training set directory setting
 
     training_set_file_name - the training set file name setting
 
     d - a dictionary that stores cached parameters
-    '''
+    """
 
     #
     # The parameters file is a .xml file with the following structure:
@@ -2584,22 +2997,25 @@ def read_params(training_set_directory, training_set_file_name, d):
     #     radii_from_training: vector ?of length num_control_points?
     #
     class X(object):
-        '''This "class" is used as a vehicle for arbitrary dot notation
+        """This "class" is used as a vehicle for arbitrary dot notation
 
         For instance:
         > x = X()
         > x.foo = 1
         > x.foo
         1
-        '''
+        """
+
         pass
 
     path = training_set_directory.get_absolute_path()
     file_name = training_set_file_name.value
     if file_name in d:
         result, timestamp = d[file_name]
-        if (timestamp == "URL" or
-                    timestamp == os.stat(os.path.join(path, file_name)).st_mtime):
+        if (
+            timestamp == "URL"
+            or timestamp == os.stat(os.path.join(path, file_name)).st_mtime
+        ):
             return d[file_name][0]
 
     if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
@@ -2613,6 +3029,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         timestamp = os.stat(fd_or_file).st_mtime
     try:
         from xml.dom.minidom import parse
+
         doc = parse(fd_or_file)
         result = X()
 
@@ -2620,53 +3037,75 @@ def read_params(training_set_directory, training_set_file_name, d):
             elements = doc.documentElement.getElementsByTagName(tag)
             assert len(elements) == 1
             element = elements[0]
-            text = "".join([text.data for text in element.childNodes
-                            if text.nodeType == doc.TEXT_NODE])
+            text = "".join(
+                [
+                    text.data
+                    for text in element.childNodes
+                    if text.nodeType == doc.TEXT_NODE
+                ]
+            )
             setattr(result, attribute, klass(text.strip()))
 
         for tag, attribute, klass in (
-                (T_VERSION, "version", int),
-                (T_MIN_AREA, "min_worm_area", float),
-                (T_MAX_AREA, "max_area", float),
-                (T_COST_THRESHOLD, "cost_threshold", float),
-                (T_NUM_CONTROL_POINTS, "num_control_points", int),
-                (T_MAX_RADIUS, "max_radius", float),
-                (T_MAX_SKEL_LENGTH, "max_skel_length", float),
-                (T_MIN_PATH_LENGTH, "min_path_length", float),
-                (T_MAX_PATH_LENGTH, "max_path_length", float),
-                (T_MEDIAN_WORM_AREA, "median_worm_area", float),
-                (T_OVERLAP_WEIGHT, "overlap_weight", float),
-                (T_LEFTOVER_WEIGHT, "leftover_weight", float)):
+            (T_VERSION, "version", int),
+            (T_MIN_AREA, "min_worm_area", float),
+            (T_MAX_AREA, "max_area", float),
+            (T_COST_THRESHOLD, "cost_threshold", float),
+            (T_NUM_CONTROL_POINTS, "num_control_points", int),
+            (T_MAX_RADIUS, "max_radius", float),
+            (T_MAX_SKEL_LENGTH, "max_skel_length", float),
+            (T_MIN_PATH_LENGTH, "min_path_length", float),
+            (T_MAX_PATH_LENGTH, "max_path_length", float),
+            (T_MEDIAN_WORM_AREA, "median_worm_area", float),
+            (T_OVERLAP_WEIGHT, "overlap_weight", float),
+            (T_LEFTOVER_WEIGHT, "leftover_weight", float),
+        ):
             f(tag, attribute, klass)
         elements = doc.documentElement.getElementsByTagName(T_MEAN_ANGLES)
         assert len(elements) == 1
         element = elements[0]
         result.mean_angles = np.zeros(result.num_control_points - 1)
-        for index, value_element in enumerate(
-                element.getElementsByTagName(T_VALUE)):
-            text = "".join([text.data for text in value_element.childNodes
-                            if text.nodeType == doc.TEXT_NODE])
+        for index, value_element in enumerate(element.getElementsByTagName(T_VALUE)):
+            text = "".join(
+                [
+                    text.data
+                    for text in value_element.childNodes
+                    if text.nodeType == doc.TEXT_NODE
+                ]
+            )
             result.mean_angles[index] = float(text.strip())
         elements = doc.documentElement.getElementsByTagName(T_RADII_FROM_TRAINING)
         assert len(elements) == 1
         element = elements[0]
         result.radii_from_training = np.zeros(result.num_control_points)
-        for index, value_element in enumerate(
-                element.getElementsByTagName(T_VALUE)):
-            text = "".join([text.data for text in value_element.childNodes
-                            if text.nodeType == doc.TEXT_NODE])
+        for index, value_element in enumerate(element.getElementsByTagName(T_VALUE)):
+            text = "".join(
+                [
+                    text.data
+                    for text in value_element.childNodes
+                    if text.nodeType == doc.TEXT_NODE
+                ]
+            )
             result.radii_from_training[index] = float(text.strip())
         result.inv_angles_covariance_matrix = np.zeros(
-                [result.num_control_points - 1] * 2)
-        elements = doc.documentElement.getElementsByTagName(T_INV_ANGLES_COVARIANCE_MATRIX)
+            [result.num_control_points - 1] * 2
+        )
+        elements = doc.documentElement.getElementsByTagName(
+            T_INV_ANGLES_COVARIANCE_MATRIX
+        )
         assert len(elements) == 1
         element = elements[0]
-        for i, values_element in enumerate(
-                element.getElementsByTagName(T_VALUES)):
+        for i, values_element in enumerate(element.getElementsByTagName(T_VALUES)):
             for j, value_element in enumerate(
-                    values_element.getElementsByTagName(T_VALUE)):
-                text = "".join([text.data for text in value_element.childNodes
-                                if text.nodeType == doc.TEXT_NODE])
+                values_element.getElementsByTagName(T_VALUE)
+            ):
+                text = "".join(
+                    [
+                        text.data
+                        for text in value_element.childNodes
+                        if text.nodeType == doc.TEXT_NODE
+                    ]
+                )
                 result.inv_angles_covariance_matrix[i, j] = float(text.strip())
     except:
         if is_url:
@@ -2677,14 +3116,14 @@ def read_params(training_set_directory, training_set_file_name, d):
 
         result = X()
 
-        CLUSTER_PATHS_SELECTION = 'cluster_paths_selection'
-        CLUSTER_GRAPH_BUILDING = 'cluster_graph_building'
-        SINGLE_WORM_FILTER = 'single_worm_filter'
-        INITIAL_FILTER = 'initial_filter'
-        SINGLE_WORM_DETERMINATION = 'single_worm_determination'
-        CLUSTER_PATHS_FINDING = 'cluster_paths_finding'
-        WORM_DESCRIPTOR_BUILDING = 'worm_descriptor_building'
-        SINGLE_WORM_FIND_PATH = 'single_worm_find_path'
+        CLUSTER_PATHS_SELECTION = "cluster_paths_selection"
+        CLUSTER_GRAPH_BUILDING = "cluster_graph_building"
+        SINGLE_WORM_FILTER = "single_worm_filter"
+        INITIAL_FILTER = "initial_filter"
+        SINGLE_WORM_DETERMINATION = "single_worm_determination"
+        CLUSTER_PATHS_FINDING = "cluster_paths_finding"
+        WORM_DESCRIPTOR_BUILDING = "worm_descriptor_building"
+        SINGLE_WORM_FIND_PATH = "single_worm_find_path"
         METHOD = "method"
 
         STRING = "string"
@@ -2693,7 +3132,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         MATRIX = "matrix"
 
         def mp(*args, **kwargs):
-            '''Look up a field from mat_params'''
+            """Look up a field from mat_params"""
             x = mat_params
             for arg in args[:-1]:
                 x = x[arg][0, 0]
@@ -2716,31 +3155,25 @@ def read_params(training_set_directory, training_set_file_name, d):
         result.num_control_points = mp(SINGLE_WORM_FILTER, "num_control_points")
         result.mean_angles = mp(SINGLE_WORM_FILTER, "mean_angles", kind=VECTOR)
         result.inv_angles_covariance_matrix = mp(
-                SINGLE_WORM_FILTER, "inv_angles_covariance_matrix", kind=MATRIX)
-        result.max_radius = mp(CLUSTER_GRAPH_BUILDING,
-                               "max_radius")
-        result.max_skel_length = mp(CLUSTER_GRAPH_BUILDING,
-                                    "max_skel_length")
-        result.min_path_length = mp(
-                CLUSTER_PATHS_SELECTION, "min_path_length")
-        result.max_path_length = mp(
-                CLUSTER_PATHS_SELECTION, "max_path_length")
-        result.median_worm_area = mp(
-                CLUSTER_PATHS_SELECTION, "median_worm_area")
-        result.worm_radius = mp(
-                CLUSTER_PATHS_SELECTION, "worm_radius")
-        result.overlap_weight = mp(
-                CLUSTER_PATHS_SELECTION, "overlap_weight")
-        result.leftover_weight = mp(
-                CLUSTER_PATHS_SELECTION, "leftover_weight")
+            SINGLE_WORM_FILTER, "inv_angles_covariance_matrix", kind=MATRIX
+        )
+        result.max_radius = mp(CLUSTER_GRAPH_BUILDING, "max_radius")
+        result.max_skel_length = mp(CLUSTER_GRAPH_BUILDING, "max_skel_length")
+        result.min_path_length = mp(CLUSTER_PATHS_SELECTION, "min_path_length")
+        result.max_path_length = mp(CLUSTER_PATHS_SELECTION, "max_path_length")
+        result.median_worm_area = mp(CLUSTER_PATHS_SELECTION, "median_worm_area")
+        result.worm_radius = mp(CLUSTER_PATHS_SELECTION, "worm_radius")
+        result.overlap_weight = mp(CLUSTER_PATHS_SELECTION, "overlap_weight")
+        result.leftover_weight = mp(CLUSTER_PATHS_SELECTION, "leftover_weight")
         result.radii_from_training = mp(
-                WORM_DESCRIPTOR_BUILDING, "radii_from_training", kind=VECTOR)
+            WORM_DESCRIPTOR_BUILDING, "radii_from_training", kind=VECTOR
+        )
     d[file_name] = (result, timestamp)
     return result
 
 
 def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
-    '''Recalculate the control points for labeled single worms
+    """Recalculate the control points for labeled single worms
 
     Given a labeling of single worms, recalculate the control points
     for those worms.
@@ -2757,10 +3190,9 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     coordinate.
 
     a vector of N lengths.
-    '''
+    """
 
-    all_object_numbers = [
-        filter((lambda n: n > 0), np.unique(l)) for l in all_labels]
+    all_object_numbers = [filter((lambda n: n > 0), np.unique(l)) for l in all_labels]
     if all([len(object_numbers) == 0 for object_numbers in all_object_numbers]):
         return np.zeros((0, ncontrolpoints, 2), int), np.zeros(0, int)
     module = UntangleWorms()
@@ -2777,11 +3209,10 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     lengths = np.zeros(nobjects)
     for object_numbers, labels in zip(all_object_numbers, all_labels):
         for object_number in object_numbers:
-            mask = (labels == object_number)
+            mask = labels == object_number
             skeleton = morph.skeletonize(mask)
             graph = module.get_graph_from_binary(mask, skeleton)
-            path_coords, path = module.get_longest_path_coords(
-                    graph, np.iinfo(int).max)
+            path_coords, path = module.get_longest_path_coords(graph, np.iinfo(int).max)
             if len(path_coords) == 0:
                 # return NaN for the control points
                 continue
@@ -2789,7 +3220,8 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
             if cumul_lengths[-1] == 0:
                 continue
             control_points = module.sample_control_points(
-                    path_coords, cumul_lengths, ncontrolpoints)
+                path_coords, cumul_lengths, ncontrolpoints
+            )
             result[(object_number - 1), :, :] = control_points
             lengths[object_number - 1] = cumul_lengths[-1]
     return result, lengths

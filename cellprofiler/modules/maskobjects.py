@@ -58,9 +58,9 @@ Measurements made by this module
 -  *Parent:* The label number of the parent object.
 -  *Location_X, Location_Y:* The pixel (X,Y) coordinates of the center
    of mass of the masked objects.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
 
 MC_OBJECTS = "Objects"
 MC_IMAGE = "Image"
@@ -84,15 +84,15 @@ S_DICTIONARY = {
     "Remove depending on overlap": P_REMOVE_PERCENTAGE,
     "Keep": P_KEEP,
     "Retain": R_RETAIN,
-    "Renumber": R_RENUMBER
+    "Renumber": R_RENUMBER,
 }
 
 
 def s_lookup(x):
-    '''Look up the current value for a setting choice w/backwards compatibility
+    """Look up the current value for a setting choice w/backwards compatibility
 
     x - setting value from pipeline
-    '''
+    """
     return S_DICTIONARY.get(x, x)
 
 
@@ -102,7 +102,7 @@ class MaskObjects(I.Identify):
     variable_revision_number = 3
 
     def create_settings(self):
-        '''Create the settings that control this module'''
+        """Create the settings that control this module"""
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to be masked",
             cps.NONE,
@@ -112,7 +112,7 @@ part based on the other settings in the module). You can choose from any
 objects created by a previous object processing module, such as
 **IdentifyPrimaryObjects**, **IdentifySecondaryObjects** or
 **IdentifyTertiaryObjects**.
-"""
+""",
         )
 
         self.remaining_objects = cps.ObjectNameProvider(
@@ -122,21 +122,19 @@ objects created by a previous object processing module, such as
 Enter a name for the objects that remain after
 the masking operation. You can refer to the masked objects in
 subsequent modules by this name.
-"""
+""",
         )
 
         self.mask_choice = cps.Choice(
             "Mask using a region defined by other objects or by binary image?",
-            [
-                MC_OBJECTS,
-                MC_IMAGE
-            ],
+            [MC_OBJECTS, MC_IMAGE],
             doc="""\
 You can mask your objects by defining a region using objects you
 previously identified in your pipeline (*%(MC_OBJECTS)s*) or by
 defining a region based on the white regions in a binary image
 previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
-""" % globals()
+"""
+            % globals(),
         )
 
         self.masking_objects = cps.ObjectNameSubscriber(
@@ -149,7 +147,7 @@ Select the objects that will be used to define the masking region. You
 can choose from any objects created by a previous object processing
 module, such as **IdentifyPrimaryObjects**,
 **IdentifySecondaryObjects**, or **IdentifyTertiaryObjects**.
-"""
+""",
         )
 
         self.masking_image = cps.ImageNameSubscriber(
@@ -164,7 +162,7 @@ is the region(s) you will use for masking. Binary images can be loaded
 from disk using the **NamesAndTypes** module by selecting “Binary mask”
 for the image type. You can also create a binary image from a grayscale
 image using **ApplyThreshold**.
-"""
+""",
         )
 
         self.wants_inverted_mask = cps.Binary(
@@ -178,17 +176,13 @@ This option reverses the foreground/background relationship of the mask.
 -  Select "*%(YES)s*" for the mask to instead be composed of the
    *background* (black portions) of the masking image or the area
    *outside* the masking objects.
-   """ % globals()
+   """
+            % globals(),
         )
 
         self.overlap_choice = cps.Choice(
             "Handling of objects that are partially masked",
-            [
-                P_MASK,
-                P_KEEP,
-                P_REMOVE,
-                P_REMOVE_PERCENTAGE
-            ],
+            [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE],
             doc="""\
 An object might partially overlap the mask region, with pixels both
 inside and outside the region. **MaskObjects** can handle this in one
@@ -207,12 +201,13 @@ of three ways:
    region. **MaskObjects** will keep an object if at least a certain
    fraction (which you enter below) of the object falls within the
    masking region. **MaskObjects** completely removes the object if too
-   little of it overlaps the masking region.""" % globals()
+   little of it overlaps the masking region."""
+            % globals(),
         )
 
         self.overlap_fraction = cps.Float(
             "Fraction of object that must overlap",
-            .5,
+            0.5,
             minval=0,
             maxval=1,
             doc="""\
@@ -222,15 +217,12 @@ Specify the minimum fraction of an object that must overlap the masking
 region for that object to be retained. For instance, if the fraction is
 0.75, then 3/4 of an object must be within the masking region for that
 object to be retained.
-"""
+""",
         )
 
         self.retain_or_renumber = cps.Choice(
             "Numbering of resulting objects",
-            [
-                R_RENUMBER,
-                R_RETAIN
-            ],
+            [R_RENUMBER, R_RETAIN],
             doc="""\
 Choose how to number the objects that remain after masking, which
 controls how remaining objects are associated with their predecessors:
@@ -245,11 +237,12 @@ controls how remaining objects are associated with their predecessors:
    objects to be directly aligned with measurements you might have made
    of the original, unmasked objects (or objects directly associated
    with them).
-""" % globals()
+"""
+            % globals(),
         )
 
     def settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [
             self.object_name,
             self.remaining_objects,
@@ -259,22 +252,35 @@ controls how remaining objects are associated with their predecessors:
             self.overlap_choice,
             self.overlap_fraction,
             self.retain_or_renumber,
-            self.wants_inverted_mask
+            self.wants_inverted_mask,
         ]
 
     def help_settings(self):
-        '''The settings as they appear in the pipeline'''
-        return [self.object_name, self.remaining_objects, self.mask_choice,
-                self.masking_objects, self.masking_image,
-                self.wants_inverted_mask,
-                self.overlap_choice, self.overlap_fraction, self.retain_or_renumber]
+        """The settings as they appear in the pipeline"""
+        return [
+            self.object_name,
+            self.remaining_objects,
+            self.mask_choice,
+            self.masking_objects,
+            self.masking_image,
+            self.wants_inverted_mask,
+            self.overlap_choice,
+            self.overlap_fraction,
+            self.retain_or_renumber,
+        ]
 
     def visible_settings(self):
-        '''The settings as they appear in the UI'''
-        result = [self.object_name, self.remaining_objects, self.mask_choice,
-                  self.masking_image if self.mask_choice == MC_IMAGE
-                  else self.masking_objects, self.wants_inverted_mask,
-                  self.overlap_choice]
+        """The settings as they appear in the UI"""
+        result = [
+            self.object_name,
+            self.remaining_objects,
+            self.mask_choice,
+            self.masking_image
+            if self.mask_choice == MC_IMAGE
+            else self.masking_objects,
+            self.wants_inverted_mask,
+            self.overlap_choice,
+        ]
 
         if self.overlap_choice == P_REMOVE_PERCENTAGE:
             result += [self.overlap_fraction]
@@ -284,19 +290,21 @@ controls how remaining objects are associated with their predecessors:
         return result
 
     def run(self, workspace):
-        '''Run the module on an image set'''
+        """Run the module on an image set"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
         original_objects = workspace.object_set.get_objects(object_name)
 
         if self.mask_choice == MC_IMAGE:
-            mask = workspace.image_set.get_image(self.masking_image.value,
-                                                 must_be_binary=True)
+            mask = workspace.image_set.get_image(
+                self.masking_image.value, must_be_binary=True
+            )
             mask = mask.pixel_data
         else:
             masking_objects = workspace.object_set.get_objects(
-                    self.masking_objects.value)
+                self.masking_objects.value
+            )
             mask = masking_objects.segmented > 0
         if self.wants_inverted_mask:
             mask = ~mask
@@ -318,23 +326,30 @@ controls how remaining objects are associated with their predecessors:
         elif self.overlap_choice == P_MASK:
             labels = labels * mask
         else:
-            pixel_counts = fix(scind.sum(mask, labels,
-                                         np.arange(1, nobjects + 1, dtype=np.int32)))
+            pixel_counts = fix(
+                scind.sum(mask, labels, np.arange(1, nobjects + 1, dtype=np.int32))
+            )
             if self.overlap_choice == P_KEEP:
                 keep = pixel_counts > 0
             else:
-                total_pixels = fix(scind.sum(np.ones(labels.shape), labels,
-                                             np.arange(1, nobjects + 1, dtype=np.int32)))
+                total_pixels = fix(
+                    scind.sum(
+                        np.ones(labels.shape),
+                        labels,
+                        np.arange(1, nobjects + 1, dtype=np.int32),
+                    )
+                )
                 if self.overlap_choice == P_REMOVE:
                     keep = pixel_counts == total_pixels
                 elif self.overlap_choice == P_REMOVE_PERCENTAGE:
                     fraction = self.overlap_fraction.value
                     keep = pixel_counts / total_pixels >= fraction
                 else:
-                    raise NotImplementedError("Unknown overlap-handling choice: %s",
-                                              self.overlap_choice.value)
+                    raise NotImplementedError(
+                        "Unknown overlap-handling choice: %s", self.overlap_choice.value
+                    )
             keep = np.hstack(([False], keep))
-            labels[~ keep[labels]] = 0
+            labels[~keep[labels]] = 0
         #
         # Renumber the labels matrix if requested
         #
@@ -352,30 +367,39 @@ controls how remaining objects are associated with their predecessors:
         remaining_objects = cpo.Objects()
         remaining_objects.segmented = labels
         remaining_objects.unedited_segmented = original_objects.unedited_segmented
-        workspace.object_set.add_objects(remaining_objects,
-                                         remaining_object_name)
+        workspace.object_set.add_objects(remaining_objects, remaining_object_name)
         #
         # Add measurements
         #
         m = workspace.measurements
-        m.add_measurement(remaining_object_name,
-                          cellprofiler.measurement.FF_PARENT % object_name,
-                          parent_objects)
+        m.add_measurement(
+            remaining_object_name,
+            cellprofiler.measurement.FF_PARENT % object_name,
+            parent_objects,
+        )
         if np.max(original_objects.segmented) == 0:
             child_count = np.array([], int)
         else:
-            child_count = fix(scind.sum(labels, original_objects.segmented,
-                                        np.arange(1, nobjects + 1, dtype=np.int32)))
+            child_count = fix(
+                scind.sum(
+                    labels,
+                    original_objects.segmented,
+                    np.arange(1, nobjects + 1, dtype=np.int32),
+                )
+            )
             child_count = (child_count > 0).astype(int)
-        m.add_measurement(object_name,
-                          cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
-                          child_count)
+        m.add_measurement(
+            object_name,
+            cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
+            child_count,
+        )
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
         else:
             remaining_object_count = len(unique_labels)
-        I.add_object_count_measurements(m, remaining_object_name,
-                                        remaining_object_count)
+        I.add_object_count_measurements(
+            m, remaining_object_name, remaining_object_count
+        )
         I.add_object_location_measurements(m, remaining_object_name, labels)
         #
         # Save the input, mask and output images for display
@@ -386,9 +410,10 @@ controls how remaining objects are associated with their predecessors:
             workspace.display_data.mask = mask
 
     def display(self, workspace, figure):
-        '''Create an informative display for the module'''
+        """Create an informative display for the module"""
         import matplotlib
         from cellprofiler.gui.tools import renumber_labels_for_display
+
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
         mask = workspace.display_data.mask
@@ -408,7 +433,7 @@ controls how remaining objects are associated with their predecessors:
         #
         # Make the mask a dark gray
         #
-        image[(final_labels == 0) & mask, :] = .25
+        image[(final_labels == 0) & mask, :] = 0.25
         #
         # Make the outlines of the kept objects the primary color
         # and the outlines of removed objects red.
@@ -420,22 +445,35 @@ controls how remaining objects are associated with their predecessors:
         image[final_outlines, :] = final_color[np.newaxis, :]
 
         figure.set_subplots((2, 1))
-        figure.subplot_imshow_labels(0, 0, original_labels,
-                                     title=self.object_name.value)
-        figure.subplot_imshow_color(1, 0, image,
-                                    title=self.remaining_objects.value,
-                                    sharexy=figure.subplot(0, 0))
+        figure.subplot_imshow_labels(
+            0, 0, original_labels, title=self.object_name.value
+        )
+        figure.subplot_imshow_color(
+            1,
+            0,
+            image,
+            title=self.remaining_objects.value,
+            sharexy=figure.subplot(0, 0),
+        )
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
         columns = I.get_object_measurement_columns(self.remaining_objects.value)
-        columns += [(object_name, cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
-                     cpmeas.COLTYPE_INTEGER),
-                    (remaining_object_name, cellprofiler.measurement.FF_PARENT % object_name,
-                     cpmeas.COLTYPE_INTEGER)]
+        columns += [
+            (
+                object_name,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+            (
+                remaining_object_name,
+                cellprofiler.measurement.FF_PARENT % object_name,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+        ]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -445,51 +483,68 @@ controls how remaining objects are associated with their predecessors:
         """
 
         object_dictionary = self.get_object_dictionary()
-        return self.get_object_categories(pipeline, object_name,
-                                          object_dictionary)
+        return self.get_object_categories(pipeline, object_name, object_dictionary)
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
+        """Get the dictionary of parent child relationships
 
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
-        object_dictionary = {
-            self.remaining_objects.value: [self.object_name.value]
-        }
+        """
+        object_dictionary = {self.remaining_objects.value: [self.object_name.value]}
         return object_dictionary
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return names of the measurements made by this module
+        """Return names of the measurements made by this module
 
         pipeline - pipeline being run
         object_name - object being measured (or Image)
         category - category of measurement, for instance, "Location"
-        '''
-        return self.get_object_measurements(pipeline, object_name, category,
-                                            self.get_object_dictionary())
+        """
+        return self.get_object_measurements(
+            pipeline, object_name, category, self.get_object_dictionary()
+        )
 
     def validate_module(self, pipeline):
         """Bypass Identify.validate_module"""
         pass
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab and variable_revision_number == 2:
-            object_name, mask_region_name, remaining_object_name, \
-            renumber, save_outlines, remove_overlapping = setting_values
-            wants_outlines = (cps.NO if save_outlines.lower() ==
-                                        cps.DO_NOT_USE.lower() else cps.YES)
-            renumber = (R_RENUMBER if renumber == "Renumber"
-                        else R_RETAIN if renumber == "Retain"
-            else renumber)
-            overlap_choice = (P_MASK if remove_overlapping == "Retain"
-                              else P_REMOVE if remove_overlapping == "Remove"
-            else remove_overlapping)
+            object_name, mask_region_name, remaining_object_name, renumber, save_outlines, remove_overlapping = (
+                setting_values
+            )
+            wants_outlines = (
+                cps.NO if save_outlines.lower() == cps.DO_NOT_USE.lower() else cps.YES
+            )
+            renumber = (
+                R_RENUMBER
+                if renumber == "Renumber"
+                else R_RETAIN
+                if renumber == "Retain"
+                else renumber
+            )
+            overlap_choice = (
+                P_MASK
+                if remove_overlapping == "Retain"
+                else P_REMOVE
+                if remove_overlapping == "Remove"
+                else remove_overlapping
+            )
 
             setting_values = [
-                object_name, remaining_object_name, MC_OBJECTS,
-                mask_region_name, mask_region_name, overlap_choice,
-                ".5", renumber, wants_outlines, save_outlines]
+                object_name,
+                remaining_object_name,
+                MC_OBJECTS,
+                mask_region_name,
+                mask_region_name,
+                overlap_choice,
+                ".5",
+                renumber,
+                wants_outlines,
+                save_outlines,
+            ]
             from_matlab = False
             variable_revision_number = 1
 

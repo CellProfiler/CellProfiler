@@ -29,8 +29,13 @@ import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-from cellprofiler.gui import (cornerbuttonmixin, metadatactrl, namesubscriber,
-                              regexp_editor, treecheckboxdialog)
+from cellprofiler.gui import (
+    cornerbuttonmixin,
+    metadatactrl,
+    namesubscriber,
+    regexp_editor,
+    treecheckboxdialog,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -249,7 +254,7 @@ def encode_label(text):
     The ampersand (&) needs to be encoded as && for wx.StaticText
     and wx.Button in order to keep it from signifying an accelerator.
     """
-    return text.replace('&', '&&')
+    return text.replace("&", "&&")
 
 
 class ModuleView(object):
@@ -261,11 +266,9 @@ class ModuleView(object):
     gives the ui for editing the setting.
     """
 
-    def __init__(self, top_panel,
-                 workspace,
-                 as_datatool=False,
-                 frame=None,
-                 notes_panel=None):
+    def __init__(
+        self, top_panel, workspace, as_datatool=False, frame=None, notes_panel=None
+    ):
         """Constructor
 
         module_panel - the top-level panel used by the view
@@ -326,8 +329,7 @@ class ModuleView(object):
         properly initialized.
         """
         self.__pipeline.add_listener(self.__on_pipeline_event)
-        self.__workspace.add_notification_callback(
-            self.__on_workspace_event)
+        self.__workspace.add_notification_callback(self.__on_workspace_event)
         self.__started = True
 
     @staticmethod
@@ -352,7 +354,7 @@ class ModuleView(object):
     def clear_selection(self):
         if self.__module:
             for listener in self.__value_listeners:
-                listener['notifier'].remove_listener(listener['listener'])
+                listener["notifier"].remove_listener(listener["listener"])
             self.__value_listeners = []
             self.__module = None
         self.__sizer.Reset(0)
@@ -363,7 +365,9 @@ class ModuleView(object):
         if self.__module is None:
             return "Module settings"
         return "Module settings (%s #%02d)" % (
-            self.__module.module_name, self.__module.module_num)
+            self.__module.module_name,
+            self.__module.module_num,
+        )
 
     def hide_settings(self):
         for child in self.__module_panel.Children:
@@ -373,16 +377,24 @@ class ModuleView(object):
         try:
             assert len(settings) > 0
         except:
-            wx.MessageBox("Module %s.visible_settings() did not return a list!\n  value: %s" % (module_name, settings),
-                          "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
+            wx.MessageBox(
+                "Module %s.visible_settings() did not return a list!\n  value: %s"
+                % (module_name, settings),
+                "Pipeline Error",
+                wx.ICON_ERROR,
+                self.__module_panel,
+            )
             settings = []
         try:
             assert all([isinstance(s, cellprofiler.setting.Setting) for s in settings])
         except:
             wx.MessageBox(
-                "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s" % (
-                    module_name, settings),
-                "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
+                "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s"
+                % (module_name, settings),
+                "Pipeline Error",
+                wx.ICON_ERROR,
+                self.__module_panel,
+            )
             settings = []
         return settings
 
@@ -398,8 +410,7 @@ class ModuleView(object):
         table_control = None
         try:
             new_module = self.__pipeline.module(module_num)
-            reselecting = (self.__module and
-                           self.__module.id == new_module.id)
+            reselecting = self.__module and self.__module.id == new_module.id
             if not reselecting:
                 if self.__module is not None:
                     self.__module.on_deactivated()
@@ -420,8 +431,9 @@ class ModuleView(object):
                 self.__module.on_activated(self.__workspace)
                 if self.notes_panel is not None:
                     self.notes_panel.Show(True)
-            settings = self.check_settings(self.__module.module_name,
-                                           self.__module.visible_settings())
+            settings = self.check_settings(
+                self.__module.module_name, self.__module.visible_settings()
+            )
             self.__sizer.Reset(len(settings), 3, False)
             sizer = self.__sizer
 
@@ -431,7 +443,9 @@ class ModuleView(object):
             #
             #################################
             if self.notes_panel is not None:
-                self.module_notes_control.SetValue(u"\n".join([_.decode("utf-8") for _ in self.__module.notes]))
+                self.module_notes_control.SetValue(
+                    u"\n".join([_.decode("utf-8") for _ in self.__module.notes])
+                )
 
             #################################
             #
@@ -441,8 +455,9 @@ class ModuleView(object):
             for i, v in enumerate(settings):
                 if isinstance(v, cellprofiler.setting.PathListDisplay):
                     path_control = v
-                    self.__frame.pipeline_controller. \
-                        set_path_list_filtering(v.using_filter)
+                    self.__frame.pipeline_controller.set_path_list_filtering(
+                        v.using_filter
+                    )
                     continue
                 if isinstance(v, cellprofiler.setting.ImageSetDisplay):
                     v.on_event_fired = self.__frame.reset_imageset_ctrl
@@ -458,72 +473,76 @@ class ModuleView(object):
                     static_text.Show()
                     static_text.Label = encode_label(v.text)
                 else:
-                    static_text = wx.StaticText(self.__module_panel,
-                                                -1,
-                                                encode_label(v.text),
-                                                style=wx.ALIGN_RIGHT,
-                                                name=text_name)
-                text_sizer_item = sizer.Add(static_text, 3, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 2)
+                    static_text = wx.StaticText(
+                        self.__module_panel,
+                        -1,
+                        encode_label(v.text),
+                        style=wx.ALIGN_RIGHT,
+                        name=text_name,
+                    )
+                text_sizer_item = sizer.Add(
+                    static_text,
+                    3,
+                    wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL,
+                    2,
+                )
                 if control:
                     control.Show()
                 self.__static_texts.append(static_text)
                 if isinstance(v, cellprofiler.setting.Binary):
                     control = self.make_binary_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
-                    text_sizer_item.Flag = \
+                    text_sizer_item.Flag = (
                         wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
+                    )
                 elif isinstance(v, cellprofiler.setting.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
-                        v, control_name, control)
+                        v, control_name, control
+                    )
                 elif isinstance(v, cellprofiler.setting.SubdirectoryFilter):
                     control = self.make_subdirectory_filter_control(
-                        v, control_name, control)
+                        v, control_name, control
+                    )
                 elif isinstance(v, cellprofiler.setting.MultiChoice):
-                    control = self.make_multichoice_control(v, control_name,
-                                                            control)
+                    control = self.make_multichoice_control(v, control_name, control)
                 elif isinstance(v, cellprofiler.setting.CustomChoice):
-                    control = self.make_choice_control(v, v.get_choices(),
-                                                       control_name,
-                                                       wx.CB_DROPDOWN,
-                                                       control)
+                    control = self.make_choice_control(
+                        v, v.get_choices(), control_name, wx.CB_DROPDOWN, control
+                    )
                 elif isinstance(v, cellprofiler.setting.Colormap):
-                    control = self.make_colormap_control(v, control_name,
-                                                         control)
+                    control = self.make_colormap_control(v, control_name, control)
                 elif isinstance(v, cellprofiler.setting.Choice):
-                    control = self.make_choice_control(v, v.get_choices(),
-                                                       control_name,
-                                                       wx.CB_READONLY,
-                                                       control)
+                    control = self.make_choice_control(
+                        v, v.get_choices(), control_name, wx.CB_READONLY, control
+                    )
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cellprofiler.setting.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
-                    control = self.make_name_subscriber_control(v, choices,
-                                                                control_name,
-                                                                control)
+                    control = self.make_name_subscriber_control(
+                        v, choices, control_name, control
+                    )
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cellprofiler.setting.FigureSubscriber):
                     choices = v.get_choices(self.__pipeline)
-                    control = self.make_choice_control(v, choices,
-                                                       control_name,
-                                                       wx.CB_DROPDOWN,
-                                                       control)
+                    control = self.make_choice_control(
+                        v, choices, control_name, wx.CB_DROPDOWN, control
+                    )
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cellprofiler.setting.DoSomething):
-                    if (isinstance(v, cellprofiler.setting.PathListRefreshButton) and
-                                v.callback is None):
-                        v.callback = \
-                            self.__frame.pipeline_controller.on_update_pathlist
-                    control = self.make_callback_control(v, control_name,
-                                                         control)
+                    if (
+                        isinstance(v, cellprofiler.setting.PathListRefreshButton)
+                        and v.callback is None
+                    ):
+                        v.callback = self.__frame.pipeline_controller.on_update_pathlist
+                    control = self.make_callback_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cellprofiler.setting.DoThings):
-                    control = self.make_callback_controls(
-                        v, control_name, control)
-                elif isinstance(v,
-                                cellprofiler.setting.IntegerOrUnboundedRange):
+                    control = self.make_callback_controls(v, control_name, control)
+                elif isinstance(v, cellprofiler.setting.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
-                elif isinstance(v, cellprofiler.setting.IntegerRange) or \
-                        isinstance(v, cellprofiler.setting.FloatRange):
+                elif isinstance(v, cellprofiler.setting.IntegerRange) or isinstance(
+                    v, cellprofiler.setting.FloatRange
+                ):
                     control = self.make_range_control(v, control)
                 elif isinstance(v, cellprofiler.setting.Coordinates):
                     control = self.make_coordinates_control(v, control)
@@ -534,18 +553,19 @@ class ModuleView(object):
                 elif isinstance(v, cellprofiler.setting.Divider):
                     if control is None:
                         if v.line:
-                            control = wx.StaticLine(self.__module_panel,
-                                                    name=control_name)
+                            control = wx.StaticLine(
+                                self.__module_panel, name=control_name
+                            )
                         else:
-                            control = wx.StaticText(self.__module_panel,
-                                                    name=control_name)
+                            control = wx.StaticText(
+                                self.__module_panel, name=control_name
+                            )
                     flag = wx.EXPAND | wx.ALL
                     border = 2
                 elif isinstance(v, cellprofiler.setting.FilenameText):
                     control = self.make_filename_text_control(v, control)
                 elif isinstance(v, cellprofiler.setting.DirectoryPath):
-                    control = self.make_directory_path_control(v, control_name,
-                                                               control)
+                    control = self.make_directory_path_control(v, control_name, control)
                 elif isinstance(v, cellprofiler.setting.Pathname):
                     control = self.make_pathname_control(v, control)
                 elif isinstance(v, cellprofiler.setting.ImagePlane):
@@ -567,8 +587,7 @@ class ModuleView(object):
                         # control.file_collection_display.update()
                         pass
                     else:
-                        fcd = FileCollectionDisplayController(
-                            self, v, self.__pipeline)
+                        fcd = FileCollectionDisplayController(self, v, self.__pipeline)
                         control = fcd.panel
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cellprofiler.setting.Table):
@@ -600,8 +619,12 @@ class ModuleView(object):
                     control = DataTypeController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cellprofiler.setting.StructuringElement):
-                    control = self.make_structuring_element_control(v, control_name, control)
-                    text_sizer_item.Flag = wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
+                    control = self.make_structuring_element_control(
+                        v, control_name, control
+                    )
+                    text_sizer_item.Flag = (
+                        wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
+                    )
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -611,12 +634,13 @@ class ModuleView(object):
 
                 if help_control is None:
                     if v.doc is None:
-                        help_control = wx.StaticText(self.__module_panel,
-                                                     -1, "",
-                                                     name=help_name)
+                        help_control = wx.StaticText(
+                            self.__module_panel, -1, "", name=help_name
+                        )
                     else:
-                        help_control = self.make_help_control(v.doc, v.text,
-                                                              name=help_name)
+                        help_control = self.make_help_control(
+                            v.doc, v.text, name=help_name
+                        )
                 else:
                     help_control.Show()
                 sizer.Add(help_control, 0, wx.LEFT, 2)
@@ -655,15 +679,11 @@ class ModuleView(object):
 
         if control is None:
             control = wx.Panel(
-                self.module_panel,
-                style=wx.TAB_TRAVERSAL,
-                name=control_name
+                self.module_panel, style=wx.TAB_TRAVERSAL, name=control_name
             )
 
             shape_control_text = wx.StaticText(
-                control,
-                label="Shape",
-                style=wx.ALIGN_LEFT
+                control, label="Shape", style=wx.ALIGN_LEFT
             )
 
             shape_control = wx.ComboBox(
@@ -671,7 +691,7 @@ class ModuleView(object):
                 choices=v.get_choices(),
                 style=wx.CB_READONLY,
                 name=shape_control_name,
-                value=v.shape
+                value=v.shape,
             )
 
             def on_select_shape(event, setting=v, control=shape_control):
@@ -682,15 +702,11 @@ class ModuleView(object):
             shape_control.Bind(wx.EVT_COMBOBOX, on_select_shape)
 
             size_control_text = wx.StaticText(
-                control,
-                label="Size",
-                style=wx.ALIGN_LEFT
+                control, label="Size", style=wx.ALIGN_LEFT
             )
 
             size_control = wx.TextCtrl(
-                control,
-                name=size_control_name,
-                value=str(v.size)
+                control, name=size_control_name, value=str(v.size)
             )
 
             def on_set_size(event):
@@ -740,7 +756,8 @@ class ModuleView(object):
         notes_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.notes_panel.SetSizer(notes_sizer)
         self.module_notes_control = wx.TextCtrl(
-            self.notes_panel, -1, style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
+            self.notes_panel, -1, style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER
+        )
         #
         # If you call self.module_notes_control.GetFullTextExtent(),
         # you will find that the font has a descender of 4 pixels. But
@@ -748,8 +765,7 @@ class ModuleView(object):
         # so I hardcode here
         #
         height = self.module_notes_control.GetTextExtent("M")[1] * 2 + 4
-        height = self.module_notes_control.ClientToWindowSize(
-            wx.Size(1, height))[1]
+        height = self.module_notes_control.ClientToWindowSize(wx.Size(1, height))[1]
         self.module_notes_control.SetInitialSize(wx.Size(100, 100))
         notes_sizer.Add(self.module_notes_control, 1, wx.ALL, 10)
 
@@ -757,11 +773,10 @@ class ModuleView(object):
             if not self.__handle_change:
                 return
             if self.__module is not None:
-                notes = self.module_notes_control.GetValue().encode('utf-8')
-                self.__module.notes = notes.split('\n')
+                notes = self.module_notes_control.GetValue().encode("utf-8")
+                self.__module.notes = notes.split("\n")
 
-        self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed,
-                              self.module_notes_control)
+        self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed, self.module_notes_control)
 
     def make_binary_control(self, v, control_name, control):
         """Make a checkbox control for a Binary setting"""
@@ -769,7 +784,8 @@ class ModuleView(object):
             control = wx.RadioBox(
                 self.__module_panel,
                 choices=[cellprofiler.setting.YES, cellprofiler.setting.NO],
-                name=control_name)
+                name=control_name,
+            )
 
             def callback(event, setting=v, control=control):
                 self.__on_radiobox_change(event, setting, control)
@@ -791,10 +807,9 @@ class ModuleView(object):
         if v.value not in [c[0] for c in choices]:
             choices = choices + [(v.value, "", 0, False)]
         if not control:
-            control = namesubscriber.NameSubscriberComboBox(self.__module_panel,
-                                                            value=v.value,
-                                                            choices=choices,
-                                                            name=control_name)
+            control = namesubscriber.NameSubscriberComboBox(
+                self.__module_panel, value=v.value, choices=choices, name=control_name
+            )
 
             def callback(event, setting=v, control=control):
                 # the NameSubscriberComboBox behaves like a combobox
@@ -804,8 +819,11 @@ class ModuleView(object):
         else:
             if list(choices) != list(control.Items):
                 control.Items = choices
-        if (getattr(v, 'has_tooltips', False) and
-                v.has_tooltips and (control.Value in v.tooltips)):
+        if (
+            getattr(v, "has_tooltips", False)
+            and v.has_tooltips
+            and (control.Value in v.tooltips)
+        ):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
         return control
 
@@ -817,7 +835,9 @@ class ModuleView(object):
         control_name - assign this name to the control
         style        - one of the CB_ styles
         """
-        assert isinstance(v, (cellprofiler.setting.Choice, cellprofiler.setting.FigureSubscriber))
+        assert isinstance(
+            v, (cellprofiler.setting.Choice, cellprofiler.setting.FigureSubscriber)
+        )
         try:
             v.test_valid(self.__pipeline)
         except:
@@ -825,24 +845,30 @@ class ModuleView(object):
         if v.value not in choices and style == wx.CB_READONLY:
             choices = choices + [v.value]
         if not control:
-            control = wx.ComboBox(self.__module_panel, -1, v.value,
-                                  choices=choices,
-                                  style=style,
-                                  name=control_name)
+            control = wx.ComboBox(
+                self.__module_panel,
+                -1,
+                v.value,
+                choices=choices,
+                style=style,
+                name=control_name,
+            )
 
             def callback(event, setting=v, control=control):
                 self.__on_combobox_change(event, setting, control)
 
             self.__module_panel.Bind(wx.EVT_COMBOBOX, callback, control)
             if style == wx.CB_DROPDOWN:
+
                 def on_cell_change(event, setting=v, control=control):
                     self.__on_cell_change(event, setting, control)
 
                 self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, control)
         else:
             old_choices = control.Items
-            if len(choices) != len(old_choices) or \
-                    not all([x == y for x, y in zip(choices, old_choices)]):
+            if len(choices) != len(old_choices) or not all(
+                [x == y for x, y in zip(choices, old_choices)]
+            ):
                 if v.value in old_choices:
                     # For Mac, if you change the choices and the current
                     # combo-box value isn't in the choices, it throws
@@ -853,22 +879,26 @@ class ModuleView(object):
                 control.Items = choices
             try:
                 # more desperate MAC cruft
-                i_am_different = (control.Value != v.value)
+                i_am_different = control.Value != v.value
             except:
                 i_am_different = True
             if len(choices) > 0 and i_am_different:
                 control.Value = v.value
 
-        if (getattr(v, 'has_tooltips', False) and
-                v.has_tooltips and control.Value in v.tooltips):
+        if (
+            getattr(v, "has_tooltips", False)
+            and v.has_tooltips
+            and control.Value in v.tooltips
+        ):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
         return control
 
     def make_measurement_multichoice_control(self, v, control_name, control):
         """Make a button that, when pressed, launches the tree editor"""
         if control is None:
-            control = wx.Button(self.module_panel, -1,
-                                "Press button to select measurements")
+            control = wx.Button(
+                self.module_panel, -1, "Press button to select measurements"
+            )
 
             def on_press(event):
                 d = {}
@@ -881,7 +911,7 @@ class ModuleView(object):
                 choices = set(v.choices)
                 for choice in choices:
                     object_name, feature = v.split_choice(choice)
-                    pieces = [object_name] + feature.split('_')
+                    pieces = [object_name] + feature.split("_")
                     d1 = d
                     for piece in pieces:
                         if piece not in d1:
@@ -896,7 +926,7 @@ class ModuleView(object):
                     if selection not in choices:
                         continue
                     object_name, feature = v.split_choice(selection)
-                    pieces = [object_name] + feature.split('_')
+                    pieces = [object_name] + feature.split("_")
                     d1 = d
                     for piece in pieces:
                         if piece not in d1:
@@ -919,9 +949,12 @@ class ModuleView(object):
                     return leaf_state
 
                 get_state(d)
-                dlg = treecheckboxdialog.TreeCheckboxDialog(self.module_panel, d, size=(480, 480))
+                dlg = treecheckboxdialog.TreeCheckboxDialog(
+                    self.module_panel, d, size=(480, 480)
+                )
                 dlg.Title = "Select measurements"
                 if dlg.ShowModal() == wx.ID_OK:
+
                     def collect_state(object_name, prefix, d):
                         if d[None] is False:
                             return []
@@ -934,19 +967,17 @@ class ModuleView(object):
                             if prefix is None:
                                 sub_prefix = key
                             else:
-                                sub_prefix = '_'.join((prefix, key))
-                            result += collect_state(object_name, sub_prefix,
-                                                    d[key])
+                                sub_prefix = "_".join((prefix, key))
+                            result += collect_state(object_name, sub_prefix, d[key])
                         return result
 
                     selections = []
                     for object_name in [x for x in d.keys() if x is not None]:
-                        selections += collect_state(object_name, None,
-                                                    d[object_name])
+                        selections += collect_state(object_name, None, d[object_name])
                     proposed_value = v.get_value_string(selections)
-                    setting_edited_event = SettingEditedEvent(v, self.__module,
-                                                              proposed_value,
-                                                              event)
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, proposed_value, event
+                    )
                     self.notify(setting_edited_event)
                     self.reset_view()
 
@@ -957,8 +988,7 @@ class ModuleView(object):
 
     def make_subdirectory_filter_control(self, v, control_name, control):
         if control is None:
-            control = wx.Button(self.module_panel, -1,
-                                "Press to select folders")
+            control = wx.Button(self.module_panel, -1, "Press to select folders")
 
             def on_press(event):
                 assert isinstance(v, cellprofiler.setting.SubdirectoryFilter)
@@ -966,6 +996,7 @@ class ModuleView(object):
                 root = v.directory_path.get_absolute_path()
                 self.module_panel.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
                 try:
+
                     def fn_populate(root):
                         d = {None: True}
                         try:
@@ -978,7 +1009,9 @@ class ModuleView(object):
                                     continue
                                 if (stat.S_IREAD & dirstat.st_mode) == 0:
                                     continue
-                                d[dirname] = lambda dirpath=dirpath: fn_populate(dirpath)
+                                d[dirname] = lambda dirpath=dirpath: fn_populate(
+                                    dirpath
+                                )
                         except:
                             print("Warning: failed to list directory %s" % root)
                         return d
@@ -996,8 +1029,9 @@ class ModuleView(object):
                             d[s0][None] = False
                         else:
                             if d[s0][None] is not False:
-                                populate_selection(d[s0], selection[1:],
-                                                   os.path.join(root, s0))
+                                populate_selection(
+                                    d[s0], selection[1:], os.path.join(root, s0)
+                                )
                         if d[s0][None] is False:
                             # At best, the root is not all true
                             d[None] = None
@@ -1015,10 +1049,13 @@ class ModuleView(object):
                 finally:
                     self.module_panel.SetCursor(wx.NullCursor)
 
-                dlg = treecheckboxdialog.TreeCheckboxDialog(self.module_panel, d, size=(320, 480))
+                dlg = treecheckboxdialog.TreeCheckboxDialog(
+                    self.module_panel, d, size=(320, 480)
+                )
                 dlg.set_parent_reflects_child(False)
                 dlg.Title = "Select folders"
                 if dlg.ShowModal() == wx.ID_OK:
+
                     def collect_state(prefix, d):
                         if d is None:
                             return []
@@ -1030,17 +1067,16 @@ class ModuleView(object):
                         for key in d.keys():
                             if key is None:
                                 continue
-                            result += collect_state(os.path.join(prefix, key),
-                                                    d[key])
+                            result += collect_state(os.path.join(prefix, key), d[key])
                         return result
 
                     selections = []
                     for object_name in [x for x in d.keys() if x is not None]:
                         selections += collect_state(object_name, d[object_name])
                     proposed_value = v.get_value_string(selections)
-                    setting_edited_event = SettingEditedEvent(v, self.__module,
-                                                              proposed_value,
-                                                              event)
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, proposed_value, event
+                    )
                     self.notify(setting_edited_event)
                     self.reset_view()
 
@@ -1055,18 +1091,24 @@ class ModuleView(object):
         if isinstance(v, cellprofiler.setting.SubscriberMultiChoice):
             # Get the choices from the providers
             v.load_choices(self.__pipeline)
-        choices = v.choices + [selection for selection in selections
-                               if selection not in v.choices]
+        choices = v.choices + [
+            selection for selection in selections if selection not in v.choices
+        ]
         if not control:
-            control = wx.ListBox(self.__module_panel, -1, choices=choices,
-                                 style=wx.LB_EXTENDED,
-                                 name=control_name)
+            control = wx.ListBox(
+                self.__module_panel,
+                -1,
+                choices=choices,
+                style=wx.LB_EXTENDED,
+                name=control_name,
+            )
             for selection in selections:
                 index = choices.index(selection)
                 control.SetSelection(index)
                 if selection not in v.choices:
                     control.SetItemForegroundColour(
-                        index, cellprofiler.preferences.get_error_color())
+                        index, cellprofiler.preferences.get_error_color()
+                    )
 
             def callback(event, setting=v, control=control):
                 self.__on_multichoice_change(event, setting, control)
@@ -1074,8 +1116,9 @@ class ModuleView(object):
             self.__module_panel.Bind(wx.EVT_LISTBOX, callback, control)
         else:
             old_choices = control.Items
-            if (len(choices) != len(old_choices) or
-                    not all([x == y for x, y in zip(choices, old_choices)])):
+            if len(choices) != len(old_choices) or not all(
+                [x == y for x, y in zip(choices, old_choices)]
+            ):
                 control.Items = choices
             for i in range(len(choices)):
                 if control.IsSelected(i):
@@ -1085,7 +1128,8 @@ class ModuleView(object):
                     control.Select(i)
                     if choices[i] not in v.choices:
                         control.SetItemForegroundColour(
-                            i, cellprofiler.preferences.get_error_color())
+                            i, cellprofiler.preferences.get_error_color()
+                        )
         return control
 
     def make_colormap_control(self, v, control_name, control):
@@ -1111,20 +1155,22 @@ class ModuleView(object):
             logger.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None
         if not control:
-            control = wx.Panel(self.__module_panel, -1,
-                               name=control_name)
+            control = wx.Panel(self.__module_panel, -1, name=control_name)
             sizer = wx.BoxSizer(wx.VERTICAL)
             control.SetSizer(sizer)
-            colorbar = wx.StaticBitmap(control, -1,
-                                       name=colorbar_ctrl_name(v))
+            colorbar = wx.StaticBitmap(control, -1, name=colorbar_ctrl_name(v))
             if not bitmap is None:
                 colorbar.SetBitmap(bitmap)
             sizer.Add(colorbar, 0, wx.EXPAND | wx.BOTTOM, 2)
 
-            combo = wx.ComboBox(control, -1, v.value,
-                                choices=v.choices,
-                                style=wx.CB_READONLY,
-                                name=combobox_ctrl_name(v))
+            combo = wx.ComboBox(
+                control,
+                -1,
+                v.value,
+                choices=v.choices,
+                style=wx.CB_READONLY,
+                name=combobox_ctrl_name(v),
+            )
             sizer.Add(combo, 1, wx.EXPAND)
 
             def callback(event, setting=v, control=combo):
@@ -1135,8 +1181,9 @@ class ModuleView(object):
             combo = control.FindWindowByName(combobox_ctrl_name(v))
             colorbar = control.FindWindowByName(colorbar_ctrl_name(v))
             old_choices = combo.Items
-            if len(v.choices) != len(old_choices) or \
-                    not all([x == y for x, y in zip(v.choices, old_choices)]):
+            if len(v.choices) != len(old_choices) or not all(
+                [x == y for x, y in zip(v.choices, old_choices)]
+            ):
                 combo.Items = v.choices
             if combo.Value != v.value:
                 combo.Value = v.value
@@ -1150,18 +1197,25 @@ class ModuleView(object):
             color.Set(v.value)
         except:
             color = wx.BLACK
-            if not hasattr(control, "bad_color_name") or control.bad_color_name != v.value:
+            if (
+                not hasattr(control, "bad_color_name")
+                or control.bad_color_name != v.value
+            ):
                 logger.warn("Failed to set color to %s" % v.value)
                 control.bad_color_name = v.value
         if control is None:
             control = wx.lib.colourselect.ColourSelect(
-                self.__module_panel,
-                colour=color)
+                self.__module_panel, colour=color
+            )
             control.SetName(control_name)
 
             def on_press(event, v=v, control=control):
-                proposed_value = control.GetColour().GetAsString(wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
-                setting_edited_event = SettingEditedEvent(v, self.__module, proposed_value, event)
+                proposed_value = control.GetColour().GetAsString(
+                    wx.C2S_NAME | wx.C2S_HTML_SYNTAX
+                )
+                setting_edited_event = SettingEditedEvent(
+                    v, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
                 self.reset_view()
 
@@ -1195,13 +1249,14 @@ class ModuleView(object):
             brush = wx.Brush(control.GetBackgroundColour())
             dc.SetBackground(brush)
             dc.Clear()
-            wx.RendererNative.Get().DrawComboBox(control, dc, wx.Rect(0, 0, width, height), flags)
+            wx.RendererNative.Get().DrawComboBox(
+                control, dc, wx.Rect(0, 0, width, height), flags
+            )
             dc.DrawText(new_label, 2, 2)
             return bitmap
 
         if control is None:
-            control = wx.BitmapButton(self.module_panel,
-                                      style=wx.BU_EXACTFIT)
+            control = wx.BitmapButton(self.module_panel, style=wx.BU_EXACTFIT)
             control.label_text = None
 
             def on_press(event, v=v, control=control):
@@ -1225,8 +1280,7 @@ class ModuleView(object):
                         if v.fn_is_leaf(node):
                             item = menu.Append(-1, text)
                             id_dict[item.GetId()] = subpath
-                            if wx.VERSION >= (2, 9) and \
-                                            sys.platform != 'win32':
+                            if wx.VERSION >= (2, 9) and sys.platform != "win32":
                                 wx.EVT_MENU(menu, item.GetId(), on_event)
                         if subtree is not None and len(subtree) > 0:
                             submenu = make_menu(subtree, path=subpath)
@@ -1235,7 +1289,7 @@ class ModuleView(object):
 
                 menu = make_menu(v.get_tree())
                 assert isinstance(control, wx.Window)
-                if wx.VERSION < (2, 9) or sys.platform == 'win32':
+                if wx.VERSION < (2, 9) or sys.platform == "win32":
                     menu.Bind(wx.EVT_MENU, on_event)
                 control.PopupMenu(menu, 0, control.GetSize()[1])
                 menu.Destroy()
@@ -1245,11 +1299,14 @@ class ModuleView(object):
         if old_label != new_label:
             control.label_text = new_label
             for getter, setter, flags in (
-                    (control.GetBitmapLabel, control.SetBitmapLabel, 0),
-                    (control.GetBitmapFocus, control.SetBitmapFocus,
-                     wx.CONTROL_FOCUSED),
-                    (control.GetBitmapSelected, control.SetBitmapSelected,
-                     wx.CONTROL_SELECTED)):
+                (control.GetBitmapLabel, control.SetBitmapLabel, 0),
+                (control.GetBitmapFocus, control.SetBitmapFocus, wx.CONTROL_FOCUSED),
+                (
+                    control.GetBitmapSelected,
+                    control.SetBitmapSelected,
+                    wx.CONTROL_SELECTED,
+                ),
+            ):
                 old_bitmap = getter()
                 setter(make_bitmap(control, flags))
                 if old_bitmap is not None:
@@ -1259,8 +1316,7 @@ class ModuleView(object):
     def make_callback_control(self, v, control_name, control):
         """Make a control that calls back using the callback buried in the setting"""
         if not control:
-            control = wx.Button(self.module_panel, -1,
-                                v.label, name=control_name)
+            control = wx.Button(self.module_panel, -1, v.label, name=control_name)
 
             def callback(event, setting=v):
                 self.__on_do_something(event, setting)
@@ -1291,7 +1347,9 @@ class ModuleView(object):
 
                 def callback(event, index=i):
                     v.on_event_fired(index)
-                    setting_edited_event = SettingEditedEvent(v, self.__module, None, event)
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, None, event
+                    )
                     self.notify(setting_edited_event)
                     self.__module.on_setting_changed(v, self.__pipeline)
                     self.reset_view()
@@ -1305,18 +1363,16 @@ class ModuleView(object):
     def make_regexp_control(self, v, control):
         """Make a textbox control + regular expression button"""
         if not control:
-            panel = wx.Panel(self.__module_panel,
-                             -1,
-                             name=edit_control_name(v))
+            panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
             control = panel
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
-            text_ctrl = wx.TextCtrl(panel, -1, str(v.value),
-                                    name=text_control_name(v))
+            text_ctrl = wx.TextCtrl(panel, -1, str(v.value), name=text_control_name(v))
             sizer.Add(text_ctrl, 1, wx.EXPAND | wx.RIGHT, 1)
             bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND, wx.ART_TOOLBAR, (16, 16))
-            bitmap_button = wx.BitmapButton(panel, bitmap=bitmap,
-                                            name=button_control_name(v))
+            bitmap_button = wx.BitmapButton(
+                panel, bitmap=bitmap, name=button_control_name(v)
+            )
             sizer.Add(bitmap_button, 0, wx.EXPAND)
 
             def on_cell_change(event, setting=v, control=text_ctrl):
@@ -1330,10 +1386,13 @@ class ModuleView(object):
                 try:
                     if setting.get_example_fn is None:
                         path = cellprofiler.preferences.get_default_image_directory()
-                        filenames = [x for x in os.listdir(path)
-                                     if x.find('.') != -1 and
-                                     os.path.splitext(x)[1].upper() in
-                                     ('.TIF', '.JPG', '.PNG', '.BMP')]
+                        filenames = [
+                            x
+                            for x in os.listdir(path)
+                            if x.find(".") != -1
+                            and os.path.splitext(x)[1].upper()
+                            in (".TIF", ".JPG", ".PNG", ".BMP")
+                        ]
                         if len(filenames):
                             filename = filenames[0]
                     else:
@@ -1346,7 +1405,9 @@ class ModuleView(object):
                 else:
                     guesses = regexp_editor.RE_FILENAME_GUESSES
 
-                new_value = regexp_editor.edit_regexp(panel, control.GetValue(), filename, guesses)
+                new_value = regexp_editor.edit_regexp(
+                    panel, control.GetValue(), filename, guesses
+                )
                 if new_value:
                     control.SetValue(new_value)
                     self.__on_cell_change(event, setting, control)
@@ -1376,8 +1437,7 @@ class ModuleView(object):
         control_name = edit_control_name(v)
         button_name = button_control_name(v)
         if control is None:
-            control = wx.Panel(self.module_panel, -1,
-                               name=control_name)
+            control = wx.Panel(self.module_panel, -1, name=control_name)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             control.SetSizer(sizer)
             if v.metadata_display:
@@ -1386,10 +1446,10 @@ class ModuleView(object):
                     self.__module,
                     control,
                     value=v.value,
-                    name=edit_name)
+                    name=edit_name,
+                )
             else:
-                edit_control = wx.TextCtrl(control, -1, str(v.value),
-                                           name=edit_name)
+                edit_control = wx.TextCtrl(control, -1, str(v.value), name=edit_name)
             sizer.Add(edit_control, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP)
 
             def on_cell_change(event, setting=v, control=edit_control):
@@ -1397,10 +1457,8 @@ class ModuleView(object):
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, edit_control)
 
-            bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN,
-                                              wx.ART_BUTTON, (16, 16))
-            button_control = wx.BitmapButton(control, bitmap=bitmap,
-                                             name=button_name)
+            bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_BUTTON, (16, 16))
+            button_control = wx.BitmapButton(control, bitmap=bitmap, name=button_name)
 
             def on_press(event):
                 """Open a file browser"""
@@ -1420,7 +1478,8 @@ class ModuleView(object):
                         v.set_directory_fn(dlg.GetDirectory())
                     v.value = dlg.GetFilename()
                     setting_edited_event = SettingEditedEvent(
-                        v, self.__module, v.value, event)
+                        v, self.__module, v.value, event
+                    )
                     self.notify(setting_edited_event)
                     self.reset_view()
 
@@ -1443,19 +1502,17 @@ class ModuleView(object):
         folder_label_ctrl_name = folder_label_name(v)
 
         if control is None:
-            control = wx.Panel(self.module_panel,
-                               style=wx.TAB_TRAVERSAL,
-                               name=control_name)
+            control = wx.Panel(
+                self.module_panel, style=wx.TAB_TRAVERSAL, name=control_name
+            )
             sizer = wx.BoxSizer(wx.VERTICAL)
             control.SetSizer(sizer)
             choice_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(choice_sizer, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
-            dir_ctrl = wx.Choice(control, choices=v.dir_choices,
-                                 name=dir_ctrl_name)
+            dir_ctrl = wx.Choice(control, choices=v.dir_choices, name=dir_ctrl_name)
             choice_sizer.Add(dir_ctrl, 0, wx.ALIGN_LEFT | wx.BOTTOM, 2)
             choice_sizer.AddSpacer(3)
-            folder_label = wx.StaticText(
-                control, name=folder_label_ctrl_name)
+            folder_label = wx.StaticText(control, name=folder_label_ctrl_name)
             choice_sizer.Add(folder_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
             custom_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1463,19 +1520,24 @@ class ModuleView(object):
             custom_label = wx.StaticText(control, name=custom_ctrl_label_name)
             custom_sizer.Add(custom_label, 0, wx.ALIGN_CENTER_VERTICAL)
             if v.allow_metadata:
-                custom_ctrl = metadatactrl.MetadataControl(self.__pipeline,
-                                                           self.__module,
-                                                           control, value=v.custom_path,
-                                                           name=custom_ctrl_name)
+                custom_ctrl = metadatactrl.MetadataControl(
+                    self.__pipeline,
+                    self.__module,
+                    control,
+                    value=v.custom_path,
+                    name=custom_ctrl_name,
+                )
             else:
-                custom_ctrl = wx.TextCtrl(control, -1, v.custom_path,
-                                          name=custom_ctrl_name)
+                custom_ctrl = wx.TextCtrl(
+                    control, -1, v.custom_path, name=custom_ctrl_name
+                )
             custom_sizer.Add(custom_ctrl, 1, wx.ALIGN_CENTER_VERTICAL)
-            browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
-                                                     wx.ART_CMN_DIALOG,
-                                                     (16, 16))
-            browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
-                                          name=browse_ctrl_name)
+            browse_bitmap = wx.ArtProvider.GetBitmap(
+                wx.ART_FOLDER, wx.ART_CMN_DIALOG, (16, 16)
+            )
+            browse_ctrl = wx.BitmapButton(
+                control, bitmap=browse_bitmap, name=browse_ctrl_name
+            )
             custom_sizer.Add(browse_ctrl, 0, wx.ALIGN_CENTER | wx.LEFT, 2)
 
             def on_dir_choice_change(event, v=v, dir_ctrl=dir_ctrl):
@@ -1484,7 +1546,8 @@ class ModuleView(object):
                     return
                 proposed_value = v.join_string(dir_choice=dir_ctrl.GetStringSelection())
                 setting_edited_event = SettingEditedEvent(
-                    v, self.__module, proposed_value, event)
+                    v, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
                 self.reset_view()
 
@@ -1494,24 +1557,25 @@ class ModuleView(object):
                     return
                 proposed_value = v.join_string(custom_path=custom_ctrl.Value)
                 setting_edited_event = SettingEditedEvent(
-                    v, self.__module, proposed_value, event)
+                    v, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
                 self.reset_view(1000)
 
-            def on_browse_pressed(event, v=v, dir_ctrl=dir_ctrl,
-                                  custom_ctrl=custom_ctrl):
+            def on_browse_pressed(
+                event, v=v, dir_ctrl=dir_ctrl, custom_ctrl=custom_ctrl
+            ):
                 """Handle browse button pressed"""
-                dlg = wx.DirDialog(self.module_panel,
-                                   v.text,
-                                   v.get_absolute_path())
+                dlg = wx.DirDialog(self.module_panel, v.text, v.get_absolute_path())
                 if dlg.ShowModal() == wx.ID_OK:
                     dir_choice, custom_path = v.get_parts_from_path(dlg.GetPath())
                     proposed_value = v.join_string(dir_choice, custom_path)
                     if v.allow_metadata:
                         # Do escapes on backslashes
-                        proposed_value = proposed_value.replace('\\', '\\\\')
+                        proposed_value = proposed_value.replace("\\", "\\\\")
                     setting_edited_event = SettingEditedEvent(
-                        v, self.__module, proposed_value, event)
+                        v, self.__module, proposed_value, event
+                    )
                     self.notify(setting_edited_event)
                     self.reset_view()
 
@@ -1533,8 +1597,10 @@ class ModuleView(object):
                 custom_label.Show()
             if not browse_ctrl.IsShown():
                 browse_ctrl.Show()
-            if v.dir_choice in (cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
-                                cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME):
+            if v.dir_choice in (
+                cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            ):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
                 if v.support_urls:
@@ -1551,14 +1617,20 @@ class ModuleView(object):
             custom_label.Hide()
             custom_ctrl.Hide()
             browse_ctrl.Hide()
-        if v.dir_choice in (cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
-                            cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME):
-            folder_label.Label = \
+        if v.dir_choice in (
+            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+            cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+        ):
+            folder_label.Label = (
                 "( %s )" % cellprofiler.preferences.get_default_image_directory()
-        elif v.dir_choice in (cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-                              cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME):
-            folder_label.Label = \
+            )
+        elif v.dir_choice in (
+            cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
+            cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+        ):
+            folder_label.Label = (
                 "( %s )" % cellprofiler.preferences.get_default_output_directory()
+            )
         else:
             folder_label.Label = wx.EmptyString
         dir_ctrl.SetToolTip(folder_label.Label)
@@ -1566,19 +1638,18 @@ class ModuleView(object):
 
     def make_pathname_control(self, v, control):
         if control is None:
-            control = wx.Panel(self.module_panel, -1,
-                               name=edit_control_name(v))
+            control = wx.Panel(self.module_panel, -1, name=edit_control_name(v))
             control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
-            text_control = wx.TextCtrl(control, -1,
-                                       name=subedit_control_name(v))
+            text_control = wx.TextCtrl(control, -1, name=subedit_control_name(v))
             text_control.Bind(
-                wx.EVT_TEXT,
-                lambda event: self.__on_cell_change(event, v, text_control))
-            browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
-                                                     wx.ART_CMN_DIALOG,
-                                                     (16, 16))
-            browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
-                                          name=button_control_name(v))
+                wx.EVT_TEXT, lambda event: self.__on_cell_change(event, v, text_control)
+            )
+            browse_bitmap = wx.ArtProvider.GetBitmap(
+                wx.ART_FOLDER, wx.ART_CMN_DIALOG, (16, 16)
+            )
+            browse_ctrl = wx.BitmapButton(
+                control, bitmap=browse_bitmap, name=button_control_name(v)
+            )
             control.GetSizer().Add(text_control, 1, wx.EXPAND)
             control.GetSizer().AddSpacer((3, 0))
             control.GetSizer().Add(browse_ctrl, 0, wx.EXPAND)
@@ -1608,15 +1679,20 @@ class ModuleView(object):
         if not control:
             control = wx.Panel(self.module_panel, name=edit_control_name(v))
             control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
-            url_control = wx.TextCtrl(control, style=wx.TE_READONLY, name=text_control_name(v))
+            url_control = wx.TextCtrl(
+                control, style=wx.TE_READONLY, name=text_control_name(v)
+            )
             control.GetSizer().Add(url_control, 1, wx.EXPAND)
             control.GetSizer().AddSpacer(2)
-            browse_button = wx.Button(control, label="Browse", name=button_control_name(v))
+            browse_button = wx.Button(
+                control, label="Browse", name=button_control_name(v)
+            )
             control.GetSizer().Add(browse_button, 0, wx.EXPAND)
 
             def on_button(event):
                 url = self.__frame.pipeline_controller.pick_from_pathlist(
-                    v.url, instructions="Select an image file from the list below")
+                    v.url, instructions="Select an image file from the list below"
+                )
                 if url is not None:
                     value = v.build(url)
                     self.on_value_change(v, control, value, event)
@@ -1640,7 +1716,7 @@ class ModuleView(object):
                     self.__module,
                     self.__module_panel,
                     value=v.value,
-                    name=control_name
+                    name=control_name,
                 )
             else:
                 style = 0
@@ -1653,11 +1729,9 @@ class ModuleView(object):
                 else:
                     lines = [text]
 
-                control = wx.TextCtrl(self.__module_panel,
-                                      -1,
-                                      text,
-                                      name=control_name,
-                                      style=style)
+                control = wx.TextCtrl(
+                    self.__module_panel, -1, text, name=control_name, style=style
+                )
 
             def on_cell_change(event, setting=v, control=control):
                 self.__on_cell_change(event, setting, control)
@@ -1688,11 +1762,9 @@ class ModuleView(object):
             panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
-            min_ctrl = wx.TextCtrl(
-                panel, -1, v.min_text, name=min_control_name(v))
+            min_ctrl = wx.TextCtrl(panel, -1, v.min_text, name=min_control_name(v))
             sizer.Add(min_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
-            max_ctrl = wx.TextCtrl(
-                panel, -1, v.max_text, name=max_control_name(v))
+            max_ctrl = wx.TextCtrl(panel, -1, v.max_text, name=max_control_name(v))
             # max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl, 0, wx.EXPAND)
 
@@ -1730,40 +1802,49 @@ class ModuleView(object):
             panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
-            min_ctrl = wx.TextCtrl(panel, -1, value=str(v.min),
-                                   name=min_control_name(v))
+            min_ctrl = wx.TextCtrl(
+                panel, -1, value=str(v.min), name=min_control_name(v)
+            )
             best_width = min_ctrl.GetCharWidth() * 5
             min_ctrl.SetInitialSize(wx.Size(best_width, -1))
             sizer.Add(min_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
-            max_ctrl = wx.TextCtrl(panel, -1, value=v.display_max,
-                                   name=max_control_name(v))
+            max_ctrl = wx.TextCtrl(
+                panel, -1, value=v.display_max, name=max_control_name(v)
+            )
             max_ctrl.SetInitialSize(wx.Size(best_width, -1))
             sizer.Add(max_ctrl, 0, wx.EXPAND)
             value = ABSOLUTE if v.is_abs() else FROM_EDGE
-            absrel_ctrl = wx.ComboBox(panel, -1, value,
-                                      choices=[ABSOLUTE, FROM_EDGE],
-                                      name=absrel_control_name(v),
-                                      style=wx.CB_DROPDOWN | wx.CB_READONLY)
+            absrel_ctrl = wx.ComboBox(
+                panel,
+                -1,
+                value,
+                choices=[ABSOLUTE, FROM_EDGE],
+                name=absrel_control_name(v),
+                style=wx.CB_DROPDOWN | wx.CB_READONLY,
+            )
             sizer.Add(absrel_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
 
             def on_min_change(event, setting=v, control=min_ctrl):
                 if not self.__handle_change:
                     return
                 proposed_value = setting.compose_min_text(control.GetValue())
-                setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                          proposed_value, event)
+                setting_edited_event = SettingEditedEvent(
+                    setting, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
                 self.fit_ctrl(control)
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_min_change, min_ctrl)
 
-            def on_max_change(event, setting=v, control=max_ctrl,
-                              absrel_ctrl=absrel_ctrl):
+            def on_max_change(
+                event, setting=v, control=max_ctrl, absrel_ctrl=absrel_ctrl
+            ):
                 if not self.__handle_change:
                     return
                 proposed_value = setting.compose_display_max_text(control.GetValue())
-                setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                          proposed_value, event)
+                setting_edited_event = SettingEditedEvent(
+                    setting, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
                 self.fit_ctrl(control)
 
@@ -1778,12 +1859,12 @@ class ModuleView(object):
                 else:
                     proposed_value = setting.compose_rel()
                 if proposed_value is not None:
-                    setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                              proposed_value, event)
+                    setting_edited_event = SettingEditedEvent(
+                        setting, self.__module, proposed_value, event
+                    )
                     self.notify(setting_edited_event)
 
-            self.__module_panel.Bind(wx.EVT_COMBOBOX,
-                                     on_absrel_change, absrel_ctrl)
+            self.__module_panel.Bind(wx.EVT_COMBOBOX, on_absrel_change, absrel_ctrl)
         else:
             min_ctrl = panel.FindWindowByName(min_control_name(v))
             if min_ctrl.Value != v.display_min:
@@ -1805,14 +1886,12 @@ class ModuleView(object):
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
             sizer.Add(wx.StaticText(panel, -1, "X:"), 0, wx.EXPAND | wx.RIGHT, 1)
-            x_ctrl = wx.TextCtrl(
-                panel, -1, v.get_x_text(), name=x_control_name(v))
+            x_ctrl = wx.TextCtrl(panel, -1, v.get_x_text(), name=x_control_name(v))
             best_width = x_ctrl.GetCharWidth() * 5
             x_ctrl.SetInitialSize(wx.Size(best_width, -1))
             sizer.Add(x_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
             sizer.Add(wx.StaticText(panel, -1, "Y:"), 0, wx.EXPAND | wx.RIGHT, 1)
-            y_ctrl = wx.TextCtrl(
-                panel, -1, v.get_y_text(), name=y_control_name(v))
+            y_ctrl = wx.TextCtrl(panel, -1, v.get_y_text(), name=y_control_name(v))
             y_ctrl.SetInitialSize(wx.Size(best_width, -1))
             sizer.Add(y_ctrl, 0, wx.EXPAND)
 
@@ -1821,8 +1900,9 @@ class ModuleView(object):
                     return
                 old_value = str(setting)
                 proposed_value = "%s,%s" % (str(control.GetValue()), str(setting.y))
-                setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                          proposed_value, event)
+                setting_edited_event = SettingEditedEvent(
+                    setting, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_x_change, x_ctrl)
@@ -1832,8 +1912,9 @@ class ModuleView(object):
                     return
                 old_value = str(setting)
                 proposed_value = "%s,%s" % (str(setting.x), str(control.GetValue()))
-                setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                          proposed_value, event)
+                setting_edited_event = SettingEditedEvent(
+                    setting, self.__module, proposed_value, event
+                )
                 self.notify(setting_edited_event)
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_y_change, y_ctrl)
@@ -1872,43 +1953,51 @@ class ModuleView(object):
             #
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
-            category_text_ctrl = wx.StaticText(panel, label='Category:',
-                                               name=category_text_control_name(v))
+            category_text_ctrl = wx.StaticText(
+                panel, label="Category:", name=category_text_control_name(v)
+            )
             sub_sizer.Add(category_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
-            category_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
-                                        name=category_control_name(v))
+            category_ctrl = wx.ComboBox(
+                panel, style=wx.CB_READONLY, name=category_control_name(v)
+            )
             sub_sizer.Add(category_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
             # The measurement / feature combo-box
             #
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
-            feature_text_ctrl = wx.StaticText(panel, label='Measurement:',
-                                              name=feature_text_control_name(v))
+            feature_text_ctrl = wx.StaticText(
+                panel, label="Measurement:", name=feature_text_control_name(v)
+            )
             sub_sizer.Add(feature_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
-            feature_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
-                                       name=feature_control_name(v))
+            feature_ctrl = wx.ComboBox(
+                panel, style=wx.CB_READONLY, name=feature_control_name(v)
+            )
             sub_sizer.Add(feature_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
             # The object combo-box which sometimes doubles as an image combo-box
             #
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
-            object_text_ctrl = wx.StaticText(panel, label='Object:',
-                                             name=object_text_control_name(v))
+            object_text_ctrl = wx.StaticText(
+                panel, label="Object:", name=object_text_control_name(v)
+            )
             sub_sizer.Add(object_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
-            object_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
-                                      name=object_control_name(v))
+            object_ctrl = wx.ComboBox(
+                panel, style=wx.CB_READONLY, name=object_control_name(v)
+            )
             sub_sizer.Add(object_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
             # The scale combo-box
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
-            scale_text_ctrl = wx.StaticText(panel, label='Scale:',
-                                            name=scale_text_ctrl_name(v))
+            scale_text_ctrl = wx.StaticText(
+                panel, label="Scale:", name=scale_text_ctrl_name(v)
+            )
             sub_sizer.Add(scale_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
-            scale_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
-                                     name=scale_control_name(v))
+            scale_ctrl = wx.ComboBox(
+                panel, style=wx.CB_READONLY, name=scale_control_name(v)
+            )
             sub_sizer.Add(scale_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             max_width = 0
             for sub_sizer_item in sizer.GetChildren():
@@ -1923,10 +2012,14 @@ class ModuleView(object):
             # Bind all controls to the function that constructs a value
             # out of the parts
             #
-            def on_change(event, v=v, category_ctrl=category_ctrl,
-                          feature_ctrl=feature_ctrl,
-                          object_ctrl=object_ctrl,
-                          scale_ctrl=scale_ctrl):
+            def on_change(
+                event,
+                v=v,
+                category_ctrl=category_ctrl,
+                feature_ctrl=feature_ctrl,
+                object_ctrl=object_ctrl,
+                scale_ctrl=scale_ctrl,
+            ):
                 """Reconstruct the measurement value if anything changes"""
                 if not self.__handle_change:
                     return
@@ -1934,14 +2027,15 @@ class ModuleView(object):
                 def value_of(ctrl):
                     return ctrl.Value if ctrl.Selection != -1 else None
 
-                value = v.construct_value(value_of(category_ctrl),
-                                          value_of(feature_ctrl),
-                                          value_of(object_ctrl),
-                                          value_of(scale_ctrl))
-                setting_edited_event = SettingEditedEvent(v,
-                                                          self.__module,
-                                                          value,
-                                                          event)
+                value = v.construct_value(
+                    value_of(category_ctrl),
+                    value_of(feature_ctrl),
+                    value_of(object_ctrl),
+                    value_of(scale_ctrl),
+                )
+                setting_edited_event = SettingEditedEvent(
+                    v, self.__module, value, event
+                )
                 self.notify(setting_edited_event)
                 self.reset_view()
 
@@ -1974,8 +2068,10 @@ class ModuleView(object):
             if len(choices):
                 if value is None:
                     choices = ["[None]"] + choices
-                if not (len(ctrl.Strings) == len(choices) and
-                            all([x == y for x, y in zip(ctrl.Strings, choices)])):
+                if not (
+                    len(ctrl.Strings) == len(choices)
+                    and all([x == y for x, y in zip(ctrl.Strings, choices)])
+                ):
                     ctrl.Clear()
                     ctrl.AppendItems(choices)
                     ctrl.SetSelection(0)
@@ -1999,10 +2095,8 @@ class ModuleView(object):
                 ctrl.Clear()
                 text_ctrl.Hide()
 
-        set_up_combobox(category_ctrl, category_text_ctrl, categories,
-                        category, True)
-        set_up_combobox(feature_ctrl, feature_text_ctrl,
-                        feature_names, feature_name)
+        set_up_combobox(category_ctrl, category_text_ctrl, categories, category, True)
+        set_up_combobox(feature_ctrl, feature_text_ctrl, feature_names, feature_name)
         #
         # The object combo-box might have image choices
         #
@@ -2023,9 +2117,11 @@ class ModuleView(object):
 
     def make_html_control(self, v, control):
         from cellprofiler.gui.html import HtmlClickableWindow
+
         if control is None:
-            control = HtmlClickableWindow(self.module_panel, -1,
-                                          name=edit_control_name(v))
+            control = HtmlClickableWindow(
+                self.module_panel, -1, name=edit_control_name(v)
+            )
             if v.size is not None:
                 unit = float(wx.SystemSettings.GetMetric(wx.SYS_CAPTION_Y))
                 if unit == -1:
@@ -2034,16 +2130,14 @@ class ModuleView(object):
         control.SetPage(v.content)
         return control
 
-    def make_help_control(self, content, title="Help",
-                          name=wx.ButtonNameStr):
-        control = wx.Button(self.__module_panel, -1, '?', (0, 0), (30, -1),
-                            name=name)
+    def make_help_control(self, content, title="Help", name=wx.ButtonNameStr):
+        control = wx.Button(self.__module_panel, -1, "?", (0, 0), (30, -1), name=name)
 
         def callback(event):
             dialog = cellprofiler.gui.htmldialog.HTMLDialog(
                 self.__module_panel,
                 title,
-                cellprofiler.gui.html.utils.rst_to_html_fragment(content)
+                cellprofiler.gui.html.utils.rst_to_html_fragment(content),
             )
             dialog.CentreOnParent()
             dialog.Show()
@@ -2061,19 +2155,22 @@ class ModuleView(object):
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
-            cornerbuttonmixin.CornerButtonMixin.__init__(self, fn_clicked, label, tooltip)
+            cornerbuttonmixin.CornerButtonMixin.__init__(
+                self, fn_clicked, label, tooltip
+            )
 
     def make_table_control(self, v, control):
         if control is None:
             control = wx.lib.resizewidget.ResizeWidget(
-                self.module_panel,
-                name=edit_control_name(v))
+                self.module_panel, name=edit_control_name(v)
+            )
 
             if v.corner_button is None:
                 grid = wx.grid.Grid(control, name=grid_control_name(v))
             else:
                 grid = self.CornerButtonGrid(
-                    control, name=grid_control_name(v), **v.corner_button)
+                    control, name=grid_control_name(v), **v.corner_button
+                )
             grid.SetTable(TableController(v))
             grid.Table.bind_to_grid(grid)
         else:
@@ -2081,8 +2178,12 @@ class ModuleView(object):
             grid.Table.update_grid()
         grid.ForceRefresh()
         grid.SetBestFittingSize(v.min_size)
-        control.AdjustToSize((v.min_size[0] + wx.lib.resizewidget.RW_THICKNESS,
-                              v.min_size[1] + wx.lib.resizewidget.RW_THICKNESS))
+        control.AdjustToSize(
+            (
+                v.min_size[0] + wx.lib.resizewidget.RW_THICKNESS,
+                v.min_size[1] + wx.lib.resizewidget.RW_THICKNESS,
+            )
+        )
         return control
 
     def add_listener(self, listener):
@@ -2121,19 +2222,18 @@ class ModuleView(object):
         if not self.__handle_change:
             return
 
-        proposed_value = u','.join([control.Items[i]
-                                    for i in control.Selections])
+        proposed_value = u",".join([control.Items[i] for i in control.Selections])
         self.on_value_change(setting, control, proposed_value, event)
 
     def __on_cell_change(self, event, setting, control):
         if not self.__handle_change:
             return
         proposed_value = six.text_type(control.GetValue())
-        self.on_value_change(setting, control, proposed_value, event,
-                             EDIT_TIMEOUT_SEC * 1000)
+        self.on_value_change(
+            setting, control, proposed_value, event, EDIT_TIMEOUT_SEC * 1000
+        )
 
-    def on_value_change(self, setting, control, proposed_value, event,
-                        timeout=None):
+    def on_value_change(self, setting, control, proposed_value, event, timeout=None):
         """Handle a change in value to a setting
 
         setting - the setting that changed
@@ -2144,10 +2244,9 @@ class ModuleView(object):
                   otherwise the # of milliseconds to wait before
                   refresh.
         """
-        setting_edited_event = SettingEditedEvent(setting,
-                                                  self.__module,
-                                                  proposed_value,
-                                                  event)
+        setting_edited_event = SettingEditedEvent(
+            setting, self.__module, proposed_value, event
+        )
         self.notify(setting_edited_event)
         if timeout is None:
             self.reset_view()  # use the default timeout
@@ -2167,7 +2266,8 @@ class ModuleView(object):
         old_value = str(setting)
         proposed_value = setting.compose_min_text(control.Value)
         setting_edited_event = SettingEditedEvent(
-            setting, self.__module, proposed_value, event)
+            setting, self.__module, proposed_value, event
+        )
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
 
@@ -2177,7 +2277,8 @@ class ModuleView(object):
         old_value = str(setting)
         proposed_value = setting.compose_max_text(control.Value)
         setting_edited_event = SettingEditedEvent(
-            setting, self.__module, proposed_value, event)
+            setting, self.__module, proposed_value, event
+        )
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
 
@@ -2188,30 +2289,42 @@ class ModuleView(object):
         if self.__validation_request is not None:
             self.__validation_request.cancel()
         self.__validation_request = ValidationRequest(
-            self.__pipeline, module, self.on_validation)
+            self.__pipeline, module, self.on_validation
+        )
         request_module_validation(self.__validation_request)
 
     def __on_pipeline_event(self, pipeline, event):
-        if (isinstance(event, cellprofiler.pipeline.PipelineClearedEvent) or
-                isinstance(event, cellprofiler.pipeline.PipelineLoadedEvent)):
+        if isinstance(event, cellprofiler.pipeline.PipelineClearedEvent) or isinstance(
+            event, cellprofiler.pipeline.PipelineLoadedEvent
+        ):
             if self.__module not in self.__pipeline.modules(False):
                 self.clear_selection()
         elif isinstance(event, cellprofiler.pipeline.ModuleEditedPipelineEvent):
-            if (not self.__inside_notify and self.__module is not None
-                and self.__module.module_num == event.module_num):
+            if (
+                not self.__inside_notify
+                and self.__module is not None
+                and self.__module.module_num == event.module_num
+            ):
                 self.reset_view()
-            if (self.__module is not None and
-                        self.__module.module_num == event.module_num):
+            if (
+                self.__module is not None
+                and self.__module.module_num == event.module_num
+            ):
                 self.request_validation()
         elif isinstance(event, cellprofiler.pipeline.ModuleRemovedPipelineEvent):
-            if (self.__module is not None and
-                        event.module_num == self.__module.module_num):
+            if (
+                self.__module is not None
+                and event.module_num == self.__module.module_num
+            ):
                 self.clear_selection()
 
     def __on_workspace_event(self, event):
         import cellprofiler.gui.workspace as cpw
-        if isinstance(event, (cpw.Workspace.WorkspaceLoadedEvent,
-                              cpw.Workspace.WorkspaceCreatedEvent)):
+
+        if isinstance(
+            event,
+            (cpw.Workspace.WorkspaceLoadedEvent, cpw.Workspace.WorkspaceCreatedEvent),
+        ):
             # Detach and reattach the current module to get it reacclimated
             # to the current workspace and reselect
             if self.__module is not None:
@@ -2221,8 +2334,7 @@ class ModuleView(object):
 
     def __on_do_something(self, event, setting):
         setting.on_event_fired()
-        setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                  None, event)
+        setting_edited_event = SettingEditedEvent(setting, self.__module, None, event)
         self.notify(setting_edited_event)
         self.__module.on_setting_changed(setting, self.__pipeline)
         self.reset_view()
@@ -2254,7 +2366,9 @@ class ModuleView(object):
         # update settings' foreground/background
         try:
             for setting in visible_settings:
-                self.set_tool_tip(setting, message if (setting is bad_setting) else None)
+                self.set_tool_tip(
+                    setting, message if (setting is bad_setting) else None
+                )
                 static_text_name = text_control_name(setting)
                 static_text = self.__module_panel.FindWindowByName(static_text_name)
                 if static_text is not None:
@@ -2265,7 +2379,9 @@ class ModuleView(object):
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
-            logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
+            logger.debug(
+                "Caught bare exception in ModuleView.on_validate()", exc_info=True
+            )
             pass
 
     def set_tool_tip(self, setting, message):
@@ -2276,14 +2392,17 @@ class ModuleView(object):
         message - message to display or None for no tool tip
         """
         control_name = edit_control_name(setting)
-        control = self.__module_panel.FindWindowByName(
-            control_name)
+        control = self.__module_panel.FindWindowByName(control_name)
         if message is None:
+
             def set_tool_tip(ctrl):
                 ctrl.SetToolTip(None)
+
         else:
+
             def set_tool_tip(ctrl, message=message):
                 ctrl.SetToolTip(message)
+
         if control is not None:
             set_tool_tip(control)
             for child in control.GetChildren():
@@ -2320,7 +2439,9 @@ class ModuleView(object):
             if focus_control:
                 focus_control.SetFocus()
                 if isinstance(focus_control, wx.TextCtrl):
-                    focus_control.SetSelection(focus_control.GetLastPosition(), focus_control.GetLastPosition())
+                    focus_control.SetSelection(
+                        focus_control.GetLastPosition(), focus_control.GetLastPosition()
+                    )
 
     def disable(self):
         self.__module_panel.Disable()
@@ -2330,7 +2451,11 @@ class ModuleView(object):
 
     def get_max_width(self):
         sizer = self.__sizer
-        return sizer.calc_max_text_width() + sizer.calc_edit_size()[0] + sizer.calc_help_size()[0]
+        return (
+            sizer.calc_max_text_width()
+            + sizer.calc_edit_size()[0]
+            + sizer.calc_help_size()[0]
+        )
 
 
 class FilterPanelController(object):
@@ -2345,9 +2470,11 @@ class FilterPanelController(object):
         assert isinstance(v, cellprofiler.setting.Filter)
         self.module_view = module_view
         self.v = v
-        self.panel = wx.Panel(self.module_view.module_panel,
-                              style=wx.TAB_TRAVERSAL,
-                              name=edit_control_name(self.v))
+        self.panel = wx.Panel(
+            self.module_view.module_panel,
+            style=wx.TAB_TRAVERSAL,
+            name=edit_control_name(self.v),
+        )
         self.panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer_dict = {}
         self.sizer_item_dict = {}
@@ -2380,18 +2507,28 @@ class FilterPanelController(object):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.indent(sizer, address)
         self.stretch_spacer_dict[key] = sizer.AddStretchSpacer()
-        line = wx.StaticLine(self.panel, -1, style=line_style,
-                             name=self.line_name(address))
+        line = wx.StaticLine(
+            self.panel, -1, style=line_style, name=self.line_name(address)
+        )
 
         if len(address) == 0:
             key = None
         else:
-            sizer.Add(self.make_delete_button(address), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-            sizer.Add(self.make_add_rule_button(address), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-            sizer.Add(self.make_add_rules_button(address), 0,
-                      wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+            sizer.Add(
+                self.make_delete_button(address),
+                0,
+                wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+            )
+            sizer.Add(
+                self.make_add_rule_button(address),
+                0,
+                wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+            )
+            sizer.Add(
+                self.make_add_rules_button(address),
+                0,
+                wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+            )
             key = tuple(address[:-1] + [address[-1] + 1])
             if key not in self.sizer_dict:
                 if len(address) == 1:
@@ -2415,15 +2552,20 @@ class FilterPanelController(object):
         try:
             tokens = self.v.parse()
         except Exception as e:
-            logger.debug("Failed to parse filter (value=%s): %s",
-                         self.v.value_text, str(e))
+            logger.debug(
+                "Failed to parse filter (value=%s): %s", self.v.value_text, str(e)
+            )
             tokens = self.v.default()
         #
         # Always require an "and" or "or" clause
         #
-        if (len(tokens) == 0 or
-                (tokens[0] not in
-                     (cellprofiler.setting.Filter.AND_PREDICATE, cellprofiler.setting.Filter.OR_PREDICATE))):
+        if len(tokens) == 0 or (
+            tokens[0]
+            not in (
+                cellprofiler.setting.Filter.AND_PREDICATE,
+                cellprofiler.setting.Filter.OR_PREDICATE,
+            )
+        ):
             tokens = [cellprofiler.setting.Filter.AND_PREDICATE, tokens]
         return tokens
 
@@ -2442,8 +2584,10 @@ class FilterPanelController(object):
         finally:
             self.inside_update = False
 
-    ANY_ALL_PREDICATES = [cellprofiler.setting.Filter.AND_PREDICATE,
-                          cellprofiler.setting.Filter.OR_PREDICATE]
+    ANY_ALL_PREDICATES = [
+        cellprofiler.setting.Filter.AND_PREDICATE,
+        cellprofiler.setting.Filter.OR_PREDICATE,
+    ]
 
     def any_all_choices(self):
         return [x.display_name for x in self.ANY_ALL_PREDICATES]
@@ -2464,11 +2608,17 @@ class FilterPanelController(object):
     @staticmethod
     def get_sizer_index(sizer, item):
         if isinstance(item, wx.Sizer):
-            indexes = [i for i, s in enumerate(sizer.GetChildren())
-                       if s.IsSizer() and s.GetSizer() is item]
+            indexes = [
+                i
+                for i, s in enumerate(sizer.GetChildren())
+                if s.IsSizer() and s.GetSizer() is item
+            ]
         elif isinstance(item, wx.Window):
-            indexes = [i for i, s in enumerate(sizer.GetChildren())
-                       if s.IsWindow() and s.GetWindow() is item]
+            indexes = [
+                i
+                for i, s in enumerate(sizer.GetChildren())
+                if s.IsWindow() and s.GetWindow() is item
+            ]
         elif isinstance(item, wx.SizerItem):
             return sizer.GetChildren().index(item)
         if len(indexes) > 0:
@@ -2478,7 +2628,8 @@ class FilterPanelController(object):
     def on_value_change(self, event, new_text, timeout=None):
         if not self.inside_update:
             self.module_view.on_value_change(
-                    self.v, self.panel, new_text, event, timeout)
+                self.v, self.panel, new_text, event, timeout
+            )
 
     def make_delete_button(self, address):
         name = self.remove_button_name(address)
@@ -2486,11 +2637,8 @@ class FilterPanelController(object):
         if button is not None:
             return button
 
-        button = wx.Button(self.panel, -1, "-",
-                           name=name,
-                           style=wx.BU_EXACTFIT)
-        button.Bind(wx.EVT_BUTTON,
-                    lambda event: self.on_delete_rule(event, address))
+        button = wx.Button(self.panel, -1, "-", name=name, style=wx.BU_EXACTFIT)
+        button.Bind(wx.EVT_BUTTON, lambda event: self.on_delete_rule(event, address))
         return button
 
     def on_delete_rule(self, event, address):
@@ -2507,11 +2655,8 @@ class FilterPanelController(object):
         if button is not None:
             return button
 
-        button = wx.Button(self.panel, -1, "+",
-                           name=name,
-                           style=wx.BU_EXACTFIT)
-        button.Bind(wx.EVT_BUTTON,
-                    lambda event: self.on_add_rule(event, address))
+        button = wx.Button(self.panel, -1, "+", name=name, style=wx.BU_EXACTFIT)
+        button.Bind(wx.EVT_BUTTON, lambda event: self.on_add_rule(event, address))
         return button
 
     def on_add_rule(self, event, address):
@@ -2528,11 +2673,8 @@ class FilterPanelController(object):
         button = self.find_and_mark(name)
         if button is not None:
             return button
-        button = wx.Button(self.panel, -1, "...",
-                           name=name,
-                           style=wx.BU_EXACTFIT)
-        button.Bind(wx.EVT_BUTTON,
-                    lambda event: self.on_add_rules(event, address))
+        button = wx.Button(self.panel, -1, "...", name=name, style=wx.BU_EXACTFIT)
+        button.Bind(wx.EVT_BUTTON, lambda event: self.on_add_rules(event, address))
         return button
 
     def on_add_rules(self, event, address):
@@ -2550,20 +2692,23 @@ class FilterPanelController(object):
         choices = [x.display_name for x in predicates]
         if choice_ctrl is not None:
             items = choice_ctrl.GetItems()
-            if (len(items) != len(choices) or
-                    any([choice not in items for choice in choices])):
+            if len(items) != len(choices) or any(
+                [choice not in items for choice in choices]
+            ):
                 choice_ctrl.SetItems(choices)
             return choice_ctrl
-        choice_ctrl = wx.Choice(self.panel, -1, choices=choices,
-                                name=name)
-        choice_ctrl.Bind(wx.EVT_CHOICE,
-                         lambda event: self.on_predicate_changed(event, index, address))
+        choice_ctrl = wx.Choice(self.panel, -1, choices=choices, name=name)
+        choice_ctrl.Bind(
+            wx.EVT_CHOICE,
+            lambda event: self.on_predicate_changed(event, index, address),
+        )
         self.add_to_sizer(sizer, choice_ctrl, index, address)
         return choice_ctrl
 
     def on_predicate_changed(self, event, index, address):
-        logger.debug("Predicate choice at %d / %s changed" %
-                     (index, self.saddress(address)))
+        logger.debug(
+            "Predicate choice at %d / %s changed" % (index, self.saddress(address))
+        )
         structure = self.v.parse()
         sequence = self.find_address(structure, address)
 
@@ -2571,9 +2716,11 @@ class FilterPanelController(object):
             # The sequence is bad (e.g., bad pipeline or metadata collection)
             # Fill in enough to deal
             #
-            sequence.append(self.v.predicates[0]
-                            if len(sequence) == 0
-                            else sequence[-1].subpredicates[0])
+            sequence.append(
+                self.v.predicates[0]
+                if len(sequence) == 0
+                else sequence[-1].subpredicates[0]
+            )
         if index == 0:
             predicates = self.v.predicates
         else:
@@ -2589,8 +2736,7 @@ class FilterPanelController(object):
             if isinstance(sequence[index], six.string_types):
                 is_good = cellprofiler.setting.Filter.LITERAL_PREDICATE in predicates
             else:
-                matches = [p for p in predicates
-                           if sequence[index].symbol == p.symbol]
+                matches = [p for p in predicates if sequence[index].symbol == p.symbol]
                 is_good = len(matches) == 1
                 if is_good:
                     sequence[index] = matches[0]
@@ -2598,7 +2744,9 @@ class FilterPanelController(object):
                 del sequence[index:]
                 sequence += self.v.default(predicates)
                 break
-            if not isinstance(sequence[index], cellprofiler.setting.Filter.FilterPredicate):
+            if not isinstance(
+                sequence[index], cellprofiler.setting.Filter.FilterPredicate
+            ):
                 break
             predicates = sequence[index].subpredicates
         new_text = self.v.build_string(structure)
@@ -2634,8 +2782,9 @@ class FilterPanelController(object):
                 literal_ctrl.SetValue(token)
             return literal_ctrl
         literal_ctrl = wx.TextCtrl(self.panel, -1, token, name=name)
-        literal_ctrl.Bind(wx.EVT_TEXT,
-                          lambda event: self.on_literal_changed(event, index, address))
+        literal_ctrl.Bind(
+            wx.EVT_TEXT, lambda event: self.on_literal_changed(event, index, address)
+        )
         self.add_to_sizer(sizer, literal_ctrl, index, address)
         return literal_ctrl
 
@@ -2648,22 +2797,28 @@ class FilterPanelController(object):
                 # The sequence is bad (e.g., bad pipeline or metadata collection)
                 # Fill in enough to deal
                 #
-                sequence.append(self.v.predicates[0]
-                                if len(sequence) == 0
-                                else sequence[-1].subpredicates[0])
+                sequence.append(
+                    self.v.predicates[0]
+                    if len(sequence) == 0
+                    else sequence[-1].subpredicates[0]
+                )
             sequence[index] = event.GetString()
         except:
             structure = self.v.default()
 
         new_text = self.v.build_string(structure)
-        self.on_value_change(event, new_text,
-                             timeout=None if self.v.reset_view else False)
+        self.on_value_change(
+            event, new_text, timeout=None if self.v.reset_view else False
+        )
 
     def make_anyall_ctrl(self, address):
-        anyall = wx.Choice(self.panel, -1, choices=self.any_all_choices(),
-                           name=self.anyall_choice_name(address))
-        anyall.Bind(wx.EVT_CHOICE,
-                    lambda event: self.on_anyall_changed(event, address))
+        anyall = wx.Choice(
+            self.panel,
+            -1,
+            choices=self.any_all_choices(),
+            name=self.anyall_choice_name(address),
+        )
+        anyall.Bind(wx.EVT_CHOICE, lambda event: self.on_anyall_changed(event, address))
         return anyall
 
     def on_anyall_changed(self, event, address):
@@ -2692,29 +2847,36 @@ class FilterPanelController(object):
         if anyall is None:
             anyall = self.make_anyall_ctrl(address)
             sizer = self.get_sizer(address)
-            idx = self.get_sizer_index(sizer,
-                                       self.stretch_spacer_dict[tuple(address)])
+            idx = self.get_sizer_index(sizer, self.stretch_spacer_dict[tuple(address)])
             if len(address) == 0:
-                text = wx.StaticText(self.panel, -1, "Match",
-                                     name=self.static_text_name(0, address))
-                sizer.Insert(idx, text, 0,
-                             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+                text = wx.StaticText(
+                    self.panel, -1, "Match", name=self.static_text_name(0, address)
+                )
+                sizer.Insert(idx, text, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                 sizer.InsertSpacer(idx + 1, (3, 0))
-                sizer.Insert(idx + 2, anyall, 0,
-                             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+                sizer.Insert(
+                    idx + 2, anyall, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL
+                )
                 sizer.InsertSpacer(idx + 3, (3, 0))
-                text = wx.StaticText(self.panel, -1, "of the following rules",
-                                     name=self.static_text_name(1, address))
-                sizer.Insert(idx + 4, text,
-                             0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+                text = wx.StaticText(
+                    self.panel,
+                    -1,
+                    "of the following rules",
+                    name=self.static_text_name(1, address),
+                )
+                sizer.Insert(idx + 4, text, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
             else:
-                sizer.Insert(idx, anyall, 0,
-                             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT)
+                sizer.Insert(
+                    idx, anyall, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT
+                )
                 sizer.InsertSpacer(idx + 1, (3, 0))
-                text = wx.StaticText(self.panel, -1, "of the following are true",
-                                     name=self.static_text_name(0, address))
-                sizer.Insert(idx + 2, text,
-                             0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+                text = wx.StaticText(
+                    self.panel,
+                    -1,
+                    "of the following are true",
+                    name=self.static_text_name(0, address),
+                )
+                sizer.Insert(idx + 2, text, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
         else:
             self.hide_show_dict[self.line_name(address)] = True
             if len(address) > 0:
@@ -2742,12 +2904,12 @@ class FilterPanelController(object):
                 predicates = self.v.predicates
                 for i, token in enumerate(substructure):
                     if isinstance(token, six.string_types):
-                        literal_ctrl = self.make_literal(
-                                token, i, subaddress, sizer)
+                        literal_ctrl = self.make_literal(token, i, subaddress, sizer)
                         predicates = []
                     else:
                         choice_ctrl = self.make_predicate_choice(
-                                predicates, i, subaddress, sizer)
+                            predicates, i, subaddress, sizer
+                        )
                         if choice_ctrl.GetStringSelection() != token.display_name:
                             choice_ctrl.SetStringSelection(token.display_name)
                         if token.doc is not None:
@@ -2761,12 +2923,14 @@ class FilterPanelController(object):
                     # chosen or none existed because of some error, but now
                     # they do.
                     #
-                    if (len(predicates) == 1 and
-                                predicates[0] is cellprofiler.setting.Filter.LITERAL_PREDICATE):
+                    if (
+                        len(predicates) == 1
+                        and predicates[0]
+                        is cellprofiler.setting.Filter.LITERAL_PREDICATE
+                    ):
                         self.make_literal("", i, subaddress, sizer)
                     else:
-                        self.make_predicate_choice(predicates, i, subaddress,
-                                                   sizer)
+                        self.make_predicate_choice(predicates, i, subaddress, sizer)
                     i += 1
                     predicates = predicates[0].subpredicates
         #
@@ -2832,24 +2996,29 @@ class FileCollectionDisplayController(object):
                              dictionary can be used for fast lookup of the
                              item without traversing the entire tree.
     """
+
     IMAGE_LIST = wx.ImageList(16, 16, 3)
     FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(
-            wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
-                                     wx.ART_OTHER, size=(16, 16)))
+        wx.ArtProvider.GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, size=(16, 16))
+    )
     FOLDER_OPEN_IMAGE_INDEX = IMAGE_LIST.Add(
-            wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
-                                     wx.ART_OTHER, size=(16, 16)))
+        wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN, wx.ART_OTHER, size=(16, 16))
+    )
     FILE_IMAGE_INDEX = IMAGE_LIST.Add(
-            wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE,
-                                     wx.ART_OTHER, size=(16, 16)))
+        wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, size=(16, 16))
+    )
     IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("microscope-icon_16").ConvertToBitmap())
+        cellprofiler.icons.get_builtin_image("microscope-icon_16").ConvertToBitmap()
+    )
     IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("microscopes_16").ConvertToBitmap())
+        cellprofiler.icons.get_builtin_image("microscopes_16").ConvertToBitmap()
+    )
     COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("microscope-color_16").ConvertToBitmap())
+        cellprofiler.icons.get_builtin_image("microscope-color_16").ConvertToBitmap()
+    )
     MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(
-            cellprofiler.icons.get_builtin_image("movie_16").ConvertToBitmap())
+        cellprofiler.icons.get_builtin_image("movie_16").ConvertToBitmap()
+    )
 
     ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
     FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
@@ -2886,8 +3055,7 @@ class FileCollectionDisplayController(object):
                 if df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
                     self.OnDropText(x, y, self.text_data_object.GetText())
                 elif df == wx.DF_FILENAME:
-                    self.OnDropFiles(x, y,
-                                     self.file_data_object.GetFilenames())
+                    self.OnDropFiles(x, y, self.file_data_object.GetFilenames())
             return wx.DragCopy
 
         @staticmethod
@@ -2900,8 +3068,9 @@ class FileCollectionDisplayController(object):
         self.v = v
         assert isinstance(pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.pipeline = pipeline
-        self.panel = wx.Panel(self.module_view.module_panel, -1,
-                              name=edit_control_name(v))
+        self.panel = wx.Panel(
+            self.module_view.module_panel, -1, name=edit_control_name(v)
+        )
         self.panel.controller = self
         self.panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -2909,16 +3078,17 @@ class FileCollectionDisplayController(object):
         self.status_text = wx.StaticText(self.panel, -1)
         sizer.Add(self.status_text, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER)
         sizer.AddStretchSpacer()
-        sizer.Add(wx.StaticText(self.panel, -1,
-                                "Drag folders and/or files here or"),
-                  0, wx.ALIGN_LEFT | wx.ALIGN_CENTER)
+        sizer.Add(
+            wx.StaticText(self.panel, -1, "Drag folders and/or files here or"),
+            0,
+            wx.ALIGN_LEFT | wx.ALIGN_CENTER,
+        )
         sizer.AddSpacer((3, 0))
         browse_button = wx.Button(self.panel, -1, "Browse...")
         sizer.Add(browse_button, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER)
         browse_button.Bind(wx.EVT_BUTTON, self.on_browse)
         tree_style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_MULTIPLE
-        self.tree_ctrl = wx.TreeCtrl(self.panel, -1,
-                                     style=tree_style)
+        self.tree_ctrl = wx.TreeCtrl(self.panel, -1, style=tree_style)
         self.panel.Sizer.Add(self.tree_ctrl, 1, wx.EXPAND)
         self.tree_ctrl.SetImageList(self.IMAGE_LIST)
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_MENU, self.on_tree_item_menu)
@@ -2940,20 +3110,19 @@ class FileCollectionDisplayController(object):
         self.root_item = self.tree_ctrl.AddRoot("I am the invisible root")
         self.tree_ctrl.SetPyData(self.root_item, None)
         self.tree_ctrl.SetItemImage(self.root_item, self.FOLDER_IMAGE_INDEX)
-        self.tree_ctrl.SetItemImage(self.root_item,
-                                    self.FOLDER_OPEN_IMAGE_INDEX,
-                                    wx.TreeItemIcon_Expanded)
+        self.tree_ctrl.SetItemImage(
+            self.root_item, self.FOLDER_OPEN_IMAGE_INDEX, wx.TreeItemIcon_Expanded
+        )
         self.tree_ctrl.SetMinSize((100, 300))
         self.tree_ctrl.SetMaxSize((sys.maxsize, 300))
-        self.file_drop_target = self.FCDCDropTarget(self.on_drop_files,
-                                                    self.on_drop_text)
+        self.file_drop_target = self.FCDCDropTarget(
+            self.on_drop_files, self.on_drop_text
+        )
         self.tree_ctrl.SetDropTarget(self.file_drop_target)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.panel.Sizer.Add(sizer, 0, wx.EXPAND)
-        self.hide_show_ctrl = wx.CheckBox(self.panel, -1,
-                                          self.v.hide_text)
-        sizer.Add(self.hide_show_ctrl, 0,
-                  wx.ALIGN_LEFT | wx.ALIGN_BOTTOM)
+        self.hide_show_ctrl = wx.CheckBox(self.panel, -1, self.v.hide_text)
+        sizer.Add(self.hide_show_ctrl, 0, wx.ALIGN_LEFT | wx.ALIGN_BOTTOM)
         self.hide_show_ctrl.Bind(wx.EVT_CHECKBOX, self.on_hide_show_checked)
         self.hide_show_ctrl.Value = not self.v.show_filtered
         sizer.AddStretchSpacer()
@@ -2987,14 +3156,13 @@ class FileCollectionDisplayController(object):
         dc.DrawRectangle(0, 0, width, height)
         if len(self.modpath_to_item) == 0:
             text = "Drop files and folders here"
-            font = wx.Font(36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,
-                           wx.FONTWEIGHT_BOLD)
+            font = wx.Font(
+                36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD
+            )
             dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
             dc.SetFont(font)
             text_width, text_height = dc.GetTextExtent(text)
-            dc.DrawText(text,
-                        (width - text_width) / 2,
-                        (height - text_height) / 2)
+            dc.DrawText(text, (width - text_width) / 2, (height - text_height) / 2)
 
     def on_browse(self, event):
         logger.debug("Browsing for file collection directory")
@@ -3054,9 +3222,9 @@ class FileCollectionDisplayController(object):
         else:
             parent_item = self.add_item(parent_key, sort=sort)
             self.tree_ctrl.SetItemImage(parent_item, self.FOLDER_IMAGE_INDEX)
-            self.tree_ctrl.SetItemImage(parent_item,
-                                        self.FOLDER_OPEN_IMAGE_INDEX,
-                                        wx.TreeItemIcon_Expanded)
+            self.tree_ctrl.SetItemImage(
+                parent_item, self.FOLDER_OPEN_IMAGE_INDEX, wx.TreeItemIcon_Expanded
+            )
 
         want_erase = len(self.modpath_to_item) == 0
         #
@@ -3116,8 +3284,7 @@ class FileCollectionDisplayController(object):
 
     def on_drop_text(self, x, y, text):
         """Text is assumed to be one file name per line"""
-        filenames = [line.strip() for line in text.split("\n")
-                     if len(line.strip()) > 0]
+        filenames = [line.strip() for line in text.split("\n") if len(line.strip()) > 0]
         self.v.fn_on_drop(filenames, False)
 
     def get_path_from_event(self, event):
@@ -3149,10 +3316,11 @@ class FileCollectionDisplayController(object):
             try:
                 delete_menu_items = []
                 for context_item in context_menu:
-                    if isinstance(context_item,
-                                  cellprofiler.setting.FileCollectionDisplay.DeleteMenuItem):
-                        delete_menu_items.append(
-                                menu.Append(-1, context_item.text).Id)
+                    if isinstance(
+                        context_item,
+                        cellprofiler.setting.FileCollectionDisplay.DeleteMenuItem,
+                    ):
+                        delete_menu_items.append(menu.Append(-1, context_item.text).Id)
                     else:
                         menu.Append(-1, context_item)
 
@@ -3190,8 +3358,7 @@ class FileCollectionDisplayController(object):
             self.on_delete_selected(event)
 
     def on_delete_selected(self, event):
-        mods = [self.get_item_address(item)
-                for item in self.tree_ctrl.GetSelections()]
+        mods = [self.get_item_address(item) for item in self.tree_ctrl.GetSelections()]
         mods = filter(lambda x: x is not None, mods)
         self.v.on_remove([self.v.get_tree_modpaths(mod) for mod in mods])
 
@@ -3236,7 +3403,11 @@ class FileCollectionDisplayController(object):
                 file_tree = self.v.file_tree
             is_filtered = False
             while True:
-                if isinstance(mp, six.string_types) or isinstance(mp, tuple) and len(mp) == 3:
+                if (
+                    isinstance(mp, six.string_types)
+                    or isinstance(mp, tuple)
+                    and len(mp) == 3
+                ):
                     path.append(mp)
                     if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
                         is_filtered = not file_tree[mp]
@@ -3251,9 +3422,11 @@ class FileCollectionDisplayController(object):
                 any_others = any_others or len(mp_list) > 1
                 mp = mp_list[0]
             if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
-                self.status_text.Label = \
-                    ("Processing " + path[-1] if isinstance(path[-1], six.string_types)
-                     else path[-2])
+                self.status_text.Label = (
+                    "Processing " + path[-1]
+                    if isinstance(path[-1], six.string_types)
+                    else path[-2]
+                )
             self.status_text.Update()
             if not any_others:
                 #
@@ -3286,8 +3459,7 @@ class FileCollectionDisplayController(object):
                         super_modpath = tuple(path[:-1])
                         if super_modpath in self.modpath_to_item:
                             item = self.modpath_to_item[super_modpath]
-                            n_children = self.tree_ctrl.GetChildrenCount(
-                                    item, False)
+                            n_children = self.tree_ctrl.GetChildrenCount(item, False)
                             if n_children == 0:
                                 self.remove_item(super_modpath)
 
@@ -3299,8 +3471,9 @@ class FileCollectionDisplayController(object):
         total = self.v.node_count()
         if total == 0:
             return
-        self.update_subtree(self.v.file_tree, self.root_item, False, [],
-                            operation_id, 0, total)
+        self.update_subtree(
+            self.v.file_tree, self.root_item, False, [], operation_id, 0, total
+        )
         self.manage_expansion()
         cellprofiler.preferences.report_progress(operation_id, 1, None)
 
@@ -3331,16 +3504,15 @@ class FileCollectionDisplayController(object):
         #
         for i in range(self.tree_ctrl.GetChildrenCount(self.root_item, False)):
             if i == 0:
-                bottom_item, thing = \
-                    self.tree_ctrl.GetFirstChild(self.root_item)
+                bottom_item, thing = self.tree_ctrl.GetFirstChild(self.root_item)
             else:
-                bottom_item, thing = \
-                    self.tree_ctrl.GetNextChild(self.root_item, thing)
+                bottom_item, thing = self.tree_ctrl.GetNextChild(self.root_item, thing)
             if not self.tree_ctrl.IsExpanded(bottom_item):
                 self.tree_ctrl.Expand(bottom_item)
 
-    def update_subtree(self, file_tree, parent_item,
-                       is_filtered, modpath, operation_id, count, total):
+    def update_subtree(
+        self, file_tree, parent_item, is_filtered, modpath, operation_id, count, total
+    ):
         existing_items = {}
         show_filtered = self.v.show_filtered
         needs_sort = False
@@ -3348,11 +3520,12 @@ class FileCollectionDisplayController(object):
         if child_count > 0:
             child_item_id, cookie = self.tree_ctrl.GetFirstChild(parent_item)
             for i in range(child_count):
-                existing_items[self.tree_ctrl.GetItemPyData(child_item_id)] = \
-                    [child_item_id, False]
+                existing_items[self.tree_ctrl.GetItemPyData(child_item_id)] = [
+                    child_item_id,
+                    False,
+                ]
                 if i < child_count - 1:
-                    child_item_id = \
-                        self.tree_ctrl.GetNextSibling(child_item_id)
+                    child_item_id = self.tree_ctrl.GetNextSibling(child_item_id)
 
         for x in sorted(file_tree.keys()):
             sub_modpath = modpath + [x]
@@ -3360,9 +3533,8 @@ class FileCollectionDisplayController(object):
                 continue
             text, node_type, tooltip = self.v.get_node_info(sub_modpath)
             cellprofiler.preferences.report_progress(
-                    operation_id,
-                    float(count) / float(total),
-                    "Processing %s" % text)
+                operation_id, float(count) / float(total), "Processing %s" % text
+            )
             count += 1
             image_id = self.get_image_id_from_nodetype(node_type)
             if isinstance(file_tree[x], bool) or isinstance(x, tuple):
@@ -3382,15 +3554,17 @@ class FileCollectionDisplayController(object):
             elif isinstance(file_tree[x], dict):
                 subtree = file_tree[x]
                 node_is_filtered = (not subtree[None]) or is_filtered
-                unfiltered_subfolders, filtered_subfolders, \
-                unfiltered_files, filtered_files = \
-                    self.get_file_and_folder_counts(subtree)
+                unfiltered_subfolders, filtered_subfolders, unfiltered_files, filtered_files = self.get_file_and_folder_counts(
+                    subtree
+                )
                 n_subfolders = unfiltered_subfolders + filtered_subfolders
                 n_files = unfiltered_files + filtered_files
                 if node_is_filtered and not show_filtered:
                     continue
-                if node_type in (cellprofiler.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE,
-                                 cellprofiler.setting.FileCollectionDisplay.NODE_MOVIE):
+                if node_type in (
+                    cellprofiler.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE,
+                    cellprofiler.setting.FileCollectionDisplay.NODE_MOVIE,
+                ):
                     expanded_image_id = image_id
                 else:
                     image_id = self.FOLDER_IMAGE_INDEX
@@ -3403,15 +3577,16 @@ class FileCollectionDisplayController(object):
                                 text += "\t%d folders" % n_subfolders
                             else:
                                 text += "\t%d of %d folders" % (
-                                    unfiltered_subfolders, n_subfolders)
+                                    unfiltered_subfolders,
+                                    n_subfolders,
+                                )
                             if n_files > 0:
                                 text += ", "
                         if n_files > 0:
                             if node_is_filtered:
                                 text += "\t%d files" % n_files
                             else:
-                                text += "\t%d of %d files" % (
-                                    unfiltered_files, n_files)
+                                text += "\t%d of %d files" % (unfiltered_files, n_files)
                         text += ")"
                 if x in existing_items:
                     existing_items[x][1] = True
@@ -3422,13 +3597,20 @@ class FileCollectionDisplayController(object):
                     existing_items[x] = (item_id, True)
                     needs_sort = True
                 self.tree_ctrl.SetItemImage(item_id, image_id)
-                self.tree_ctrl.SetItemImage(item_id, expanded_image_id,
-                                            wx.TreeItemIcon_Expanded)
+                self.tree_ctrl.SetItemImage(
+                    item_id, expanded_image_id, wx.TreeItemIcon_Expanded
+                )
                 has_children = n_subfolders + n_files > 0
                 self.tree_ctrl.SetItemHasChildren(item_id, has_children)
                 count = self.update_subtree(
-                        subtree, item_id, node_is_filtered,
-                        sub_modpath, operation_id, count, total)
+                    subtree,
+                    item_id,
+                    node_is_filtered,
+                    sub_modpath,
+                    operation_id,
+                    count,
+                    total,
+                )
 
             color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
             self.tree_ctrl.SetItemTextColour(item_id, color)
@@ -3442,10 +3624,14 @@ class FileCollectionDisplayController(object):
     def get_image_id_from_nodetype(self, node_type):
         if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_COLOR_IMAGE:
             image_id = self.COLOR_IMAGE_INDEX
-        elif node_type == cellprofiler.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE:
+        elif (
+            node_type == cellprofiler.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE
+        ):
             image_id = self.IMAGE_PLANES_IMAGE_INDEX
-        elif node_type in (cellprofiler.setting.FileCollectionDisplay.NODE_MONOCHROME_IMAGE,
-                           cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE):
+        elif node_type in (
+            cellprofiler.setting.FileCollectionDisplay.NODE_MONOCHROME_IMAGE,
+            cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
+        ):
             image_id = self.IMAGE_PLANE_IMAGE_INDEX
         elif node_type == cellprofiler.setting.FileCollectionDisplay.NODE_MOVIE:
             image_id = self.MOVIE_IMAGE_INDEX
@@ -3476,15 +3662,20 @@ class FileCollectionDisplayController(object):
                     unfiltered_subfolders += 1
                 else:
                     filtered_subfolders += 1
-                ufolders, ffolders, ufiles, ffiles = \
-                    cls.get_file_and_folder_counts(tree[key])
+                ufolders, ffolders, ufiles, ffiles = cls.get_file_and_folder_counts(
+                    tree[key]
+                )
                 filtered_files += ffiles
                 if is_filtered:
                     filtered_files += ufiles
                 else:
                     unfiltered_files += ufiles
-        return unfiltered_subfolders, filtered_subfolders, unfiltered_files, \
-               filtered_files
+        return (
+            unfiltered_subfolders,
+            filtered_subfolders,
+            unfiltered_files,
+            filtered_files,
+        )
 
     def on_hide_show_checked(self, event):
         self.v.show_filtered = not self.hide_show_ctrl.Value
@@ -3493,6 +3684,7 @@ class FileCollectionDisplayController(object):
 
 class JoinerController(object):
     """The JoinerController managers a joiner setting"""
+
     #
     # It's important that DISPLAY_NONE be an illegal name for metadata
     # so that it can be recognized by its string. If this isn't acceptable,
@@ -3505,8 +3697,7 @@ class JoinerController(object):
         assert isinstance(module_view, ModuleView)
         self.module_view = module_view
         self.v = v
-        self.panel = wx.Panel(module_view.module_panel, -1,
-                              name=edit_control_name(v))
+        self.panel = wx.Panel(module_view.module_panel, -1, name=edit_control_name(v))
         self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
         self.panel.joiner_controller = self
         self.update()
@@ -3575,13 +3766,14 @@ class JoinerController(object):
             header_control_name = self.get_header_control_name(i)
             ctrl = self.panel.FindWindowByName(header_control_name)
             if ctrl is None:
-                ctrl = wx.StaticText(self.panel, -1, column_name,
-                                     name=header_control_name)
+                ctrl = wx.StaticText(
+                    self.panel, -1, column_name, name=header_control_name
+                )
             else:
                 ctrl.Label = column_name
             self.panel.Sizer.Add(
-                    ctrl, row=0, col=i,
-                    flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                ctrl, row=0, col=i, flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM
+            )
             all_subcontrols[header_control_name] = True
 
         for i, join in enumerate(joins):
@@ -3597,76 +3789,94 @@ class JoinerController(object):
                 if selection not in choices:
                     choices += [selection]
                 if ctrl is None:
-                    ctrl = wx.Choice(self.panel, -1,
-                                     choices=choices,
-                                     name=choice_ctrl_name)
-                    ctrl.Bind(wx.EVT_CHOICE,
-                              lambda event, row=i, col=j:
-                              self.on_choice_changed(event, row, col))
+                    ctrl = wx.Choice(
+                        self.panel, -1, choices=choices, name=choice_ctrl_name
+                    )
+                    ctrl.Bind(
+                        wx.EVT_CHOICE,
+                        lambda event, row=i, col=j: self.on_choice_changed(
+                            event, row, col
+                        ),
+                    )
                 else:
                     ctrl.SetItems(choices)
                 ctrl.SetStringSelection(selection)
-                self.panel.Sizer.Add(ctrl, row=i + 1, col=j,
-                                     flag=wx.ALIGN_BOTTOM)
+                self.panel.Sizer.Add(ctrl, row=i + 1, col=j, flag=wx.ALIGN_BOTTOM)
                 all_subcontrols[choice_ctrl_name] = True
 
             add_button_name = self.get_add_button_control_name(i)
             ctrl = self.panel.FindWindowByName(add_button_name)
             if ctrl is None:
-                ctrl = wx.Button(self.panel, -1, "+",
-                                 name=add_button_name,
-                                 style=wx.BU_EXACTFIT)
-                ctrl.Bind(wx.EVT_BUTTON,
-                          lambda event, position=i + 1:
-                          self.on_insert_row(event, position))
-            self.panel.Sizer.Add(ctrl, row=i + 1, col=len(column_names),
-                                 flag=wx.ALIGN_BOTTOM)
+                ctrl = wx.Button(
+                    self.panel, -1, "+", name=add_button_name, style=wx.BU_EXACTFIT
+                )
+                ctrl.Bind(
+                    wx.EVT_BUTTON,
+                    lambda event, position=i + 1: self.on_insert_row(event, position),
+                )
+            self.panel.Sizer.Add(
+                ctrl, row=i + 1, col=len(column_names), flag=wx.ALIGN_BOTTOM
+            )
             all_subcontrols[add_button_name] = True
 
             if len(joins) > 1:
                 delete_button_name = self.get_delete_button_control_name(i)
                 ctrl = self.panel.FindWindowByName(delete_button_name)
                 if ctrl is None:
-                    ctrl = wx.Button(self.panel, -1, "-",
-                                     name=delete_button_name,
-                                     style=wx.BU_EXACTFIT)
-                    ctrl.Bind(wx.EVT_BUTTON,
-                              lambda event, position=i:
-                              self.on_delete_row(event, position))
-                self.panel.Sizer.Add(ctrl, row=i + 1, col=len(column_names) + 1,
-                                     flag=wx.ALIGN_BOTTOM)
+                    ctrl = wx.Button(
+                        self.panel,
+                        -1,
+                        "-",
+                        name=delete_button_name,
+                        style=wx.BU_EXACTFIT,
+                    )
+                    ctrl.Bind(
+                        wx.EVT_BUTTON,
+                        lambda event, position=i: self.on_delete_row(event, position),
+                    )
+                self.panel.Sizer.Add(
+                    ctrl, row=i + 1, col=len(column_names) + 1, flag=wx.ALIGN_BOTTOM
+                )
                 all_subcontrols[delete_button_name] = True
 
             if i > 0:
                 move_up_button_name = self.get_up_button_control_name(i)
                 ctrl = self.panel.FindWindowByName(move_up_button_name)
                 if ctrl is None:
-                    img = wx.ArtProvider.GetBitmap(wx.ART_GO_UP,
-                                                   wx.ART_BUTTON,
-                                                   (16, 16))
-                    ctrl = wx.BitmapButton(self.panel, -1, img,
-                                           name=move_up_button_name)
-                    ctrl.Bind(wx.EVT_BUTTON,
-                              lambda event, position=i:
-                              self.on_move_row_up(event, position))
-                self.panel.Sizer.Add(ctrl, row=i + 1, col=len(column_names) + 2,
-                                     flag=wx.ALIGN_BOTTOM)
+                    img = wx.ArtProvider.GetBitmap(
+                        wx.ART_GO_UP, wx.ART_BUTTON, (16, 16)
+                    )
+                    ctrl = wx.BitmapButton(
+                        self.panel, -1, img, name=move_up_button_name
+                    )
+                    ctrl.Bind(
+                        wx.EVT_BUTTON,
+                        lambda event, position=i: self.on_move_row_up(event, position),
+                    )
+                self.panel.Sizer.Add(
+                    ctrl, row=i + 1, col=len(column_names) + 2, flag=wx.ALIGN_BOTTOM
+                )
                 all_subcontrols[move_up_button_name] = True
 
             if i < len(joins) - 1:
                 move_down_button_name = self.get_down_button_control_name(i)
                 ctrl = self.panel.FindWindowByName(move_down_button_name)
                 if ctrl is None:
-                    img = wx.ArtProvider.GetBitmap(wx.ART_GO_DOWN,
-                                                   wx.ART_BUTTON,
-                                                   (16, 16))
-                    ctrl = wx.BitmapButton(self.panel, -1, img,
-                                           name=move_down_button_name)
-                    ctrl.Bind(wx.EVT_BUTTON,
-                              lambda event, position=i:
-                              self.on_move_row_down(event, position))
-                self.panel.Sizer.Add(ctrl, row=i + 1, col=len(column_names) + 3,
-                                     flag=wx.ALIGN_BOTTOM)
+                    img = wx.ArtProvider.GetBitmap(
+                        wx.ART_GO_DOWN, wx.ART_BUTTON, (16, 16)
+                    )
+                    ctrl = wx.BitmapButton(
+                        self.panel, -1, img, name=move_down_button_name
+                    )
+                    ctrl.Bind(
+                        wx.EVT_BUTTON,
+                        lambda event, position=i: self.on_move_row_down(
+                            event, position
+                        ),
+                    )
+                self.panel.Sizer.Add(
+                    ctrl, row=i + 1, col=len(column_names) + 3, flag=wx.ALIGN_BOTTOM
+                )
                 all_subcontrols[move_down_button_name] = True
 
         for key, value in all_subcontrols.items():
@@ -3683,35 +3893,46 @@ class JoinerController(object):
         join = joins[row].copy()
         join[self.column_names[column]] = new_value
         joins[row] = join
-        self.module_view.on_value_change(self.v, self.panel,
-                                         self.v.build_string(joins), event)
+        self.module_view.on_value_change(
+            self.v, self.panel, self.v.build_string(joins), event
+        )
 
     def on_insert_row(self, event, position):
         joins = list(self.joins)
         new_join = dict([(column_name, None) for column_name in self.column_names])
         joins.insert(position, new_join)
-        self.module_view.on_value_change(self.v, self.panel,
-                                         self.v.build_string(joins), event)
+        self.module_view.on_value_change(
+            self.v, self.panel, self.v.build_string(joins), event
+        )
 
     def on_delete_row(self, event, position):
         joins = list(self.joins)
         del joins[position]
-        self.module_view.on_value_change(self.v, self.panel,
-                                         self.v.build_string(joins), event)
+        self.module_view.on_value_change(
+            self.v, self.panel, self.v.build_string(joins), event
+        )
 
     def on_move_row_up(self, event, position):
         joins = list(self.joins)
-        joins = joins[0:(position - 1)] + [joins[position], joins[position - 1]] + \
-                joins[(position + 1):]
-        self.module_view.on_value_change(self.v, self.panel,
-                                         self.v.build_string(joins), event)
+        joins = (
+            joins[0 : (position - 1)]
+            + [joins[position], joins[position - 1]]
+            + joins[(position + 1) :]
+        )
+        self.module_view.on_value_change(
+            self.v, self.panel, self.v.build_string(joins), event
+        )
 
     def on_move_row_down(self, event, position):
         joins = list(self.joins)
-        joins = joins[0:position] + [joins[position + 1], joins[position]] + \
-                joins[(position + 2):]
-        self.module_view.on_value_change(self.v, self.panel,
-                                         self.v.build_string(joins), event)
+        joins = (
+            joins[0:position]
+            + [joins[position + 1], joins[position]]
+            + joins[(position + 2) :]
+        )
+        self.module_view.on_value_change(
+            self.v, self.panel, self.v.build_string(joins), event
+        )
 
 
 class BinaryMatrixController(object):
@@ -3727,8 +3948,7 @@ class BinaryMatrixController(object):
         """
         self.module_view = module_view
         self.setting = v
-        self.panel = wx.Panel(module_view.module_panel,
-                              name=edit_control_name(v))
+        self.panel = wx.Panel(module_view.module_panel, name=edit_control_name(v))
         self.panel.controller = self
         self.panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.matrix_ctrl = wx.Panel(self.panel)
@@ -3736,15 +3956,21 @@ class BinaryMatrixController(object):
         self.matrix_ctrl.SetMinSize(wx.Size(50, 50))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.panel.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 2)
-        sizer.Add(wx.StaticText(self.panel, label="Width:"),
-                  0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER)
+        sizer.Add(
+            wx.StaticText(self.panel, label="Width:"),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_CENTER,
+        )
         sizer.AddSpacer(1)
         self.width_ctrl = wx.SpinCtrl(self.panel)
         self.width_ctrl.SetRange(1, 100)
         sizer.Add(self.width_ctrl, 1, wx.EXPAND)
         sizer.AddSpacer(4)
-        sizer.Add(wx.StaticText(self.panel, label="Height:"),
-                  0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER)
+        sizer.Add(
+            wx.StaticText(self.panel, label="Height:"),
+            0,
+            wx.ALIGN_RIGHT | wx.ALIGN_CENTER,
+        )
         sizer.AddSpacer(1)
         self.height_ctrl = wx.SpinCtrl(self.panel)
         self.height_ctrl.SetRange(1, 100)
@@ -3775,8 +4001,7 @@ class BinaryMatrixController(object):
             matrix = self.setting.get_matrix()
             matrix[i][j] = not matrix[i][j]
             value = cellprofiler.setting.BinaryMatrix.to_value(matrix)
-            self.module_view.on_value_change(self.setting, self.panel,
-                                             value, event)
+            self.module_view.on_value_change(self.setting, self.panel, value, event)
 
     def on_matrix_ctrl_paint(self, event):
         paint_dc = wx.BufferedPaintDC(self.matrix_ctrl)
@@ -3785,18 +4010,27 @@ class BinaryMatrixController(object):
         h = len(matrix)
         w = len(matrix[0])
         bx, ex, dx, by, ey, dy = [
-            wx.SystemSettings.GetMetric(m) for m in (
-                wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
-                wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
+            wx.SystemSettings.GetMetric(m)
+            for m in (
+                wx.SYS_BORDER_X,
+                wx.SYS_EDGE_X,
+                wx.SYS_SMALLICON_X,
+                wx.SYS_BORDER_Y,
+                wx.SYS_EDGE_Y,
+                wx.SYS_SMALLICON_Y,
+            )
+        ]
         paint_dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
         paint_dc.Clear()
         pShadow = wx.Pen(
-                wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.SOLID)
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.SOLID
+        )
         pHighlight = wx.Pen(
-                wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, wx.SOLID)
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, wx.SOLID
+        )
         bBackground, bForeground = [
-            wx.Brush(color) for color in
-            (wx.Colour(80, 80, 80, 255), wx.WHITE)]
+            wx.Brush(color) for color in (wx.Colour(80, 80, 80, 255), wx.WHITE)
+        ]
         rw = 2 * ex + dx
         rh = 2 * ey + dy
         for x in range(w):
@@ -3810,8 +4044,12 @@ class BinaryMatrixController(object):
                     paint_dc.DrawLine(rx + k, ry + k, rx + k, ry + rh - k - 1)
                 paint_dc.Pen = pShadow if value else pHighlight
                 for k in range(ex):
-                    paint_dc.DrawLine(rx + k, ry + rh - k - 1, rx + rw - k - 1, ry + rh - k - 1)
-                    paint_dc.DrawLine(rx + rw - k - 1, ry + k, rx + rw - k - 1, ry + rh - k - 1)
+                    paint_dc.DrawLine(
+                        rx + k, ry + rh - k - 1, rx + rw - k - 1, ry + rh - k - 1
+                    )
+                    paint_dc.DrawLine(
+                        rx + rw - k - 1, ry + k, rx + rw - k - 1, ry + rh - k - 1
+                    )
                 paint_dc.Pen = wx.TRANSPARENT_PEN
                 paint_dc.Brush = bForeground if value else bBackground
                 paint_dc.DrawRectangle(rx + ex, ry + ey, dx, dy)
@@ -3821,11 +4059,22 @@ class BinaryMatrixController(object):
     @staticmethod
     def get_matrix_element_rect(i, j):
         bx, ex, dx, by, ey, dy = [
-            wx.SystemSettings.GetMetric(m) for m in (
-                wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
-                wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
-        return wx.Rect(ex * (2 * j + 1) + dx * j + bx * j,
-                       ey * (2 * i + 1) + dy * i + by * i, dx, dy)
+            wx.SystemSettings.GetMetric(m)
+            for m in (
+                wx.SYS_BORDER_X,
+                wx.SYS_EDGE_X,
+                wx.SYS_SMALLICON_X,
+                wx.SYS_BORDER_Y,
+                wx.SYS_EDGE_Y,
+                wx.SYS_SMALLICON_Y,
+            )
+        ]
+        return wx.Rect(
+            ex * (2 * j + 1) + dx * j + bx * j,
+            ey * (2 * i + 1) + dy * i + by * i,
+            dx,
+            dy,
+        )
 
     def hit_test(self, x, y):
         """Return the i, j coordinates at the mouse
@@ -3833,14 +4082,26 @@ class BinaryMatrixController(object):
         returns i, j or None, None if misses the hit test
         """
         bx, ex, dx, by, ey, dy = [
-            wx.SystemSettings.GetMetric(m) for m in (
-                wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
-                wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
+            wx.SystemSettings.GetMetric(m)
+            for m in (
+                wx.SYS_BORDER_X,
+                wx.SYS_EDGE_X,
+                wx.SYS_SMALLICON_X,
+                wx.SYS_BORDER_Y,
+                wx.SYS_EDGE_Y,
+                wx.SYS_SMALLICON_Y,
+            )
+        ]
         i = int((y - ey) / (2 * ey + dy + by))
         j = int((x - ex) / (2 * ex + dx + bx))
         h, w = self.setting.get_size()
-        if (i < 0 or j < 0 or i >= h or j >= w or
-                not self.get_matrix_element_rect(i, j).Contains(x, y)):
+        if (
+            i < 0
+            or j < 0
+            or i >= h
+            or j >= w
+            or not self.get_matrix_element_rect(i, j).Contains(x, y)
+        ):
             return None, None
         return i, j
 
@@ -3856,8 +4117,7 @@ class BinaryMatrixController(object):
         else:
             return
         value = cellprofiler.setting.BinaryMatrix.to_value(matrix)
-        self.module_view.on_value_change(self.setting, self.panel,
-                                         value, event)
+        self.module_view.on_value_change(self.setting, self.panel, value, event)
 
     def on_height_changed(self, event):
         matrix = self.setting.get_matrix()
@@ -3867,13 +4127,15 @@ class BinaryMatrixController(object):
         if d < 0:
             matrix = matrix[n:-n]
         elif d > 0:
-            matrix = [[False] * w for _ in range(n)] + matrix + \
-                     [[False] * w for _ in range(n)]
+            matrix = (
+                [[False] * w for _ in range(n)]
+                + matrix
+                + [[False] * w for _ in range(n)]
+            )
         else:
             return
         value = cellprofiler.setting.BinaryMatrix.to_value(matrix)
-        self.module_view.on_value_change(self.setting, self.panel,
-                                         value, event)
+        self.module_view.on_value_change(self.setting, self.panel, value, event)
 
     @classmethod
     def update_control(cls, module_view, v):
@@ -3893,6 +4155,7 @@ class BinaryMatrixController(object):
 
 class DataTypeController(object):
     """The DataTypeController manages a DataType setting"""
+
     DTC_NONE = "None"
     DTC_TEXT = "Text"
     DTC_INTEGER = "Integer"
@@ -3902,27 +4165,29 @@ class DataTypeController(object):
         DTC_TEXT: cellprofiler.setting.DataTypes.DT_TEXT,
         DTC_INTEGER: cellprofiler.setting.DataTypes.DT_INTEGER,
         DTC_FLOAT: cellprofiler.setting.DataTypes.DT_FLOAT,
-        None: cellprofiler.setting.DataTypes.DT_TEXT}
+        None: cellprofiler.setting.DataTypes.DT_TEXT,
+    }
     DT_TO_DTC = {
         cellprofiler.setting.DataTypes.DT_NONE: DTC_NONE,
         cellprofiler.setting.DataTypes.DT_TEXT: DTC_TEXT,
         cellprofiler.setting.DataTypes.DT_INTEGER: DTC_INTEGER,
-        cellprofiler.setting.DataTypes.DT_FLOAT: DTC_FLOAT}
+        cellprofiler.setting.DataTypes.DT_FLOAT: DTC_FLOAT,
+    }
 
     def __init__(self, module_view, v):
         assert isinstance(v, cellprofiler.setting.DataTypes)
         self.module_view = module_view
         self.v = v
-        self.panel = module_view.module_panel.FindWindowByName(
-                edit_control_name(v))
+        self.panel = module_view.module_panel.FindWindowByName(edit_control_name(v))
         if self.panel is None:
+
             class DoesntInheritBackgroundColor(wx.Panel):
                 def InheritsBackgroundColour(self):
                     return False
 
             self.panel = DoesntInheritBackgroundColor(
-                    module_view.module_panel, -1,
-                    name=edit_control_name(v))
+                module_view.module_panel, -1, name=edit_control_name(v)
+            )
             self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
             self.panel.Bind(wx.EVT_PAINT, self.on_paint)
         self.panel.controller = self
@@ -3932,11 +4197,9 @@ class DataTypeController(object):
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self.panel)
         dc.BeginDrawing()
-        dc.Background = wx.Brush(wx.SystemSettings.GetColour(
-                wx.SYS_COLOUR_WINDOW))
+        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
         dc.Clear()
-        dc.Pen = wx.Pen(wx.SystemSettings.GetColour(
-                wx.SYS_COLOUR_GRAYTEXT))
+        dc.Pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
         sizer = self.panel.Sizer
         _, panel_width = self.panel.GetClientSize()
         assert isinstance(sizer, wx.lib.rcsizer.RowColSizer)
@@ -3974,23 +4237,29 @@ class DataTypeController(object):
         label_header_name = self.get_label_control_name(0)
         choice_header_name = self.get_choice_control_name(0)
         for header_name, column, text in (
-                (label_header_name, 0, "Key"),
-                (choice_header_name, 1, "Data type")):
+            (label_header_name, 0, "Key"),
+            (choice_header_name, 1, "Data type"),
+        ):
             ctrl = self.panel.FindWindowByName(header_name)
             if ctrl is None:
-                ctrl = wx.StaticText(self.panel,
-                                     label=text,
-                                     name=header_name)
+                ctrl = wx.StaticText(self.panel, label=text, name=header_name)
                 ctrl.Font = wx.Font(
-                        ctrl.Font.GetPointSize(),
-                        ctrl.Font.GetFamily(),
-                        ctrl.Font.GetStyle(),
-                        wx.FONTWEIGHT_BOLD, False,
-                        ctrl.Font.GetFaceName())
-                sizer.Add(ctrl,
-                          flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.BOTTOM,
-                          border=1,
-                          row=0, col=column)
+                    ctrl.Font.GetPointSize(),
+                    ctrl.Font.GetFamily(),
+                    ctrl.Font.GetStyle(),
+                    wx.FONTWEIGHT_BOLD,
+                    False,
+                    ctrl.Font.GetFaceName(),
+                )
+                sizer.Add(
+                    ctrl,
+                    flag=wx.ALIGN_CENTER_HORIZONTAL
+                    | wx.ALIGN_CENTER_VERTICAL
+                    | wx.BOTTOM,
+                    border=1,
+                    row=0,
+                    col=column,
+                )
             else:
                 sizer.Show(ctrl)
         for i, feature in enumerate(sorted(d.keys())):
@@ -3998,14 +4267,14 @@ class DataTypeController(object):
             choice_name = self.get_choice_control_name(i + 1)
             label = self.panel.FindWindowByName(label_name)
             if label is None:
-                label = wx.StaticText(
-                        self.panel,
-                        label=feature,
-                        name=label_name)
-                sizer.Add(label,
-                          flag=wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.RIGHT,
-                          border=3,
-                          row=i + 1, col=0)
+                label = wx.StaticText(self.panel, label=feature, name=label_name)
+                sizer.Add(
+                    label,
+                    flag=wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.RIGHT,
+                    border=3,
+                    row=i + 1,
+                    col=0,
+                )
             else:
                 sizer.Show(label)
                 if label.Label != feature:
@@ -4013,14 +4282,22 @@ class DataTypeController(object):
             choice = self.panel.FindWindowByName(choice_name)
             if choice is None:
                 choice = wx.Choice(
-                        self.panel,
-                        choices=[self.DTC_TEXT, self.DTC_INTEGER, self.DTC_FLOAT,
-                                 self.DTC_NONE],
-                        name=choice_name)
-                sizer.Add(choice,
-                          flag=wx.EXPAND | wx.BOTTOM | wx.RIGHT,
-                          border=3,
-                          row=i + 1, col=1)
+                    self.panel,
+                    choices=[
+                        self.DTC_TEXT,
+                        self.DTC_INTEGER,
+                        self.DTC_FLOAT,
+                        self.DTC_NONE,
+                    ],
+                    name=choice_name,
+                )
+                sizer.Add(
+                    choice,
+                    flag=wx.EXPAND | wx.BOTTOM | wx.RIGHT,
+                    border=3,
+                    row=i + 1,
+                    col=1,
+                )
                 needs_bind.append(choice)
             else:
                 sizer.Show(choice)
@@ -4035,8 +4312,7 @@ class DataTypeController(object):
         result = {}
         for i in range(1, self.n_items + 1):
             label = self.panel.FindWindowByName(self.get_label_control_name(i))
-            choice = self.panel.FindWindowByName(
-                    self.get_choice_control_name(i))
+            choice = self.panel.FindWindowByName(self.get_choice_control_name(i))
             result[label.Label] = self.DTC_TO_DT[choice.GetStringSelection()]
         result = cellprofiler.setting.DataTypes.encode_data_types(result)
         if self.v.value != result:
@@ -4108,29 +4384,37 @@ class TableController(wx.grid.GridTableBase):
         v = self.v
         if len(v.column_names) < grid.GetNumberCols():
             tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
-                    0, grid.GetNumberCols() - len(v.column_names))
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
+                0,
+                grid.GetNumberCols() - len(v.column_names),
+            )
             grid.ProcessTableMessage(tm)
             need_column_layout = True
         elif grid.GetNumberCols() < len(v.column_names):
             tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
-                    0, len(v.column_names) - grid.GetNumberCols())
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
+                0,
+                len(v.column_names) - grid.GetNumberCols(),
+            )
             grid.ProcessTableMessage(tm)
             need_column_layout = True
         if len(v.data) < grid.GetNumberRows():
             tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
-                    0, grid.GetNumberRows() - len(v.data))
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                0,
+                grid.GetNumberRows() - len(v.data),
+            )
             grid.ProcessTableMessage(tm)
         elif grid.GetNumberRows() < len(v.data):
             tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
-                    0, len(v.data) - grid.GetNumberRows())
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
+                0,
+                len(v.data) - grid.GetNumberRows(),
+            )
             grid.ProcessTableMessage(tm)
         if need_column_layout:
             grid.AutoSizeColumns()
@@ -4140,12 +4424,17 @@ class TableController(wx.grid.GridTableBase):
         row = self.grid.YToRow(y)
         col = self.grid.XToCol(x)
         this_pos = (row, col)
-        if (this_pos != self.last_pos and row >= 0 and col >= 0 and
-                    row < len(self.v.data) and col < len(self.v.data[row])):
+        if (
+            this_pos != self.last_pos
+            and row >= 0
+            and col >= 0
+            and row < len(self.v.data)
+            and col < len(self.v.data[row])
+        ):
             self.last_pos = this_pos
             s = self.v.data[row][col]
             if s is None:
-                s = ''
+                s = ""
             elif not isinstance(s, six.string_types):
                 s = str(s)
             self.grid.GetGridWindow().SetToolTip(s)
@@ -4157,15 +4446,12 @@ class TableController(wx.grid.GridTableBase):
         width = grid.GetColSize(col)
         table = grid.GetTable()
         self.column_size[col] = int(width * 1.1) / grid.CharWidth
-        tm = wx.grid.GridTableMessage(
-                self,
-                wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        tm = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
         grid.ProcessTableMessage(tm)
         grid.ForceRefresh()
 
     def GetAttr(self, row, col, kind):
-        attrs = self.v.get_cell_attributes(
-                row, self.v.column_names[col])
+        attrs = self.v.get_cell_attributes(row, self.v.column_names[col])
         attr = self.DEFAULT_ATTR
         if attrs is not None and self.v.ATTR_ERROR in attrs:
             attr = self.ERROR_ATTR
@@ -4182,16 +4468,20 @@ class TableController(wx.grid.GridTableBase):
         return len(self.v.column_names)
 
     def IsEmptyCell(self, row, col):
-        return (len(self.v.data) <= row or
-                len(self.v.data[row]) <= col or
-                self.v.data[row][col] is None)
+        return (
+            len(self.v.data) <= row
+            or len(self.v.data[row]) <= col
+            or self.v.data[row][col] is None
+        )
 
     def GetValue(self, row, col):
         if self.IsEmptyCell(row, col):
             return None
         s = six.text_type(self.v.data[row][col])
         if len(self.column_size) <= col:
-            self.column_size += [self.v.max_field_size] * (col - len(self.column_size) + 1)
+            self.column_size += [self.v.max_field_size] * (
+                col - len(self.column_size) + 1
+            )
         field_size = self.column_size[col]
         if len(s) > field_size:
             half = int(field_size - 3) / 2
@@ -4281,15 +4571,19 @@ class ModuleSizer(wx.Sizer):
         controls and help controls.
         """
         try:
-            if (self.__rows * self.__cols == 0 or
-                        self.Children is None or
-                        len(self.Children) == 0):
+            if (
+                self.__rows * self.__cols == 0
+                or self.Children is None
+                or len(self.Children) == 0
+            ):
                 return wx.Size(0, 0)
             height = self.__height_padding
             for j in range(0, self.__rows):
-                borders = [self.get_item(col, j).GetBorder()
-                           for col in range(2)
-                           if self.get_item(col, j) is not None]
+                borders = [
+                    self.get_item(col, j).GetBorder()
+                    for col in range(2)
+                    if self.get_item(col, j) is not None
+                ]
                 if len(borders) == 0:
                     height += 10
                 else:
@@ -4297,9 +4591,12 @@ class ModuleSizer(wx.Sizer):
                     height += self.get_row_height(j) + 2 * height_border
             height += self.__height_padding
             self.__printed_exception = False
-            return wx.Size(self.calc_edit_size()[0] + self.__min_text_width +
-                           self.calc_help_size()[0],
-                           height)
+            return wx.Size(
+                self.calc_edit_size()[0]
+                + self.__min_text_width
+                + self.calc_help_size()[0],
+                height,
+            )
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
@@ -4347,9 +4644,11 @@ class ModuleSizer(wx.Sizer):
             if item is None:
                 continue
             control = item.GetWindow()
-            assert isinstance(control, wx.StaticText), 'Control at column 0, ' \
-                                                       '%d of grid is not StaticText: %s' % (i, str(control))
-            text = control.GetLabel().replace('\n', ' ')
+            assert isinstance(control, wx.StaticText), (
+                "Control at column 0, "
+                "%d of grid is not StaticText: %s" % (i, str(control))
+            )
+            text = control.GetLabel().replace("\n", " ")
             ctrl_width = control.GetTextExtent(text)[0] + 2 * item.GetBorder()
             width = max(width, ctrl_width)
         return width
@@ -4370,8 +4669,7 @@ class ModuleSizer(wx.Sizer):
                 edit_width = width - max_text_width - help_width
             elif edit_width * 4 < width:
                 edit_width = width / 4
-            text_width = max([width - edit_width - help_width,
-                              self.__min_text_width])
+            text_width = max([width - edit_width - help_width, self.__min_text_width])
             widths = [text_width, edit_width, help_width]
             #
             # Change all static text controls to wrap at the text width. Then
@@ -4386,13 +4684,14 @@ class ModuleSizer(wx.Sizer):
                     continue
                 inner_text_width = text_width - 2 * text_item.GetBorder()
                 control = text_item.GetWindow()
-                assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s' % (
-                    i, str(control))
+                assert isinstance(control, wx.StaticText), (
+                    "Control at column 0, %d of grid is not StaticText: %s"
+                    % (i, str(control))
+                )
                 text = control.GetLabel()
                 edit_control = edit_item.GetWindow()
                 height_border = max([x.GetBorder() for x in (edit_item, text_item)])
-                if (isinstance(edit_control, wx.StaticLine) and
-                            len(text) == 0):
+                if isinstance(edit_control, wx.StaticLine) and len(text) == 0:
                     #
                     # A line spans both columns
                     #
@@ -4402,17 +4701,19 @@ class ModuleSizer(wx.Sizer):
                     assert isinstance(edit_item, wx.SizerItem)
                     border = edit_item.GetBorder()
                     third_width = (text_width + edit_width - 2 * border) / 3
-                    item_location = wx.Point(text_width - third_width / 2,
-                                             height + border + item_height / 2)
+                    item_location = wx.Point(
+                        text_width - third_width / 2, height + border + item_height / 2
+                    )
                     item_size = wx.Size(third_width, edit_item.GetSize()[1])
                     item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
                 else:
                     text_item.Show(True)
-                    if (text_width > self.__min_text_width and
-                            (text.find('\n') != -1 or
-                                     control.GetTextExtent(text)[0] > inner_text_width)):
-                        text = text.replace('\n', ' ')
+                    if text_width > self.__min_text_width and (
+                        text.find("\n") != -1
+                        or control.GetTextExtent(text)[0] > inner_text_width
+                    ):
+                        text = text.replace("\n", " ")
                         control.SetLabel(text)
                         control.Wrap(inner_text_width)
                     row_height = self.get_row_height(i)
@@ -4466,6 +4767,7 @@ class ValidationRequest(object):
     def cancel(self):
         self.cancelled = True
 
+
 #
 # Cacheing is not compatible with the current pattern of sharing state between GUI components. E.g., the pipeline object
 # stored in the ModuleView constructor will never be updated, yet it is used to validate current state.
@@ -4510,12 +4812,15 @@ def validate_module(pipeline, module_num, test_mode, callback):
         level = logging.INFO
     except cellprofiler.setting.ValidationError as instance:
         message = instance.message
-        setting_idx = [m.key() for m in module.visible_settings()].index(instance.get_setting().key())
+        setting_idx = [m.key() for m in module.visible_settings()].index(
+            instance.get_setting().key()
+        )
     wx.CallAfter(callback, setting_idx, message, level)
 
 
 def validation_queue_handler():
     from javabridge import attach, detach
+
     attach()
     try:
         while validation_queue_keep_running:
@@ -4524,12 +4829,16 @@ def validation_queue_handler():
                 continue
             start = time.clock()
             try:
-                validate_module(request.pipeline, request.module_num,
-                                request.test_mode, request.callback)
+                validate_module(
+                    request.pipeline,
+                    request.module_num,
+                    request.test_mode,
+                    request.callback,
+                )
             except:
                 pass
             # Make sure this thread utilizes less than 1/2 of GIL clock
-            wait_for = max(.25, time.clock() - start)
+            wait_for = max(0.25, time.clock() - start)
             time.sleep(wait_for)
     finally:
         detach()

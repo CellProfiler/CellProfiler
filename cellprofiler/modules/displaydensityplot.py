@@ -63,37 +63,55 @@ class DisplayDensityPlot(cpm.Module):
 
     def create_settings(self):
         self.x_object = cps.ObjectNameSubscriber(
-                'Select the object to display on the X-axis',
-                cps.NONE, doc='''\
+            "Select the object to display on the X-axis",
+            cps.NONE,
+            doc="""\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
 measurements are to be displayed on the X-axis.
-''')
+""",
+        )
 
         self.x_axis = cps.Measurement(
-                'Select the object measurement to plot on the X-axis',
-                self.get_x_object, cps.NONE, doc='''Choose the object measurement made by a previous module to display on the X-axis.''')
+            "Select the object measurement to plot on the X-axis",
+            self.get_x_object,
+            cps.NONE,
+            doc="""Choose the object measurement made by a previous module to display on the X-axis.""",
+        )
 
         self.y_object = cps.ObjectNameSubscriber(
-                'Select the object to display on the Y-axis',
-                cps.NONE, doc='''\
+            "Select the object to display on the Y-axis",
+            cps.NONE,
+            doc="""\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
 measurements are to be displayed on the Y-axis.
-''')
+""",
+        )
 
         self.y_axis = cps.Measurement(
-                'Select the object measurement to plot on the Y-axis',
-                self.get_y_object, cps.NONE, doc='''Choose the object measurement made by a previous module to display on the Y-axis.''')
+            "Select the object measurement to plot on the Y-axis",
+            self.get_y_object,
+            cps.NONE,
+            doc="""Choose the object measurement made by a previous module to display on the Y-axis.""",
+        )
 
         self.gridsize = cps.Integer(
-                'Select the grid size', 100, 1, 1000, doc='''\
+            "Select the grid size",
+            100,
+            1,
+            1000,
+            doc="""\
 Enter the number of grid regions you want used on each
 axis. Increasing the number of grid regions increases the
-resolution of the plot.''')
+resolution of the plot.""",
+        )
 
         self.xscale = cps.Choice(
-                'How should the X-axis be scaled?', ['linear', 'log'], None, doc='''\
+            "How should the X-axis be scaled?",
+            ["linear", "log"],
+            None,
+            doc="""\
 The X-axis can be scaled either with a *linear* scale or with a *log*
 (base 10) scaling.
 
@@ -101,10 +119,14 @@ Using a log scaling is useful when one of the measurements being plotted
 covers a large range of values; a log scale can bring out features in
 the measurements that would not easily be seen if the measurement is
 plotted linearly.
-''')
+""",
+        )
 
         self.yscale = cps.Choice(
-                'How should the Y-axis be scaled?', ['linear', 'log'], None, doc='''\
+            "How should the Y-axis be scaled?",
+            ["linear", "log"],
+            None,
+            doc="""\
 The Y-axis can be scaled either with a *linear* scale or with a *log*
 (base 10) scaling.
 
@@ -112,10 +134,14 @@ Using a log scaling is useful when one of the measurements being plotted
 covers a large range of values; a log scale can bring out features in
 the measurements that would not easily be seen if the measurement is
 plotted linearly.
-''')
+""",
+        )
 
         self.bins = cps.Choice(
-                'How should the colorbar be scaled?', ['linear', 'log'], None, doc='''\
+            "How should the colorbar be scaled?",
+            ["linear", "log"],
+            None,
+            doc="""\
 The colorbar can be scaled either with a *linear* scale or with a *log*
 (base 10) scaling.
 
@@ -123,30 +149,47 @@ Using a log scaling is useful when one of the measurements being plotted
 covers a large range of values; a log scale can bring out features in
 the measurements that would not easily be seen if the measurement is
 plotted linearly.
-''')
+""",
+        )
 
-        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith('_r')]
+        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith("_r")]
         maps.sort()
 
         self.colormap = cps.Choice(
-                'Select the color map', maps, 'jet', doc='''\
+            "Select the color map",
+            maps,
+            "jet",
+            doc="""\
 Select the color map for the density plot. See `this page`_ for pictures
 of the available colormaps.
 
 .. _this page: http://matplotlib.org/users/colormaps.html
-''')
+""",
+        )
 
         self.title = cps.Text(
-                'Enter a title for the plot, if desired', '', doc='''\
+            "Enter a title for the plot, if desired",
+            "",
+            doc="""\
 Enter a title for the plot. If you leave this blank, the title will
 default to *(cycle N)* where *N* is the current image cycle being
 executed.
-''')
+""",
+        )
 
     def settings(self):
-        return [self.x_object, self.x_axis, self.y_object, self.y_axis,
-                self.gridsize, self.xscale, self.yscale, self.bins,
-                self.colormap, self.title]
+        return [
+            self.x_object,
+            self.x_axis,
+            self.y_object,
+            self.y_axis,
+            self.gridsize,
+            self.xscale,
+            self.yscale,
+            self.bins,
+            self.colormap,
+            self.title,
+        ]
 
     def visible_settings(self):
         return self.settings()
@@ -161,7 +204,7 @@ executed.
             data += [[xx, yy]]
 
         bins = None
-        if self.bins.value != 'linear':
+        if self.bins.value != "linear":
             bins = self.bins.value
 
         if self.show_window:
@@ -172,19 +215,25 @@ executed.
         data = workspace.display_data.data
         bins = workspace.display_data.bins
         figure.set_subplots((1, 1))
-        figure.subplot_density(0, 0, data,
-                               gridsize=self.gridsize.value,
-                               xlabel=self.x_axis.value,
-                               ylabel=self.y_axis.value,
-                               xscale=self.xscale.value,
-                               yscale=self.yscale.value,
-                               bins=bins,
-                               cmap=self.colormap.value,
-                               title='%s (cycle %s)' % (self.title.value, workspace.measurements.image_set_number))
+        figure.subplot_density(
+            0,
+            0,
+            data,
+            gridsize=self.gridsize.value,
+            xlabel=self.x_axis.value,
+            ylabel=self.y_axis.value,
+            xscale=self.xscale.value,
+            yscale=self.yscale.value,
+            bins=bins,
+            cmap=self.colormap.value,
+            title="%s (cycle %s)"
+            % (self.title.value, workspace.measurements.image_set_number),
+        )
 
     def run_as_data_tool(self, workspace):
         self.run(workspace)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number,
-                                module_name, from_matlab):
+    def backwards_compatibilize(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         return setting_values, variable_revision_number, from_matlab

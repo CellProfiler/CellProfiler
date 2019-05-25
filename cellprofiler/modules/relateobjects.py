@@ -63,9 +63,9 @@ Measurements made by this module
 -  *Parent:* The label number of the parent object, as assigned by an
    **Identify** or **Watershed** module.
 -  *Distances:* The distance of each child object to its respective parent.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
 
 D_NONE = "None"
 D_CENTROID = "Centroid"
@@ -76,25 +76,26 @@ D_ALL = [D_NONE, D_CENTROID, D_MINIMUM, D_BOTH]
 
 C_MEAN = "Mean"
 
-FF_MEAN = '%s_%%s_%%s' % C_MEAN
+FF_MEAN = "%s_%%s_%%s" % C_MEAN
 
-'''Distance category'''
-C_DISTANCE = 'Distance'
+"""Distance category"""
+C_DISTANCE = "Distance"
 
-'''Centroid distance feature'''
-FEAT_CENTROID = 'Centroid'
+"""Centroid distance feature"""
+FEAT_CENTROID = "Centroid"
 
-'''Minimum distance feature'''
-FEAT_MINIMUM = 'Minimum'
+"""Minimum distance feature"""
+FEAT_MINIMUM = "Minimum"
 
-'''Centroid distance measurement (FF_DISTANCE % parent)'''
-FF_CENTROID = '%s_%s_%%s' % (C_DISTANCE, FEAT_CENTROID)
+"""Centroid distance measurement (FF_DISTANCE % parent)"""
+FF_CENTROID = "%s_%s_%%s" % (C_DISTANCE, FEAT_CENTROID)
 
-'''Minimum distance measurement (FF_MINIMUM % parent)'''
-FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
+"""Minimum distance measurement (FF_MINIMUM % parent)"""
+FF_MINIMUM = "%s_%s_%%s" % (C_DISTANCE, FEAT_MINIMUM)
 
 FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
+
 
 class RelateObjects(cellprofiler.module.ObjectProcessing):
     module_name = "RelateObjects"
@@ -117,7 +118,7 @@ the nuclei are the parents.
             doc="""\
 Child objects are defined as those objects contained within the parent object. For example, when relating
 speckles to the nuclei that contains them, the speckles are the children.
-            """
+            """,
         )
 
         self.find_parent_child_distances = cellprofiler.setting.Choice(
@@ -135,12 +136,14 @@ periphery.
 -  *{D_CENTROID}:* The distance from the centroid of the child object
    to the centroid of the parent.
 -  *{D_BOTH}:* Calculate both the *{D_MINIMUM}* and *{D_CENTROID}*
-   distances.""".format(**{
-                "D_NONE": D_NONE,
-                "D_MINIMUM": D_MINIMUM,
-                "D_CENTROID": D_CENTROID,
-                "D_BOTH": D_BOTH
-            })
+   distances.""".format(
+                **{
+                    "D_NONE": D_NONE,
+                    "D_MINIMUM": D_MINIMUM,
+                    "D_CENTROID": D_CENTROID,
+                    "D_BOTH": D_BOTH,
+                }
+            ),
         )
 
         self.wants_step_parent_distances = cellprofiler.setting.Binary(
@@ -158,9 +161,9 @@ instance, you might find “Nuclei” using **IdentifyPrimaryObjects**, find
 to cells and then measure distances to nuclei and cytoplasm. You could
 not use **RelateObjects** to relate speckles to cytoplasm and then
 measure distances to nuclei, because nuclei are neither a direct parent
-nor child of cytoplasm.""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+nor child of cytoplasm.""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.step_parent_names = []
@@ -168,9 +171,7 @@ nor child of cytoplasm.""".format(**{
         self.add_step_parent(can_delete=False)
 
         self.add_step_parent_button = cellprofiler.setting.DoSomething(
-            "",
-            "Add another parent",
-            self.add_step_parent
+            "", "Add another parent", self.add_step_parent
         )
 
         self.wants_per_parent_means = cellprofiler.setting.Binary(
@@ -182,9 +183,9 @@ measurement made with the children objects and store them as a
 measurement for the parent; the nomenclature of this new measurement is
 “Mean_<child>_<category>_<feature>”. This module
 must be placed *after* all **Measure** modules that make measurements
-of the children objects.""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+of the children objects.""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
     def add_step_parent(self, can_delete=True):
@@ -202,24 +203,22 @@ of the children objects.""".format(**{
 Choose the name of the other parent. The **RelateObjects** module will
 measure the distance from this parent to the child objects in the same
 manner as it does to the primary parents. You can only choose the
-parents or children of the parent object."""
-            )
+parents or children of the parent object.""",
+            ),
         )
 
         if can_delete:
             group.append(
                 "remove",
                 cellprofiler.setting.RemoveSettingButton(
-                    "",
-                    "Remove this object",
-                    self.step_parent_names, group
-                )
+                    "", "Remove this object", self.step_parent_names, group
+                ),
             )
 
         self.step_parent_names.append(group)
 
     def get_step_parents(self, pipeline):
-        '''Return the possible step-parents associated with the parent'''
+        """Return the possible step-parents associated with the parent"""
         step_parents = set()
 
         parent_name = self.x_name.value
@@ -230,18 +229,14 @@ parents or children of the parent object."""
 
             # Objects that are the parent of the parents
             grandparents = module.get_measurements(
-                pipeline,
-                parent_name,
-                cellprofiler.measurement.C_PARENT
+                pipeline, parent_name, cellprofiler.measurement.C_PARENT
             )
 
             step_parents.update(grandparents)
 
             # Objects that are the children of the parents
             siblings = module.get_measurements(
-                pipeline,
-                parent_name,
-                cellprofiler.measurement.C_CHILDREN
+                pipeline, parent_name, cellprofiler.measurement.C_CHILDREN
             )
 
             for sibling in siblings:
@@ -251,9 +246,7 @@ parents or children of the parent object."""
                     sibling_name = match.groups()[0]
 
                     if parent_name in module.get_measurements(
-                            pipeline,
-                            sibling_name,
-                            cellprofiler.measurement.C_PARENT
+                        pipeline, sibling_name, cellprofiler.measurement.C_PARENT
                     ):
                         step_parents.add(sibling_name)
 
@@ -261,8 +254,11 @@ parents or children of the parent object."""
 
     @property
     def has_step_parents(self):
-        '''True if there are possible step-parents for the parent object'''
-        return len(self.step_parent_names) > 0 and len(self.step_parent_names[0].step_parent_name.choices) > 0
+        """True if there are possible step-parents for the parent object"""
+        return (
+            len(self.step_parent_names) > 0
+            and len(self.step_parent_names[0].step_parent_name.choices) > 0
+        )
 
     def settings(self):
         __settings__ = super(RelateObjects, self).settings()
@@ -274,7 +270,7 @@ parents or children of the parent object."""
         __settings__ += [
             self.find_parent_child_distances,
             self.wants_per_parent_means,
-            self.wants_step_parent_distances
+            self.wants_step_parent_distances,
         ]
 
         __settings__ += [group.step_parent_name for group in self.step_parent_names]
@@ -288,10 +284,7 @@ parents or children of the parent object."""
         # See settings for insert rationale
         __settings__.insert(1, self.x_child_name)
 
-        __settings__ += [
-            self.wants_per_parent_means,
-            self.find_parent_child_distances
-        ]
+        __settings__ += [self.wants_per_parent_means, self.find_parent_child_distances]
 
         if self.find_parent_child_distances != D_NONE and self.has_step_parents:
             __settings__ += [self.wants_step_parent_distances]
@@ -318,13 +311,13 @@ parents or children of the parent object."""
         m.add_measurement(
             self.x_child_name.value,
             cellprofiler.measurement.FF_PARENT % self.x_name.value,
-            parents_of
+            parents_of,
         )
 
         m.add_measurement(
             self.x_name.value,
             cellprofiler.measurement.FF_CHILDREN_COUNT % self.x_child_name.value,
-            child_count
+            child_count,
         )
 
         good_parents = parents_of[parents_of != 0]
@@ -342,7 +335,7 @@ parents or children of the parent object."""
                 image_numbers,
                 good_parents,
                 image_numbers,
-                good_children
+                good_children,
             )
 
             m.add_relate_measurement(
@@ -353,7 +346,7 @@ parents or children of the parent object."""
                 image_numbers,
                 good_children,
                 image_numbers,
-                good_parents
+                good_parents,
             )
 
         parent_names = self.get_parent_names()
@@ -376,7 +369,9 @@ parents or children of the parent object."""
 
                 if data is not None and len(data) > 0:
                     if len(parents_of) > 0:
-                        means = scipy.ndimage.mean(data.astype(float), parents_of, parent_indexes)
+                        means = scipy.ndimage.mean(
+                            data.astype(float), parents_of, parent_indexes
+                        )
                     else:
                         means = numpy.zeros((0,))
                 else:
@@ -437,11 +432,7 @@ parents or children of the parent object."""
 
         parent_labels = workspace.display_data.parent_labels
 
-        max_label = max(
-            parent_labels.max(),
-            child_labels.max(),
-            related_children.max()
-        )
+        max_label = max(parent_labels.max(), child_labels.max(), related_children.max())
 
         seed = numpy.random.randint(256)
 
@@ -478,12 +469,14 @@ parents or children of the parent object."""
         parent_names = [self.x_name.value]
 
         if self.wants_step_parent_distances.value:
-            parent_names += [group.step_parent_name.value for group in self.step_parent_names]
+            parent_names += [
+                group.step_parent_name.value for group in self.step_parent_names
+            ]
 
         return parent_names
 
     def calculate_centroid_distances(self, workspace, parent_name):
-        '''Calculate the centroid-centroid distance between parent & child'''
+        """Calculate the centroid-centroid distance between parent & child"""
         meas = workspace.measurements
 
         sub_object_name = self.x_child_name.value
@@ -510,12 +503,14 @@ parents or children of the parent object."""
 
             dist = numpy.array([numpy.NaN] * ccenters.shape[0])
 
-            dist[mask] = numpy.sqrt(numpy.sum((ccenters[mask, :] - pcenters[parents_of[mask], :]) ** 2, 1))
+            dist[mask] = numpy.sqrt(
+                numpy.sum((ccenters[mask, :] - pcenters[parents_of[mask], :]) ** 2, 1)
+            )
 
         meas.add_measurement(sub_object_name, FF_CENTROID % parent_name, dist)
 
     def calculate_minimum_distances(self, workspace, parent_name):
-        '''Calculate the distance from child center to parent perimeter'''
+        """Calculate the distance from child center to parent perimeter"""
         meas = workspace.measurements
 
         sub_object_name = self.x_child_name.value
@@ -539,7 +534,10 @@ parents or children of the parent object."""
 
             parents_of_masked = parents_of[mask] - 1
 
-            pperim = skimage.segmentation.find_boundaries(parents.segmented, mode="inner") * parents.segmented
+            pperim = (
+                skimage.segmentation.find_boundaries(parents.segmented, mode="inner")
+                * parents.segmented
+            )
 
             # Get a list of all points on the perimeter
             perim_loc = numpy.argwhere(pperim != 0)
@@ -562,7 +560,9 @@ parents or children of the parent object."""
 
             # Get counts and indexes to each run of perimeter points
             counts = scipy.ndimage.sum(
-                numpy.ones(len(perim_idx)), perim_idx, numpy.arange(1, perim_idx[-1] + 1)
+                numpy.ones(len(perim_idx)),
+                perim_idx,
+                numpy.arange(1, perim_idx[-1] + 1),
             ).astype(numpy.int32)
 
             indexes = numpy.cumsum(counts) - counts
@@ -589,7 +589,9 @@ parents or children of the parent object."""
             cp_index += cindexes[clabel]
 
             # Now, calculate the distance from the centroid of each label to each perimeter point in the parent.
-            dist = numpy.sqrt(numpy.sum((perim_loc[cp_index, :] - ccenters[clabel, :]) ** 2, 1))
+            dist = numpy.sqrt(
+                numpy.sum((perim_loc[cp_index, :] - ccenters[clabel, :]) ** 2, 1)
+            )
 
             # Finally, find the minimum distance per child
             min_dist = scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
@@ -602,7 +604,7 @@ parents or children of the parent object."""
         meas.add_measurement(sub_object_name, FF_MINIMUM % parent_name, dist)
 
     def get_parents_of(self, workspace, parent_name):
-        '''Return the parents_of measurement or equivalent
+        """Return the parents_of measurement or equivalent
 
         parent_name - name of parent objects
 
@@ -610,7 +612,7 @@ parents or children of the parent object."""
         the Parent measurement. Look for a direct parent / child link first
         and then look for relationships between self.parent_name and the
         named parent.
-        '''
+        """
         meas = workspace.measurements
 
         parent_feature = cellprofiler.measurement.FF_PARENT % parent_name
@@ -628,9 +630,13 @@ parents or children of the parent object."""
             # parent_name is the grandparent of the sub-object via
             # the primary parent.
             #
-            primary_parents_of = meas.get_current_measurement(sub_object_name, primary_parent_feature)
+            primary_parents_of = meas.get_current_measurement(
+                sub_object_name, primary_parent_feature
+            )
 
-            grandparents_of = meas.get_current_measurement(primary_parent, parent_feature)
+            grandparents_of = meas.get_current_measurement(
+                primary_parent, parent_feature
+            )
 
             mask = primary_parents_of != 0
 
@@ -639,9 +645,13 @@ parents or children of the parent object."""
             if primary_parents_of.shape[0] > 0:
                 parents_of[mask] = grandparents_of[primary_parents_of[mask] - 1]
         elif primary_parent_feature in meas.get_feature_names(parent_name):
-            primary_parents_of = meas.get_current_measurement(sub_object_name, primary_parent_feature)
+            primary_parents_of = meas.get_current_measurement(
+                sub_object_name, primary_parent_feature
+            )
 
-            primary_parents_of_parent = meas.get_current_measurement(parent_name, primary_parent_feature)
+            primary_parents_of_parent = meas.get_current_measurement(
+                parent_name, primary_parent_feature
+            )
 
             if len(primary_parents_of_parent) == 0:
                 return primary_parents_of_parent
@@ -650,27 +660,33 @@ parents or children of the parent object."""
             # There may not be a 1-1 relationship, but we attempt to
             # construct one
             #
-            reverse_lookup_len = max(numpy.max(primary_parents_of) + 1, len(primary_parents_of_parent))
+            reverse_lookup_len = max(
+                numpy.max(primary_parents_of) + 1, len(primary_parents_of_parent)
+            )
 
             reverse_lookup = numpy.zeros(reverse_lookup_len, int)
 
             if primary_parents_of_parent.shape[0] > 0:
-                reverse_lookup[primary_parents_of_parent] = numpy.arange(1, len(primary_parents_of_parent) + 1)
+                reverse_lookup[primary_parents_of_parent] = numpy.arange(
+                    1, len(primary_parents_of_parent) + 1
+                )
 
             if primary_parents_of.shape[0] > 0:
                 parents_of = reverse_lookup[primary_parents_of]
         else:
-            raise ValueError("Don't know how to relate {} to {}".format(primary_parent, parent_name))
+            raise ValueError(
+                "Don't know how to relate {} to {}".format(primary_parent, parent_name)
+            )
 
         return parents_of
 
     ignore_features = set(cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
-        '''Return True if aggregate measurements should be made on a feature
+        """Return True if aggregate measurements should be made on a feature
 
         feature_name - name of a measurement, such as Location_Center_X
-        '''
+        """
         if feature_name.startswith(C_MEAN):
             return False
 
@@ -683,24 +699,24 @@ parents or children of the parent object."""
         return True
 
     def validate_module(self, pipeline):
-        '''Validate the module's settings
+        """Validate the module's settings
 
         Relate will complain if the children and parents are related
-        by a prior module or if a step-parent is named twice'''
+        by a prior module or if a step-parent is named twice"""
         for module in pipeline.modules():
             if module == self:
                 break
 
-            parent_features = module.get_measurements(pipeline, self.x_child_name.value, "Parent")
+            parent_features = module.get_measurements(
+                pipeline, self.x_child_name.value, "Parent"
+            )
 
             if self.x_name.value in parent_features:
                 raise cellprofiler.setting.ValidationError(
                     "{} and {} were related by the {} module".format(
-                        self.x_child_name.value,
-                        self.x_name.value,
-                        module.module_name
+                        self.x_child_name.value, self.x_name.value, module.module_name
                     ),
-                    self.x_name
+                    self.x_name,
                 )
 
         if self.has_step_parents and self.wants_step_parent_distances:
@@ -711,17 +727,19 @@ parents or children of the parent object."""
                         u"{} has already been chosen".format(
                             group.step_parent_name.value
                         ),
-                        group.step_parent_name
+                        group.step_parent_name,
                     )
 
                 step_parents.add(group.step_parent_name.value)
 
     def get_child_columns(self, pipeline):
-        child_columns = list(filter(
-            lambda column: column[0] == self.x_child_name.value and self.should_aggregate_feature(column[1]),
-            pipeline.get_measurement_columns(self)
-
-        ))
+        child_columns = list(
+            filter(
+                lambda column: column[0] == self.x_child_name.value
+                and self.should_aggregate_feature(column[1]),
+                pipeline.get_measurement_columns(self),
+            )
+        )
 
         child_columns += self.get_child_measurement_columns(pipeline)
 
@@ -732,30 +750,38 @@ parents or children of the parent object."""
         if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
             for parent_name in self.get_parent_names():
                 columns += [
-                    (self.x_child_name.value, FF_CENTROID % parent_name, cellprofiler.measurement.COLTYPE_INTEGER)
+                    (
+                        self.x_child_name.value,
+                        FF_CENTROID % parent_name,
+                        cellprofiler.measurement.COLTYPE_INTEGER,
+                    )
                 ]
 
         if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
             for parent_name in self.get_parent_names():
                 columns += [
-                    (self.x_child_name.value, FF_MINIMUM % parent_name, cellprofiler.measurement.COLTYPE_INTEGER)
+                    (
+                        self.x_child_name.value,
+                        FF_MINIMUM % parent_name,
+                        cellprofiler.measurement.COLTYPE_INTEGER,
+                    )
                 ]
 
         return columns
 
     def get_measurement_columns(self, pipeline):
-        '''Return the column definitions for this module's measurements'''
+        """Return the column definitions for this module's measurements"""
         columns = [
             (
                 self.x_child_name.value,
                 cellprofiler.measurement.FF_PARENT % self.x_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER
+                cellprofiler.measurement.COLTYPE_INTEGER,
             ),
             (
                 self.x_name.value,
                 cellprofiler.measurement.FF_CHILDREN_COUNT % self.x_child_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER
-            )
+                cellprofiler.measurement.COLTYPE_INTEGER,
+            ),
         ]
 
         if self.wants_per_parent_means.value:
@@ -765,16 +791,17 @@ parents or children of the parent object."""
                 (
                     self.x_name.value,
                     FF_MEAN % (self.x_child_name.value, column[1]),
-                    cellprofiler.measurement.COLTYPE_FLOAT
-                 ) for column in child_columns
-                ]
+                    cellprofiler.measurement.COLTYPE_FLOAT,
+                )
+                for column in child_columns
+            ]
 
         columns += self.get_child_measurement_columns(pipeline)
 
         return columns
 
     def get_object_relationships(self, pipeline):
-        '''Return the object relationships produced by this module'''
+        """Return the object relationships produced by this module"""
         parent_name = self.x_name.value
 
         sub_object_name = self.x_child_name.value
@@ -784,23 +811,20 @@ parents or children of the parent object."""
                 cellprofiler.measurement.R_PARENT,
                 parent_name,
                 sub_object_name,
-                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE
+                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
             ),
             (
                 cellprofiler.measurement.R_CHILD,
                 sub_object_name,
                 parent_name,
-                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE
-            )
+                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+            ),
         ]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.x_name.value:
             if self.wants_per_parent_means:
-                return [
-                    "Mean_{}".format(self.x_child_name),
-                    "Children"
-                ]
+                return ["Mean_{}".format(self.x_child_name), "Children"]
             else:
                 return ["Children"]
         elif object_name == self.x_child_name.value:
@@ -831,10 +855,16 @@ parents or children of the parent object."""
             result = []
 
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-                result += ["{}_{}".format(FEAT_CENTROID, parent_name) for parent_name in self.get_parent_names()]
+                result += [
+                    "{}_{}".format(FEAT_CENTROID, parent_name)
+                    for parent_name in self.get_parent_names()
+                ]
 
             if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-                result += ["{}_{}".format(FEAT_MINIMUM, parent_name) for parent_name in self.get_parent_names()]
+                result += [
+                    "{}_{}".format(FEAT_MINIMUM, parent_name)
+                    for parent_name in self.get_parent_names()
+                ]
 
             return result
 
@@ -843,7 +873,9 @@ parents or children of the parent object."""
     def prepare_settings(self, setting_values):
         setting_count = len(setting_values)
 
-        step_parent_count = ((setting_count - FIXED_SETTING_COUNT) / VARIABLE_SETTING_COUNT)
+        step_parent_count = (
+            setting_count - FIXED_SETTING_COUNT
+        ) / VARIABLE_SETTING_COUNT
 
         assert len(self.step_parent_names) > 0
 
@@ -852,7 +884,9 @@ parents or children of the parent object."""
         for i in range(1, step_parent_count):
             self.add_step_parent()
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1:
             #
             # Added other distance parents
@@ -867,12 +901,12 @@ parents or children of the parent object."""
             else:
                 wants_step_parent_distances = cellprofiler.setting.YES
 
-            setting_values = (setting_values[:2] + [
+            setting_values = setting_values[:2] + [
                 find_parent_distances,
                 setting_values[4],
                 wants_step_parent_distances,
-                setting_values[3]
-            ])
+                setting_values[3],
+            ]
 
             variable_revision_number = 2
 

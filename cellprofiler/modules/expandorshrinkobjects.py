@@ -43,9 +43,9 @@ Measurements made by this module
 
 -  *Location\_X, Location\_Y:* Pixel (*X,Y*) coordinates of the center
    of mass of the expanded/shrunken objects.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
 
 import centrosome.cpmorphology
 import numpy
@@ -66,7 +66,15 @@ O_SHRINK = "Shrink objects by a specified number of pixels"
 O_EXPAND = "Expand objects by a specified number of pixels"
 O_SKELETONIZE = "Skeletonize each object"
 O_SPUR = "Remove spurs"
-O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND, O_SKELETONIZE, O_SPUR]
+O_ALL = [
+    O_SHRINK_INF,
+    O_EXPAND_INF,
+    O_DIVIDE,
+    O_SHRINK,
+    O_EXPAND,
+    O_SKELETONIZE,
+    O_SPUR,
+]
 
 
 class ExpandOrShrinkObjects(cellprofiler.module.Module):
@@ -78,13 +86,13 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
             "Select the input objects",
             cellprofiler.setting.NONE,
-            doc="Select the objects that you want to expand or shrink."
+            doc="Select the objects that you want to expand or shrink.",
         )
 
         self.output_object_name = cellprofiler.setting.ObjectNameProvider(
             "Name the output objects",
             "ShrunkenNuclei",
-            doc="Enter a name for the resulting objects."
+            doc="Enter a name for the resulting objects.",
         )
 
         self.operation = cellprofiler.setting.Choice(
@@ -120,15 +128,17 @@ Choose the operation that you want to perform:
    image. The algorithm reduces spur size by the number of pixels
    indicated in the setting *Number of pixels by which to expand or
    shrink*.
-""".format(**{
-                "O_DIVIDE": O_DIVIDE,
-                "O_EXPAND": O_EXPAND,
-                "O_EXPAND_INF": O_EXPAND_INF,
-                "O_SHRINK": O_SHRINK,
-                "O_SHRINK_INF": O_SHRINK_INF,
-                "O_SKELETONIZE": O_SKELETONIZE,
-                "O_SPUR": O_SPUR
-            })
+""".format(
+                **{
+                    "O_DIVIDE": O_DIVIDE,
+                    "O_EXPAND": O_EXPAND,
+                    "O_EXPAND_INF": O_EXPAND_INF,
+                    "O_SHRINK": O_SHRINK,
+                    "O_SHRINK_INF": O_SHRINK_INF,
+                    "O_SKELETONIZE": O_SKELETONIZE,
+                    "O_SPUR": O_SPUR,
+                }
+            ),
         )
 
         self.iterations = cellprofiler.setting.Integer(
@@ -139,11 +149,9 @@ Choose the operation that you want to perform:
 *(Used only if "{O_SHRINK}", "{O_EXPAND}", or "{O_SPUR}" is selected)*
 
 Specify the number of pixels to add or remove from object borders.
-""".format(**{
-                "O_EXPAND": O_EXPAND,
-                "O_SHRINK": O_SHRINK,
-                "O_SPUR": O_SPUR
-            })
+""".format(
+                **{"O_EXPAND": O_EXPAND, "O_SHRINK": O_SHRINK, "O_SPUR": O_SPUR}
+            ),
         )
 
         self.wants_fill_holes = cellprofiler.setting.Binary(
@@ -160,10 +168,9 @@ algorithm preserves each object’s Euler number, which means that it will
 erode an object with a hole to a ring in order to keep the hole. An
 object with two holes will be shrunk to two rings connected by a line in
 order to keep from breaking up the object or breaking the hole.
-""".format(**{
-                "NO": cellprofiler.setting.NO,
-                "YES": cellprofiler.setting.YES
-            })
+""".format(
+                **{"NO": cellprofiler.setting.NO, "YES": cellprofiler.setting.YES}
+            ),
         )
 
     def settings(self):
@@ -172,15 +179,11 @@ order to keep from breaking up the object or breaking the hole.
             self.output_object_name,
             self.operation,
             self.iterations,
-            self.wants_fill_holes
+            self.wants_fill_holes,
         ]
 
     def visible_settings(self):
-        result = [
-            self.object_name,
-            self.output_object_name,
-            self.operation
-        ]
+        result = [self.object_name, self.output_object_name, self.operation]
 
         if self.operation in [O_SHRINK, O_EXPAND, O_SPUR]:
             result += [self.iterations]
@@ -197,25 +200,37 @@ order to keep from breaking up the object or breaking the hole.
 
         output_objects.segmented = self.do_labels(input_objects.segmented)
 
-        if (input_objects.has_small_removed_segmented and self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):
-            output_objects.small_removed_segmented = self.do_labels(input_objects.small_removed_segmented)
+        if input_objects.has_small_removed_segmented and self.operation not in (
+            O_EXPAND,
+            O_EXPAND_INF,
+            O_DIVIDE,
+        ):
+            output_objects.small_removed_segmented = self.do_labels(
+                input_objects.small_removed_segmented
+            )
 
-        if (input_objects.has_unedited_segmented and self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):
+        if input_objects.has_unedited_segmented and self.operation not in (
+            O_EXPAND,
+            O_EXPAND_INF,
+            O_DIVIDE,
+        ):
 
-            output_objects.unedited_segmented = self.do_labels(input_objects.unedited_segmented)
+            output_objects.unedited_segmented = self.do_labels(
+                input_objects.unedited_segmented
+            )
 
         workspace.object_set.add_objects(output_objects, self.output_object_name.value)
 
         cellprofiler.modules.identify.add_object_count_measurements(
             workspace.measurements,
             self.output_object_name.value,
-            numpy.max(output_objects.segmented)
+            numpy.max(output_objects.segmented),
         )
 
         cellprofiler.modules.identify.add_object_location_measurements(
             workspace.measurements,
             self.output_object_name.value,
-            output_objects.segmented
+            output_objects.segmented,
         )
 
         if self.show_window:
@@ -231,10 +246,7 @@ order to keep from breaking up the object or breaking the hole.
         figure.set_subplots((2, 1))
 
         figure.subplot_imshow_labels(
-            0,
-            0,
-            input_objects_segmented,
-            self.object_name.value
+            0, 0, input_objects_segmented, self.object_name.value
         )
 
         figure.subplot_imshow_labels(
@@ -242,19 +254,21 @@ order to keep from breaking up the object or breaking the hole.
             0,
             output_objects_segmented,
             self.output_object_name.value,
-            sharexy=figure.subplot(0, 0)
+            sharexy=figure.subplot(0, 0),
         )
 
     def do_labels(self, labels):
-        '''Run whatever transformation on the given labels matrix'''
-        if (self.operation in (O_SHRINK, O_SHRINK_INF) and self.wants_fill_holes.value):
+        """Run whatever transformation on the given labels matrix"""
+        if self.operation in (O_SHRINK, O_SHRINK_INF) and self.wants_fill_holes.value:
             labels = centrosome.cpmorphology.fill_labeled_holes(labels)
 
         if self.operation == O_SHRINK_INF:
             return centrosome.cpmorphology.binary_shrink(labels)
 
         if self.operation == O_SHRINK:
-            return centrosome.cpmorphology.binary_shrink(labels, iterations=self.iterations.value)
+            return centrosome.cpmorphology.binary_shrink(
+                labels, iterations=self.iterations.value
+            )
 
         if self.operation in (O_EXPAND, O_EXPAND_INF):
             if self.operation == O_EXPAND_INF:
@@ -264,11 +278,13 @@ order to keep from breaking up the object or breaking the hole.
 
             background = labels == 0
 
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(background, return_indices=True)
+            distances, (i, j) = scipy.ndimage.distance_transform_edt(
+                background, return_indices=True
+            )
 
             out_labels = labels.copy()
 
-            mask = (background & (distances <= distance))
+            mask = background & (distances <= distance)
 
             out_labels[mask] = labels[i[mask], j[mask]]
 
@@ -285,7 +301,7 @@ order to keep from breaking up the object or breaking the hole.
 
             out_labels = labels.copy()
 
-            out_labels[adjacent_mask & ~ thinnable_mask] = 0
+            out_labels[adjacent_mask & ~thinnable_mask] = 0
 
             return out_labels
 
@@ -293,32 +309,40 @@ order to keep from breaking up the object or breaking the hole.
             return centrosome.cpmorphology.skeletonize_labels(labels)
 
         if self.operation == O_SPUR:
-            return centrosome.cpmorphology.spur(labels, iterations=self.iterations.value)
+            return centrosome.cpmorphology.spur(
+                labels, iterations=self.iterations.value
+            )
 
         raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab and variable_revision_number == 2:
             inf = setting_values[4] == "Inf"
 
             if setting_values[3] == "Expand":
                 operation = O_EXPAND_INF if inf else O_EXPAND
             elif setting_values[3] == "Shrink":
-                operation = (O_SHRINK_INF if inf else O_DIVIDE if setting_values[4] == "0" else O_SHRINK)
+                operation = (
+                    O_SHRINK_INF
+                    if inf
+                    else O_DIVIDE
+                    if setting_values[4] == "0"
+                    else O_SHRINK
+                )
 
             iterations = "1" if inf else setting_values[4]
 
             wants_outlines = setting_values[5] != cellprofiler.setting.DO_NOT_USE
 
-            setting_values = (
-                setting_values[:2] + [
-                    operation,
-                    iterations,
-                    cellprofiler.setting.NO,
-                    cellprofiler.setting.YES if wants_outlines else cellprofiler.setting.NO,
-                    setting_values[5]
-                ]
-            )
+            setting_values = setting_values[:2] + [
+                operation,
+                iterations,
+                cellprofiler.setting.NO,
+                cellprofiler.setting.YES if wants_outlines else cellprofiler.setting.NO,
+                setting_values[5],
+            ]
 
             from_matlab = False
 
@@ -332,8 +356,10 @@ order to keep from breaking up the object or breaking the hole.
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.output_object_name.value)
+        """Return column definitions for measurements made by this module"""
+        columns = cellprofiler.modules.identify.get_object_measurement_columns(
+            self.output_object_name.value
+        )
         return columns
 
     def get_categories(self, pipeline, object_name):

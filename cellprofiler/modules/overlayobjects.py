@@ -22,11 +22,13 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
 
         self.x_name.doc = "Objects will be overlaid on this image."
 
-        self.y_name.doc = "An RGB image with color-coded labels overlaid on a grayscale image."
+        self.y_name.doc = (
+            "An RGB image with color-coded labels overlaid on a grayscale image."
+        )
 
         self.objects = cellprofiler.setting.ObjectNameSubscriber(
             text="Objects",
-            doc="Color-coded labels of this object will be overlaid on the input image."
+            doc="Color-coded labels of this object will be overlaid on the input image.",
         )
 
         self.opacity = cellprofiler.setting.Float(
@@ -37,26 +39,20 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
             doc="""
             Opacity of overlaid labels. Increase this value to decrease the transparency of the colorized object
             labels.
-            """
+            """,
         )
 
     def settings(self):
         settings = super(OverlayObjects, self).settings()
 
-        settings += [
-            self.objects,
-            self.opacity
-        ]
+        settings += [self.objects, self.opacity]
 
         return settings
 
     def visible_settings(self):
         visible_settings = super(OverlayObjects, self).visible_settings()
 
-        visible_settings += [
-            self.objects,
-            self.opacity
-        ]
+        visible_settings += [self.objects, self.opacity]
 
         return visible_settings
 
@@ -64,7 +60,7 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
         self.function = lambda pixel_data, objects_name, opacity: cellprofiler.object.overlay_labels(
             pixel_data,
             workspace.object_set.get_objects(objects_name).segmented,
-            opacity
+            opacity,
         )
 
         super(OverlayObjects, self).run(workspace)

@@ -58,7 +58,7 @@ from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler.image  as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
@@ -85,7 +85,7 @@ FI_AUTOMATIC = "Automatic"
 FI_OBJECT_SIZE = "Object size"
 FI_MANUALLY = "Manually"
 
-ROBUST_FACTOR = .02  # For rescaling, take 2nd percentile value
+ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
 OUTPUT_IMAGE = "OutputImage"
 
@@ -102,20 +102,22 @@ class CorrectIlluminationCalculate(cpm.Module):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
             cps.NONE,
-            doc="Choose the image to be used to calculate the illumination function."
+            doc="Choose the image to be used to calculate the illumination function.",
         )
 
         self.illumination_image_name = cps.ImageNameProvider(
-            "Name the output image", "IllumBlue", doc="""Enter a name for the resultant illumination function.""",
-                provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
-                                     cps.AVAILABLE_ON_LAST_ATTRIBUTE: False})
+            "Name the output image",
+            "IllumBlue",
+            doc="""Enter a name for the resultant illumination function.""",
+            provided_attributes={
+                cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
+                cps.AVAILABLE_ON_LAST_ATTRIBUTE: False,
+            },
+        )
 
         self.intensity_choice = cps.Choice(
             "Select how the illumination function is calculated",
-            [
-                IC_REGULAR,
-                IC_BACKGROUND
-            ],
+            [IC_REGULAR, IC_BACKGROUND],
             IC_REGULAR,
             doc="""\
 Choose which method you want to use to calculate the illumination
@@ -151,18 +153,22 @@ for instance, in cases where you have masked out the well edge in an
 image from a multi-well plate; the dark well edge would distort the
 illumination correction function along the interior well edge. Masking
 the image beforehand solves this problem.
-""".format(**{
-                "IC_REGULAR": IC_REGULAR,
-                "EA_ALL": EA_ALL,
-                "EA_EACH": EA_EACH,
-                "SM_NONE": SM_NONE,
-                "IC_BACKGROUND": IC_BACKGROUND,
-                "DOS_SUBTRACT": DOS_SUBTRACT
-            })
+""".format(
+                **{
+                    "IC_REGULAR": IC_REGULAR,
+                    "EA_ALL": EA_ALL,
+                    "EA_EACH": EA_EACH,
+                    "SM_NONE": SM_NONE,
+                    "IC_BACKGROUND": IC_BACKGROUND,
+                    "DOS_SUBTRACT": DOS_SUBTRACT,
+                }
+            ),
         )
 
         self.dilate_objects = cps.Binary(
-            "Dilate objects in the final averaged image?", False, doc="""\
+            "Dilate objects in the final averaged image?",
+            False,
+            doc="""\
 *(Used only if the “%(IC_REGULAR)s” method is selected)*
 
 For some applications, the incoming images are binary and each object
@@ -170,27 +176,40 @@ should be dilated with a Gaussian filter in the final averaged
 (projection) image. This is for a sophisticated method of illumination
 correction where model objects are produced. Select *%(YES)s* to dilate
 objects for this approach.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.object_dilation_radius = cps.Integer(
-            "Dilation radius", 1, 0, doc="""\
+            "Dilation radius",
+            1,
+            0,
+            doc="""\
 *(Used only if the “%(IC_REGULAR)s” method and dilation is selected)*
 
 This value should be roughly equal to the original radius of the objects.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.block_size = cps.Integer(
-            "Block size", 60, 1, doc="""\
+            "Block size",
+            60,
+            1,
+            doc="""\
 *(Used only if “%(IC_BACKGROUND)s” is selected)*
 
 The block size should be large enough that every square block of pixels
 is likely to contain some background pixels, where no objects are
 located.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.rescale_option = cps.Choice(
             "Rescale the illumination function?",
-            [cps.YES, cps.NO, RE_MEDIAN], doc="""\
+            [cps.YES, cps.NO, RE_MEDIAN],
+            doc="""\
 The illumination function can be rescaled so that the pixel intensities
 are all equal to or greater than 1. You have the following options:
 
@@ -207,11 +226,14 @@ are all equal to or greater than 1. You have the following options:
    corrected images to be very dark, even negative.
 -  %(RE_MEDIAN)s\ *:* This option chooses the median value in the image
    to rescale so that division increases some values and decreases others.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.each_or_all = cps.Choice(
             "Calculate function for each image individually, or based on all images?",
-            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc="""\
+            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS],
+            doc="""\
 Calculate a separate function for each image, or one for all the
 images? You can calculate the illumination function using just the
 current image or you can calculate the illumination function using all
@@ -240,16 +262,21 @@ illumination function can be calculated in one of the three ways:
    the resulting image in another pipeline. The option is useful if you
    want to exclude images that are filtered by a prior **FlagImage**
    module.
-""" % globals())
+"""
+            % globals(),
+        )
         self.smoothing_method = cps.Choice(
-                "Smoothing method",
-                [SM_NONE,
-                 SM_CONVEX_HULL,
-                 SM_FIT_POLYNOMIAL,
-                 SM_MEDIAN_FILTER,
-                 SM_GAUSSIAN_FILTER,
-                 SM_TO_AVERAGE,
-                 SM_SPLINES], doc="""\
+            "Smoothing method",
+            [
+                SM_NONE,
+                SM_CONVEX_HULL,
+                SM_FIT_POLYNOMIAL,
+                SM_MEDIAN_FILTER,
+                SM_GAUSSIAN_FILTER,
+                SM_TO_AVERAGE,
+                SM_SPLINES,
+            ],
+            doc="""\
 If requested, the resulting image is smoothed. If you are using *Each* mode,
 smoothing is definitely needed. For *All* modes, you usually also want to
 smooth, especially if you have few objects in each image or a small image set.
@@ -321,11 +348,14 @@ time-consuming process, but some methods are faster than others.
 of intensity nonuniformities in 2D and 3D microscope images of fluorescence
 stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
 (SCIA), pp. 264-271
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.automatic_object_width = cps.Choice(
             "Method to calculate smoothing filter size",
-            [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY], doc="""\
+            [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY],
+            doc="""\
 *(Used only if a smoothing method other than Fit Polynomial is selected)*
 
 Calculate the smoothing filter size. There are three options:
@@ -335,24 +365,36 @@ Calculate the smoothing filter size. There are three options:
 -  *%(FI_OBJECT_SIZE)s:* The module will calculate the smoothing size
    based on the width of typical objects in your images.
 -  *%(FI_MANUALLY)s:* You can enter a value yourself.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.object_width = cps.Integer(
-            "Approximate object diameter", 10, doc="""\
+            "Approximate object diameter",
+            10,
+            doc="""\
 *(Used only if %(FI_OBJECT_SIZE)s is selected for smoothing filter size calculation)*
 
 Enter the approximate diameter of typical objects, in pixels.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.size_of_smoothing_filter = cps.Integer(
-            "Smoothing filter size", 10, doc="""\
+            "Smoothing filter size",
+            10,
+            doc="""\
 *(Used only if %(FI_MANUALLY)s is selected for smoothing filter size calculation)*
 
 Enter the size of the desired smoothing filter, in pixels.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.save_average_image = cps.Binary(
-            "Retain the averaged image?", False, doc="""\
+            "Retain the averaged image?",
+            False,
+            doc="""\
 The averaged image is the illumination function prior to dilation or
 smoothing. It is an image produced during the calculations, not
 typically needed for downstream modules. It can be helpful to retain it
@@ -361,33 +403,47 @@ taking the time to recalculate the averaged image each time.
 
 Select *%(YES)s* to retain this averaged image. Use the **SaveImages**
 module to save it to your hard drive.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.average_image_name = cps.ImageNameProvider(
-            "Name the averaged image", "IllumBlueAvg", doc="""\
+            "Name the averaged image",
+            "IllumBlueAvg",
+            doc="""\
 *(Used only if the averaged image is to be retained for later use in the pipeline)*
 
-Enter a name that will allow the averaged image to be selected later in the pipeline.""")
+Enter a name that will allow the averaged image to be selected later in the pipeline.""",
+        )
 
         self.save_dilated_image = cps.Binary(
-            "Retain the dilated image?", False, doc="""\
+            "Retain the dilated image?",
+            False,
+            doc="""\
 The dilated image is the illumination function after dilation but prior
 to smoothing. It is an image produced during the calculations, and is
 not typically needed for downstream modules.
 
 Select *%(YES)s* to retain this dilated image. Use the **SaveImages**
 module to save it to your hard drive.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.dilated_image_name = cps.ImageNameProvider(
-            "Name the dilated image", "IllumBlueDilated", doc="""\
+            "Name the dilated image",
+            "IllumBlueDilated",
+            doc="""\
 *(Used only if the dilated image is to be retained for later use in the pipeline)*
 
 Enter a name that will allow the dilated image to be selected later in
-the pipeline.""")
+the pipeline.""",
+        )
 
         self.automatic_splines = cps.Binary(
-"Automatically calculate spline parameters?", True, doc="""\
+            "Automatically calculate spline parameters?",
+            True,
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method)*
 
 Select *%(YES)s* to automatically calculate the parameters for spline
@@ -395,11 +451,14 @@ fitting.
 
 Select *%(NO)s* to specify the background mode, background threshold,
 scale, maximum number of iterations and convergence.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.spline_bg_mode = cps.Choice(
             "Background mode",
-            [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY], doc="""\
+            [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY],
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method
 and spline parameters are not calculated automatically)*
 
@@ -420,10 +479,16 @@ foreground.
 -  *%(MODE_GRAY)s*: Fit the spline to mid-range pixels, excluding both
    dark and light pixels. This may be appropriate for a brightfield
    image where the objects of interest have light and dark features.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.spline_threshold = cps.Float(
-            "Background threshold", 2, minval=.1, maxval=5.0, doc="""\
+            "Background threshold",
+            2,
+            minval=0.1,
+            maxval=5.0,
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method
 and spline parameters are not calculated automatically)*
 
@@ -438,10 +503,15 @@ You should enter a higher number to converge stabily and slowly on a
 final background and a lower number to converge more rapidly, but with
 lower stability. The default for this parameter is two standard
 deviations; this will provide a fairly stable, smooth background estimate.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.spline_points = cps.Integer(
-            "Number of spline points", 5, 4, doc="""\
+            "Number of spline points",
+            5,
+            4,
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method and
 spline parameters are not calculated automatically)*
 
@@ -450,10 +520,15 @@ results in a 5x5 grid of splines across the image and is the value
 suggested by the method’s authors. A lower value will give you a more
 stable background while a higher one will fit variations in the
 background more closely and take more time to compute.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.spline_rescale = cps.Float(
-            "Image resampling factor", 2, minval=1, doc="""\
+            "Image resampling factor",
+            2,
+            minval=1,
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method and
 spline parameters are not calculated automatically)*
 
@@ -463,20 +538,31 @@ if the resampling factor is larger than the diameter of foreground
 objects. The image will be downsampled by the factor you enter. For
 instance, a 500x600 image will be downsampled into a 250x300 image if a
 factor of 2 is entered.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.spline_maximum_iterations = cps.Integer(
-            "Maximum number of iterations", 40, minval=1, doc="""\
+            "Maximum number of iterations",
+            40,
+            minval=1,
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method and
 spline parameters are not calculated automatically)*
 
 This setting determines the maximum number of iterations of the
 algorithm to be performed. The algorithm will perform fewer iterations
 if it converges.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.spline_convergence = cps.Float(
-            "Residual value for convergence", value=.001, minval=.00001, maxval=.1, doc="""\
+            "Residual value for convergence",
+            value=0.001,
+            minval=0.00001,
+            maxval=0.1,
+            doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method
 and spline parameters are not calculated automatically)*
 
@@ -492,27 +578,42 @@ iteration is less than the convergence criterion.
 Enter a smaller number for the convergence to calculate a more accurate
 background. Enter a larger number to calculate the background using
 fewer iterations, but less accuracy.
-""" % globals())
+"""
+            % globals(),
+        )
 
     def settings(self):
-        return [self.image_name, self.illumination_image_name,
-                self.intensity_choice, self.dilate_objects,
-                self.object_dilation_radius, self.block_size,
-                self.rescale_option, self.each_or_all, self.smoothing_method,
-                self.automatic_object_width, self.object_width,
-                self.size_of_smoothing_filter, self.save_average_image,
-                self.average_image_name, self.save_dilated_image,
-                self.dilated_image_name,
-                self.automatic_splines, self.spline_bg_mode,
-                self.spline_points, self.spline_threshold, self.spline_rescale,
-                self.spline_maximum_iterations, self.spline_convergence]
+        return [
+            self.image_name,
+            self.illumination_image_name,
+            self.intensity_choice,
+            self.dilate_objects,
+            self.object_dilation_radius,
+            self.block_size,
+            self.rescale_option,
+            self.each_or_all,
+            self.smoothing_method,
+            self.automatic_object_width,
+            self.object_width,
+            self.size_of_smoothing_filter,
+            self.save_average_image,
+            self.average_image_name,
+            self.save_dilated_image,
+            self.dilated_image_name,
+            self.automatic_splines,
+            self.spline_bg_mode,
+            self.spline_points,
+            self.spline_threshold,
+            self.spline_rescale,
+            self.spline_maximum_iterations,
+            self.spline_convergence,
+        ]
 
     def visible_settings(self):
         """The settings as seen by the UI
 
         """
-        result = [self.image_name, self.illumination_image_name,
-                  self.intensity_choice]
+        result = [self.image_name, self.illumination_image_name, self.intensity_choice]
         if self.intensity_choice == IC_REGULAR:
             result += [self.dilate_objects]
             if self.dilate_objects.value:
@@ -520,8 +621,7 @@ fewer iterations, but less accuracy.
         elif self.smoothing_method != SM_SPLINES:
             result += [self.block_size]
 
-        result += [self.rescale_option, self.each_or_all,
-                   self.smoothing_method]
+        result += [self.rescale_option, self.each_or_all, self.smoothing_method]
         if self.smoothing_method in (SM_GAUSSIAN_FILTER, SM_MEDIAN_FILTER):
             result += [self.automatic_object_width]
             if self.automatic_object_width == FI_OBJECT_SIZE:
@@ -531,10 +631,14 @@ fewer iterations, but less accuracy.
         elif self.smoothing_method == SM_SPLINES:
             result += [self.automatic_splines]
             if not self.automatic_splines:
-                result += [self.spline_bg_mode, self.spline_points,
-                           self.spline_threshold,
-                           self.spline_rescale, self.spline_maximum_iterations,
-                           self.spline_convergence]
+                result += [
+                    self.spline_bg_mode,
+                    self.spline_points,
+                    self.spline_threshold,
+                    self.spline_rescale,
+                    self.spline_maximum_iterations,
+                    self.spline_convergence,
+                ]
         result += [self.save_average_image]
         if self.save_average_image.value:
             result += [self.average_image_name]
@@ -544,18 +648,31 @@ fewer iterations, but less accuracy.
         return result
 
     def help_settings(self):
-        return [self.image_name, self.illumination_image_name,
-                self.intensity_choice, self.dilate_objects,
-                self.object_dilation_radius, self.block_size,
-                self.rescale_option, self.each_or_all, self.smoothing_method,
-                self.automatic_object_width, self.object_width,
-                self.size_of_smoothing_filter,
-                self.automatic_splines, self.spline_bg_mode,
-                self.spline_points, self.spline_threshold, self.spline_rescale,
-                self.spline_maximum_iterations, self.spline_convergence,
-                self.save_average_image,
-                self.average_image_name, self.save_dilated_image,
-                self.dilated_image_name]
+        return [
+            self.image_name,
+            self.illumination_image_name,
+            self.intensity_choice,
+            self.dilate_objects,
+            self.object_dilation_radius,
+            self.block_size,
+            self.rescale_option,
+            self.each_or_all,
+            self.smoothing_method,
+            self.automatic_object_width,
+            self.object_width,
+            self.size_of_smoothing_filter,
+            self.automatic_splines,
+            self.spline_bg_mode,
+            self.spline_points,
+            self.spline_threshold,
+            self.spline_rescale,
+            self.spline_maximum_iterations,
+            self.spline_convergence,
+            self.save_average_image,
+            self.average_image_name,
+            self.save_dilated_image,
+            self.dilated_image_name,
+        ]
 
     def prepare_group(self, workspace, grouping, image_numbers):
         image_set_list = workspace.image_set_list
@@ -565,27 +682,32 @@ fewer iterations, but less accuracy.
         assert isinstance(m, cpmeas.Measurements)
         if self.each_or_all != EA_EACH and len(image_numbers) > 0:
             title = "#%d: CorrectIlluminationCalculate for %s" % (
-                self.module_num, self.image_name)
-            message = ("CorrectIlluminationCalculate is averaging %d images while "
-                       "preparing for run" % (len(image_numbers)))
+                self.module_num,
+                self.image_name,
+            )
+            message = (
+                "CorrectIlluminationCalculate is averaging %d images while "
+                "preparing for run" % (len(image_numbers))
+            )
             output_image_provider = CorrectIlluminationImageProvider(
-                    self.illumination_image_name.value, self)
+                self.illumination_image_name.value, self
+            )
             d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
             if self.each_or_all == EA_ALL_FIRST:
                 #
                 # Find the module that provides the image we need
                 #
                 md = workspace.pipeline.get_provider_dictionary(
-                        self.image_name.group, self)
+                    self.image_name.group, self
+                )
                 src_module, src_setting = md[self.image_name.value][-1]
                 modules = list(pipeline.modules())
                 idx = modules.index(src_module)
                 last_module = modules[idx + 1]
                 for w in pipeline.run_group_with_yield(
-                        workspace, grouping, image_numbers,
-                        last_module, title, message):
-                    image = w.image_set.get_image(self.image_name.value,
-                                                  cache=False)
+                    workspace, grouping, image_numbers, last_module, title, message
+                ):
+                    image = w.image_set.get_image(self.image_name.value, cache=False)
                     output_image_provider.add_image(image)
                     w.image_set.clear_cache()
             output_image_provider.serialize(d)
@@ -596,7 +718,8 @@ fewer iterations, but less accuracy.
         if self.each_or_all != EA_EACH:
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.deserialize(
-                    d, self)
+                d, self
+            )
             if self.each_or_all == EA_ALL_ACROSS:
                 #
                 # We are accumulating a pipeline image. Add this image set's
@@ -607,8 +730,12 @@ fewer iterations, but less accuracy.
                 output_image_provider.serialize(d)
 
             # fetch images for display
-            if (self.show_window or self.save_average_image or
-                    self.save_dilated_image or self.each_or_all == EA_ALL_FIRST):
+            if (
+                self.show_window
+                or self.save_average_image
+                or self.save_dilated_image
+                or self.each_or_all == EA_ALL_FIRST
+            ):
                 avg_image = output_image_provider.provide_avg_image()
                 dilated_image = output_image_provider.provide_dilated_image()
                 workspace.image_set.providers.append(output_image_provider)
@@ -624,15 +751,12 @@ fewer iterations, but less accuracy.
             output_image = self.apply_scaling(smoothed_image, orig_image)
             # for illumination correction, we want the smoothed function to extend beyond the mask.
             output_image.mask = np.ones(output_image.pixel_data.shape[:2], bool)
-            workspace.image_set.add(self.illumination_image_name.value,
-                                    output_image)
+            workspace.image_set.add(self.illumination_image_name.value, output_image)
 
         if self.save_average_image.value:
-            workspace.image_set.add(self.average_image_name.value,
-                                    avg_image)
+            workspace.image_set.add(self.average_image_name.value, avg_image)
         if self.save_dilated_image.value:
-            workspace.image_set.add(self.dilated_image_name.value,
-                                    dilated_image)
+            workspace.image_set.add(self.dilated_image_name.value, dilated_image)
         if self.show_window:
             # store images for potential display
             workspace.display_data.avg_image = avg_image.pixel_data
@@ -640,34 +764,41 @@ fewer iterations, but less accuracy.
             workspace.display_data.output_image = output_image.pixel_data
 
     def is_aggregation_module(self):
-        '''Return True if aggregation is performed within a group'''
+        """Return True if aggregation is performed within a group"""
         return self.each_or_all != EA_EACH
 
     def post_group(self, workspace, grouping):
-        '''Handle tasks to be performed after a group has been processed
+        """Handle tasks to be performed after a group has been processed
 
         For CorrectIllumninationCalculate, we make sure the current image
         set includes the aggregate image. "run" may not have run if an
         image was filtered out.
-        '''
+        """
         if self.each_or_all != EA_EACH:
             image_set = workspace.image_set
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.deserialize(
-                    d, self)
+                d, self
+            )
             assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
             if not self.illumination_image_name.value in image_set.names:
                 workspace.image_set.providers.append(output_image_provider)
-            if (self.save_average_image and
-                        self.average_image_name.value not in image_set.names):
+            if (
+                self.save_average_image
+                and self.average_image_name.value not in image_set.names
+            ):
                 workspace.image_set.add(
-                        self.average_image_name.value,
-                        output_image_provider.provide_avg_image())
-            if (self.save_dilated_image and
-                        self.dilated_image_name.value not in image_set.names):
+                    self.average_image_name.value,
+                    output_image_provider.provide_avg_image(),
+                )
+            if (
+                self.save_dilated_image
+                and self.dilated_image_name.value not in image_set.names
+            ):
                 workspace.image_set.add(
-                        self.dilated_image_name.value,
-                        output_image_provider.provide_dilated_image())
+                    self.dilated_image_name.value,
+                    output_image_provider.provide_dilated_image(),
+                )
 
     def display(self, workspace, figure):
         # these are actually just the pixel data
@@ -686,16 +817,19 @@ fewer iterations, but less accuracy.
 
         imshow(0, 0, avg_image, "Averaged image")
         pixel_data = output_image
-        imshow(0, 1, output_image,
-               "Final illumination function",
-               sharexy=figure.subplot(0, 0))
-        imshow(1, 0, dilated_image,
-               "Dilated image",
-               sharexy=figure.subplot(0, 0))
-        statistics = [["Min value", round(np.min(output_image), 2)],
-                      ["Max value", round(np.max(output_image), 2)],
-                      ["Calculation type", self.intensity_choice.value]
-                      ]
+        imshow(
+            0,
+            1,
+            output_image,
+            "Final illumination function",
+            sharexy=figure.subplot(0, 0),
+        )
+        imshow(1, 0, dilated_image, "Dilated image", sharexy=figure.subplot(0, 0))
+        statistics = [
+            ["Min value", round(np.min(output_image), 2)],
+            ["Max value", round(np.max(output_image), 2)],
+            ["Calculation type", self.intensity_choice.value],
+        ]
         if self.intensity_choice == IC_REGULAR:
             statistics.append(["Radius", self.object_dilation_radius.value])
         elif self.smoothing_method != SM_SPLINES:
@@ -703,11 +837,15 @@ fewer iterations, but less accuracy.
         statistics.append(["Rescaling?", self.rescale_option.value])
         statistics.append(["Each or all?", self.each_or_all.value])
         statistics.append(["Smoothing method", self.smoothing_method.value])
-        statistics.append(["Smoothing filter size",
-                           round(self.smoothing_filter_size(output_image.size), 2)])
-        figure.subplot_table(1, 1,
-                             [[x[1]] for x in statistics],
-                             row_labels=[x[0] for x in statistics])
+        statistics.append(
+            [
+                "Smoothing filter size",
+                round(self.smoothing_filter_size(output_image.size), 2),
+            ]
+        )
+        figure.subplot_table(
+            1, 1, [[x[1]] for x in statistics], row_labels=[x[0] for x in statistics]
+        )
 
     def apply_dilation(self, image, orig_image=None):
         """Return an image that is dilated according to the settings
@@ -721,19 +859,24 @@ fewer iterations, but less accuracy.
             # This filter is designed to spread the boundaries of cells
             # and this "dilates" the cells
             #
-            kernel = circular_gaussian_kernel(self.object_dilation_radius.value,
-                                              self.object_dilation_radius.value * 3)
+            kernel = circular_gaussian_kernel(
+                self.object_dilation_radius.value, self.object_dilation_radius.value * 3
+            )
 
             def fn(image):
-                return scind.convolve(image, kernel, mode='constant', cval=0)
+                return scind.convolve(image, kernel, mode="constant", cval=0)
 
             if image.pixel_data.ndim == 2:
                 dilated_pixels = smooth_with_function_and_mask(
-                        image.pixel_data, fn, image.mask)
+                    image.pixel_data, fn, image.mask
+                )
             else:
-                dilated_pixels = np.dstack([
-                                               smooth_with_function_and_mask(x, fn, image.mask)
-                                               for x in image.pixel_data.transpose(2, 0, 1)])
+                dilated_pixels = np.dstack(
+                    [
+                        smooth_with_function_and_mask(x, fn, image.mask)
+                        for x in image.pixel_data.transpose(2, 0, 1)
+                    ]
+                )
             return cpi.Image(dilated_pixels, parent_image=orig_image)
         else:
             return image
@@ -756,24 +899,23 @@ fewer iterations, but less accuracy.
 
         """
         pixels = orig_image.pixel_data
-        if (self.intensity_choice == IC_REGULAR or
-                    self.smoothing_method == SM_SPLINES):
+        if self.intensity_choice == IC_REGULAR or self.smoothing_method == SM_SPLINES:
             if orig_image.has_mask:
                 if pixels.ndim == 2:
-                    pixels[~ orig_image.mask] = 0
+                    pixels[~orig_image.mask] = 0
                 else:
-                    pixels[~ orig_image.mask, :] = 0
+                    pixels[~orig_image.mask, :] = 0
                 avg_image = cpi.Image(pixels, parent_image=orig_image)
             else:
                 avg_image = orig_image
         else:
             # For background, we create a labels image using the block
             # size and find the minimum within each block.
-            labels, indexes = cpmm.block(pixels.shape[:2],
-                                         (self.block_size.value,
-                                          self.block_size.value))
+            labels, indexes = cpmm.block(
+                pixels.shape[:2], (self.block_size.value, self.block_size.value)
+            )
             if orig_image.has_mask:
-                labels[~ orig_image.mask] = -1
+                labels[~orig_image.mask] = -1
 
             min_block = np.zeros(pixels.shape)
             if pixels.ndim == 2:
@@ -800,15 +942,16 @@ fewer iterations, but less accuracy.
         if pixel_data.ndim == 3:
             output_pixels = np.zeros(pixel_data.shape, pixel_data.dtype)
             for i in range(pixel_data.shape[2]):
-                output_pixels[:, :, i] = self.smooth_plane(pixel_data[:, :, i],
-                                                           image.mask)
+                output_pixels[:, :, i] = self.smooth_plane(
+                    pixel_data[:, :, i], image.mask
+                )
         else:
             output_pixels = self.smooth_plane(pixel_data, image.mask)
         output_image = cpi.Image(output_pixels, parent_image=orig_image)
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
-        '''Smooth one 2-d color plane of an image'''
+        """Smooth one 2-d color plane of an image"""
 
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
@@ -820,17 +963,17 @@ fewer iterations, but less accuracy.
             # by any choice of how to deal with border effects.
             #
             def fn(image):
-                return scind.gaussian_filter(image, sigma,
-                                             mode='constant', cval=0)
+                return scind.gaussian_filter(image, sigma, mode="constant", cval=0)
 
-            output_pixels = smooth_with_function_and_mask(pixel_data, fn,
-                                                          mask)
+            output_pixels = smooth_with_function_and_mask(pixel_data, fn, mask)
         elif self.smoothing_method == SM_MEDIAN_FILTER:
-            filter_sigma = max(1, int(sigma+.5))
+            filter_sigma = max(1, int(sigma + 0.5))
             strel = strel_disk(filter_sigma)
             rescaled_pixel_data = pixel_data * 65535
             rescaled_pixel_data = rescaled_pixel_data.astype(np.uint16)
-            output_pixels = skimage.filters.median(rescaled_pixel_data, strel, mask=mask)
+            output_pixels = skimage.filters.median(
+                rescaled_pixel_data, strel, mask=mask
+            )
         elif self.smoothing_method == SM_TO_AVERAGE:
             mean = np.mean(pixel_data[mask])
             output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
@@ -839,11 +982,13 @@ fewer iterations, but less accuracy.
         elif self.smoothing_method == SM_CONVEX_HULL:
             output_pixels = self.smooth_with_convex_hull(pixel_data, mask)
         else:
-            raise ValueError("Unimplemented smoothing method: %s:" % self.smoothing_method.value)
+            raise ValueError(
+                "Unimplemented smoothing method: %s:" % self.smoothing_method.value
+            )
         return output_pixels
 
     def smooth_with_convex_hull(self, pixel_data, mask):
-        '''Use the convex hull transform to smooth the image'''
+        """Use the convex hull transform to smooth the image"""
         #
         # Apply an erosion, then the transform, then a dilation, heuristically
         # to ignore little spikey noisy things.
@@ -869,9 +1014,16 @@ fewer iterations, but less accuracy.
             convergence = self.spline_convergence.value
             iterations = self.spline_maximum_iterations.value
             rescale = self.spline_rescale.value
-            result = backgr(pixel_data, mask, mode=mode, thresh=threshold,
-                            splinepoints=spline_points, scale=rescale,
-                            maxiter=iterations, convergence=convergence)
+            result = backgr(
+                pixel_data,
+                mask,
+                mode=mode,
+                thresh=threshold,
+                splinepoints=spline_points,
+                scale=rescale,
+                maxiter=iterations,
+                convergence=convergence,
+            )
         #
         # The result is a fit to the background intensity, but we
         # want to normalize the intensity by subtraction, leaving
@@ -913,19 +1065,24 @@ fewer iterations, but less accuracy.
         if image.pixel_data.ndim == 2:
             output_pixels = scaling_fn_2d(image.pixel_data)
         else:
-            output_pixels = np.dstack([
-                                          scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)])
+            output_pixels = np.dstack(
+                [scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)]
+            )
         output_image = cpi.Image(output_pixels, parent_image=orig_image)
         return output_image
 
     def validate_module(self, pipeline):
-        '''Produce error if 'All:First' is selected and input image is not provided by the file image provider.'''
-        if not pipeline.is_image_from_file(self.image_name.value) and self.each_or_all == EA_ALL_FIRST:
+        """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
+        if (
+            not pipeline.is_image_from_file(self.image_name.value)
+            and self.each_or_all == EA_ALL_FIRST
+        ):
             raise cps.ValidationError(
-                    "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
-                    self.each_or_all)
+                "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
+                self.each_or_all,
+            )
 
-        '''Modify the image provider attributes based on other setttings'''
+        """Modify the image provider attributes based on other setttings"""
         d = self.illumination_image_name.provided_attributes
         if self.each_or_all == EA_ALL_ACROSS:
             d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
@@ -933,14 +1090,17 @@ fewer iterations, but less accuracy.
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
-                    "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead." % EA_ALL_ACROSS,
-                    self.each_or_all)
+                "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead."
+                % EA_ALL_ACROSS,
+                self.each_or_all,
+            )
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         """Adjust the setting values of old versions
 
         setting_values - sequence of strings that are the values for our settings
@@ -989,18 +1149,19 @@ fewer iterations, but less accuracy.
             #
             if setting_values[9] == FI_AUTOMATIC:
                 new_setting_values.extend([FI_AUTOMATIC, "10", "10"])
-            elif (setting_values[10] == cps.DO_NOT_USE or
-                          setting_values[10] == "/"):
+            elif setting_values[10] == cps.DO_NOT_USE or setting_values[10] == "/":
                 new_setting_values.extend([FI_OBJECT_SIZE, setting_values[9], "10"])
             else:
-                new_setting_values.extend([FI_MANUALLY, setting_values[9],
-                                           setting_values[10]])
+                new_setting_values.extend(
+                    [FI_MANUALLY, setting_values[9], setting_values[10]]
+                )
             #
             # The optional output images: were "Do not use" if the user
             # didn't want them. Now it's two settings each.
             #
-            for setting, name in zip(setting_values[11:],
-                                     ("IllumBlueAvg", "IllumBlueDilated")):
+            for setting, name in zip(
+                setting_values[11:], ("IllumBlueAvg", "IllumBlueDilated")
+            ):
                 if setting == cps.DO_NOT_USE:
                     new_setting_values.extend([cps.NO, name])
                 else:
@@ -1018,18 +1179,19 @@ fewer iterations, but less accuracy.
                 "2",  # spline threshold
                 "2",  # spline rescale
                 "40",  # spline maximum iterations
-                "0.001"]  # spline convergence
+                "0.001",
+            ]  # spline convergence
             variable_revision_number = 2
 
         return setting_values, variable_revision_number, from_matlab
 
     def post_pipeline_load(self, pipeline):
-        '''After loading, set each_or_all appropriately
+        """After loading, set each_or_all appropriately
 
         This function handles the legacy EA_ALL which guessed the user's
         intent: processing before the first cycle or not. We look for
         the image provider and see if it is a file image provider.
-        '''
+        """
         if self.each_or_all == EA_ALL:
             if pipeline.is_image_from_file(self.image_name.value):
                 self.each_or_all.value = EA_ALL_FIRST
@@ -1061,26 +1223,26 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
     D_MASK_COUNT = "mask_count"
 
     def serialize(self, d):
-        '''Save the internal state of the provider to a dictionary
+        """Save the internal state of the provider to a dictionary
 
         d - save to this dictionary, numpy arrays and json serializable only
-        '''
+        """
         d[self.D_NAME] = self.__name
         d[self.D_IMAGE_SUM] = self.__image_sum
         d[self.D_MASK_COUNT] = self.__mask_count
 
     @staticmethod
     def deserialize(d, module):
-        '''Restore a state saved by serialize
+        """Restore a state saved by serialize
 
         d - dictionary containing the state
         module - the module providing details on how to perform the correction
 
         returns a provider set up with the restored state
-        '''
+        """
         provider = CorrectIlluminationImageProvider(
-                d[CorrectIlluminationImageProvider.D_NAME],
-                module)
+            d[CorrectIlluminationImageProvider.D_NAME], module
+        )
         provider.__dirty = True
         provider.__image_sum = d[CorrectIlluminationImageProvider.D_IMAGE_SUM]
         provider.__mask_count = d[CorrectIlluminationImageProvider.D_MASK_COUNT]
@@ -1096,25 +1258,23 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         pimage = self.__module.preprocess_image_for_averaging(image)
         pixel_data = pimage.pixel_data
         if self.__image_sum is None:
-            self.__image_sum = np.zeros(pixel_data.shape,
-                                        pixel_data.dtype)
-            self.__mask_count = np.zeros(pixel_data.shape[:2],
-                                         np.int32)
+            self.__image_sum = np.zeros(pixel_data.shape, pixel_data.dtype)
+            self.__mask_count = np.zeros(pixel_data.shape[:2], np.int32)
         if image.has_mask:
             mask = image.mask
             if self.__image_sum.ndim == 2:
-                self.__image_sum[mask] = \
-                    self.__image_sum[mask] + pixel_data[mask]
+                self.__image_sum[mask] = self.__image_sum[mask] + pixel_data[mask]
             else:
-                self.__image_sum[mask, :] = \
+                self.__image_sum[mask, :] = (
                     self.__image_sum[mask, :] + pixel_data[mask, :]
+                )
             self.__mask_count[mask] = self.__mask_count[mask] + 1
         else:
             self.__image_sum = self.__image_sum + pixel_data
             self.__mask_count = self.__mask_count + 1
 
     def reset(self):
-        '''Reset the image sum at the start of a group'''
+        """Reset the image sum at the start of a group"""
         self.__image_sum = None
         self.__cached_image = None
         self.__cached_avg_image = None
@@ -1140,20 +1300,20 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         return self.__cached_dilated_image
 
     def calculate_image(self):
-        pixel_data = np.zeros(self.__image_sum.shape,
-                              self.__image_sum.dtype)
+        pixel_data = np.zeros(self.__image_sum.shape, self.__image_sum.dtype)
         mask = self.__mask_count > 0
         if pixel_data.ndim == 2:
             pixel_data[mask] = self.__image_sum[mask] / self.__mask_count[mask]
         else:
             for i in range(pixel_data.shape[2]):
-                pixel_data[mask, i] = \
+                pixel_data[mask, i] = (
                     self.__image_sum[mask, i] / self.__mask_count[mask]
+                )
         self.__cached_avg_image = cpi.Image(pixel_data, mask)
-        self.__cached_dilated_image = \
-            self.__module.apply_dilation(self.__cached_avg_image)
-        smoothed_image = \
-            self.__module.apply_smoothing(self.__cached_dilated_image)
+        self.__cached_dilated_image = self.__module.apply_dilation(
+            self.__cached_avg_image
+        )
+        smoothed_image = self.__module.apply_smoothing(self.__cached_dilated_image)
         self.__cached_image = self.__module.apply_scaling(smoothed_image)
         self.__dirty = False
 

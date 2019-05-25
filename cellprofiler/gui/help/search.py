@@ -10,37 +10,86 @@ import cellprofiler.gui.html.utils
 import cellprofiler.modules
 
 MENU_HELP = {
-    "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content("other_omero.rst"),
+    "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(
+        "other_omero.rst"
+    ),
     "Batch Processing": cellprofiler.gui.help.content.read_content("other_batch.rst"),
-    "How To Build A Pipeline": cellprofiler.gui.help.content.read_content("pipelines_building.rst"),
-    "Configuring Images for Analysis": cellprofiler.gui.help.content.read_content("projects_configure_images.rst"),
-    "Configuring Logging": cellprofiler.gui.help.content.read_content("other_logging.rst"),
-    "Introduction to Projects": cellprofiler.gui.help.content.read_content("projects_introduction.rst"),
-    "Load Modules": cellprofiler.gui.help.content.read_content("legacy_load_modules.rst"),
-    "Loading Image Stacks and Movies": cellprofiler.gui.help.content.read_content("projects_image_sequences.rst"),
-    "MATLAB format images": cellprofiler.gui.help.content.read_content("legacy_matlab_image.rst"),
-    "How Measurements are Named": cellprofiler.gui.help.content.read_content("output_measurements.rst"),
-    "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.read_content("other_troubleshooting.rst"),
-    "Using the Data Tools Menu": cellprofiler.gui.help.content.read_content("navigation_data_tools_menu.rst"),
-    "Using the Edit Menu": cellprofiler.gui.help.content.read_content("navigation_file_menu.rst"),
-    "Using the File Menu": cellprofiler.gui.help.content.read_content("navigation_edit_menu.rst"),
-    "Using the Window Menu": cellprofiler.gui.help.content.read_content("navigation_window_menu.rst"),
-    "How To Use The Image Tools": cellprofiler.gui.help.content.read_content("display_image_tools.rst"),
-    "Using The Interactive Navigation Toolbar":
-        cellprofiler.gui.help.content.read_content("display_interactive_navigation.rst"),
-    "Using The Display Window Menu Bar": cellprofiler.gui.help.content.read_content("display_menu_bar.rst"),
+    "How To Build A Pipeline": cellprofiler.gui.help.content.read_content(
+        "pipelines_building.rst"
+    ),
+    "Configuring Images for Analysis": cellprofiler.gui.help.content.read_content(
+        "projects_configure_images.rst"
+    ),
+    "Configuring Logging": cellprofiler.gui.help.content.read_content(
+        "other_logging.rst"
+    ),
+    "Introduction to Projects": cellprofiler.gui.help.content.read_content(
+        "projects_introduction.rst"
+    ),
+    "Load Modules": cellprofiler.gui.help.content.read_content(
+        "legacy_load_modules.rst"
+    ),
+    "Loading Image Stacks and Movies": cellprofiler.gui.help.content.read_content(
+        "projects_image_sequences.rst"
+    ),
+    "MATLAB format images": cellprofiler.gui.help.content.read_content(
+        "legacy_matlab_image.rst"
+    ),
+    "How Measurements are Named": cellprofiler.gui.help.content.read_content(
+        "output_measurements.rst"
+    ),
+    "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.read_content(
+        "other_troubleshooting.rst"
+    ),
+    "Using the Data Tools Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_data_tools_menu.rst"
+    ),
+    "Using the Edit Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_file_menu.rst"
+    ),
+    "Using the File Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_edit_menu.rst"
+    ),
+    "Using the Window Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_window_menu.rst"
+    ),
+    "How To Use The Image Tools": cellprofiler.gui.help.content.read_content(
+        "display_image_tools.rst"
+    ),
+    "Using The Interactive Navigation Toolbar": cellprofiler.gui.help.content.read_content(
+        "display_interactive_navigation.rst"
+    ),
+    "Using The Display Window Menu Bar": cellprofiler.gui.help.content.read_content(
+        "display_menu_bar.rst"
+    ),
     "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
         "navigation_parameter_sampling_menu.rst"
     ),
-    "Plate Viewer": cellprofiler.gui.help.content.read_content("output_plateviewer.rst"),
-    "Running Multiple Pipelines": cellprofiler.gui.help.content.read_content("other_multiple_pipelines.rst"),
-    "Running Your Pipeline": cellprofiler.gui.help.content.read_content("pipelines_running.rst"),
-    "Selecting Images for Input": cellprofiler.gui.help.content.read_content("projects_selecting_images.rst"),
-    "Using Spreadsheets and Databases": cellprofiler.gui.help.content.read_content("output_spreadsheets.rst"),
-    "Using the Test Menu": cellprofiler.gui.help.content.read_content("navigation_test_menu.rst"),
+    "Plate Viewer": cellprofiler.gui.help.content.read_content(
+        "output_plateviewer.rst"
+    ),
+    "Running Multiple Pipelines": cellprofiler.gui.help.content.read_content(
+        "other_multiple_pipelines.rst"
+    ),
+    "Running Your Pipeline": cellprofiler.gui.help.content.read_content(
+        "pipelines_running.rst"
+    ),
+    "Selecting Images for Input": cellprofiler.gui.help.content.read_content(
+        "projects_selecting_images.rst"
+    ),
+    "Using Spreadsheets and Databases": cellprofiler.gui.help.content.read_content(
+        "output_spreadsheets.rst"
+    ),
+    "Using the Test Menu": cellprofiler.gui.help.content.read_content(
+        "navigation_test_menu.rst"
+    ),
     "Using Plugins": cellprofiler.gui.help.content.read_content("other_plugins.rst"),
-    "Setting the Output Filename": cellprofiler.gui.help.content.read_content("legacy_output_file.rst"),
-    "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content("why_use_cellprofiler.rst")
+    "Setting the Output Filename": cellprofiler.gui.help.content.read_content(
+        "legacy_output_file.rst"
+    ),
+    "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content(
+        "why_use_cellprofiler.rst"
+    ),
 }
 
 
@@ -50,10 +99,10 @@ class Search(wx.Frame):
             parent,
             size=(
                 wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
-                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2
+                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2,
             ),
             style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
-            title="Search CellProfiler help"
+            title="Search CellProfiler help",
         )
 
         self.AutoLayout = True
@@ -77,7 +126,7 @@ class Search(wx.Frame):
 
         html_window.Bind(
             wx.html.EVT_HTML_LINK_CLICKED,
-            lambda event: self.__on_link_clicked(event, html_window)
+            lambda event: self.__on_link_clicked(event, html_window),
         )
 
         return html_window
@@ -98,9 +147,9 @@ class Search(wx.Frame):
     <header></header>Could not find "{search_text}" in CellProfiler's help documentation
 </body>
 </html>
-        """.format(**{
-                    "search_text": search_text
-                })
+        """.format(
+                    **{"search_text": search_text}
+                )
 
                 results_view.SetPage(no_results_message)
             else:
@@ -111,7 +160,7 @@ class Search(wx.Frame):
         sizer.Add(
             wx.StaticText(self, label="Search:"),
             0,
-            wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL
+            wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL,
         )
 
         sizer.AddSpacer(2)
@@ -124,10 +173,7 @@ class Search(wx.Frame):
 
         search_button.SetDefault()
 
-        search_button.Bind(
-            wx.EVT_BUTTON,
-            lambda _: __on_search(self.results_view)
-        )
+        search_button.Bind(wx.EVT_BUTTON, lambda _: __on_search(self.results_view))
 
         sizer.AddSpacer(2)
 
@@ -196,10 +242,11 @@ def __search_fn(html, text):
 
     pattern = "(<[^>]*?>|%s)" % escaped_text
 
-    return [(x.start() + start, x.end() + start) for x in re.finditer(
-        pattern, html[start:end],
-        re.IGNORECASE
-    ) if x.group(1)[0] != '<']
+    return [
+        (x.start() + start, x.end() + start)
+        for x in re.finditer(pattern, html[start:end], re.IGNORECASE)
+        if x.group(1)[0] != "<"
+    ]
 
 
 def search_module_help(text):
@@ -226,7 +273,9 @@ def search_module_help(text):
     for module_name in cellprofiler.modules.get_module_names():
         module = cellprofiler.modules.instantiate_module(module_name)
 
-        location = os.path.split(module.create_settings.__func__.__code__.co_filename)[0]
+        location = os.path.split(module.create_settings.__func__.__code__.co_filename)[
+            0
+        ]
 
         if location == cellprofiler.preferences.get_plugin_directory():
             continue
@@ -253,10 +302,9 @@ def search_module_help(text):
     <ul></ul>
 </body>
 </html>
-""".format(**{
-        "count": count,
-        "es": u"" if count == 1 else u"es"
-    })
+""".format(
+        **{"count": count, "es": u"" if count == 1 else u"es"}
+    )
 
     body = u"<br>"
 

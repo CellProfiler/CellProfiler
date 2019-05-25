@@ -23,7 +23,9 @@ TEST_MODE_REF = six.moves.urllib.parse.quote("Using test mode")
 SELECTING_IMAGES_REF = six.moves.urllib.parse.quote("Selecting images")
 WELCOME_MAIN_REF = six.moves.urllib.parse.quote("Welcome")
 
-GO_BACK = """<p>Go <a href=help://{}>back</a> to the welcome screen.</p>""".format(WELCOME_MAIN_REF)
+GO_BACK = """<p>Go <a href=help://{}>back</a> to the welcome screen.</p>""".format(
+    WELCOME_MAIN_REF
+)
 
 CONFIGURE_IMAGES_HELP = u"""\
 <!DOCTYPE html>
@@ -35,12 +37,14 @@ CONFIGURE_IMAGES_HELP = u"""\
     {CONFIGURE_IMAGES_CONTENT}
     {GO_BACK}
 </body>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "CONFIGURE_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
-    )
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "CONFIGURE_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
+            cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
+        ),
+    }
+)
 
 EXPORTING_RESULTS_HELP = u"""\
 <!DOCTYPE html>
@@ -75,11 +79,13 @@ EXPORTING_RESULTS_HELP = u"""\
     {GO_BACK}
 </body>
 </html>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON,
-    "USING_YOUR_OUTPUT_REF": cellprofiler.gui.help.content.USING_YOUR_OUTPUT_REF
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON,
+        "USING_YOUR_OUTPUT_REF": cellprofiler.gui.help.content.USING_YOUR_OUTPUT_REF,
+    }
+)
 
 IDENTIFY_FEATUREES_HELP = u"""\
 <!DOCTYPE html>
@@ -147,10 +153,12 @@ IDENTIFY_FEATUREES_HELP = u"""\
     {GO_BACK}
 </body>
 </html>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON,
+    }
+)
 
 IN_APP_HELP = u"""\
 <!DOCTYPE html>
@@ -167,10 +175,12 @@ IN_APP_HELP = u"""\
     {GO_BACK}
 </body>
 </html>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON,
+    }
+)
 
 MAKING_MEASUREMENTS_HELP = u"""\
 <!DOCTYPE html>
@@ -247,12 +257,14 @@ MAKING_MEASUREMENTS_HELP = u"""\
     {GO_BACK}
 </body>
 </html>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "MEASUREMENT_NAMING_HELP": cellprofiler.gui.help.content.MEASUREMENT_NAMING_HELP,
-    "MODULE_ADD_BUTTON": cellprofiler.gui.help.content.MODULE_ADD_BUTTON,
-    "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "MEASUREMENT_NAMING_HELP": cellprofiler.gui.help.content.MEASUREMENT_NAMING_HELP,
+        "MODULE_ADD_BUTTON": cellprofiler.gui.help.content.MODULE_ADD_BUTTON,
+        "MODULE_HELP_BUTTON": cellprofiler.gui.help.content.MODULE_HELP_BUTTON,
+    }
+)
 
 RUNNING_YOUR_PIPELINE_HELP = u"""\
 <!DOCTYPE html>
@@ -264,12 +276,14 @@ RUNNING_YOUR_PIPELINE_HELP = u"""\
     {RUNNING_YOUR_PIPELINE_CONTENT}
     {GO_BACK}
 </body>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "RUNNING_YOUR_PIPELINE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.read_content("pipelines_running.rst")
-    )
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "RUNNING_YOUR_PIPELINE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
+            cellprofiler.gui.help.content.read_content("pipelines_running.rst")
+        ),
+    }
+)
 
 TEST_MODE_HELP = u"""\
 <!DOCTYPE html>
@@ -281,12 +295,14 @@ TEST_MODE_HELP = u"""\
     {TEST_MODE_CONTENT}
     {GO_BACK}
 </body>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "TEST_MODE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
-    )
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "TEST_MODE_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
+            cellprofiler.gui.help.content.read_content("navigation_test_menu.rst")
+        ),
+    }
+)
 
 SELECTING_IMAGES_HELP = u"""\
 <!DOCTYPE html>
@@ -298,12 +314,14 @@ SELECTING_IMAGES_HELP = u"""\
     {SELECTING_IMAGES_CONTENT}
     {GO_BACK}
 </body>
-""".format(**{
-    "GO_BACK": GO_BACK,
-    "SELECTING_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-        cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
-    )
-})
+""".format(
+    **{
+        "GO_BACK": GO_BACK,
+        "SELECTING_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
+            cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
+        ),
+    }
+)
 
 WELCOME_MAIN = u"""\
 <!DOCTYPE html>
@@ -435,17 +453,19 @@ WELCOME_MAIN = u"""\
     Welcome Screen</i> at any time.</p>
 </body>
 </html>
-""".format(**{
-    "CONFIGURE_IMAGES_REF": CONFIGURE_IMAGES_REF,
-    "EXPORTING_RESULTS_REF": EXPORTING_RESULTS_REF,
-    "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
-    "IN_APP_HELP_REF": IN_APP_HELP_REF,
-    "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
-    "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
-    "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
-    "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
-    "TEST_MODE_REF": TEST_MODE_REF
-})
+""".format(
+    **{
+        "CONFIGURE_IMAGES_REF": CONFIGURE_IMAGES_REF,
+        "EXPORTING_RESULTS_REF": EXPORTING_RESULTS_REF,
+        "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
+        "IN_APP_HELP_REF": IN_APP_HELP_REF,
+        "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
+        "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
+        "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
+        "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
+        "TEST_MODE_REF": TEST_MODE_REF,
+    }
+)
 
 
 class Welcome(wx.Frame):
@@ -488,7 +508,7 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
         RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
         TEST_MODE_REF: TEST_MODE_HELP,
         SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
-        WELCOME_MAIN_REF: WELCOME_MAIN
+        WELCOME_MAIN_REF: WELCOME_MAIN,
     }
 
     def __init__(self, parent):
@@ -513,25 +533,29 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
     @staticmethod
     def __load_example_pipeline(example_name):
         example_dir = pkg_resources.resource_filename(
-            "cellprofiler",
-            os.path.join("data", "examples", example_name)
+            "cellprofiler", os.path.join("data", "examples", example_name)
         )
 
-        pipeline_pathname = os.path.join(example_dir, "{:s}.cppipe".format(example_name))
+        pipeline_pathname = os.path.join(
+            example_dir, "{:s}.cppipe".format(example_name)
+        )
 
         images_dir = os.path.join(example_dir, "images")
 
         try:
+
             def load(pathname=pipeline_pathname):
                 pipeline = wx.GetApp().frame.pipeline
                 pipeline.load(pathname)
-                pipeline.add_pathnames_to_file_list(glob.glob(os.path.join(images_dir, "*")))
+                pipeline.add_pathnames_to_file_list(
+                    glob.glob(os.path.join(images_dir, "*"))
+                )
 
                 wx.MessageBox(
-                    "Now that you have loaded an example pipeline, press the \"Analyze images\" button to access and"
+                    'Now that you have loaded an example pipeline, press the "Analyze images" button to access and'
                     " process a small image set from the CellProfiler website so you can see how CellProfiler works.",
                     "",
-                    wx.ICON_INFORMATION
+                    wx.ICON_INFORMATION,
                 )
 
             wx.CallAfter(load)
@@ -539,7 +563,7 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
             wx.MessageBox(
                 "CellProfiler was unable to load {}".format(pipeline_pathname),
                 "Error loading pipeline",
-                style=wx.OK | wx.ICON_ERROR
+                style=wx.OK | wx.ICON_ERROR,
             )
 
     def __set_startup_blurb(self):

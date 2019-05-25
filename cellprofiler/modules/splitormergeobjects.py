@@ -82,9 +82,9 @@ of the objects having their numbers reordered. This reassignment
 information is stored as a per-object measurement with both the original
 input and reassigned output objects, in case you need to track the
 reassignment.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
 
 OPTION_MERGE = "Merge"
 OPTION_SPLIT = "Split"
@@ -106,23 +106,28 @@ class SplitOrMergeObjects(cpm.Module):
 
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
-                "Select the input objects",
-                cps.NONE, doc="""\
+            "Select the input objects",
+            cps.NONE,
+            doc="""\
 Select the objects you would like to split or merge (that is,
 whose object numbers you want to reassign). You can
 use any objects that were created in previous modules, such as
-**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**."""
+**IdentifyPrimaryObjects** or **IdentifySecondaryObjects**.""",
         )
 
         self.output_objects_name = cps.ObjectNameProvider(
-                "Name the new objects", "RelabeledNuclei", doc="""\
+            "Name the new objects",
+            "RelabeledNuclei",
+            doc="""\
 Enter a name for the objects that have been split or merged (that is,
 whose numbers have been reassigned).
-You can use this name in subsequent modules that take objects as inputs."""
+You can use this name in subsequent modules that take objects as inputs.""",
         )
 
         self.relabel_option = cps.Choice(
-                "Operation", [OPTION_MERGE, OPTION_SPLIT], doc="""\
+            "Operation",
+            [OPTION_MERGE, OPTION_SPLIT],
+            doc="""\
 You can choose one of the following options:
 
 -  *%(OPTION_MERGE)s:* Assign adjacent or nearby objects the same label
@@ -131,11 +136,14 @@ You can choose one of the following options:
    by an **Identify** module.
 -  *%(OPTION_SPLIT)s:* Assign a unique number to separate objects that
    currently share the same label. This can occur if you applied certain
-   operations in the **Morph** module to objects.""" % globals()
+   operations in the **Morph** module to objects."""
+            % globals(),
         )
 
         self.merge_option = cps.Choice(
-                "Merging method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""\
+            "Merging method",
+            [UNIFY_DISTANCE, UNIFY_PARENT],
+            doc="""\
 *(Used only with the "%(OPTION_MERGE)s" option)*
 
 You can merge objects in one of two ways:
@@ -146,12 +154,14 @@ You can merge objects in one of two ways:
    relationship to another object will be merged. This is not to be
    confused with using the **RelateObjects** module, in which the
    related objects remain as individual objects. See **RelateObjects**
-   for more details.""" % globals()
+   for more details."""
+            % globals(),
         )
 
         self.merging_method = cps.Choice(
-                "Output object type", [UM_DISCONNECTED, UM_CONVEX_HULL],
-                doc="""\
+            "Output object type",
+            [UM_DISCONNECTED, UM_CONVEX_HULL],
+            doc="""\
 *(Used only with the "%(UNIFY_PARENT)s" merging method)*
 
 **SplitOrMergeObjects** can either merge the child objects and keep them
@@ -160,12 +170,15 @@ hull) that encloses all of a parent’s child objects. The convex hull
 will be truncated to include only those pixels in the parent - in that
 case it may not truly be convex. Choose *%(UM_DISCONNECTED)s* to leave
 the children as disconnected pieces. Choose *%(UM_CONVEX_HULL)s* to
-create an output object that is the convex hull around them all.""" % globals()
+create an output object that is the convex hull around them all."""
+            % globals(),
         )
 
         self.parent_object = cps.Choice(
-                "Select the parent object", [cps.NONE],
-                choices_fn=self.get_parent_choices, doc="""\
+            "Select the parent object",
+            [cps.NONE],
+            choices_fn=self.get_parent_choices,
+            doc="""\
 Select the parent object that will be used to merge the child objects.
 Please note the following:
 
@@ -173,12 +186,14 @@ Please note the following:
    objects using a prior **RelateObjects** module.
 -  Primary objects and their associated secondary objects are already in
    a one-to-one parent-child relationship, so it makes no sense to merge
-   them here."""
+   them here.""",
         )
 
         self.distance_threshold = cps.Integer(
-                "Maximum distance within which to merge objects",
-                0, minval=0, doc="""\
+            "Maximum distance within which to merge objects",
+            0,
+            minval=0,
+            doc="""\
 *(Used only with the "%(OPTION_MERGE)s" option and the "%(UNIFY_DISTANCE)s"
 method)*
 
@@ -189,37 +204,51 @@ not actually connect or bridge the two objects by adding any new pixels;
 it simply assigns the same object number to the portions of the object.
 The new, merged object may therefore consist of two or more unconnected
 components. If you want to add pixels around objects, see
-**ExpandOrShrink** or **Morph**.""" % globals()
+**ExpandOrShrink** or **Morph**."""
+            % globals(),
         )
 
         self.wants_image = cps.Binary(
-                "Merge using a grayscale image?", False, doc="""\
+            "Merge using a grayscale image?",
+            False,
+            doc="""\
 *(Used only with the "%(OPTION_MERGE)s" option)*
 
 Select *%(YES)s* to use the objects’ intensity features to determine
 whether two objects should be merged. If you choose to use a grayscale
 image, *%(OPTION_MERGE)s* will merge two objects only if they are
 within the distance you have specified *and* certain criteria about the
-objects within the grayscale image are met.""" % globals())
+objects within the grayscale image are met."""
+            % globals(),
+        )
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the grayscale image to guide merging", cps.NONE, doc="""\
+            "Select the grayscale image to guide merging",
+            cps.NONE,
+            doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 merging)*
 
-Select the name of an image loaded or created by a previous module.""")
+Select the name of an image loaded or created by a previous module.""",
+        )
 
         self.minimum_intensity_fraction = cps.Float(
-                "Minimum intensity fraction", .9, minval=0, maxval=1, doc="""\
+            "Minimum intensity fraction",
+            0.9,
+            minval=0,
+            maxval=1,
+            doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 merging)*
 
 Select the minimum acceptable intensity fraction. This will be used as
-described for the method you choose in the next setting.""")
+described for the method you choose in the next setting.""",
+        )
 
         self.where_algorithm = cps.Choice(
-                "Method to find object intensity",
-                [CA_CLOSEST_POINT, CA_CENTROIDS], doc="""\
+            "Method to find object intensity",
+            [CA_CLOSEST_POINT, CA_CENTROIDS],
+            doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 merging)*
 
@@ -254,43 +283,56 @@ above):
    An example of a feature that satisfies the above constraints is a
    line of pixels that connects two neighboring objects and is roughly
    the same intensity as the boundary pixels of both (such as an axon
-   connecting two neurons' soma).""" % globals())
+   connecting two neurons' soma)."""
+            % globals(),
+        )
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()
         choices = [cps.NONE]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            if (object_name == self.objects_name.value and
-                    feature.startswith(C_PARENT)):
-                choices.append(feature[(len(C_PARENT) + 1):])
+            if object_name == self.objects_name.value and feature.startswith(C_PARENT):
+                choices.append(feature[(len(C_PARENT) + 1) :])
         return choices
 
     def validate_module(self, pipeline):
-        if self.relabel_option == OPTION_MERGE and self.merge_option == UNIFY_PARENT and self.parent_object.value == cps.NONE:
+        if (
+            self.relabel_option == OPTION_MERGE
+            and self.merge_option == UNIFY_PARENT
+            and self.parent_object.value == cps.NONE
+        ):
             raise cps.ValidationError(
-                    '%s is not a valid object name' % cps.NONE,
-                    self.parent_object)
+                "%s is not a valid object name" % cps.NONE, self.parent_object
+            )
 
     def settings(self):
-        return [self.objects_name, self.output_objects_name,
-                self.relabel_option, self.distance_threshold,
-                self.wants_image, self.image_name,
-                self.minimum_intensity_fraction,
-                self.where_algorithm,
-                self.merge_option, self.parent_object,
-                self.merging_method]
+        return [
+            self.objects_name,
+            self.output_objects_name,
+            self.relabel_option,
+            self.distance_threshold,
+            self.wants_image,
+            self.image_name,
+            self.minimum_intensity_fraction,
+            self.where_algorithm,
+            self.merge_option,
+            self.parent_object,
+            self.merging_method,
+        ]
 
     def visible_settings(self):
-        result = [self.objects_name, self.output_objects_name,
-                  self.relabel_option]
+        result = [self.objects_name, self.output_objects_name, self.relabel_option]
         if self.relabel_option == OPTION_MERGE:
             result += [self.merge_option]
             if self.merge_option == UNIFY_DISTANCE:
                 result += [self.distance_threshold, self.wants_image]
                 if self.wants_image:
-                    result += [self.image_name, self.minimum_intensity_fraction,
-                               self.where_algorithm]
+                    result += [
+                        self.image_name,
+                        self.minimum_intensity_fraction,
+                        self.where_algorithm,
+                    ]
             elif self.merge_option == UNIFY_PARENT:
                 result += [self.merging_method, self.parent_object]
         return result
@@ -320,7 +362,8 @@ above):
             elif self.merge_option == UNIFY_PARENT:
                 parents_name = self.parent_object.value
                 parents_of = workspace.measurements[
-                    objects_name, "_".join((C_PARENT, parents_name))]
+                    objects_name, "_".join((C_PARENT, parents_name))
+                ]
                 output_labels = labels.copy().astype(np.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
                 if self.merging_method == UM_CONVEX_HULL:
@@ -331,95 +374,130 @@ above):
         output_objects = cpo.Objects()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
-            output_objects.small_removed_segmented = \
-                copy_labels(objects.small_removed_segmented, output_labels)
+            output_objects.small_removed_segmented = copy_labels(
+                objects.small_removed_segmented, output_labels
+            )
         if objects.has_unedited_segmented:
-            output_objects.unedited_segmented = \
-                copy_labels(objects.unedited_segmented, output_labels)
+            output_objects.unedited_segmented = copy_labels(
+                objects.unedited_segmented, output_labels
+            )
         output_objects.parent_image = objects.parent_image
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 
         measurements = workspace.measurements
-        add_object_count_measurements(measurements,
-                                      self.output_objects_name.value,
-                                      np.max(output_objects.segmented))
-        add_object_location_measurements(measurements,
-                                         self.output_objects_name.value,
-                                         output_objects.segmented)
+        add_object_count_measurements(
+            measurements,
+            self.output_objects_name.value,
+            np.max(output_objects.segmented),
+        )
+        add_object_location_measurements(
+            measurements, self.output_objects_name.value, output_objects.segmented
+        )
 
         #
         # Relate the output objects to the input ones and record
         # the relationship.
         #
-        children_per_parent, parents_of_children = \
-            objects.relate_children(output_objects)
-        measurements.add_measurement(self.objects_name.value,
-                                     FF_CHILDREN_COUNT %
-                                     self.output_objects_name.value,
-                                     children_per_parent)
-        measurements.add_measurement(self.output_objects_name.value,
-                                     FF_PARENT % self.objects_name.value,
-                                     parents_of_children)
+        children_per_parent, parents_of_children = objects.relate_children(
+            output_objects
+        )
+        measurements.add_measurement(
+            self.objects_name.value,
+            FF_CHILDREN_COUNT % self.output_objects_name.value,
+            children_per_parent,
+        )
+        measurements.add_measurement(
+            self.output_objects_name.value,
+            FF_PARENT % self.objects_name.value,
+            parents_of_children,
+        )
 
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
             if self.merge_option == UNIFY_PARENT:
-                workspace.display_data.parent_labels = \
-                    workspace.object_set.get_objects(self.parent_object.value).segmented
+                workspace.display_data.parent_labels = workspace.object_set.get_objects(
+                    self.parent_object.value
+                ).segmented
 
     def display(self, workspace, figure):
-        '''Display the results of relabeling
+        """Display the results of relabeling
 
         workspace - workspace containing saved display data
-        '''
+        """
 
         figure.set_subplots((2, 1))
         ax = figure.subplot_imshow_labels(
-                0, 0, workspace.display_data.orig_labels,
-                title=self.objects_name.value)
+            0, 0, workspace.display_data.orig_labels, title=self.objects_name.value
+        )
 
         if self.relabel_option == OPTION_MERGE and (
-                    (self.merge_option == UNIFY_DISTANCE and self.wants_image) or (self.merge_option == UNIFY_PARENT)):
+            (self.merge_option == UNIFY_DISTANCE and self.wants_image)
+            or (self.merge_option == UNIFY_PARENT)
+        ):
             if self.merge_option == UNIFY_DISTANCE and self.wants_image:
                 image = workspace.display_data.image
                 cplabels = [
-                    dict(name=self.output_objects_name.value,
-                         labels=[workspace.display_data.output_labels]),
-                    dict(name=self.objects_name.value,
-                         labels=[workspace.display_data.orig_labels])]
+                    dict(
+                        name=self.output_objects_name.value,
+                        labels=[workspace.display_data.output_labels],
+                    ),
+                    dict(
+                        name=self.objects_name.value,
+                        labels=[workspace.display_data.orig_labels],
+                    ),
+                ]
 
             elif self.merge_option == UNIFY_PARENT:
                 image = np.zeros(workspace.display_data.output_labels.shape)
                 cplabels = [
-                    dict(name=self.output_objects_name.value,
-                         labels=[workspace.display_data.output_labels]),
-                    dict(name=self.parent_object.value,
-                         labels=[workspace.display_data.parent_labels]),
-                    dict(name=self.objects_name.value,
-                         labels=[workspace.display_data.orig_labels],
-                         mode="none")
+                    dict(
+                        name=self.output_objects_name.value,
+                        labels=[workspace.display_data.output_labels],
+                    ),
+                    dict(
+                        name=self.parent_object.value,
+                        labels=[workspace.display_data.parent_labels],
+                    ),
+                    dict(
+                        name=self.objects_name.value,
+                        labels=[workspace.display_data.orig_labels],
+                        mode="none",
+                    ),
                 ]
             if image.ndim == 2:
                 figure.subplot_imshow_grayscale(
-                        1, 0, image, title=self.output_objects_name.value,
-                        cplabels=cplabels, sharexy=ax)
+                    1,
+                    0,
+                    image,
+                    title=self.output_objects_name.value,
+                    cplabels=cplabels,
+                    sharexy=ax,
+                )
             else:
                 figure.subplot_imshow_color(
-                        1, 0, image, title=self.output_objects_name.value,
-                        cplabels=cplabels, sharexy=ax)
+                    1,
+                    0,
+                    image,
+                    title=self.output_objects_name.value,
+                    cplabels=cplabels,
+                    sharexy=ax,
+                )
         else:
-            figure.subplot_imshow_labels(1, 0,
-                                         workspace.display_data.output_labels,
-                                         title=self.output_objects_name.value,
-                                         sharexy=ax)
+            figure.subplot_imshow_labels(
+                1,
+                0,
+                workspace.display_data.output_labels,
+                title=self.output_objects_name.value,
+                sharexy=ax,
+            )
 
     def filter_using_image(self, workspace, mask):
-        '''Filter out connections using local intensity minima between objects
+        """Filter out connections using local intensity minima between objects
 
         workspace - the workspace for the image set
         mask - mask of background points within the minimum distance
-        '''
+        """
         #
         # NOTE: This is an efficient implementation and an improvement
         #       in accuracy over the Matlab version. It would be faster and
@@ -449,9 +527,9 @@ above):
         # Do a distance transform into the background to label points
         # in the background with their closest foreground object
         #
-        i, j = scind.distance_transform_edt(labels == 0,
-                                            return_indices=True,
-                                            return_distances=False)
+        i, j = scind.distance_transform_edt(
+            labels == 0, return_indices=True, return_distances=False
+        )
         confluent_labels = labels[i, j]
         confluent_labels[~mask] = 0
         if self.where_algorithm == CA_CLOSEST_POINT:
@@ -489,8 +567,11 @@ above):
             #
             center_i, center_j = morph.centers_of_labels(labels)
             indexes, counts, i, j = morph.get_line_pts(
-                    center_i[c_i - 1], center_j[c_i - 1],
-                    center_i[c_j - 1], center_j[c_j - 1])
+                center_i[c_i - 1],
+                center_j[c_i - 1],
+                center_i[c_j - 1],
+                center_j[c_j - 1],
+            )
             #
             # The indexes of the centroids at pt1
             #
@@ -499,8 +580,8 @@ above):
             # The minimum of the intensities at pt0 and pt1
             #
             centroid_intensities = np.minimum(
-                    image[i[indexes], j[indexes]],
-                    image[i[last_indexes], j[last_indexes]])
+                image[i[indexes], j[indexes]], image[i[last_indexes], j[last_indexes]]
+            )
             #
             # Assign label numbers to each point so we can use
             # scipy.ndimage.minimum. The label numbers are indexes into
@@ -535,9 +616,13 @@ above):
         new_labels[labels != 0] = new_indexes[labels[labels != 0]]
         return new_labels
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab:
-            raise NotImplementedError("There is no automatic upgrade path for this module from MATLAB pipelines.")
+            raise NotImplementedError(
+                "There is no automatic upgrade path for this module from MATLAB pipelines."
+            )
 
         if variable_revision_number == 1:
             # Added outline options
@@ -567,21 +652,28 @@ above):
         return setting_values, variable_revision_number, False
 
     def get_image(self, workspace):
-        '''Get the image for image-directed merging'''
+        """Get the image for image-directed merging"""
         objects = workspace.object_set.get_objects(self.objects_name.value)
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.get_image(
+            self.image_name.value, must_be_grayscale=True
+        )
         image = objects.crop_image_similarly(image.pixel_data)
         return image
 
     def get_measurement_columns(self, pipeline):
         columns = get_object_measurement_columns(self.output_objects_name.value)
-        columns += [(self.output_objects_name.value,
-                     FF_PARENT % self.objects_name.value,
-                     cpmeas.COLTYPE_INTEGER),
-                    (self.objects_name.value,
-                     FF_CHILDREN_COUNT % self.output_objects_name.value,
-                     cpmeas.COLTYPE_INTEGER)]
+        columns += [
+            (
+                self.output_objects_name.value,
+                FF_PARENT % self.objects_name.value,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+            (
+                self.objects_name.value,
+                FF_CHILDREN_COUNT % self.output_objects_name.value,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+        ]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -589,12 +681,12 @@ above):
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if object_name == 'Image':
-            return ['Count']
+        if object_name == "Image":
+            return ["Count"]
         elif object_name == self.output_objects_name.value:
-            return ['Location', 'Parent', 'Number']
+            return ["Location", "Parent", "Number"]
         elif object_name == self.objects_name.value:
-            return ['Children']
+            return ["Children"]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
@@ -603,25 +695,25 @@ above):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if object_name == 'Image' and category == 'Count':
+        if object_name == "Image" and category == "Count":
             return [self.output_objects_name.value]
-        elif object_name == self.output_objects_name.value and category == 'Location':
-            return ['Center_X', 'Center_Y']
-        elif object_name == self.output_objects_name.value and category == 'Parent':
+        elif object_name == self.output_objects_name.value and category == "Location":
+            return ["Center_X", "Center_Y"]
+        elif object_name == self.output_objects_name.value and category == "Parent":
             return [self.objects_name.value]
-        elif object_name == self.output_objects_name.value and category == 'Number':
-            return ['Object_Number']
-        elif object_name == self.objects_name.value and category == 'Children':
+        elif object_name == self.output_objects_name.value and category == "Number":
+            return ["Object_Number"]
+        elif object_name == self.objects_name.value and category == "Children":
             return ["%s_Count" % self.output_objects_name.value]
         return []
 
 
 def copy_labels(labels, segmented):
-    '''Carry differences between orig_segmented and new_segmented into "labels"
+    """Carry differences between orig_segmented and new_segmented into "labels"
 
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
-    '''
+    """
     max_labels = np.max(segmented)
     seglabel = scind.minimum(labels, segmented, np.arange(1, max_labels + 1))
     labels_new = labels.copy()

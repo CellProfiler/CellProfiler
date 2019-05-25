@@ -21,7 +21,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         href = linkinfo.Href
         if href.startswith("#"):
             super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
-        elif href.startswith('http://') or href.startswith("https://"):
+        elif href.startswith("http://") or href.startswith("https://"):
             webbrowser.open(href)
         else:
             newpage = utils.find_link(href)
@@ -34,7 +34,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         if file_format == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
                 path = cellprofiler.icons.get_builtin_images_path()
-                full_path = os.path.join(path, url[len(MEMORY_SCHEME):])
+                full_path = os.path.join(path, url[len(MEMORY_SCHEME) :])
                 if sys.platform.startswith("win"):
                     my_url = full_path
                 else:

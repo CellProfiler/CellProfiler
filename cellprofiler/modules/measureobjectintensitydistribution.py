@@ -2,8 +2,12 @@
 
 import cellprofiler.gui.help.content
 
-MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource('MeasureObjectIntensityDistribution_Magnitude_Phase.png')
-MeasureObjectIntensityDistribution_Edges_Centers = cellprofiler.gui.help.content.image_resource('MeasureObjectIntensityDistribution_Edges_Centers.png')
+MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
+    "MeasureObjectIntensityDistribution_Magnitude_Phase.png"
+)
+MeasureObjectIntensityDistribution_Edges_Centers = cellprofiler.gui.help.content.image_resource(
+    "MeasureObjectIntensityDistribution_Edges_Centers.png"
+)
 
 __doc__ = """
 MeasureObjectIntensityDistribution
@@ -63,10 +67,12 @@ Measurements made by this module
 .. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
 .. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
 
-""".format(**{
-    "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
-    "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers
-})
+""".format(
+    **{
+        "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
+        "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers,
+    }
+)
 
 import centrosome.cpmorphology
 import centrosome.propagate
@@ -85,26 +91,26 @@ import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
 
-C_SELF = 'These objects'
-C_CENTERS_OF_OTHER_V2 = 'Other objects'
-C_CENTERS_OF_OTHER = 'Centers of other objects'
-C_EDGES_OF_OTHER = 'Edges of other objects'
+C_SELF = "These objects"
+C_CENTERS_OF_OTHER_V2 = "Other objects"
+C_CENTERS_OF_OTHER = "Centers of other objects"
+C_EDGES_OF_OTHER = "Edges of other objects"
 C_ALL = [C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER]
 
-Z_NONE = 'None'
+Z_NONE = "None"
 Z_MAGNITUDES = "Magnitudes only"
 Z_MAGNITUDES_AND_PHASE = "Magnitudes and phase"
 Z_ALL = [Z_NONE, Z_MAGNITUDES, Z_MAGNITUDES_AND_PHASE]
 
-M_CATEGORY = 'RadialDistribution'
-F_FRAC_AT_D = 'FracAtD'
-F_MEAN_FRAC = 'MeanFrac'
-F_RADIAL_CV = 'RadialCV'
+M_CATEGORY = "RadialDistribution"
+F_FRAC_AT_D = "FracAtD"
+F_MEAN_FRAC = "MeanFrac"
+F_RADIAL_CV = "RadialCV"
 F_ALL = [F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV]
 
-FF_SCALE = '%dof%d'
-FF_OVERFLOW = 'Overflow'
-FF_GENERIC = '_%s_' + FF_SCALE
+FF_SCALE = "%dof%d"
+FF_OVERFLOW = "Overflow"
+FF_GENERIC = "_%s_" + FF_SCALE
 FF_FRAC_AT_D = F_FRAC_AT_D + FF_GENERIC
 FF_MEAN_FRAC = F_MEAN_FRAC + FF_GENERIC
 FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
@@ -112,28 +118,28 @@ FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
 FF_ZERNIKE_MAGNITUDE = "ZernikeMagnitude"
 FF_ZERNIKE_PHASE = "ZernikePhase"
 
-MF_FRAC_AT_D = '_'.join((M_CATEGORY, FF_FRAC_AT_D))
-MF_MEAN_FRAC = '_'.join((M_CATEGORY, FF_MEAN_FRAC))
-MF_RADIAL_CV = '_'.join((M_CATEGORY, FF_RADIAL_CV))
-OF_FRAC_AT_D = '_'.join((M_CATEGORY, F_FRAC_AT_D, "%s", FF_OVERFLOW))
-OF_MEAN_FRAC = '_'.join((M_CATEGORY, F_MEAN_FRAC, "%s", FF_OVERFLOW))
-OF_RADIAL_CV = '_'.join((M_CATEGORY, F_RADIAL_CV, "%s", FF_OVERFLOW))
+MF_FRAC_AT_D = "_".join((M_CATEGORY, FF_FRAC_AT_D))
+MF_MEAN_FRAC = "_".join((M_CATEGORY, FF_MEAN_FRAC))
+MF_RADIAL_CV = "_".join((M_CATEGORY, FF_RADIAL_CV))
+OF_FRAC_AT_D = "_".join((M_CATEGORY, F_FRAC_AT_D, "%s", FF_OVERFLOW))
+OF_MEAN_FRAC = "_".join((M_CATEGORY, F_MEAN_FRAC, "%s", FF_OVERFLOW))
+OF_RADIAL_CV = "_".join((M_CATEGORY, F_RADIAL_CV, "%s", FF_OVERFLOW))
 
-'''# of settings aside from groups'''
+"""# of settings aside from groups"""
 SETTINGS_STATIC_COUNT = 3
-'''# of settings in image group'''
+"""# of settings in image group"""
 SETTINGS_IMAGE_GROUP_COUNT = 1
-'''# of settings in object group'''
+"""# of settings in object group"""
 SETTINGS_OBJECT_GROUP_COUNT = 3
-'''# of settings in bin group, v1'''
+"""# of settings in bin group, v1"""
 SETTINGS_BIN_GROUP_COUNT_V1 = 1
-'''# of settings in bin group, v2'''
+"""# of settings in bin group, v2"""
 SETTINGS_BIN_GROUP_COUNT_V2 = 3
 SETTINGS_BIN_GROUP_COUNT = 3
-'''# of settings in heatmap group, v4'''
+"""# of settings in heatmap group, v4"""
 SETTINGS_HEATMAP_GROUP_COUNT_V4 = 7
 SETTINGS_HEATMAP_GROUP_COUNT = 7
-'''Offset of center choice in object group'''
+"""Offset of center choice in object group"""
 SETTINGS_CENTER_CHOICE_OFFSET = 1
 
 A_FRAC_AT_D = "Fraction at Distance"
@@ -144,7 +150,8 @@ MEASUREMENT_CHOICES = [A_FRAC_AT_D, A_MEAN_FRAC, A_RADIAL_CV]
 MEASUREMENT_ALIASES = {
     A_FRAC_AT_D: MF_FRAC_AT_D,
     A_MEAN_FRAC: MF_MEAN_FRAC,
-    A_RADIAL_CV: MF_RADIAL_CV}
+    A_RADIAL_CV: MF_RADIAL_CV,
+}
 
 
 class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
@@ -185,12 +192,14 @@ useful information for classifying phenotypes.
 |MeasureObjectIntensityDistribution_image0|
 
 .. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
-""".format(**{
-                "Z_NONE": Z_NONE,
-                "Z_MAGNITUDES": Z_MAGNITUDES,
-                "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
-                "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase
-            })
+""".format(
+                **{
+                    "Z_NONE": Z_NONE,
+                    "Z_MAGNITUDES": Z_MAGNITUDES,
+                    "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                    "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
+                }
+            ),
         )
 
         self.zernike_degree = cellprofiler.setting.Integer(
@@ -204,22 +213,30 @@ useful information for classifying phenotypes.
 This is the maximum radial moment that will be calculated. There are
 increasing numbers of azimuthal moments as you increase the radial
 moment, so higher values are increasingly expensive to calculate.
-""".format(**{
-                "wants_zernikes": self.wants_zernikes.text,
-                "Z_MAGNITUDES": Z_MAGNITUDES,
-                "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE
-            })
+""".format(
+                **{
+                    "wants_zernikes": self.wants_zernikes.text,
+                    "Z_MAGNITUDES": Z_MAGNITUDES,
+                    "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                }
+            ),
         )
 
-        self.add_image_button = cellprofiler.setting.DoSomething("", "Add another image", self.add_image)
+        self.add_image_button = cellprofiler.setting.DoSomething(
+            "", "Add another image", self.add_image
+        )
 
         self.spacer_1 = cellprofiler.setting.Divider()
 
-        self.add_object_button = cellprofiler.setting.DoSomething("", "Add another object", self.add_object)
+        self.add_object_button = cellprofiler.setting.DoSomething(
+            "", "Add another object", self.add_object
+        )
 
         self.spacer_2 = cellprofiler.setting.Divider()
 
-        self.add_bin_count_button = cellprofiler.setting.DoSomething("", "Add another set of bins", self.add_bin_count)
+        self.add_bin_count_button = cellprofiler.setting.DoSomething(
+            "", "Add another set of bins", self.add_bin_count
+        )
 
         self.spacer_3 = cellprofiler.setting.Divider()
 
@@ -231,7 +248,8 @@ moment, so higher values are increasingly expensive to calculate.
 Press this button to add a display of one of the radial distribution
 measurements. Each radial band of the object is colored using a
 heatmap according to the measurement value for that band.
-""")
+""",
+        )
 
         self.add_image(can_remove=False)
 
@@ -250,19 +268,16 @@ heatmap according to the measurement value for that band.
             cellprofiler.setting.ImageNameSubscriber(
                 "Select an image to measure",
                 cellprofiler.setting.NONE,
-                doc="Select the image whose intensity distribution you want to measure."
-            )
+                doc="Select the image whose intensity distribution you want to measure.",
+            ),
         )
 
         if can_remove:
             group.append(
                 "remover",
                 cellprofiler.setting.RemoveSettingButton(
-                    "",
-                    "Remove this image",
-                    self.images,
-                    group
-                )
+                    "", "Remove this image", self.images, group
+                ),
             )
 
         self.images.append(group)
@@ -278,8 +293,8 @@ heatmap according to the measurement value for that band.
             cellprofiler.setting.ObjectNameSubscriber(
                 "Select objects to measure",
                 cellprofiler.setting.NONE,
-                doc="Select the objects whose intensity distribution you want to measure."
-            )
+                doc="Select the objects whose intensity distribution you want to measure.",
+            ),
         )
 
         group.append(
@@ -307,13 +322,15 @@ previously identified Nuclei objects as the centers
 |MeasureObjectIntensityDistribution_image1|
 
 .. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
-""".format(**{
-                    "C_SELF": C_SELF,
-                    "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
-                    "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER,
-                    "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers
-                })
-            )
+""".format(
+                    **{
+                        "C_SELF": C_SELF,
+                        "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
+                        "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER,
+                        "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers,
+                    }
+                ),
+            ),
         )
 
         group.append(
@@ -327,22 +344,18 @@ previously identified Nuclei objects as the centers
 Select the object to use as the center, or select *None* to use the
 input object centers (which is the same as selecting *{C_SELF}* for the
 object centers).
-""".format(**{
-                    "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
-                    "C_SELF": C_SELF
-                })
-            )
+""".format(
+                    **{"C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER, "C_SELF": C_SELF}
+                ),
+            ),
         )
 
         if can_remove:
             group.append(
                 "remover",
                 cellprofiler.setting.RemoveSettingButton(
-                    "",
-                    "Remove this object",
-                    self.objects,
-                    group
-                )
+                    "", "Remove this object", self.objects, group
+                ),
             )
 
         self.objects.append(group)
@@ -367,11 +380,10 @@ distance. For this option, you will be asked to specify a maximum
 distance so that each object will have the same measurements (which
 might be zero for small objects) and so that the measurements can be
 taken without knowing the maximum object radius before the run starts.
-""".format(**{
-                    "YES": cellprofiler.setting.YES,
-                    "NO": cellprofiler.setting.NO
-                })
-            )
+""".format(
+                    **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                ),
+            ),
         )
 
         group.append(
@@ -387,7 +399,9 @@ of concentric rings starting from the object center (or more generally,
 between contours at a normalized distance from the object center). This
 number specifies the number of rings into which the distribution is to
 be divided. Additional ring counts can be specified by clicking the *Add
-another set of bins* button."""))
+another set of bins* button.""",
+            ),
+        )
 
         group.append(
             "maximum_radius",
@@ -400,8 +414,8 @@ Specify the maximum radius for the unscaled bins. The unscaled binning method cr
 bins that you specify and creates equally spaced bin boundaries up to the maximum radius. Parts of
 the object that are beyond this radius will be counted in an overflow bin. The radius is measured
 in pixels.
-"""
-            )
+""",
+            ),
         )
 
         group.can_remove = can_remove
@@ -410,11 +424,8 @@ in pixels.
             group.append(
                 "remover",
                 cellprofiler.setting.RemoveSettingButton(
-                    "",
-                    "Remove this set of bins",
-                    self.bin_counts,
-                    group
-                )
+                    "", "Remove this set of bins", self.bin_counts, group
+                ),
             )
 
         self.bin_counts.append(group)
@@ -440,7 +451,9 @@ in pixels.
                 doc="""\
 The heatmap will be displayed with measurements taken using this image. The setting will let you
 choose from among the images you have specified in "Select image to measure".
-"""))
+""",
+            ),
+        )
 
         group.image_name.set_module(self)
 
@@ -450,7 +463,9 @@ choose from among the images you have specified in "Select image to measure".
                 "Objects to display",
                 doc="""\
 The objects to display in the heatmap. You can select any of the
-objects chosen in "Select objects to measure"."""))
+objects chosen in "Select objects to measure".""",
+            ),
+        )
 
         group.object_name.set_module(self)
 
@@ -459,8 +474,8 @@ objects chosen in "Select objects to measure"."""))
             cellprofiler.setting.Choice(
                 "Number of bins",
                 self.get_bin_count_choices(),
-                choices_fn=self.get_bin_count_choices
-            )
+                choices_fn=self.get_bin_count_choices,
+            ),
         )
 
         def get_number_of_bins(module=self, group=group):
@@ -474,10 +489,8 @@ objects chosen in "Select objects to measure"."""))
         group.append(
             "measurement",
             cellprofiler.setting.Choice(
-                "Measurement",
-                MEASUREMENT_CHOICES,
-                doc="The measurement to display."
-            )
+                "Measurement", MEASUREMENT_CHOICES, doc="The measurement to display."
+            ),
         )
 
         group.append(
@@ -488,7 +501,9 @@ objects chosen in "Select objects to measure"."""))
 The color map setting chooses the color palette that will be
 used to render the different values for your measurement. If you
 choose "gray", the image will label each of the bins with the
-actual image measurement."""))
+actual image measurement.""",
+            ),
+        )
 
         group.append(
             "wants_to_save_display",
@@ -499,15 +514,15 @@ actual image measurement."""))
 This setting allows you to save the heatmap display as an image that can
 be output using the **SaveImages** module. Choose *{YES}* to save the
 display or *{NO}* if the display is not needed.
-""".format(**{
-                    "YES": cellprofiler.setting.YES,
-                    "NO": cellprofiler.setting.NO
-                })
-            )
+""".format(
+                    **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                ),
+            ),
         )
 
         group.append(
-            "display_name", cellprofiler.setting.ImageNameProvider(
+            "display_name",
+            cellprofiler.setting.ImageNameProvider(
                 "Output image name",
                 "Heatmap",
                 doc="""\
@@ -515,20 +530,17 @@ display or *{NO}* if the display is not needed.
 
 This setting names the heatmap image so that the name you enter here can
 be selected in a later **SaveImages** or other module.
-""".format(**{
-                    "YES": cellprofiler.setting.YES
-                })
-            )
+""".format(
+                    **{"YES": cellprofiler.setting.YES}
+                ),
+            ),
         )
 
         group.append(
             "remover",
             cellprofiler.setting.RemoveSettingButton(
-                "",
-                "Remove this heatmap display",
-                self.heatmaps,
-                group
-            )
+                "", "Remove this heatmap display", self.heatmaps, group
+            ),
         )
 
         self.heatmaps.append(group)
@@ -540,7 +552,7 @@ be selected in a later **SaveImages** or other module.
             if group.image_name.value in images:
                 raise cellprofiler.setting.ValidationError(
                     "{} has already been selected".format(group.image_name.value),
-                    group.image_name
+                    group.image_name,
                 )
 
             images.add(group.image_name.value)
@@ -551,7 +563,7 @@ be selected in a later **SaveImages** or other module.
             if group.object_name.value in objects:
                 raise cellprofiler.setting.ValidationError(
                     "{} has already been selected".format(group.object_name.value),
-                    group.object_name
+                    group.object_name,
                 )
 
             objects.add(group.object_name.value)
@@ -562,7 +574,7 @@ be selected in a later **SaveImages** or other module.
             if group.bin_count.value in bins:
                 raise cellprofiler.setting.ValidationError(
                     "{} has already been selected".format(group.bin_count.value),
-                    group.bin_count
+                    group.bin_count,
                 )
 
             bins.add(group.bin_count.value)
@@ -574,7 +586,7 @@ be selected in a later **SaveImages** or other module.
             self.bin_counts_count,
             self.heatmap_count,
             self.wants_zernikes,
-            self.zernike_degree
+            self.zernike_degree,
         ]
 
         for x in (self.images, self.objects, self.bin_counts, self.heatmaps):
@@ -632,7 +644,7 @@ be selected in a later **SaveImages** or other module.
             result += [
                 settings.measurement,
                 settings.colormap,
-                settings.wants_to_save_display
+                settings.wants_to_save_display,
             ]
 
             if settings.wants_to_save_display:
@@ -645,13 +657,15 @@ be selected in a later **SaveImages** or other module.
         return result
 
     def prepare_settings(self, setting_values):
-        image_count, objects_count, bin_counts_count, heatmap_count = [int(x) for x in setting_values[:4]]
+        image_count, objects_count, bin_counts_count, heatmap_count = [
+            int(x) for x in setting_values[:4]
+        ]
 
         for sequence, add_fn, count in (
-                (self.images, self.add_image, image_count),
-                (self.objects, self.add_object, objects_count),
-                (self.bin_counts, self.add_bin_count, bin_counts_count),
-                (self.heatmaps, self.add_heatmap, heatmap_count)
+            (self.images, self.add_image, image_count),
+            (self.objects, self.add_object, objects_count),
+            (self.bin_counts, self.add_bin_count, bin_counts_count),
+            (self.heatmaps, self.add_heatmap, heatmap_count),
         ):
             while len(sequence) > count:
                 del sequence[-1]
@@ -660,7 +674,15 @@ be selected in a later **SaveImages** or other module.
                 add_fn()
 
     def run(self, workspace):
-        header = ("Image", "Objects", "Bin # (innermost=1)", "Bin count", "Fraction", "Intensity", "COV")
+        header = (
+            "Image",
+            "Objects",
+            "Bin # (innermost=1)",
+            "Bin count",
+            "Fraction",
+            "Intensity",
+            "COV",
+        )
 
         stats = []
 
@@ -673,10 +695,12 @@ be selected in a later **SaveImages** or other module.
                         workspace,
                         image.image_name.value,
                         o.object_name.value,
-                        o.center_object_name.value if o.center_choice != C_SELF else None,
+                        o.center_object_name.value
+                        if o.center_choice != C_SELF
+                        else None,
                         o.center_choice.value,
                         bin_count_settings,
-                        d
+                        d,
                     )
 
         if self.wants_zernikes != Z_NONE:
@@ -694,7 +718,9 @@ be selected in a later **SaveImages** or other module.
 
             if heatmap_img is not None:
                 if self.show_window or heatmap.wants_to_save_display:
-                    labels = workspace.object_set.get_objects(heatmap.object_name.get_objects_name()).segmented
+                    labels = workspace.object_set.get_objects(
+                        heatmap.object_name.get_objects_name()
+                    ).segmented
 
                 if self.show_window:
                     workspace.display_data.heatmaps.append((heatmap_img, labels != 0))
@@ -714,9 +740,13 @@ be selected in a later **SaveImages** or other module.
 
                         output_pixels[labels == 0, :] = 0
 
-                    parent_image = workspace.image_set.get_image(heatmap.image_name.get_image_name())
+                    parent_image = workspace.image_set.get_image(
+                        heatmap.image_name.get_image_name()
+                    )
 
-                    output_img = cellprofiler.image.Image(output_pixels, parent_image=parent_image)
+                    output_img = cellprofiler.image.Image(
+                        output_pixels, parent_image=parent_image
+                    )
 
                     img_name = heatmap.display_name.value
 
@@ -741,7 +771,9 @@ be selected in a later **SaveImages** or other module.
 
         sharexy = None
 
-        for heatmap, (heatmap_img, mask) in zip(self.heatmaps, workspace.display_data.heatmaps):
+        for heatmap, (heatmap_img, mask) in zip(
+            self.heatmaps, workspace.display_data.heatmaps
+        ):
 
             heatmap_img = numpy.ma.array(heatmap_img, mask=~mask)
 
@@ -749,7 +781,7 @@ be selected in a later **SaveImages** or other module.
                 title = "{} {} {}".format(
                     heatmap.image_name.get_image_name(),
                     heatmap.object_name.get_objects_name(),
-                    heatmap.measurement.value
+                    heatmap.measurement.value,
                 )
 
                 x = idx % n_horiz
@@ -763,36 +795,43 @@ be selected in a later **SaveImages** or other module.
 
                 if sharexy is None:
                     sharexy = figure.subplot_imshow(
-                        x, y, heatmap_img,
+                        x,
+                        y,
+                        heatmap_img,
                         title=title,
                         colormap=colormap,
                         normalize=False,
                         vmin=numpy.min(heatmap_img),
                         vmax=numpy.max(heatmap_img),
-                        colorbar=True
+                        colorbar=True,
                     )
                 else:
                     figure.subplot_imshow(
-                        x, y, heatmap_img,
+                        x,
+                        y,
+                        heatmap_img,
                         title=title,
                         colormap=colormap,
                         colorbar=True,
                         normalize=False,
                         vmin=numpy.min(heatmap_img),
                         vmax=numpy.max(heatmap_img),
-                        sharexy=sharexy
+                        sharexy=sharexy,
                     )
 
                 idx += 1
 
-    def do_measurements(self, workspace,
-                        image_name,
-                        object_name,
-                        center_object_name,
-                        center_choice,
-                        bin_count_settings,
-                        dd):
-        '''Perform the radial measurements on the image set
+    def do_measurements(
+        self,
+        workspace,
+        image_name,
+        object_name,
+        center_object_name,
+        center_choice,
+        bin_count_settings,
+        dd,
+    ):
+        """Perform the radial measurements on the image set
 
         workspace - workspace that holds images / objects
         image_name - make measurements on this image
@@ -806,7 +845,7 @@ be selected in a later **SaveImages** or other module.
         d - a dictionary for saving reusable partial results
 
         returns one statistics tuple per ring.
-        '''
+        """
         bin_count = bin_count_settings.bin_count.value
 
         wants_scaled = bin_count_settings.wants_scaled.value
@@ -817,7 +856,9 @@ be selected in a later **SaveImages** or other module.
 
         objects = workspace.object_set.get_objects(object_name)
 
-        labels, pixel_data = cellprofiler.object.crop_labels_and_image(objects.segmented, image.pixel_data)
+        labels, pixel_data = cellprofiler.object.crop_labels_and_image(
+            objects.segmented, image.pixel_data
+        )
 
         nobjects = numpy.max(objects.segmented)
 
@@ -826,27 +867,43 @@ be selected in a later **SaveImages** or other module.
         heatmaps = {}
 
         for heatmap in self.heatmaps:
-            if heatmap.object_name.get_objects_name() == object_name and \
-                            image_name == heatmap.image_name.get_image_name() and \
-                            heatmap.get_number_of_bins() == bin_count:
+            if (
+                heatmap.object_name.get_objects_name() == object_name
+                and image_name == heatmap.image_name.get_image_name()
+                and heatmap.get_number_of_bins() == bin_count
+            ):
 
-                dd[id(heatmap)] = heatmaps[MEASUREMENT_ALIASES[heatmap.measurement.value]] = numpy.zeros(labels.shape)
+                dd[id(heatmap)] = heatmaps[
+                    MEASUREMENT_ALIASES[heatmap.measurement.value]
+                ] = numpy.zeros(labels.shape)
 
         if nobjects == 0:
             for bin in range(1, bin_count + 1):
                 for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
-                    feature_name = ((feature + FF_GENERIC) % (image_name, bin, bin_count))
+                    feature_name = (feature + FF_GENERIC) % (image_name, bin, bin_count)
 
-                    measurements.add_measurement(object_name, "_".join([M_CATEGORY, feature_name]), numpy.zeros(0))
+                    measurements.add_measurement(
+                        object_name,
+                        "_".join([M_CATEGORY, feature_name]),
+                        numpy.zeros(0),
+                    )
 
                     if not wants_scaled:
-                        measurement_name = "_".join([M_CATEGORY, feature, image_name, FF_OVERFLOW])
+                        measurement_name = "_".join(
+                            [M_CATEGORY, feature, image_name, FF_OVERFLOW]
+                        )
 
-                        measurements.add_measurement(object_name, measurement_name, numpy.zeros(0))
+                        measurements.add_measurement(
+                            object_name, measurement_name, numpy.zeros(0)
+                        )
 
             return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
 
-        name = (object_name if center_object_name is None else "{}_{}".format(object_name, center_object_name))
+        name = (
+            object_name
+            if center_object_name is None
+            else "{}_{}".format(object_name, center_object_name)
+        )
 
         if name in dd:
             normalized_distance, i_center, j_center, good_mask = dd[name]
@@ -860,19 +917,25 @@ be selected in a later **SaveImages** or other module.
                 #
                 center_objects = workspace.object_set.get_objects(center_object_name)
 
-                center_labels, cmask = cellprofiler.object.size_similarly(labels, center_objects.segmented)
+                center_labels, cmask = cellprofiler.object.size_similarly(
+                    labels, center_objects.segmented
+                )
 
                 pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
                     scipy.ndimage.sum(
                         numpy.ones(center_labels.shape),
                         center_labels,
-                        numpy.arange(1, numpy.max(center_labels) + 1, dtype=numpy.int32)
+                        numpy.arange(
+                            1, numpy.max(center_labels) + 1, dtype=numpy.int32
+                        ),
                     )
                 )
 
                 good = pixel_counts > 0
 
-                i, j = (centrosome.cpmorphology.centers_of_labels(center_labels) + .5).astype(int)
+                i, j = (
+                    centrosome.cpmorphology.centers_of_labels(center_labels) + 0.5
+                ).astype(int)
 
                 ig = i[good]
 
@@ -890,10 +953,7 @@ be selected in a later **SaveImages** or other module.
                     center_labels[ig, jg] = lg
 
                 cl, d_from_center = centrosome.propagate.propagate(
-                    numpy.zeros(center_labels.shape),
-                    center_labels,
-                    labels != 0,
-                    1
+                    numpy.zeros(center_labels.shape), center_labels, labels != 0, 1
                 )
 
                 #
@@ -913,7 +973,9 @@ be selected in a later **SaveImages** or other module.
                 if len(missing_labels):
                     all_centers = centrosome.cpmorphology.centers_of_labels(labels)
 
-                    missing_i_centers, missing_j_centers = all_centers[:, missing_labels - 1]
+                    missing_i_centers, missing_j_centers = all_centers[
+                        :, missing_labels - 1
+                    ]
 
                     di = missing_i_centers[:, numpy.newaxis] - ig[numpy.newaxis, :]
 
@@ -932,7 +994,7 @@ be selected in a later **SaveImages** or other module.
                     # of these pixels from whatever center was assigned to
                     # the object.
                     #
-                    iii, jjj = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                    iii, jjj = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
 
                     di = iii[missing_mask] - i[cl[missing_mask] - 1]
 
@@ -947,7 +1009,9 @@ be selected in a later **SaveImages** or other module.
                 #   center of the nucleus or the center of one or the other
                 #   of two touching cells.
                 #
-                i, j = centrosome.cpmorphology.maximum_position_of_labels(d_to_edge, labels, objects.indices)
+                i, j = centrosome.cpmorphology.maximum_position_of_labels(
+                    d_to_edge, labels, objects.indices
+                )
 
                 center_labels = numpy.zeros(labels.shape, int)
 
@@ -967,7 +1031,9 @@ be selected in a later **SaveImages** or other module.
 
                 for color in range(1, ncolors + 1):
                     mask = colors == color
-                    l, d = centrosome.propagate.propagate(numpy.zeros(center_labels.shape), center_labels, mask, 1)
+                    l, d = centrosome.propagate.propagate(
+                        numpy.zeros(center_labels.shape), center_labels, mask, 1
+                    )
 
                     d_from_center[mask] = d[mask]
 
@@ -993,9 +1059,13 @@ be selected in a later **SaveImages** or other module.
             if wants_scaled:
                 total_distance = d_from_center + d_to_edge
 
-                normalized_distance[good_mask] = (d_from_center[good_mask] / (total_distance[good_mask] + .001))
+                normalized_distance[good_mask] = d_from_center[good_mask] / (
+                    total_distance[good_mask] + 0.001
+                )
             else:
-                normalized_distance[good_mask] = d_from_center[good_mask] / maximum_radius
+                normalized_distance[good_mask] = (
+                    d_from_center[good_mask] / maximum_radius
+                )
 
             dd[name] = [normalized_distance, i_center, j_center, good_mask]
 
@@ -1010,8 +1080,7 @@ be selected in a later **SaveImages** or other module.
         labels_and_bins = (good_labels - 1, bin_indexes[good_mask])
 
         histogram = scipy.sparse.coo_matrix(
-            (pixel_data[good_mask], labels_and_bins),
-            (nobjects, bin_count + 1)
+            (pixel_data[good_mask], labels_and_bins), (nobjects, bin_count + 1)
         ).toarray()
 
         sum_by_object = numpy.sum(histogram, 1)
@@ -1021,8 +1090,7 @@ be selected in a later **SaveImages** or other module.
         fraction_at_distance = histogram / sum_by_object_per_bin
 
         number_at_distance = scipy.sparse.coo_matrix(
-            (numpy.ones(ngood_pixels), labels_and_bins),
-            (nobjects, bin_count + 1)
+            (numpy.ones(ngood_pixels), labels_and_bins), (nobjects, bin_count + 1)
         ).toarray()
 
         object_mask = number_at_distance > 0
@@ -1033,31 +1101,41 @@ be selected in a later **SaveImages** or other module.
 
         fraction_at_bin = number_at_distance / sum_by_object_per_bin
 
-        mean_pixel_fraction = fraction_at_distance / (fraction_at_bin + numpy.finfo(float).eps)
+        mean_pixel_fraction = fraction_at_distance / (
+            fraction_at_bin + numpy.finfo(float).eps
+        )
 
-        masked_fraction_at_distance = numpy.ma.masked_array(fraction_at_distance, ~object_mask)
+        masked_fraction_at_distance = numpy.ma.masked_array(
+            fraction_at_distance, ~object_mask
+        )
 
-        masked_mean_pixel_fraction = numpy.ma.masked_array(mean_pixel_fraction, ~object_mask)
+        masked_mean_pixel_fraction = numpy.ma.masked_array(
+            mean_pixel_fraction, ~object_mask
+        )
 
         # Anisotropy calculation.  Split each cell into eight wedges, then
         # compute coefficient of variation of the wedges' mean intensities
         # in each ring.
         #
         # Compute each pixel's delta from the center object's centroid
-        i, j = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+        i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
 
         imask = i[good_mask] > i_center[good_mask]
 
         jmask = j[good_mask] > j_center[good_mask]
 
-        absmask = (abs(i[good_mask] - i_center[good_mask]) > abs(j[good_mask] - j_center[good_mask]))
+        absmask = abs(i[good_mask] - i_center[good_mask]) > abs(
+            j[good_mask] - j_center[good_mask]
+        )
 
-        radial_index = (imask.astype(int) + jmask.astype(int) * 2 + absmask.astype(int) * 4)
+        radial_index = (
+            imask.astype(int) + jmask.astype(int) * 2 + absmask.astype(int) * 4
+        )
 
         statistics = []
 
         for bin in range(bin_count + (0 if wants_scaled else 1)):
-            bin_mask = (good_mask & (bin_indexes == bin))
+            bin_mask = good_mask & (bin_indexes == bin)
 
             bin_pixels = numpy.sum(bin_mask)
 
@@ -1068,13 +1146,11 @@ be selected in a later **SaveImages** or other module.
             labels_and_radii = (bin_labels - 1, bin_radial_index)
 
             radial_values = scipy.sparse.coo_matrix(
-                (pixel_data[bin_mask], labels_and_radii),
-                (nobjects, 8)
+                (pixel_data[bin_mask], labels_and_radii), (nobjects, 8)
             ).toarray()
 
             pixel_count = scipy.sparse.coo_matrix(
-                (numpy.ones(bin_pixels), labels_and_radii),
-                (nobjects, 8)
+                (numpy.ones(bin_pixels), labels_and_radii), (nobjects, 8)
             ).toarray()
 
             mask = pixel_count == 0
@@ -1086,9 +1162,9 @@ be selected in a later **SaveImages** or other module.
             radial_cv[numpy.sum(~mask, 1) == 0] = 0
 
             for measurement, feature, overflow_feature in (
-                    (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
-                    (mean_pixel_fraction[:, bin], MF_MEAN_FRAC, OF_MEAN_FRAC),
-                    (numpy.array(radial_cv), MF_RADIAL_CV, OF_RADIAL_CV)
+                (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
+                (mean_pixel_fraction[:, bin], MF_MEAN_FRAC, OF_MEAN_FRAC),
+                (numpy.array(radial_cv), MF_RADIAL_CV, OF_RADIAL_CV),
             ):
                 if bin == bin_count:
                     measurement_name = overflow_feature % image_name
@@ -1112,14 +1188,16 @@ be selected in a later **SaveImages** or other module.
                     str(bin_count),
                     round(numpy.mean(masked_fraction_at_distance[:, bin]), 4),
                     round(numpy.mean(masked_mean_pixel_fraction[:, bin]), 4),
-                    round(numpy.mean(radial_cv), 4)
+                    round(numpy.mean(radial_cv), 4),
                 )
             ]
 
         return statistics
 
     def calculate_zernikes(self, workspace):
-        zernike_indexes = centrosome.zernike.get_zernike_indexes(self.zernike_degree.value + 1)
+        zernike_indexes = centrosome.zernike.get_zernike_indexes(
+            self.zernike_degree.value + 1
+        )
 
         meas = workspace.measurements
 
@@ -1137,7 +1215,9 @@ be selected in a later **SaveImages** or other module.
             r = numpy.zeros(objects.count + 1)
 
             for labels, indexes in objects.get_labels():
-                ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(labels, indexes)
+                ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(
+                    labels, indexes
+                )
 
                 ij[indexes] = ij_
 
@@ -1154,12 +1234,15 @@ be selected in a later **SaveImages** or other module.
             yx = (ijv[:, :2] - ij[l, :]) / r[l, numpy.newaxis]
 
             z = centrosome.zernike.construct_zernike_polynomials(
-                    yx[:, 1], yx[:, 0], zernike_indexes)
+                yx[:, 1], yx[:, 0], zernike_indexes
+            )
 
             for image_group in self.images:
                 image_name = image_group.image_name.value
 
-                image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+                image = workspace.image_set.get_image(
+                    image_name, must_be_grayscale=True
+                )
 
                 pixels = image.pixel_data
 
@@ -1186,19 +1269,21 @@ be selected in a later **SaveImages** or other module.
 
                     continue
 
-                areas = scipy.ndimage.sum(numpy.ones(l_.shape, int), labels=l_, index=objects.indices)
+                areas = scipy.ndimage.sum(
+                    numpy.ones(l_.shape, int), labels=l_, index=objects.indices
+                )
 
                 for i, (n, m) in enumerate(zernike_indexes):
                     vr = scipy.ndimage.sum(
                         pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].real,
                         labels=l_,
-                        index=objects.indices
+                        index=objects.indices,
                     )
 
                     vi = scipy.ndimage.sum(
                         pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
                         labels=l_,
-                        index=objects.indices
+                        index=objects.indices,
                     )
 
                     magnitude = numpy.sqrt(vr * vr + vi * vi) / areas
@@ -1215,21 +1300,21 @@ be selected in a later **SaveImages** or other module.
                         meas[object_name, ftr] = phase
 
     def get_zernike_magnitude_name(self, image_name, n, m):
-        '''The feature name of the magnitude of a Zernike moment
+        """The feature name of the magnitude of a Zernike moment
 
         image_name - the name of the image being measured
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
-        '''
+        """
         return "_".join((M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, str(n), str(m)))
 
     def get_zernike_phase_name(self, image_name, n, m):
-        '''The feature name of the phase of a Zernike moment
+        """The feature name of the phase of a Zernike moment
 
         image_name - the name of the image being measured
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
-        '''
+        """
         return "_".join((M_CATEGORY, FF_ZERNIKE_PHASE, image_name, str(n), str(m)))
 
     def get_measurement_columns(self, pipeline):
@@ -1247,16 +1332,16 @@ be selected in a later **SaveImages** or other module.
                     wants_scaling = bin_count_obj.wants_scaled.value
 
                     for feature, ofeature in (
-                            (MF_FRAC_AT_D, OF_FRAC_AT_D),
-                            (MF_MEAN_FRAC, OF_MEAN_FRAC),
-                            (MF_RADIAL_CV, OF_RADIAL_CV)
+                        (MF_FRAC_AT_D, OF_FRAC_AT_D),
+                        (MF_MEAN_FRAC, OF_MEAN_FRAC),
+                        (MF_RADIAL_CV, OF_RADIAL_CV),
                     ):
                         for bin in range(1, bin_count + 1):
                             columns.append(
                                 (
                                     object_name,
                                     feature % (image_name, bin, bin_count),
-                                    cellprofiler.measurement.COLTYPE_FLOAT
+                                    cellprofiler.measurement.COLTYPE_FLOAT,
                                 )
                             )
 
@@ -1265,7 +1350,7 @@ be selected in a later **SaveImages** or other module.
                                 (
                                     object_name,
                                     ofeature % image.image_name.value,
-                                    cellprofiler.measurement.COLTYPE_FLOAT
+                                    cellprofiler.measurement.COLTYPE_FLOAT,
                                 )
                             )
 
@@ -1278,10 +1363,18 @@ be selected in a later **SaveImages** or other module.
                         max_n = self.zernike_degree.value
 
                         for name_fn in name_fns:
-                            for n, m in centrosome.zernike.get_zernike_indexes(max_n + 1):
+                            for n, m in centrosome.zernike.get_zernike_indexes(
+                                max_n + 1
+                            ):
                                 ftr = name_fn(image_name, n, m)
 
-                                columns.append((object_name, ftr, cellprofiler.measurement.COLTYPE_FLOAT))
+                                columns.append(
+                                    (
+                                        object_name,
+                                        ftr,
+                                        cellprofiler.measurement.COLTYPE_FLOAT,
+                                    )
+                                )
 
         return columns
 
@@ -1309,60 +1402,71 @@ be selected in a later **SaveImages** or other module.
 
         return []
 
-    def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
-        if image_name in self.get_measurement_images(pipeline, object_name, category, feature):
+    def get_measurement_scales(
+        self, pipeline, object_name, category, feature, image_name
+    ):
+        if image_name in self.get_measurement_images(
+            pipeline, object_name, category, feature
+        ):
             if feature in (FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE):
                 n_max = self.zernike_degree.value
 
                 result = [
-                    "{}_{}".format(n, m) for n, m in centrosome.zernike.get_zernike_indexes(n_max + 1)
-                    ]
+                    "{}_{}".format(n, m)
+                    for n, m in centrosome.zernike.get_zernike_indexes(n_max + 1)
+                ]
             else:
                 result = [
-                    FF_SCALE % (
-                        bin,
-                        bin_count.bin_count.value
-                    ) for bin_count in self.bin_counts for bin in range(1, bin_count.bin_count.value + 1)
+                    FF_SCALE % (bin, bin_count.bin_count.value)
+                    for bin_count in self.bin_counts
+                    for bin in range(1, bin_count.bin_count.value + 1)
                 ]
 
-                if any([not bin_count.wants_scaled.value for bin_count in self.bin_counts]):
+                if any(
+                    [not bin_count.wants_scaled.value for bin_count in self.bin_counts]
+                ):
                     result += [FF_OVERFLOW]
 
             return result
 
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1:
-            n_images, n_objects, n_bins = [int(setting) for setting in setting_values[:3]]
+            n_images, n_objects, n_bins = [
+                int(setting) for setting in setting_values[:3]
+            ]
 
-            off_bins = SETTINGS_STATIC_COUNT + \
-                       n_images * SETTINGS_IMAGE_GROUP_COUNT + \
-                       n_objects * SETTINGS_OBJECT_GROUP_COUNT
+            off_bins = (
+                SETTINGS_STATIC_COUNT
+                + n_images * SETTINGS_IMAGE_GROUP_COUNT
+                + n_objects * SETTINGS_OBJECT_GROUP_COUNT
+            )
 
             new_setting_values = setting_values[:off_bins]
 
             for bin_count in setting_values[off_bins:]:
-                new_setting_values += [
-                    cellprofiler.setting.YES,
-                    bin_count,
-                    "100"
-                ]
+                new_setting_values += [cellprofiler.setting.YES, bin_count, "100"]
 
             setting_values = new_setting_values
 
             variable_revision_number = 2
 
         if variable_revision_number == 2:
-            n_images, n_objects = [
-                int(setting) for setting in setting_values[:2]]
+            n_images, n_objects = [int(setting) for setting in setting_values[:2]]
 
-            off_objects = (SETTINGS_STATIC_COUNT + n_images * SETTINGS_IMAGE_GROUP_COUNT)
+            off_objects = SETTINGS_STATIC_COUNT + n_images * SETTINGS_IMAGE_GROUP_COUNT
 
             setting_values = list(setting_values)
 
             for i in range(n_objects):
-                offset = (off_objects + i * SETTINGS_OBJECT_GROUP_COUNT + SETTINGS_CENTER_CHOICE_OFFSET)
+                offset = (
+                    off_objects
+                    + i * SETTINGS_OBJECT_GROUP_COUNT
+                    + SETTINGS_CENTER_CHOICE_OFFSET
+                )
 
                 if setting_values[offset] == C_CENTERS_OF_OTHER_V2:
                     setting_values[offset] = C_CENTERS_OF_OTHER
@@ -1389,7 +1493,8 @@ be selected in a later **SaveImages** or other module.
 
 
 class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
-    '''An object name subscriber limited by the objects in the objects' group'''
+    """An object name subscriber limited by the objects in the objects' group"""
+
     def set_module(self, module):
         assert isinstance(module, MeasureObjectIntensityDistribution)
 
@@ -1408,11 +1513,11 @@ class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
         return filter(self.__is_valid_choice, super_choices)
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.objects) > 1
 
     def get_objects_name(self):
-        '''Return the name of the objects to use in the display'''
+        """Return the name of the objects to use in the display"""
         if len(self.__module.objects) == 1:
             return self.__module.objects[0].object_name.value
 
@@ -1420,7 +1525,8 @@ class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
 
 
 class MORDImageNameSubscriber(cellprofiler.setting.ImageNameSubscriber):
-    '''An image name subscriber limited by the images in the image group'''
+    """An image name subscriber limited by the images in the image group"""
+
     def set_module(self, module):
         assert isinstance(module, MeasureObjectIntensityDistribution)
 
@@ -1439,11 +1545,11 @@ class MORDImageNameSubscriber(cellprofiler.setting.ImageNameSubscriber):
         return filter(self.__is_valid_choice, super_choices)
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.images) > 1
 
     def get_image_name(self):
-        '''Return the name of the image to use in the display'''
+        """Return the name of the image to use in the display"""
         if len(self.__module.images) == 1:
             return self.__module.images[0].image_name.value
 

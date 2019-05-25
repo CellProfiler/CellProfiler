@@ -55,10 +55,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         self.operation = cellprofiler.setting.Choice(
             text="Generate from",
-            choices=[
-                O_DISTANCE,
-                O_MARKERS
-            ],
+            choices=[O_DISTANCE, O_MARKERS],
             value=O_DISTANCE,
             doc="""\
 Select a method of inputs for the watershed algorithm:
@@ -72,21 +69,20 @@ Select a method of inputs for the watershed algorithm:
    intensity surrounding regions of interest and low intensity inside
    regions of interest. Refer to the documentation for the other
    available options for more information.
-""".format(**{
-                "O_DISTANCE": O_DISTANCE,
-                "O_MARKERS": O_MARKERS
-            })
+""".format(
+                **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
+            ),
         )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
             "Markers",
-            doc="An image marking the approximate centers of the objects for segmentation."
+            doc="An image marking the approximate centers of the objects for segmentation.",
         )
 
         self.mask_name = cellprofiler.setting.ImageNameSubscriber(
             "Mask",
             can_be_blank=True,
-            doc="Optional. Only regions not blocked by the mask will be segmented."
+            doc="Optional. Only regions not blocked by the mask will be segmented.",
         )
 
         self.connectivity = cellprofiler.setting.Integer(
@@ -109,15 +105,15 @@ See `skimage label`_ for more information.
 
         self.compactness = cellprofiler.setting.Float(
             text="Compactness",
-            minval=0.,
-            value=0.,
+            minval=0.0,
+            value=0.0,
             doc="""\
 Use `compact watershed`_ with given compactness parameter. 
 Higher values result in more regularly-shaped watershed basins.
 
 
 .. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
-"""
+""",
         )
 
         self.watershed_line = cellprofiler.setting.Binary(
@@ -127,7 +123,7 @@ Higher values result in more regularly-shaped watershed basins.
 Create a 1 pixel wide line around the watershed labels. This effectively separates
 the different objects identified by the watershed algorithm, rather than allowing them 
 to touch. The line has the same label as the background.
-"""
+""",
         )
 
         self.footprint = cellprofiler.setting.Integer(
@@ -158,7 +154,7 @@ the image is not downsampled.
 """,
             minval=1,
             text="Downsample",
-            value=1
+            value=1,
         )
 
     def settings(self):
@@ -172,28 +168,23 @@ the image is not downsampled.
             self.compactness,
             self.footprint,
             self.downsample,
-            self.watershed_line
+            self.watershed_line,
         ]
 
     def visible_settings(self):
         __settings__ = super(Watershed, self).settings()
 
-        __settings__ = __settings__ + [
-            self.operation
-        ]
+        __settings__ = __settings__ + [self.operation]
 
         if self.operation.value == O_DISTANCE:
-            __settings__ = __settings__ + [
-                self.footprint,
-                self.downsample
-            ]
+            __settings__ = __settings__ + [self.footprint, self.downsample]
         else:
             __settings__ = __settings__ + [
                 self.markers_name,
                 self.mask_name,
                 self.connectivity,
                 self.compactness,
-                self.watershed_line
+                self.watershed_line,
             ]
 
         return __settings__
@@ -222,10 +213,7 @@ the image is not downsampled.
                 else:
                     factors = (factor, factor)
 
-                x_data = skimage.transform.downscale_local_mean(
-                    x_data,
-                    factors
-                )
+                x_data = skimage.transform.downscale_local_mean(x_data, factors)
 
             threshold = skimage.filters.threshold_otsu(x_data)
 
@@ -239,19 +227,10 @@ the image is not downsampled.
 
             if x.volumetric:
                 footprint = numpy.ones(
-                    (
-                        self.footprint.value,
-                        self.footprint.value,
-                        self.footprint.value
-                    )
+                    (self.footprint.value, self.footprint.value, self.footprint.value)
                 )
             else:
-                footprint = numpy.ones(
-                    (
-                        self.footprint.value,
-                        self.footprint.value
-                    )
-                )
+                footprint = numpy.ones((self.footprint.value, self.footprint.value))
 
             peaks = mahotas.regmax(distance, footprint)
 
@@ -266,11 +245,7 @@ the image is not downsampled.
 
             if factor > 1:
                 y_data = skimage.transform.resize(
-                    y_data,
-                    original_shape,
-                    mode="edge",
-                    order=0,
-                    preserve_range=True
+                    y_data, original_shape, mode="edge", order=0, preserve_range=True
                 )
 
                 y_data = numpy.rint(y_data).astype(numpy.uint16)
@@ -302,7 +277,7 @@ the image is not downsampled.
                 mask=mask_data,
                 connectivity=self.connectivity.value,
                 compactness=self.compactness.value,
-                watershed_line=self.watershed_line.value
+                watershed_line=self.watershed_line.value,
             )
 
         y_data = skimage.measure.label(y_data)
@@ -324,15 +299,16 @@ the image is not downsampled.
 
             workspace.display_data.dimensions = dimensions
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
 
         if variable_revision_number == 1:
             # Last two items were moved down to add more options for seeded watershed
             __settings__ = setting_values[:-2]
 
             # Add default connectivity and compactness
-            __settings__ += [1, 0.]
+            __settings__ += [1, 0.0]
 
             # Add the rest of the settings
             __settings__ += setting_values[-2:]

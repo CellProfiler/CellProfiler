@@ -23,7 +23,7 @@ class Menu(wx.Menu):
         help_dialog = cellprofiler.gui.htmldialog.HTMLDialog(
             self.frame,
             title,
-            cellprofiler.gui.html.utils.rst_to_html_fragment(contents)
+            cellprofiler.gui.html.utils.rst_to_html_fragment(contents),
         )
 
         help_dialog.Show()

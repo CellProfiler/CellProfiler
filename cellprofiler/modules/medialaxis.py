@@ -59,9 +59,7 @@ class MedialAxis(cellprofiler.module.ImageProcessing):
             y_data = skimage.morphology.medial_axis(x_data)
 
         y = cellprofiler.image.Image(
-            dimensions=x.dimensions,
-            image=y_data,
-            parent_image=x
+            dimensions=x.dimensions, image=y_data, parent_image=x
         )
 
         images.add(y_name, y)

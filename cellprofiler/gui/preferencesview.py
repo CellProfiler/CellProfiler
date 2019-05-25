@@ -45,36 +45,51 @@ class PreferencesView(object):
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
             cellprofiler.preferences.get_default_image_directory(),
-            lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
-            'Default Input Folder',
+            lambda: cellprofiler.preferences.get_recent_files(
+                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            ),
+            "Default Input Folder",
             cellprofiler.preferences.DEFAULT_IMAGE_FOLDER_HELP,
-            [cellprofiler.preferences.set_default_image_directory,
-             self.__notify_pipeline_list_view_directory_change],
-            refresh_action=self.refresh_input_directory)
+            [
+                cellprofiler.preferences.set_default_image_directory,
+                self.__notify_pipeline_list_view_directory_change,
+            ],
+            refresh_action=self.refresh_input_directory,
+        )
         self.__output_folder_panel = wx.Panel(panel)
         self.__output_folder_panel.SetAutoLayout(True)
         self.__output_edit_box = self.__make_folder_panel(
             self.__output_folder_panel,
             cellprofiler.preferences.get_default_output_directory(),
-            lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY),
-            'Default Output Folder',
+            lambda: cellprofiler.preferences.get_recent_files(
+                cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY
+            ),
+            "Default Output Folder",
             cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_HELP,
-            [cellprofiler.preferences.set_default_output_directory,
-             self.__notify_pipeline_list_view_directory_change])
+            [
+                cellprofiler.preferences.set_default_output_directory,
+                self.__notify_pipeline_list_view_directory_change,
+            ],
+        )
         self.__odds_and_ends_panel = wx.Panel(panel)
         self.__odds_and_ends_panel.SetAutoLayout(True)
         self.__make_odds_and_ends_panel()
         self.__status_panel = status_panel
         status_panel.Sizer = wx.BoxSizer()
         self.__status_text = wx.StaticText(
-            status_panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
+            status_panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE
+        )
         status_panel.Sizer.Add(self.__status_text, 1, wx.EXPAND)
         self.__progress_panel = progress_panel
         self.__progress_panel.AutoLayout = True
         self.__make_progress_panel()
-        self.__sizer.AddMany([(self.__image_folder_panel, 0, wx.EXPAND | wx.ALL, 1),
-                              (self.__output_folder_panel, 0, wx.EXPAND | wx.ALL, 1),
-                              (self.__odds_and_ends_panel, 0, wx.EXPAND | wx.ALL, 1)])
+        self.__sizer.AddMany(
+            [
+                (self.__image_folder_panel, 0, wx.EXPAND | wx.ALL, 1),
+                (self.__output_folder_panel, 0, wx.EXPAND | wx.ALL, 1),
+                (self.__odds_and_ends_panel, 0, wx.EXPAND | wx.ALL, 1),
+            ]
+        )
         self.show_status_text()
         self.__errors = set()
         self.__pipeline_list_view = None
@@ -106,17 +121,24 @@ class PreferencesView(object):
         self.__status_panel.Layout()
 
     def close(self):
-        cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
-        cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        cellprofiler.preferences.remove_output_file_name_listener(
+            self.__on_preferences_output_filename_event
+        )
+        cellprofiler.preferences.remove_image_directory_listener(
+            self.__on_preferences_image_directory_event
+        )
+        cellprofiler.preferences.remove_output_directory_listener(
+            self.__on_preferences_output_directory_event
+        )
 
-    def __make_folder_panel(self, panel, value, list_fn, text, help_text,
-                            actions, refresh_action=None):
+    def __make_folder_panel(
+        self, panel, value, list_fn, text, help_text, actions, refresh_action=None
+    ):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        help_button = wx.Button(panel, label='?', style=wx.BU_EXACTFIT)
+        help_button = wx.Button(panel, label="?", style=wx.BU_EXACTFIT)
         sizer.Add(help_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
-        text_static = wx.StaticText(panel, -1, text + ':')
+        text_static = wx.StaticText(panel, -1, text + ":")
         sizer.Add(text_static, 0, wx.ALIGN_CENTER)
         choices = list_fn()
         if value not in choices:
@@ -124,26 +146,24 @@ class PreferencesView(object):
         edit_box = wx.ComboBox(panel, -1, value, choices=choices)
         sizer.Add(edit_box, 1, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
-        browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
-                                              wx.ART_CMN_DIALOG,
-                                              (16, 16))
+        browse_bmp = wx.ArtProvider.GetBitmap(
+            wx.ART_FOLDER_OPEN, wx.ART_CMN_DIALOG, (16, 16)
+        )
         browse_button = wx.BitmapButton(panel, -1, bitmap=browse_bmp)
         browse_button.SetToolTip("Browse for %s folder" % text)
         sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
 
-        new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
-                                           wx.ART_CMN_DIALOG,
-                                           (16, 16))
+        new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR, wx.ART_CMN_DIALOG, (16, 16))
         new_button = wx.BitmapButton(panel, -1, bitmap=new_bmp)
         new_button.SetToolTip("Make a new sub-folder")
         if os.path.isdir(value):
             new_button.Disable()
         sizer.Add(new_button, 0, wx.ALIGN_CENTER)
         if refresh_action is not None:
-            refresh_bitmap = wx.ArtProvider.GetBitmap(wx.ART_REDO,
-                                                      wx.ART_CMN_DIALOG,
-                                                      (16, 16))
+            refresh_bitmap = wx.ArtProvider.GetBitmap(
+                wx.ART_REDO, wx.ART_CMN_DIALOG, (16, 16)
+            )
             refresh_button = wx.BitmapButton(panel, -1, bitmap=refresh_bitmap)
             sizer.AddSpacer(2)
             sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
@@ -158,7 +178,13 @@ class PreferencesView(object):
         def on_new_folder(event):
             if os.path.exists(edit_box.GetValue()):
                 return
-            if wx.MessageBox("Do you really want to create the %s folder?" % edit_box.GetValue(), style=wx.YES_NO) == wx.YES:
+            if (
+                wx.MessageBox(
+                    "Do you really want to create the %s folder?" % edit_box.GetValue(),
+                    style=wx.YES_NO,
+                )
+                == wx.YES
+            ):
                 os.makedirs(edit_box.GetValue())
                 self.__on_edit_box_change(event, edit_box, text, actions)
 
@@ -168,12 +194,18 @@ class PreferencesView(object):
                 new_button.SetToolTip("%s is a directory" % edit_box.GetValue())
             else:
                 new_button.Enable()
-                new_button.SetToolTip("Press button to create the %s folder" % edit_box.GetValue())
+                new_button.SetToolTip(
+                    "Press button to create the %s folder" % edit_box.GetValue()
+                )
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()
 
         help_button.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text))
-        panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
+        panel.Bind(
+            wx.EVT_BUTTON,
+            lambda event: self.__on_browse(event, edit_box, text),
+            browse_button,
+        )
         panel.Bind(wx.EVT_TEXT, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_COMBOBOX, on_edit_box_change, edit_box)
         panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
@@ -181,41 +213,58 @@ class PreferencesView(object):
 
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        output_filename_text = wx.StaticText(panel, -1, 'Output Filename:')
+        output_filename_text = wx.StaticText(panel, -1, "Output Filename:")
         output_filename_edit_box = wx.TextCtrl(
-            panel, value=cellprofiler.preferences.get_output_file_name())
+            panel, value=cellprofiler.preferences.get_output_file_name()
+        )
         self.__output_filename_edit_box = output_filename_edit_box
-        allow_output_filename_overwrite_check_box = \
-            wx.CheckBox(panel, label="Allow overwrite?")
-        allow_output_filename_overwrite_check_box.SetValue(cellprofiler.preferences.get_allow_output_file_overwrite())
+        allow_output_filename_overwrite_check_box = wx.CheckBox(
+            panel, label="Allow overwrite?"
+        )
+        allow_output_filename_overwrite_check_box.SetValue(
+            cellprofiler.preferences.get_allow_output_file_overwrite()
+        )
         write_measurements_combo_box = wx.Choice(
-            panel, choices=
-            [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
-             DO_NOT_WRITE_MEASUREMENTS_TEXT])
+            panel,
+            choices=[
+                WRITE_HDF_FILE_TEXT,
+                WRITE_MAT_FILE_TEXT,
+                DO_NOT_WRITE_MEASUREMENTS_TEXT,
+            ],
+        )
         # set measurements mode, then fake an event to update output
         # filename and which controls are shown.
-        measurements_mode_idx = [cellprofiler.preferences.WRITE_HDF5, True, False].index(
-            cellprofiler.preferences.get_write_MAT_files())
+        measurements_mode_idx = [
+            cellprofiler.preferences.WRITE_HDF5,
+            True,
+            False,
+        ].index(cellprofiler.preferences.get_write_MAT_files())
         write_measurements_combo_box.SetSelection(measurements_mode_idx)
-        output_filename_help_button = wx.Button(
-            panel, label='?', style=wx.BU_EXACTFIT)
-        output_file_format_text = wx.StaticText(
-            panel, label="Output file format:")
+        output_filename_help_button = wx.Button(panel, label="?", style=wx.BU_EXACTFIT)
+        output_file_format_text = wx.StaticText(panel, label="Output file format:")
         cellprofiler.preferences.add_output_file_name_listener(
-            self.__on_preferences_output_filename_event)
+            self.__on_preferences_output_filename_event
+        )
         cellprofiler.preferences.add_image_directory_listener(
-            self.__on_preferences_image_directory_event)
+            self.__on_preferences_image_directory_event
+        )
         cellprofiler.preferences.add_output_directory_listener(
-            self.__on_preferences_output_directory_event)
+            self.__on_preferences_output_directory_event
+        )
         self.__hold_a_reference_to_progress_callback = self.progress_callback
         cellprofiler.preferences.add_progress_callback(
-            self.__hold_a_reference_to_progress_callback)
+            self.__hold_a_reference_to_progress_callback
+        )
 
         def on_output_filename_changed(event):
-            cellprofiler.preferences.set_output_file_name(output_filename_edit_box.GetValue())
+            cellprofiler.preferences.set_output_file_name(
+                output_filename_edit_box.GetValue()
+            )
 
         def on_allow_checkbox(event):
-            cellprofiler.preferences.set_allow_output_file_overwrite(allow_output_filename_overwrite_check_box.GetValue())
+            cellprofiler.preferences.set_allow_output_file_overwrite(
+                allow_output_filename_overwrite_check_box.GetValue()
+            )
 
         def on_write_MAT_files_combo_box(event):
             #
@@ -224,19 +273,23 @@ class PreferencesView(object):
             sel = write_measurements_combo_box.GetStringSelection()
             output_filename = output_filename_edit_box.GetValue()
             if sel == WRITE_HDF_FILE_TEXT:
-                cellprofiler.preferences.set_write_MAT_files(cellprofiler.preferences.WRITE_HDF5)
-                if output_filename.lower().endswith('.mat'):
+                cellprofiler.preferences.set_write_MAT_files(
+                    cellprofiler.preferences.WRITE_HDF5
+                )
+                if output_filename.lower().endswith(".mat"):
                     output_filename = output_filename[:-4] + u".h5"
             elif sel == WRITE_MAT_FILE_TEXT:
                 cellprofiler.preferences.set_write_MAT_files(True)
-                if output_filename.lower().endswith('.h5'):
+                if output_filename.lower().endswith(".h5"):
                     output_filename = output_filename[:-3] + u".mat"
             else:
                 cellprofiler.preferences.set_write_MAT_files(False)
 
             if output_filename != output_filename_edit_box.GetValue():
                 output_filename_edit_box.SetValue(output_filename)
-                cellprofiler.preferences.set_output_file_name(output_filename_edit_box.GetValue())
+                cellprofiler.preferences.set_output_file_name(
+                    output_filename_edit_box.GetValue()
+                )
             #
             # Reconstruct the sizers depending on whether we have one or two rows
             #
@@ -253,11 +306,12 @@ class PreferencesView(object):
                 output_sizer.AddGrowableCol(2)
                 output_filename_edit_box_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 output_filename_edit_box_sizer.Add(
-                    output_filename_edit_box, 1, wx.EXPAND)
+                    output_filename_edit_box, 1, wx.EXPAND
+                )
                 output_filename_edit_box_sizer.AddSpacer(2)
                 output_filename_edit_box_sizer.Add(
-                    allow_output_filename_overwrite_check_box, 0,
-                    wx.ALIGN_CENTER)
+                    allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER
+                )
                 output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
                 output_sizer.Add(output_filename_text, 0, wx.ALIGN_RIGHT)
                 output_sizer.Add(output_filename_edit_box_sizer, 1, wx.EXPAND)
@@ -267,21 +321,27 @@ class PreferencesView(object):
                 output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
 
             panel.SetSizer(output_sizer)
-            for ctrl in (output_filename_text,
-                         output_filename_edit_box,
-                         allow_output_filename_overwrite_check_box):
+            for ctrl in (
+                output_filename_text,
+                output_filename_edit_box,
+                allow_output_filename_overwrite_check_box,
+            ):
                 ctrl.Show(show)
 
             panel.GetParent().Layout()
             panel.Layout()
 
-        write_measurements_combo_box.Bind(
-            wx.EVT_CHOICE, on_write_MAT_files_combo_box)
+        write_measurements_combo_box.Bind(wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         allow_output_filename_overwrite_check_box.Bind(
-            wx.EVT_CHECKBOX, on_allow_checkbox)
+            wx.EVT_CHECKBOX, on_allow_checkbox
+        )
         output_filename_help_button.Bind(
             wx.EVT_BUTTON,
-            lambda event: self.__on_help(event, cellprofiler.gui.help.content.read_content("legacy_output_file.rst")))
+            lambda event: self.__on_help(
+                event,
+                cellprofiler.gui.help.content.read_content("legacy_output_file.rst"),
+            ),
+        )
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
@@ -305,14 +365,18 @@ class PreferencesView(object):
         self.__progress_bar.SetValue(25)
         self.__timer = wx.StaticText(panel)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddMany([((1, 1), 1),
-                       (self.__progress_msg_ctrl, 0, wx.ALIGN_BOTTOM),
-                       ((10, 0), 0),
-                       (self.__worker_count_ctrl, 0, wx.ALIGN_BOTTOM),
-                       ((10, 0), 0),
-                       (self.__progress_bar, 0, wx.ALIGN_BOTTOM),
-                       ((10, 0), 0),
-                       (self.__timer, 0, wx.ALIGN_BOTTOM)])
+        sizer.AddMany(
+            [
+                ((1, 1), 1),
+                (self.__progress_msg_ctrl, 0, wx.ALIGN_BOTTOM),
+                ((10, 0), 0),
+                (self.__worker_count_ctrl, 0, wx.ALIGN_BOTTOM),
+                ((10, 0), 0),
+                (self.__progress_bar, 0, wx.ALIGN_BOTTOM),
+                ((10, 0), 0),
+                (self.__timer, 0, wx.ALIGN_BOTTOM),
+            ]
+        )
         panel.SetSizer(sizer)
         panel.Layout()
         #
@@ -364,15 +428,19 @@ class PreferencesView(object):
                 return
             if progress == 1:
                 loc -= 1
-            for operation_id in self.__progress_stack[(loc + 1):]:
+            for operation_id in self.__progress_stack[(loc + 1) :]:
                 del self.__progress_dictionary[operation_id]
-            self.__progress_stack = self.__progress_stack[:(loc + 1)]
+            self.__progress_stack = self.__progress_stack[: (loc + 1)]
         self.__progress_dictionary[operation_id] = (progress, message)
         wx.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
         message = ", ".join(
-            ["%s (%d %%)" % (message, int(progress * 100))
-             for progress, message in [
-                 self.__progress_dictionary[o] for o in self.__progress_stack]])
+            [
+                "%s (%d %%)" % (message, int(progress * 100))
+                for progress, message in [
+                    self.__progress_dictionary[o] for o in self.__progress_stack
+                ]
+            ]
+        )
         self.set_message_text(message)
         wx.SafeYield(None, True)  # ouch, can't repaint without it.
 
@@ -380,30 +448,52 @@ class PreferencesView(object):
         """Return True if preferences are OK (e.g., directories exist)"""
         path = self.__image_edit_box.GetValue()
         if not os.path.isdir(path):
-            if wx.MessageBox(('The Default Input Folder is "%s", but '
-                              'the directory does not exist. Do you want to '
-                              'create it?') % path,
-                             "Warning, cannot run pipeline",
-                             style=wx.YES_NO) == wx.NO:
+            if (
+                wx.MessageBox(
+                    (
+                        'The Default Input Folder is "%s", but '
+                        "the directory does not exist. Do you want to "
+                        "create it?"
+                    )
+                    % path,
+                    "Warning, cannot run pipeline",
+                    style=wx.YES_NO,
+                )
+                == wx.NO
+            ):
                 return False, "Image directory does not exist"
             os.makedirs(path)
             cellprofiler.preferences.set_default_image_directory(path)
         path = self.__output_edit_box.GetValue()
         if not os.path.isdir(path):
-            if wx.MessageBox(('The Default Output Folder is "%s", but '
-                              'the directory does not exist. Do you want to '
-                              'create it?') % path,
-                             "Warning, cannot run pipeline",
-                             style=wx.YES_NO) == wx.NO:
+            if (
+                wx.MessageBox(
+                    (
+                        'The Default Output Folder is "%s", but '
+                        "the directory does not exist. Do you want to "
+                        "create it?"
+                    )
+                    % path,
+                    "Warning, cannot run pipeline",
+                    style=wx.YES_NO,
+                )
+                == wx.NO
+            ):
                 return False, "Output directory does not exist"
             os.makedirs(path)
             cellprofiler.preferences.set_default_output_directory(path)
         return True, "OK"
 
     def __on_destroy(self, event):
-        cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
-        cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cellprofiler.preferences.remove_image_directory_listener(
+            self.__on_preferences_image_directory_event
+        )
+        cellprofiler.preferences.remove_output_directory_listener(
+            self.__on_preferences_output_directory_event
+        )
+        cellprofiler.preferences.remove_output_file_name_listener(
+            self.__on_preferences_output_filename_event
+        )
 
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
@@ -413,7 +503,8 @@ class PreferencesView(object):
         self.__progress_watcher = ProgressWatcher(
             self.__progress_panel,
             self.update_progress,
-            multiprocessing=cellprofiler.analysis.use_analysis)
+            multiprocessing=cellprofiler.analysis.use_analysis,
+        )
         self.show_progress_panel()
 
     def on_pipeline_progress(self, *args):
@@ -443,10 +534,13 @@ class PreferencesView(object):
         self.__progress_bar.Show(True)
         self.__progress_msg_ctrl.SetLabel(message)
         if remaining_time is not None:
-            self.__progress_bar.SetValue((100 * elapsed_time) / (elapsed_time + remaining_time + .00001))
-            timestr = 'Time %s/%s' % (
+            self.__progress_bar.SetValue(
+                (100 * elapsed_time) / (elapsed_time + remaining_time + 0.00001)
+            )
+            timestr = "Time %s/%s" % (
                 secs_to_timestr(elapsed_time),
-                secs_to_timestr(elapsed_time + remaining_time))
+                secs_to_timestr(elapsed_time + remaining_time),
+            )
         else:
             self.__progress_bar.Pulse()
             timestr = "Elapsed time: %s" % secs_to_timestr(elapsed_time)
@@ -479,7 +573,9 @@ class PreferencesView(object):
         self.__errors.add(error_text)
 
     def __on_browse(self, event, edit_box, text):
-        dir_dialog = wx.DirDialog(self.__panel, string.capitalize(text), edit_box.GetValue())
+        dir_dialog = wx.DirDialog(
+            self.__panel, string.capitalize(text), edit_box.GetValue()
+        )
         if dir_dialog.ShowModal() == wx.ID_OK:
             edit_box.SetValue(dir_dialog.GetPath())
             fake_event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED)
@@ -489,7 +585,7 @@ class PreferencesView(object):
 
     def __on_edit_box_change(self, event, edit_box, text, actions):
         path = edit_box.GetValue()
-        error_text = 'The %s is not a directory' % text
+        error_text = "The %s is not a directory" % text
         if os.path.isdir(path):
             for action in actions:
                 action(path)
@@ -511,12 +607,12 @@ class PreferencesView(object):
         dlg = cellprofiler.gui.htmldialog.HTMLDialog(
             self.__panel,
             "Help",
-            cellprofiler.gui.html.utils.rst_to_html_fragment(help_text)
+            cellprofiler.gui.html.utils.rst_to_html_fragment(help_text),
         )
         dlg.Show()
 
     def __on_pixel_size_changed(self, event):
-        error_text = 'Pixel size must be a number'
+        error_text = "Pixel size must be a number"
         text = self.__pixel_size_edit_box.GetValue()
         if text.isdigit():
             cellprofiler.preferences.set_pixel_size(int(text))
@@ -525,17 +621,32 @@ class PreferencesView(object):
             self.set_error_text(error_text)
 
     def __on_preferences_output_filename_event(self, event):
-        if self.__output_filename_edit_box.GetValue() != cellprofiler.preferences.get_output_file_name():
-            self.__output_filename_edit_box.SetValue(cellprofiler.preferences.get_output_file_name())
+        if (
+            self.__output_filename_edit_box.GetValue()
+            != cellprofiler.preferences.get_output_file_name()
+        ):
+            self.__output_filename_edit_box.SetValue(
+                cellprofiler.preferences.get_output_file_name()
+            )
 
     def __on_preferences_output_directory_event(self, event):
         old_selection = self.__output_edit_box.GetSelection()
-        if self.__output_edit_box.GetValue() != cellprofiler.preferences.get_default_output_directory():
-            self.__output_edit_box.SetValue(cellprofiler.preferences.get_default_output_directory())
+        if (
+            self.__output_edit_box.GetValue()
+            != cellprofiler.preferences.get_default_output_directory()
+        ):
+            self.__output_edit_box.SetValue(
+                cellprofiler.preferences.get_default_output_directory()
+            )
 
     def __on_preferences_image_directory_event(self, event):
-        if self.__image_edit_box.GetValue() != cellprofiler.preferences.get_default_image_directory():
-            self.__image_edit_box.SetValue(cellprofiler.preferences.get_default_image_directory())
+        if (
+            self.__image_edit_box.GetValue()
+            != cellprofiler.preferences.get_default_image_directory()
+        ):
+            self.__image_edit_box.SetValue(
+                cellprofiler.preferences.get_default_image_directory()
+            )
 
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
@@ -556,7 +667,7 @@ class ProgressWatcher(object):
         # start tracking progress
         self.start_time = time.time()
         self.end_times = None
-        self.current_module_name = ''
+        self.current_module_name = ""
         self.pause_start_time = None
         self.previous_pauses_duration = 0.0
         self.image_set_index = 0
@@ -582,19 +693,22 @@ class ProgressWatcher(object):
         self.timer.Stop()
 
     def update(self, event=None):
-        status = '%s, Image Set %d/%d' % (self.current_module_name, self.image_set_index + 1, self.num_image_sets)
-        self.update_callback(status,
-                             self.elapsed_time(),
-                             self.remaining_time())
+        status = "%s, Image Set %d/%d" % (
+            self.current_module_name,
+            self.image_set_index + 1,
+            self.num_image_sets,
+        )
+        self.update_callback(status, self.elapsed_time(), self.remaining_time())
 
     def update_multiprocessing(self, event=None):
         if self.num_jobs > self.num_received:
-            status = 'Processing: %d of %d image sets completed' % \
-                     (self.num_received, self.num_jobs)
+            status = "Processing: %d of %d image sets completed" % (
+                self.num_received,
+                self.num_jobs,
+            )
             self.update_callback(
-                status,
-                self.elapsed_time(),
-                self.remaining_time_multiprocessing())
+                status, self.elapsed_time(), self.remaining_time_multiprocessing()
+            )
         else:
             status = "Post-processing, please wait"
             self.update_callback(status, self.elapsed_time())
@@ -605,8 +719,7 @@ class ProgressWatcher(object):
         else:
             self.on_receive_work(*args)
 
-    def on_start_module(self, module, num_modules, image_set_index,
-                        num_image_sets):
+    def on_start_module(self, module, num_modules, image_set_index, num_image_sets):
         """
         Update the historical execution times, which are used as the
         bases for projecting the time that remains.  Also update the
@@ -667,20 +780,34 @@ class ProgressWatcher(object):
         else:
             module_index = self.current_module.module_num - 1
             index = self.image_set_index * self.num_modules + module_index
-            durations = (self.end_times[1:] - self.end_times[:-1]).reshape(self.num_image_sets, self.num_modules)
+            durations = (self.end_times[1:] - self.end_times[:-1]).reshape(
+                self.num_image_sets, self.num_modules
+            )
             per_module_estimates = numpy.zeros(self.num_modules)
-            per_module_estimates[:module_index] = numpy.median(durations[:self.image_set_index + 1, :module_index], 0)
+            per_module_estimates[:module_index] = numpy.median(
+                durations[: self.image_set_index + 1, :module_index], 0
+            )
             current_module_so_far = self.elapsed_time() - self.end_times[1 + index - 1]
             if self.image_set_index > 0:
-                per_module_estimates[module_index:] = numpy.median(durations[:self.image_set_index, module_index:], 0)
-                per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)
+                per_module_estimates[module_index:] = numpy.median(
+                    durations[: self.image_set_index, module_index:], 0
+                )
+                per_module_estimates[module_index] = max(
+                    per_module_estimates[module_index], current_module_so_far
+                )
             else:
                 # Guess that the modules that haven't finished yet are
                 # as slow as the slowest one we've seen so far.
                 per_module_estimates[module_index] = current_module_so_far
-                per_module_estimates[module_index:] = per_module_estimates[:module_index + 1].max()
-            per_module_estimates[:module_index] *= self.num_image_sets - self.image_set_index - 1
-            per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
+                per_module_estimates[module_index:] = per_module_estimates[
+                    : module_index + 1
+                ].max()
+            per_module_estimates[:module_index] *= (
+                self.num_image_sets - self.image_set_index - 1
+            )
+            per_module_estimates[module_index:] *= (
+                self.num_image_sets - self.image_set_index
+            )
             per_module_estimates[module_index] -= current_module_so_far
             return per_module_estimates.sum()
 

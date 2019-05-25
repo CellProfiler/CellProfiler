@@ -12,30 +12,35 @@ STYLE_MATCH = 1
 STYLE_FIRST_LABEL = 2
 STYLE_ERROR = 31
 
-UUID_REGEXP = "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"
+UUID_REGEXP = (
+    "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"
+)
 RE_FILENAME_GUESSES = [
     # This is the generic naming convention for fluorescent microscopy images
     "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)f(?P<Site>[0-9]{2})d(?P<Dye>[0-9])\\.tif$",
     # Molecular devices single site
-    "^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_?" + UUID_REGEXP + "\\.tif$",
+    "^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_?"
+    + UUID_REGEXP
+    + "\\.tif$",
     # Plate / well / site / channel without UUID
     "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])\\.tif$",
     # Molecular devices multi-site
-    '^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])' + UUID_REGEXP + '\\.tif$',
+    "^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
+    + UUID_REGEXP
+    + "\\.tif$",
     # Molecular devices multi-site, single wavelength
-    '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{2})_s(?P<Site>[0-9])' + UUID_REGEXP,
+    "^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{2})_s(?P<Site>[0-9])" + UUID_REGEXP,
     # Plate / well / [UUID]
-    '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_\\[' + UUID_REGEXP + '\\]\\.tif$',
+    "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_\\[" + UUID_REGEXP + "\\]\\.tif$",
     # Cellomics
-    '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{1,2})f(?P<Site>[0-9]{1,2})d(?P<Wavelength>[0-9])',
+    "^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{1,2})f(?P<Site>[0-9]{1,2})d(?P<Wavelength>[0-9])",
     # BD Pathway
-    '^(?P<Wavelength>.*) - n(?P<StackSlice>[0-9]{6})',
+    "^(?P<Wavelength>.*) - n(?P<StackSlice>[0-9]{6})",
     # GE InCell Analyzer
-    r'^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)',
+    r"^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)",
     # Phenix
-    r'^r(?P<WellRow>\d{2})c(?P<WellColumn>\d{2})f(?P<Site>\d{2})p\d{2}-ch(?P<ChannelNumber>\d)'
+    r"^r(?P<WellRow>\d{2})c(?P<WellColumn>\d{2})f(?P<Site>\d{2})p\d{2}-ch(?P<ChannelNumber>\d)"
     # Please add more guesses below
-
 ]
 
 RE_FOLDER_GUESSES = [
@@ -50,8 +55,9 @@ RE_FOLDER_GUESSES = [
 def edit_regexp(parent, regexp, test_text, guesses=None):
     if guesses is None:
         guesses = RE_FILENAME_GUESSES
-    frame = RegexpDialog(parent, size=(500, 200),
-                         style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+    frame = RegexpDialog(
+        parent, size=(500, 200), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+    )
     frame.value = regexp
     frame.test_text = test_text
     frame.guesses = guesses
@@ -82,7 +88,8 @@ class RegexpDialog(wx.Dialog):
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
         self.regexp_display.SetBufferedDraw(True)
         w, h = self.regexp_display.ClientToWindowSize(
-                self.regexp_display.GetTextExtent("".join(["M"] * 50)))
+            self.regexp_display.GetTextExtent("".join(["M"] * 50))
+        )
         self.regexp_display.SetMinSize(wx.Size(w, h))
         self.regexp_display.Text = self.value
         self.regexp_display.SetLexer(wx.stc.STC_LEX_CONTAINER)
@@ -92,13 +99,19 @@ class RegexpDialog(wx.Dialog):
         self.regexp_display.StyleSetForeground(TOK_ESCAPE, wx.Colour(0, 64, 64, 255))
         self.regexp_display.StyleSetForeground(TOK_GROUP, wx.Colour(0, 0, 255, 255))
         self.regexp_display.StyleSetForeground(TOK_REPEAT, wx.Colour(0, 128, 0, 255))
-        self.regexp_display.StyleSetForeground(TOK_BRACKET_EXP, wx.Colour(64, 64, 64, 255))
+        self.regexp_display.StyleSetForeground(
+            TOK_BRACKET_EXP, wx.Colour(64, 64, 64, 255)
+        )
         self.regexp_display.StyleSetForeground(TOK_SPECIAL, wx.Colour(128, 64, 0, 255))
         color_db = self.get_color_db()
         for i in range(1, 16):
-            self.regexp_display.StyleSetForeground(TOK_DEFINITION - 1 + i, color_db[i % len(color_db)])
+            self.regexp_display.StyleSetForeground(
+                TOK_DEFINITION - 1 + i, color_db[i % len(color_db)]
+            )
 
-        self.regexp_display.StyleSetForeground(STYLE_ERROR, wx.Colour(255, 64, 128, 255))
+        self.regexp_display.StyleSetForeground(
+            STYLE_ERROR, wx.Colour(255, 64, 128, 255)
+        )
         self.regexp_display.StyleSetFont(34, self.font)
         self.regexp_display.StyleSetForeground(34, wx.Colour(0, 0, 255, 255))
         self.regexp_display.StyleSetUnderline(34, True)
@@ -111,7 +124,9 @@ class RegexpDialog(wx.Dialog):
         hsizer.Add(self.regexp_display, 1, wx.EXPAND | wx.ALL, 5)
 
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        hsizer.Add(wx.StaticText(self, label="Test text:"), 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        hsizer.Add(
+            wx.StaticText(self, label="Test text:"), 0, wx.ALIGN_CENTER | wx.ALL, 5
+        )
         self.test_text_ctl = wx.TextCtrl(self, value=self.__test_text)
         self.test_text_ctl.Font = self.font
         hsizer.Add(self.test_text_ctl, 1, wx.ALIGN_CENTER | wx.ALL, 5)
@@ -122,12 +137,15 @@ class RegexpDialog(wx.Dialog):
         self.test_display.SetLexer(wx.stc.STC_LEX_CONTAINER)
         self.test_display.StyleClearAll()
         self.test_display.StyleSetFont(STYLE_NO_MATCH, self.font)
-        self.test_display.StyleSetForeground(STYLE_NO_MATCH,
-                                             wx.Colour(128, 128, 128, 255))
+        self.test_display.StyleSetForeground(
+            STYLE_NO_MATCH, wx.Colour(128, 128, 128, 255)
+        )
         color_db = self.get_color_db()
         for i in range(16):
             self.test_display.StyleSetFont(STYLE_FIRST_LABEL - 1 + i, self.font)
-            self.test_display.StyleSetForeground(STYLE_FIRST_LABEL - 1 + i, color_db[i % len(color_db)])
+            self.test_display.StyleSetForeground(
+                STYLE_FIRST_LABEL - 1 + i, color_db[i % len(color_db)]
+            )
 
         self.test_display.StyleSetFont(STYLE_ERROR, self.error_font)
         self.test_display.StyleSetForeground(STYLE_ERROR, wx.Colour(255, 0, 0, 255))
@@ -159,7 +177,9 @@ class RegexpDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_ok_button, ok_button)
         self.Bind(wx.EVT_BUTTON, self.on_cancel_button, cancel_button)
         self.Bind(wx.EVT_TEXT, self.on_test_text_text_change, self.test_text_ctl)
-        self.Bind(wx.stc.EVT_STC_CHANGE, self.on_editor_text_change, self.regexp_display)
+        self.Bind(
+            wx.stc.EVT_STC_CHANGE, self.on_editor_text_change, self.regexp_display
+        )
         self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.on_style_needed, self.regexp_display)
         self.regexp_display.Bind(wx.EVT_KEY_DOWN, self.on_regexp_key)
         self.SetSizer(sizer)
@@ -176,7 +196,16 @@ class RegexpDialog(wx.Dialog):
 
     @staticmethod
     def get_color_db():
-        color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN", "MAGENTA", "SIENNA", "PURPLE"]
+        color_db = [
+            "BLACK",
+            "RED",
+            "GREEN",
+            "BLUE",
+            "CYAN",
+            "MAGENTA",
+            "SIENNA",
+            "PURPLE",
+        ]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]
         return color_db
 
@@ -189,10 +218,11 @@ class RegexpDialog(wx.Dialog):
                 break
         else:
             wx.MessageBox(
-                    "None of the standard regular expressions matches the test text.",
-                    caption="No matching guesses",
-                    style=wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
-                    parent=self)
+                "None of the standard regular expressions matches the test text.",
+                caption="No matching guesses",
+                style=wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
+                parent=self,
+            )
 
     def on_ok_button(self, event):
         self.EndModal(1)
@@ -215,24 +245,27 @@ class RegexpDialog(wx.Dialog):
     def refresh_regexp(self):
         state = RegexpState()
         regexp_text = self.__value
-        self.regexp_display.StartStyling(0, 0xff)
+        self.regexp_display.StartStyling(0, 0xFF)
         self.regexp_display.SetStyling(len(regexp_text), STYLE_ERROR)
         try:
             parse(regexp_text, state)
         except:
             pass
         for i in range(state.position):
-            self.regexp_display.StartStyling(i, 0xff)
+            self.regexp_display.StartStyling(i, 0xFF)
             self.regexp_display.SetStyling(1, state.token_labels[i])
         pos = self.regexp_display.CurrentPos
         if state.open_expression_start is not None:
             self.regexp_display.BraceBadLight(state.open_expression_start)
-        elif 0 < pos < len(state.matching_braces) and state.matching_braces[pos - 1] is not None:
-            self.regexp_display.BraceHighlight(state.matching_braces[pos - 1],
-                                               pos - 1)
+        elif (
+            0 < pos < len(state.matching_braces)
+            and state.matching_braces[pos - 1] is not None
+        ):
+            self.regexp_display.BraceHighlight(state.matching_braces[pos - 1], pos - 1)
         else:
-            self.regexp_display.BraceHighlight(wx.stc.STC_INVALID_POSITION,
-                                               wx.stc.STC_INVALID_POSITION)
+            self.regexp_display.BraceHighlight(
+                wx.stc.STC_INVALID_POSITION, wx.stc.STC_INVALID_POSITION
+            )
 
     def refresh_text(self):
         self.test_display.ReadOnly = False
@@ -241,9 +274,8 @@ class RegexpDialog(wx.Dialog):
             parse(self.__value, RegexpState())
         except ValueError as e:
             self.test_display.Text = e.message
-            self.test_display.StartStyling(0, 0xff)
-            self.test_display.SetStyling(len(self.test_display.Text),
-                                         STYLE_ERROR)
+            self.test_display.StartStyling(0, 0xFF)
+            self.test_display.SetStyling(len(self.test_display.Text), STYLE_ERROR)
             return
         try:
             match = re.search(self.__value, self.__test_text)
@@ -251,18 +283,16 @@ class RegexpDialog(wx.Dialog):
                 for i in range(len(match.groups()) + 1):
                     start = match.start(i)
                     end = match.end(i)
-                    self.test_display.StartStyling(start, 0xff)
+                    self.test_display.StartStyling(start, 0xFF)
                     self.test_display.SetStyling(end - start, i + 1)
             else:
                 self.test_display.Text = "Regular expression does not match"
-                self.test_display.StartStyling(0, 0xff)
-                self.test_display.SetStyling(len(self.test_display.Text),
-                                             STYLE_ERROR)
+                self.test_display.StartStyling(0, 0xFF)
+                self.test_display.SetStyling(len(self.test_display.Text), STYLE_ERROR)
         except:
             self.test_display.Text = "Regular expression is not valid"
-            self.test_display.StartStyling(0, 0xff)
-            self.test_display.SetStyling(len(self.test_display.GetText()),
-                                         STYLE_ERROR)
+            self.test_display.StartStyling(0, 0xFF)
+            self.test_display.SetStyling(len(self.test_display.GetText()), STYLE_ERROR)
         self.test_display.SetReadOnly(True)
 
     def refresh_bitmap(self):
@@ -315,16 +345,32 @@ TOK_REPEAT = 4
 TOK_SPECIAL = 5
 TOK_DEFINITION = 6
 
-HARDCODE_ESCAPES = {r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r", r"\s", r"\t", r"\v", r"\w", r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"}
+HARDCODE_ESCAPES = {
+    r"\\",
+    r"\a",
+    r"\b",
+    r"\d",
+    r"\f",
+    r"\n",
+    r"\r",
+    r"\s",
+    r"\t",
+    r"\v",
+    r"\w",
+    r"\A",
+    r"\B",
+    r"\D",
+    r"\S",
+    r"\W",
+    r"\Z",
+}
 OCTAL_DIGITS = set("01234567")
 DECIMAL_DIGITS = set("0123456789")
 HEXIDECIMAL_DIGITS = set("0123456789ABCDEFabcdef")
 REPEAT_STARTS = set("{*+?")
 OTHER_SPECIAL_CHARACTERS = set(".|")
 
-IGNORABLE_GROUPS = (r"\(\?[iLmsux]+\)",
-                    r"\(\?#.*\)"
-                    )
+IGNORABLE_GROUPS = (r"\(\?[iLmsux]+\)", r"\(\?#.*\)")
 
 
 class RegexpState(object):
@@ -458,7 +504,9 @@ def looking_at_escape(s, state):
                 if s[i] != OCTAL_DIGITS:
                     return i
         if s[1] in DECIMAL_DIGITS:
-            raise ValueError("Numeric escapes within brackets must be octal values: e.g., [\\21] for ^Q")
+            raise ValueError(
+                "Numeric escapes within brackets must be octal values: e.g., [\\21] for ^Q"
+            )
     elif s[1] == 0:
         for i in range(2, min(4, len(s))):
             if s[i] != OCTAL_DIGITS:
@@ -474,7 +522,7 @@ def looking_at_escape(s, state):
         if group_number > state.group_count:
             raise ValueError("Only %d groups at this point" % state.group_count)
         return length
-    if s[1] == 'x':
+    if s[1] == "x":
         if s[2] in HEXIDECIMAL_DIGITS and s[3] in HEXIDECIMAL_DIGITS:
             return 4
         raise ValueError("Hexidecimal escapes are two digits long: eg. \\x1F")
@@ -489,22 +537,25 @@ def looking_at_repeat(s, state):
         return None
     if not state.any_tokens:
         raise ValueError("Invalid repeat placement: there is nothing to repeat")
-    if s[0] == '{':
+    if s[0] == "{":
         match = re.match("\\{([0-9]+)(,([0-9]+))?\\}", s)
         if not match:
             raise ValueError("Incomplete or badly formatted repeat expression")
         if match.group(3) is not None:
             if int(match.group(1)) > int(match.group(3)):
-                raise ValueError("Minimum # of matches in %s is greater than maximum number" % match.group())
+                raise ValueError(
+                    "Minimum # of matches in %s is greater than maximum number"
+                    % match.group()
+                )
         return len(match.group())
-    if len(s) > 1 and s[1] == '?':
+    if len(s) > 1 and s[1] == "?":
         return 2
     return 1
 
 
 def handle_open_group(s, state):
-    if s[0] == '(':
-        if len(s) > 2 and s[1] == '?':
+    if s[0] == "(":
+        if len(s) > 2 and s[1] == "?":
             if s[2] in ("=", "!", ":"):
                 # a look-ahead expression or parentheses without grouping
                 state.open_group(3, is_non_grouping=True)
@@ -520,14 +571,14 @@ def handle_open_group(s, state):
                     raise ValueError("Incomplete or badly formatted switch expression")
                 state.parsed_special(len(match.group()))
                 return len(match.group())
-            elif s[2] == '#':
+            elif s[2] == "#":
                 # comment
                 match = re.match(r"\(\?#.*\)", s)
                 if not match:
                     raise ValueError("Incomplete or badly formatted comment")
                 state.parsed_special(len(match.group()))
                 return len(match.group())
-            elif s[2] == '(':
+            elif s[2] == "(":
                 # (?(name/id)) construct
                 match = re.match(r"\(\?\(([^)]+)\)", s)
                 if not match:
@@ -536,18 +587,24 @@ def handle_open_group(s, state):
                 if name_or_id.isdigit():
                     if int(name_or_id) > state.group_count:
                         raise ValueError(
-                                "Not enough groups before conditional match: asked for %d, but only %d available" %
-                                (int(name_or_id), state.group_count))
+                            "Not enough groups before conditional match: asked for %d, but only %d available"
+                            % (int(name_or_id), state.group_count)
+                        )
                 else:
                     if not state.is_group_name(name_or_id):
-                        raise ValueError('Unavailable group name, "%s", in conditional match' % name_or_id)
+                        raise ValueError(
+                            'Unavailable group name, "%s", in conditional match'
+                            % name_or_id
+                        )
                 state.open_group(len(match.group()), is_non_grouping=True)
-            elif s[2] == 'P' and len(s) > 3:
+            elif s[2] == "P" and len(s) > 3:
                 if s[3] == "=":
                     # (?P=FOO) matches the previous group expression, FOO
                     match = re.match(r"\(\?P=([^)]+)\)", s)
                     if not match:
-                        raise ValueError("Incomplete or badly formatted named group reference")
+                        raise ValueError(
+                            "Incomplete or badly formatted named group reference"
+                        )
                     else:
                         state.parsed_token(len(match.group()), TOK_GROUP)
                         return len(match.group())
@@ -555,16 +612,21 @@ def handle_open_group(s, state):
                     # Named group definition: (?P<FOO>...)
                     match = re.match(r"\(\?P<([^>]+)>", s)
                     if not match:
-                        raise ValueError("Incomplete or badly formattted named group definition")
+                        raise ValueError(
+                            "Incomplete or badly formattted named group definition"
+                        )
                     elif state.is_group_name(match.group(1)):
                         raise ValueError("Doubly-defined group: %s" % match.group(1))
                     else:
                         group_name = match.group(1)
-                        state.open_group(len(match.group()),
-                                         group_name=group_name,
-                                         is_non_grouping=True)
-                        state.token_labels[-len(group_name) - 1:-1] = \
-                            [TOK_DEFINITION + state.group_name_index(group_name)] * len(group_name)
+                        state.open_group(
+                            len(match.group()),
+                            group_name=group_name,
+                            is_non_grouping=True,
+                        )
+                        state.token_labels[-len(group_name) - 1 : -1] = [
+                            TOK_DEFINITION + state.group_name_index(group_name)
+                        ] * len(group_name)
                         return len(match.group())
                 else:
                     raise ValueError("Incomplete or badly formatted (?P expression")
@@ -577,45 +639,49 @@ def handle_open_group(s, state):
 
 def parse(s, state):
     while state.position < len(s):
-        length = looking_at_escape(s[state.position:], state)
+        length = looking_at_escape(s[state.position :], state)
         if length:
             state.parsed_token(length, TOK_ESCAPE)
             continue
         if state.in_brackets:
-            if s[state.position] != ']':
+            if s[state.position] != "]":
                 state.parsed_token(1, TOK_BRACKET_EXP)
             else:
                 state.close_brackets()
         else:
-            length = looking_at_repeat(s[state.position:], state)
+            length = looking_at_repeat(s[state.position :], state)
             if length:
                 state.parsed_repeat(length)
                 continue
-            if s[state.position] == '[':
+            if s[state.position] == "[":
                 state.open_brackets()
                 continue
-            if s[state.position] == '^':
+            if s[state.position] == "^":
                 if state.position:
-                    raise ValueError("^ can only appear at the start of a regular expression")
+                    raise ValueError(
+                        "^ can only appear at the start of a regular expression"
+                    )
                 else:
                     state.parsed_special()
                 continue
-            if s[state.position] == '$':
+            if s[state.position] == "$":
                 if state.position < len(s) - 1:
-                    raise ValueError("$ can only appear at the end of a regular expression")
+                    raise ValueError(
+                        "$ can only appear at the end of a regular expression"
+                    )
                 else:
                     state.parsed_special()
                     continue
-            if s[state.position] == '|':
+            if s[state.position] == "|":
                 state.parsed_special()
                 continue
-            if s[state.position] == '.':
+            if s[state.position] == ".":
                 state.parsed_token(1, TOK_SPECIAL)
                 continue
-            if s[state.position] == ')':
+            if s[state.position] == ")":
                 state.close_group()
                 continue
-            if handle_open_group(s[state.position:], state):
+            if handle_open_group(s[state.position :], state):
                 continue
             # Otherwise, assume normal character
             state.parsed_token()

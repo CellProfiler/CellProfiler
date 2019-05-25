@@ -19,11 +19,12 @@ class InjectImage(cellprofiler.module.Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
+
     module_name = "InjectImage"
     variable_revision_number = 1
 
     def __init__(self, image_name, image, mask=None, release_image=False):
-        '''Initializer
+        """Initializer
 
         image_name - the name of the image to put into the image set
 
@@ -34,12 +35,14 @@ class InjectImage(cellprofiler.module.Module):
         mask - None for no mask (default), a binary 2-d matrix if same mask
                for all image sets or a list or tuple of masks if one
                different mask per image set.
-        '''
+        """
         super(InjectImage, self).__init__()
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = cellprofiler.setting.NameProvider("Hardwired image name", "imagegroup", image_name)
+        self.image_name = cellprofiler.setting.NameProvider(
+            "Hardwired image name", "imagegroup", image_name
+        )
         self.__release_image = release_image
 
     def settings(self):
@@ -52,7 +55,9 @@ class InjectImage(cellprofiler.module.Module):
         """Return help text for the module
 
         """
-        raise NotImplementedError("Please implement GetHelp in your derived module class")
+        raise NotImplementedError(
+            "Please implement GetHelp in your derived module class"
+        )
 
     variable_revision_number = 1
 
@@ -70,8 +75,8 @@ class InjectImage(cellprofiler.module.Module):
         digest.update(np.ascontiguousarray(self.__image).data)
 
         workspace.measurements.add_measurement(
-                cpmeas.IMAGE, "MD5Digest_%s" % self.__image_name, 1,
-                image_set_number=1)
+            cpmeas.IMAGE, "MD5Digest_%s" % self.__image_name, 1, image_set_number=1
+        )
         return True
 
     def run(self, workspace):
@@ -118,7 +123,9 @@ class InjectImage(cellprofiler.module.Module):
         """
         return []
 
-    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
+    def get_measurement_scales(
+        self, pipeline, object_name, category, measurement, image_name
+    ):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
@@ -130,7 +137,13 @@ class InjectObjects(cellprofiler.module.Module):
     module_name = "InjectObjects"
     variable_revision_number = 1
 
-    def __init__(self, object_name, segmented, unedited_segmented=None, small_removed_segmented=None):
+    def __init__(
+        self,
+        object_name,
+        segmented,
+        unedited_segmented=None,
+        small_removed_segmented=None,
+    ):
         """Initialize the module with the objects for the object set
 
         object_name - name of the objects to be provided

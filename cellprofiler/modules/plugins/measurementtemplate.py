@@ -139,7 +139,7 @@ wherever possible, include a link to the original work. For example,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
 #
-'''This is the measurement template category'''
+"""This is the measurement template category"""
 C_MEASUREMENT_TEMPLATE = "MT"
 
 
@@ -186,7 +186,7 @@ This is the image that the module operates on. You can choose any image
 that is made available by a prior module.
 
 **MeasurementTemplate** will measure something about this image.
-"""
+""",
         )
 
         #
@@ -196,7 +196,8 @@ that is made available by a prior module.
         #
         self.input_object_name = cellprofiler.setting.ObjectNameSubscriber(
             text="Input object name",
-            doc="These are the objects that the module operates on.")
+            doc="These are the objects that the module operates on.",
+        )
 
         #
         # The radial degree is the "N" parameter in the Zernike - how many
@@ -217,7 +218,7 @@ degree. The Zernike function is parameterized by a radial
 and azimuthal degree. The module will calculate all Zernike
 features for all azimuthal degrees up to and including the
 radial degree you enter here.
-"""
+""",
         )
 
     #
@@ -232,11 +233,7 @@ radial degree you enter here.
     # a template for visible_settings that you can cut and paste here.
     #
     def settings(self):
-        return [
-            self.input_image_name,
-            self.input_object_name,
-            self.radial_degree
-        ]
+        return [self.input_image_name, self.input_object_name, self.radial_degree]
 
     #
     # CellProfiler calls "run" on each image set in your pipeline.
@@ -335,7 +332,9 @@ radial degree you enter here.
         # in those indexes. MEC returns the i and j coordinate of the center
         # and the radius of the circle and that defines the circle entirely.
         #
-        centers, radius = centrosome.cpmorphology.minimum_enclosing_circle(labels, indexes)
+        centers, radius = centrosome.cpmorphology.minimum_enclosing_circle(
+            labels, indexes
+        )
         #
         # The module computes a measurement based on the image intensity
         # inside an object times a Zernike polynomial inscribed in the
@@ -345,7 +344,9 @@ radial degree you enter here.
         #
         for n, m in self.get_zernike_indexes():
             # Compute the zernikes for each object, returned in an array
-            zr, zi = self.measure_zernike(pixels, labels, indexes, centers, radius, n, m)
+            zr, zi = self.measure_zernike(
+                pixels, labels, indexes, centers, radius, n, m
+            )
 
             # Get the name of the measurement feature for this zernike
             feature = self.get_measurement_name(n, m)
@@ -378,13 +379,13 @@ radial degree you enter here.
         figure.subplot_table(0, 0, statistics)
 
     def get_zernike_indexes(self, wants_negative=False):
-        '''Get an N x 2 numpy array containing the M and N Zernike degrees
+        """Get an N x 2 numpy array containing the M and N Zernike degrees
 
         Use the radial_degree setting to determine which Zernikes to do.
 
         wants_negative - if True, return both positive and negative M, if false
                          return only positive
-        '''
+        """
         zi = centrosome.zernike.get_zernike_indexes(self.radial_degree.value + 1)
 
         if wants_negative:
@@ -408,7 +409,7 @@ radial degree you enter here.
     # "measure_zernike" makes one Zernike measurement on each object
     #
     def measure_zernike(self, pixels, labels, indexes, centers, radius, n, m):
-        '''Measure the intensity of the image with Zernike (N, M)
+        """Measure the intensity of the image with Zernike (N, M)
 
         pixels - the intensity image to be measured
         labels - the labels matrix that labels each object with an integer
@@ -419,7 +420,7 @@ radial degree you enter here.
 
         See http://en.wikipedia.org/wiki/Zernike_polynomials for an
         explanation of the Zernike polynomials
-        '''
+        """
         #
         # The strategy here is to operate on the whole array instead
         # of operating on one object at a time. The most important thing
@@ -453,7 +454,7 @@ radial degree you enter here.
         # raidus. Numpy requires consistent data types for in-place
         # operations like -= and /=.
         #
-        y, x = numpy.mgrid[0.0:labels.shape[0], 0.0:labels.shape[1]]
+        y, x = numpy.mgrid[0.0 : labels.shape[0], 0.0 : labels.shape[1]]
 
         #
         # Get the x and y coordinates relative to the object centers.
@@ -481,10 +482,7 @@ radial degree you enter here.
         # runs a little faster.
         #
         zernike_polynomial = centrosome.zernike.construct_zernike_polynomials(
-            x,
-            y,
-            numpy.array([[n, m]]),
-            labels > 0
+            x, y, numpy.array([[n, m]]), labels > 0
         )
 
         #
@@ -522,7 +520,7 @@ radial degree you enter here.
     # use the same functions in different places.
     #
     def get_feature_name(self, n, m):
-        '''Return a measurement feature name for the given Zernike'''
+        """Return a measurement feature name for the given Zernike"""
         #
         # Something nice and simple for a name... Intensity_DNA_N4M2 for instance
         #
@@ -532,10 +530,10 @@ radial degree you enter here.
         return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
 
     def get_measurement_name(self, n, m):
-        '''Return the whole measurement name'''
+        """Return the whole measurement name"""
         input_image_name = self.input_image_name.value
 
-        return '_'.join([C_MEASUREMENT_TEMPLATE, self.get_feature_name(n, m)])
+        return "_".join([C_MEASUREMENT_TEMPLATE, self.get_feature_name(n, m)])
 
     #
     # We have to tell CellProfiler about the measurements we produce.
@@ -564,11 +562,14 @@ radial degree you enter here.
         #
         input_object_name = self.input_object_name.value
 
-        return [(
-            input_object_name,
-            self.get_measurement_name(n, m),
-            cellprofiler.measurement.COLTYPE_FLOAT
-        ) for n, m in self.get_zernike_indexes(True)]
+        return [
+            (
+                input_object_name,
+                self.get_measurement_name(n, m),
+                cellprofiler.measurement.COLTYPE_FLOAT,
+            )
+            for n, m in self.get_zernike_indexes(True)
+        ]
 
     #
     # "get_categories" returns a list of the measurement categories produced
@@ -605,26 +606,31 @@ radial degree you enter here.
 
         return []
 
-    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
-        '''Get the scales for a measurement
+    def get_measurement_scales(
+        self, pipeline, object_name, category, measurement, image_name
+    ):
+        """Get the scales for a measurement
 
         For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
         negative azimuthal degree
-        '''
+        """
+
         def get_scale(n, m):
             if m >= 0:
                 return "N%dM%d" % (n, m)
 
             return "N%dMM%d" % (n, -m)
 
-        if image_name in self.get_measurement_images(pipeline, object_name, category, measurement):
+        if image_name in self.get_measurement_images(
+            pipeline, object_name, category, measurement
+        ):
             return [get_scale(n, m) for n, m in self.get_zernike_indexes(True)]
 
         return []
 
     @staticmethod
     def get_image_from_features(radius, feature_dictionary):
-        '''Reconstruct the intensity image from the zernike features
+        """Reconstruct the intensity image from the zernike features
 
         radius - the radius of the minimum enclosing circle
 
@@ -632,17 +638,28 @@ radial degree you enter here.
         magnitudes.
 
         returns a greyscale image based on the feature dictionary.
-        '''
-        i, j = numpy.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(float) / radius
+        """
+        i, j = (
+            numpy.mgrid[-radius : (radius + 1), -radius : (radius + 1)].astype(float)
+            / radius
+        )
         mask = (i * i + j * j) <= 1
 
         zernike_indexes = numpy.array(feature_dictionary.keys())
         zernike_features = numpy.array(feature_dictionary.values())
 
-        z = centrosome.zernike.construct_zernike_polynomials(j, i, numpy.abs(zernike_indexes), mask=mask)
-        zn = (2 * zernike_indexes[:, 0] + 2) / ((zernike_indexes[:, 1] == 0) + 1) / numpy.pi
+        z = centrosome.zernike.construct_zernike_polynomials(
+            j, i, numpy.abs(zernike_indexes), mask=mask
+        )
+        zn = (
+            (2 * zernike_indexes[:, 0] + 2)
+            / ((zernike_indexes[:, 1] == 0) + 1)
+            / numpy.pi
+        )
         z *= zn[numpy.newaxis, numpy.newaxis, :]
-        z = z.real * (zernike_indexes[:, 1] >= 0)[numpy.newaxis, numpy.newaxis, :] + \
-            z.imag * (zernike_indexes[:, 1] <= 0)[numpy.newaxis, numpy.newaxis, :]
+        z = (
+            z.real * (zernike_indexes[:, 1] >= 0)[numpy.newaxis, numpy.newaxis, :]
+            + z.imag * (zernike_indexes[:, 1] <= 0)[numpy.newaxis, numpy.newaxis, :]
+        )
 
         return numpy.sum(z * zernike_features[numpy.newaxis, numpy.newaxis, :], 2)

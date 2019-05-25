@@ -36,9 +36,9 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          NO
 ============ ============ ===============
 
-""".format(**{
-    "HELP_BINARY_IMAGE": HELP_BINARY_IMAGE
-})
+""".format(
+    **{"HELP_BINARY_IMAGE": HELP_BINARY_IMAGE}
+)
 
 
 class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
@@ -52,9 +52,7 @@ class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
         super(ConvertImageToObjects, self).create_settings()
 
         self.cast_to_bool = cellprofiler.setting.Binary(
-            text="Convert to boolean image",
-            value=True,
-            doc=HELP_BINARY_IMAGE
+            text="Convert to boolean image", value=True, doc=HELP_BINARY_IMAGE
         )
 
         self.preserve_labels = cellprofiler.setting.Binary(
@@ -64,9 +62,9 @@ class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
 By default, this module will re-label the input image.
 Setting this to *{YES}* will ensure that the original labels 
 (i.e. pixel values of the objects) are preserved.
-""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.background_label = cellprofiler.setting.Integer(
@@ -75,7 +73,7 @@ Setting this to *{YES}* will ensure that the original labels
             doc="""\
 Consider all pixels with this value as background pixels, and label them as 0. 
 By default, 0-valued pixels are considered as background pixels.
-"""
+""",
         )
 
         self.connectivity = cellprofiler.setting.Integer(
@@ -86,7 +84,7 @@ By default, 0-valued pixels are considered as background pixels.
 Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. 
 Accepted values are ranging from 1 to the number of dimensions of the input. 
 If set to 0, a full connectivity of the input dimension is used.
-"""
+""",
         )
 
     def settings(self):
@@ -96,7 +94,7 @@ If set to 0, a full connectivity of the input dimension is used.
             self.cast_to_bool,
             self.preserve_labels,
             self.background_label,
-            self.connectivity
+            self.connectivity,
         ]
 
     def visible_settings(self):
@@ -108,16 +106,14 @@ If set to 0, a full connectivity of the input dimension is used.
             __settings__ += [self.preserve_labels]
 
         if not self.preserve_labels.value:
-            __settings__ += [
-                self.background_label,
-                self.connectivity
-            ]
+            __settings__ += [self.background_label, self.connectivity]
 
         return __settings__
 
     def run(self, workspace):
-        self.function = lambda data, cast_to_bool, preserve_label, background, connectivity: \
-            convert_to_objects(data, cast_to_bool, preserve_label, background, connectivity)
+        self.function = lambda data, cast_to_bool, preserve_label, background, connectivity: convert_to_objects(
+            data, cast_to_bool, preserve_label, background, connectivity
+        )
 
         super(ConvertImageToObjects, self).run(workspace)
 
@@ -125,8 +121,7 @@ If set to 0, a full connectivity of the input dimension is used.
         layout = (2, 1)
 
         figure.set_subplots(
-            dimensions=workspace.display_data.dimensions,
-            subplots=layout
+            dimensions=workspace.display_data.dimensions, subplots=layout
         )
 
         figure.subplot_imshow(
@@ -134,7 +129,7 @@ If set to 0, a full connectivity of the input dimension is used.
             image=workspace.display_data.x_data,
             title=self.x_name.value,
             x=0,
-            y=0
+            y=0,
         )
 
         figure.subplot_imshow_labels(
@@ -142,7 +137,7 @@ If set to 0, a full connectivity of the input dimension is used.
             sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             x=1,
-            y=0
+            y=0,
         )
 
 
@@ -157,8 +152,4 @@ def convert_to_objects(data, cast_to_bool, preserve_label, background, connectiv
     if preserve_label and not cast_to_bool:
         return data
 
-    return skimage.measure.label(
-        data,
-        background=background,
-        connectivity=connectivity
-    )
+    return skimage.measure.label(data, background=background, connectivity=connectivity)

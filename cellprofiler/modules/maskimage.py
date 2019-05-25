@@ -53,10 +53,7 @@ class MaskImage(cpm.Module):
         """
         self.source_choice = cps.Choice(
             "Use objects or an image as a mask?",
-            [
-                IO_OBJECTS,
-                IO_IMAGE
-            ],
+            [IO_OBJECTS, IO_IMAGE],
             doc="""\
 You can mask an image in two ways:
 
@@ -70,7 +67,8 @@ You can mask an image in two ways:
    intensity is greater than 0.5 as the mask’s foreground (white area).
    You can use **Threshold** instead to create a binary image with
    finer control over the intensity choice.
-   """ % globals()
+   """
+            % globals(),
         )
 
         self.object_name = cps.ObjectNameSubscriber(
@@ -80,7 +78,7 @@ You can mask an image in two ways:
 *(Used only if mask is to be made from objects)*
 
 Select the objects you would like to use to mask the input image.
-"""
+""",
         )
 
         self.masking_image_name = cps.ImageNameSubscriber(
@@ -90,19 +88,19 @@ Select the objects you would like to use to mask the input image.
 *(Used only if mask is to be made from an image)*
 
 Select the image that you like to use to mask the input image.
-"""
+""",
         )
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
             cps.NONE,
-            doc="Select the image that you want to mask."
+            doc="Select the image that you want to mask.",
         )
 
         self.masked_image_name = cps.ImageNameProvider(
             "Name the output image",
             "MaskBlue",
-            doc="Enter the name for the output masked image."
+            doc="Enter the name for the output masked image.",
         )
 
         self.invert_mask = cps.Binary(
@@ -116,7 +114,8 @@ This option reverses the foreground/background relationship of the mask.
 -  Select "*%(YES)s*" to instead produce the mask from the *background*
    (black portions) of the masking image or the area *outside* the
    masking objects.
-       """ % globals()
+       """
+            % globals(),
         )
 
     def settings(self):
@@ -126,20 +125,26 @@ This option reverses the foreground/background relationship of the mask.
               they also control the display order. Implement visible_settings
               for a different display order.
         """
-        return [self.image_name,
-                self.masked_image_name,
-                self.source_choice,
-                self.object_name,
-                self.masking_image_name,
-                self.invert_mask]
+        return [
+            self.image_name,
+            self.masked_image_name,
+            self.source_choice,
+            self.object_name,
+            self.masking_image_name,
+            self.invert_mask,
+        ]
 
     def visible_settings(self):
         """Return the settings as displayed in the user interface"""
-        return [self.image_name,
-                self.masked_image_name,
-                self.source_choice,
-                self.object_name if self.source_choice == IO_OBJECTS else self.masking_image_name,
-                self.invert_mask]
+        return [
+            self.image_name,
+            self.masked_image_name,
+            self.source_choice,
+            self.object_name
+            if self.source_choice == IO_OBJECTS
+            else self.masking_image_name,
+            self.invert_mask,
+        ]
 
     def run(self, workspace):
         image_set = workspace.image_set
@@ -153,16 +158,20 @@ This option reverses the foreground/background relationship of the mask.
         else:
             objects = None
             try:
-                mask = image_set.get_image(self.masking_image_name.value,
-                                           must_be_binary=True).pixel_data
+                mask = image_set.get_image(
+                    self.masking_image_name.value, must_be_binary=True
+                ).pixel_data
             except ValueError:
-                mask = image_set.get_image(self.masking_image_name.value,
-                                           must_be_grayscale=True).pixel_data
-                mask = mask > .5
+                mask = image_set.get_image(
+                    self.masking_image_name.value, must_be_grayscale=True
+                ).pixel_data
+                mask = mask > 0.5
             if self.invert_mask.value:
                 mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value)
-        if (orig_image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]) or mask.shape != orig_image.pixel_data.shape:
+        if (
+            orig_image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]
+        ) or mask.shape != orig_image.pixel_data.shape:
             tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp
@@ -170,15 +179,18 @@ This option reverses the foreground/background relationship of the mask.
             mask = np.logical_and(mask, orig_image.mask)
         masked_pixels = orig_image.pixel_data.copy()
         masked_pixels[np.logical_not(mask)] = 0
-        masked_image = cpi.Image(masked_pixels, mask=mask,
-                                 parent_image=orig_image,
-                                 masking_objects=objects,
-                                 dimensions=orig_image.dimensions)
+        masked_image = cpi.Image(
+            masked_pixels,
+            mask=mask,
+            parent_image=orig_image,
+            masking_objects=objects,
+            dimensions=orig_image.dimensions,
+        )
 
         image_set.add(self.masked_image_name.value, masked_image)
 
         if self.show_window:
-            workspace.display_data.dimensions=orig_image.dimensions
+            workspace.display_data.dimensions = orig_image.dimensions
             workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
             workspace.display_data.masked_pixels = masked_pixels
             workspace.display_data.multichannel = orig_image.multichannel
@@ -186,24 +198,39 @@ This option reverses the foreground/background relationship of the mask.
     def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
         masked_pixels = workspace.display_data.masked_pixels
-        figure.set_subplots((2, 1),dimensions=workspace.display_data.dimensions)
+        figure.set_subplots((2, 1), dimensions=workspace.display_data.dimensions)
         if workspace.display_data.multichannel:
-            figure.subplot_imshow_color(0, 0, orig_image_pixel_data,
-                                        "Original image: %s" % self.image_name.value)
-            figure.subplot_imshow_color(1, 0, masked_pixels,
-                                        "Masked image: %s" % self.masked_image_name.value,
-                                        sharexy=figure.subplot(0, 0))
+            figure.subplot_imshow_color(
+                0,
+                0,
+                orig_image_pixel_data,
+                "Original image: %s" % self.image_name.value,
+            )
+            figure.subplot_imshow_color(
+                1,
+                0,
+                masked_pixels,
+                "Masked image: %s" % self.masked_image_name.value,
+                sharexy=figure.subplot(0, 0),
+            )
         else:
-            figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
-                                            "Original image: %s" % self.image_name.value)
-            figure.subplot_imshow_grayscale(1, 0, masked_pixels,
-                                            "Masked image: %s" % self.masked_image_name.value,
-                                            sharexy=figure.subplot(0, 0))
+            figure.subplot_imshow_grayscale(
+                0,
+                0,
+                orig_image_pixel_data,
+                "Original image: %s" % self.image_name.value,
+            )
+            figure.subplot_imshow_grayscale(
+                1,
+                0,
+                masked_pixels,
+                "Masked image: %s" % self.masked_image_name.value,
+                sharexy=figure.subplot(0, 0),
+            )
 
-
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         """Adjust the setting_values to upgrade from a previous version
 
         """
@@ -215,18 +242,22 @@ This option reverses the foreground/background relationship of the mask.
             #
             # Added ability to select an image
             #
-            setting_values = setting_values + [IO_IMAGE if setting_values[0] == "Image" else IO_OBJECTS,
-                                               cps.NONE]
+            setting_values = setting_values + [
+                IO_IMAGE if setting_values[0] == "Image" else IO_OBJECTS,
+                cps.NONE,
+            ]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 2:
             # Reordering setting values so the settings order and Help makes sense
-            setting_values = [setting_values[1],  # Input image name
-                              setting_values[2],  # Output image name
-                              setting_values[4],  # Image or objects?
-                              setting_values[0],  # Object used as mask
-                              setting_values[5],  # Image used as mask
-                              setting_values[3]]  # Invert image?
+            setting_values = [
+                setting_values[1],  # Input image name
+                setting_values[2],  # Output image name
+                setting_values[4],  # Image or objects?
+                setting_values[0],  # Object used as mask
+                setting_values[5],  # Image used as mask
+                setting_values[3],
+            ]  # Invert image?
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab

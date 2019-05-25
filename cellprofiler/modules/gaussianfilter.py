@@ -38,7 +38,7 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         self.sigma = cellprofiler.setting.Integer(
             text="Sigma",
             value=1,
-            doc="Standard deviation of the kernel to be used for blurring. Larger sigmas induce more blurring."
+            doc="Standard deviation of the kernel to be used for blurring. Larger sigmas induce more blurring.",
         )
 
     def run(self, workspace):
@@ -59,9 +59,7 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
         y_data = skimage.filters.gaussian(x_data, sigma=sigma)
 
         y = cellprofiler.image.Image(
-            dimensions=dimensions,
-            image=y_data,
-            parent_image=x
+            dimensions=dimensions, image=y_data, parent_image=x
         )
 
         images.add(y_name, y)
@@ -76,15 +74,11 @@ class GaussianFilter(cellprofiler.module.ImageProcessing):
     def settings(self):
         __settings__ = super(GaussianFilter, self).settings()
 
-        return __settings__ + [
-            self.sigma
-        ]
+        return __settings__ + [self.sigma]
 
     def visible_settings(self):
         __settings__ = super(GaussianFilter, self).visible_settings()
 
-        __settings__ += [
-            self.sigma
-        ]
+        __settings__ += [self.sigma]
 
         return __settings__

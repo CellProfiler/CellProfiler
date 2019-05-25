@@ -52,9 +52,9 @@ Measurements made by this module
    filtered (remaining) object.
 -  *Location\_X, Location\_Y, Location\_Z:* The pixel (X,Y,Z)
    coordinates of the center of mass of the filtered (remaining) objects.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
 
 import logging
 import os
@@ -77,30 +77,36 @@ import cellprofiler.utilities.rules
 logger = logging.getLogger(__name__)
 
 
-'''Minimal filter - pick a single object per image by minimum measured value'''
+"""Minimal filter - pick a single object per image by minimum measured value"""
 FI_MINIMAL = "Minimal"
 
-'''Maximal filter - pick a single object per image by maximum measured value'''
+"""Maximal filter - pick a single object per image by maximum measured value"""
 FI_MAXIMAL = "Maximal"
 
-'''Pick one object per containing object by minimum measured value'''
+"""Pick one object per containing object by minimum measured value"""
 FI_MINIMAL_PER_OBJECT = "Minimal per object"
 
-'''Pick one object per containing object by maximum measured value'''
+"""Pick one object per containing object by maximum measured value"""
 FI_MAXIMAL_PER_OBJECT = "Maximal per object"
 
-'''Keep all objects whose values fall between set limits'''
+"""Keep all objects whose values fall between set limits"""
 FI_LIMITS = "Limits"
 
-FI_ALL = [FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT, FI_LIMITS]
+FI_ALL = [
+    FI_MINIMAL,
+    FI_MAXIMAL,
+    FI_MINIMAL_PER_OBJECT,
+    FI_MAXIMAL_PER_OBJECT,
+    FI_LIMITS,
+]
 
-'''The number of settings for this module in the pipeline if no additional objects'''
+"""The number of settings for this module in the pipeline if no additional objects"""
 FIXED_SETTING_COUNT_V6 = 12
 
-'''The location of the setting count'''
+"""The location of the setting count"""
 ADDITIONAL_OBJECT_SETTING_INDEX = 9
 
-'''The location of the measurements count setting'''
+"""The location of the measurements count setting"""
 MEASUREMENT_COUNT_SETTING_INDEX = 8
 
 MODE_RULES = "Rules"
@@ -123,9 +129,9 @@ class FilterObjects(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(FilterObjects, self).create_settings()
 
-        self.x_name.text="""Select the objects to filter"""
+        self.x_name.text = """Select the objects to filter"""
 
-        self.x_name.doc="""\
+        self.x_name.doc = """\
 Select the set of objects that you want to filter. This setting also
 controls which measurement choices appear for filtering: you can only
 filter based on measurements made on the object you select. Be sure
@@ -136,7 +142,7 @@ to to filter objects, select the first operand’s object here, because
 **CalculateMath** measurements are stored with the first operand’s
 object."""
 
-        self.y_name.text="""Name the output objects"""
+        self.y_name.text = """Name the output objects"""
 
         self.y_name.doc = "Enter a name for the collection of objects that are retained after applying the filter(s)."
 
@@ -159,26 +165,28 @@ You can choose from the following options:
 -  *{MODE_CLASSIFIERS}*: Use a file containing a trained classifier from
    CellProfiler Analyst. You will need to ensure that the measurements
    specified by the file are produced by upstream modules in the
-   pipeline. This setting is not compatible with data processed as 3D.""".format(**{
-                "MODE_MEASUREMENTS": MODE_MEASUREMENTS,
-                "MODE_RULES": MODE_RULES,
-                "MODE_BORDER": MODE_BORDER,
-                "MODE_CLASSIFIERS": MODE_CLASSIFIERS
-            })
+   pipeline. This setting is not compatible with data processed as 3D.""".format(
+                **{
+                    "MODE_MEASUREMENTS": MODE_MEASUREMENTS,
+                    "MODE_RULES": MODE_RULES,
+                    "MODE_BORDER": MODE_BORDER,
+                    "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
+                }
+            ),
         )
 
         self.spacer_2 = cellprofiler.setting.Divider(line=False)
 
         self.measurements = []
 
-        self.measurement_count = cellprofiler.setting.HiddenCount(self.measurements, "Measurement count")
+        self.measurement_count = cellprofiler.setting.HiddenCount(
+            self.measurements, "Measurement count"
+        )
 
         self.add_measurement(False)
 
         self.add_measurement_button = cellprofiler.setting.DoSomething(
-            "",
-            "Add another measurement",
-            self.add_measurement
+            "", "Add another measurement", self.add_measurement
         )
 
         self.filter_choice = cellprofiler.setting.Choice(
@@ -207,13 +215,15 @@ There are five different ways to filter objects:
    You do not have to explicitly relate objects before using this
    module.
 -  *{FI_MINIMAL_PER_OBJECT}:* Same as *Maximal per object*, except
-   filtering is based on the minimum value.""".format(**{
-                "FI_LIMITS": FI_LIMITS,
-                "FI_MAXIMAL": FI_MAXIMAL,
-                "FI_MINIMAL": FI_MINIMAL,
-                "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
-                "FI_MINIMAL_PER_OBJECT": FI_MINIMAL_PER_OBJECT
-            })
+   filtering is based on the minimum value.""".format(
+                **{
+                    "FI_LIMITS": FI_LIMITS,
+                    "FI_MAXIMAL": FI_MAXIMAL,
+                    "FI_MINIMAL": FI_MINIMAL,
+                    "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
+                    "FI_MINIMAL_PER_OBJECT": FI_MINIMAL_PER_OBJECT,
+                }
+            ),
         )
 
         self.per_object_assignment = cellprofiler.setting.Choice(
@@ -242,10 +252,12 @@ maximal child is assigned. The choices are:
    maximal/minimal measurement, if available, will be assigned to other
    parents. Use this option to ensure that parents with an alternate
    non-overlapping child object are assigned some child object by a
-   subsequent **RelateObjects** module.""".format(**{
-                "PO_BOTH": PO_BOTH,
-                "PO_PARENT_WITH_MOST_OVERLAP": PO_PARENT_WITH_MOST_OVERLAP
-            })
+   subsequent **RelateObjects** module.""".format(
+                **{
+                    "PO_BOTH": PO_BOTH,
+                    "PO_PARENT_WITH_MOST_OVERLAP": PO_PARENT_WITH_MOST_OVERLAP,
+                }
+            ),
         )
 
         self.enclosing_object_name = cellprofiler.setting.ObjectNameSubscriber(
@@ -256,10 +268,12 @@ maximal child is assigned. The choices are:
 
 This setting selects the container (i.e., parent) objects for the
 *{FI_MAXIMAL_PER_OBJECT}* and *{FI_MINIMAL_PER_OBJECT}* filtering
-choices.""".format(**{
-                "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
-                "FI_MINIMAL_PER_OBJECT": FI_MINIMAL_PER_OBJECT
-            })
+choices.""".format(
+                **{
+                    "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
+                    "FI_MINIMAL_PER_OBJECT": FI_MINIMAL_PER_OBJECT,
+                }
+            ),
         )
 
         self.rules_directory = cellprofiler.setting.DirectoryPath(
@@ -271,11 +285,13 @@ Select the location of the rules or classifier file that will be used for
 filtering.
 
 {IO_FOLDER_CHOICE_HELP_TEXT}
-""".format(**{
-                "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
-                "MODE_RULES": MODE_RULES,
-                "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
-            })
+""".format(
+                **{
+                    "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
+                    "MODE_RULES": MODE_RULES,
+                    "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
+                }
+            ),
         )
 
         self.rules_class = cellprofiler.setting.Choice(
@@ -295,14 +311,13 @@ Please note the following:
 -  The object is retained if the object falls into the selected class.
 -  You can make multiple class selections. If you do so, the module will
    retain the object if the object falls into any of the selected
-   classes.""".format(**{
-                "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
-                "MODE_RULES": MODE_RULES
-            })
+   classes.""".format(
+                **{"MODE_CLASSIFIERS": MODE_CLASSIFIERS, "MODE_RULES": MODE_RULES}
+            ),
         )
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return self.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -337,17 +352,15 @@ A classifier file is a trained classifier exported from CellProfiler Analyst.
 You will need to ensure that the measurements specified by the file are
 produced by upstream modules in the pipeline. This setting is not compatible
 with data processed as 3D.
-""".format(**{
-                "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
-                "MODE_RULES": MODE_RULES
-            })
+""".format(
+                **{"MODE_CLASSIFIERS": MODE_CLASSIFIERS, "MODE_RULES": MODE_RULES}
+            ),
         )
 
         self.additional_objects = []
 
         self.additional_object_count = cellprofiler.setting.HiddenCount(
-            self.additional_objects,
-            "Additional object count"
+            self.additional_objects, "Additional object count"
         )
 
         self.spacer_3 = cellprofiler.setting.Divider(line=False)
@@ -359,7 +372,7 @@ with data processed as 3D.
             doc="""\
 Click this button to add an object to receive the same post-filtering labels as
 the filtered object. This is useful in making sure that labeling is maintained
-between related objects (e.g., primary and secondary objects) after filtering."""
+between related objects (e.g., primary and secondary objects) after filtering.""",
         )
 
     def get_class_choices(self, pipeline):
@@ -368,7 +381,7 @@ between related objects (e.g., primary and secondary objects) after filtering.""
         elif self.mode == MODE_RULES:
             rules = self.get_rules()
             nclasses = len(rules.rules[0].weights[0])
-            return [str(i) for i in range(1, nclasses+1)]
+            return [str(i) for i in range(1, nclasses + 1)]
 
     def get_rules_class_choices(self, pipeline):
         try:
@@ -379,7 +392,7 @@ between related objects (e.g., primary and secondary objects) after filtering.""
             return [str(i) for i in range(1, 3)]
 
     def add_measurement(self, can_delete=True):
-        '''Add another measurement to the filter list'''
+        """Add another measurement to the filter list"""
         group = cellprofiler.setting.SettingsGroup()
 
         group.append(
@@ -392,49 +405,47 @@ between related objects (e.g., primary and secondary objects) after filtering.""
 *(Used only if filtering using {MODE_MEASUREMENTS})*
 
 See the **Measurements** modules help pages for more information on the
-features measured.""".format(**{
-                    "MODE_MEASUREMENTS": MODE_MEASUREMENTS
-                })
-            )
+features measured.""".format(
+                    **{"MODE_MEASUREMENTS": MODE_MEASUREMENTS}
+                ),
+            ),
         )
 
         group.append(
             "wants_minimum",
             cellprofiler.setting.Binary(
-                'Filter using a minimum measurement value?',
+                "Filter using a minimum measurement value?",
                 True,
                 doc="""\
 *(Used only if {FI_LIMITS} is selected for filtering method)*
 
 Select "*{YES}*" to filter the objects based on a minimum acceptable
 object measurement value. Objects which are greater than or equal to
-this value will be retained.""".format(**{
-                    "FI_LIMITS": FI_LIMITS,
-                    "YES": cellprofiler.setting.YES
-                })
-            )
+this value will be retained.""".format(
+                    **{"FI_LIMITS": FI_LIMITS, "YES": cellprofiler.setting.YES}
+                ),
+            ),
         )
 
-        group.append("min_limit", cellprofiler.setting.Float('Minimum value', 0))
+        group.append("min_limit", cellprofiler.setting.Float("Minimum value", 0))
 
         group.append(
             "wants_maximum",
             cellprofiler.setting.Binary(
-                'Filter using a maximum measurement value?',
+                "Filter using a maximum measurement value?",
                 True,
                 doc="""\
 *(Used only if {FI_LIMITS} is selected for filtering method)*
 
 Select "*{YES}*" to filter the objects based on a maximum acceptable
 object measurement value. Objects which are less than or equal to this
-value will be retained.""".format(**{
-                    "FI_LIMITS": FI_LIMITS,
-                    "YES": cellprofiler.setting.YES
-                })
-            )
+value will be retained.""".format(
+                    **{"FI_LIMITS": FI_LIMITS, "YES": cellprofiler.setting.YES}
+                ),
+            ),
         )
 
-        group.append("max_limit", cellprofiler.setting.Float('Maximum value', 1))
+        group.append("max_limit", cellprofiler.setting.Float("Maximum value", 1))
 
         group.append("divider", cellprofiler.setting.Divider())
 
@@ -444,10 +455,8 @@ value will be retained.""".format(**{
             group.append(
                 "remover",
                 cellprofiler.setting.RemoveSettingButton(
-                    "",
-                    "Remove this measurement",
-                    self.measurements, group
-                )
+                    "", "Remove this measurement", self.measurements, group
+                ),
             )
 
     def add_additional_object(self):
@@ -456,27 +465,22 @@ value will be retained.""".format(**{
         group.append(
             "object_name",
             cellprofiler.setting.ObjectNameSubscriber(
-                "Select additional object to relabel",
-                cellprofiler.setting.NONE
-            )
+                "Select additional object to relabel", cellprofiler.setting.NONE
+            ),
         )
 
         group.append(
             "target_name",
             cellprofiler.setting.ObjectNameProvider(
-                "Name the relabeled objects",
-                "FilteredGreen"
-            )
+                "Name the relabeled objects", "FilteredGreen"
+            ),
         )
 
         group.append(
             "remover",
             cellprofiler.setting.RemoveSettingButton(
-                "",
-                "Remove this additional object",
-                self.additional_objects,
-                group
-            )
+                "", "Remove this additional object", self.additional_objects, group
+            ),
         )
 
         group.append("divider", cellprofiler.setting.Divider(line=False))
@@ -484,8 +488,8 @@ value will be retained.""".format(**{
         self.additional_objects.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Make sure the # of slots for additional objects matches
-           the anticipated number of additional objects'''
+        """Make sure the # of slots for additional objects matches
+           the anticipated number of additional objects"""
         additional_object_count = int(setting_values[ADDITIONAL_OBJECT_SETTING_INDEX])
         while len(self.additional_objects) > additional_object_count:
             self.remove_additional_object(self.additional_objects[-1].key)
@@ -510,7 +514,7 @@ value will be retained.""".format(**{
             self.rules_class,
             self.measurement_count,
             self.additional_object_count,
-            self.per_object_assignment
+            self.per_object_assignment,
         ]
 
         for x in self.measurements:
@@ -532,7 +536,7 @@ value will be retained.""".format(**{
             self.rules_file_name,
             self.rules_class,
             self.enclosing_object_name,
-            self.additional_object_button
+            self.additional_object_button,
         ]
 
     def visible_settings(self):
@@ -541,10 +545,14 @@ value will be retained.""".format(**{
         visible_settings += [self.spacer_2, self.mode]
 
         if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
-            visible_settings += [self.rules_file_name, self.rules_directory,
-                       self.rules_class]
-            self.rules_class.text = "Class number" if self.mode == MODE_RULES \
-                else "Class name"
+            visible_settings += [
+                self.rules_file_name,
+                self.rules_directory,
+                self.rules_class,
+            ]
+            self.rules_class.text = (
+                "Class number" if self.mode == MODE_RULES else "Class name"
+            )
             try:
                 self.rules_class.test_valid(None)
             except:
@@ -553,14 +561,17 @@ value will be retained.""".format(**{
         elif self.mode == MODE_MEASUREMENTS:
             visible_settings += [self.spacer_1, self.filter_choice]
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
-                visible_settings += [self.measurements[0].measurement,
-                           self.measurements[0].divider]
-            elif self.filter_choice in (FI_MINIMAL_PER_OBJECT,
-                                        FI_MAXIMAL_PER_OBJECT):
-                visible_settings += [self.per_object_assignment,
-                           self.measurements[0].measurement,
-                           self.enclosing_object_name,
-                           self.measurements[0].divider]
+                visible_settings += [
+                    self.measurements[0].measurement,
+                    self.measurements[0].divider,
+                ]
+            elif self.filter_choice in (FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT):
+                visible_settings += [
+                    self.per_object_assignment,
+                    self.measurements[0].measurement,
+                    self.enclosing_object_name,
+                    self.measurements[0].divider,
+                ]
             elif self.filter_choice == FI_LIMITS:
                 for i, group in enumerate(self.measurements):
                     visible_settings += [group.measurement, group.wants_minimum]
@@ -580,32 +591,41 @@ value will be retained.""".format(**{
         return visible_settings
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if self.mode == MODE_MEASUREMENTS and self.filter_choice == FI_LIMITS:
             for group in self.measurements:
                 if not (group.wants_minimum.value or group.wants_maximum.value):
                     raise cellprofiler.setting.ValidationError(
-                        'Please enter a minimum and/or maximum limit for your measurement',
-                        group.wants_minimum)
+                        "Please enter a minimum and/or maximum limit for your measurement",
+                        group.wants_minimum,
+                    )
         if self.mode == MODE_RULES:
             try:
                 rules = self.get_rules()
             except Exception as instance:
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
-                raise cellprofiler.setting.ValidationError(str(instance),
-                                                           self.rules_file_name)
+                raise cellprofiler.setting.ValidationError(
+                    str(instance), self.rules_file_name
+                )
             measurement_columns = pipeline.get_measurement_columns(self)
             for r in rules.rules:
-                if not any([mc[0] == r.object_name and
-                            mc[1] == r.feature for mc in measurement_columns]):
+                if not any(
+                    [
+                        mc[0] == r.object_name and mc[1] == r.feature
+                        for mc in measurement_columns
+                    ]
+                ):
                     raise cellprofiler.setting.ValidationError(
-                        ("The rules file, %s, uses the measurement, %s "
-                         "for object %s, but that measurement is not available "
-                         "at this stage of the pipeline. Consider editing the "
-                         "rules to match the available measurements or adding "
-                         "measurement modules to produce the measurement.") %
-                        (self.rules_file_name, r.feature, r.object_name),
-                        self.rules_file_name)
+                        (
+                            "The rules file, %s, uses the measurement, %s "
+                            "for object %s, but that measurement is not available "
+                            "at this stage of the pipeline. Consider editing the "
+                            "rules to match the available measurements or adding "
+                            "measurement modules to produce the measurement."
+                        )
+                        % (self.rules_file_name, r.feature, r.object_name),
+                        self.rules_file_name,
+                    )
         elif self.mode == MODE_CLASSIFIERS:
             try:
                 self.get_classifier()
@@ -613,23 +633,25 @@ value will be retained.""".format(**{
                 self.get_classifier_features()
             except IOError:
                 raise cellprofiler.setting.ValidationError(
-                    "Failed to load classifier file %s" %
-                    self.rules_file_name.value, self.rules_file_name)
+                    "Failed to load classifier file %s" % self.rules_file_name.value,
+                    self.rules_file_name,
+                )
             except:
                 raise cellprofiler.setting.ValidationError(
-                    "Unable to load %s as a classifier file" %
-                    self.rules_file_name.value, self.rules_file_name)
+                    "Unable to load %s as a classifier file"
+                    % self.rules_file_name.value,
+                    self.rules_file_name,
+                )
 
     def run(self, workspace):
-        '''Filter objects for this image set, display results'''
+        """Filter objects for this image set, display results"""
         src_objects = workspace.get_objects(self.x_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
         elif self.mode == MODE_MEASUREMENTS:
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
                 indexes = self.keep_one(workspace, src_objects)
-            if self.filter_choice in (FI_MINIMAL_PER_OBJECT,
-                                      FI_MAXIMAL_PER_OBJECT):
+            if self.filter_choice in (FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT):
                 indexes = self.keep_per_object(workspace, src_objects)
             if self.filter_choice == FI_LIMITS:
                 indexes = self.keep_within_limits(workspace, src_objects)
@@ -638,8 +660,7 @@ value will be retained.""".format(**{
         elif self.mode == MODE_CLASSIFIERS:
             indexes = self.keep_by_class(workspace, src_objects)
         else:
-            raise ValueError("Unknown filter choice: %s" %
-                             self.mode.value)
+            raise ValueError("Unknown filter choice: %s" % self.mode.value)
 
         #
         # Create an array that maps label indexes to their new values
@@ -678,8 +699,7 @@ value will be retained.""".format(**{
             # "filtered_removed_segmented".
             #
             small_removed = src_objects.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) &
-                          (src_objects.segmented != 0)] = 0
+            small_removed[(target_labels == 0) & (src_objects.segmented != 0)] = 0
             target_objects.small_removed_segmented = small_removed
             if src_objects.has_parent_image:
                 target_objects.parent_image = src_objects.parent_image
@@ -693,7 +713,7 @@ value will be retained.""".format(**{
             workspace.display_data.dimensions = src_objects.dimensions
 
     def display(self, workspace, figure):
-        '''Display what was filtered'''
+        """Display what was filtered"""
         src_name = self.x_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         target_objects_segmented = workspace.display_data.target_objects_segmented
@@ -703,45 +723,57 @@ value will be retained.""".format(**{
 
         figure.set_subplots((2, 2), dimensions=dimensions)
 
-        figure.subplot_imshow_labels(0, 0, src_objects_segmented,
-                                     title="Original: %s" % src_name)
+        figure.subplot_imshow_labels(
+            0, 0, src_objects_segmented, title="Original: %s" % src_name
+        )
 
-        figure.subplot_imshow_labels(1, 0, target_objects_segmented,
-                                     title="Filtered: %s" %
-                                     target_name,
-                                     sharexy=figure.subplot(0, 0))
+        figure.subplot_imshow_labels(
+            1,
+            0,
+            target_objects_segmented,
+            title="Filtered: %s" % target_name,
+            sharexy=figure.subplot(0, 0),
+        )
 
-        statistics = [[numpy.max(src_objects_segmented)], [numpy.max(target_objects_segmented)]]
+        statistics = [
+            [numpy.max(src_objects_segmented)],
+            [numpy.max(target_objects_segmented)],
+        ]
 
         figure.subplot_table(
             0,
             1,
             statistics,
-            row_labels=("Number of objects pre-filtering", "Number of objects post-filtering")
+            row_labels=(
+                "Number of objects pre-filtering",
+                "Number of objects post-filtering",
+            ),
         )
 
     def keep_one(self, workspace, src_objects):
-        '''Return an array containing the single object to keep
+        """Return an array containing the single object to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.x_name.value
-        values = workspace.measurements.get_current_measurement(src_name,
-                                                                measurement)
+        values = workspace.measurements.get_current_measurement(src_name, measurement)
         if len(values) == 0:
             return numpy.array([], int)
-        best_idx = (numpy.argmax(values) if self.filter_choice == FI_MAXIMAL
-                    else numpy.argmin(values)) + 1
+        best_idx = (
+            numpy.argmax(values)
+            if self.filter_choice == FI_MAXIMAL
+            else numpy.argmin(values)
+        ) + 1
         return numpy.array([best_idx], int)
 
     def keep_per_object(self, workspace, src_objects):
-        '''Return an array containing the best object per enclosing object
+        """Return an array containing the best object per enclosing object
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.x_name.value
         enclosing_name = self.enclosing_object_name.value
@@ -759,8 +791,7 @@ value will be retained.""".format(**{
         # For unlabeled pixels, put the minimum value if looking for the
         # maximum value and vice-versa
         #
-        values = workspace.measurements.get_current_measurement(src_name,
-                                                                measurement)
+        values = workspace.measurements.get_current_measurement(src_name, measurement)
         wants_max = self.filter_choice == FI_MAXIMAL_PER_OBJECT
         src_labels = src_objects.segmented
         src_count = src_objects.count
@@ -776,10 +807,16 @@ value will be retained.""".format(**{
             src_labels = src_labels[order]
             enclosing_labels = enclosing_labels[order]
             firsts = numpy.hstack(
-                ([0],
-                 numpy.where((src_labels[:-1] != src_labels[1:]) |
-                             (enclosing_labels[:-1] != enclosing_labels[1:]))[0] + 1,
-                 [len(src_labels)]))
+                (
+                    [0],
+                    numpy.where(
+                        (src_labels[:-1] != src_labels[1:])
+                        | (enclosing_labels[:-1] != enclosing_labels[1:])
+                    )[0]
+                    + 1,
+                    [len(src_labels)],
+                )
+            )
             areas = firsts[1:] - firsts[:-1]
             enclosing_labels = enclosing_labels[firsts[:-1]]
             src_labels = src_labels[firsts[:-1]]
@@ -792,10 +829,15 @@ value will be retained.""".format(**{
                 svalues = values
             order = numpy.lexsort((-areas, svalues[src_labels - 1]))
             src_labels, enclosing_labels, areas = [
-                x[order] for x in (src_labels, enclosing_labels, areas)]
-            firsts = numpy.hstack((
-                [0], numpy.where(src_labels[:-1] != src_labels[1:])[0] + 1,
-                src_labels.shape[:1]))
+                x[order] for x in (src_labels, enclosing_labels, areas)
+            ]
+            firsts = numpy.hstack(
+                (
+                    [0],
+                    numpy.where(src_labels[:-1] != src_labels[1:])[0] + 1,
+                    src_labels.shape[:1],
+                )
+            )
             counts = firsts[1:] - firsts[:-1]
             #
             # Process them in order. The maximal or minimal child
@@ -807,8 +849,7 @@ value will be retained.""".format(**{
                 for i in range(count):
                     enclosing_object_number = enclosing_labels[idx + i]
                     if best_src_label[enclosing_object_number] == 0:
-                        best_src_label[enclosing_object_number] = \
-                            src_labels[idx]
+                        best_src_label[enclosing_object_number] = src_labels[idx]
                         break
             #
             # Remove best source labels = 0 and sort to get the list
@@ -827,9 +868,15 @@ value will be retained.""".format(**{
             #
             # Now find the location of the best for each of the enclosing objects
             #
-            fn = scipy.ndimage.maximum_position if wants_max else scipy.ndimage.minimum_position
+            fn = (
+                scipy.ndimage.maximum_position
+                if wants_max
+                else scipy.ndimage.minimum_position
+            )
             best_pos = fn(src_values, enclosing_labels, enclosing_range)
-            best_pos = numpy.array((best_pos,) if isinstance(best_pos, tuple) else best_pos)
+            best_pos = numpy.array(
+                (best_pos,) if isinstance(best_pos, tuple) else best_pos
+            )
             best_pos = best_pos.astype(numpy.uint32)
             #
             # Get the label of the pixel at each location
@@ -841,23 +888,22 @@ value will be retained.""".format(**{
             return indexes[1:] if len(indexes) > 0 and indexes[0] == 0 else indexes
 
     def keep_within_limits(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         src_name = self.x_name.value
         hits = None
         m = workspace.measurements
         for group in self.measurements:
             measurement = group.measurement.value
-            values = m.get_current_measurement(src_name,
-                                               measurement)
+            values = m.get_current_measurement(src_name, measurement)
             if hits is None:
                 hits = numpy.ones(len(values), bool)
             elif len(hits) < len(values):
                 temp = numpy.ones(len(values), bool)
-                temp[~ hits] = False
+                temp[~hits] = False
                 hits = temp
             low_limit = group.min_limit.value
             high_limit = group.max_limit.value
@@ -870,11 +916,11 @@ value will be retained.""".format(**{
         return indexes
 
     def discard_border_objects(self, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         labels = src_objects.segmented
 
         if src_objects.has_parent_image and src_objects.parent_image.has_mask:
@@ -891,7 +937,11 @@ value will be retained.""".format(**{
 
         border_labels = set(labels[border_pixels])
 
-        if border_labels == set([0]) and src_objects.has_parent_image and src_objects.parent_image.has_mask:
+        if (
+            border_labels == set([0])
+            and src_objects.has_parent_image
+            and src_objects.parent_image.has_mask
+        ):
             # The assumption here is that, if nothing touches the border,
             # the mask is a large, elliptical mask that tells you where the
             # well is. That's the way the old Matlab code works and it's duplicated here
@@ -911,33 +961,36 @@ value will be retained.""".format(**{
         return list(set(labels.ravel()).difference(border_labels))
 
     def get_rules(self):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = self.rules_file_name.value
         rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
         if not os.path.isfile(path):
-            raise cellprofiler.setting.ValidationError("No such rules file: %s" % path,
-                                                       self.rules_file_name)
+            raise cellprofiler.setting.ValidationError(
+                "No such rules file: %s" % path, self.rules_file_name
+            )
         else:
             rules = cellprofiler.utilities.rules.Rules()
             rules.parse(path)
             return rules
 
     def load_classifier(self):
-        '''Load the classifier pickle if not cached
+        """Load the classifier pickle if not cached
 
         returns classifier, bin_labels, name and features
-        '''
+        """
         d = self.get_dictionary()
         file_ = self.rules_file_name.value
         directory_ = self.rules_directory.get_absolute_path()
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cellprofiler.setting.ValidationError("No such classifier file: %s" % path_,
-                                                           self.rules_file_name)
+                raise cellprofiler.setting.ValidationError(
+                    "No such classifier file: %s" % path_, self.rules_file_name
+                )
             else:
                 from sklearn.externals import joblib
+
                 d[path_] = joblib.load(path_)
         return d[path_]
 
@@ -951,19 +1004,19 @@ value will be retained.""".format(**{
         return self.load_classifier()[3]
 
     def keep_by_rules(self, workspace, src_objects):
-        '''Keep objects according to rules
+        """Keep objects according to rules
 
         workspace - workspace holding the measurements for the rules
         src_objects - filter these objects (uses measurement indexes instead)
 
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
-        '''
+        """
         rules = self.get_rules()
         rules_class = int(self.rules_class.value) - 1
         scores = rules.score(workspace.measurements)
         if len(scores) > 0:
-            is_not_nan = numpy.any(~ numpy.isnan(scores), 1)
+            is_not_nan = numpy.any(~numpy.isnan(scores), 1)
             best_class = numpy.argmax(scores[is_not_nan], 1).flatten()
             hits = numpy.zeros(scores.shape[0], bool)
             hits[is_not_nan] = best_class == rules_class
@@ -973,11 +1026,11 @@ value will be retained.""".format(**{
         return indexes
 
     def keep_by_class(self, workspace, src_objects):
-        ''' Keep objects according to their predicted class
+        """ Keep objects according to their predicted class
         :param workspace: workspace holding the measurements for the rules
         :param src_objects: filter these objects (uses measurement indexes instead)
         :return: indexes (base 1) of the objects that pass
-        '''
+        """
         classifier = self.get_classifier()
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
@@ -990,9 +1043,12 @@ value will be retained.""".format(**{
                 feature_name = cellprofiler.measurement.M_LOCATION_CENTER_Y
             features.append(feature_name)
 
-        feature_vector = numpy.column_stack([
-            workspace.measurements[self.x_name.value, feature_name]
-            for feature_name in features])
+        feature_vector = numpy.column_stack(
+            [
+                workspace.measurements[self.x_name.value, feature_name]
+                for feature_name in features
+            ]
+        )
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
         indexes = numpy.argwhere(hits) + 1
@@ -1001,11 +1057,14 @@ value will be retained.""".format(**{
     def get_measurement_columns(self, pipeline):
         return super(FilterObjects, self).get_measurement_columns(
             pipeline,
-            additional_objects=[(x.object_name.value, x.target_name.value) for x in self.additional_objects]
+            additional_objects=[
+                (x.object_name.value, x.target_name.value)
+                for x in self.additional_objects
+            ],
         )
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -1019,51 +1078,63 @@ value will be retained.""".format(**{
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.rules_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if (not from_matlab) and variable_revision_number == 1:
             #
             # Added CPA rules
             #
-            setting_values = (setting_values[:11] +
-                              [
-                                  MODE_MEASUREMENTS, 
-                                  cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, 
-                                  "."
-                              ] +
-                              setting_values[11:])
+            setting_values = (
+                setting_values[:11]
+                + [
+                    MODE_MEASUREMENTS,
+                    cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                    ".",
+                ]
+                + setting_values[11:]
+            )
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
             #
             # Forgot file name (???!!!)
             #
-            setting_values = (setting_values[:14] + ["rules.txt"] +
-                              setting_values[14:])
+            setting_values = setting_values[:14] + ["rules.txt"] + setting_values[14:]
             variable_revision_number = 3
         if (not from_matlab) and variable_revision_number == 3:
             #
             # Allowed multiple measurements
             # Structure changed substantially.
             #
-            target_name, object_name, measurement, filter_choice, \
-                enclosing_objects, wants_minimum, minimum_value, \
-                wants_maximum, maximum_value, wants_outlines, \
-                outlines_name, rules_or_measurements, rules_directory_choice, \
-                rules_path_name, rules_file_name = setting_values[:15]
+            target_name, object_name, measurement, filter_choice, enclosing_objects, wants_minimum, minimum_value, wants_maximum, maximum_value, wants_outlines, outlines_name, rules_or_measurements, rules_directory_choice, rules_path_name, rules_file_name = setting_values[
+                :15
+            ]
             additional_object_settings = setting_values[15:]
             additional_object_count = len(additional_object_settings) / 4
 
             setting_values = [
-                target_name, object_name, rules_or_measurements,
-                filter_choice, enclosing_objects, wants_outlines,
-                outlines_name, rules_directory_choice, rules_path_name,
-                rules_file_name, "1", str(additional_object_count),
-                measurement, wants_minimum, minimum_value,
-                wants_maximum, maximum_value] + additional_object_settings
+                target_name,
+                object_name,
+                rules_or_measurements,
+                filter_choice,
+                enclosing_objects,
+                wants_outlines,
+                outlines_name,
+                rules_directory_choice,
+                rules_path_name,
+                rules_file_name,
+                "1",
+                str(additional_object_count),
+                measurement,
+                wants_minimum,
+                minimum_value,
+                wants_maximum,
+                maximum_value,
+            ] + additional_object_settings
             variable_revision_number = 4
         if (not from_matlab) and variable_revision_number == 4:
             #
@@ -1073,16 +1144,20 @@ value will be retained.""".format(**{
             rules_path_name = setting_values[8]
             if rules_directory_choice == DIR_CUSTOM:
                 rules_directory_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
-                if rules_path_name.startswith('.'):
-                    rules_directory_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
-                elif rules_path_name.startswith('&'):
-                    rules_directory_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                if rules_path_name.startswith("."):
+                    rules_directory_choice = (
+                        cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                    )
+                elif rules_path_name.startswith("&"):
+                    rules_directory_choice = (
+                        cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    )
                     rules_path_name = "." + rules_path_name[1:]
 
             rules_directory = cellprofiler.setting.DirectoryPath.static_join_string(
-                rules_directory_choice, rules_path_name)
-            setting_values = (
-                setting_values[:7] + [rules_directory] + setting_values[9:])
+                rules_directory_choice, rules_path_name
+            )
+            setting_values = setting_values[:7] + [rules_directory] + setting_values[9:]
             variable_revision_number = 5
 
         if (not from_matlab) and variable_revision_number == 5:
@@ -1096,8 +1171,11 @@ value will be retained.""".format(**{
             #
             # Added per-object assignment
             #
-            setting_values = setting_values[:FIXED_SETTING_COUNT_V6] + \
-                [PO_BOTH] + setting_values[FIXED_SETTING_COUNT_V6:]
+            setting_values = (
+                setting_values[:FIXED_SETTING_COUNT_V6]
+                + [PO_BOTH]
+                + setting_values[FIXED_SETTING_COUNT_V6:]
+            )
 
             variable_revision_number = 7
 
@@ -1112,31 +1190,38 @@ value will be retained.""".format(**{
 
             n_measurement_settings = measurement_count * 5
 
-            additional_object_settings = setting_values[13 + n_measurement_settings:]
+            additional_object_settings = setting_values[13 + n_measurement_settings :]
 
             additional_object_names = additional_object_settings[::4]
 
             additional_target_names = additional_object_settings[1::4]
 
             new_additional_object_settings = sum(
-                [[object_name, target_name] for object_name, target_name in zip(
-                    additional_object_names,
-                    additional_target_names
-                )],
-                []
+                [
+                    [object_name, target_name]
+                    for object_name, target_name in zip(
+                        additional_object_names, additional_target_names
+                    )
+                ],
+                [],
             )
 
-            setting_values = [
-                x_name,
-                y_name
-            ] + setting_values[2:5] + setting_values[7:13 + n_measurement_settings] + new_additional_object_settings
+            setting_values = (
+                [x_name, y_name]
+                + setting_values[2:5]
+                + setting_values[7 : 13 + n_measurement_settings]
+                + new_additional_object_settings
+            )
 
             variable_revision_number = 8
 
         slot_directory = 5
 
-        setting_values[slot_directory] = cellprofiler.setting.DirectoryPath.upgrade_setting(
-            setting_values[slot_directory])
+        setting_values[
+            slot_directory
+        ] = cellprofiler.setting.DirectoryPath.upgrade_setting(
+            setting_values[slot_directory]
+        )
 
         return setting_values, variable_revision_number, from_matlab
 

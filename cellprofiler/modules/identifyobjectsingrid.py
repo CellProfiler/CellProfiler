@@ -52,9 +52,9 @@ See also
 ^^^^^^^^
 
 See also **DefineGrid**.
-""".format(**{
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
+)
 
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels
@@ -91,16 +91,23 @@ class IdentifyObjectsInGrid(cpm.Module):
         create_settings is called at the end of initialization.
         """
         self.grid_name = cps.GridNameSubscriber(
-                "Select the defined grid", cps.NONE, doc="""Select the name of a grid created by a previous **DefineGrid** module.""")
+            "Select the defined grid",
+            cps.NONE,
+            doc="""Select the name of a grid created by a previous **DefineGrid** module.""",
+        )
 
         self.output_objects_name = cps.ObjectNameProvider(
-                "Name the objects to be identified", "Wells", doc="""\
+            "Name the objects to be identified",
+            "Wells",
+            doc="""\
 Enter the name of the grid objects identified by this module. These objects
-will be available for further measurement and processing in subsequent modules.""")
+will be available for further measurement and processing in subsequent modules.""",
+        )
 
         self.shape_choice = cps.Choice(
-                "Select object shapes and locations",
-                [SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED, SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL], doc="""\
+            "Select object shapes and locations",
+            [SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED, SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL],
+            doc="""\
 Use this setting to choose the method to be used to determine the grid
 objects’ shapes and locations:
 
@@ -137,11 +144,14 @@ objects’ shapes and locations:
    guiding object does not exist within a grid compartment, an object
    consisting of one single pixel in the middle of the grid compartment
    will be created.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.diameter_choice = cps.Choice(
-                "Specify the circle diameter automatically?",
-                [AM_AUTOMATIC, AM_MANUAL], doc="""\
+            "Specify the circle diameter automatically?",
+            [AM_AUTOMATIC, AM_MANUAL],
+            doc="""\
 *(Used only if "Circle" is selected as object shape)*
 
 There are two methods for selecting the circle diameter:
@@ -150,19 +160,28 @@ There are two methods for selecting the circle diameter:
    identified guiding objects as the diameter.
 -  *%(AM_MANUAL)s:* Lets you specify the diameter directly, as a
    number.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.diameter = cps.Integer(
-                "Circle diameter", 20, minval=2, doc="""\
+            "Circle diameter",
+            20,
+            minval=2,
+            doc="""\
 *(Used only if "Circle" is selected as object shape and diameter is
 specified manually)*
 
 Enter the diameter to be used for each grid circle, in pixels.
 %(HELP_ON_MEASURING_DISTANCES)s
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.guiding_object_name = cps.ObjectNameSubscriber(
-                "Select the guiding objects", cps.NONE, doc="""\
+            "Select the guiding objects",
+            cps.NONE,
+            doc="""\
 *(Used only if "Circle" is selected as object shape and diameter is
 specified automatically, or if "Natural Location" is selected as the
 object shape)*
@@ -170,7 +189,8 @@ object shape)*
 Select the names of previously identified objects that will be used to
 guide the shape and/or location of the objects created by this module,
 depending on the method chosen.
-""")
+""",
+        )
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -180,9 +200,14 @@ depending on the method chosen.
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
         """
-        return [self.grid_name, self.output_objects_name, self.shape_choice,
-                self.diameter_choice, self.diameter,
-                self.guiding_object_name]
+        return [
+            self.grid_name,
+            self.output_objects_name,
+            self.shape_choice,
+            self.diameter_choice,
+            self.diameter,
+            self.guiding_object_name,
+        ]
 
     def visible_settings(self):
         """Return the settings that the user sees"""
@@ -196,13 +221,14 @@ depending on the method chosen.
         return result
 
     def wants_guiding_objects(self):
-        '''Return TRUE if the settings require valid guiding objects'''
-        return ((self.shape_choice == SHAPE_CIRCLE_FORCED and
-                 self.diameter_choice == AM_AUTOMATIC) or
-                (self.shape_choice in (SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL)))
+        """Return TRUE if the settings require valid guiding objects"""
+        return (
+            self.shape_choice == SHAPE_CIRCLE_FORCED
+            and self.diameter_choice == AM_AUTOMATIC
+        ) or (self.shape_choice in (SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL))
 
     def run(self, workspace):
-        '''Find the outlines on the current image set
+        """Find the outlines on the current image set
 
         workspace    - The workspace contains
             pipeline     - instance of cpp for this run
@@ -210,7 +236,7 @@ depending on the method chosen.
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
-        '''
+        """
         gridding = workspace.get_grid(self.grid_name.value)
         if self.shape_choice == SHAPE_RECTANGLE:
             labels = self.run_rectangle(workspace, gridding)
@@ -223,56 +249,55 @@ depending on the method chosen.
         objects = cpo.Objects()
         objects.segmented = labels
         object_count = gridding.rows * gridding.columns
-        workspace.object_set.add_objects(objects,
-                                         self.output_objects_name.value)
-        add_object_location_measurements(workspace.measurements,
-                                         self.output_objects_name.value,
-                                         labels, object_count)
-        add_object_count_measurements(workspace.measurements,
-                                      self.output_objects_name.value,
-                                      object_count)
+        workspace.object_set.add_objects(objects, self.output_objects_name.value)
+        add_object_location_measurements(
+            workspace.measurements, self.output_objects_name.value, labels, object_count
+        )
+        add_object_count_measurements(
+            workspace.measurements, self.output_objects_name.value, object_count
+        )
         if self.show_window:
             workspace.display_data.gridding = gridding
             workspace.display_data.labels = labels
 
     def run_rectangle(self, workspace, gridding):
-        '''Return a labels matrix composed of the grid rectangles'''
+        """Return a labels matrix composed of the grid rectangles"""
         return self.fill_grid(workspace, gridding)
 
     def fill_grid(self, workspace, gridding):
-        '''Fill a labels matrix by labeling each rectangle in the grid'''
+        """Fill a labels matrix by labeling each rectangle in the grid"""
         assert isinstance(gridding, cpg.Grid)
-        i, j = np.mgrid[0:gridding.image_height,
-               0:gridding.image_width]
-        i_min = int(gridding.y_location_of_lowest_y_spot -
-                    gridding.y_spacing / 2)
-        j_min = int(gridding.x_location_of_lowest_x_spot -
-                    gridding.x_spacing / 2)
+        i, j = np.mgrid[0 : gridding.image_height, 0 : gridding.image_width]
+        i_min = int(gridding.y_location_of_lowest_y_spot - gridding.y_spacing / 2)
+        j_min = int(gridding.x_location_of_lowest_x_spot - gridding.x_spacing / 2)
         i = np.floor((i - i_min) / gridding.y_spacing).astype(int)
         j = np.floor((j - j_min) / gridding.x_spacing).astype(int)
-        mask = ((i >= 0) & (j >= 0) &
-                (i < gridding.spot_table.shape[0]) &
-                (j < gridding.spot_table.shape[1]))
+        mask = (
+            (i >= 0)
+            & (j >= 0)
+            & (i < gridding.spot_table.shape[0])
+            & (j < gridding.spot_table.shape[1])
+        )
         labels = np.zeros((int(gridding.image_height), int(gridding.image_width)), int)
         labels[mask] = gridding.spot_table[i[mask], j[mask]]
         return labels
 
     def run_forced_circle(self, workspace, gridding):
-        '''Return a labels matrix composed of circles centered in the grids'''
-        i, j = np.mgrid[0:gridding.rows, 0:gridding.columns]
+        """Return a labels matrix composed of circles centered in the grids"""
+        i, j = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
 
-        return self.run_circle(workspace, gridding,
-                               gridding.y_locations[i],
-                               gridding.x_locations[j])
+        return self.run_circle(
+            workspace, gridding, gridding.y_locations[i], gridding.x_locations[j]
+        )
 
     def run_circle(self, workspace, gridding, spot_center_i, spot_center_j):
-        '''Return a labels matrix compose of circles centered on the x,y locations
+        """Return a labels matrix compose of circles centered on the x,y locations
 
         workspace - workspace for the run
         gridding - an instance of CPGridInfo giving the details of the grid
         spot_center_i, spot_center_j - the locations of the grid centers.
                    This should have one coordinate per grid cell.
-        '''
+        """
 
         assert isinstance(gridding, cpg.Grid)
         radius = self.get_radius(workspace, gridding)
@@ -285,11 +310,11 @@ depending on the method chosen.
 
         centers_i = spot_center_i_flat[labels]
         centers_j = spot_center_j_flat[labels]
-        i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+        i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
         #
         # Add .5 to measure from the center of the pixel
         #
-        mask = (i - centers_i) ** 2 + (j - centers_j) ** 2 <= (radius + .5) ** 2
+        mask = (i - centers_i) ** 2 + (j - centers_j) ** 2 <= (radius + 0.5) ** 2
         labels[~mask] = 0
         #
         # Remove any label with a bogus center (no guiding object)
@@ -299,13 +324,13 @@ depending on the method chosen.
         return labels
 
     def run_natural_circle(self, workspace, gridding):
-        '''Return a labels matrix composed of circles found from objects'''
+        """Return a labels matrix composed of circles found from objects"""
         #
         # Find the centroid of any guide label in a grid
         #
         guide_label = self.filtered_labels(workspace, gridding)
         labels = self.fill_grid(workspace, gridding)
-        labels[guide_label[0:labels.shape[0], 0:labels.shape[1]] == 0] = 0
+        labels[guide_label[0 : labels.shape[0], 0 : labels.shape[1]] == 0] = 0
         centers_i, centers_j = centers_of_labels(labels)
         nmissing = np.max(gridding.spot_table) - len(centers_i)
         if nmissing > 0:
@@ -319,8 +344,8 @@ depending on the method chosen.
         return self.run_circle(workspace, gridding, centers_i, centers_j)
 
     def run_natural(self, workspace, gridding):
-        '''Return a labels matrix made by masking the grid labels with
-        the filtered guide labels'''
+        """Return a labels matrix made by masking the grid labels with
+        the filtered guide labels"""
         guide_label = self.filtered_labels(workspace, gridding)
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
@@ -329,38 +354,41 @@ depending on the method chosen.
         return labels
 
     def fit_labels_to_guiding_objects(self, workspace, labels):
-        '''Make the labels matrix the same size as the guiding objects matrix
+        """Make the labels matrix the same size as the guiding objects matrix
 
         The gridding is typically smaller in extent than the image it's
         based on. This function enlarges the labels matrix to match the
         dimensions of the guiding objects matrix if appropriate.
-        '''
+        """
         if not self.wants_guiding_objects():
             # No guiding objects? No-op
             return labels
 
         guide_label = self.get_guide_labels(workspace)
         if any(guide_label.shape[i] > labels.shape[i] for i in range(2)):
-            result = np.zeros([max(guide_label.shape[i], labels.shape[i])
-                               for i in range(2)], int)
-            result[0:labels.shape[0], 0:labels.shape[1]] = labels
+            result = np.zeros(
+                [max(guide_label.shape[i], labels.shape[i]) for i in range(2)], int
+            )
+            result[0 : labels.shape[0], 0 : labels.shape[1]] = labels
             return result
         return labels
 
     def get_radius(self, workspace, gridding):
-        '''Get the radius for circles'''
+        """Get the radius for circles"""
         if self.diameter_choice == AM_MANUAL:
             return self.diameter.value / 2
         labels = self.filtered_labels(workspace, gridding)
         areas = np.bincount(labels[labels != 0])
         if len(areas) == 0:
-            raise RuntimeError("Failed to calculate average radius: no grid objects found in %s" %
-                               self.guiding_object_name.value)
+            raise RuntimeError(
+                "Failed to calculate average radius: no grid objects found in %s"
+                % self.guiding_object_name.value
+            )
         median_area = np.median(areas[areas != 0])
         return max(1, np.sqrt(median_area / np.pi))
 
     def filtered_labels(self, workspace, gridding):
-        '''Filter labels by proximity to edges of grid'''
+        """Filter labels by proximity to edges of grid"""
         #
         # A label might slightly graze a grid other than its own or
         # a label might be something small in a corner of the grid.
@@ -372,10 +400,12 @@ depending on the method chosen.
 
         centers = np.zeros((2, np.max(guide_labels) + 1))
         centers[:, 1:] = centers_of_labels(guide_labels)
-        bad_centers = ((~ np.isfinite(centers[0, :])) |
-                       (~ np.isfinite(centers[1, :])) |
-                       (centers[0, :] >= labels.shape[0]) |
-                       (centers[1, :] >= labels.shape[1]))
+        bad_centers = (
+            (~np.isfinite(centers[0, :]))
+            | (~np.isfinite(centers[1, :]))
+            | (centers[0, :] >= labels.shape[0])
+            | (centers[1, :] >= labels.shape[1])
+        )
         centers = np.round(centers).astype(int)
         masked_labels = labels.copy()
         x_border = int(np.ceil(gridding.x_spacing / 10))
@@ -405,7 +435,7 @@ depending on the method chosen.
         # centers.
         #
         mask = np.zeros(guide_labels.shape, bool)
-        ii_labels = np.index_exp[0:labels.shape[0], 0:labels.shape[1]]
+        ii_labels = np.index_exp[0 : labels.shape[0], 0 : labels.shape[1]]
         mask[ii_labels] = lcenters[guide_labels[ii_labels]] != labels
         mask[guide_labels == 0] = True
         mask[lcenters[guide_labels] == 0] = True
@@ -414,31 +444,33 @@ depending on the method chosen.
         return filtered_guide_labels
 
     def get_guide_labels(self, workspace):
-        '''Return the guide labels matrix for this module'''
+        """Return the guide labels matrix for this module"""
         guide_labels = workspace.object_set.get_objects(self.guiding_object_name.value)
         guide_labels = guide_labels.segmented
         return guide_labels
 
     def display(self, workspace, figure):
-        '''Display the resulting objects'''
+        """Display the resulting objects"""
         import matplotlib
+
         gridding = workspace.display_data.gridding
         labels = workspace.display_data.labels
         objects_name = self.output_objects_name.value
         figure.set_subplots((1, 1))
-        figure.subplot_imshow_labels(0, 0, labels,
-                                     title="Identified %s" % objects_name)
+        figure.subplot_imshow_labels(0, 0, labels, title="Identified %s" % objects_name)
         axes = figure.subplot(0, 0)
-        for xc, yc in ((gridding.horiz_lines_x, gridding.horiz_lines_y),
-                       (gridding.vert_lines_x, gridding.vert_lines_y)):
+        for xc, yc in (
+            (gridding.horiz_lines_x, gridding.horiz_lines_y),
+            (gridding.vert_lines_x, gridding.vert_lines_y),
+        ):
             for i in range(xc.shape[1]):
-                line = matplotlib.lines.Line2D(xc[:, i], yc[:, i],
-                                               color="red")
+                line = matplotlib.lines.Line2D(xc[:, i], yc[:, i], color="red")
                 axes.add_line(line)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -456,20 +488,27 @@ depending on the method chosen.
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
-            grid_name, new_object_name, shape, old_object_name, \
-            diameter, save_outlines, failed_grid_choice = setting_values
+            grid_name, new_object_name, shape, old_object_name, diameter, save_outlines, failed_grid_choice = (
+                setting_values
+            )
             if diameter == AM_AUTOMATIC:
                 diameter = "40"
                 diameter_choice = AM_AUTOMATIC
             else:
                 diameter_choice = AM_MANUAL
-            wants_outlines = (cps.NO if save_outlines == cps.DO_NOT_USE
-                              else cps.YES)
-            setting_values = [grid_name, new_object_name, shape,
-                              diameter_choice, diameter, old_object_name,
-                              wants_outlines, save_outlines]
+            wants_outlines = cps.NO if save_outlines == cps.DO_NOT_USE else cps.YES
+            setting_values = [
+                grid_name,
+                new_object_name,
+                shape,
+                diameter_choice,
+                diameter,
+                old_object_name,
+                wants_outlines,
+                save_outlines,
+            ]
             variable_revision_number = 1
             from_matlab = False
 
@@ -488,7 +527,7 @@ depending on the method chosen.
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimaryObjects'''
+        """Column definitions for measurements made by IdentifyPrimaryObjects"""
         return get_object_measurement_columns(self.output_objects_name.value)
 
     def get_categories(self, pipeline, object_name):
@@ -496,10 +535,10 @@ depending on the method chosen.
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if object_name == 'Image':
-            return ['Count']
+        if object_name == "Image":
+            return ["Count"]
         elif object_name == self.output_objects_name.value:
-            return ['Location', 'Number']
+            return ["Location", "Number"]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
@@ -508,10 +547,10 @@ depending on the method chosen.
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if object_name == 'Image' and category == 'Count':
+        if object_name == "Image" and category == "Count":
             return [self.output_objects_name.value]
-        elif object_name == self.output_objects_name.value and category == 'Location':
-            return ['Center_X', 'Center_Y']
-        elif object_name == self.output_objects_name.value and category == 'Number':
-            return ['Object_Number']
+        elif object_name == self.output_objects_name.value and category == "Location":
+            return ["Center_X", "Center_Y"]
+        elif object_name == self.output_objects_name.value and category == "Number":
+            return ["Object_Number"]
         return []

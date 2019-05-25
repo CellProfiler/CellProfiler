@@ -70,25 +70,25 @@ import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
-T_WITHIN_CYCLES = 'Within cycles'
-T_ACROSS_CYCLES = 'Across cycles'
+T_WITHIN_CYCLES = "Within cycles"
+T_ACROSS_CYCLES = "Across cycles"
 T_ALL = (T_WITHIN_CYCLES, T_ACROSS_CYCLES)
 
-P_TOP_LEFT = 'top left'
-P_BOTTOM_LEFT = 'bottom left'
-P_TOP_RIGHT = 'top right'
-P_BOTTOM_RIGHT = 'bottom right'
+P_TOP_LEFT = "top left"
+P_BOTTOM_LEFT = "bottom left"
+P_TOP_RIGHT = "top right"
+P_BOTTOM_RIGHT = "bottom right"
 P_ALL = (P_TOP_LEFT, P_BOTTOM_LEFT, P_TOP_RIGHT, P_BOTTOM_RIGHT)
 
 S_ROW = "row"
 S_COL = "column"
 S_ALL = (S_ROW, S_COL)
 
-'''Module dictionary keyword for storing the # of images in the group when tiling'''
+"""Module dictionary keyword for storing the # of images in the group when tiling"""
 IMAGE_COUNT = "ImageCount"
-'''Dictionary keyword for storing the current image number in the group'''
+"""Dictionary keyword for storing the current image number in the group"""
 IMAGE_NUMBER = "ImageNumber"
-'''Module dictionary keyword for the image being tiled'''
+"""Module dictionary keyword for the image being tiled"""
 TILED_IMAGE = "TiledImage"
 TILE_WIDTH = "TileWidth"
 TILE_HEIGHT = "TileHeight"
@@ -98,27 +98,38 @@ FIXED_SETTING_COUNT = 10
 
 class Tile(cpm.Module):
     module_name = "Tile"
-    category = 'Image Processing'
+    category = "Image Processing"
     variable_revision_number = 1
 
     def create_settings(self):
         self.input_image = cps.ImageNameSubscriber(
-                "Select an input image",
-                cps.NONE, doc="""Select the image to be tiled. Additional images within the cycle can be
+            "Select an input image",
+            cps.NONE,
+            doc="""Select the image to be tiled. Additional images within the cycle can be
 added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.output_image = cps.ImageNameProvider(
-                "Name the output image",
-                "TiledImage", doc="""Enter a name for the final tiled image.""")
+            "Name the output image",
+            "TiledImage",
+            doc="""Enter a name for the final tiled image.""",
+        )
 
         self.additional_images = []
 
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image, doc="""Add images from other channels to perform similar tiling""")
+        self.add_button = cps.DoSomething(
+            "",
+            "Add another image",
+            self.add_image,
+            doc="""Add images from other channels to perform similar tiling""",
+        )
 
         self.tile_method = cps.Choice(
-                "Tile assembly method",
-                T_ALL, doc='''\
+            "Tile assembly method",
+            T_ALL,
+            doc="""\
 This setting controls the method by which the final tiled image is
 assembled:
 
@@ -132,10 +143,14 @@ assembled:
    the images of the same type (e.g., OrigBlue) across all fields of
    view in your experiment, which will result in one final tiled image
    when processing is complete.
-''' % globals())
+"""
+            % globals(),
+        )
 
         self.rows = cps.Integer(
-                "Final number of rows", 8, doc='''\
+            "Final number of rows",
+            8,
+            doc="""\
 Specify the number of rows would you like to have in the tiled image.
 For example, if you want to show your images in a 96-well format, enter
 8.
@@ -148,11 +163,13 @@ images.
 -  If the *M* < *N*, an error will occur since there are not enough
    image slots. Check “Automatically calculate number of rows?” to avoid
    this error.
-''')
+""",
+        )
 
         self.columns = cps.Integer(
-                "Final number of columns",
-                12, doc='''\
+            "Final number of columns",
+            12,
+            doc="""\
 Specify the number of columns you like to have in the tiled image. For
 example, if you want to show your images in a 96-well format, enter 12.
 
@@ -164,30 +181,44 @@ images.
 -  If the *M* < *N*, an error will occur since there are not enough
    image slots. Check “Automatically calculate number of columns?” to
    avoid this error.
-''')
+""",
+        )
 
         self.place_first = cps.Choice(
-                "Image corner to begin tiling", P_ALL, doc='''Where do you want the first image to be placed? Begin in the upper
+            "Image corner to begin tiling",
+            P_ALL,
+            doc="""Where do you want the first image to be placed? Begin in the upper
 left-hand corner for a typical multi-well plate format where the first image is A01.
-''')
+""",
+        )
 
         self.tile_style = cps.Choice(
-                "Direction to begin tiling", S_ALL, doc='''This setting specifies the order that the images are to be arranged. For example, if
+            "Direction to begin tiling",
+            S_ALL,
+            doc="""This setting specifies the order that the images are to be arranged. For example, if
 your images are named A01, A02, etc, enter "*%(S_ROW)s*".
-''' % globals())
+"""
+            % globals(),
+        )
 
         self.meander = cps.Binary(
-                "Use meander mode?", False, doc='''\
+            "Use meander mode?",
+            False,
+            doc="""\
 Select "*%(YES)s*" to tile adjacent images in one direction, then the next
 row/column is tiled in the opposite direction. Some microscopes capture
 images in this fashion. The default mode is “comb”, or “typewriter”
 mode; in this mode, when one row is completely tiled in one direction,
 the next row starts near where the first row started and tiles again in
 the same direction.
-''' % globals())
+"""
+            % globals(),
+        )
 
         self.wants_automatic_rows = cps.Binary(
-                "Automatically calculate number of rows?", False, doc="""\
+            "Automatically calculate number of rows?",
+            False,
+            doc="""\
 **Tile** can automatically calculate the number of rows in the grid
 based on the number of image cycles that will be processed. Select
 "*%(YES)s*" to create a grid that has the number of columns that you
@@ -196,10 +227,14 @@ to specify the number of rows.
 
 If you check both automatic rows and automatic columns, **Tile** will
 create a grid that has roughly the same number of rows and columns.
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.wants_automatic_columns = cps.Binary(
-                "Automatically calculate number of columns?", False, doc="""\
+            "Automatically calculate number of columns?",
+            False,
+            doc="""\
 **Tile** can automatically calculate the number of columns in the grid
 from the number of image cycles that will be processed. Select "*%(YES)s*"
 to create a grid that has the number of rows that you entered and enough
@@ -208,26 +243,46 @@ number of rows.
 
 If you check both automatic rows and automatic columns, **Tile** will
 create a grid that has roughly the same number of rows and columns.
-""" % globals())
+"""
+            % globals(),
+        )
 
     def add_image(self, can_remove=True):
-        '''Add an image + associated questions and buttons'''
+        """Add an image + associated questions and buttons"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=True))
 
-        group.append("input_image_name",
-                     cps.ImageNameSubscriber("Select an additional image to tile",
-                                             cps.NONE, doc="""Select an additional image to tile?"""))
+        group.append(
+            "input_image_name",
+            cps.ImageNameSubscriber(
+                "Select an additional image to tile",
+                cps.NONE,
+                doc="""Select an additional image to tile?""",
+            ),
+        )
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
+            group.append(
+                "remover",
+                cps.RemoveSettingButton(
+                    "", "Remove above image", self.additional_images, group
+                ),
+            )
         self.additional_images.append(group)
 
     def settings(self):
-        result = [self.input_image, self.output_image, self.tile_method,
-                  self.rows, self.columns, self.place_first, self.tile_style,
-                  self.meander, self.wants_automatic_rows,
-                  self.wants_automatic_columns]
+        result = [
+            self.input_image,
+            self.output_image,
+            self.tile_method,
+            self.rows,
+            self.columns,
+            self.place_first,
+            self.tile_style,
+            self.meander,
+            self.wants_automatic_rows,
+            self.wants_automatic_columns,
+        ]
 
         for additional in self.additional_images:
             result += [additional.input_image_name]
@@ -241,8 +296,12 @@ create a grid that has roughly the same number of rows and columns.
             self.add_image()
 
     def visible_settings(self):
-        result = [self.input_image, self.output_image, self.tile_method,
-                  self.wants_automatic_rows]
+        result = [
+            self.input_image,
+            self.output_image,
+            self.tile_method,
+            self.wants_automatic_rows,
+        ]
         if not self.wants_automatic_rows:
             result += [self.rows]
         result += [self.wants_automatic_columns]
@@ -258,11 +317,18 @@ create a grid that has roughly the same number of rows and columns.
         return result
 
     def help_settings(self):
-        result = [self.input_image, self.output_image, self.tile_method,
-                  self.wants_automatic_rows, self.rows,
-                  self.wants_automatic_columns, self.columns,
-                  self.place_first, self.tile_style,
-                  self.meander]
+        result = [
+            self.input_image,
+            self.output_image,
+            self.tile_method,
+            self.wants_automatic_rows,
+            self.rows,
+            self.wants_automatic_columns,
+            self.columns,
+            self.place_first,
+            self.tile_style,
+            self.meander,
+        ]
 
         return result
 
@@ -270,14 +336,14 @@ create a grid that has roughly the same number of rows and columns.
         return self.tile_method == T_ACROSS_CYCLES
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to handle a group of images when tiling'''
+        """Prepare to handle a group of images when tiling"""
         d = self.get_dictionary(workspace.image_set_list)
         d[IMAGE_COUNT] = len(image_numbers)
         d[IMAGE_NUMBER] = 0
         d[TILED_IMAGE] = None
 
     def run(self, workspace):
-        '''do the image analysis'''
+        """do the image analysis"""
         if self.tile_method == T_WITHIN_CYCLES:
             output_pixels = self.place_adjacent(workspace)
         else:
@@ -292,16 +358,15 @@ create a grid that has roughly the same number of rows and columns.
             image_set = workspace.image_set
             if self.output_image.value not in image_set.names:
                 d = self.get_dictionary(workspace.image_set_list)
-                image_set.add(self.output_image.value,
-                              cpi.Image(d[TILED_IMAGE]))
+                image_set.add(self.output_image.value, cpi.Image(d[TILED_IMAGE]))
 
     def is_aggregation_module(self):
-        '''Need to run all cycles in same worker if across cycles'''
+        """Need to run all cycles in same worker if across cycles"""
         return self.tile_method == T_ACROSS_CYCLES
 
     def display(self, workspace, figure):
-        '''Display
-        '''
+        """Display
+        """
         figure.set_subplots((1, 1))
         pixels = workspace.display_data.image
         name = self.output_image.value
@@ -311,8 +376,8 @@ create a grid that has roughly the same number of rows and columns.
             figure.subplot_imshow_grayscale(0, 0, pixels, title=name)
 
     def tile(self, workspace):
-        '''Tile images across image cycles
-        '''
+        """Tile images across image cycles
+        """
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
@@ -350,28 +415,29 @@ create a grid that has roughly the same number of rows and columns.
         img_height = min(tile_height, pixels.shape[0])
         img_width = min(tile_width, pixels.shape[1])
         if output_pixels.ndim == 2:
-            output_pixels[tile_i:(tile_i + img_height),
-            tile_j:(tile_j + img_width)] = \
-                pixels[:img_height, :img_width]
+            output_pixels[
+                tile_i : (tile_i + img_height), tile_j : (tile_j + img_width)
+            ] = pixels[:img_height, :img_width]
         elif pixels.ndim == 3:
-            output_pixels[tile_i:(tile_i + img_height),
-            tile_j:(tile_j + img_width), :] = \
-                pixels[:img_height, :img_width, :]
+            output_pixels[
+                tile_i : (tile_i + img_height), tile_j : (tile_j + img_width), :
+            ] = pixels[:img_height, :img_width, :]
         else:
             for k in range(output_pixels.shape[2]):
-                output_pixels[tile_i:(tile_i + img_height),
-                tile_j:(tile_j + img_width), k] = \
-                    pixels[:img_height, :img_width]
+                output_pixels[
+                    tile_i : (tile_i + img_height), tile_j : (tile_j + img_width), k
+                ] = pixels[:img_height, :img_width]
         return output_pixels
 
     def place_adjacent(self, workspace):
-        '''Place images from the same image set adjacent to each other'''
+        """Place images from the same image set adjacent to each other"""
         rows, columns = self.get_grid_dimensions()
-        image_names = ([self.input_image.value] +
-                       [g.input_image_name.value
-                        for g in self.additional_images])
-        pixel_data = [workspace.image_set.get_image(name).pixel_data
-                      for name in image_names]
+        image_names = [self.input_image.value] + [
+            g.input_image_name.value for g in self.additional_images
+        ]
+        pixel_data = [
+            workspace.image_set.get_image(name).pixel_data for name in image_names
+        ]
         tile_width = 0
         tile_height = 0
         colors = 0
@@ -391,10 +457,10 @@ create a grid that has roughly the same number of rows and columns.
         return output_pixels
 
     def get_tile_ij(self, image_index, rows, columns):
-        '''Get the I/J coordinates for an image
+        """Get the I/J coordinates for an image
 
         returns i,j where 0 < i < self.rows and 0 < j < self.columns
-        '''
+        """
         if self.tile_style == S_ROW:
             tile_i = int(image_index / columns)
             tile_j = image_index % columns
@@ -411,22 +477,25 @@ create a grid that has roughly the same number of rows and columns.
             tile_i = rows - tile_i - 1
         if self.place_first in (P_TOP_RIGHT, P_BOTTOM_RIGHT):
             tile_j = columns - tile_j - 1
-        if (tile_i < 0 or tile_i >= rows or
-                    tile_j < 0 or tile_j >= columns):
-            raise ValueError(("The current image falls outside of the grid boundaries. \n"
-                              "Grid dimensions: %d, %d\n"
-                              "Tile location: %d, %d\n") %
-                             (columns, rows,
-                              tile_j, tile_i))
+        if tile_i < 0 or tile_i >= rows or tile_j < 0 or tile_j >= columns:
+            raise ValueError(
+                (
+                    "The current image falls outside of the grid boundaries. \n"
+                    "Grid dimensions: %d, %d\n"
+                    "Tile location: %d, %d\n"
+                )
+                % (columns, rows, tile_j, tile_i)
+            )
         return tile_i, tile_j
 
     def get_grid_dimensions(self, image_count=None):
-        '''Get the dimensions of the grid in i,j format
+        """Get the dimensions of the grid in i,j format
 
         image_count - # of images in the grid. If None, use info from settings.
-        '''
-        assert ((image_count is not None) or
-                self.tile_method == T_WITHIN_CYCLES), "Must specify image count for %s method" % self.tile_method.value
+        """
+        assert (image_count is not None) or self.tile_method == T_WITHIN_CYCLES, (
+            "Must specify image count for %s method" % self.tile_method.value
+        )
         if image_count is None:
             image_count = len(self.additional_images) + 1
         if self.wants_automatic_rows:
@@ -450,50 +519,54 @@ create a grid that has roughly the same number of rows and columns.
             return self.rows.value, self.columns.value
 
     def get_measurement_columns(self, pipeline):
-        '''return the measurements'''
+        """return the measurements"""
         columns = []
         return columns
 
     def validate_module(self, pipeline):
-        '''Make sure the settings are consistent
+        """Make sure the settings are consistent
 
         Check to make sure that we have enough rows and columns if
         we are in PlaceAdjacent mode.
-        '''
-        if (self.tile_method == T_WITHIN_CYCLES and
-                (not self.wants_automatic_rows) and
-                (not self.wants_automatic_columns) and
-                        self.rows.value * self.columns.value <
-                        len(self.additional_images) + 1):
+        """
+        if (
+            self.tile_method == T_WITHIN_CYCLES
+            and (not self.wants_automatic_rows)
+            and (not self.wants_automatic_columns)
+            and self.rows.value * self.columns.value < len(self.additional_images) + 1
+        ):
             raise cps.ValidationError(
-                    "There are too many images (%d) for a %d by %d grid" %
-                    (len(self.additional_images) + 1, self.columns.value,
-                     self.rows.value),
-                    self.rows)
+                "There are too many images (%d) for a %d by %d grid"
+                % (
+                    len(self.additional_images) + 1,
+                    self.columns.value,
+                    self.rows.value,
+                ),
+                self.rows,
+            )
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
-        '''this must take into account both Tile and PlaceAdjacent from the Matlab'''
-        if (from_matlab and module_name == "Tile" and
-                    variable_revision_number == 1):
-            image_name, orig_image_name, tiled_image, number_rows, \
-            number_columns, row_or_column, top_or_bottom, left_or_right, \
-            meander_mode, size_change = setting_values
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        """this must take into account both Tile and PlaceAdjacent from the Matlab"""
+        if from_matlab and module_name == "Tile" and variable_revision_number == 1:
+            image_name, orig_image_name, tiled_image, number_rows, number_columns, row_or_column, top_or_bottom, left_or_right, meander_mode, size_change = (
+                setting_values
+            )
 
             if size_change != "1":
                 logger.warning(
-                        "Discarding rescaling during import of Tile. "
-                        "Use the resize module with a factor of %s.\n" %
-                        size_change)
+                    "Discarding rescaling during import of Tile. "
+                    "Use the resize module with a factor of %s.\n" % size_change
+                )
 
-            left = left_or_right.lower() == 'left'
-            if top_or_bottom.lower() == 'top':
+            left = left_or_right.lower() == "left"
+            if top_or_bottom.lower() == "top":
                 place_first = P_TOP_LEFT if left else P_TOP_RIGHT
             else:
                 place_first = P_BOTTOM_LEFT if left else P_BOTTOM_RIGHT
 
-            tile_style = S_ROW if row_or_column.lower() == 'row' else S_COL
+            tile_style = S_ROW if row_or_column.lower() == "row" else S_COL
 
             wants_automatic_rows = cps.NO
             wants_automatic_columns = cps.NO
@@ -503,26 +576,39 @@ create a grid that has roughly the same number of rows and columns.
             if number_columns == cps.AUTOMATIC:
                 number_columns = 12
                 wants_automatic_columns = cps.YES
-            setting_values = [image_name, tiled_image, T_ACROSS_CYCLES,
-                              number_rows, number_columns, place_first,
-                              tile_style, meander_mode, wants_automatic_rows,
-                              wants_automatic_columns]
+            setting_values = [
+                image_name,
+                tiled_image,
+                T_ACROSS_CYCLES,
+                number_rows,
+                number_columns,
+                place_first,
+                tile_style,
+                meander_mode,
+                wants_automatic_rows,
+                wants_automatic_columns,
+            ]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
 
-        if (from_matlab and module_name == "PlaceAdjacent" and
-                    variable_revision_number == 3):
-            image_names = [s for s in setting_values[:6]
-                           if s.lower() != cps.DO_NOT_USE.lower()]
+        if (
+            from_matlab
+            and module_name == "PlaceAdjacent"
+            and variable_revision_number == 3
+        ):
+            image_names = [
+                s for s in setting_values[:6] if s.lower() != cps.DO_NOT_USE.lower()
+            ]
             adjacent_image_name = setting_values[6]
             horizontal_or_vertical = setting_values[7]
             delete_pipeline = setting_values[8]
             if delete_pipeline == cps.YES:
                 logger.warning(
-                        "Ignoring memory option when importing PlaceAdjacent "
-                        "into Tile. Use the ConserveMemory module to remove "
-                        "the image from memory if desired.\n")
+                    "Ignoring memory option when importing PlaceAdjacent "
+                    "into Tile. Use the ConserveMemory module to remove "
+                    "the image from memory if desired.\n"
+                )
             if len(image_names) == 0:
                 image_names.append(cps.DO_NOT_USE)
             if horizontal_or_vertical.lower() == "horizontal":
@@ -534,9 +620,18 @@ create a grid that has roughly the same number of rows and columns.
                 number_rows = str(len(image_names))
                 number_columns = "1"
 
-            setting_values = [image_names[0], adjacent_image_name,
-                              T_WITHIN_CYCLES, number_rows, number_columns,
-                              P_TOP_LEFT, tile_style, cps.NO, cps.NO, cps.NO]
+            setting_values = [
+                image_names[0],
+                adjacent_image_name,
+                T_WITHIN_CYCLES,
+                number_rows,
+                number_columns,
+                P_TOP_LEFT,
+                tile_style,
+                cps.NO,
+                cps.NO,
+                cps.NO,
+            ]
             setting_values += image_names[1:]
             variable_revision_number = 1
             from_matlab = False

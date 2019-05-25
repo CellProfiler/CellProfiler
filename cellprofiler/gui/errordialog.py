@@ -17,7 +17,7 @@ ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
 
-ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
+ERROR_URL = "http://www.cellprofiler.org/cgi-bin/reporterror.cgi"
 
 __inside_display_error_dialog = False
 
@@ -57,14 +57,23 @@ def display_error_dialog(*args, **kwargs):
         try:
             logging.root.error("Exception in display_error_dialog()!", exc_info=True)
         except Exception:
-            sys.stderr.write("Exception logging exception in display_error_dialog().  Everything probably broken.\n")
+            sys.stderr.write(
+                "Exception logging exception in display_error_dialog().  Everything probably broken.\n"
+            )
             pass
     finally:
         __inside_display_error_dialog = False
 
 
-def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_only=False,
-                          remote_exc_info=None):
+def _display_error_dialog(
+    frame,
+    exc,
+    pipeline,
+    message=None,
+    tb=None,
+    continue_only=False,
+    remote_exc_info=None,
+):
     """Display an error dialog, returning an indication of whether to continue
 
     frame - parent frame for application
@@ -82,12 +91,14 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     """
 
     import wx
+
     assert wx.IsMainThread(), "Can only display errors from WX thread."
 
     if remote_exc_info:
         from_subprocess = True
-        exc_name, exc_message, traceback_text, \
-        filename, line_number, remote_debug_callback = remote_exc_info
+        exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback = (
+            remote_exc_info
+        )
         if message is None:
             message = exc_message
     else:
@@ -107,29 +118,37 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
     if (filename, line_number) in previously_seen_error_locations:
         if from_subprocess:
-            logging.root.error("Previously displayed remote exception:\n%s\n%s",
-                               exc_name, traceback_text)
+            logging.root.error(
+                "Previously displayed remote exception:\n%s\n%s",
+                exc_name,
+                traceback_text,
+            )
         else:
-            logging.root.error("Previously displayed uncaught exception:",
-                               exc_info=(type(exc), exc, tb))
+            logging.root.error(
+                "Previously displayed uncaught exception:",
+                exc_info=(type(exc), exc, tb),
+            )
         return ED_CONTINUE
 
-    dialog = wx.Dialog(frame, title="Pipeline error",
-                       style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+    dialog = wx.Dialog(
+        frame, title="Pipeline error", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+    )
     sizer = wx.BoxSizer(wx.VERTICAL)
     dialog.SetSizer(sizer)
     if continue_only:
         qc_msg = "Encountered error while processing."
     else:
-        qc_msg = ("Encountered error while processing. "
-                  "Do you want to stop processing?")
+        qc_msg = (
+            "Encountered error while processing. " "Do you want to stop processing?"
+        )
     question_control = wx.StaticText(dialog, -1, qc_msg)
-    question_control.Font = wx.Font(int(dialog.GetFont().GetPointSize() * 5 / 4),
-                                    dialog.GetFont().GetFamily(),
-                                    dialog.GetFont().GetStyle(),
-                                    wx.FONTWEIGHT_BOLD)
-    sizer.Add(question_control, 0,
-              wx.EXPAND | wx.ALL, 5)
+    question_control.Font = wx.Font(
+        int(dialog.GetFont().GetPointSize() * 5 / 4),
+        dialog.GetFont().GetFamily(),
+        dialog.GetFont().GetStyle(),
+        wx.FONTWEIGHT_BOLD,
+    )
+    sizer.Add(question_control, 0, wx.EXPAND | wx.ALL, 5)
     error_box = wx.BoxSizer(wx.HORIZONTAL)
     message_control = wx.StaticText(dialog, -1, message)
     error_box.Add(message_control, 1, wx.EXPAND | wx.RIGHT, 5)
@@ -142,9 +161,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     #
     details_button = wx.Button(dialog, -1, "Details...")
     details_button.SetToolTip("Show error details")
-    aux_button_box.Add(details_button, 0,
-                       wx.EXPAND | wx.BOTTOM,
-                       5)
+    aux_button_box.Add(details_button, 0, wx.EXPAND | wx.BOTTOM, 5)
     details_on = [False]
 
     def on_details(event):
@@ -170,8 +187,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     #
     copy_button = wx.Button(dialog, -1, "Copy to clipboard")
     copy_button.SetToolTip("Copy error to clipboard")
-    aux_button_box.Add(copy_button, 0,
-                       wx.EXPAND | wx.BOTTOM, 5)
+    aux_button_box.Add(copy_button, 0, wx.EXPAND | wx.BOTTOM, 5)
 
     def on_copy(event):
         if wx.TheClipboard.Open():
@@ -187,7 +203,9 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     #
     # Handle pdb button
     #
-    if ((tb or remote_exc_info) is not None) and (not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG')):
+    if ((tb or remote_exc_info) is not None) and (
+        not hasattr(sys, "frozen") or os.getenv("CELLPROFILER_DEBUG")
+    ):
         if not from_subprocess:
             pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
             pdb_button.SetToolTip("Debug in python's pdb on the console")
@@ -195,11 +213,13 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
             def handle_pdb(event):
                 import pdb
+
                 pdb.post_mortem(tb)
                 # This level of interest seems to indicate the user might
                 # want to debug this error if it occurs again.
                 if (filename, line_number) in previously_seen_error_locations:
                     previously_seen_error_locations.remove((filename, line_number))
+
         else:
             pdb_button = wx.Button(dialog, -1, "Debug remotely...")
             pdb_button.SetToolTip("Debug remotely in pdb via telnet")
@@ -213,9 +233,11 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
                 # want to debug this error if it occurs again.
                 if (filename, line_number) in previously_seen_error_locations:
                     previously_seen_error_locations.remove((filename, line_number))
+
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
-    dont_show_exception_checkbox = \
-        wx.CheckBox(dialog, label="Don't show this error again")
+    dont_show_exception_checkbox = wx.CheckBox(
+        dialog, label="Don't show this error again"
+    )
     dont_show_exception_checkbox.SetValue(False)
     sizer.Add(dont_show_exception_checkbox, 0, wx.ALIGN_LEFT | wx.ALL, 5)
     #
@@ -262,7 +284,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
         dialog.Close()
         event.Skip()
 
-    skip_button = wx.Button(dialog, label='Skip Image, Continue Pipeline')
+    skip_button = wx.Button(dialog, label="Skip Image, Continue Pipeline")
     dialog.Bind(wx.EVT_BUTTON, on_skip, skip_button)
 
     button_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -291,10 +313,12 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 def on_report(event, dialog, traceback_text, pipeline):
     """Report an error to us"""
     import cellprofiler
-    params = {"traceback": traceback_text,
-              "revision": cellprofiler.__version__,
-              "platform": str(platform.platform())
-              }
+
+    params = {
+        "traceback": traceback_text,
+        "revision": cellprofiler.__version__,
+        "platform": str(platform.platform()),
+    }
     try:
         obfuscated_pipeline = pipeline.copy()
         obfuscated_pipeline.obfuscate()
@@ -309,11 +333,13 @@ def on_report(event, dialog, traceback_text, pipeline):
     data = six.moves.urllib.urlencode(params)
     req = six.moves.urllib.request.Request(ERROR_URL, data, headers)
     import wx
+
     try:
         conn = six.moves.urllib.request.urlopen(req)
         response = conn.read()
-        wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
-                      parent=dialog)
+        wx.MessageBox(
+            "Report successfully sent to CellProfiler.org. Thank you.", parent=dialog
+        )
     except six.moves.urllib.request.HTTPError as e:
         wx.MessageBox("Failed to upload, server reported code %d" % e.code)
     except six.moves.urllib.request.URLError as e:
@@ -345,6 +371,7 @@ def show_warning(title, message, get_preference, set_preference):
         return
 
     import wx
+
     if wx.GetApp() is None:
         print(message)
         return
@@ -353,14 +380,19 @@ def show_warning(title, message, get_preference, set_preference):
         dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
-        subsizer.Add(wx.StaticBitmap(dlg, wx.ID_ANY,
-                                     wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
-                                                              wx.ART_CMN_DIALOG)),
-                     0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
+        subsizer.Add(
+            wx.StaticBitmap(
+                dlg,
+                wx.ID_ANY,
+                wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG),
+            ),
+            0,
+            wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT,
+            5,
+        )
         text = wx.StaticText(dlg, wx.ID_ANY, message)
         subsizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
-        dont_show = wx.CheckBox(dlg,
-                                label="Don't show this message again.")
+        dont_show = wx.CheckBox(dlg, label="Don't show this message again.")
         sizer.Add(dont_show, 0, wx.ALIGN_LEFT | wx.ALL, 5)
         buttons_sizer = wx.StdDialogButtonSizer()
         buttons_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
@@ -372,8 +404,7 @@ def show_warning(title, message, get_preference, set_preference):
             set_preference(False)
 
 
-def display_error_message(parent, message, title, buttons=None,
-                          size=(300, 200)):
+def display_error_message(parent, message, title, buttons=None, size=(300, 200)):
     """Display an error in a scrolling message box
 
     parent - parent window to the error message
@@ -386,13 +417,15 @@ def display_error_message(parent, message, title, buttons=None,
     returns the code from ShowModal.
     """
     import wx
+
     if buttons is None:
         buttons = [wx.ID_OK]
     else:
         assert len(buttons) > 0
 
-    with wx.Dialog(parent, title=title, size=size,
-                   style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
+    with wx.Dialog(
+        parent, title=title, size=size, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+    ) as dlg:
         assert isinstance(dlg, wx.Dialog)
         dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -401,14 +434,17 @@ def display_error_message(parent, message, title, buttons=None,
 
         sizer.AddSpacer(10)
         icon = wx.ArtProvider.GetBitmap(wx.ART_ERROR)
-        sizer.Add(wx.StaticBitmap(dlg, bitmap=icon), 0,
-                  wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | wx.ALL, 10)
+        sizer.Add(
+            wx.StaticBitmap(dlg, bitmap=icon),
+            0,
+            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | wx.ALL,
+            10,
+        )
         sizer.AddSpacer(10)
         message_ctrl = wx.TextCtrl(
-                dlg, value=message,
-                style=wx.TE_MULTILINE | wx.TE_READONLY | wx.NO_BORDER)
-        line_sizes = [message_ctrl.GetTextExtent(line)
-                      for line in message.split("\n")]
+            dlg, value=message, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.NO_BORDER
+        )
+        line_sizes = [message_ctrl.GetTextExtent(line) for line in message.split("\n")]
         width = reduce(max, [x[0] for x in line_sizes])
         width += wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         width += wx.SystemSettings.GetMetric(wx.SYS_BORDER_X) * 2
@@ -426,7 +462,8 @@ def display_error_message(parent, message, title, buttons=None,
                 wx.ID_YES: wx.YES,
                 wx.ID_NO: wx.NO,
                 wx.ID_CANCEL: wx.CANCEL,
-                wx.ID_OK: wx.OK}
+                wx.ID_OK: wx.OK,
+            }
             assert isinstance(event, wx.Event)
             dlg.EndModal(id2code[event.GetId()])
 

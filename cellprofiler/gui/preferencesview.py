@@ -500,12 +500,13 @@ class PreferencesView(object):
 
     def on_analyze_images(self):
         # begin tracking progress
-        self.__progress_watcher = ProgressWatcher(
-            self.__progress_panel,
-            self.update_progress,
-            multiprocessing=cellprofiler.analysis.use_analysis,
-        )
-        self.show_progress_panel()
+        # self.__progress_watcher = ProgressWatcher(
+        #     self.__progress_panel,
+        #     self.update_progress,
+        #     multiprocessing=cellprofiler.analysis.use_analysis,
+        # )
+        # self.show_progress_panel()
+        pass
 
     def on_pipeline_progress(self, *args):
         if self.__progress_watcher is not None:

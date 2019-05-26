@@ -2795,15 +2795,20 @@ class PipelineController(object):
 
         try:
             self.__module_view.disable()
+
             self.__pipeline_list_view.allow_editing(False)
+
             self.__frame.preferences_view.on_analyze_images()
+
             with cellprofiler.gui.pipeline.Pipeline.PipelineListener(
                 self.__pipeline, self.on_prepare_run_error_event
             ):
                 if not self.__pipeline.prepare_run(self.__workspace):
                     self.stop_running()
                     return
+
             measurements_file_path = None
+
             if (
                 cellprofiler.preferences.get_write_MAT_files()
                 == cellprofiler.preferences.WRITE_HDF5
@@ -2814,17 +2819,25 @@ class PipelineController(object):
                 len(self.__workspace.measurements.get_image_numbers()),
                 cellprofiler.preferences.get_max_workers(),
             )
+
             self.__analysis = cellprofiler.analysis.Analysis(
                 self.__pipeline,
                 measurements_file_path,
                 initial_measurements=self.__workspace.measurements,
             )
+
             self.__analysis.start(self.analysis_event_handler, num_workers)
+
             self.__frame.preferences_view.update_worker_count_info(num_workers)
+
             self.enable_module_controls_panel_buttons()
+
             self.populate_goto_menu()
 
-        except Exception as instance:
+            print("ran")
+
+        except Exception as error:
+            print(error)
             extended_message = "Failure in analysis startup"
 
             error = cellprofiler.gui.dialog.Error("Error", extended_message)

@@ -30,14 +30,18 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 
-    def OnOpeningURL(self, file_format, url, **kwargs):
-        if file_format == wx.html.HTML_URL_IMAGE:
+    def OnOpeningURL(self, url_type, url, redirect):
+        if url_type == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
                 path = cellprofiler.icons.get_builtin_images_path()
+
                 full_path = os.path.join(path, url[len(MEMORY_SCHEME) :])
+
                 if sys.platform.startswith("win"):
                     my_url = full_path
                 else:
                     my_url = "file:" + six.moves.urllib.request.pathname2url(full_path)
-                return my_url
-        return wx.html.HTML_OPEN
+
+                return wx.html.HTML_REDIRECT, my_url
+
+        return wx.html.HTML_OPEN, ""

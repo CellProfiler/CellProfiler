@@ -2853,11 +2853,11 @@ class FilterPanelController(object):
                     self.panel, -1, "Match", name=self.static_text_name(0, address)
                 )
                 sizer.Insert(idx, text, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-                sizer.InsertSpacer(idx + 1, (3, 0))
+                sizer.Insert(idx + 1, 3, 0)
                 sizer.Insert(
                     idx + 2, anyall, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL
                 )
-                sizer.InsertSpacer(idx + 3, (3, 0))
+                sizer.Insert(idx + 3, 3, 0)
                 text = wx.StaticText(
                     self.panel,
                     -1,
@@ -2869,7 +2869,7 @@ class FilterPanelController(object):
                 sizer.Insert(
                     idx, anyall, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT
                 )
-                sizer.InsertSpacer(idx + 1, (3, 0))
+                sizer.Insert(idx + 1, 3, 0)
                 text = wx.StaticText(
                     self.panel,
                     -1,

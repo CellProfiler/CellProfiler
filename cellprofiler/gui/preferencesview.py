@@ -683,10 +683,10 @@ class ProgressWatcher(object):
         self.timer = wx.Timer(parent, timer_id)
         self.timer.Start(500)
         if not multiprocessing:
-            wx.EVT_TIMER(parent, timer_id, self.update)
+            parent.Bind(wx.EVT_TIMER, timer_id, self.update)
             self.update()
         else:
-            wx.EVT_TIMER(parent, timer_id, self.update_multiprocessing)
+            parent.Bind(wx.EVT_TIMER, timer_id, self.update_multiprocessing)
             self.update_multiprocessing()
 
     def stop(self):

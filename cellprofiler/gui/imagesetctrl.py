@@ -7,6 +7,7 @@ import re
 
 import numpy
 import six
+import six.moves.urllib.parse
 import wx
 import wx.adv
 import wx.grid
@@ -238,7 +239,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             and value is not None
         ):
             last_slash = value.rfind("/")
-            return six.moves.urllib.unquote(value[(last_slash + 1) :])
+            return six.moves.urllib.parse.unquote(value[(last_slash + 1) :])
         return value
 
     def get_url(self, row, col):
@@ -262,7 +263,9 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         image_number = self.image_numbers[row]
         metadata_tags = self.metadata_tags
         if len(metadata_tags) > 0:
-            key = [unicode(self.cache[tag, image_number]) for tag in metadata_tags]
+            key = [
+                six.text_type(self.cache[tag, image_number]) for tag in metadata_tags
+            ]
             return " : ".join(key)
 
         return str(image_number)
@@ -1079,7 +1082,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.GetTable().GetValue(row, col))
+        s = six.text_type(grid.GetTable().GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()

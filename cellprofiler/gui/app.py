@@ -94,6 +94,8 @@ class App(wx.App):
     def OnExit(self):
         cellprofiler.utilities.cpjvm.cp_stop_vm()
 
+        return 0
+
 
 if __name__ == "__main__":
     app = App(False)

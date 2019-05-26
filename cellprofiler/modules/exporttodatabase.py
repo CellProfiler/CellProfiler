@@ -2558,7 +2558,7 @@ available:
                 else:
                     raise Exception(
                         'ExportToDatabase only supports saving thumbnails of grayscale or 3-channel images. "%s" was neither.'
-                        % (name)
+                        % name
                     )
 
                 # resize the image so the major axis is 200px long

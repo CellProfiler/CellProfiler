@@ -1788,7 +1788,7 @@ class EditObjectsDialog(wx.Dialog):
             idx_right = 1
         else:
             idx_right = idx + 1
-        return ((a[idx_left, :] + a[idx, :]) / 2, (a[idx_right, :] + a[idx, :]) / 2)
+        return (a[idx_left, :] + a[idx, :]) / 2, (a[idx_right, :] + a[idx, :]) / 2
 
     ################################
     #

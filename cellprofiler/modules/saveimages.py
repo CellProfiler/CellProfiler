@@ -700,7 +700,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             except workspace.NoInteractionException:
                 raise ValueError(
                     'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'
-                    % (filename)
+                    % filename
                 )
         return True
 

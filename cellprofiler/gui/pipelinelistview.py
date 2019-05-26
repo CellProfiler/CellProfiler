@@ -652,7 +652,7 @@ class PipelineListView(object):
 
         text_data_object = wx.TextDataObject()
         fd.seek(0)
-        text_data_object.SetData(fd.read())
+        text_data_object.SetData(wx.DF_UNICODETEXT, fd.read())
 
         data_object = wx.DataObjectComposite()
         data_object.Add(pipeline_data_object)

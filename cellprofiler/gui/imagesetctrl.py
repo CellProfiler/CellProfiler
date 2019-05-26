@@ -97,7 +97,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         if self.n_rows > 0:
             self.image_numbers = self.measurements.get_image_numbers().copy()
             self.metadata_tags = self.measurements.get_metadata_tags()
-        return (self.n_rows - old_row_count, len(self.columns) - old_column_count)
+        return self.n_rows - old_row_count, len(self.columns) - old_column_count
 
     @property
     def measurements(self):

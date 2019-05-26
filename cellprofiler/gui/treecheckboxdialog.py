@@ -144,7 +144,7 @@ class TreeCheckboxDialog(wx.Dialog):
             self.SetCursor(wx.NullCursor)
 
     def on_left_down(self, event):
-        item_id, where = self.tree_ctrl.HitTest(event.Position)
+        item_id, where = self.tree_ctrl.HitTest(event.Position, wx.TREE_HITTEST_ABOVE)
         if where & wx.TREE_HITTEST_ONITEMICON == 0:
             event.Skip()
             return

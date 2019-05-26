@@ -1359,12 +1359,14 @@ class Measurements(object):
             return True
         return agg_ignore_feature(feature_name)
 
-    def compute_aggregate_measurements(self, image_set_number, aggs=AGG_NAMES):
+    def compute_aggregate_measurements(self, image_set_number, aggs=None):
         """Compute aggregate measurements for a given image set
 
         returns a dictionary whose key is the aggregate measurement name and
         whose value is the aggregate measurement value
         """
+        if aggs is None:
+            aggs = AGG_NAMES
         d = {}
         if len(aggs) == 0:
             return d

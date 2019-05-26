@@ -957,7 +957,9 @@ class ImageProcessing(Module):
             doc="Enter the name you want to call the image produced by this module.",
         )
 
-    def display(self, workspace, figure, cmap=["gray", "gray"]):
+    def display(self, workspace, figure, cmap=None):
+        if cmap is None:
+            cmap = ["gray", "gray"]
         layout = (2, 1)
 
         figure.set_subplots(
@@ -1282,7 +1284,9 @@ class ObjectProcessing(ImageSegmentation):
 
         return categories
 
-    def get_measurement_columns(self, pipeline, additional_objects=[]):
+    def get_measurement_columns(self, pipeline, additional_objects=None):
+        if additional_objects is None:
+            additional_objects = []
         object_names = [(self.x_name.value, self.y_name.value)] + additional_objects
 
         columns = [

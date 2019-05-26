@@ -199,7 +199,9 @@ class Communicable(object):
     their attributes.
     """
 
-    def send(self, socket, routing=[]):
+    def send(self, socket, routing=None):
+        if routing is None:
+            routing = []
         if hasattr(self, "_remote"):
             assert not self._remote, "send() called on a non-local Communicable object."
         json_str, buffers = json_encode(self.__dict__)

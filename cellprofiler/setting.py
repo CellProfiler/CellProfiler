@@ -2221,11 +2221,13 @@ class TreeChoice(Setting):
         """Return the setting value for a list of menu path parts"""
         return "|".join([x.replace("|", "||") for x in value])
 
-    def get_leaves(self, path=[]):
+    def get_leaves(self, path=None):
         """Get all leaf nodes of a given parent node
 
         path - the names of nodes traversing the path down the tree
         """
+        if path is None:
+            path = []
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])
@@ -2235,11 +2237,13 @@ class TreeChoice(Setting):
             path = path[1:]
         return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
 
-    def get_subnodes(self, path=[]):
+    def get_subnodes(self, path=None):
         """Get all child nodes that are not leaves for a  given parent
 
         path - the names of nodes traversing the path down the tree
         """
+        if path is None:
+            path = []
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])
@@ -3833,7 +3837,7 @@ class Table(Setting):
             if row_index in self.row_attributes:
                 self.row_attributes[row_index].add(attribute)
             else:
-                self.row_attributes[row_index] = set([attribute])
+                self.row_attributes[row_index] = {attribute}
         else:
             if row_index in self.row_attributes:
                 s = self.row_attributes[row_index]
@@ -3866,7 +3870,7 @@ class Table(Setting):
             if key in self.cell_attributes:
                 self.cell_attributes[key].add(attribute)
             else:
-                self.cell_attributes[key] = set([attribute])
+                self.cell_attributes[key] = {attribute}
         else:
             if key in self.cell_attributes:
                 s = self.cell_attributes[key]

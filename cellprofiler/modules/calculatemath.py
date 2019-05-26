@@ -153,7 +153,7 @@ the type of measurement that is requested.""",
 
             @property
             def object(self):
-                '''The name of the object for measurement or "Image"'''
+                """The name of the object for measurement or "Image\""""
                 if self.operand_choice == MC_IMAGE:
                     return cpmeas.IMAGE
                 else:

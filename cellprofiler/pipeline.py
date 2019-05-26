@@ -83,7 +83,6 @@ SETTINGS = "Settings"
 VARIABLE_VALUES = "VariableValues"
 VARIABLE_INFO_TYPES = "VariableInfoTypes"
 MODULE_NAMES = "ModuleNames"
-PIXEL_SIZE = "PixelSize"
 NUMBERS_OF_VARIABLES = "NumbersOfVariables"
 VARIABLE_REVISION_NUMBERS = "VariableRevisionNumbers"
 MODULE_REVISION_NUMBERS = "ModuleRevisionNumbers"
@@ -2400,9 +2399,9 @@ class Pipeline(object):
 
         prepare_run_error_detected = [False]
 
-        def on_pipeline_event(
-            pipeline, event, prepare_run_error_detected=prepare_run_error_detected
-        ):
+        def on_pipeline_event(pipeline, event, prepare_run_error_detected=None):
+            if prepare_run_error_detected is None:
+                prepare_run_error_detected = prepare_run_error_detected
             if isinstance(event, PrepareRunErrorEvent):
                 prepare_run_error_detected[0] = True
 

@@ -716,7 +716,7 @@ input for a measurement module."""
 class MorphSettingsGroup(cps.SettingsGroup):
     @property
     def repeat_count(self):
-        ""  # of times to repeat'''
+        """"""  # of times to repeat'''
         if self.repeats_choice == R_ONCE:
             return 1
         elif self.repeats_choice == R_FOREVER:

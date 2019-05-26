@@ -138,61 +138,59 @@ IO_ALL = (IO_IMAGES, IO_OBJECTS)
 IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
 # The following is a list of extensions supported by PIL 1.1.7
-SUPPORTED_IMAGE_EXTENSIONS = set(
-    [
-        ".ppm",
-        ".grib",
-        ".im",
-        ".rgba",
-        ".rgb",
-        ".pcd",
-        ".h5",
-        ".jpe",
-        ".jfif",
-        ".jpg",
-        ".fli",
-        ".sgi",
-        ".gbr",
-        ".pcx",
-        ".mpeg",
-        ".jpeg",
-        ".ps",
-        ".flc",
-        ".tif",
-        ".hdf",
-        ".icns",
-        ".gif",
-        ".palm",
-        ".mpg",
-        ".fits",
-        ".pgm",
-        ".mic",
-        ".fit",
-        ".xbm",
-        ".eps",
-        ".emf",
-        ".dcx",
-        ".bmp",
-        ".bw",
-        ".pbm",
-        ".dib",
-        ".ras",
-        ".cur",
-        ".fpx",
-        ".png",
-        ".msp",
-        ".iim",
-        ".wmf",
-        ".tga",
-        ".bufr",
-        ".ico",
-        ".psd",
-        ".xpm",
-        ".arg",
-        ".pdf",
-        ".tiff",
-    ]
-)
+SUPPORTED_IMAGE_EXTENSIONS = {
+    ".ppm",
+    ".grib",
+    ".im",
+    ".rgba",
+    ".rgb",
+    ".pcd",
+    ".h5",
+    ".jpe",
+    ".jfif",
+    ".jpg",
+    ".fli",
+    ".sgi",
+    ".gbr",
+    ".pcx",
+    ".mpeg",
+    ".jpeg",
+    ".ps",
+    ".flc",
+    ".tif",
+    ".hdf",
+    ".icns",
+    ".gif",
+    ".palm",
+    ".mpg",
+    ".fits",
+    ".pgm",
+    ".mic",
+    ".fit",
+    ".xbm",
+    ".eps",
+    ".emf",
+    ".dcx",
+    ".bmp",
+    ".bw",
+    ".pbm",
+    ".dib",
+    ".ras",
+    ".cur",
+    ".fpx",
+    ".png",
+    ".msp",
+    ".iim",
+    ".wmf",
+    ".tga",
+    ".bufr",
+    ".ico",
+    ".psd",
+    ".xpm",
+    ".arg",
+    ".pdf",
+    ".tiff",
+}
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
@@ -376,9 +374,16 @@ SUPPORTED_IMAGE_EXTENSIONS.update(
         ".zvi",
     ]
 )
-SUPPORTED_MOVIE_EXTENSIONS = set(
-    [".avi", ".mpeg", ".stk", ".flex", ".mov", ".tif", ".tiff", ".zvi"]
-)
+SUPPORTED_MOVIE_EXTENSIONS = {
+    ".avi",
+    ".mpeg",
+    ".stk",
+    ".flex",
+    ".mov",
+    ".tif",
+    ".tiff",
+    ".zvi",
+}
 
 FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update(
@@ -701,7 +706,7 @@ pair of fields.""",
         )
 
     def add_imagecb(self, can_remove=True):
-        "Adds another image to the settings"
+        """Adds another image to the settings"""
         group = cellprofiler.setting.SettingsGroup()
 
         def example_file_fn(path=None):

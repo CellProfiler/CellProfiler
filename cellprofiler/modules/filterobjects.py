@@ -938,7 +938,7 @@ value will be retained.""".format(
         border_labels = set(labels[border_pixels])
 
         if (
-            border_labels == set([0])
+            border_labels == {0}
             and src_objects.has_parent_image
             and src_objects.parent_image.has_mask
         ):

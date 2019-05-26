@@ -60,7 +60,7 @@ class Workspace(object):
         image_set_list,
         frame=None,
         create_new_window=False,
-        outlines={},
+        outlines=None,
     ):
         """Workspace constructor
 
@@ -74,6 +74,8 @@ class Workspace(object):
         create_new_window - True to create another frame, even if one is open
                             False to reuse the current frame.
         """
+        if outlines is None:
+            outlines = {}
         self.__pipeline = pipeline
         self.__module = module
         self.__image_set = image_set

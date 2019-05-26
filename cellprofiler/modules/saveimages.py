@@ -493,7 +493,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
             should_save = self.run_image(workspace)
         elif self.save_image_or_figure == IF_MOVIE:
-            should_save = self.run_movie(workspace)
+            self.run_movie(workspace)
         else:
             raise NotImplementedError(
                 ("Saving a %s is not yet supported" % self.save_image_or_figure)
@@ -802,7 +802,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             return []
 
     def get_filename(self, workspace, make_dirs=True, check_overwrite=True):
-        "Concoct a filename for the current image based on the user settings"
+        """Concoct a filename for the current image based on the user settings"""
 
         measurements = workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:

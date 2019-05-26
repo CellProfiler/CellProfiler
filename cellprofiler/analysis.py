@@ -969,10 +969,12 @@ class DictionaryReqRep(Reply):
 
 
 class MeasurementsReport(AnalysisRequest):
-    def __init__(self, analysis_id, buf, image_set_numbers=[]):
+    def __init__(self, analysis_id, buf, image_set_numbers=None):
         AnalysisRequest.__init__(
             self, analysis_id, buf=buf, image_set_numbers=image_set_numbers
         )
+        if image_set_numbers is None:
+            image_set_numbers = []
 
 
 class InteractionRequest(AnalysisRequest):
@@ -1018,8 +1020,10 @@ class SharedDictionaryRequest(AnalysisRequest):
 
 
 class SharedDictionaryReply(Reply):
-    def __init__(self, dictionaries=[{}]):
+    def __init__(self, dictionaries=None):
         Reply.__init__(self, dictionaries=dictionaries)
+        if dictionaries is None:
+            dictionaries = [{}]
 
 
 class ExceptionReport(AnalysisRequest):

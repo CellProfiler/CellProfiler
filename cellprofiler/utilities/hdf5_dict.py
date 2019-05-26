@@ -1181,7 +1181,9 @@ class HDF5FileList(object):
                 d1[None] = []
             d1[None].append(parts[-1])
 
-        def fn(g, d, parts=[]):
+        def fn(g, d, parts=None):
+            if parts is None:
+                parts = []
             for k in d:
                 if k is None:
                     g.attrs[A_TIMESTAMP] = timestamp
@@ -1250,7 +1252,9 @@ class HDF5FileList(object):
                 d1[None] = []
             d1[None].append(parts[-1])
 
-        def fn(g, d, parts=[]):
+        def fn(g, d, parts=None):
+            if parts is None:
+                parts = []
             for k in d:
                 next_parts = parts + [k]
                 parts_tuple = tuple(parts)

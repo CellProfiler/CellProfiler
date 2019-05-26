@@ -2341,7 +2341,7 @@ available:
                 )
                 needs_close = True
                 if self.wants_well_tables:
-                    per_well = self.write_mysql_table_per_well(pipeline, image_set_list)
+                    self.write_mysql_table_per_well(pipeline, image_set_list)
             elif self.db_type == DB_SQLITE:
                 db_file = self.make_full_filename(self.sqlite_file.value)
                 self.connection, self.cursor = connect_sqlite(db_file)
@@ -3865,8 +3865,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         )
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
         for image_number in measurements.get_image_numbers():
-            image_row = []
-            image_row.append(image_number)
+            image_row = [image_number]
             for object_name, feature, coltype in columns:
                 if object_name != cellprofiler.measurement.IMAGE:
                     continue

@@ -1144,7 +1144,9 @@ class HDF5FileList(object):
             url = url.encode("utf-8")
         else:
             url = str(url)
-        schema, rest = six.moves.urllib.parse.splittype(url)
+        import urllib
+
+        schema, rest = urllib.splittype(url)
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #

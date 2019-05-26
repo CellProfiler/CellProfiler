@@ -80,6 +80,7 @@ import numpy
 import scipy.io.matlab.mio
 import six
 import six.moves.urllib.parse
+import six.moves.urllib.request
 import skimage.external.tifffile
 
 import cellprofiler.image
@@ -4574,7 +4575,7 @@ def pathname2url(path):
     utf8_path = path.encode("utf-8")
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
-    return FILE_SCHEME + six.moves.urllib.pathname2url(utf8_path)
+    return FILE_SCHEME + six.moves.urllib.request.pathname2url(utf8_path)
 
 
 def is_file_url(url):
@@ -4587,7 +4588,7 @@ def url2pathname(url):
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
-    utf8_url = six.moves.urllib.url2pathname(url[len(FILE_SCHEME) :])
+    utf8_url = six.moves.urllib.request.url2pathname(url[len(FILE_SCHEME) :])
     return utf8_url.encode("utf-8")
 
 

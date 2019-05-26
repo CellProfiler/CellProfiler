@@ -1595,7 +1595,7 @@ class Measurements(object):
             K_CASE_SENSITIVE: (os.path.normcase("A") != os.path.normcase("a")),
             K_LOCAL_SEPARATOR: os.path.sep,
             K_PATH_MAPPINGS: tuple([tuple(m) for m in mappings]),
-            K_URL2PATHNAME_PACKAGE_NAME: six.moves.urllib.url2pathname.__module__,
+            K_URL2PATHNAME_PACKAGE_NAME: six.moves.urllib.request.url2pathname.__module__,
         }
         s = json.dumps(d)
         self.add_experiment_measurement(M_PATH_MAPPINGS, s)
@@ -1628,7 +1628,7 @@ class Measurements(object):
             else:
                 if full_name_c.startswith(local_directory.lower()):
                     full_name = remote_directory + full_name[len(local_directory) :]
-        url = "file:" + six.moves.urllib.pathname2url(full_name)
+        url = "file:" + six.moves.urllib.request.pathname2url(full_name)
         if isinstance(url, six.text_type):
             url = url.encode("utf-8")
         return url

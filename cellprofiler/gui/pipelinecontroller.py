@@ -1930,7 +1930,7 @@ class PipelineController(object):
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 browse_function(None)
             else:
-                path = six.moves.urllib.url2pathname(paths[0][5:])
+                path = six.moves.urllib.request.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
                 browse_function(None, default_dir=path)
         else:
@@ -1972,7 +1972,7 @@ class PipelineController(object):
             else:
                 browse_function = self.on_pathlist_browse_files
             if path.startswith("file:"):
-                path = six.moves.urllib.url2pathname(path[5:])
+                path = six.moves.urllib.request.url2pathname(path[5:])
                 browse_function(None, default_dir=path)
             else:
                 browse_function(None)
@@ -2069,7 +2069,7 @@ class PipelineController(object):
             assert isinstance(dlg, wx.ProgressDialog)
             to_remove = []
             for idx, url in enumerate(urls):
-                path = six.moves.urllib.url2pathname(url[5:])
+                path = six.moves.urllib.request.url2pathname(url[5:])
                 if not os.path.isfile(path):
                     to_remove.append(url)
                 if idx % 100 == 0:

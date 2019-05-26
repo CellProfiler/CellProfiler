@@ -151,6 +151,7 @@ import six
 import cellprofiler.measurement as cpmeas
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
+import cellprofiler.modules._help
 
 """# of settings aside from the dose measurements"""
 FIXED_SETTING_COUNT = 1

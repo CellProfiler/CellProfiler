@@ -16,6 +16,8 @@ import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.utilities.hdf5_dict
 
+from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP
+
 __doc__ = """\
 Images
 ======
@@ -235,9 +237,7 @@ Specify a set of rules to narrow down the files to be analyzed.
 
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
-                **{
-                    "FILTER_RULES_BUTTONS_HELP": cellprofiler.modules._help.FILTER_RULES_BUTTONS_HELP
-                }
+                **{"FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP}
             ),
         )
 

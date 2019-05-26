@@ -105,6 +105,8 @@ import cellprofiler.setting
 import cellprofiler.utilities.legacy
 from cellprofiler.modules import _help
 
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
+
 try:
     buffer  # Python 2
 except NameError:  # Python 3
@@ -524,7 +526,7 @@ location.
 {IO_WITH_METADATA_HELP_TEXT}
 """.format(
                 **{
-                    "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
+                    "IO_FOLDER_CHOICE_HELP_TEXT": IO_FOLDER_CHOICE_HELP_TEXT,
                     "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT,
                 }
             ),

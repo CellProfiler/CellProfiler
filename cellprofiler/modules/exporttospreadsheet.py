@@ -110,6 +110,15 @@ from cellprofiler.preferences import (
     DEFAULT_OUTPUT_SUBFOLDER_NAME,
 )
 
+from cellprofiler.modules._help import (
+    IO_FOLDER_CHOICE_HELP_TEXT,
+    IO_WITH_METADATA_HELP_TEXT,
+    USING_METADATA_HELP_REF,
+    USING_METADATA_TAGS_REF,
+)
+
+from cellprofiler.gui.help.content import MEASUREMENT_NAMING_HELP
+
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
 

@@ -729,7 +729,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             help_text.Wrap(dlg.GetSize()[0] - 20)
             dlg.Sizer.Add(help_text, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 10)
             if selection is not None:
-                choice.SetSelection(selection)
+                choice.SetSelection(selection, -1)
 
             def on_combo(event):
                 idx = choice.GetSelection()

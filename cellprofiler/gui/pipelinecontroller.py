@@ -1775,23 +1775,22 @@ class PipelineController(object):
                     seconds = waiting_for % 60
                     msg += "\nElapsed time: %d minutes, %d seconds" % (minutes, seconds)
                     msg += "\nConsider using the LoadData module for loading large numbers of images."
-                keep_going, skip = dlg.UpdatePulse(msg)
+                keep_going, skip = dlg.Pulse(msg)
                 return keep_going
 
             while not interrupt[0]:
-                logger.warn("while is going")
-                logger.warn(thread.is_alive())
-                logger.warn(queue.empty())
                 try:
                     urls = queue.get(timeout=0.1)
                     try:
                         while True:
+                            logger.warn("Pre queue")
                             urls += queue.get(block=False)
-                    except:
+                            logger.warn("hey here", urls)
+                    except Queue.Empty:
                         keep_going = update_pulse(
                             "Adding %d files to file list" % len(urls))
                         self.add_urls(urls)
-                except:
+                except Queue.Empty as err:
                     if not thread.is_alive():
                         try:
                             self.add_urls(queue.get(block=False))

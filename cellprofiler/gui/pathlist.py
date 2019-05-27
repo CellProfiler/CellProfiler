@@ -1,4 +1,4 @@
-# coding=utf-8
+
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 
@@ -240,6 +240,9 @@ class PathListCtrl(wx.ScrolledWindow):
 
         paths - a sequence of URLs
         """
+
+        logger.warn(paths)
+
         uid = uuid.uuid4()
         npaths = len(paths)
         for i, path in enumerate(paths):

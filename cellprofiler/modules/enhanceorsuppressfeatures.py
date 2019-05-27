@@ -35,16 +35,15 @@ import cellprofiler.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
+ENHANCE = "Enhance"
+SUPPRESS = "Suppress"
 
-ENHANCE = 'Enhance'
-SUPPRESS = 'Suppress'
-
-E_SPECKLES = 'Speckles'
-E_NEURITES = 'Neurites'
-E_DARK_HOLES = 'Dark holes'
-E_CIRCLES = 'Circles'
-E_TEXTURE = 'Texture'
-E_DIC = 'DIC'
+E_SPECKLES = "Speckles"
+E_NEURITES = "Neurites"
+E_DARK_HOLES = "Dark holes"
+E_CIRCLES = "Circles"
+E_TEXTURE = "Texture"
+E_DIC = "DIC"
 
 S_FAST = "Fast"
 S_SLOW = "Slow"
@@ -54,7 +53,7 @@ N_TUBENESS = "Tubeness"
 
 
 class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
-    module_name = 'EnhanceOrSuppressFeatures'
+    module_name = "EnhanceOrSuppressFeatures"
 
     variable_revision_number = 6
 
@@ -62,11 +61,8 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         super(EnhanceOrSuppressFeatures, self).create_settings()
 
         self.method = cellprofiler.setting.Choice(
-            'Select the operation',
-            [
-                ENHANCE,
-                SUPPRESS
-            ],
+            "Select the operation",
+            [ENHANCE, SUPPRESS],
             doc="""\
 Select whether you want to enhance or suppress the features you
 designate.
@@ -74,22 +70,14 @@ designate.
 -  *{ENHANCE}:* Produce an image whose intensity is largely composed
    of the features of interest.
 -  *{SUPPRESS}:* Produce an image with the features largely removed.
-""".format(**{
-                "ENHANCE": ENHANCE,
-                "SUPPRESS": SUPPRESS
-            })
+""".format(
+                **{"ENHANCE": ENHANCE, "SUPPRESS": SUPPRESS}
+            ),
         )
 
         self.enhance_method = cellprofiler.setting.Choice(
-            'Feature type',
-            [
-                E_SPECKLES,
-                E_NEURITES,
-                E_DARK_HOLES,
-                E_CIRCLES,
-                E_TEXTURE,
-                E_DIC
-            ],
+            "Feature type",
+            [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
             doc="""\
 *(Used only if "{ENHANCE}" is selected)*
 
@@ -137,21 +125,23 @@ This module can enhance several kinds of image features:
    by integrating in a direction perpendicular to the shear direction of
    the image.
 
-""".format(**{
-                "E_CIRCLES": E_CIRCLES,
-                "E_DARK_HOLES": E_DARK_HOLES,
-                "E_DIC": E_DIC,
-                "N_GRADIENT": N_GRADIENT,
-                "E_NEURITES": E_NEURITES,
-                "E_SPECKLES": E_SPECKLES,
-                "E_TEXTURE": E_TEXTURE,
-                "ENHANCE": ENHANCE,
-                "N_TUBENESS": N_TUBENESS
-            })
+""".format(
+                **{
+                    "E_CIRCLES": E_CIRCLES,
+                    "E_DARK_HOLES": E_DARK_HOLES,
+                    "E_DIC": E_DIC,
+                    "N_GRADIENT": N_GRADIENT,
+                    "E_NEURITES": E_NEURITES,
+                    "E_SPECKLES": E_SPECKLES,
+                    "E_TEXTURE": E_TEXTURE,
+                    "ENHANCE": ENHANCE,
+                    "N_TUBENESS": N_TUBENESS,
+                }
+            ),
         )
 
         self.object_size = cellprofiler.setting.Integer(
-            'Feature size',
+            "Feature size",
             10,
             2,
             doc="""\
@@ -163,16 +153,18 @@ the width of the neurites to be enhanced or suppressed, which will be
 used to calculate an appropriate filter size.
 
 {HELP_ON_MEASURING_DISTANCES}
-""".format(**{
-                "E_CIRCLES": E_CIRCLES,
-                "E_NEURITES": E_NEURITES,
-                "E_SPECKLES": E_SPECKLES,
-                "HELP_ON_MEASURING_DISTANCES": _help.HELP_ON_MEASURING_DISTANCES
-            })
+""".format(
+                **{
+                    "E_CIRCLES": E_CIRCLES,
+                    "E_NEURITES": E_NEURITES,
+                    "E_SPECKLES": E_SPECKLES,
+                    "HELP_ON_MEASURING_DISTANCES": _help.HELP_ON_MEASURING_DISTANCES,
+                }
+            ),
         )
 
         self.hole_size = cellprofiler.setting.IntegerRange(
-            'Range of hole sizes',
+            "Range of hole sizes",
             value=(1, 10),
             minval=1,
             doc="""\
@@ -180,13 +172,13 @@ used to calculate an appropriate filter size.
 
 The range of hole sizes to be enhanced. The algorithm will identify only
 holes whose diameters fall between these two values.
-""".format(**{
-                "E_DARK_HOLES": E_DARK_HOLES
-            })
+""".format(
+                **{"E_DARK_HOLES": E_DARK_HOLES}
+            ),
         )
 
         self.smoothing = cellprofiler.setting.Float(
-            'Smoothing scale',
+            "Smoothing scale",
             value=2.0,
             minval=0.0,
             doc="""\
@@ -211,17 +203,19 @@ holes whose diameters fall between these two values.
 this is not recommended.
 
 .. |image0| image:: {PROTIP_AVOID_ICON}
-""".format(**{
-                "E_DIC": E_DIC,
-                "E_NEURITES": E_NEURITES,
-                "E_TEXTURE": E_TEXTURE,
-                "N_TUBENESS": N_TUBENESS,
-                "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON
-            })
+""".format(
+                **{
+                    "E_DIC": E_DIC,
+                    "E_NEURITES": E_NEURITES,
+                    "E_TEXTURE": E_TEXTURE,
+                    "N_TUBENESS": N_TUBENESS,
+                    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                }
+            ),
         )
 
         self.angle = cellprofiler.setting.Float(
-            'Shear angle',
+            "Shear angle",
             value=0,
             doc="""\
 *(Used only for the "{E_DIC}" method)*
@@ -232,13 +226,13 @@ direction perpendicular to the shear angle. For example, if the shadows
 run diagonally from lower left to upper right and the highlights appear
 above the shadows, the shear angle is 45°. If the shadows appear on top,
 the shear angle is 180° + 45° = 225°.
-""".format(**{
-                "E_DIC": E_DIC
-            })
+""".format(
+                **{"E_DIC": E_DIC}
+            ),
         )
 
         self.decay = cellprofiler.setting.Float(
-            'Decay',
+            "Decay",
             value=0.95,
             minval=0.1,
             maxval=1,
@@ -253,17 +247,14 @@ intensities in the middle of large objects. Set the decay to a large
 value, on the order of 1 - 1/diameter of your objects if the intensities
 decrease toward the middle. Set the decay to a small value if there
 appears to be a bias in the integration direction.
-""".format(**{
-                "E_DIC": E_DIC
-            })
+""".format(
+                **{"E_DIC": E_DIC}
+            ),
         )
 
         self.neurite_choice = cellprofiler.setting.Choice(
             "Enhancement method",
-            [
-                N_TUBENESS,
-                N_GRADIENT
-            ],
+            [N_TUBENESS, N_GRADIENT],
             doc="""\
 *(Used only for the "{E_NEURITES}" method)*
 
@@ -287,19 +278,18 @@ Two methods can be used to enhance neurites:
    feature size.
 
 .. _ImageJ Tubeness plugin: http://www.longair.net/edinburgh/imagej/tubeness/
-""".format(**{
-                "E_NEURITES": E_NEURITES,
-                "N_GRADIENT": N_GRADIENT,
-                "N_TUBENESS": N_TUBENESS
-            })
+""".format(
+                **{
+                    "E_NEURITES": E_NEURITES,
+                    "N_GRADIENT": N_GRADIENT,
+                    "N_TUBENESS": N_TUBENESS,
+                }
+            ),
         )
 
         self.speckle_accuracy = cellprofiler.setting.Choice(
             "Speed and accuracy",
-            choices=[
-                S_FAST,
-                S_SLOW
-            ],
+            choices=[S_FAST, S_SLOW],
             doc="""\
 *(Used only for the "{E_SPECKLES}" method)*
 
@@ -308,11 +298,9 @@ Two methods can be used to enhance neurites:
 -  *{S_FAST}:* Select this option for speckles that have a large radius
    (greater than 10 pixels) and need not be exactly circular.
 -  *{S_SLOW}:* Use for speckles of small radius.
-""".format(**{
-                "E_SPECKLES": E_SPECKLES,
-                "S_FAST": S_FAST,
-                "S_SLOW": S_SLOW
-            })
+""".format(
+                **{"E_SPECKLES": E_SPECKLES, "S_FAST": S_FAST, "S_SLOW": S_SLOW}
+            ),
         )
 
     def settings(self):
@@ -326,7 +314,7 @@ Two methods can be used to enhance neurites:
             self.angle,
             self.decay,
             self.neurite_choice,
-            self.speckle_accuracy
+            self.speckle_accuracy,
         ]
 
     def visible_settings(self):
@@ -363,7 +351,9 @@ Two methods can be used to enhance neurites:
 
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
-                result = self.enhance_speckles(image, radius, self.speckle_accuracy.value)
+                result = self.enhance_speckles(
+                    image, radius, self.speckle_accuracy.value
+                )
             elif self.enhance_method == E_NEURITES:
                 result = skimage.exposure.rescale_intensity(
                     self.enhance_neurites(image, radius, self.neurite_choice.value)
@@ -379,18 +369,20 @@ Two methods can be used to enhance neurites:
             elif self.enhance_method == E_TEXTURE:
                 result = self.enhance_texture(image, self.smoothing.value)
             elif self.enhance_method == E_DIC:
-                result = self.enhance_dic(image, self.angle.value, self.decay.value, self.smoothing.value)
+                result = self.enhance_dic(
+                    image, self.angle.value, self.decay.value, self.smoothing.value
+                )
             else:
-                raise NotImplementedError("Unimplemented enhance method: %s" % self.enhance_method.value)
+                raise NotImplementedError(
+                    "Unimplemented enhance method: %s" % self.enhance_method.value
+                )
         elif self.method == SUPPRESS:
             result = self.suppress(image, radius)
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
 
         result_image = cellprofiler.image.Image(
-            result,
-            parent_image=image,
-            dimensions=image.dimensions
+            result, parent_image=image, dimensions=image.dimensions
         )
 
         workspace.image_set.add(self.y_name.value, result_image)
@@ -460,19 +452,24 @@ Two methods can be used to enhance neurites:
             sigma = self.smoothing.value
 
             smoothed = scipy.ndimage.gaussian_filter(
-                data,
-                numpy.divide(sigma, image.spacing)
+                data, numpy.divide(sigma, image.spacing)
             )
 
             if image.volumetric:
                 result = numpy.zeros_like(smoothed)
 
                 for index, plane in enumerate(smoothed):
-                    hessian = centrosome.filter.hessian(plane, return_hessian=False, return_eigenvectors=False)
+                    hessian = centrosome.filter.hessian(
+                        plane, return_hessian=False, return_eigenvectors=False
+                    )
 
-                    result[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
+                    result[index] = (
+                        -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
+                    )
             else:
-                hessian = centrosome.filter.hessian(smoothed, return_hessian=False, return_eigenvectors=False)
+                hessian = centrosome.filter.hessian(
+                    smoothed, return_hessian=False, return_eigenvectors=False
+                )
 
                 #
                 # The positive values are darker pixels with lighter
@@ -503,11 +500,21 @@ Two methods can be used to enhance neurites:
 
         data = self.__mask(image.pixel_data, mask)
 
-        gmask = skimage.filters.gaussian(mask.astype(float), sigma, mode='constant', multichannel=False)
+        gmask = skimage.filters.gaussian(
+            mask.astype(float), sigma, mode="constant", multichannel=False
+        )
 
-        img_mean = skimage.filters.gaussian(data, sigma, mode='constant', multichannel=False) / gmask
+        img_mean = (
+            skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
+            / gmask
+        )
 
-        img_squared = skimage.filters.gaussian(data ** 2, sigma, mode='constant', multichannel=False) / gmask
+        img_squared = (
+            skimage.filters.gaussian(
+                data ** 2, sigma, mode="constant", multichannel=False
+            )
+            / gmask
+        )
 
         result = img_squared - img_mean ** 2
 
@@ -534,7 +541,9 @@ Two methods can be used to enhance neurites:
             if mask is not None:
                 eroded_image *= mask
 
-            reconstructed_image = skimage.morphology.reconstruction(eroded_image, inverted_image, "dilation", se)
+            reconstructed_image = skimage.morphology.reconstruction(
+                eroded_image, inverted_image, "dilation", se
+            )
 
             output_image = previous_reconstructed_image - reconstructed_image
 
@@ -552,7 +561,9 @@ Two methods can be used to enhance neurites:
             result = numpy.zeros_like(pixel_data)
 
             for index, plane in enumerate(pixel_data):
-                result[index] = centrosome.filter.line_integration(plane, angle, decay, smoothing)
+                result[index] = centrosome.filter.line_integration(
+                    plane, angle, decay, smoothing
+                )
 
             return result
 
@@ -570,9 +581,10 @@ Two methods can be used to enhance neurites:
 
         return self.__unmask(result, image.pixel_data, image.mask)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -590,7 +602,7 @@ Two methods can be used to enhance neurites:
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if not from_matlab and variable_revision_number == 1:
             #
             # V1 -> V2, added enhance method and hole size

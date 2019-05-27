@@ -3,36 +3,37 @@
 """
 from __future__ import print_function
 
+import re
+
+import numpy
+import six
+import six.moves.urllib.parse
+import wx
+import wx.adv
+import wx.grid
+import wx.lib.mixins.gridlabelrenderer
+
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
 import cellprofiler.modules.images
 import cellprofiler.pipeline
+import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
-import cellprofiler.pipeline
 import cellprofiler.utilities.legacy
-import numpy
-import re
-import urllib
-import wx
-import wx.adv
-import wx.grid
-import wx.lib.mixins.gridlabelrenderer
-import six
 
-
-'''Table column displays metadata'''
+"""Table column displays metadata"""
 COL_METADATA = "Metadata"
-'''Table column displays a URL'''
+"""Table column displays a URL"""
 COL_URL = "URL"
-'''Table column displays a file name'''
+"""Table column displays a file name"""
 COL_FILENAME = "Filename"
-'''Table column displays a path name'''
+"""Table column displays a path name"""
 COL_PATHNAME = "Pathname"
-'''Table column displays a series number'''
+"""Table column displays a series number"""
 COL_SERIES = "Series"
-'''Table column displays a frame number'''
+"""Table column displays a frame number"""
 COL_FRAME = "Frame"
 
 COL_ORDER = [COL_PATHNAME, COL_FILENAME, COL_URL, COL_SERIES, COL_FRAME]
@@ -52,8 +53,9 @@ class ImageSetGridTable(wx.grid.GridTableBase):
     ERROR_ATTR.SetTextColour(ERROR_COLOR)
 
     class ImageSetColumn(object):
-        def __init__(self, name, channel, feature, column_type,
-                     channel_type, is_key=False):
+        def __init__(
+            self, name, channel, feature, column_type, channel_type, is_key=False
+        ):
             """Initialize ImageSetColumn
 
             name - display name of the column
@@ -96,8 +98,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         if self.n_rows > 0:
             self.image_numbers = self.measurements.get_image_numbers().copy()
             self.metadata_tags = self.measurements.get_metadata_tags()
-        return (self.n_rows - old_row_count,
-                len(self.columns) - old_column_count)
+        return self.n_rows - old_row_count, len(self.columns) - old_column_count
 
     @property
     def measurements(self):
@@ -120,18 +121,21 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                     name = feature.split("_", 1)[1]
                     if feature in metadata_tags:
                         is_key = True
-                elif (feature.startswith(cellprofiler.measurement.C_FILE_NAME) or
-                      feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME)):
+                elif feature.startswith(
+                    cellprofiler.measurement.C_FILE_NAME
+                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME):
                     column_type = COL_FILENAME
                     channel = feature.split("_", 1)[1]
                     name = "%s File Name" % channel
-                elif (feature.startswith(cellprofiler.measurement.C_PATH_NAME) or
-                      feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)):
+                elif feature.startswith(
+                    cellprofiler.measurement.C_PATH_NAME
+                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME):
                     column_type = COL_PATHNAME
                     channel = feature.split("_", 1)[1]
                     name = "%s Path Name" % channel
-                elif (feature.startswith(cellprofiler.measurement.C_URL) or
-                      feature.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
+                elif feature.startswith(
+                    cellprofiler.measurement.C_URL
+                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_URL):
                     column_type = COL_URL
                     channel = feature.split("_", 1)[1]
                     name = "%s URL" % channel
@@ -145,8 +149,9 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                     name = "%s Frame" % channel
                 else:
                     continue
-            elif (feature.startswith(cellprofiler.measurement.C_URL) or
-                  feature.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
+            elif feature.startswith(
+                cellprofiler.measurement.C_URL
+            ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_URL):
                 column_type = COL_URL
                 channel = feature.split("_", 1)[1]
                 name = channel
@@ -154,9 +159,16 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 continue
             iscd = m.get_channel_descriptor(channel)
 
-            columns.append(self.ImageSetColumn(
-                name, channel, feature,
-                column_type, None if iscd is None else iscd.channel_type, is_key))
+            columns.append(
+                self.ImageSetColumn(
+                    name,
+                    channel,
+                    feature,
+                    column_type,
+                    None if iscd is None else iscd.channel_type,
+                    is_key,
+                )
+            )
 
         def ordering_fn(a, b):
             """Put keys first, then sort by channel name"""
@@ -165,7 +177,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             #
             if a.is_key:
                 if b.is_key:
-                    return cmp(a.name, b.name)
+                    return cellprofiler.utilities.legacy.cmp(a.name, b.name)
                 return -1
             elif b.is_key:
                 return 1
@@ -174,7 +186,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             #
             if a.column_type == COL_METADATA:
                 if b.column_type == COL_METADATA:
-                    return cmp(a.name, b.name)
+                    return cellprofiler.utilities.legacy.cmp(a.name, b.name)
                 return 1
             elif b.column_type == COL_METADATA:
                 return -1
@@ -182,12 +194,13 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             # If different channels, order by channel
             #
             if a.channel != b.channel:
-                return cmp(a.channel, b.channel)
+                return cellprofiler.utilities.legacy.cmp(a.channel, b.channel)
             #
             # Otherwise, the order is given by COL_ORDER
             #
-            return cmp(COL_ORDER.index(a.column_type),
-                       COL_ORDER.index(b.column_type))
+            return cellprofiler.utilities.legacy.cmp(
+                COL_ORDER.index(a.column_type), COL_ORDER.index(b.column_type)
+            )
 
         columns.sort(cmp=ordering_fn)
 
@@ -211,24 +224,32 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         return row >= self.GetNumberRows() or col >= self.GetNumberCols()
 
     def GetValue(self, row, col):
-        if (row >= self.n_rows or col >= len(self.columns) or
-                row >= len(self.image_numbers)):
+        if (
+            row >= self.n_rows
+            or col >= len(self.columns)
+            or row >= len(self.image_numbers)
+        ):
             return u""
         image_set = self.image_numbers[row]
         column = self.columns[col]
         value = self.cache[column.feature, image_set]
-        if (column.column_type == COL_URL and
-                self.display_mode == DISPLAY_MODE_SIMPLE and
-                value is not None):
+        if (
+            column.column_type == COL_URL
+            and self.display_mode == DISPLAY_MODE_SIMPLE
+            and value is not None
+        ):
             last_slash = value.rfind("/")
-            return urllib.unquote(value[(last_slash + 1):])
+            return six.moves.urllib.parse.unquote(value[(last_slash + 1) :])
         return value
 
     def get_url(self, row, col):
         """Get the URL for a cell"""
         image_set = self.image_numbers[row]
         column = self.columns[col]
-        if column.channel_type == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
+        if (
+            column.channel_type
+            == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
+        ):
             feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
         else:
             feature = cellprofiler.measurement.C_URL + "_" + column.channel
@@ -242,8 +263,9 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         image_number = self.image_numbers[row]
         metadata_tags = self.metadata_tags
         if len(metadata_tags) > 0:
-            key = [unicode(self.cache[tag, image_number])
-                   for tag in metadata_tags]
+            key = [
+                six.text_type(self.cache[tag, image_number]) for tag in metadata_tags
+            ]
             return " : ".join(key)
 
         return str(image_number)
@@ -272,7 +294,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
     def DeleteCols(self, index, numCols):
         if self.controller is None:
             return False
-        channels = [x.channel for x in self.columns[index:(index + numCols)]]
+        channels = [x.channel for x in self.columns[index : (index + numCols)]]
         for channel in channels:
             self.controller.remove_channel(channel)
         return True
@@ -282,8 +304,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
 
     def SetColLabelValue(self, index, value):
         if self.controller is not None:
-            self.controller.change_channel_name(
-                self.columns[index].channel, value)
+            self.controller.change_channel_name(self.columns[index].channel, value)
 
 
 class ImageSetCache:
@@ -317,8 +338,10 @@ class ImageSetCache:
             self.image_set_page = numpy.zeros(0, int)
             self.image_set_index = numpy.zeros(0, int)
         else:
-            self.pages = [image_set_numbers[i:(i + page_size)]
-                          for i in range(0, len(image_set_numbers), page_size)]
+            self.pages = [
+                image_set_numbers[i : (i + page_size)]
+                for i in range(0, len(image_set_numbers), page_size)
+            ]
             self.image_set_page = numpy.zeros(numpy.max(image_set_numbers) + 1, int)
             self.image_set_index = numpy.zeros(numpy.max(image_set_numbers) + 1, int)
             for i, page in enumerate(self.pages):
@@ -335,15 +358,17 @@ class ImageSetCache:
         """Get a feature for an image number"""
         feature, image_number = idx
         if image_number > len(self.image_set_index):
-            return ''
+            return ""
         page = self.image_set_page[image_number]
         index = self.image_set_index[image_number]
         key = (feature, page)
         if not key in self.cache:
             if len(self.cache) >= self.max_size:
                 self.decimate()
-            entry = [self.m[cellprofiler.measurement.IMAGE, feature, self.pages[page]],
-                     self.access_time]
+            entry = [
+                self.m[cellprofiler.measurement.IMAGE, feature, self.pages[page]],
+                self.access_time,
+            ]
             self.cache[key] = entry
         else:
             entry = self.cache[key]
@@ -356,7 +381,7 @@ class ImageSetCache:
         # Get the cache, sorted from low values to high
         cache_kv = sorted(self.cache.items(), key=lambda x: x[1][1])
         # Take 1/2 of the max size
-        self.cache = dict(cache_kv[-int(self.max_size / 2):])
+        self.cache = dict(cache_kv[-int(self.max_size / 2) :])
 
 
 class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
@@ -382,7 +407,9 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update, tooltip="Update and display the image set")
+        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
+            self, self.on_update, tooltip="Update and display the image set"
+        )
         gclw = self.GetGridColLabelWindow()
         self.table = ImageSetGridTable(workspace, display_mode)
         self.SetTable(self.table)
@@ -396,16 +423,23 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.GetGridWindow().SetDoubleBuffered(True)
         self.GetGridColLabelWindow().SetDoubleBuffered(True)
         self.GetGridRowLabelWindow().SetDoubleBuffered(True)
-        self.column_label_editor = wx.TextCtrl(gclw, validator=ColumnNameValidator(self.table))
+        self.column_label_editor = wx.TextCtrl(
+            gclw, validator=ColumnNameValidator(self.table)
+        )
         self.column_label_editor.Hide()
-        self.column_label_editor.Bind(wx.EVT_KILL_FOCUS, self.on_col_label_editor_kill_focus)
-        self.column_label_editor.Bind(wx.EVT_TEXT_ENTER, self.on_col_label_editor_text_enter)
+        self.column_label_editor.Bind(
+            wx.EVT_KILL_FOCUS, self.on_col_label_editor_kill_focus
+        )
+        self.column_label_editor.Bind(
+            wx.EVT_TEXT_ENTER, self.on_col_label_editor_text_enter
+        )
         self.column_label_editor.Bind(wx.EVT_CHAR, self.on_col_label_editor_char)
         self.editor_column = None
         self.recompute()
         self.pressed_button = (-1, None, False)
 
         from cellprofiler.icons import get_builtin_image
+
         def get_builtin_bitmap(name):
             return wx.Bitmap(get_builtin_image(name))
 
@@ -433,7 +467,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.table.workspace.refresh_image_set()
         n_imagesets = self.table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
                 "as currently configured. Check your Input module settings, "
@@ -441,11 +474,12 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 "on using the Input modules." % locals(),
                 caption="No Image Sets Available",
                 style=wx.OK | wx.ICON_INFORMATION,
-                parent=self)
+                parent=self,
+            )
         else:
             cellprofiler.preferences.report_progress(
-                "ImageSetCount", None,
-                "Found %d image sets" % n_imagesets)
+                "ImageSetCount", None, "Found %d image sets" % n_imagesets
+            )
         self.recompute()
 
     def set_controller(self, controller):
@@ -473,9 +507,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         last_column = self.table.GetNumberCols() - 1
         only = self.table.GetNumberCols() == 1
         label_size = self.GetGridColLabelWindow()().GetTextExtent(
-            self.table.GetColLabelValue(last_column))
+            self.table.GetColLabelValue(last_column)
+        )
         return self.col_label_renderer.add_button_rect(
-            self.get_column_rect(last_column), label_size, only)
+            self.get_column_rect(last_column), label_size, only
+        )
 
     def on_paint_gclw(self, event):
         dc = wx.BufferedPaintDC(self.GetGridColLabelWindow())
@@ -487,8 +523,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         if self.table.GetNumberCols() == 0:
             return
         selected_col, hit_code, pressed = self.pressed_button
-        cols = self.CalcColLabelsExposed(
-            self.GetGridColLabelWindow().GetUpdateRegion())
+        cols = self.CalcColLabelsExposed(self.GetGridColLabelWindow().GetUpdateRegion())
         x, y = self.CalcUnscrolledPosition((0, 0))
         pt = dc.GetDeviceOrigin()
         dc.SetDeviceOrigin(pt.x - x, pt.y)
@@ -523,23 +558,21 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if r.Contains(x, y):
                 label = self.table.GetColLabelValue(i)
                 label_size = self.GetGridColLabelWindow().GetTextExtent(label)
-                rl = self.col_label_renderer.label_rect(
-                    r, label_size, last, only)
+                rl = self.col_label_renderer.label_rect(r, label_size, last, only)
                 if rl.Contains(x, y):
                     return i, self.HIT_LABEL
                 rct = self.col_label_renderer.channel_type_icon_rect(
-                    r, label_size, last, only)
+                    r, label_size, last, only
+                )
                 if self.read_only:
                     return i, self.HIT_NOTHING
                 if rct.Contains(x, y):
                     return i, self.HIT_CHANNEL_TYPE_BUTTON
-                rf = self.col_label_renderer.filter_icon_rect(
-                    r, label_size, last, only)
+                rf = self.col_label_renderer.filter_icon_rect(r, label_size, last, only)
                 if rf.Contains(x, y):
                     return i, self.HIT_FILTER_BUTTON
                 if self.table.GetNumberCols() > 1:
-                    rr = self.col_label_renderer.remove_icon_rect(
-                        r, label_size, last)
+                    rr = self.col_label_renderer.remove_icon_rect(r, label_size, last)
                     if rr.Contains(x, y):
                         return i, self.HIT_MINUS
                 return i, self.HIT_NOTHING
@@ -551,13 +584,16 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         if col is None:
             event.Skip(True)
             return
-        if hit_code in (self.HIT_CHANNEL_TYPE_BUTTON,
-                        self.HIT_FILTER_BUTTON,
-                        self.HIT_PLUS,
-                        self.HIT_MINUS):
+        if hit_code in (
+            self.HIT_CHANNEL_TYPE_BUTTON,
+            self.HIT_FILTER_BUTTON,
+            self.HIT_PLUS,
+            self.HIT_MINUS,
+        ):
             self.pressed_button = (col, hit_code, True)
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
-                                                eraseBackground=False)
+            self.GetGridColLabelWindow().RefreshRect(
+                self.get_column_rect(col), eraseBackground=False
+            )
             self.GetGridColLabelWindow().CaptureMouse()
         elif hit_code == self.HIT_LABEL:
             self.activate_col_label_editor(col)
@@ -578,8 +614,9 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             event.Skip(True)
             return
         if col == pb_col and hit_code == pb_hit_code:
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
-                                                eraseBackground=False)
+            self.GetGridColLabelWindow().RefreshRect(
+                self.get_column_rect(col), eraseBackground=False
+            )
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
                 self.on_channel_type_pressed(col)
             elif hit_code == self.HIT_FILTER_BUTTON:
@@ -595,66 +632,93 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         if pb_hit_code is None:
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
                 self.GetGridColLabelWindow().SetToolTipString(
-                    "Change the channel's type (monochrome, color, objects, etc)")
+                    "Change the channel's type (monochrome, color, objects, etc)"
+                )
             elif hit_code == self.HIT_FILTER_BUTTON:
                 self.GetGridColLabelWindow().SetToolTipString(
-                    "Select items in this channel using a filter")
+                    "Select items in this channel using a filter"
+                )
             elif hit_code == self.HIT_PLUS:
                 self.GetGridColLabelWindow().SetToolTipString(
-                    "Add an image column to the image set")
+                    "Add an image column to the image set"
+                )
             elif hit_code == self.HIT_MINUS:
                 self.GetGridColLabelWindow().SetToolTipString(
-                    "Remove this image column from the image set.")
+                    "Remove this image column from the image set."
+                )
             elif col is not None:
                 self.GetGridColLabelWindow().SetToolTipString(
-                    'Image column, "%s"' % self.table.columns[col].channel)
+                    'Image column, "%s"' % self.table.columns[col].channel
+                )
             event.Skip(True)
             return
         if (col != pb_col or hit_code != pb_hit_code) and pb_show:
             self.pressed_button = (pb_col, pb_hit_code, False)
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
-                                                eraseBackground=False)
+            self.GetGridColLabelWindow().RefreshRect(
+                self.get_column_rect(col), eraseBackground=False
+            )
         elif col == pb_col and hit_code == pb_hit_code and not pb_show:
             self.pressed_button = (pb_col, pb_hit_code, True)
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(col),
-                                                eraseBackground=False)
+            self.GetGridColLabelWindow().RefreshRect(
+                self.get_column_rect(col), eraseBackground=False
+            )
 
     def on_gclw_mouse_capture_lost(self, event):
         pb_col, pb_hit_code, pb_show = self.pressed_button
         self.pressed_button = (-1, None, False)
-        if pb_hit_code in (self.HIT_CHANNEL_TYPE_BUTTON, self.HIT_PLUS,
-                           self.HIT_FILTER_BUTTON, self.HIT_MINUS):
-            self.GetGridColLabelWindow().RefreshRect(self.get_column_rect(pb_col),
-                                                eraseBackground=False)
+        if pb_hit_code in (
+            self.HIT_CHANNEL_TYPE_BUTTON,
+            self.HIT_PLUS,
+            self.HIT_FILTER_BUTTON,
+            self.HIT_MINUS,
+        ):
+            self.GetGridColLabelWindow().RefreshRect(
+                self.get_column_rect(pb_col), eraseBackground=False
+            )
 
     def on_channel_type_pressed(self, col):
         with wx.Dialog(self) as dlg:
             assert isinstance(dlg, wx.Dialog)
             channel_name = self.table.columns[col].channel
-            dlg.SetTitle("Change image type for %s" % (self.table.GetColLabelValue(col)))
+            dlg.SetTitle(
+                "Change image type for %s" % (self.table.GetColLabelValue(col))
+            )
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
-                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
-                 self.monochrome_channel_image,
-                 "Treat the image as monochrome, averaging colors if needed"),
-                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
-                 self.color_channel_image,
-                 "Treat the image as color. Use ColorToGray to get individual colors"),
-                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
-                 self.mask_image,
-                 "Treat the image as a binary mask"),
-                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
-                 self.objects_image,
-                 "Treat the image as objects"),
-                (cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
-                 self.illumination_function_image,
-                 "Use the image for illumination correction")]
+                (
+                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                    self.monochrome_channel_image,
+                    "Treat the image as monochrome, averaging colors if needed",
+                ),
+                (
+                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                    self.color_channel_image,
+                    "Treat the image as color. Use ColorToGray to get individual colors",
+                ),
+                (
+                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                    self.mask_image,
+                    "Treat the image as a binary mask",
+                ),
+                (
+                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                    self.objects_image,
+                    "Treat the image as objects",
+                ),
+                (
+                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
+                    self.illumination_function_image,
+                    "Use the image for illumination correction",
+                ),
+            ]
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.Sizer.AddSpacer(10)
             dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 10)
             sub_sizer.Add(wx.StaticText(dlg, label="Image type:"))
             channel_type = self.table.columns[col].channel_type
-            choice = wx.adv.BitmapComboBox(dlg, value=channel_type, style=wx.CB_DROPDOWN)
+            choice = wx.adv.BitmapComboBox(
+                dlg, value=channel_type, style=wx.CB_DROPDOWN
+            )
             sub_sizer.Add(choice)
             selection = None
             current_help = ""
@@ -668,7 +732,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             help_text.Wrap(dlg.GetSize()[0] - 20)
             dlg.Sizer.Add(help_text, 1, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 10)
             if selection is not None:
-                choice.SetSelection(selection)
+                choice.SetSelection(selection, -1)
 
             def on_combo(event):
                 idx = choice.GetSelection()
@@ -688,7 +752,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 channel_type = choice.GetStringSelection()
                 if self.table.controller is not None:
                     self.table.controller.change_channel_type(
-                        channel_name, channel_type)
+                        channel_name, channel_type
+                    )
 
     def get_selected_cells(self):
         """Find the selected cells in the grid
@@ -707,26 +772,26 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         """
         selected_cells = set()
         for row in self.GetSelectedRows():
-            selected_cells.update(
-                [(row, col) for col in range(self.GetNumberCols())])
+            selected_cells.update([(row, col) for col in range(self.GetNumberCols())])
 
         for col in self.GetSelectedCols():
-            selected_cells.update(
-                [(row, col) for row in range(self.GetNumberRows())])
+            selected_cells.update([(row, col) for row in range(self.GetNumberRows())])
 
         for (row_min, col_min), (row_max, col_max) in zip(
-                self.GetSelectionBlockTopLeft(),
-                self.GetSelectionBlockBottomRight()):
+            self.GetSelectionBlockTopLeft(), self.GetSelectionBlockBottomRight()
+        ):
             for col in range(col_min, col_max + 1):
                 selected_cells.update(
-                    [(row, col) for row in range(row_min, row_max + 1)])
+                    [(row, col) for row in range(row_min, row_max + 1)]
+                )
         selected_cells.update(self.GetSelectedCells())
         return sorted(selected_cells)
 
     def on_filter_pressed(self, col):
         channel_name = self.table.columns[col].channel
         channel_name_dict = dict(
-            [(x.channel, (i, x)) for i, x in enumerate(self.table.columns)])
+            [(x.channel, (i, x)) for i, x in enumerate(self.table.columns)]
+        )
 
         def on_select_all(channel_name, fn_filter):
             idx, column = channel_name_dict[channel_name]
@@ -741,31 +806,44 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             for row_idx in range(self.GetNumberRows()):
                 url = self.table.get_url(row_idx, col_idx)
                 if url is not None:
-                    url = url.encode('utf-8')
+                    url = url.encode("utf-8")
                     if fn_filter(url):
-                        self.SelectBlock(row_idx, col_idx,
-                                         row_idx, col_idx, True)
+                        self.SelectBlock(row_idx, col_idx, row_idx, col_idx, True)
 
         def on_deselect(channel_name, fn_filter):
             col_idx, column = channel_name_dict[channel_name]
             for row_idx in range(self.GetNumberRows()):
                 url = self.table.get_url(row_idx, col_idx)
                 if url is not None:
-                    url = url.encode('utf-8')
+                    url = url.encode("utf-8")
                     if fn_filter(url):
                         self.DeselectCell(row_idx, col_idx)
 
         function_list = (
-            ("Select channel", on_select_all,
-             "Select all images in the current channel"),
-            ("Deselect channel", on_select_none,
-             "Deselect all selected images in the current channel from the selection"),
-            ("Add to selection", on_select,
-             "Add any image in the current channel that matches the filter to the current selection"),
-            ("Remove from selection", on_deselect,
-             "Deselect any image in the current channel that is selected and matches the filter"))
-        with FilterPanelDlg(self, channel_name, sorted(channel_name_dict.keys()),
-                            function_list) as dlg:
+            (
+                "Select channel",
+                on_select_all,
+                "Select all images in the current channel",
+            ),
+            (
+                "Deselect channel",
+                on_select_none,
+                "Deselect all selected images in the current channel from the selection",
+            ),
+            (
+                "Add to selection",
+                on_select,
+                "Add any image in the current channel that matches the filter to the current selection",
+            ),
+            (
+                "Remove from selection",
+                on_deselect,
+                "Deselect any image in the current channel that is selected and matches the filter",
+            ),
+        )
+        with FilterPanelDlg(
+            self, channel_name, sorted(channel_name_dict.keys()), function_list
+        ) as dlg:
             dlg.ShowModal()
 
     def on_add_column(self):
@@ -802,8 +880,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def on_col_label_editor_done(self, rename=True):
         if rename and self.column_label_editor.Validate():
             self.table.SetColLabelValue(
-                self.editor_column,
-                self.column_label_editor.GetValue())
+                self.editor_column, self.column_label_editor.GetValue()
+            )
         rect = self.column_label_editor.GetRect()
         self.column_label_editor.Hide()
         self.editor_column = None
@@ -827,7 +905,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     #
     ##################
 
-    '''Height of the drop graphic'''
+    """Height of the drop graphic"""
     DROP_HEIGHT = 7
 
     def get_drop_location(self, x, y):
@@ -864,8 +942,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         if self.drop_location is None:
             return wx.DragNone
 
-        return wx.DragNone if any([x is None for x in self.drop_location]) \
+        return (
+            wx.DragNone
+            if any([x is None for x in self.drop_location])
             else default_result
+        )
 
     def on_drop_enter(self, x, y, result):
         self.drop_location = self.get_drop_location(x, y)
@@ -912,10 +993,12 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
 
     def on_grid_begin_drag(self, event):
         from cellprofiler.modules.loadimages import url2pathname
+
         selections = self.get_selected_cells()
         if len(selections) > 0:
-            filenames = [url2pathname(self.table.get_url(row, col))
-                         for row, col in selections]
+            filenames = [
+                url2pathname(self.table.get_url(row, col)) for row, col in selections
+            ]
             data_object = wx.FileDataObject()
             for filename in filenames:
                 data_object.AddFile(filename)
@@ -943,42 +1026,40 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         need_column_layout = False
         if n_columns_added < 0:
             tm = wx.grid.GridTableMessage(
-                self.table,
-                wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
-                0, -n_columns_added)
+                self.table, wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, 0, -n_columns_added
+            )
             self.ProcessTableMessage(tm)
             need_column_layout = True
         elif n_columns_added > 0:
             tm = wx.grid.GridTableMessage(
-                self.table,
-                wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
-                0, n_columns_added)
+                self.table, wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED, 0, n_columns_added
+            )
             self.ProcessTableMessage(tm)
             need_column_layout = True
         if n_rows_added < 0:
             tm = wx.grid.GridTableMessage(
-                self.table,
-                wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
-                0, -n_rows_added)
+                self.table, wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, 0, -n_rows_added
+            )
             self.ProcessTableMessage(tm)
         elif n_rows_added > 0:
             tm = wx.grid.GridTableMessage(
-                self.table,
-                wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
-                0, n_rows_added)
+                self.table, wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED, 0, n_rows_added
+            )
             self.ProcessTableMessage(tm)
 
         only = self.table.GetNumberCols() == 1
         for i in range(self.table.GetNumberCols()):
             last = i == self.table.GetNumberCols() - 1
             label_size = self.GetGridColLabelWindow().GetTextExtent(
-                self.table.GetColLabelValue(i))
+                self.table.GetColLabelValue(i)
+            )
             min_width = self.col_label_renderer.minimum_width(label_size, last, only)
             self.SetColMinimalWidth(i, min_width)
             if need_column_layout:
                 if self.table.GetNumberRows() > 0:
                     first_width, _ = self.GetGridWindow().GetTextExtent(
-                        unicode(self.table.GetValue(0, i)))
+                        unicode(self.table.GetValue(0, i))
+                    )
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
                 else:
@@ -1001,7 +1082,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.GetTable().GetValue(row, col))
+        s = six.text_type(grid.GetTable().GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1019,16 +1100,23 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
                 brush = wx.Brush(grid.GetGridWindow().BackgroundColour)
                 dc.SetBrush(brush)
             dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
+            dc.DrawRectangle(
+                rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight()
+            )
             flags = 0
             if grid.IsInSelection(row, col):
                 flags += wx.CONTROL_SELECTED
             if wx.Window.FindFocus() in (
-                    grid, grid.GetGridWindow(), grid.GetGridColLabelWindow(),
-                    grid.GetGridRowLabelWindow(), grid.GetGridCornerLabelWindow()):
+                grid,
+                grid.GetGridWindow(),
+                grid.GetGridColLabelWindow(),
+                grid.GetGridRowLabelWindow(),
+                grid.GetGridCornerLabelWindow(),
+            ):
                 flags += wx.CONTROL_FOCUSED
             cellprofiler.gui.draw_item_selection_rect(
-                grid.GetGridWindow(), dc, rect, flags)
+                grid.GetGridWindow(), dc, rect, flags
+            )
             dc.SetBackgroundMode(wx.TRANSPARENT)
             if attr.HasTextColour():
                 dc.SetTextForeground(attr.GetTextColour())
@@ -1071,16 +1159,19 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
                     dc.SetPen(wx.TRANSPARENT_PEN)
                     dc.SetBrush(wx.BLACK_BRUSH)
                     half_height = int(grid.DROP_HEIGHT) / 2
-                    dc.DrawPolygon([
-                        (rect.GetX(), y - half_height - 1),
-                        (rect.GetX() + half_height + 1, y),
-                        (rect.GetX() + rect.GetWidth() - half_height - 1, y),
-                        (rect.GetX() + rect.GetWidth(), y - half_height - 1),
-                        (rect.GetX() + rect.GetWidth(), y + half_height + 1),
-                        (rect.GetX() + rect.GetWidth() - half_height, y + 1),
-                        (rect.GetX() + half_height, y + 1),
-                        (rect.GetX(), y + half_height + 1),
-                        (rect.GetX(), y - half_height)])
+                    dc.DrawPolygon(
+                        [
+                            (rect.GetX(), y - half_height - 1),
+                            (rect.GetX() + half_height + 1, y),
+                            (rect.GetX() + rect.GetWidth() - half_height - 1, y),
+                            (rect.GetX() + rect.GetWidth(), y - half_height - 1),
+                            (rect.GetX() + rect.GetWidth(), y + half_height + 1),
+                            (rect.GetX() + rect.GetWidth() - half_height, y + 1),
+                            (rect.GetX() + half_height, y + 1),
+                            (rect.GetX(), y + half_height + 1),
+                            (rect.GetX(), y - half_height),
+                        ]
+                    )
         finally:
             dc.SetFont(old_font)
             dc.SetBrush(old_brush)
@@ -1131,7 +1222,10 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
             label = grid.GetTable().GetColLabelValue(col)
             label_size = mdc.GetTextExtent(label)
             draw_simple = False
-            if grid.GetTable().display_mode == DISPLAY_MODE_SIMPLE and not self.read_only:
+            if (
+                grid.GetTable().display_mode == DISPLAY_MODE_SIMPLE
+                and not self.read_only
+            ):
                 column = grid.GetTable().columns[col]
                 m = grid.GetTable().measurements
                 channel_descriptors = m.get_channel_descriptors()
@@ -1140,8 +1234,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                         draw_simple = True
                         break
             if draw_simple:
-                x, y, width, height = self.label_rect(
-                    b_rect, label_size, last, only)
+                x, y, width, height = self.label_rect(b_rect, label_size, last, only)
                 if grid.editor_column is None:
                     for line_number, line in enumerate(label.split("\n")):
                         mdc.DrawText(line, x, y + label_size[1] * line_number)
@@ -1157,21 +1250,24 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                     image = grid.objects_image
                 else:
                     image = grid.illumination_function_image
-                icon_info = [(grid.HIT_CHANNEL_TYPE_BUTTON, image),
-                             (grid.HIT_FILTER_BUTTON, grid.filter_image)]
+                icon_info = [
+                    (grid.HIT_CHANNEL_TYPE_BUTTON, image),
+                    (grid.HIT_FILTER_BUTTON, grid.filter_image),
+                ]
                 if last:
                     icon_info.append((grid.HIT_PLUS, "+"))
                 if not only:
                     icon_info.append((grid.HIT_MINUS, "-"))
                 for idx, (hit_code, image) in enumerate(icon_info):
                     flags = 0
-                    if ((pb_col is None or pb_col == col) and
-                            hit_code == pb_hit_code and pb_pressed):
+                    if (
+                        (pb_col is None or pb_col == col)
+                        and hit_code == pb_hit_code
+                        and pb_pressed
+                    ):
                         flags = wx.CONTROL_PRESSED
-                    icon_rect = self.get_icon_rect(
-                        b_rect, label_size, idx, last, only)
-                    self.draw_button(window, mdc, icon_rect,
-                                     image, flags)
+                    icon_rect = self.get_icon_rect(b_rect, label_size, idx, last, only)
+                    self.draw_button(window, mdc, icon_rect, image, flags)
             else:
                 x = (rect.width - label_size[0] + 1) / 2
                 y = self.icon_padding + self.gap_size
@@ -1226,9 +1322,13 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         if not only:
             n_icons += 1
         n_to_right = n_icons - index - 1
-        x = rect.x + rect.width - self.icon_padding * (2 * n_to_right + 1) - \
-            self.icon_size * (n_to_right + 1) - \
-            self.gap_size * (n_to_right + 1)
+        x = (
+            rect.x
+            + rect.width
+            - self.icon_padding * (2 * n_to_right + 1)
+            - self.icon_size * (n_to_right + 1)
+            - self.gap_size * (n_to_right + 1)
+        )
         y = self.icon_padding + self.gap_size
         return wx.Rect(x, y, self.icon_size, max(self.icon_size, label_height))
 
@@ -1237,8 +1337,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         x = rect.X + self.gap_size
         y = rect.Y + self.gap_size
         height = rect.Height - self.gap_size * 2
-        first_icon_rect = self.get_icon_rect(
-            rect, wx.Size(0, height), 0, last, only)
+        first_icon_rect = self.get_icon_rect(rect, wx.Size(0, height), 0, last, only)
         width = first_icon_rect.GetX() - self.gap_size - x
         return wx.Rect(x, y, width, height)
 
@@ -1246,10 +1345,12 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         """Draw a button with the given flags"""
         assert isinstance(dc, wx.DC)
         x, y, width, height = rect
-        rect = wx.Rect(x - self.icon_padding,
-                       y - self.icon_padding,
-                       width + self.icon_padding * 2,
-                       height + self.icon_padding * 2)
+        rect = wx.Rect(
+            x - self.icon_padding,
+            y - self.icon_padding,
+            width + self.icon_padding * 2,
+            height + self.icon_padding * 2,
+        )
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
@@ -1288,8 +1389,12 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                 n_icons += 1
             if not only:
                 n_icons += 1
-        return label_size[0] + self.gap_size * (n_icons + 4) + \
-               self.icon_padding * n_icons * 2 + self.icon_size * n_icons
+        return (
+            label_size[0]
+            + self.gap_size * (n_icons + 4)
+            + self.icon_padding * n_icons * 2
+            + self.icon_size * n_icons
+        )
 
 
 class ColumnNameValidator(wx.Validator):
@@ -1459,10 +1564,9 @@ class FilterPanelDlg(wx.Dialog):
 
         self.filter_setting = cellprofiler.setting.Filter(
             "Filter",
-            predicates=[FilePredicate(),
-                        DirectoryPredicate(),
-                        ExtensionPredicate()],
-            value='and (file does contain "")')
+            predicates=[FilePredicate(), DirectoryPredicate(), ExtensionPredicate()],
+            value='and (file does contain "")',
+        )
 
         self.make_ui(channel_name, channel_names, function_list)
 
@@ -1476,7 +1580,8 @@ class FilterPanelDlg(wx.Dialog):
         """A filter function that applies the current filter to a URL"""
         modpath = cellprofiler.modules.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
-            (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
+            (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None)
+        )
 
     def on_value_change(self, setting, panel, new_text, event, timeout):
         self.filter_setting.set_value_text(new_text)
@@ -1499,14 +1604,16 @@ class FilterPanelDlg(wx.Dialog):
         self.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 20)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 0, wx.EXPAND)
-        sub_sizer.Add(wx.StaticText(self, label="Channel:"), 0,
-                      wx.ALIGN_LEFT | wx.ALIGN_TOP)
+        sub_sizer.Add(
+            wx.StaticText(self, label="Channel:"), 0, wx.ALIGN_LEFT | wx.ALIGN_TOP
+        )
         self.channel_choice = wx.Choice(self, choices=channel_names)
         self.channel_choice.SetStringSelection(channel_name)
         sub_sizer.Add(self.channel_choice, 0, wx.EXPAND)
 
         self.filter_panel_controller = FilterPanelController(
-            self, self.filter_setting, self.on_value_change)
+            self, self.filter_setting, self.on_value_change
+        )
         sizer.AddSpacer(5)
         sizer.Add(self.filter_panel_controller.panel, 1, wx.EXPAND)
         sizer.AddSpacer(5)

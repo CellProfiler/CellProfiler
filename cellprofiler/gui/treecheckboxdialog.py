@@ -24,31 +24,31 @@ class TreeCheckboxDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         tree_style = wx.TR_DEFAULT_STYLE
-        self.tree_ctrl = wx.TreeCtrl(self,
-                                     style=tree_style)
+        self.tree_ctrl = wx.TreeCtrl(self, style=tree_style)
         sizer.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 5)
 
         image_list = wx.ImageList(16, 16)
         for i, state_flag in enumerate(
-                (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
+            (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)
+        ):
             for j, selection_flag in enumerate((0, wx.CONTROL_CURRENT)):
                 idx = image_list.Add(
-                        self.get_checkbox_bitmap(state_flag | selection_flag,
-                                                 16, 16))
+                    self.get_checkbox_bitmap(state_flag | selection_flag, 16, 16)
+                )
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)
-        root_id = self.tree_ctrl.AddRoot("All", image_index,
-                                         selected_image_index,
-                                         wx.TreeItemData(d))
-        self.tree_ctrl.SetItemImage(root_id, image_index,
-                                    wx.TreeItemIcon_Normal)
-        self.tree_ctrl.SetItemImage(root_id, selected_image_index,
-                                    wx.TreeItemIcon_Selected)
-        self.tree_ctrl.SetItemImage(root_id, image_index,
-                                    wx.TreeItemIcon_Expanded)
-        self.tree_ctrl.SetItemImage(root_id, image_index,
-                                    wx.TreeItemIcon_SelectedExpanded)
+        root_id = self.tree_ctrl.AddRoot(
+            "All", image_index, selected_image_index, wx.TreeItemData(d)
+        )
+        self.tree_ctrl.SetItemImage(root_id, image_index, wx.TreeItemIcon_Normal)
+        self.tree_ctrl.SetItemImage(
+            root_id, selected_image_index, wx.TreeItemIcon_Selected
+        )
+        self.tree_ctrl.SetItemImage(root_id, image_index, wx.TreeItemIcon_Expanded)
+        self.tree_ctrl.SetItemImage(
+            root_id, image_index, wx.TreeItemIcon_SelectedExpanded
+        )
         self.root_id = root_id
         self.tree_ctrl.SetItemHasChildren(root_id, len(d) > 1)
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.on_expanding, self.tree_ctrl)
@@ -56,18 +56,25 @@ class TreeCheckboxDialog(wx.Dialog):
         self.tree_ctrl.Expand(root_id)
         table_sizer = wx.GridBagSizer()
         sizer.Add(table_sizer, 0, wx.EXPAND)
-        table_sizer.Add(wx.StaticText(self, label='Key:'), (0, 0), flag=wx.LEFT | wx.RIGHT, border=3)
-        for i, (bitmap, description) in enumerate((
+        table_sizer.Add(
+            wx.StaticText(self, label="Key:"), (0, 0), flag=wx.LEFT | wx.RIGHT, border=3
+        )
+        for i, (bitmap, description) in enumerate(
+            (
                 (image_list.GetBitmap(0), "No subitems selected / not selected"),
                 (image_list.GetBitmap(2), "All subitems selected / selected"),
-                (image_list.GetBitmap(4), "Some subitems selected. Open tree to see selections."))):
+                (
+                    image_list.GetBitmap(4),
+                    "Some subitems selected. Open tree to see selections.",
+                ),
+            )
+        ):
             bitmap_ctrl = wx.StaticBitmap(self)
             bitmap_ctrl.SetBitmap(bitmap)
             table_sizer.Add(bitmap_ctrl, (i, 1), flag=wx.RIGHT, border=5)
             table_sizer.Add(wx.StaticText(self, label=description), (i, 2))
         table_sizer.AddGrowableCol(2)
-        sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK),
-                  flag=wx.CENTER)
+        sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK), flag=wx.CENTER)
         self.Layout()
 
     def set_parent_reflects_child(self, value):
@@ -117,23 +124,27 @@ class TreeCheckboxDialog(wx.Dialog):
                         d1 = d1()
                         d[key] = d1
                     image_index, selected_index = self.img_idx(d1)
-                    sub_id = self.tree_ctrl.AppendItem(item_id, key, image_index,
-                                                       selected_index,
-                                                       wx.TreeItemData(d1))
-                    self.tree_ctrl.SetItemImage(sub_id, image_index,
-                                                wx.TreeItemIcon_Normal)
-                    self.tree_ctrl.SetItemImage(sub_id, selected_index,
-                                                wx.TreeItemIcon_Selected)
-                    self.tree_ctrl.SetItemImage(sub_id, image_index,
-                                                wx.TreeItemIcon_Expanded)
-                    self.tree_ctrl.SetItemImage(sub_id, selected_index,
-                                                wx.TreeItemIcon_SelectedExpanded)
+                    sub_id = self.tree_ctrl.AppendItem(
+                        item_id, key, image_index, selected_index, wx.TreeItemData(d1)
+                    )
+                    self.tree_ctrl.SetItemImage(
+                        sub_id, image_index, wx.TreeItemIcon_Normal
+                    )
+                    self.tree_ctrl.SetItemImage(
+                        sub_id, selected_index, wx.TreeItemIcon_Selected
+                    )
+                    self.tree_ctrl.SetItemImage(
+                        sub_id, image_index, wx.TreeItemIcon_Expanded
+                    )
+                    self.tree_ctrl.SetItemImage(
+                        sub_id, selected_index, wx.TreeItemIcon_SelectedExpanded
+                    )
                     self.tree_ctrl.SetItemHasChildren(sub_id, len(d1) > 1)
         finally:
             self.SetCursor(wx.NullCursor)
 
     def on_left_down(self, event):
-        item_id, where = self.tree_ctrl.HitTest(event.Position)
+        item_id, where = self.tree_ctrl.HitTest(event.Position, wx.TREE_HITTEST_ABOVE)
         if where & wx.TREE_HITTEST_ONITEMICON == 0:
             event.Skip()
             return
@@ -166,10 +177,18 @@ class TreeCheckboxDialog(wx.Dialog):
                     state = None
                 d_parent[None] = state
                 image_index, selected_index = self.img_idx(d_parent)
-                self.tree_ctrl.SetItemImage(parent_id, image_index, wx.TreeItemIcon_Normal)
-                self.tree_ctrl.SetItemImage(parent_id, selected_index, wx.TreeItemIcon_Selected)
-                self.tree_ctrl.SetItemImage(parent_id, image_index, wx.TreeItemIcon_Expanded)
-                self.tree_ctrl.SetItemImage(parent_id, selected_index, wx.TreeItemIcon_SelectedExpanded)
+                self.tree_ctrl.SetItemImage(
+                    parent_id, image_index, wx.TreeItemIcon_Normal
+                )
+                self.tree_ctrl.SetItemImage(
+                    parent_id, selected_index, wx.TreeItemIcon_Selected
+                )
+                self.tree_ctrl.SetItemImage(
+                    parent_id, image_index, wx.TreeItemIcon_Expanded
+                )
+                self.tree_ctrl.SetItemImage(
+                    parent_id, selected_index, wx.TreeItemIcon_SelectedExpanded
+                )
                 self.set_parent_state(parent_id)
 
     def set_item_state(self, item_id, state):
@@ -179,7 +198,9 @@ class TreeCheckboxDialog(wx.Dialog):
         self.tree_ctrl.SetItemImage(item_id, image_index, wx.TreeItemIcon_Normal)
         self.tree_ctrl.SetItemImage(item_id, selected_index, wx.TreeItemIcon_Selected)
         self.tree_ctrl.SetItemImage(item_id, image_index, wx.TreeItemIcon_Expanded)
-        self.tree_ctrl.SetItemImage(item_id, selected_index, wx.TreeItemIcon_SelectedExpanded)
+        self.tree_ctrl.SetItemImage(
+            item_id, selected_index, wx.TreeItemIcon_SelectedExpanded
+        )
         if len(d) > 1:
             if self.tree_ctrl.GetChildrenCount(item_id) == 0:
                 self.populate(item_id)

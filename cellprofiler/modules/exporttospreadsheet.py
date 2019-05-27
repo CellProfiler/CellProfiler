@@ -90,10 +90,8 @@ import logging
 logger = logging.getLogger(__name__)
 import base64
 import csv
-import errno
 import numpy as np
 import os
-import sys
 
 import six
 
@@ -101,17 +99,25 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+from cellprofiler.setting import YES
 from cellprofiler.measurement import IMAGE, EXPERIMENT
-from cellprofiler.preferences import get_absolute_path, get_output_file_name
-from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
+from cellprofiler.preferences import get_headless
+from cellprofiler.preferences import (
+    DEFAULT_INPUT_FOLDER_NAME,
+    DEFAULT_OUTPUT_FOLDER_NAME,
+    ABSOLUTE_FOLDER_NAME,
+    DEFAULT_INPUT_SUBFOLDER_NAME,
+    DEFAULT_OUTPUT_SUBFOLDER_NAME,
+)
+
+from cellprofiler.modules._help import (
+    IO_FOLDER_CHOICE_HELP_TEXT,
+    IO_WITH_METADATA_HELP_TEXT,
+    USING_METADATA_HELP_REF,
+    USING_METADATA_TAGS_REF,
+)
+
 from cellprofiler.gui.help.content import MEASUREMENT_NAMING_HELP
-from cellprofiler.modules._help import USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF, IO_FOLDER_CHOICE_HELP_TEXT, \
-    IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
@@ -170,68 +176,91 @@ NANS_AS_NANS = "NaN"
 
 
 class ExportToSpreadsheet(cpm.Module):
-    module_name = 'ExportToSpreadsheet'
+    module_name = "ExportToSpreadsheet"
     category = ["File Processing", "Data Tools"]
     variable_revision_number = 12
 
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
-                "Select the column delimiter", DELIMITERS, doc="""\
+            "Select the column delimiter",
+            DELIMITERS,
+            doc="""\
 Select the delimiter to use, i.e., the character that separates columns in a file. The
 two default choices are tab and comma, but you can type in any single character delimiter
 you prefer. Be sure that the delimiter you choose is not a character that is present
-within your data (for example, in file names).""")
+within your data (for example, in file names).""",
+        )
 
         self.directory = cps.DirectoryPath(
-                "Output file location",
-                dir_choices=[
-                    ABSOLUTE_FOLDER_NAME,
-                    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
+            "Output file location",
+            dir_choices=[
+                ABSOLUTE_FOLDER_NAME,
+                DEFAULT_OUTPUT_FOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_FOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME,
+            ],
+            doc="""\
 This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
 %(IO_WITH_METADATA_HELP_TEXT)s
-""" % globals())
+"""
+            % globals(),
+        )
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         self.wants_prefix = cps.Binary(
-                "Add a prefix to file names?",
-                True,
-                doc="""\
+            "Add a prefix to file names?",
+            True,
+            doc="""\
 This setting lets you choose whether or not to add a prefix to each of
 the .CSV filenames produced by **ExportToSpreadsheet**. A prefix may be
 useful if you use the same directory for the results of more than one
 pipeline; you can specify a different prefix in each pipeline. Select
-*"%(YES)s"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
-Select *"%(NO)s"* to use filenames without prefixes (e.g., “Images.csv”).
-            """ % globals())
+*"Yes"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
+Select *"No"* to use filenames without prefixes (e.g., “Images.csv”).
+            """
+            % globals(),
+        )
 
         self.prefix = cps.Text(
-                "Filename prefix", "MyExpt_",
-                doc="""\
-(*Used only if “Add a prefix to file names?” is "%(YES)s"*)
+            "Filename prefix",
+            "MyExpt_",
+            doc="""\
+(*Used only if “Add a prefix to file names?” is "Yes"*)
 
 The text you enter here is prepended to the names of each file produced by
 **ExportToSpreadsheet**.
-            """ % globals())
+            """
+            % globals(),
+        )
 
         self.wants_overwrite_without_warning = cps.Binary(
-                "Overwrite existing files without warning?", False,
-                doc="""\
+            "Overwrite existing files without warning?",
+            False,
+            doc="""\
 This setting either prevents or allows overwriting of old .CSV files by
-**ExportToSpreadsheet** without confirmation. Select *"%(YES)s"* to
+**ExportToSpreadsheet** without confirmation. Select *"Yes"* to
 overwrite without warning any .CSV file that already exists. Select
-*"%(NO)s"* to prompt before overwriting when running CellProfiler in the
-GUI and to fail when running headless.""" % globals())
+*"No"* to prompt before overwriting when running CellProfiler in the
+GUI and to fail when running headless."""
+            % globals(),
+        )
 
         self.add_metadata = cps.Binary(
-                "Add image metadata columns to your object data file?", False, doc="""\
+            "Add image metadata columns to your object data file?",
+            False,
+            doc="""\
 “Image\_Metadata\_” columns are normally exported in the Image data
-file, but if you select *"%(YES)s"*, they will also be exported with the
-Object data file(s).""" % globals())
+file, but if you select *"Yes"*, they will also be exported with the
+Object data file(s)."""
+            % globals(),
+        )
 
         self.nan_representation = cps.Choice(
-                "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc="""\
+            "Representation of Nan/Inf",
+            [NANS_AS_NANS, NANS_AS_NULLS],
+            doc="""\
 This setting controls the output for numeric fields if the calculated
 value is infinite (*Inf*) or undefined (*NaN*). CellProfiler will
 produce Inf or NaN values under certain rare circumstances, for instance
@@ -240,7 +269,9 @@ of an image.
 
 -  *%(NANS_AS_NULLS)s:* Output these values as empty fields.
 -  *%(NANS_AS_NANS)s:* Output them as the strings “NaN”, “Inf” or
-   “-Inf”.""" % globals())
+   “-Inf”."""
+            % globals(),
+        )
 
         self.pick_columns = cps.Binary(
             "Select the measurements to export",
@@ -253,21 +284,25 @@ measurements would be a nuisance.
 
 Alternatively, this option can be helpful for viewing spreadsheets in
 programs which limit the number of rows and columns.
-""".format(**{
-                "YES": YES
-            })
+""".format(
+                **{"YES": YES}
+            ),
         )
 
         self.columns = cps.MeasurementMultiChoice(
-                "Press button to select measurements", doc="""\
+            "Press button to select measurements",
+            doc="""\
 *(Used only when selecting the columns of measurements to export)*
 
 This setting controls the columns to be exported. Press the button and
-check the measurements or categories to export.""")
+check the measurements or categories to export.""",
+        )
 
         self.wants_aggregate_means = cps.Binary(
-                "Calculate the per-image mean values for object measurements?", False, doc="""\
-Select *"%(YES)s"* for **ExportToSpreadsheet** to calculate population
+            "Calculate the per-image mean values for object measurements?",
+            False,
+            doc="""\
+Select *"Yes"* for **ExportToSpreadsheet** to calculate population
 statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
@@ -277,11 +312,15 @@ generate a very large number of columns of data.
 
 However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
-per-object measurements.""" % globals())
+per-object measurements."""
+            % globals(),
+        )
 
-        self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?",
-                                                  False, doc="""\
-Select *"%(YES)s"* for **ExportToSpreadsheet** to calculate population
+        self.wants_aggregate_medians = cps.Binary(
+            "Calculate the per-image median values for object measurements?",
+            False,
+            doc="""\
+Select *"Yes"* for **ExportToSpreadsheet** to calculate population
 statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
@@ -291,11 +330,15 @@ generate a very large number of columns of data.
 
 However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
-per-object measurements.""" % globals())
+per-object measurements."""
+            % globals(),
+        )
 
         self.wants_aggregate_std = cps.Binary(
-                "Calculate the per-image standard deviation values for object measurements?", False, doc="""\
-Select *"%(YES)s"* for **ExportToSpreadsheet** to calculate population
+            "Calculate the per-image standard deviation values for object measurements?",
+            False,
+            doc="""\
+Select *"Yes"* for **ExportToSpreadsheet** to calculate population
 statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
@@ -305,11 +348,15 @@ generate a very large number of columns of data.
 
 However, if you chose to select the specific measurements to
 export, the aggregate statistics will only be computed for the selected
-per-object measurements.""" % globals())
+per-object measurements."""
+            % globals(),
+        )
 
         self.wants_genepattern_file = cps.Binary(
-                "Create a GenePattern GCT file?", False, doc="""\
-Select *"%(YES)s"* to create a GCT file compatible with `GenePattern`_.
+            "Create a GenePattern GCT file?",
+            False,
+            doc="""\
+Select *"Yes"* to create a GCT file compatible with `GenePattern`_.
 The GCT file format is a tab-delimited text file format designed for
 gene expression datasets; the specifics of the format are described
 `here`_. By converting your measurements into a GCT file, you can make
@@ -323,11 +370,15 @@ selection above. If per-image aggregate measurements are requested
 above, those measurements are included in the GCT file as well.
 
 .. _GenePattern: http://www.broadinstitute.org/cancer/software/genepattern/
-.. _here: http://software.broadinstitute.org/cancer/software/genepattern/file-formats-guide""" % globals())
+.. _here: http://software.broadinstitute.org/cancer/software/genepattern/file-formats-guide"""
+            % globals(),
+        )
 
         self.how_to_specify_gene_name = cps.Choice(
-                "Select source of sample row name",
-                GP_NAME_OPTIONS, GP_NAME_METADATA, doc="""\
+            "Select source of sample row name",
+            GP_NAME_OPTIONS,
+            GP_NAME_METADATA,
+            doc="""\
 *(Used only if a GenePattern file is requested)*
 
 The first column of the GCT file is the unique identifier for each
@@ -341,27 +392,37 @@ specified in one of two ways:
    filename can be used as a surrogate identifier.
 
 %(USING_METADATA_HELP_REF)s
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.gene_name_column = cps.Measurement(
-                "Select the metadata to use as the identifier",
-                lambda: cpmeas.IMAGE, doc="""\
+            "Select the metadata to use as the identifier",
+            lambda: cpmeas.IMAGE,
+            doc="""\
 *(Used only if a GenePattern file is requested and metadata is used to
 name each row)*
 
 Choose the measurement that corresponds to the identifier, such as
-metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s""" % globals())
+metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s"""
+            % globals(),
+        )
 
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
-                "Select the image to use as the identifier", cps.NONE, doc="""\
+            "Select the image to use as the identifier",
+            cps.NONE,
+            doc="""\
 *(Used only if a GenePattern file is requested and image filename is
 used to name each row)*
 
-Select which image whose filename will be used to identify each sample row.""")
+Select which image whose filename will be used to identify each sample row.""",
+        )
 
         self.wants_everything = cps.Binary(
-                "Export all measurement types?", True, doc="""\
-Select *"%(YES)s"* to export every category of measurement.
+            "Export all measurement types?",
+            True,
+            doc="""\
+Select *"Yes"* to export every category of measurement.
 **ExportToSpreadsheet** will create one data file for each object
 produced in the pipeline, as well as per-image, per-experiment and
 object relationships, if relevant. See *%(MEASUREMENT_NAMING_HELP)s*
@@ -369,54 +430,80 @@ for more details on the various measurement types. The module will use
 the object name as the file name, optionally prepending the output file
 name if specified above.
 
-Select *"%(NO)s"* if you want to do either (or both) of two things:
+Select *"No"* if you want to do either (or both) of two things:
 
 -  Specify which objects should be exported;
--  Override the automatic nomenclature of the exported files.""" % globals())
+-  Override the automatic nomenclature of the exported files."""
+            % globals(),
+        )
 
         self.object_groups = []
         self.add_object_group()
-        self.add_button = cps.DoSomething("", "Add another data set",
-                                          self.add_object_group)
+        self.add_button = cps.DoSomething(
+            "", "Add another data set", self.add_object_group
+        )
 
     def add_object_group(self, can_remove=True):
         group = cps.SettingsGroup()
         group.append(
-                "name", EEObjectNameSubscriber("Data to export", doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+            "name",
+            EEObjectNameSubscriber(
+                "Data to export",
+                doc="""\
+*(Used only when “Export all measurements?” is set to “No”)*
 
 Choose *Image*, *Experiment*, *Object relationships* or an object name
 from the list. **ExportToSpreadsheet** will write out a file of
 measurements for the given category. See *%(MEASUREMENT_NAMING_HELP)s*
-for more details on the various measurement types.""" % globals()))
+for more details on the various measurement types."""
+                % globals(),
+            ),
+        )
 
         group.append(
-                "previous_file", cps.Binary(
-                        "Combine these object measurements with those of the previous object?", False, doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+            "previous_file",
+            cps.Binary(
+                "Combine these object measurements with those of the previous object?",
+                False,
+                doc="""\
+*(Used only when “Export all measurements?” is set to “No”)*
 
-Select *"%(YES)s"* to create a file composed of measurements made on
+Select *"Yes"* to create a file composed of measurements made on
 this object and the one directly above it. This can be convenient, for
 example, if you measured Nuclei, Cells, and Cytoplasm objects, and you
 want to look at the measurements for all of them in a single spreadsheet.
 
-Select *"%(NO)s"* to create separate files for this and the previous
-object.""" % globals()))
+Select *"No"* to create separate files for this and the previous
+object."""
+                % globals(),
+            ),
+        )
 
-        group.append("wants_automatic_file_name", cps.Binary(
-                "Use the object name for the file name?", True, doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+        group.append(
+            "wants_automatic_file_name",
+            cps.Binary(
+                "Use the object name for the file name?",
+                True,
+                doc="""\
+*(Used only when “Export all measurements?” is set to “No”)*
 
-Select *"%(YES)s"* to use the object name as selected above to generate
+Select *"Yes"* to use the object name as selected above to generate
 a file name for the spreadsheet. For example, if you selected *Image*
 above and have not checked the "*Prepend output file name*" option, your
 output file will be named “Image.csv”.
-Select *"%(NO)s"* to name the file yourself.""" % globals()))
+Select *"No"* to name the file yourself."""
+                % globals(),
+            ),
+        )
 
-        group.append("file_name", cps.Text(
-                "File name", "DATA.csv",
-                metadata=True, doc="""\
-*(Used only when “Export all measurements?” is set to “%(NO)s”)*
+        group.append(
+            "file_name",
+            cps.Text(
+                "File name",
+                "DATA.csv",
+                metadata=True,
+                doc="""\
+*(Used only when “Export all measurements?” is set to “No”)*
 
 Enter a file name for the named objects’ measurements.
 **ExportToSpreadsheet** will prepend the name of the measurements file
@@ -427,9 +514,17 @@ desired.
 %(USING_METADATA_TAGS_REF)s
 
 %(USING_METADATA_HELP_REF)s
-""" % globals()))
+"""
+                % globals(),
+            ),
+        )
 
-        group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
+        group.append(
+            "remover",
+            cps.RemoveSettingButton(
+                "", "Remove this data set", self.object_groups, group
+            ),
+        )
         group.append("divider", cps.Divider(line=False))
 
         self.object_groups.append(group)
@@ -437,10 +532,8 @@ desired.
     def prepare_settings(self, setting_values):
         """Add enough object groups to capture the settings"""
         setting_count = len(setting_values)
-        assert ((setting_count - SETTING_OG_OFFSET) %
-                SETTING_OBJECT_GROUP_CT == 0)
-        group_count = int((setting_count - SETTING_OG_OFFSET) /
-                          SETTING_OBJECT_GROUP_CT)
+        assert (setting_count - SETTING_OG_OFFSET) % SETTING_OBJECT_GROUP_CT == 0
+        group_count = int((setting_count - SETTING_OG_OFFSET) / SETTING_OBJECT_GROUP_CT)
         del self.object_groups[group_count:]
 
         while len(self.object_groups) < group_count:
@@ -448,18 +541,32 @@ desired.
 
     def settings(self):
         """Return the settings in the order used when storing """
-        result = [self.delimiter, self.add_metadata,
-                  self.pick_columns,
-                  self.wants_aggregate_means, self.wants_aggregate_medians,
-                  self.wants_aggregate_std, self.directory,
-                  self.wants_genepattern_file, self.how_to_specify_gene_name,
-                  self.use_which_image_for_gene_name, self.gene_name_column,
-                  self.wants_everything, self.columns, self.nan_representation,
-                  self.wants_prefix, self.prefix,
-                  self.wants_overwrite_without_warning]
+        result = [
+            self.delimiter,
+            self.add_metadata,
+            self.pick_columns,
+            self.wants_aggregate_means,
+            self.wants_aggregate_medians,
+            self.wants_aggregate_std,
+            self.directory,
+            self.wants_genepattern_file,
+            self.how_to_specify_gene_name,
+            self.use_which_image_for_gene_name,
+            self.gene_name_column,
+            self.wants_everything,
+            self.columns,
+            self.nan_representation,
+            self.wants_prefix,
+            self.prefix,
+            self.wants_overwrite_without_warning,
+        ]
         for group in self.object_groups:
-            result += [group.name, group.previous_file, group.file_name,
-                       group.wants_automatic_file_name]
+            result += [
+                group.name,
+                group.previous_file,
+                group.file_name,
+                group.wants_automatic_file_name,
+            ]
         return result
 
     def visible_settings(self):
@@ -468,12 +575,19 @@ desired.
         if self.wants_prefix:
             result += [self.prefix]
         result += [
-            self.wants_overwrite_without_warning, self.add_metadata,
-            self.nan_representation, self.pick_columns]
+            self.wants_overwrite_without_warning,
+            self.add_metadata,
+            self.nan_representation,
+            self.pick_columns,
+        ]
         if self.pick_columns:
             result += [self.columns]
-        result += [self.wants_aggregate_means, self.wants_aggregate_medians,
-                   self.wants_aggregate_std, self.wants_genepattern_file]
+        result += [
+            self.wants_aggregate_means,
+            self.wants_aggregate_medians,
+            self.wants_aggregate_std,
+            self.wants_genepattern_file,
+        ]
         if self.wants_genepattern_file:
             result += [self.how_to_specify_gene_name]
             if self.how_to_specify_gene_name == GP_NAME_METADATA:
@@ -487,8 +601,7 @@ desired.
                 result += [group.name]
                 append_file_name = True
                 if is_object_group(group):
-                    if ((not previous_group is None) and
-                            is_object_group(previous_group)):
+                    if (not previous_group is None) and is_object_group(previous_group):
                         #
                         # Show the previous-group button if there was a previous
                         # group and it was an object group
@@ -506,39 +619,55 @@ desired.
         return result
 
     def validate_module(self, pipeline):
-        '''Test the module settings to make sure they are internally consistent'''
-        if (len(self.delimiter.value) != 1 and
-                not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
-            raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
+        """Test the module settings to make sure they are internally consistent"""
+        if len(self.delimiter.value) != 1 and not self.delimiter.value in (
+            DELIMITER_TAB,
+            DELIMITER_COMMA,
+        ):
+            raise cps.ValidationError(
+                "The CSV field delimiter must be a single character", self.delimiter
+            )
 
-        '''Make sure metadata tags exist'''
+        """Make sure metadata tags exist"""
         for group in self.object_groups:
             if not group.wants_automatic_file_name:
                 text_str = group.file_name.value
                 undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
                 if len(undefined_tags) > 0:
                     raise cps.ValidationError(
-                            "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
-                            undefined_tags[0],
-                            group.file_name)
+                        "%s is not a defined metadata tag. Check the metadata specifications in your load modules"
+                        % undefined_tags[0],
+                        group.file_name,
+                    )
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cps.ValidationError("ExportToSpreadsheet will not produce output in Test Mode",
-                                      self.directory)
+            raise cps.ValidationError(
+                "ExportToSpreadsheet will not produce output in Test Mode",
+                self.directory,
+            )
 
-        '''Warn user that changing the extension may cause Excel to stuff everything into one column'''
+        """Warn user that changing the extension may cause Excel to stuff everything into one column"""
         if not self.wants_everything.value:
-            all_extensions = [os.path.splitext(group.file_name.value)[1] for group in self.object_groups]
-            is_valid_extension = [not group.wants_automatic_file_name.value and (
-                (extension == ".csv" and self.delimiter == DELIMITER_COMMA) or (
-                    extension == ".txt" and self.delimiter == DELIMITER_TAB))
-                                  for (extension, group) in zip(all_extensions, self.object_groups)]
+            all_extensions = [
+                os.path.splitext(group.file_name.value)[1]
+                for group in self.object_groups
+            ]
+            is_valid_extension = [
+                not group.wants_automatic_file_name.value
+                and (
+                    (extension == ".csv" and self.delimiter == DELIMITER_COMMA)
+                    or (extension == ".txt" and self.delimiter == DELIMITER_TAB)
+                )
+                for (extension, group) in zip(all_extensions, self.object_groups)
+            ]
             if not all(is_valid_extension):
-                raise cps.ValidationError("To avoid formatting problems in Excel, use the extension .csv for "
-                                          "comma-delimited files and .txt for tab-delimited..",
-                                          self.object_groups[is_valid_extension.index(False)].file_name)
+                raise cps.ValidationError(
+                    "To avoid formatting problems in Excel, use the extension .csv for "
+                    "comma-delimited files and .txt for tab-delimited..",
+                    self.object_groups[is_valid_extension.index(False)].file_name,
+                )
 
     @property
     def delimiter_char(self):
@@ -550,12 +679,12 @@ desired.
             return self.delimiter.value.encode("ascii")
 
     def prepare_run(self, workspace):
-        '''Prepare an image set to be run
+        """Prepare an image set to be run
 
         workspace - workspace with image set populated (at this point)
 
         returns False if analysis can't be done
-        '''
+        """
         return self.check_overwrite(workspace)
 
     def run(self, workspace):
@@ -567,7 +696,8 @@ desired.
             if self.wants_everything:
                 for object_name in workspace.measurements.get_object_names():
                     path = self.make_objects_file_name(
-                            object_name, workspace, image_set_number)
+                        object_name, workspace, image_set_number
+                    )
                     columns.append((object_name, path))
             else:
                 first = True
@@ -576,7 +706,8 @@ desired.
                     last_in_file = self.last_in_file(i)
                     if first:
                         filename = self.make_objects_file_name(
-                                group.name.value, workspace, image_set_number, group)
+                            group.name.value, workspace, image_set_number, group
+                        )
                         first = False
                     columns.append((group.name.value, filename))
                     if last_in_file:
@@ -585,24 +716,27 @@ desired.
             workspace.display_data.columns = columns
 
     def display(self, workspace, figure):
-        figure.set_subplots((1, 1,))
+        figure.set_subplots((1, 1))
         if workspace.display_data.columns is None:
-            figure.subplot_table(
-                    0, 0, [["Data written to spreadsheet"]])
+            figure.subplot_table(0, 0, [["Data written to spreadsheet"]])
         elif workspace.pipeline.test_mode:
             figure.subplot_table(
-                    0, 0, [["Data not written to spreadsheets in test mode"]])
+                0, 0, [["Data not written to spreadsheets in test mode"]]
+            )
         else:
-            figure.subplot_table(0, 0,
-                                 workspace.display_data.columns,
-                                 col_labels=workspace.display_data.header)
+            figure.subplot_table(
+                0,
+                0,
+                workspace.display_data.columns,
+                col_labels=workspace.display_data.header,
+            )
 
     def run_as_data_tool(self, workspace):
-        '''Run the module as a data tool
+        """Run the module as a data tool
 
         For ExportToSpreadsheet, we do the "post_run" method in order to write
         out the .csv files as if the experiment had just finished.
-        '''
+        """
         #
         # Set the measurements to the end of the list to mimic the state
         # at the end of the run.
@@ -612,7 +746,7 @@ desired.
         self.post_run(workspace)
 
     def post_run(self, workspace):
-        '''Save measurements at end of run'''
+        """Save measurements at end of run"""
         #
         # Don't export in test mode
         #
@@ -646,32 +780,34 @@ desired.
                 object_names = []
 
     def last_in_file(self, i):
-        '''Return true if the group is the last to be included in a csv file
+        """Return true if the group is the last to be included in a csv file
 
         i - the index of the group being considered.
 
         Objects can be collected together in one file. Return true if
         this is the last object in a collection.
-        '''
+        """
 
         group = self.object_groups[i]
-        return ((i == len(self.object_groups) - 1) or
-                (not is_object_group(group)) or
-                (not is_object_group(self.object_groups[i + 1])) or
-                (not self.object_groups[i + 1].previous_file.value))
+        return (
+            (i == len(self.object_groups) - 1)
+            or (not is_object_group(group))
+            or (not is_object_group(self.object_groups[i + 1]))
+            or (not self.object_groups[i + 1].previous_file.value)
+        )
 
     def should_stop_writing_measurements(self):
-        '''All subsequent modules should not write measurements'''
+        """All subsequent modules should not write measurements"""
         return True
 
     def get_metadata_groups(self, workspace, settings_group=None):
-        '''Find the metadata groups that are relevant for creating the file name
+        """Find the metadata groups that are relevant for creating the file name
 
         workspace - the workspace with the image set metadata elements and
                     grouping measurements populated.
         settings_group - if saving individual objects, this is the settings
                          group that controls naming the files.
-        '''
+        """
         if settings_group is None or settings_group.wants_automatic_file_name:
             tags = []
         else:
@@ -696,21 +832,26 @@ desired.
         metadata_groups = self.get_metadata_groups(workspace, settings_group)
         for metadata_group in metadata_groups:
             if len(object_names) == 1 and object_names[0] == IMAGE:
-                self.make_image_file(metadata_group.image_numbers,
-                                     workspace, settings_group)
+                self.make_image_file(
+                    metadata_group.image_numbers, workspace, settings_group
+                )
                 if self.wants_genepattern_file.value:
-                    self.make_gct_file(metadata_group.image_numbers,
-                                       workspace, settings_group)
+                    self.make_gct_file(
+                        metadata_group.image_numbers, workspace, settings_group
+                    )
             elif len(object_names) == 1 and object_names[0] == OBJECT_RELATIONSHIPS:
                 self.make_relationships_file(
-                        metadata_group.image_numbers, workspace, settings_group)
+                    metadata_group.image_numbers, workspace, settings_group
+                )
             else:
                 self.make_object_file(
-                        object_names, metadata_group.image_numbers,
-                        workspace, settings_group)
+                    object_names,
+                    metadata_group.image_numbers,
+                    workspace,
+                    settings_group,
+                )
 
-    def make_full_filename(self, file_name,
-                           workspace=None, image_set_number=None):
+    def make_full_filename(self, file_name, workspace=None, image_set_number=None):
         """Convert a file name into an absolute path
 
         We do a few things here:
@@ -721,11 +862,11 @@ desired.
         * Create any directories along the path
         """
         if image_set_number is not None and workspace is not None:
-            file_name = workspace.measurements.apply_metadata(file_name,
-                                                              image_set_number)
+            file_name = workspace.measurements.apply_metadata(
+                file_name, image_set_number
+            )
         measurements = None if workspace is None else workspace.measurements
-        path_name = self.directory.get_absolute_path(measurements,
-                                                     image_set_number)
+        path_name = self.directory.get_absolute_path(measurements, image_set_number)
         if self.wants_prefix:
             file_name = self.prefix.value + file_name
         file_name = os.path.join(path_name, file_name)
@@ -735,49 +876,49 @@ desired.
         return os.path.join(path, file)
 
     def extension(self):
-        '''Return the appropriate extension for the CSV file name
+        """Return the appropriate extension for the CSV file name
 
         The appropriate extension is "csv" if comma is used as the
         delimiter, otherwise "txt"
-        '''
+        """
         return "csv" if self.delimiter == DELIMITER_COMMA else "txt"
 
     def make_objects_file_name(
-            self, object_name, workspace, image_set_number, settings_group=None):
-        '''Concoct the .CSV filename for some object category
+        self, object_name, workspace, image_set_number, settings_group=None
+    ):
+        """Concoct the .CSV filename for some object category
 
         :param object_name: name of the objects whose measurements are to be
                             saved (or IMAGES or EXPERIMENT)
         :param workspace: the current workspace
         :param image_set_number: the current image set number
         :param settings_group: the settings group used to name the file
-        '''
+        """
         if self.wants_everything:
             filename = "%s.%s" % (object_name, self.extension())
 
             if object_name == EXPERIMENT:
                 # No metadata substitution allowed for experiment file
                 return self.make_full_filename(filename)
-            return self.make_full_filename(
-                    filename, workspace, image_set_number)
+            return self.make_full_filename(filename, workspace, image_set_number)
         if settings_group.wants_automatic_file_name:
             filename = "%s.%s" % (settings_group.name.value, self.extension())
         else:
             filename = settings_group.file_name.value
-        filename = self.make_full_filename(
-                filename, workspace, image_set_number)
+        filename = self.make_full_filename(filename, workspace, image_set_number)
         return filename
 
     def make_gct_file_name(self, workspace, image_set_number, settings_group=None):
-        '''Concoct a name for the .gct file
+        """Concoct a name for the .gct file
 
         workspace - workspace containing metadata measurements
         image_number - the first image number in the group being written
         settings_group - the settings group asking for the file to be written
                         if not wants_everything
-        '''
+        """
         file_name = self.make_objects_file_name(
-                IMAGE, workspace, image_set_number, settings_group)
+            IMAGE, workspace, image_set_number, settings_group
+        )
         if any([file_name.lower().endswith(x) for x in (".csv", "txt")]):
             file_name = file_name[:-3] + "gct"
         return file_name
@@ -794,31 +935,36 @@ desired.
 
         files_to_check = []
         if self.wants_everything:
-            object_names = set((IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS))
+            object_names = {IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS}
             object_providers = workspace.pipeline.get_provider_dictionary(
-                    cps.OBJECT_GROUP, self)
+                cps.OBJECT_GROUP, self
+            )
             object_names.update(object_providers.keys())
             metadata_groups = self.get_metadata_groups(workspace)
             for object_name in object_names:
                 for metadata_group in metadata_groups:
                     image_number = metadata_group.image_numbers[0]
                     if object_name == IMAGE and self.wants_genepattern_file:
-                        files_to_check.append(self.make_gct_file_name(
-                                workspace, image_number))
-                    files_to_check.append(self.make_objects_file_name(
-                            object_name, workspace, image_number))
+                        files_to_check.append(
+                            self.make_gct_file_name(workspace, image_number)
+                        )
+                    files_to_check.append(
+                        self.make_objects_file_name(
+                            object_name, workspace, image_number
+                        )
+                    )
         else:
             first_in_file = True
             for i, group in enumerate(self.object_groups):
                 if first_in_file:
-                    metadata_groups = self.get_metadata_groups(
-                            workspace, group)
+                    metadata_groups = self.get_metadata_groups(workspace, group)
                     for metadata_group in metadata_groups:
                         image_number = metadata_group.image_numbers[0]
                         files_to_check.append(
-                                self.make_objects_file_name(
-                                        group.name.value, workspace, image_number,
-                                        group))
+                            self.make_objects_file_name(
+                                group.name.value, workspace, image_number, group
+                            )
+                        )
                 #
                 # set first_in_file for next time around
                 #
@@ -828,15 +974,18 @@ desired.
         if len(files_to_overwrite) > 0:
             if get_headless():
                 logger.error(
-                        "ExportToSpreadsheet is configured to refrain from overwriting files and the following file(s) already exist: %s" %
-                        ", ".join(files_to_overwrite))
+                    "ExportToSpreadsheet is configured to refrain from overwriting files and the following file(s) already exist: %s"
+                    % ", ".join(files_to_overwrite)
+                )
                 return False
-            msg = "Overwrite the following file(s)?\n" + \
-                  "\n".join(files_to_overwrite)
+            msg = "Overwrite the following file(s)?\n" + "\n".join(files_to_overwrite)
             import wx
+
             result = wx.MessageBox(
-                    msg, caption="ExportToSpreadsheet: Overwrite existing files",
-                    style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+                msg,
+                caption="ExportToSpreadsheet: Overwrite existing files",
+                style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION,
+            )
             if result != wx.YES:
                 return False
 
@@ -852,10 +1001,13 @@ desired.
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
-                EXPERIMENT, workspace, 1, settings_group)
+            EXPERIMENT, workspace, 1, settings_group
+        )
         feature_names = [
-            feature_name for feature_name in m.get_feature_names(EXPERIMENT)
-            if feature_name != cpp.EXIT_STATUS]
+            feature_name
+            for feature_name in m.get_feature_names(EXPERIMENT)
+            if feature_name != cpp.EXIT_STATUS
+        ]
         if len(feature_names) == 0:
             return
         fd = open(file_name, "wb")
@@ -864,11 +1016,10 @@ desired.
             writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
                 v = m.get_all_measurements(EXPERIMENT, feature_name)
-                if isinstance(v, np.ndarray) and \
-                                v.dtype == np.uint8:
+                if isinstance(v, np.ndarray) and v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    six.text_type(v).encode('utf8')
+                    six.text_type(v).encode("utf8")
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -884,7 +1035,8 @@ desired.
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
-                IMAGE, workspace, image_set_numbers[0], settings_group)
+            IMAGE, workspace, image_set_numbers[0], settings_group
+        )
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
 
@@ -899,15 +1051,13 @@ desired.
                     aggs.append(cpmeas.AGG_MEDIAN)
                 if self.wants_aggregate_std:
                     aggs.append(cpmeas.AGG_STD_DEV)
-                agg_measurements = m.compute_aggregate_measurements(img_number,
-                                                                    aggs)
+                agg_measurements = m.compute_aggregate_measurements(img_number, aggs)
                 if img_number == image_set_numbers[0]:
                     ordered_agg_names = list(agg_measurements.keys())
                     ordered_agg_names.sort()
                     image_features += ordered_agg_names
                     image_features.sort()
-                    image_features = self.filter_columns(image_features,
-                                                         cpmeas.IMAGE)
+                    image_features = self.filter_columns(image_features, cpmeas.IMAGE)
                     if image_features is None:
                         return
                     writer.writerow(image_features)
@@ -922,17 +1072,16 @@ desired.
                         else:
                             value = m[IMAGE, feature_name, img_number]
                         if value is None:
-                            row.append('')
+                            row.append("")
                         elif isinstance(value, six.text_type):
-                            row.append(value.encode('utf8'))
+                            row.append(value.encode("utf8"))
                         elif isinstance(value, six.string_types):
                             row.append(value)
-                        elif isinstance(value, np.ndarray) and \
-                                        value.dtype == np.uint8:
+                        elif isinstance(value, np.ndarray) and value.dtype == np.uint8:
                             row.append(base64.b64encode(value.data))
                         elif np.isnan(value):
                             if self.nan_representation == NANS_AS_NULLS:
-                                row.append('')
+                                row.append("")
                             else:
                                 row.append(str(np.NaN))
                         else:
@@ -953,26 +1102,28 @@ desired.
         from cellprofiler.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
         from .loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
-        file_name = self.make_gct_file_name(workspace, image_set_numbers[0],
-                                            settings_group)
+        file_name = self.make_gct_file_name(
+            workspace, image_set_numbers[0], settings_group
+        )
 
         def ignore_feature(feature_name):
             """Return true if we should ignore a feature"""
-            if (is_file_name_feature(feature_name) or
-                    is_path_name_feature(feature_name) or
-                    feature_name.startswith('ImageNumber') or
-                    feature_name.startswith("Group_Number") or
-                    feature_name.startswith("Group_Index") or
-                    feature_name.startswith('Description_') or
-                    feature_name.startswith('ModuleError_') or
-                    feature_name.startswith('TimeElapsed_') or
-                    feature_name.startswith('ExecutionTime_') or
-                    feature_name.startswith(C_URL) or
-                    feature_name.startswith(C_MD5_DIGEST) or
-                    feature_name.startswith(C_SCALING) or
-                    feature_name.startswith(C_HEIGHT) or
-                    feature_name.startswith(C_WIDTH)
-                ):
+            if (
+                is_file_name_feature(feature_name)
+                or is_path_name_feature(feature_name)
+                or feature_name.startswith("ImageNumber")
+                or feature_name.startswith("Group_Number")
+                or feature_name.startswith("Group_Index")
+                or feature_name.startswith("Description_")
+                or feature_name.startswith("ModuleError_")
+                or feature_name.startswith("TimeElapsed_")
+                or feature_name.startswith("ExecutionTime_")
+                or feature_name.startswith(C_URL)
+                or feature_name.startswith(C_MD5_DIGEST)
+                or feature_name.startswith(C_SCALING)
+                or feature_name.startswith(C_HEIGHT)
+                or feature_name.startswith(C_WIDTH)
+            ):
                 return True
             return False
 
@@ -998,44 +1149,66 @@ desired.
                     ordered_agg_names.sort()
                     image_features += ordered_agg_names
                     image_features.sort()
-                    image_features = self.filter_columns(image_features,
-                                                         cpmeas.IMAGE)
+                    image_features = self.filter_columns(image_features, cpmeas.IMAGE)
                     if image_features is None:
                         return
 
                     # Count # of actual measurements
                     num_measures = 0
                     for feature_name in image_features:
-                        if not ignore_feature(feature_name) or feature_name in agg_measurements:
+                        if (
+                            not ignore_feature(feature_name)
+                            or feature_name in agg_measurements
+                        ):
                             num_measures += 1
 
-                    writer.writerow(['#1.2'])
+                    writer.writerow(["#1.2"])
                     writer.writerow([len(image_set_numbers), num_measures])
 
                     # Keep measurements only
-                    measurement_feature_names = [x for x in image_features if not ignore_feature(x)]
+                    measurement_feature_names = [
+                        x for x in image_features if not ignore_feature(x)
+                    ]
 
                     # The first headers need to be 'NAME' and 'Description'
-                    written_image_names = ['NAME', 'Description'] + measurement_feature_names
+                    written_image_names = [
+                        "NAME",
+                        "Description",
+                    ] + measurement_feature_names
                     writer.writerow(written_image_names)
 
                     # Place the one of the paths and desired info column up front in image feature list
-                    description_feature = [x for x in image_features if x.startswith(C_PATH_NAME + "_")]
+                    description_feature = [
+                        x for x in image_features if x.startswith(C_PATH_NAME + "_")
+                    ]
                     if self.how_to_specify_gene_name == GP_NAME_METADATA:
                         name_feature = [self.gene_name_column.value]
                     elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
-                        name_feature = [x for x in image_features if
-                                        x.startswith("_".join((C_FILE_NAME, self.use_which_image_for_gene_name.value)))]
-                    image_features = [name_feature[0], description_feature[0]] + measurement_feature_names
+                        name_feature = [
+                            x
+                            for x in image_features
+                            if x.startswith(
+                                "_".join(
+                                    (
+                                        C_FILE_NAME,
+                                        self.use_which_image_for_gene_name.value,
+                                    )
+                                )
+                            )
+                        ]
+                    image_features = [
+                        name_feature[0],
+                        description_feature[0],
+                    ] + measurement_feature_names
 
                 # Output all measurements
-                row = [agg_measurements[feature_name]
-                       if feature_name in agg_measurements
-                       else m.get_measurement(IMAGE, feature_name, img_number)
-                       for feature_name in image_features]
-                row = ['' if x is None
-                       else x if np.isscalar(x)
-                else x[0] for x in row]
+                row = [
+                    agg_measurements[feature_name]
+                    if feature_name in agg_measurements
+                    else m.get_measurement(IMAGE, feature_name, img_number)
+                    for feature_name in image_features
+                ]
+                row = ["" if x is None else x if np.isscalar(x) else x[0] for x in row]
                 writer.writerow(row)
         finally:
             fd.close()
@@ -1045,29 +1218,39 @@ desired.
             columns = [
                 self.columns.get_measurement_feature(x)
                 for x in self.columns.selections
-                if self.columns.get_measurement_object(x) == object_name]
+                if self.columns.get_measurement_object(x) == object_name
+            ]
             if object_name == cpmeas.IMAGE:
                 if cpmeas.IMAGE_NUMBER not in columns:
                     columns.insert(0, cpmeas.IMAGE_NUMBER)
                 for agg, wants_it in (
-                        (cpmeas.AGG_MEAN, self.wants_aggregate_means),
-                        (cpmeas.AGG_MEDIAN, self.wants_aggregate_medians),
-                        (cpmeas.AGG_STD_DEV, self.wants_aggregate_std)):
+                    (cpmeas.AGG_MEAN, self.wants_aggregate_means),
+                    (cpmeas.AGG_MEDIAN, self.wants_aggregate_medians),
+                    (cpmeas.AGG_STD_DEV, self.wants_aggregate_std),
+                ):
                     if not wants_it:
                         continue
                     for column in self.columns.selections:
                         if self.columns.get_measurement_object(column) not in (
-                                cpmeas.IMAGE, cpmeas.EXPERIMENT, cpmeas.NEIGHBORS):
-                            columns += [cpmeas.get_agg_measurement_name(
-                                    agg, self.columns.get_measurement_object(column),
-                                    self.columns.get_measurement_feature(column))]
+                            cpmeas.IMAGE,
+                            cpmeas.EXPERIMENT,
+                            cpmeas.NEIGHBORS,
+                        ):
+                            columns += [
+                                cpmeas.get_agg_measurement_name(
+                                    agg,
+                                    self.columns.get_measurement_object(column),
+                                    self.columns.get_measurement_feature(column),
+                                )
+                            ]
 
             columns = set(columns)
             features = [x for x in features if x in columns]
         return features
 
-    def make_object_file(self, object_names, image_set_numbers, workspace,
-                         settings_group=None):
+    def make_object_file(
+        self, object_names, image_set_numbers, workspace, settings_group=None
+    ):
         """Make a file containing object measurements
 
         object_names - sequence of names of the objects whose measurements
@@ -1079,23 +1262,24 @@ desired.
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
-                object_names[0], workspace, image_set_numbers[0], settings_group)
-        features = [(IMAGE, IMAGE_NUMBER),
-                    (object_names[0], OBJECT_NUMBER)]
-        columns = map(
-                (lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
+            object_names[0], workspace, image_set_numbers[0], settings_group
+        )
+        features = [(IMAGE, IMAGE_NUMBER), (object_names[0], OBJECT_NUMBER)]
+        columns = map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
         if self.add_metadata.value:
             mdfeatures = [
-                (IMAGE, name) for object_name, name in columns
-                if name.startswith("Metadata_") and object_name == IMAGE]
+                (IMAGE, name)
+                for object_name, name in columns
+                if name.startswith("Metadata_") and object_name == IMAGE
+            ]
             mdfeatures.sort()
             features += mdfeatures
         for object_name in object_names:
-            ofeatures = [feature for col_object, feature in columns
-                         if col_object == object_name]
+            ofeatures = [
+                feature for col_object, feature in columns if col_object == object_name
+            ]
             ofeatures = self.filter_columns(ofeatures, object_name)
-            ofeatures = [(object_name, feature_name)
-                         for feature_name in ofeatures]
+            ofeatures = [(object_name, feature_name) for feature_name in ofeatures]
             ofeatures.sort()
             features += ofeatures
         fd = open(file_name, "wb")
@@ -1108,45 +1292,54 @@ desired.
             for i in (0, 1) if len(object_names) > 1 else (1,):
                 writer.writerow([x[i] for x in features])
             for img_number in image_set_numbers:
-                object_count = \
-                    np.max([m.get_measurement(IMAGE, "Count_%s" % name, img_number)
-                            for name in object_names])
+                object_count = np.max(
+                    [
+                        m.get_measurement(IMAGE, "Count_%s" % name, img_number)
+                        for name in object_names
+                    ]
+                )
                 object_count = int(object_count) if object_count else 0
-                columns = [np.repeat(img_number, object_count)
-                           if feature_name == IMAGE_NUMBER
-                           else np.arange(1, object_count + 1)
-                if feature_name == OBJECT_NUMBER
-                else np.repeat(np.NAN, object_count)
-                if not m.has_feature(object_name, feature_name)
-                else np.repeat(m.get_measurement(IMAGE, feature_name,
-                                                 img_number),
-                               object_count)
-                if object_name == IMAGE
-                else m.get_measurement(object_name, feature_name,
-                                       img_number)
-                           for object_name, feature_name in features]
+                columns = [
+                    np.repeat(img_number, object_count)
+                    if feature_name == IMAGE_NUMBER
+                    else np.arange(1, object_count + 1)
+                    if feature_name == OBJECT_NUMBER
+                    else np.repeat(np.NAN, object_count)
+                    if not m.has_feature(object_name, feature_name)
+                    else np.repeat(
+                        m.get_measurement(IMAGE, feature_name, img_number), object_count
+                    )
+                    if object_name == IMAGE
+                    else m.get_measurement(object_name, feature_name, img_number)
+                    for object_name, feature_name in features
+                ]
                 for obj_index in range(object_count):
-                    row = [column[obj_index]
-                           if (column is not None and
-                               obj_index < column.shape[0])
-                           else np.NAN
-                           for column in columns]
+                    row = [
+                        column[obj_index]
+                        if (column is not None and obj_index < column.shape[0])
+                        else np.NAN
+                        for column in columns
+                    ]
                     if self.nan_representation == NANS_AS_NULLS:
                         row = [
-                            "" if (field is None) or
-                                  (np.isreal(field) and not np.isfinite(field))
-                            else field for field in row]
+                            ""
+                            if (field is None)
+                            or (np.isreal(field) and not np.isfinite(field))
+                            else field
+                            for field in row
+                        ]
                     writer.writerow(row)
         finally:
             fd.close()
 
-    def make_relationships_file(self, image_set_numbers, workspace,
-                                settings_group=None):
-        '''Create a CSV file documenting the relationships between objects'''
+    def make_relationships_file(
+        self, image_set_numbers, workspace, settings_group=None
+    ):
+        """Create a CSV file documenting the relationships between objects"""
 
         file_name = self.make_objects_file_name(
-                OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
-                settings_group)
+            OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0], settings_group
+        )
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         fd = open(file_name, "wb")
@@ -1156,31 +1349,57 @@ desired.
 
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
-            writer.writerow([
-                "Module", "Module Number", "Relationship",
-                "First Object Name", "First Image Number", "First Object Number",
-                "Second Object Name", "Second Image Number", "Second Object Number"])
+            writer.writerow(
+                [
+                    "Module",
+                    "Module Number",
+                    "Relationship",
+                    "First Object Name",
+                    "First Image Number",
+                    "First Object Number",
+                    "Second Object Name",
+                    "Second Image Number",
+                    "Second Object Number",
+                ]
+            )
             for key in m.get_relationship_groups():
                 r = m.get_relationships(
-                        key.module_number, key.relationship,
-                        key.object_name1, key.object_name2,
-                        image_numbers=image_set_numbers)
-                for image_number_1, image_number_2, \
-                    object_number_1, object_number_2 in zip(
-                        r[cpmeas.R_FIRST_IMAGE_NUMBER],
-                        r[cpmeas.R_SECOND_IMAGE_NUMBER],
-                        r[cpmeas.R_FIRST_OBJECT_NUMBER],
-                        r[cpmeas.R_SECOND_OBJECT_NUMBER]):
+                    key.module_number,
+                    key.relationship,
+                    key.object_name1,
+                    key.object_name2,
+                    image_numbers=image_set_numbers,
+                )
+                for (
+                    image_number_1,
+                    image_number_2,
+                    object_number_1,
+                    object_number_2,
+                ) in zip(
+                    r[cpmeas.R_FIRST_IMAGE_NUMBER],
+                    r[cpmeas.R_SECOND_IMAGE_NUMBER],
+                    r[cpmeas.R_FIRST_OBJECT_NUMBER],
+                    r[cpmeas.R_SECOND_OBJECT_NUMBER],
+                ):
                     module_name = module_map[key.module_number]
-                    writer.writerow([
-                        module_name, key.module_number, key.relationship,
-                        key.object_name1, image_number_1, object_number_1,
-                        key.object_name2, image_number_2, object_number_2])
+                    writer.writerow(
+                        [
+                            module_name,
+                            key.module_number,
+                            key.relationship,
+                            key.object_name1,
+                            image_number_1,
+                            object_number_1,
+                            key.object_name2,
+                            image_number_2,
+                            object_number_2,
+                        ]
+                    )
         finally:
             fd.close()
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -1197,12 +1416,13 @@ desired.
 
         ExportToSpreadsheet has to convert the path to file names to
         something that can be used on the cluster.
-        '''
+        """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         """Adjust the setting values based on the version that saved them
 
         """
@@ -1213,11 +1433,9 @@ desired.
             setting_values.append(cps.NO)
             variable_revision_number = 2
         if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = (setting_values[8] == cps.YES)
-            object_names = [x for x in setting_values[:-1]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
-                              cps.NO, cps.NO]
+            wants_subdirectories = setting_values[8] == cps.YES
+            object_names = [x for x in setting_values[:-1] if x != cps.DO_NOT_USE]
+            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO, cps.NO, cps.NO]
             for name in object_names:
                 setting_values.extend([name, cps.NO, "%s.csv" % name])
             variable_revision_number = 1
@@ -1227,10 +1445,10 @@ desired.
             # Variables 9 and 10 are the pathname and prefix and
             # are not yet replicated in pyCP
             #
-            custom_directory = '.'
-            if setting_values[8] == '.':
+            custom_directory = "."
+            if setting_values[8] == ".":
                 directory_choice = DEFAULT_OUTPUT_FOLDER_NAME
-            elif setting_values[8] == '&':
+            elif setting_values[8] == "&":
                 directory_choice = DEFAULT_INPUT_FOLDER_NAME
             elif setting_values[8].find(r"\(?<"):
                 directory_choice = DIR_CUSTOM_WITH_METADATA
@@ -1242,40 +1460,51 @@ desired.
                 prefix = setting_values[9] + "_"
             else:
                 prefix = ""
-            object_names = [x for x in setting_values[:8]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
-                              cps.NO, cps.NO, cps.NO, cps.NO, cps.NO,
-                              directory_choice, custom_directory]
+            object_names = [x for x in setting_values[:8] if x != cps.DO_NOT_USE]
+            setting_values = [
+                DELIMITER_TAB,
+                cps.YES,
+                cps.NO,
+                cps.NO,
+                cps.NO,
+                cps.NO,
+                cps.NO,
+                cps.NO,
+                cps.NO,
+                directory_choice,
+                custom_directory,
+            ]
             for name in object_names:
-                setting_values.extend([name, cps.NO,
-                                       "%s%s.csv" % (prefix, name)])
+                setting_values.extend([name, cps.NO, "%s%s.csv" % (prefix, name)])
             variable_revision_number = 3
             from_matlab = False
         if variable_revision_number == 1 and not from_matlab:
             # Added aggregate questions
-            setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] +
-                              setting_values[6:])
+            setting_values = (
+                setting_values[:6] + [cps.NO, cps.NO, cps.NO] + setting_values[6:]
+            )
             variable_revision_number = 2
         if variable_revision_number == 2 and not from_matlab:
             # Added directory choice questions
-            setting_values = (setting_values[:9] +
-                              [DEFAULT_OUTPUT_FOLDER_NAME, "."] +
-                              setting_values[9:])
+            setting_values = (
+                setting_values[:9]
+                + [DEFAULT_OUTPUT_FOLDER_NAME, "."]
+                + setting_values[9:]
+            )
             variable_revision_number = 3
         if variable_revision_number == 3 and not from_matlab:
             # Added "wants everything" setting
             #
             new_setting_values = setting_values[:11] + [cps.NO]
             for i in range(11, len(setting_values), 3):
-                new_setting_values += setting_values[i:i + 3] + [cps.NO]
+                new_setting_values += setting_values[i : i + 3] + [cps.NO]
 
             setting_values = new_setting_values
             variable_revision_number = 4
 
         if variable_revision_number == 4 and not from_matlab:
             # Added column selector
-            setting_values = setting_values[:12] + ['None|None'] + setting_values[12:]
+            setting_values = setting_values[:12] + ["None|None"] + setting_values[12:]
             variable_revision_number = 5
 
         if variable_revision_number == 5 and not from_matlab:
@@ -1284,36 +1513,43 @@ desired.
             directory_choice = setting_values[9]
             custom_directory = setting_values[10]
             if directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
-                if custom_directory.startswith('.'):
+                if custom_directory.startswith("."):
                     directory_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
-                elif custom_directory.startswith('&'):
+                elif custom_directory.startswith("&"):
                     directory_choice = DEFAULT_INPUT_SUBFOLDER_NAME
-                    custom_directory = '.' + custom_directory[1:]
+                    custom_directory = "." + custom_directory[1:]
                 else:
                     directory_choice = ABSOLUTE_FOLDER_NAME
             directory = cps.DirectoryPath.static_join_string(
-                    directory_choice, custom_directory)
-            setting_values = (setting_values[:3] +
-                              setting_values[4:9] +
-                              [directory] +
-                              setting_values[11:])
+                directory_choice, custom_directory
+            )
+            setting_values = (
+                setting_values[:3]
+                + setting_values[4:9]
+                + [directory]
+                + setting_values[11:]
+            )
             variable_revision_number = 6
 
         if variable_revision_number == 6 and not from_matlab:
-            ''' Add GenePattern export options
+            """ Add GenePattern export options
             self.wants_genepattern_file, self.how_to_specify_gene_name,
             self.use_which_image_for_gene_name,self.gene_name_column
-            '''
-            setting_values = (setting_values[:9] +
-                              [cps.NO, GP_NAME_METADATA, cps.NONE, cps.NONE] +
-                              setting_values[9:])
+            """
+            setting_values = (
+                setting_values[:9]
+                + [cps.NO, GP_NAME_METADATA, cps.NONE, cps.NONE]
+                + setting_values[9:]
+            )
             variable_revision_number = 7
 
         if variable_revision_number == 7 and not from_matlab:
             # Add nan_representation
             setting_values = (
-                setting_values[:SETTING_OG_OFFSET_V7] +
-                [NANS_AS_NANS] + setting_values[SETTING_OG_OFFSET_V7:])
+                setting_values[:SETTING_OG_OFFSET_V7]
+                + [NANS_AS_NANS]
+                + setting_values[SETTING_OG_OFFSET_V7:]
+            )
             variable_revision_number = 8
 
         if variable_revision_number == 8 and not from_matlab:
@@ -1323,16 +1559,20 @@ desired.
 
         if variable_revision_number == 9 and not from_matlab:
             # Added prefix
-            setting_values = setting_values[:SETTING_OG_OFFSET_V9] + \
-                             [cps.NO, "MyExpt_"] + \
-                             setting_values[SETTING_OG_OFFSET_V9:]
+            setting_values = (
+                setting_values[:SETTING_OG_OFFSET_V9]
+                + [cps.NO, "MyExpt_"]
+                + setting_values[SETTING_OG_OFFSET_V9:]
+            )
             variable_revision_number = 10
 
         if variable_revision_number == 10 and not from_matlab:
             # added overwrite choice - legacy value is "Yes"
-            setting_values = setting_values[:SETTING_OG_OFFSET_V10] + \
-                             [cps.YES] + \
-                             setting_values[SETTING_OG_OFFSET_V10:]
+            setting_values = (
+                setting_values[:SETTING_OG_OFFSET_V10]
+                + [cps.YES]
+                + setting_values[SETTING_OG_OFFSET_V10:]
+            )
             variable_revision_number = 11
 
         if variable_revision_number == 11:
@@ -1344,9 +1584,11 @@ desired.
         SLOT_DIRCHOICE = 6
         directory = setting_values[SLOT_DIRCHOICE]
         directory = cps.DirectoryPath.upgrade_setting(directory)
-        setting_values = (setting_values[:SLOT_DIRCHOICE] +
-                          [directory] +
-                          setting_values[SLOT_DIRCHOICE + 1:])
+        setting_values = (
+            setting_values[:SLOT_DIRCHOICE]
+            + [directory]
+            + setting_values[SLOT_DIRCHOICE + 1 :]
+        )
 
         return setting_values, variable_revision_number, from_matlab
 
@@ -1365,8 +1607,7 @@ class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
     """
 
     def get_choices(self, pipeline):
-        choices = [
-            (s, '', 0, False) for s in [IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS]]
+        choices = [(s, "", 0, False) for s in [IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS]]
         choices += cps.ObjectNameSubscriber.get_choices(self, pipeline)
         return choices
 

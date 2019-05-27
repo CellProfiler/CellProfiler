@@ -22,12 +22,13 @@ YES          YES          NO
 
 """
 
+import numpy
+import skimage.measure
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
-import skimage.measure
 
 
 class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
@@ -45,10 +46,14 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
         output_objects.segmented = self.find_centroids(input_objects.segmented)
 
         if input_objects.has_small_removed_segmented:
-            output_objects.small_removed_segmented = self.find_centroids(input_objects.small_removed_segmented)
+            output_objects.small_removed_segmented = self.find_centroids(
+                input_objects.small_removed_segmented
+            )
 
         if input_objects.has_unedited_segmented:
-            output_objects.unedited_segmented = self.find_centroids(input_objects.unedited_segmented)
+            output_objects.unedited_segmented = self.find_centroids(
+                input_objects.unedited_segmented
+            )
 
         output_objects.parent_image = input_objects.parent_image
 
@@ -65,7 +70,9 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
 
     @staticmethod
     def find_centroids(label_image):
-        input_props = skimage.measure.regionprops(label_image, intensity_image=None, cache=True)
+        input_props = skimage.measure.regionprops(
+            label_image, intensity_image=None, cache=True
+        )
 
         input_centroids = [numpy.int_(obj["centroid"]) for obj in input_props]
 

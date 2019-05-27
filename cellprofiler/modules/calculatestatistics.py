@@ -142,22 +142,18 @@ References
 """
 
 import os
+from functools import reduce
 
 import numpy as np
 import scipy.optimize
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler.setting import YES, NO
-from functools import reduce
 import six
 
-'''# of settings aside from the dose measurements'''
+import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
+import cellprofiler.modules._help
+
+"""# of settings aside from the dose measurements"""
 FIXED_SETTING_COUNT = 1
 VARIABLE_SETTING_COUNT = 5
 
@@ -183,8 +179,9 @@ class CalculateStatistics(cpm.Module):
             self.smoothing_size = cellprofiler.settings.Float(...)"""
 
         self.grouping_values = cps.Measurement(
-                "Select the image measurement describing the positive and negative control status",
-                lambda: cpmeas.IMAGE, doc='''\
+            "Select the image measurement describing the positive and negative control status",
+            lambda: cpmeas.IMAGE,
+            doc="""\
 The Z’ factor, a measure of assay quality, is calculated by this module
 based on measurements from images that are specified as positive
 controls and images that are specified as negative controls. Images
@@ -208,43 +205,67 @@ that file into the pipeline using the **Metadata** module or the legacy
 the column header of the measurement in the input file. See the main
 module help for this module or for the **Metadata** module for an
 example text file.
-''')
+""",
+        )
         self.dose_values = []
         self.add_dose_value(can_remove=False)
-        self.add_dose_button = cps.DoSomething("", "Add another dose specification",
-                                               self.add_dose_value)
+        self.add_dose_button = cps.DoSomething(
+            "", "Add another dose specification", self.add_dose_value
+        )
 
     def add_dose_value(self, can_remove=True):
-        '''Add a dose value measurement to the list
+        """Add a dose value measurement to the list
 
         can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present.'''
+                     button for images that must be present."""
         group = cps.SettingsGroup()
-        group.append("measurement",
-                     cps.Measurement("Select the image measurement describing the treatment dose",
-                                     lambda: cpmeas.IMAGE,
-                                     doc="""\
+        group.append(
+            "measurement",
+            cps.Measurement(
+                "Select the image measurement describing the treatment dose",
+                lambda: cpmeas.IMAGE,
+                doc="""\
 The V and Z’ factors, metrics of assay quality, and the EC50,
 indicating dose-response, are calculated by this module based on each
 image being specified as a particular treatment dose. Choose a
 measurement that gives the dose of some treatment for each of your
-images. See the help for the previous setting for details."""))
+images. See the help for the previous setting for details.""",
+            ),
+        )
 
-        group.append("log_transform", cps.Binary(
-                "Log-transform the dose values?", False, doc='''\
-Select *%(YES)s* if you have dose-response data and you want to
+        group.append(
+            "log_transform",
+            cps.Binary(
+                "Log-transform the dose values?",
+                False,
+                doc="""\
+Select *Yes* if you have dose-response data and you want to
 log-transform the dose values before fitting a sigmoid curve.
 
-Select *%(NO)s* if your data values indicate only positive vs. negative
+Select *No* if your data values indicate only positive vs. negative
 controls.
-''' % globals()))
+"""
+                % globals(),
+            ),
+        )
 
-        group.append('wants_save_figure', cps.Binary(
-                '''Create dose-response plots?''', False, doc='''Select *%(YES)s* if you want to create and save dose-response plots.
-You will be asked for information on how to save the plots.''' % globals()))
+        group.append(
+            "wants_save_figure",
+            cps.Binary(
+                """Create dose-response plots?""",
+                False,
+                doc="""Select *Yes* if you want to create and save dose-response plots.
+You will be asked for information on how to save the plots."""
+                % globals(),
+            ),
+        )
 
-        group.append('figure_name', cps.Text(
-                "Figure prefix", "", doc='''\
+        group.append(
+            "figure_name",
+            cps.Text(
+                "Figure prefix",
+                "",
+                doc="""\
 *(Used only when creating dose-response plots)*
 
 CellProfiler will create a file name by appending the measurement name
@@ -253,26 +274,39 @@ of “Dose\_”, when saving a file related to objects you have chosen (for
 example, *Cells*) and a particular measurement (for example, *AreaShape_Area*),
 CellProfiler will save the figure as *Dose_Cells_AreaShape_Area.m*.
 Leave this setting blank if you do not want a prefix.
-'''
-        ))
-        group.append('pathname', cps.DirectoryPath(
+""",
+            ),
+        )
+        group.append(
+            "pathname",
+            cps.DirectoryPath(
                 "Output file location",
                 dir_choices=[
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
-                    cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""\
+                    cps.DEFAULT_OUTPUT_FOLDER_NAME,
+                    cps.DEFAULT_INPUT_FOLDER_NAME,
+                    cps.ABSOLUTE_FOLDER_NAME,
+                    cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+                ],
+                doc="""\
 *(Used only when creating dose-response plots)*
 
 This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
 %(IO_WITH_METADATA_HELP_TEXT)s
-""" % globals()))
+"""
+                % globals(),
+            ),
+        )
 
         group.append("divider", cps.Divider())
 
-        group.append("remover", cps.RemoveSettingButton("", "Remove this dose measurement",
-                                                        self.dose_values,
-                                                        group))
+        group.append(
+            "remover",
+            cps.RemoveSettingButton(
+                "", "Remove this dose measurement", self.dose_values, group
+            ),
+        )
         self.dose_values.append(group)
 
     def settings(self):
@@ -283,12 +317,19 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
         """
-        return ([self.grouping_values] +
-                reduce(lambda x, y: x + y,
-                       [[value.measurement, value.log_transform,
-                         value.wants_save_figure, value.figure_name,
-                         value.pathname]
-                        for value in self.dose_values]))
+        return [self.grouping_values] + reduce(
+            lambda x, y: x + y,
+            [
+                [
+                    value.measurement,
+                    value.log_transform,
+                    value.wants_save_figure,
+                    value.figure_name,
+                    value.pathname,
+                ]
+                for value in self.dose_values
+            ],
+        )
 
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -297,8 +338,11 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         for index, dose_value in enumerate(self.dose_values):
             if index > 0:
                 result.append(dose_value.divider)
-            result += [dose_value.measurement, dose_value.log_transform,
-                       dose_value.wants_save_figure]
+            result += [
+                dose_value.measurement,
+                dose_value.log_transform,
+                dose_value.wants_save_figure,
+            ]
             if dose_value.wants_save_figure:
                 result += [dose_value.figure_name, dose_value.pathname]
             if index > 0:
@@ -320,8 +364,10 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         """
         value_count = len(setting_values)
         if (value_count - FIXED_SETTING_COUNT) % VARIABLE_SETTING_COUNT != 0:
-            raise ValueError("Invalid # of settings (%d) for the CalculateStatistics module" %
-                             value_count)
+            raise ValueError(
+                "Invalid # of settings (%d) for the CalculateStatistics module"
+                % value_count
+            )
         dose_count = (value_count - FIXED_SETTING_COUNT) / VARIABLE_SETTING_COUNT
         if len(self.dose_values) > dose_count:
             del self.dose_values[dose_count:]
@@ -351,9 +397,11 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         result = np.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
             value = measurements.get_measurement(
-                    cpmeas.IMAGE, feature_name, image_number)
-            result[i] = (None if value is None
-                         else value if np.isscalar(value) else value[0])
+                cpmeas.IMAGE, feature_name, image_number
+            )
+            result[i] = (
+                None if value is None else value if np.isscalar(value) else value[0]
+            )
         return result
 
     def aggregate_measurement(self, measurements, object_name, feature_name):
@@ -362,7 +410,8 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         result = np.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
             values = measurements.get_measurement(
-                    object_name, feature_name, image_number)
+                object_name, feature_name, image_number
+            )
             if values is None:
                 result[i] = np.nan
             elif np.isscalar(values):
@@ -381,45 +430,54 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         """
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
-        all_objects = [x for x in measurements.get_object_names()
-                       if x not in [cpmeas.EXPERIMENT, cpmeas.NEIGHBORS]]
+        all_objects = [
+            x
+            for x in measurements.get_object_names()
+            if x not in [cpmeas.EXPERIMENT, cpmeas.NEIGHBORS]
+        ]
         feature_set = []
         image_numbers = measurements.get_image_numbers()
         for object_name in all_objects:
             all_features = [
-                x for x in measurements.get_feature_names(object_name)
-                if self.include_feature(
-                        measurements, object_name, x, image_numbers)]
-            feature_set += [(object_name, feature_name)
-                            for feature_name in all_features]
+                x
+                for x in measurements.get_feature_names(object_name)
+                if self.include_feature(measurements, object_name, x, image_numbers)
+            ]
+            feature_set += [
+                (object_name, feature_name) for feature_name in all_features
+            ]
         grouping_data = self.get_image_measurements(
-                measurements, self.grouping_values.value)
+            measurements, self.grouping_values.value
+        )
         grouping_data = grouping_data.flatten()
         data = np.zeros((len(grouping_data), len(feature_set)))
         for i, (object_name, feature_name) in enumerate(feature_set):
             data[:, i] = self.aggregate_measurement(
-                    measurements, object_name, feature_name)
+                measurements, object_name, feature_name
+            )
 
-        z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues = \
-            z_factors(grouping_data, data)
+        z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues = z_factors(
+            grouping_data, data
+        )
         #
         # For now, use first dose value only
         #
         dose_data = self.get_image_measurements(
-                measurements, self.dose_values[0].measurement.value)
+            measurements, self.dose_values[0].measurement.value
+        )
         dose_data = np.array(dose_data).flatten()
         v = v_factors(dose_data, data)
         expt_measurements = {
             "Zfactor": z,
             "Vfactor": v,
-            "OneTailedZfactor": z_one_tailed
+            "OneTailedZfactor": z_one_tailed,
         }
         for dose_group in self.dose_values:
             dose_feature = dose_group.measurement.value
-            dose_data = self.get_image_measurements(
-                    measurements, dose_feature)
-            ec50_coeffs = calculate_ec50(dose_data, data,
-                                         dose_group.log_transform.value)
+            dose_data = self.get_image_measurements(measurements, dose_feature)
+            ec50_coeffs = calculate_ec50(
+                dose_data, data, dose_group.log_transform.value
+            )
             if len(self.dose_values) == 1:
                 name = "EC50"
             else:
@@ -429,13 +487,20 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 pathname = dose_group.pathname.get_absolute_path(measurements)
                 if not os.path.exists(pathname):
                     os.makedirs(pathname)
-                write_figures(dose_group.figure_name, pathname, dose_feature,
-                              dose_data, data, ec50_coeffs, feature_set,
-                              dose_group.log_transform.value)
+                write_figures(
+                    dose_group.figure_name,
+                    pathname,
+                    dose_feature,
+                    dose_data,
+                    data,
+                    ec50_coeffs,
+                    feature_set,
+                    dose_group.log_transform.value,
+                )
 
         for i, (object_name, feature_name) in enumerate(feature_set):
-            for statistic, value in expt_measurements.iteritems():
-                sfeature_name = '_'.join((statistic, object_name, feature_name))
+            for statistic, value in expt_measurements.items():
+                sfeature_name = "_".join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
         if self.show_window:
             workspace.display_data.expt_measurements = expt_measurements
@@ -449,32 +514,28 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             a = expt_measurements[key]
             indexes = np.lexsort((-a,))
             col_labels = ["Object", "Feature", key]
-            stats = [[feature_set[i][0], feature_set[i][1], a[i]]
-                     for i in indexes[:10]]
+            stats = [[feature_set[i][0], feature_set[i][1], a[i]] for i in indexes[:10]]
             figure.subplot_table(ii, 0, stats, col_labels=col_labels)
 
-    def include_feature(self, measurements, object_name, feature_name,
-                        image_numbers):
-        '''Return true if we should analyze a feature'''
+    def include_feature(self, measurements, object_name, feature_name, image_numbers):
+        """Return true if we should analyze a feature"""
         if feature_name.find("Location") != -1:
             return False
         if feature_name.find("ModuleError") != -1:
             return False
         if feature_name.find("ExecutionTime") != -1:
             return False
-        if (object_name == cpmeas.IMAGE and
-                    feature_name == self.grouping_values):
+        if object_name == cpmeas.IMAGE and feature_name == self.grouping_values:
             # Don't measure the pos/neg controls
             return False
-        if (object_name == cpmeas.IMAGE and
-                    feature_name in [g.measurement.value for g in self.dose_values]):
+        if object_name == cpmeas.IMAGE and feature_name in [
+            g.measurement.value for g in self.dose_values
+        ]:
             return False
         if len(image_numbers) == 0:
             return False
         for image_number in image_numbers:
-            v = measurements.get_measurement(object_name,
-                                             feature_name,
-                                             image_number)
+            v = measurements.get_measurement(object_name, feature_name, image_number)
             if v is not None:
                 break
         else:
@@ -487,14 +548,16 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         return np.asanyarray(v).dtype.kind not in "OSU"
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
-                    "CalculateStatistics will not produce any output in test mode",
-                    self.grouping_values)
+                "CalculateStatistics will not produce any output in test mode",
+                self.grouping_values,
+            )
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
 
         PC_DEFAULT = "Default output folder"
         PC_WITH_IMAGE = "Same folder as image"
@@ -503,15 +566,16 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             data_name = setting_values[0]
             logarithmic = setting_values[1]
             figure_name = setting_values[2]
-            wants_save_figure = (cps.NO if figure_name == cps.DO_NOT_USE
-                                 else cps.YES)
-            setting_values = [data_name,
-                              data_name,
-                              logarithmic,
-                              wants_save_figure,
-                              figure_name,
-                              PC_DEFAULT,
-                              cps.DO_NOT_USE]
+            wants_save_figure = cps.NO if figure_name == cps.DO_NOT_USE else cps.YES
+            setting_values = [
+                data_name,
+                data_name,
+                logarithmic,
+                wants_save_figure,
+                figure_name,
+                PC_DEFAULT,
+                cps.DO_NOT_USE,
+            ]
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 1 and not from_matlab:
@@ -523,16 +587,17 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 dir_choice = setting_values[offset + 4]
                 custom_path = setting_values[offset + 5]
                 if dir_choice == PC_CUSTOM:
-                    if custom_path[0] == '.':
+                    if custom_path[0] == ".":
                         dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
-                    elif custom_path[0] == '&':
+                    elif custom_path[0] == "&":
                         dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
                         custom_path = "." + custom_path[1:]
                     else:
                         dir_choice = cps.ABSOLUTE_FOLDER_NAME
                 directory = cps.DirectoryPath.static_join_string(
-                        dir_choice, custom_path)
-                new_setting_values += setting_values[offset:(offset + 4)]
+                    dir_choice, custom_path
+                )
+                new_setting_values += setting_values[offset : (offset + 4)]
                 new_setting_values += [directory]
             setting_values = new_setting_values
             variable_revision_number = 2
@@ -541,7 +606,8 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         setting_values = list(setting_values)
         for offset in range(5, len(setting_values), VARIABLE_SETTING_COUNT):
             setting_values[offset] = cps.DirectoryPath.upgrade_setting(
-                    setting_values[offset])
+                setting_values[offset]
+            )
 
         return setting_values, variable_revision_number, from_matlab
 
@@ -553,7 +619,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
 # http://www.ravkin.net
 ########################################################
 def z_factors(xcol, ymatr):
-    '''xcol is (Nobservations,1) column vector of grouping values
+    """xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
        ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to
            observations and columns corresponds to different measures.
@@ -563,7 +629,7 @@ def z_factors(xcol, ymatr):
        between-mean Z'-factors for the corresponding measures.
 
        When ranges are zero, we set the Z' factors to a very negative
-       value.'''
+       value."""
 
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     # Z' factor is defined by the positive and negative controls, so we take the
@@ -590,10 +656,12 @@ def z_factors(xcol, ymatr):
         # Here the std must be calculated using the full formula
         exp1_cvals = exp1_vals[:, i]
         exp2_cvals = exp2_vals[:, i]
-        vals1 = exp1_cvals[(exp1_cvals >= sort_avers[0, i]) &
-                           (exp1_cvals <= sort_avers[1, i])]
-        vals2 = exp2_cvals[(exp2_cvals >= sort_avers[0, i]) &
-                           (exp2_cvals <= sort_avers[1, i])]
+        vals1 = exp1_cvals[
+            (exp1_cvals >= sort_avers[0, i]) & (exp1_cvals <= sort_avers[1, i])
+        ]
+        vals2 = exp2_cvals[
+            (exp2_cvals >= sort_avers[0, i]) & (exp2_cvals <= sort_avers[1, i])
+        ]
         stds[0, i] = np.sqrt(np.sum((vals1 - sort_avers[0, i]) ** 2) / len(vals1))
         stds[1, i] = np.sqrt(np.sum((vals2 - sort_avers[1, i]) ** 2) / len(vals2))
 
@@ -602,18 +670,18 @@ def z_factors(xcol, ymatr):
     # If means aren't the same and stdev aren't NaN, calculate the value
     z_one_tailed = 1 - 3 * (zstd / zrange)
     # Otherwise, set it to a really negative value
-    z_one_tailed[(~ np.isfinite(zstd)) | (zrange == 0)] = -1e5
+    z_one_tailed[(~np.isfinite(zstd)) | (zrange == 0)] = -1e5
     return z, z_one_tailed, xs, avers
 
 
 def v_factors(xcol, ymatr):
-    '''xcol is (Nobservations,1) column vector of grouping values
+    """xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
        ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to
            observations and columns corresponds to different measures.
 
         Calculate the V factor = 1-6 * mean standard deviation / range
-    '''
+    """
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     #
     # Range of averages per label
@@ -631,7 +699,7 @@ def v_factors(xcol, ymatr):
 
 
 def loc_shrink_mean_std(xcol, ymatr):
-    '''Compute mean and standard deviation per label
+    """Compute mean and standard deviation per label
 
     xcol - column of image labels or doses
     ymatr - a matrix with rows of values per image and columns
@@ -640,13 +708,13 @@ def loc_shrink_mean_std(xcol, ymatr):
     returns xs - a vector of unique doses
             avers - the average value per label
             stds - the standard deviation per label
-    '''
+    """
     ncols = ymatr.shape[1]
     labels, labnum, xs = loc_vector_labels(xcol)
     avers = np.zeros((labnum, ncols))
     stds = avers.copy()
     for ilab in range(labnum):
-        labinds = (labels == ilab)
+        labinds = labels == ilab
         labmatr = ymatr[labinds, :]
         if labmatr.shape[0] == 1:
             avers[ilab, :] = labmatr[0, :]
@@ -657,7 +725,7 @@ def loc_shrink_mean_std(xcol, ymatr):
 
 
 def loc_vector_labels(x):
-    '''Identify unique labels from the vector of image labels
+    """Identify unique labels from the vector of image labels
 
     x - a vector of one label or dose per image
 
@@ -666,7 +734,7 @@ def loc_vector_labels(x):
              is an index into the vector of unique labels (uniqsortvals)
     labnum - # of unique labels in x
     uniqsortvals - a vector containing the unique labels in x
-    '''
+    """
     #
     # Get the index of each image's label in the sorted array
     #
@@ -699,7 +767,7 @@ def loc_vector_labels(x):
 #
 #######################################################
 def calculate_ec50(conc, responses, Logarithmic):
-    '''EC50 Function to fit a dose-response data to a 4 parameter dose-response
+    """EC50 Function to fit a dose-response data to a 4 parameter dose-response
        curve.
 
        Inputs: 1. a 1 dimensional array of drug concentrations
@@ -716,7 +784,7 @@ def calculate_ec50(conc, responses, Logarithmic):
 
        Original Matlab code Copyright 2004 Carlos Evangelista
        send comments to CCEvangelista@aol.com
-       '''
+       """
     # If we are using a log-domain set of doses, we have a better chance of
     # fitting a sigmoid to the curve if the concentrations are
     # log-transformed.
@@ -727,44 +795,43 @@ def calculate_ec50(conc, responses, Logarithmic):
     results = np.zeros((n, 4))
 
     def error_fn(v, x, y):
-        '''Least-squares error function
+        """Least-squares error function
 
         This measures the least-squares error of fitting the sigmoid
         with parameters in v to the x and y data.
-        '''
+        """
         return np.sum((sigmoid(v, x) - y) ** 2)
 
     for i in range(n):
         response = responses[:, i]
         v0 = calc_init_params(conc, response)
-        v = scipy.optimize.fmin(error_fn, v0, args=(conc, response),
-                                maxiter=1000, maxfun=1000,
-                                disp=False)
+        v = scipy.optimize.fmin(
+            error_fn, v0, args=(conc, response), maxiter=1000, maxfun=1000, disp=False
+        )
         results[i, :] = v
     return results
 
 
 def sigmoid(v, x):
-    '''This is the EC50 sigmoid function
+    """This is the EC50 sigmoid function
 
     v is a vector of parameters:
         v[0] = minimum allowed value
         v[1] = maximum allowed value
         v[2] = ec50
         v[3] = Hill coefficient
-    '''
+    """
     p_min, p_max, ec50, hill = v
-    return p_min + ((p_max - p_min) /
-                    (1 + (x / ec50) ** hill))
+    return p_min + ((p_max - p_min) / (1 + (x / ec50) ** hill))
 
 
 def calc_init_params(x, y):
-    '''This generates the min, max, x value at the mid-y value, and Hill
+    """This generates the min, max, x value at the mid-y value, and Hill
       coefficient. These values are starting points for the sigmoid fitting.
 
       x & y are the points to be fit
       returns minimum, maximum, ec50 and hill coefficient starting points
-      '''
+      """
     min_0 = min(y)
     max_0 = max(y)
 
@@ -821,7 +888,10 @@ def calc_init_params(x, y):
     if x0 == x1:
         # If all of the doses are the same, why are we doing this?
         # There's not much point in fitting.
-        raise ValueError("All doses or labels for all image sets are %s. Can't calculate dose-response curves." % x0)
+        raise ValueError(
+            "All doses or labels for all image sets are %s. Can't calculate dose-response curves."
+            % x0
+        )
     elif y1 > y0:
         hillc = -1
     else:
@@ -829,10 +899,17 @@ def calc_init_params(x, y):
     return min_0, max_0, ec50, hillc
 
 
-def write_figures(prefix, directory, dose_name,
-                  dose_data, data, ec50_coeffs,
-                  feature_set, log_transform):
-    '''Write out figure scripts for each measurement
+def write_figures(
+    prefix,
+    directory,
+    dose_name,
+    dose_data,
+    data,
+    ec50_coeffs,
+    feature_set,
+    log_transform,
+):
+    """Write out figure scripts for each measurement
 
     prefix - prefix for file names
     directory - write files into this directory
@@ -842,7 +919,7 @@ def write_figures(prefix, directory, dose_name,
     ec50_coeffs - coefficients calculated by calculate_ec50
     feature_set - tuples of object name and feature name in same order as data
     log_transform - true to log-transform the dose data
-    '''
+    """
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_pdf import FigureCanvasPdf
 
@@ -861,7 +938,7 @@ def write_figures(prefix, directory, dose_name,
         ax.plot(x, y)
         dose_y = sigmoid(fcoeffs, dose_data)
         ax.plot(dose_data, dose_y, "o")
-        ax.set_xlabel('Dose')
-        ax.set_ylabel('Response')
-        ax.set_title('%s_%s' % (object_name, feature_name))
+        ax.set_xlabel("Dose")
+        ax.set_ylabel("Response")
+        ax.set_title("%s_%s" % (object_name, feature_name))
         f.savefig(pathname)

@@ -110,13 +110,11 @@ class MeasureImageSkeleton(cellprofiler.module.Module):
 Select the morphological skeleton image you wish to measure.
 You can create a morphological skeleton with the
 **MorphologicalSkeleton** module from the *Advanced* category.
-"""
+""",
         )
 
     def settings(self):
-        return [
-            self.skeleton_name
-        ]
+        return [self.skeleton_name]
 
     def run(self, workspace):
         names = ["Branches", "Endpoints"]
@@ -162,15 +160,11 @@ You can create a morphological skeleton with the
         layout = (2, 2)
 
         figure.set_subplots(
-            dimensions=workspace.display_data.dimensions,
-            subplots=layout
+            dimensions=workspace.display_data.dimensions, subplots=layout
         )
 
         figure.subplot_imshow(
-            image=workspace.display_data.skeleton,
-            title="Skeleton",
-            x=0,
-            y=0
+            image=workspace.display_data.skeleton, title="Skeleton", x=0, y=0
         )
 
         figure.subplot_imshow(
@@ -178,7 +172,7 @@ You can create a morphological skeleton with the
             title="Nodes",
             x=1,
             y=0,
-            sharexy=figure.subplot(0, 0)
+            sharexy=figure.subplot(0, 0),
         )
 
         figure.subplot_table(
@@ -186,14 +180,12 @@ You can create a morphological skeleton with the
             statistics=workspace.display_data.statistics,
             title="Measurement",
             x=0,
-            y=1
+            y=1,
         )
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
-            return [
-                "Skeleton"
-            ]
+            return ["Skeleton"]
 
         return []
 
@@ -208,7 +200,7 @@ You can create a morphological skeleton with the
         if object_name == cellprofiler.measurement.IMAGE and category == "Skeleton":
             return [
                 "Skeleton_Branches_{}".format(name),
-                "Skeleton_Endpoints_{}".format(name)
+                "Skeleton_Endpoints_{}".format(name),
             ]
 
         return []
@@ -218,7 +210,7 @@ You can create a morphological skeleton with the
 
         features = [
             self.get_measurement_name("Branches"),
-            self.get_measurement_name("Endpoints")
+            self.get_measurement_name("Endpoints"),
         ]
 
         column_type = cellprofiler.measurement.COLTYPE_INTEGER

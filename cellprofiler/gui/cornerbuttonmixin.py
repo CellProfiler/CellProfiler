@@ -82,8 +82,12 @@ class CornerButtonMixin(object):
                 r = self.get_corner_update_button_rect()
                 if self.corner_hitcode == self.CORNER_HIT_UPDATE:
                     if self.corner_button_pressed:
-                        flags = wx.CONTROL_PRESSED | wx.CONTROL_CURRENT \
-                                | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
+                        flags = (
+                            wx.CONTROL_PRESSED
+                            | wx.CONTROL_CURRENT
+                            | wx.CONTROL_FOCUSED
+                            | wx.CONTROL_SELECTED
+                        )
                     else:
                         flags = 0
                 else:
@@ -129,12 +133,13 @@ class CornerButtonMixin(object):
         else:
             was_pressed = self.corner_button_pressed
             self.corner_button_pressed = (
-                self.corner_hitcode != self.CORNER_HIT_NONE and
-                self.corner_hitcode == hit_code)
+                self.corner_hitcode != self.CORNER_HIT_NONE
+                and self.corner_hitcode == hit_code
+            )
             if was_pressed != self.corner_button_pressed:
                 corner.RefreshRect(
-                        self.get_corner_update_button_rect(),
-                        eraseBackground=False)
+                    self.get_corner_update_button_rect(), eraseBackground=False
+                )
 
     def on_corner_capture_lost(self, event):
         self.corner_hitcode = self.CORNER_HIT_NONE

@@ -5,6 +5,7 @@ import six
 def make_help_menu(h, window, menu=None):
     import wx
     import cellprofiler.gui.htmldialog
+
     if menu is None:
         menu = wx.Menu()
     for key, value in h:
@@ -12,6 +13,7 @@ def make_help_menu(h, window, menu=None):
         if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
             menu.Append(my_id, key, make_help_menu(value, window))
         else:
+
             def show_dialog(event, key=key, value=value):
                 dlg = cellprofiler.gui.htmldialog.HTMLDialog(window, key, value)
                 dlg.Show()

@@ -2115,11 +2115,7 @@ class PipelineController(object):
             interrupt = [False]
             message = ["Initializing"]
 
-            def fn(filenames=filenames, interrupt=None, message=None, queue=queue):
-                if message is None:
-                    message = message
-                if interrupt is None:
-                    interrupt = interrupt
+            def fn(filenames=filenames, interrupt=interrupt, message=message, queue=queue):
                 urls = []
                 for pathname in filenames:
                     if interrupt[0]:
@@ -2179,12 +2175,12 @@ class PipelineController(object):
                     try:
                         while True:
                             urls += queue.get(block=False)
-                    except Queue.Empty:
+                    except six.moves.queue.Empty as e:
                         keep_going = update_pulse(
                             "Adding %d files to file list" % len(urls)
                         )
                         self.add_urls(urls)
-                except Queue.Empty as err:
+                except six.moves.queue.Empty as e:
                     if not thread.is_alive():
                         try:
                             self.add_urls(queue.get(block=False))

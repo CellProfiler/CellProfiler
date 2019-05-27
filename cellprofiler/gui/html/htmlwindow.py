@@ -2,11 +2,12 @@
 
 import os
 import sys
-import urllib
 import webbrowser
 
-import cellprofiler.icons
+import six.moves.urllib.request
 import wx.html
+
+import cellprofiler.icons
 from cellprofiler.gui.html import utils
 
 MEMORY_SCHEME = "memory:"
@@ -20,7 +21,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         href = linkinfo.Href
         if href.startswith("#"):
             super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
-        elif href.startswith('http://') or href.startswith("https://"):
+        elif href.startswith("http://") or href.startswith("https://"):
             webbrowser.open(href)
         else:
             newpage = utils.find_link(href)
@@ -29,14 +30,18 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 
-    def OnOpeningURL(self, file_format, url, **kwargs):
-        if file_format == wx.html.HTML_URL_IMAGE:
+    def OnOpeningURL(self, url_type, url, redirect):
+        if url_type == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
                 path = cellprofiler.icons.get_builtin_images_path()
-                full_path = os.path.join(path, url[len(MEMORY_SCHEME):])
+
+                full_path = os.path.join(path, url[len(MEMORY_SCHEME) :])
+
                 if sys.platform.startswith("win"):
                     my_url = full_path
                 else:
-                    my_url = "file:" + urllib.pathname2url(full_path)
-                return my_url
-        return wx.html.HTML_OPEN
+                    my_url = "file:" + six.moves.urllib.request.pathname2url(full_path)
+
+                return wx.html.HTML_REDIRECT, my_url
+
+        return wx.html.HTML_OPEN, ""

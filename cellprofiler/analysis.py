@@ -1,7 +1,6 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
 
-import queue
 import collections
 import logging
 import multiprocessing
@@ -13,31 +12,31 @@ import tempfile
 import threading
 import uuid
 
-import h5py
 import numpy as np
-import zmq
+import six.moves.queue
 import six
 import six.moves
+import zmq
 
 import cellprofiler
 import cellprofiler.image as cpimage
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
-from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
+from cellprofiler.utilities.zmqrequest import AnalysisRequest, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import get_announcer_address
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
+from cellprofiler.utilities.zmqrequest import register_analysis
 
 logger = logging.getLogger(__name__)
 
 use_analysis = True
 
-DEBUG = 'DEBUG'
+DEBUG = "DEBUG"
 ANNOUNCE_DONE = "DONE"
 
 
 class Analysis(object):
-    '''An Analysis is the application of a particular pipeline of modules to a
+    """An Analysis is the application of a particular pipeline of modules to a
     set of images to produce measurements.
 
     Multiprocessing for analyses is handled by multiple layers of threads and
@@ -63,13 +62,12 @@ class Analysis(object):
     +---------------+----------------+---------------+
 
     Workers are managed by class variables in the AnalysisRunner.
-    '''
+    """
 
-    def __init__(self, pipeline, measurements_filename,
-                 initial_measurements=None):
-        '''create an Analysis applying pipeline to a set of images, writing out
+    def __init__(self, pipeline, measurements_filename, initial_measurements=None):
+        """create an Analysis applying pipeline to a set of images, writing out
         to measurements_filename, optionally starting with previous
-        measurements.'''
+        measurements."""
         self.pipeline = pipeline
         initial_measurements = cpmeas.Measurements(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
@@ -82,7 +80,7 @@ class Analysis(object):
         self.runner_lock = threading.Lock()  # defensive coding purposes
 
     def start(self, analysis_event_callback, num_workers=None, overwrite=True):
-        '''Start the analysis runner
+        """Start the analysis runner
 
         analysis_event_callback - callback from runner to UI thread for
                                   event progress and UI handlers
@@ -91,16 +89,18 @@ class Analysis(object):
 
         overwrite - True (default) to process all image sets, False to only
                     process incomplete ones (or incomplete groups if grouping)
-        '''
+        """
         with self.runner_lock:
             assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
 
-            self.runner = AnalysisRunner(self.analysis_in_progress,
-                                         self.pipeline,
-                                         self.initial_measurements_buf,
-                                         self.output_path,
-                                         analysis_event_callback)
+            self.runner = AnalysisRunner(
+                self.analysis_in_progress,
+                self.pipeline,
+                self.initial_measurements_buf,
+                self.output_path,
+                analysis_event_callback,
+            )
             self.runner.start(num_workers=num_workers, overwrite=overwrite)
             return self.analysis_in_progress
 
@@ -123,11 +123,11 @@ class Analysis(object):
             self.runner = None
 
     def check_running(self):
-        '''Verify that an analysis is running, allowing the GUI to recover even
+        """Verify that an analysis is running, allowing the GUI to recover even
         if the AnalysisRunner fails in some way.
 
         Returns True if analysis is still running (threads are still alive).
-        '''
+        """
         with self.runner_lock:
             if self.analysis_in_progress:
                 return self.runner.check()
@@ -135,7 +135,7 @@ class Analysis(object):
 
 
 class AnalysisRunner(object):
-    '''The AnalysisRunner manages two threads (per instance) and all of the
+    """The AnalysisRunner manages two threads (per instance) and all of the
     workers (per class, i.e., singletons).
 
     The two threads run interface() and jobserver(), below.
@@ -154,7 +154,7 @@ class AnalysisRunner(object):
     interface() and jobserver() communicate via Queues and using condition
     variables to get each other's attention.  zmqrequest is used to communicate
     between jobserver() and workers[].
-    '''
+    """
 
     # worker pool - shared by all instances
     workers = []
@@ -166,11 +166,21 @@ class AnalysisRunner(object):
     STATUS_IN_PROCESS = "InProcess"
     STATUS_FINISHED_WAITING = "FinishedWaitingMeasurements"
     STATUS_DONE = "Done"
-    STATUSES = [STATUS_UNPROCESSED, STATUS_IN_PROCESS, STATUS_FINISHED_WAITING, STATUS_DONE]
+    STATUSES = [
+        STATUS_UNPROCESSED,
+        STATUS_IN_PROCESS,
+        STATUS_FINISHED_WAITING,
+        STATUS_DONE,
+    ]
 
-    def __init__(self, analysis_id, pipeline,
-                 initial_measurements_buf,
-                 output_path, event_listener):
+    def __init__(
+        self,
+        analysis_id,
+        pipeline,
+        initial_measurements_buf,
+        output_path,
+        event_listener,
+    ):
         self.initial_measurements_buf = initial_measurements_buf
 
         # for writing results
@@ -185,9 +195,9 @@ class AnalysisRunner(object):
         self.paused = False
         self.cancelled = False
 
-        self.work_queue = queue.Queue()
-        self.in_process_queue = queue.Queue()
-        self.finished_queue = queue.Queue()
+        self.work_queue = six.moves.queue.Queue()
+        self.in_process_queue = six.moves.queue.Queue()
+        self.finished_queue = six.moves.queue.Queue()
 
         # We use a queue size of 10 because we keep measurements in memory (as
         # their HDF5 file contents) until they get merged into the full
@@ -196,7 +206,7 @@ class AnalysisRunner(object):
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
         # http://code.google.com/p/h5py/issues/detail?id=244
-        self.received_measurements_queue = queue.Queue(maxsize=10)
+        self.received_measurements_queue = six.moves.queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -205,12 +215,12 @@ class AnalysisRunner(object):
 
     # External control interfaces
     def start(self, num_workers=None, overwrite=True):
-        '''start the analysis run
+        """start the analysis run
 
         num_workers - # of workers to run, default = # of cores
         overwrite - if True, overwrite existing image set measurements, False
                     try to reuse them.
-        '''
+        """
 
         # Although it would be nice to reuse the worker pool, I'm not entirely
         # sure they recover correctly from the user cancelling an analysis
@@ -223,18 +233,20 @@ class AnalysisRunner(object):
 
         start_signal = threading.Semaphore(0)
         self.interface_thread = start_daemon_thread(
-                target=self.interface,
-                args=(start_signal,),
-                kwargs=dict(overwrite=overwrite),
-                name='AnalysisRunner.interface')
+            target=self.interface,
+            args=(start_signal,),
+            kwargs=dict(overwrite=overwrite),
+            name="AnalysisRunner.interface",
+        )
         #
         # Wait for signal on interface started.
         #
         start_signal.acquire()
         self.jobserver_thread = start_daemon_thread(
-                target=self.jobserver,
-                args=(self.analysis_id, start_signal),
-                name='AnalysisRunner.jobserver')
+            target=self.jobserver,
+            args=(self.analysis_id, start_signal),
+            name="AnalysisRunner.jobserver",
+        )
         #
         # Wait for signal on jobserver started.
         #
@@ -243,10 +255,12 @@ class AnalysisRunner(object):
         self.start_workers(num_workers)
 
     def check(self):
-        return ((self.interface_thread is not None) and
-                (self.jobserver_thread is not None) and
-                self.interface_thread.is_alive() and
-                self.jobserver_thread.is_alive())
+        return (
+            (self.interface_thread is not None)
+            and (self.jobserver_thread is not None)
+            and self.interface_thread.is_alive()
+            and self.jobserver_thread.is_alive()
+        )
 
     def notify_threads(self):
         with self.interface_work_cv:
@@ -255,7 +269,7 @@ class AnalysisRunner(object):
             self.jobserver_work_cv.notify()
 
     def cancel(self):
-        '''cancel the analysis run'''
+        """cancel the analysis run"""
         logger.debug("Stopping workers")
         self.stop_workers()
         logger.debug("Canceling run")
@@ -269,12 +283,12 @@ class AnalysisRunner(object):
         logger.debug("Cancel complete")
 
     def pause(self):
-        '''pause the analysis run'''
+        """pause the analysis run"""
         self.paused = True
         self.notify_threads()
 
     def resume(self):
-        '''resume a paused analysis run'''
+        """resume a paused analysis run"""
         self.paused = False
         self.notify_threads()
 
@@ -283,25 +297,23 @@ class AnalysisRunner(object):
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRunRequest(module.module_num,
-                                      workspace.display_data)
+        event = DisplayPostRunRequest(module.module_num, workspace.display_data)
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
-    def interface(self,
-                  start_signal,
-                  image_set_start=1,
-                  image_set_end=None,
-                  overwrite=True):
-        '''Top-half thread for running an analysis.  Sets up grouping for jobs,
+    def interface(
+        self, start_signal, image_set_start=1, image_set_end=None, overwrite=True
+    ):
+        """Top-half thread for running an analysis.  Sets up grouping for jobs,
         deals with returned measurements, reports status periodically.
 
         start_signal- signal this semaphore when jobs are ready.
         image_set_start - beginning image set number to process
         image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
-        '''
+        """
         from javabridge import attach, detach
+
         posted_analysis_started = False
         acknowledged_thread_start = False
         measurements = None
@@ -315,17 +327,18 @@ class AnalysisRunner(object):
             if self.output_path is None:
                 # Caller wants a temporary measurements file.
                 fd, filename = tempfile.mkstemp(
-                        ".h5", dir=cpprefs.get_temporary_directory())
+                    ".h5", dir=cpprefs.get_temporary_directory()
+                )
                 try:
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
                     initial_measurements = cpmeas.Measurements(
-                            filename=filename, mode="r")
+                        filename=filename, mode="r"
+                    )
                     measurements = cpmeas.Measurements(
-                            image_set_start=None,
-                            copy=initial_measurements,
-                            mode="a")
+                        image_set_start=None, copy=initial_measurements, mode="a"
+                    )
                 finally:
                     if initial_measurements is not None:
                         initial_measurements.close()
@@ -333,19 +346,21 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurements(image_set_start=None,
-                                                   filename=self.output_path,
-                                                   mode="a")
+                measurements = cpmeas.Measurements(
+                    image_set_start=None, filename=self.output_path, mode="a"
+                )
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
-            workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                      measurements, cpimage.ImageSetList())
+            workspace = cpw.Workspace(
+                self.pipeline, None, None, None, measurements, cpimage.ImageSetList()
+            )
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
             image_sets_to_process = filter(
-                    lambda x: x >= image_set_start and x <= image_set_end,
-                    measurements.get_image_numbers())
+                lambda x: image_set_start <= x <= image_set_end,
+                measurements.get_image_numbers(),
+            )
 
             self.post_event(AnalysisStarted())
             posted_analysis_started = True
@@ -361,9 +376,9 @@ class AnalysisRunner(object):
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number]
-                        status = measurements[cpmeas.IMAGE, self.STATUS,
-                                              image_number]
+                            cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number
+                        ]
+                        status = measurements[cpmeas.IMAGE, self.STATUS, image_number]
                         if status != self.STATUS_DONE:
                             group_status[group_number] = self.STATUS_UNPROCESSED
                         elif group_number not in group_status:
@@ -372,20 +387,29 @@ class AnalysisRunner(object):
             new_image_sets_to_process = []
             for image_set_number in image_sets_to_process:
                 needs_reset = False
-                if (overwrite or
-                        (not measurements.has_measurements(
-                                cpmeas.IMAGE, self.STATUS, image_set_number)) or
-                        (measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
-                             != self.STATUS_DONE)):
+                if (
+                    overwrite
+                    or (
+                        not measurements.has_measurements(
+                            cpmeas.IMAGE, self.STATUS, image_set_number
+                        )
+                    )
+                    or (
+                        measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                        != self.STATUS_DONE
+                    )
+                ):
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
+                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number
+                    ]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
-                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = \
-                        self.STATUS_UNPROCESSED
+                    measurements[
+                        cpmeas.IMAGE, self.STATUS, image_set_number
+                    ] = self.STATUS_UNPROCESSED
                     new_image_sets_to_process.append(image_set_number)
             image_sets_to_process = new_image_sets_to_process
 
@@ -395,18 +419,26 @@ class AnalysisRunner(object):
                 worker_runs_post_group = True
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
-                    group_number = measurements[cpmeas.IMAGE,
-                                                cpmeas.GROUP_NUMBER,
-                                                image_set_number]
-                    group_index = measurements[cpmeas.IMAGE,
-                                               cpmeas.GROUP_INDEX,
-                                               image_set_number]
-                    job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
-                job_groups = [[isn for _, isn in sorted(job_groups[group_number])]
-                              for group_number in sorted(job_groups)]
+                    group_number = measurements[
+                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number
+                    ]
+                    group_index = measurements[
+                        cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number
+                    ]
+                    job_groups[group_number] = job_groups.get(group_number, []) + [
+                        (group_index, image_set_number)
+                    ]
+                job_groups = [
+                    [isn for _, isn in sorted(job_groups[group_number])]
+                    for group_number in sorted(job_groups)
+                ]
             else:
-                worker_runs_post_group = False  # prepare_group will be run in worker, but post_group is below.
-                job_groups = [[image_set_number] for image_set_number in image_sets_to_process]
+                worker_runs_post_group = (
+                    False
+                )  # prepare_group will be run in worker, but post_group is below.
+                job_groups = [
+                    [image_set_number] for image_set_number in image_sets_to_process
+                ]
 
             # XXX - check that any constructed groups are complete, i.e.,
             # image_set_start and image_set_end shouldn't carve them up.
@@ -416,9 +448,7 @@ class AnalysisRunner(object):
                 # finish (see the check of self.finish_queue below) to post the rest.
                 # This ensures that any shared data from the first imageset is
                 # available to later imagesets.
-                self.work_queue.put((job_groups[0],
-                                     worker_runs_post_group,
-                                     True))
+                self.work_queue.put((job_groups[0], worker_runs_post_group, True))
                 waiting_for_first_imageset = True
                 del job_groups[0]
             else:
@@ -437,7 +467,9 @@ class AnalysisRunner(object):
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
                     recd_measurements = cpmeas.load_measurements_from_buffer(buf)
-                    self.copy_recieved_measurements(recd_measurements, measurements, image_numbers)
+                    self.copy_recieved_measurements(
+                        recd_measurements, measurements, image_numbers
+                    )
                     recd_measurements.close()
                     del recd_measurements
 
@@ -445,16 +477,18 @@ class AnalysisRunner(object):
                 while not self.in_process_queue.empty():
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
-                        measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
+                        measurements[
+                            cpmeas.IMAGE, self.STATUS, int(image_set_number)
+                        ] = self.STATUS_IN_PROCESS
 
                 # check for finished jobs that haven't returned measurements, yet
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
+                        cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)
+                    ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
-                        assert isinstance(finished_req,
-                                          ImageSetSuccessWithDictionary)
+                        assert isinstance(finished_req, ImageSetSuccessWithDictionary)
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
@@ -465,8 +499,10 @@ class AnalysisRunner(object):
                     finished_req.reply(Ack())
 
                 # check progress and report
-                counts = collections.Counter(measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
-                                             for image_set_number in image_sets_to_process)
+                counts = collections.Counter(
+                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                    for image_set_number in image_sets_to_process
+                )
                 self.post_event(AnalysisProgress(counts))
 
                 # Are we finished?
@@ -476,22 +512,22 @@ class AnalysisRunner(object):
                     if not worker_runs_post_group:
                         self.pipeline.post_group(workspace, {})
 
-                    workspace = cpw.Workspace(self.pipeline,
-                                              None, None, None,
-                                              measurements, None, None)
-                    workspace.post_run_display_handler = \
-                        self.post_run_display_handler
+                    workspace = cpw.Workspace(
+                        self.pipeline, None, None, None, measurements, None, None
+                    )
+                    workspace.post_run_display_handler = self.post_run_display_handler
                     self.pipeline.post_run(workspace)
                     break
 
                 measurements.flush()
                 # not done, wait for more work
                 with self.interface_work_cv:
-                    while (self.paused or
-                               ((not self.cancelled) and
-                                    self.in_process_queue.empty() and
-                                    self.finished_queue.empty() and
-                                    self.received_measurements_queue.empty())):
+                    while self.paused or (
+                        (not self.cancelled)
+                        and self.in_process_queue.empty()
+                        and self.finished_queue.empty()
+                        and self.received_measurements_queue.empty()
+                    ):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
         finally:
             detach()
@@ -506,18 +542,17 @@ class AnalysisRunner(object):
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
-    def copy_recieved_measurements(self,
-                                   recd_measurements,
-                                   measurements,
-                                   image_numbers):
-        '''Copy the received measurements to the local process' measurements
+    def copy_recieved_measurements(
+        self, recd_measurements, measurements, image_numbers
+    ):
+        """Copy the received measurements to the local process' measurements
 
         recd_measurements - measurements received from worker
 
         measurements - local measurements = destination for copy
 
         image_numbers - image numbers processed by worker
-        '''
+        """
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
             if o == cpmeas.EXPERIMENT:
@@ -530,21 +565,31 @@ class AnalysisRunner(object):
                         f_image_numbers = image_numbers
                     else:
                         local_values = measurements[
-                            cpmeas.IMAGE, feature, image_numbers]
+                            cpmeas.IMAGE, feature, image_numbers
+                        ]
                         remote_values = recd_measurements[
-                            cpmeas.IMAGE, feature, image_numbers]
+                            cpmeas.IMAGE, feature, image_numbers
+                        ]
                         f_image_numbers = [
-                            i for i, lv, rv in zip(
-                                    image_numbers, local_values, remote_values)
-                            if (np.any(rv != lv) if isinstance(lv, np.ndarray)
-                                else lv != rv)]
+                            i
+                            for i, lv, rv in zip(
+                                image_numbers, local_values, remote_values
+                            )
+                            if (
+                                np.any(rv != lv)
+                                if isinstance(lv, np.ndarray)
+                                else lv != rv
+                            )
+                        ]
                     if len(f_image_numbers) > 0:
-                        measurements[o, feature, f_image_numbers] \
-                            = recd_measurements[o, feature, f_image_numbers]
+                        measurements[o, feature, f_image_numbers] = recd_measurements[
+                            o, feature, f_image_numbers
+                        ]
             else:
                 for feature in recd_measurements.get_feature_names(o):
-                    measurements[o, feature, image_numbers] \
-                        = recd_measurements[o, feature, image_numbers]
+                    measurements[o, feature, image_numbers] = recd_measurements[
+                        o, feature, image_numbers
+                    ]
         for image_set_number in image_numbers:
             measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
 
@@ -553,9 +598,8 @@ class AnalysisRunner(object):
         # all the requests from workers, of which there might be several.
 
         # start the zmqrequest Boundary
-        request_queue = queue.Queue()
-        boundary = register_analysis(analysis_id,
-                                     request_queue)
+        request_queue = six.moves.queue.Queue()
+        boundary = register_analysis(analysis_id, request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
         # will get announcements if they connect.
@@ -575,7 +619,9 @@ class AnalysisRunner(object):
                     self.post_event(AnalysisPaused())
                     i_was_paused_before = True
                 if self.paused or request_queue.empty():
-                    self.jobserver_work_cv.wait(1)  # we timeout in order to keep announcing ourselves.
+                    self.jobserver_work_cv.wait(
+                        1
+                    )  # we timeout in order to keep announcing ourselves.
                     continue  # back to while... check that we're still running
 
             if i_was_paused_before:
@@ -584,13 +630,17 @@ class AnalysisRunner(object):
 
             try:
                 req = request_queue.get(timeout=0.25)
-            except queue.Empty:
+            except six.moves.queue.Empty:
                 continue
 
             if isinstance(req, PipelinePreferencesRequest):
                 logger.debug("Received pipeline preferences request")
-                req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
-                                preferences=cpprefs.preferences_as_dict()))
+                req.reply(
+                    Reply(
+                        pipeline_blob=np.array(self.pipeline_as_string()),
+                        preferences=cpprefs.preferences_as_dict(),
+                    )
+                )
                 logger.debug("Replied to pipeline preferences request")
             elif isinstance(req, InitialMeasurementsRequest):
                 logger.debug("Received initial measurements request")
@@ -599,15 +649,21 @@ class AnalysisRunner(object):
             elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
                     logger.debug("Received work request")
-                    job, worker_runs_post_group, wants_dictionary = \
+                    job, worker_runs_post_group, wants_dictionary = (
                         self.work_queue.get()
-                    req.reply(WorkReply(
+                    )
+                    req.reply(
+                        WorkReply(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
-                            wants_dictionary=wants_dictionary))
+                            wants_dictionary=wants_dictionary,
+                        )
+                    )
                     self.queue_dispatched_job(job)
-                    logger.debug("Dispatched job: image sets=%s" %
-                                 ",".join([str(i) for i in job]))
+                    logger.debug(
+                        "Dispatched job: image sets=%s"
+                        % ",".join([str(i) for i in job])
+                    )
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
@@ -624,8 +680,7 @@ class AnalysisRunner(object):
                 logger.debug("Sent shared dictionary reply")
             elif isinstance(req, MeasurementsReport):
                 logger.debug("Received measurements report")
-                self.queue_received_measurements(req.image_set_numbers,
-                                                 req.buf)
+                self.queue_received_measurements(req.image_set_numbers, req.buf)
                 req.reply(Ack())
                 logger.debug("Acknowledged measurements report")
             elif isinstance(req, AnalysisCancelRequest):
@@ -635,10 +690,18 @@ class AnalysisRunner(object):
                     self.cancelled = True
                     self.interface_work_cv.notify()
                 req.reply(Ack())
-            elif isinstance(req, (InteractionRequest, DisplayRequest,
-                                  DisplayPostGroupRequest,
-                                  ExceptionReport, DebugWaiting, DebugComplete,
-                                  OmeroLoginRequest)):
+            elif isinstance(
+                req,
+                (
+                    InteractionRequest,
+                    DisplayRequest,
+                    DisplayPostGroupRequest,
+                    ExceptionReport,
+                    DebugWaiting,
+                    DebugComplete,
+                    OmeroLoginRequest,
+                ),
+            ):
                 logger.debug("Enqueueing interactive request")
                 # bump upward
                 self.post_event(req)
@@ -690,11 +753,10 @@ class AnalysisRunner(object):
 
         cls.work_announce_address = get_announcer_address()
         logger.info("Starting workers on address %s" % cls.work_announce_address)
-        if 'CP_DEBUG_WORKER' in os.environ:
-            if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
+        if "CP_DEBUG_WORKER" in os.environ:
+            if os.environ["CP_DEBUG_WORKER"] == "NOT_INPROC":
                 return
-            from cellprofiler.worker import \
-                AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
+            from cellprofiler.worker import AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
             class WorkerRunner(threading.Thread):
@@ -724,44 +786,49 @@ class AnalysisRunner(object):
         close_fds = False
         # start workers
         for idx in range(num):
-            if sys.platform == 'darwin':
+            if sys.platform == "darwin":
                 close_all_on_exec()
 
-            aw_args = ["--work-announce", cls.work_announce_address,
-                       "--plugins-directory", cpprefs.get_plugin_directory(),
-                       "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
+            aw_args = [
+                "--work-announce",
+                cls.work_announce_address,
+                "--plugins-directory",
+                cpprefs.get_plugin_directory(),
+                "--ij-plugins-directory",
+                cpprefs.get_ij_plugin_directory(),
+            ]
             jvm_arg = "%dm" % cpprefs.get_jvm_heap_mb()
             aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
-            if hasattr(sys, 'frozen'):
-                if sys.platform == 'darwin':
-                    executable = os.path.join(
-                            os.path.dirname(sys.executable), "cp")
-                    args = ([executable] + aw_args)
-                elif sys.platform.startswith('linux'):
-                    aw_path = os.path.join(os.path.dirname(__file__),
-                                           "worker.py")
+            if hasattr(sys, "frozen"):
+                if sys.platform == "darwin":
+                    executable = os.path.join(os.path.dirname(sys.executable), "cp")
+                    args = [executable] + aw_args
+                elif sys.platform.startswith("linux"):
+                    aw_path = os.path.join(os.path.dirname(__file__), "worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
                     args = [sys.executable] + aw_args
 
-                worker = subprocess.Popen(args,
-                                          env=find_worker_env(idx),
-                                          stdin=subprocess.PIPE,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT,
-                                          close_fds=close_fds)
+                worker = subprocess.Popen(
+                    args,
+                    env=find_worker_env(idx),
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    close_fds=close_fds,
+                )
             else:
                 worker = subprocess.Popen(
-                        [find_python(),
-                         '-u',  # unbuffered
-                         find_analysis_worker_source()] + aw_args,
-                        env=find_worker_env(idx),
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        close_fds=close_fds)
+                    [find_python(), "-u", find_analysis_worker_source()]  # unbuffered
+                    + aw_args,
+                    env=find_worker_env(idx),
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    close_fds=close_fds,
+                )
 
             def run_logger(workR, widx):
                 while True:
@@ -773,7 +840,9 @@ class AnalysisRunner(object):
                     except:
                         break
 
-            start_daemon_thread(target=run_logger, args=(worker, idx,), name='worker stdout logger')
+            start_daemon_thread(
+                target=run_logger, args=(worker, idx), name="worker stdout logger"
+            )
 
             cls.workers += [worker]
             cls.deadman_switches += [worker.stdin]  # closing stdin will kill subprocess
@@ -789,38 +858,37 @@ class AnalysisRunner(object):
 
 
 def find_python():
-    if hasattr(sys, 'frozen'):
+    if hasattr(sys, "frozen"):
         if sys.platform == "darwin":
-            app_python = os.path.join(os.path.dirname(os.environ['ARGVZERO']), "python")
+            app_python = os.path.join(os.path.dirname(os.environ["ARGVZERO"]), "python")
             return app_python
     return sys.executable
 
 
 def find_worker_env(idx):
-    '''Construct a command-line environment for the worker
+    """Construct a command-line environment for the worker
 
     idx - index of the worker, e.g., 0 for the first, 1 for the second...
-    '''
+    """
     newenv = os.environ.copy()
     root_dir = os.path.abspath(
-            os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
+        os.path.join(os.path.dirname(cellprofiler.__file__), "..")
+    )
     added_paths = []
-    if 'PYTHONPATH' in newenv:
-        old_path = newenv['PYTHONPATH']
-        if not any([root_dir == path
-                    for path in old_path.split(os.pathsep)]):
+    if "PYTHONPATH" in newenv:
+        old_path = newenv["PYTHONPATH"]
+        if not any([root_dir == path for path in old_path.split(os.pathsep)]):
             added_paths.append(root_dir)
     else:
         added_paths.append(root_dir)
 
-    if hasattr(sys, 'frozen'):
+    if hasattr(sys, "frozen"):
         if sys.platform == "darwin":
             # http://mail.python.org/pipermail/pythonmac-sig/2005-April/013852.html
             added_paths += [p for p in sys.path if isinstance(p, six.string_types)]
-    if 'PYTHONPATH' in newenv:
-        added_paths.insert(0, newenv['PYTHONPATH'])
-    newenv['PYTHONPATH'] = os.pathsep.join(
-            [x.encode('utf-8') for x in added_paths])
+    if "PYTHONPATH" in newenv:
+        added_paths.insert(0, newenv["PYTHONPATH"])
+    newenv["PYTHONPATH"] = os.pathsep.join([x.encode("utf-8") for x in added_paths])
     if "CP_JDWP_PORT" in newenv:
         del newenv["CP_JDWP_PORT"]
     if "AW_JDWP_PORT" in newenv:
@@ -829,13 +897,14 @@ def find_worker_env(idx):
         del newenv["AW_JDWP_PORT"]
     for key in newenv:
         if isinstance(newenv[key], six.text_type):
-            newenv[key] = newenv[key].encode('utf-8')
+            newenv[key] = newenv[key].encode("utf-8")
     return newenv
 
 
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
+
     return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
 
 
@@ -886,14 +955,12 @@ class WorkRequest(AnalysisRequest):
 
 class ImageSetSuccess(AnalysisRequest):
     def __init__(self, analysis_id, image_set_number=None):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
+        AnalysisRequest.__init__(self, analysis_id, image_set_number=image_set_number)
 
 
 class ImageSetSuccessWithDictionary(ImageSetSuccess):
     def __init__(self, analysis_id, image_set_number, shared_dicts):
-        ImageSetSuccess.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
+        ImageSetSuccess.__init__(self, analysis_id, image_set_number=image_set_number)
         self.shared_dicts = shared_dicts
 
 
@@ -902,10 +969,12 @@ class DictionaryReqRep(Reply):
 
 
 class MeasurementsReport(AnalysisRequest):
-    def __init__(self, analysis_id, buf, image_set_numbers=[]):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 buf=buf,
-                                 image_set_numbers=image_set_numbers)
+    def __init__(self, analysis_id, buf, image_set_numbers=None):
+        AnalysisRequest.__init__(
+            self, analysis_id, buf=buf, image_set_numbers=image_set_numbers
+        )
+        if image_set_numbers is None:
+            image_set_numbers = []
 
 
 class InteractionRequest(AnalysisRequest):
@@ -921,9 +990,9 @@ class DisplayRequest(AnalysisRequest):
 
 
 class DisplayPostRunRequest(object):
-    '''Request a post-run display
+    """Request a post-run display
 
-    This is a message sent to the UI from the analysis worker'''
+    This is a message sent to the UI from the analysis worker"""
 
     def __init__(self, module_num, display_data):
         self.module_num = module_num
@@ -931,16 +1000,18 @@ class DisplayPostRunRequest(object):
 
 
 class DisplayPostGroupRequest(AnalysisRequest):
-    '''Request a post-group display
+    """Request a post-group display
 
-    This is a message sent to the UI from the analysis worker'''
+    This is a message sent to the UI from the analysis worker"""
 
     def __init__(self, analysis_id, module_num, display_data, image_set_number):
         AnalysisRequest.__init__(
-                self, analysis_id,
-                module_num=module_num,
-                image_set_number=image_set_number,
-                display_data=display_data)
+            self,
+            analysis_id,
+            module_num=module_num,
+            image_set_number=image_set_number,
+            display_data=display_data,
+        )
 
 
 class SharedDictionaryRequest(AnalysisRequest):
@@ -949,24 +1020,35 @@ class SharedDictionaryRequest(AnalysisRequest):
 
 
 class SharedDictionaryReply(Reply):
-    def __init__(self, dictionaries=[{}]):
+    def __init__(self, dictionaries=None):
         Reply.__init__(self, dictionaries=dictionaries)
+        if dictionaries is None:
+            dictionaries = [{}]
 
 
 class ExceptionReport(AnalysisRequest):
-    def __init__(self, analysis_id,
-                 image_set_number, module_name,
-                 exc_type, exc_message, exc_traceback,
-                 filename, line_number):
-        AnalysisRequest.__init__(self,
-                                 analysis_id,
-                                 image_set_number=image_set_number,
-                                 module_name=module_name,
-                                 exc_type=exc_type,
-                                 exc_message=exc_message,
-                                 exc_traceback=exc_traceback,
-                                 filename=filename,
-                                 line_number=line_number)
+    def __init__(
+        self,
+        analysis_id,
+        image_set_number,
+        module_name,
+        exc_type,
+        exc_message,
+        exc_traceback,
+        filename,
+        line_number,
+    ):
+        AnalysisRequest.__init__(
+            self,
+            analysis_id,
+            image_set_number=image_set_number,
+            module_name=module_name,
+            exc_type=exc_type,
+            exc_message=exc_message,
+            exc_traceback=exc_traceback,
+            filename=filename,
+            line_number=line_number,
+        )
 
     def __str__(self):
         return "(Worker) %s: %s" % (self.exc_type, self.exc_message)
@@ -974,20 +1056,20 @@ class ExceptionReport(AnalysisRequest):
 
 class ExceptionPleaseDebugReply(Reply):
     def __init__(self, disposition, verification_hash=None):
-        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
+        Reply.__init__(
+            self, disposition=disposition, verification_hash=verification_hash
+        )
 
 
 class DebugWaiting(AnalysisRequest):
-    '''Communicate the debug port to the server and wait for server OK to attach'''
+    """Communicate the debug port to the server and wait for server OK to attach"""
 
     def __init__(self, analysis_id, port):
-        AnalysisRequest.__init__(self,
-                                 analysis_id=analysis_id,
-                                 port=port)
+        AnalysisRequest.__init__(self, analysis_id=analysis_id, port=port)
 
 
 class DebugCancel(Reply):
-    '''If sent in response to DebugWaiting, the user has changed his/her mind'''
+    """If sent in response to DebugWaiting, the user has changed his/her mind"""
 
 
 class DebugComplete(AnalysisRequest):
@@ -1027,16 +1109,15 @@ class Ack(Reply):
 if sys.platform == "darwin":
     import fcntl
 
-
     def close_all_on_exec():
-        '''Mark every file handle above 2 with CLOEXEC
+        """Mark every file handle above 2 with CLOEXEC
 
         We don't want child processes inheret anything
         except for STDIN / STDOUT / STDERR. This should
         make it so in a horribly brute-force way.
-        '''
+        """
         try:
-            maxfd = os.sysconf('SC_OPEN_MAX')
+            maxfd = os.sysconf("SC_OPEN_MAX")
         except:
             maxfd = 256
         for fd in range(3, maxfd):
@@ -1045,8 +1126,8 @@ if sys.platform == "darwin":
             except:
                 pass
 
-if __name__ == '__main__':
-    import time
+
+if __name__ == "__main__":
     import cellprofiler.pipeline
     import cellprofiler.preferences
 

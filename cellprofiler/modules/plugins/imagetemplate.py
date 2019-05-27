@@ -9,15 +9,15 @@
 import numpy
 import scipy.ndimage
 
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+
 #################################
 #
 # Imports from CellProfiler
 #
 ##################################
-
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
 
 __doc__ = """\
 ImageTemplate
@@ -228,11 +228,13 @@ Choose what to calculate:
    X).
 -  *{GRADIENT_DIRECTION_Y}*: get the relative contribution of the
    gradient in the Y direction.
-""".format(**{
-                "GRADIENT_MAGNITUDE": GRADIENT_MAGNITUDE,
-                "GRADIENT_DIRECTION_X": GRADIENT_DIRECTION_X,
-                "GRADIENT_DIRECTION_Y": GRADIENT_DIRECTION_Y
-            })
+""".format(
+                **{
+                    "GRADIENT_MAGNITUDE": GRADIENT_MAGNITUDE,
+                    "GRADIENT_DIRECTION_X": GRADIENT_DIRECTION_X,
+                    "GRADIENT_DIRECTION_Y": GRADIENT_DIRECTION_Y,
+                }
+            ),
         )
 
         #
@@ -241,7 +243,7 @@ Choose what to calculate:
         self.automatic_smoothing = cellprofiler.setting.Binary(
             text="Automatically choose the smoothing scale?",
             value=True,  # The default value is to choose automatically
-            doc="The module will automatically choose a smoothing scale for you if you leave this checked."
+            doc="The module will automatically choose a smoothing scale for you if you leave this checked.",
         )
 
         #
@@ -261,7 +263,7 @@ This is a scaling factor that supplies the sigma for a gaussian that's
 used to smooth the image. The gradient is calculated on the smoothed
 image, so large scales will give you long-range gradients and small
 scales will give you short-range gradients.
-"""
+""",
         )
 
     #
@@ -278,11 +280,7 @@ scales will give you short-range gradients.
         settings = super(ImageTemplate, self).settings()
 
         # Append additional settings here.
-        return settings + [
-            self.gradient_choice,
-            self.automatic_smoothing,
-            self.scale
-        ]
+        return settings + [self.gradient_choice, self.automatic_smoothing, self.scale]
 
     #
     # "visible_settings" tells CellProfiler which settings should be
@@ -300,10 +298,7 @@ scales will give you short-range gradients.
         visible_settings = super(ImageTemplate, self).visible_settings()
 
         # Configure the visibility of additional settings below.
-        visible_settings += [
-            self.gradient_choice,
-            self.automatic_smoothing
-        ]
+        visible_settings += [self.gradient_choice, self.automatic_smoothing]
 
         #
         # Show the user the scale only if self.wants_smoothing is checked
@@ -342,6 +337,7 @@ scales will give you short-range gradients.
     def volumetric(self):
         return False
 
+
 #
 # This is the function that gets called during "run" to create the output image.
 # The first parameter must be the input image data. The remaining parameters are
@@ -360,7 +356,7 @@ def gradient_image(pixels, gradient_choice, automatic_smoothing, scale):
         fft = numpy.fft.fft2(pixels)
         power2 = numpy.sqrt((fft * fft.conjugate()).real)
         mode = numpy.argwhere(power2 == power2.max())[0]
-        scale = numpy.sqrt(numpy.sum((mode + .5) ** 2))
+        scale = numpy.sqrt(numpy.sum((mode + 0.5) ** 2))
 
     gradient_magnitude = scipy.ndimage.gaussian_gradient_magnitude(pixels, scale)
 
@@ -377,8 +373,8 @@ def gradient_image(pixels, gradient_choice, automatic_smoothing, scale):
         y = scipy.ndimage.correlate1d(gradient_magnitude, [-1, 0, 1], 0)
         norm = numpy.sqrt(x ** 2 + y ** 2)
         if gradient_choice == GRADIENT_DIRECTION_X:
-            gradient_image = .5 + x / norm / 2
+            gradient_image = 0.5 + x / norm / 2
         else:
-            gradient_image = .5 + y / norm / 2
+            gradient_image = 0.5 + y / norm / 2
 
     return gradient_image

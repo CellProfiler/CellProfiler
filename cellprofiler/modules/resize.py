@@ -30,11 +30,12 @@ See also **Crop**.
 
 import logging
 
+import numpy
+import skimage.transform
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import numpy
-import skimage.transform
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +47,9 @@ C_IMAGE = "Image"
 C_MANUAL = "Manual"
 C_ALL = [C_MANUAL, C_IMAGE]
 
-I_NEAREST_NEIGHBOR = 'Nearest Neighbor'
-I_BILINEAR = 'Bilinear'
-I_BICUBIC = 'Bicubic'
+I_NEAREST_NEIGHBOR = "Nearest Neighbor"
+I_BILINEAR = "Bilinear"
+I_BICUBIC = "Bicubic"
 
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 
@@ -70,7 +71,8 @@ class Resize(cellprofiler.module.ImageProcessing):
 The following options are available:
 
 -  *Resize by a fraction or multiple of the original size:* Enter a single value which specifies the scaling.
--  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image, in units of pixels.""")
+-  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image, in units of pixels.""",
+        )
 
         self.resizing_factor = cellprofiler.setting.Float(
             "Resizing factor",
@@ -80,7 +82,8 @@ The following options are available:
 *(Used only if resizing by a fraction or multiple of the original size)*
 
 Numbers less than one (that is, fractions) will shrink the image;
-numbers greater than one (that is, multiples) will enlarge the image.""")
+numbers greater than one (that is, multiples) will enlarge the image.""",
+        )
 
         self.use_manual_or_image = cellprofiler.setting.Choice(
             "Method to specify the dimensions",
@@ -92,10 +95,9 @@ You have two options on how to resize your image:
 
 -  *{C_MANUAL}:* Specify the height and width of the output image.
 -  *{C_IMAGE}:* Specify an image and the input image will be resized to the same dimensions.
-            """.format(**{
-                "C_IMAGE": C_IMAGE,
-                "C_MANUAL": C_MANUAL
-            })
+            """.format(
+                **{"C_IMAGE": C_IMAGE, "C_MANUAL": C_MANUAL}
+            ),
         )
 
         self.specific_width = cellprofiler.setting.Integer(
@@ -105,7 +107,8 @@ You have two options on how to resize your image:
             doc="""\
 *(Used only if resizing by specifying desired final dimensions)*
 
-Enter the desired width of the final image, in pixels.""")
+Enter the desired width of the final image, in pixels.""",
+        )
 
         self.specific_height = cellprofiler.setting.Integer(
             "Height of the final image",
@@ -114,7 +117,8 @@ Enter the desired width of the final image, in pixels.""")
             doc="""\
 *(Used only if resizing by specifying desired final dimensions)*
 
-Enter the desired height of the final image, in pixels.""")
+Enter the desired height of the final image, in pixels.""",
+        )
 
         self.specific_image = cellprofiler.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
@@ -122,7 +126,8 @@ Enter the desired height of the final image, in pixels.""")
             doc="""\
 *(Used only if resizing by specifying desired final dimensions using an image)*
 
-The input image will be resized to the dimensions of the specified image.""")
+The input image will be resized to the dimensions of the specified image.""",
+        )
 
         self.interpolation = cellprofiler.setting.Choice(
             "Interpolation method",
@@ -135,15 +140,20 @@ The input image will be resized to the dimensions of the specified image.""")
    input image.
 -  *Bicubic:* Each output pixel is given the intensity of the weighted
    average of the 4x4 neighborhood at the corresponding position in the
-   input image.""")
+   input image.""",
+        )
 
         self.separator = cellprofiler.setting.Divider(line=False)
 
         self.additional_images = []
 
-        self.additional_image_count = cellprofiler.setting.HiddenCount(self.additional_images, "Additional image count")
+        self.additional_image_count = cellprofiler.setting.HiddenCount(
+            self.additional_images, "Additional image count"
+        )
 
-        self.add_button = cellprofiler.setting.DoSomething("", "Add another image", self.add_image)
+        self.add_button = cellprofiler.setting.DoSomething(
+            "", "Add another image", self.add_image
+        )
 
     def add_image(self, can_remove=True):
         group = cellprofiler.setting.SettingsGroup()
@@ -158,19 +168,25 @@ The input image will be resized to the dimensions of the specified image.""")
                 cellprofiler.setting.NONE,
                 doc="""\
 What is the name of the additional image to resize? This image will be
-resized with the same settings as the first image."""))
+resized with the same settings as the first image.""",
+            ),
+        )
 
         group.append(
             "output_image_name",
             cellprofiler.setting.ImageNameProvider(
                 "Name the output image",
                 "ResizedBlue",
-                doc="What is the name of the additional resized image?"))
+                doc="What is the name of the additional resized image?",
+            ),
+        )
 
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton("", "Remove above image", self.additional_images, group)
+                cellprofiler.setting.RemoveSettingButton(
+                    "", "Remove above image", self.additional_images, group
+                ),
             )
 
         self.additional_images.append(group)
@@ -186,14 +202,11 @@ resized with the same settings as the first image."""))
             self.interpolation,
             self.use_manual_or_image,
             self.specific_image,
-            self.additional_image_count
+            self.additional_image_count,
         ]
 
         for additional in self.additional_images:
-            settings += [
-                additional.input_image_name,
-                additional.output_image_name
-            ]
+            settings += [additional.input_image_name, additional.output_image_name]
 
         return settings
 
@@ -205,7 +218,7 @@ resized with the same settings as the first image."""))
             self.specific_image,
             self.specific_width,
             self.specific_height,
-            self.interpolation
+            self.interpolation,
         ]
 
     def visible_settings(self):
@@ -221,12 +234,11 @@ resized with the same settings as the first image."""))
             if self.use_manual_or_image == C_IMAGE:
                 visible_settings += [self.specific_image]
             elif self.use_manual_or_image == C_MANUAL:
-                visible_settings += [
-                    self.specific_width,
-                    self.specific_height
-                ]
+                visible_settings += [self.specific_width, self.specific_height]
         else:
-            raise ValueError(u"Unsupported size method: {}".format(self.size_method.value))
+            raise ValueError(
+                u"Unsupported size method: {}".format(self.size_method.value)
+            )
 
         visible_settings += [self.interpolation]
 
@@ -239,18 +251,22 @@ resized with the same settings as the first image."""))
 
     def prepare_settings(self, setting_values):
         try:
-            additional_image_setting_count = int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
+            additional_image_setting_count = int(
+                setting_values[S_ADDITIONAL_IMAGE_COUNT]
+            )
 
             if len(self.additional_images) > additional_image_setting_count:
                 del self.additional_images[additional_image_setting_count:]
             else:
-                for i in range(len(self.additional_images), additional_image_setting_count):
+                for i in range(
+                    len(self.additional_images), additional_image_setting_count
+                ):
                     self.add_image()
         except ValueError:
             logger.warning(
-                "Additional image setting count was \"%s\" which is not an integer.",
+                'Additional image setting count was "%s" which is not an integer.',
                 setting_values[S_ADDITIONAL_IMAGE_COUNT],
-                exc_info=True
+                exc_info=True,
             )
 
             pass
@@ -259,7 +275,11 @@ resized with the same settings as the first image."""))
         self.apply_resize(workspace, self.x_name.value, self.y_name.value)
 
         for additional in self.additional_images:
-            self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)
+            self.apply_resize(
+                workspace,
+                additional.input_image_name.value,
+                additional.output_image_name.value,
+            )
 
     def resized_shape(self, image, workspace):
         image_pixels = image.pixel_data
@@ -325,20 +345,16 @@ resized with the same settings as the first image."""))
         if image.volumetric and image.multichannel:
             output_pixels = numpy.zeros(new_shape.astype(int), dtype=image_pixels.dtype)
 
-
             for idx in range(int(new_shape[-1])):
                 output_pixels[:, :, :, idx] = skimage.transform.resize(
-                    image_pixels[:, :, :, idx]/img_scale_fac,
+                    image_pixels[:, :, :, idx] / img_scale_fac,
                     new_shape[:-1],
                     order=order,
-                    mode="symmetric"
+                    mode="symmetric",
                 )
         else:
             output_pixels = skimage.transform.resize(
-                image_pixels/img_scale_fac,
-                new_shape,
-                order=order,
-                mode="symmetric"
+                image_pixels / img_scale_fac, new_shape, order=order, mode="symmetric"
             )
 
         if image.multichannel and len(new_shape) > image.dimensions:
@@ -347,23 +363,15 @@ resized with the same settings as the first image."""))
         if img_scale_fac != 1:
             # if the image intensities were scaled,
             # scale them back in the output
-            output_pixels = output_pixels*img_scale_fac
+            output_pixels = output_pixels * img_scale_fac
 
-        mask = skimage.transform.resize(
-            image.mask,
-            new_shape,
-            order=0,
-            mode="constant"
-        )
+        mask = skimage.transform.resize(image.mask, new_shape, order=0, mode="constant")
 
         mask = skimage.img_as_bool(mask)
 
         if image.has_crop_mask:
             cropping = skimage.transform.resize(
-                image.crop_mask,
-                new_shape,
-                order=0,
-                mode="constant"
+                image.crop_mask, new_shape, order=0, mode="constant"
             )
 
             cropping = skimage.img_as_bool(cropping)
@@ -375,13 +383,13 @@ resized with the same settings as the first image."""))
             parent_image=image,
             mask=mask,
             crop_mask=cropping,
-            dimensions=image.dimensions
+            dimensions=image.dimensions,
         )
 
         workspace.image_set.add(output_image_name, output_image)
 
         if self.show_window:
-            if hasattr(workspace.display_data, 'input_images'):
+            if hasattr(workspace.display_data, "input_images"):
                 workspace.display_data.multichannel += [image.multichannel]
                 workspace.display_data.input_images += [image.pixel_data]
                 workspace.display_data.output_images += [output_image.pixel_data]
@@ -396,14 +404,14 @@ resized with the same settings as the first image."""))
                 workspace.display_data.output_image_names = [output_image_name]
 
     def display(self, workspace, figure):
-        '''Display the resized images
+        """Display the resized images
 
         workspace - the workspace being run
         statistics - a list of lists:
             0: index of this statistic
             1: input image name of image being aligned
             2: output image name of image being aligned
-        '''
+        """
         dimensions = workspace.display_data.dimensions
         multichannel = workspace.display_data.multichannel
         input_images = workspace.display_data.input_images
@@ -415,20 +423,31 @@ resized with the same settings as the first image."""))
 
         share_axes = figure.subplot(0, 0)
 
-        for i, (
+        for (
+            i,
+            (
                 input_image_pixels,
                 output_image_pixels,
                 input_image_name,
                 output_image_name,
-                multichannel
-        ) in enumerate(zip(input_images, output_images, input_image_names, output_image_names, multichannel)):
+                multichannel,
+            ),
+        ) in enumerate(
+            zip(
+                input_images,
+                output_images,
+                input_image_names,
+                output_image_names,
+                multichannel,
+            )
+        ):
             if multichannel:
                 figure.subplot_imshow(
                     0,
                     i,
                     input_image_pixels,
                     title=input_image_name,
-                    sharexy=None if i == 0 else share_axes
+                    sharexy=None if i == 0 else share_axes,
                 )
 
                 figure.subplot_imshow(
@@ -436,7 +455,7 @@ resized with the same settings as the first image."""))
                     i,
                     output_image_pixels,
                     title=output_image_name,
-                    sharexy=share_axes
+                    sharexy=share_axes,
                 )
             else:
                 figure.subplot_imshow_bw(
@@ -444,7 +463,7 @@ resized with the same settings as the first image."""))
                     i,
                     input_image_pixels,
                     title=input_image_name,
-                    sharexy=None if i == 0 else share_axes
+                    sharexy=None if i == 0 else share_axes,
                 )
 
                 figure.subplot_imshow_bw(
@@ -452,20 +471,24 @@ resized with the same settings as the first image."""))
                     i,
                     output_image_pixels,
                     title=output_image_name,
-                    sharexy=share_axes
+                    sharexy=share_axes,
                 )
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab and variable_revision_number == 1:
-            width, height = setting_values[3].split(',')
+            width, height = setting_values[3].split(",")
             size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE
-            setting_values = [setting_values[0],  # image name
-                              setting_values[1],  # resized image name
-                              size_method,
-                              setting_values[2],  # resizing factor
-                              width,
-                              height,
-                              setting_values[4]]  # interpolation method
+            setting_values = [
+                setting_values[0],  # image name
+                setting_values[1],  # resized image name
+                size_method,
+                setting_values[2],  # resizing factor
+                width,
+                height,
+                setting_values[4],
+            ]  # interpolation method
             from_matlab = False
             variable_revision_number = 1
 
@@ -484,7 +507,11 @@ resized with the same settings as the first image."""))
 
         if (not from_matlab) and variable_revision_number == 3:
             # Add resizing to another image size
-            setting_values = setting_values[:7] + [C_MANUAL, cellprofiler.setting.NONE] + setting_values[7:]
+            setting_values = (
+                setting_values[:7]
+                + [C_MANUAL, cellprofiler.setting.NONE]
+                + setting_values[7:]
+            )
             variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab

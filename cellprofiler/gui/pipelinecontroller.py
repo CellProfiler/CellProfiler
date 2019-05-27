@@ -1783,9 +1783,7 @@ class PipelineController(object):
                     urls = queue.get(timeout=0.1)
                     try:
                         while True:
-                            logger.warn("Pre queue")
                             urls += queue.get(block=False)
-                            logger.warn("hey here", urls)
                     except Queue.Empty:
                         keep_going = update_pulse(
                             "Adding %d files to file list" % len(urls))

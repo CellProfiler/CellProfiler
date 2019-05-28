@@ -2830,9 +2830,6 @@ class PipelineController(object):
             self.enable_module_controls_panel_buttons()
 
             self.populate_goto_menu()
-
-            print("ran")
-
         except Exception as error:
             print(error)
             extended_message = "Failure in analysis startup"

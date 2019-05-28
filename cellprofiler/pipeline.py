@@ -1004,10 +1004,7 @@ class Pipeline(object):
             elif len(line.strip()) == 0:
                 break
 
-            try:
-                kwd, value = line.split(":")
-            except ValueError:
-                print(line)
+            kwd, value = line.split(":")
 
             if kwd == H_VERSION:
                 version = int(value)

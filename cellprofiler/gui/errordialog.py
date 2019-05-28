@@ -444,7 +444,7 @@ def display_error_message(parent, message, title, buttons=None, size=(300, 200))
         message_ctrl = wx.TextCtrl(
             dlg, value=message, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.NO_BORDER
         )
-        line_sizes = [message_ctrl.GetTextExtent(line) for line in message.split("\n")]
+        line_sizes = [message_ctrl.GetFullTextExtent(line) for line in message.split("\n")]
         width = reduce(max, [x[0] for x in line_sizes])
         width += wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         width += wx.SystemSettings.GetMetric(wx.SYS_BORDER_X) * 2

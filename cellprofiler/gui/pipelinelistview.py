@@ -1166,7 +1166,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         # Gap before and after text
         self.text_gap = 3
         # The height of one row in the display
-        self.line_height = max(16 + self.border + self.gap, self.GetTextExtent("M")[1])
+        self.line_height = max(16 + self.border + self.gap, self.GetFullTextExtent("M")[1])
         # The width of a icon column
         self.column_width = self.line_height
         # The row # of the currently pressed icon button
@@ -1428,7 +1428,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         x0 = self.column_width * 3 + self.slider_width + self.text_gap
         max_width = 0
         for i, item in enumerate(self.items):
-            width, height = self.GetTextExtent(item.module_name)
+            width, height, _, _ = self.GetFullTextExtent(item.module_name)
             max_width = max(width, max_width)
         total_width = x0 + max_width + self.border * 2 + self.gap + self.text_gap
         height = len(self.items) * self.line_height

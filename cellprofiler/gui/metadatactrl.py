@@ -170,13 +170,13 @@ class MetadataControl(wx.Control):
 
         rawpos = 0
         for i in range(self.__cursor_pos):
-            rawpos += self.GetTextExtent(self.get_text(i, i + 1))[0]
+            rawpos += self.GetFullTextExtent(self.get_text(i, i + 1))[0]
         xsize = self.Size[0] - self.padding * 2
 
         pos = self.xoffset + rawpos
         slop = pos - xsize
         if slop > 0:
-            slop += self.GetTextExtent("M")[0]
+            slop += self.GetFullTextExtent("M")[0]
             self.offset -= slop
             pos -= slop
             self.Refresh()
@@ -184,7 +184,7 @@ class MetadataControl(wx.Control):
             self.offset = rawpos
             pos = self.padding
             self.Refresh()
-        elif rawpos + self.GetTextExtent("M")[0] < xsize:
+        elif rawpos + self.GetFullTextExtent("M")[0] < xsize:
             self.offset = 0
             self.Refresh()
         if self.__caret is not None:
@@ -435,7 +435,7 @@ class MetadataControl(wx.Control):
         return True
 
     def DoGetBestSize(self):
-        size = self.GetTextExtent(self.get_text() + "M")
+        size = self.GetFullTextExtent(self.get_text() + "M")
         size = wx.Size(size[0] + self.padding * 2, size[1] + self.padding * 2)
         return self.ClientToWindowSize(size)
 

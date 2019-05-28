@@ -764,7 +764,7 @@ class ModuleView(object):
         # it looks like GetFullTextExtent is not implemented everywhere
         # so I hardcode here
         #
-        height = self.module_notes_control.GetTextExtent("M")[1] * 2 + 4
+        height = self.module_notes_control.GetFullTextExtent("M")[1] * 2 + 4
         height = self.module_notes_control.ClientToWindowSize(wx.Size(1, height))[1]
         self.module_notes_control.SetInitialSize(wx.Size(100, 100))
         notes_sizer.Add(self.module_notes_control, 1, wx.ALL, 10)
@@ -1237,7 +1237,7 @@ class ModuleView(object):
 
         def make_bitmap(control, flags):
             assert isinstance(control, wx.BitmapButton)
-            text_width, text_height = control.GetTextExtent(new_label)
+            text_width, text_height = control.GetFullTextExtent(new_label)
             gap = 4
             drop_width = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_ARROW_X)
             drop_height = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_ARROW_Y)
@@ -4649,7 +4649,7 @@ class ModuleSizer(wx.Sizer):
                 "%d of grid is not StaticText: %s" % (i, str(control))
             )
             text = control.GetLabel().replace("\n", " ")
-            ctrl_width = control.GetTextExtent(text)[0] + 2 * item.GetBorder()
+            ctrl_width = control.GetFullTextExtent(text)[0] + 2 * item.GetBorder()
             width = max(width, ctrl_width)
         return width
 
@@ -4711,7 +4711,7 @@ class ModuleSizer(wx.Sizer):
                     text_item.Show(True)
                     if text_width > self.__min_text_width and (
                         text.find("\n") != -1
-                        or control.GetTextExtent(text)[0] > inner_text_width
+                        or control.GetFullTextExtent(text)[0] > inner_text_width
                     ):
                         text = text.replace("\n", " ")
                         control.SetLabel(text)

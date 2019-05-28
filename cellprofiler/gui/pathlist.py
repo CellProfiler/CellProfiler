@@ -65,7 +65,7 @@ class PathListCtrl(wx.ScrolledWindow):
         self.folder_names = []
         self.folder_counts = numpy.zeros(0, int)
         self.folder_idxs = numpy.zeros(0, int)
-        _, height = self.GetTextExtent("Wally")
+        _, height, _, _ = self.GetFullTextExtent("Wally")
         self.line_height = height
         self.leading = 0
         self.show_disabled = True
@@ -112,7 +112,7 @@ class PathListCtrl(wx.ScrolledWindow):
         tmp = self.GetFont()
         try:
             self.SetFont(self.DROP_FILES_AND_FOLDERS_FONT)
-            self.drop_files_and_folders_text_extent = self.GetTextExtent(
+            self.drop_files_and_folders_text_extent = self.GetFullTextExtent(
                 self.DROP_FILES_AND_FOLDERS_HERE
             )
         except:
@@ -263,7 +263,7 @@ class PathListCtrl(wx.ScrolledWindow):
                 )
             folder, filename = self.splitpath(path)
             display_name = six.moves.urllib.request.url2pathname(filename)
-            width, _ = self.GetTextExtent(display_name)
+            width, _, _, _ = self.GetFullTextExtent(display_name)
             idx = bisect.bisect_left(self.folder_names, folder)
             if idx >= len(self.folder_names) or self.folder_names[idx] != folder:
                 folder_item = self.FolderItem(self, folder)

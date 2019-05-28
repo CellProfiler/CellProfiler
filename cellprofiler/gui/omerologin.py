@@ -35,7 +35,7 @@ class OmeroLoginDlg(wx.Dialog):
             self.USER_LABEL,
             self.PASSWORD_LABEL,
         ):
-            w, h = self.GetTextExtent(label)
+            w, h, _, _ = self.GetFullTextExtent(label)
             max_width = max(w, max_width)
             max_height = max(h, max_height)
 

@@ -3541,7 +3541,7 @@ class PipelineController(object):
                 assert isinstance(dlg, wx.ProgressDialog)
                 module = self.current_debug_module()
                 message = message_format % (index + 1, count, module.module_name)
-                message_width = dlg.GetTextExtent(message)[0]
+                message_width = dlg.GetFullTextExtent(message)[0]
                 if max_message_width is None:
                     max_message_width = message_width
                 elif max_message_width < message_width:
@@ -3794,7 +3794,7 @@ class PipelineController(object):
                 )
                 self.list_ctrl = ListCtrlAndWidthMixin(self, style=wx.LC_REPORT)
                 self.list_ctrl.InsertColumn(0, "Image #")
-                total_width = self.list_ctrl.GetTextExtent("Image #")[0]
+                total_width = self.list_ctrl.GetFullTextExtent("Image #")[0]
                 for i, f in enumerate(features):
                     if f.startswith(cellprofiler.measurement.C_METADATA):
                         name = f[(len(cellprofiler.measurement.C_METADATA) + 1) :]
@@ -3812,7 +3812,7 @@ class PipelineController(object):
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in choices.values():
-                        w, h = self.list_ctrl.GetTextExtent(six.text_type(row[i]))
+                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(six.text_type(row[i]))
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)

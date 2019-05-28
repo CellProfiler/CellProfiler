@@ -88,7 +88,7 @@ class RegexpDialog(wx.Dialog):
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
         self.regexp_display.SetBufferedDraw(True)
         w, h = self.regexp_display.ClientToWindowSize(
-            self.regexp_display.GetTextExtent("".join(["M"] * 50))
+            self.regexp_display.GetFullTextExtent("".join(["M"] * 50))
         )
         self.regexp_display.SetMinSize(wx.Size(w, h))
         self.regexp_display.Text = self.value
@@ -155,7 +155,7 @@ class RegexpDialog(wx.Dialog):
         self.test_display.SetUseHorizontalScrollBar(0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_NUMBER, 0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_SYMBOL, 0)
-        text_extent = self.test_display.GetTextExtent(self.__test_text)
+        text_extent = self.test_display.GetFullTextExtent(self.__test_text)
         self.test_display.SetSizeHints(100, text_extent[1], maxH=text_extent[1])
         sizer.Add(self.test_display, 0, wx.EXPAND | wx.ALL, 5)
 

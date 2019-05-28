@@ -58,7 +58,7 @@ class NameSubscriberComboBox(wx.Panel):
         self.annotation_dlg.MinSize = (
             max(
                 [
-                    self.annotation_dlg.GetTextExtent(choice[1] + " (from #00)")[0]
+                    self.annotation_dlg.GetFullTextExtent(choice[1] + " (from #00)")[0]
                     for choice in self.orig_choices
                 ]
             ),

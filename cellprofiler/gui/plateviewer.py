@@ -181,7 +181,7 @@ class PlateViewer(object):
         self.plate_panel = wx.Panel(self.sr_panel)
         self.sr_panel.Sizer.Add(self.plate_panel, 1, wx.EXPAND)
         rows, cols = data.plate_layout
-        w, h = self.plate_panel.GetTextExtent("".join(["00"] * cols))
+        w, h, _, _ = self.plate_panel.GetFullTextExtent("".join(["00"] * cols))
         h *= rows
         self.plate_panel.SetInitialSize((w, h))
         self.canvas_panel = wx.Panel(self.splitter)

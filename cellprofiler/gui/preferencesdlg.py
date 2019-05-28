@@ -126,7 +126,7 @@ class PreferencesDlg(wx.Dialog):
                     parent=scrollpanel, id=-1, value=current, validator=validator
                 )
                 min_height = ctl.GetMinHeight()
-                min_width = ctl.GetTextExtent("Make sure the window can display this")[
+                min_width = ctl.GetFullTextExtent("Make sure the window can display this")[
                     0
                 ]
                 ctl.SetMinSize((min_width, min_height))

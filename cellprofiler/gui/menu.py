@@ -1,6 +1,7 @@
 import wx
 
-import cellprofiler.gui
+import cellprofiler.gui.html.utils
+import cellprofiler.gui.htmldialog
 
 
 class Menu(wx.Menu):

@@ -447,7 +447,7 @@ class MetadataControl(wx.Control):
     def hit_test(self, pos):
         text = self.get_text(0, len(self.__tokens))
         dc = wx.ClientDC(self)
-        dc.Font = self.Font
+        dc.SetFont(self.Font)
         positions = self.get_positions(dc)
         del dc
         for i in range(len(self.__tokens)):
@@ -535,7 +535,7 @@ class MetadataControl(wx.Control):
     def OnPaint(self, event):
         dc = wx.BufferedPaintDC(self)
         try:
-            dc.BackgroundMode = wx.SOLID
+            dc.SetBackgroundMode(wx.SOLID)
             background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
             metadata_color = cellprofiler.preferences.get_primary_outline_color()
             selected_background_color = wx.SystemSettings.GetColour(
@@ -543,8 +543,8 @@ class MetadataControl(wx.Control):
             )
             selected_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
             text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-            dc.Background = wx.Brush(background_color)
-            dc.Font = self.Font
+            dc.SetBackground(wx.Brush(background_color))
+            dc.SetFont(self.Font)
             dc.Clear()
             if self.native_border:
                 renderer = wx.RendererNative.Get()
@@ -595,7 +595,7 @@ class MetadataControl(wx.Control):
             }
             background_color = [colors[state][0] for state in state_list]
             foreground_color = [colors[state][1] for state in state_list]
-            dc.BackgroundMode = wx.SOLID
+            dc.SetBackgroundMode(wx.SOLID)
             for text, position, background, foreground in zip(
                 text_list, position_list, background_color, foreground_color
             ):

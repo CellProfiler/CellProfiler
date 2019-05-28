@@ -1,4 +1,4 @@
-import docutils
+import docutils.core
 
 
 # https://wiki.python.org/moin/reStructuredText

@@ -1058,7 +1058,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if need_column_layout:
                 if self.table.GetNumberRows() > 0:
                     first_width, _ = self.GetGridWindow().GetTextExtent(
-                        unicode(self.table.GetValue(0, i))
+                        six.text_type(self.table.GetValue(0, i))
                     )
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
@@ -1182,7 +1182,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.GetTable().GetValue(row, col))
+        s = six.text_type(grid.GetTable().GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1354,7 +1354,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
-        elif isinstance(bitmap, basestring):
+        elif isinstance(bitmap, six.string_types):
             dc.SetFont(window.Font)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             width, height = dc.GetTextExtent(bitmap)

@@ -21,6 +21,7 @@ import h5py
 import numpy
 import six
 import six.moves.queue
+import six.moves.urllib
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
@@ -775,7 +776,7 @@ class PipelineController(object):
         ) as dlg:
             try:
                 assert isinstance(dlg, wx.ProgressDialog)
-                dlg.longest_msg_len = dlg.GetTextExtent(message)[0]
+                dlg.longest_msg_len = dlg.GetFullTextExtent(message)[0]
 
                 def progress_callback(operation_id, progress, message):
                     if progress not in (1, None):
@@ -3861,10 +3862,12 @@ class PipelineController(object):
 
             @staticmethod
             def on_size(event):
+                size = event.GetSize()
+
                 assert isinstance(event, wx.SizeEvent)
-                cellprofiler.preferences.set_choose_image_set_frame_size(
-                    event.m_size.width, event.m_size.height
-                )
+
+                cellprofiler.preferences.set_choose_image_set_frame_size(size.width, size.height)
+
                 event.Skip(True)
 
             def GetListCtrl(self):

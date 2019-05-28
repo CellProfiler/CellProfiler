@@ -3124,7 +3124,7 @@ class FileCollectionDisplayController(object):
         self.hide_show_ctrl = wx.CheckBox(self.panel, -1, self.v.hide_text)
         sizer.Add(self.hide_show_ctrl, 0, wx.ALIGN_LEFT | wx.ALIGN_BOTTOM)
         self.hide_show_ctrl.Bind(wx.EVT_CHECKBOX, self.on_hide_show_checked)
-        self.hide_show_ctrl.Value = not self.v.show_filtered
+        self.hide_show_ctrl.SetValue(not self.v.show_filtered)
         sizer.AddStretchSpacer()
         self.stop_button = wx.Button(self.panel, -1, "Stop")
         self.stop_button.Enable(False)
@@ -3147,7 +3147,7 @@ class FileCollectionDisplayController(object):
 
     def on_erase_background(self, event):
         assert isinstance(event, wx.EraseEvent)
-        dc = event.DC
+        dc = event.GetDC()
         assert isinstance(dc, wx.DC)
         brush = wx.Brush(self.tree_ctrl.GetBackgroundColour())
         dc.SetBrush(brush)
@@ -3678,7 +3678,7 @@ class FileCollectionDisplayController(object):
         )
 
     def on_hide_show_checked(self, event):
-        self.v.show_filtered = not self.hide_show_ctrl.Value
+        self.v.show_filtered = not self.hide_show_ctrl.GetValue()
         self.request_update()
 
 
@@ -3996,7 +3996,7 @@ class BinaryMatrixController(object):
 
     def on_matrix_ctrl_clicked(self, event):
         assert isinstance(event, wx.MouseEvent)
-        i, j = self.hit_test(event.X, event.Y)
+        i, j = self.hit_test(event.GetX(), event.GetY())
         if i is not None:
             matrix = self.setting.get_matrix()
             matrix[i][j] = not matrix[i][j]
@@ -4020,7 +4020,7 @@ class BinaryMatrixController(object):
                 wx.SYS_SMALLICON_Y,
             )
         ]
-        paint_dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
+        paint_dc.SetBackground(wx.Brush(cellprofiler.preferences.get_background_color()))
         paint_dc.Clear()
         pShadow = wx.Pen(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.SOLID
@@ -4038,11 +4038,11 @@ class BinaryMatrixController(object):
                 rx = x * rw + x * bx
                 ry = y * rh + y * by
                 value = matrix[y][x]
-                paint_dc.Pen = pHighlight if value else pShadow
+                paint_dc.SetPen(pHighlight if value else pShadow)
                 for k in range(ex):
                     paint_dc.DrawLine(rx + k, ry + k, rx + rw - k - 1, ry + k)
                     paint_dc.DrawLine(rx + k, ry + k, rx + k, ry + rh - k - 1)
-                paint_dc.Pen = pShadow if value else pHighlight
+                paint_dc.SetPen(pShadow if value else pHighlight)
                 for k in range(ex):
                     paint_dc.DrawLine(
                         rx + k, ry + rh - k - 1, rx + rw - k - 1, ry + rh - k - 1
@@ -4050,8 +4050,8 @@ class BinaryMatrixController(object):
                     paint_dc.DrawLine(
                         rx + rw - k - 1, ry + k, rx + rw - k - 1, ry + rh - k - 1
                     )
-                paint_dc.Pen = wx.TRANSPARENT_PEN
-                paint_dc.Brush = bForeground if value else bBackground
+                paint_dc.SetPen(wx.TRANSPARENT_PEN)
+                paint_dc.SetBrush(bForeground if value else bBackground)
                 paint_dc.DrawRectangle(rx + ex, ry + ey, dx, dy)
         paint_dc.EndDrawing()
         event.Skip()
@@ -4197,9 +4197,9 @@ class DataTypeController(object):
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self.panel)
         dc.BeginDrawing()
-        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        dc.SetBackground(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)))
         dc.Clear()
-        dc.Pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)))
         sizer = self.panel.Sizer
         _, panel_width = self.panel.GetClientSize()
         assert isinstance(sizer, wx.lib.rcsizer.RowColSizer)

@@ -1475,9 +1475,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
         if not self.test_mode:
             return None
         top = (
-            self.line_height - self.bmp_slider.Height
+            self.line_height - self.bmp_slider.GetHeight()
         ) / 2 + self.line_height * self.running_item
-        return wx.Rect(1, top, self.bmp_slider.Width, self.bmp_slider.Height)
+        return wx.Rect(1, top, self.bmp_slider.GetWidth(), self.bmp_slider.GetHeight())
 
     def on_paint(self, event):
         assert isinstance(event, wx.PaintEvent)

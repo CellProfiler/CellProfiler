@@ -6,7 +6,9 @@ import os
 import sys
 
 import matplotlib.cm
+import six
 import wx
+import wx.lib.scrolledpanel
 
 import cellprofiler.gui.help
 import cellprofiler.gui.html.utils
@@ -145,8 +147,7 @@ class PreferencesDlg(wx.Dialog):
 
                         dlg.Destroy()
 
-            elif isinstance(ui_info, basestring) and ui_info.startswith(FILEBROWSE):
-
+            elif isinstance(ui_info, six.string_types) and ui_info.startswith(FILEBROWSE):
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)
 
@@ -167,7 +168,7 @@ class PreferencesDlg(wx.Dialog):
                     name, size = ctl.Value.split(",")
                     fd = wx.FontData()
                     fd.SetInitialFont(
-                        wx.FFont(float(size), wx.FONTFAMILY_DEFAULT, face=name)
+                        wx.FFont(pointSize=float(size), family=wx.FONTFAMILY_DEFAULT, faceName=name)
                     )
                     dlg = wx.FontDialog(parent, fd)
                     if dlg.ShowModal() == wx.ID_OK:

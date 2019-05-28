@@ -6,8 +6,11 @@ import io
 
 import centrosome.cpmorphology
 import matplotlib
+import matplotlib.figure
+import matplotlib.transforms
 import numpy
 import scipy
+import scipy.misc
 
 
 def figure_to_image(figure, *args, **kwargs):

@@ -2123,8 +2123,10 @@ class PipelineController(object):
                     interrupt = interrupt
                 urls = []
                 for pathname in filenames:
-                    if interrupt[0]:
-                        break
+                    # FIXME:
+                    # if interrupt[0]:
+                    #     break
+
                     # Hack - convert drive names to lower case in
                     #        Windows to normalize them.
                     if (
@@ -2133,7 +2135,9 @@ class PipelineController(object):
                         and pathname[1] == ":"
                     ):
                         pathname = os.path.normpath(pathname[:2]) + pathname[2:]
-                    message[0] = "Processing " + pathname
+
+                    # FIXME:
+                    # message[0] = "Processing " + pathname
 
                     if os.path.isfile(pathname):
                         urls.append(

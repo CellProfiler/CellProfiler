@@ -4497,22 +4497,22 @@ class TableController(wx.grid.GridTableBase):
     def GetColLabelValue(self, col):
         return self.v.column_names[col]
 
-    def AppendCols(self, numCols):
+    def AppendCols(self, numCols=1):
         return True
 
-    def AppendRows(self, numRows):
+    def AppendRows(self, numRows=1, updateLabels=True):
         return True
 
-    def InsertCols(self, index, numCols):
+    def InsertCols(self, pos=0, numCols=1, updateLabels=True):
         return True
 
-    def InsertRows(self, index, numRows):
+    def InsertRows(self, pos=0, numRows=1, updateLabels=True):
         return True
 
-    def DeleteCols(self, index, numCols):
+    def DeleteCols(self, pos=0, numCols=1, updateLabels=True):
         return True
 
-    def DeleteRows(self, index, numRows):
+    def DeleteRows(self, pos=0, numRows=1, updateLabels=True):
         return True
 
 

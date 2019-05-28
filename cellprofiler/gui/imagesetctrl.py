@@ -282,24 +282,24 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             self.controller.append_channel()
         return True
 
-    def AppendRows(self, numRows):
+    def AppendRows(self, numRows=1, updateLabels=True):
         return True
 
-    def InsertCols(self, index, numCols):
+    def InsertCols(self, pos=0, numCols=1, updateLabels=True):
         return True
 
-    def InsertRows(self, index, numRows):
+    def InsertRows(self, pos=0, numRows=1, updateLabels=True):
         return True
 
-    def DeleteCols(self, index, numCols):
+    def DeleteCols(self, pos=0, numCols=1, updateLabels=True):
         if self.controller is None:
             return False
-        channels = [x.channel for x in self.columns[index : (index + numCols)]]
+        channels = [x.channel for x in self.columns[pos: (pos + numCols)]]
         for channel in channels:
             self.controller.remove_channel(channel)
         return True
 
-    def DeleteRows(self, index, numRows):
+    def DeleteRows(self, pos=0, numRows=1, updateLabels=True):
         return True
 
     def SetColLabelValue(self, index, value):

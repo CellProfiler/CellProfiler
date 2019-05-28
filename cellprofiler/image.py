@@ -15,7 +15,7 @@ import six.moves
 logger = logging.getLogger(__name__)
 
 
-class Image:
+class Image(object):
     """
     An image composed of a Numpy array plus secondary attributes such as mask and label matrices
 
@@ -419,7 +419,7 @@ def crop_image(image, crop_mask, crop_internal=False):
         return image[i_first[0] : i_end[0], j_first[0] : j_end[0]].copy()
 
 
-class GrayscaleImage:
+class GrayscaleImage(object):
     """A wrapper around a non-grayscale image
 
     This is meant to be used if the image is 3-d but all channels
@@ -441,7 +441,7 @@ class GrayscaleImage:
         return self.__image.pixel_data[:, :, 0]
 
 
-class RGBImage:
+class RGBImage(object):
     """A wrapper that discards the alpha channel
 
     This is meant to be used if the image is 3-d + alpha but the alpha
@@ -460,7 +460,7 @@ class RGBImage:
         return self.__image.pixel_data[:, :, :3]
 
 
-class AbstractImageProvider:
+class AbstractImageProvider(object):
     """Represents an image provider that returns images
     """
 
@@ -530,7 +530,7 @@ class CallbackImageProvider(AbstractImageProvider):
         return self.__name
 
 
-class ImageSet:
+class ImageSet(object):
     """Represents the images for a particular iteration of a pipeline
 
     An image set is composed of one image provider per image in the set.
@@ -671,7 +671,7 @@ class ImageSet:
         self.providers.append(provider)
 
 
-class ImageSetList:
+class ImageSetList(object):
     """Represents the list of image sets in a pipeline run
 
     """

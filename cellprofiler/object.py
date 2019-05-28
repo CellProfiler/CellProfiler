@@ -184,7 +184,7 @@ def _colors(labels, max_label=None, seed=None):
     return colors
 
 
-class Objects:
+class Objects(object):
     """Represents a segmentation of an image.
 
     IdentityPrimAutomatic produces three variants of its segmentation
@@ -657,7 +657,7 @@ class Objects:
         )
 
 
-class Segmentation:
+class Segmentation(object):
     """A segmentation of a space into labeled objects
 
     Supports overlapping objects and cacheing. Retrieval can be as a
@@ -974,7 +974,7 @@ class Segmentation:
         return self.__set_dense(dense, indices)
 
 
-class ObjectSet:
+class ObjectSet(object):
     """A set of objects.Objects instances.
 
     This class allows you to either refer to an object by name or

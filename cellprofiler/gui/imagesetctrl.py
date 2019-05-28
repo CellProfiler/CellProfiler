@@ -497,7 +497,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     #######
 
     def get_column_rect(self, col):
-        _, height = self.GetGridColLabelWindow().GetClientSizeTuple()
+        _, height = self.GetGridColLabelWindow().GetClientSize()
         widths = [self.GetColSize(i) for i in range(col + 1)]
         x = 0 if col == 0 else sum(widths[:col])
         width = widths[-1]
@@ -506,7 +506,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def get_add_button_rect(self):
         last_column = self.table.GetNumberCols() - 1
         only = self.table.GetNumberCols() == 1
-        label_size = self.GetGridColLabelWindow()().GetTextExtent(
+        label_size = self.GetGridColLabelWindow().GetTextExtent(
             self.table.GetColLabelValue(last_column)
         )
         return self.col_label_renderer.add_button_rect(
@@ -631,23 +631,23 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         pb_col, pb_hit_code, pb_show = self.pressed_button
         if pb_hit_code is None:
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                     "Change the channel's type (monochrome, color, objects, etc)"
                 )
             elif hit_code == self.HIT_FILTER_BUTTON:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                     "Select items in this channel using a filter"
                 )
             elif hit_code == self.HIT_PLUS:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                     "Add an image column to the image set"
                 )
             elif hit_code == self.HIT_MINUS:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                     "Remove this image column from the image set."
                 )
             elif col is not None:
-                self.GetGridColLabelWindow().SetToolTipString(
+                self.GetGridColLabelWindow().SetToolTip(
                     'Image column, "%s"' % self.table.columns[col].channel
                 )
             event.Skip(True)
@@ -1096,7 +1096,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
             if attr.HasBackgroundColour():
                 brush = wx.Brush(attr.GetBackgroundColour())
                 dc.SetBrush(brush)
-            if dc.GetBrush().IsNull():
+            if not dc.GetBrush().IsOk():
                 brush = wx.Brush(grid.GetGridWindow().BackgroundColour)
                 dc.SetBrush(brush)
             dc.SetPen(wx.TRANSPARENT_PEN)
@@ -1209,7 +1209,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         assert isinstance(grid, ImageSetCtrl)
         assert isinstance(dc, wx.DC)
         window = grid.GetGridColLabelWindow()
-        bitmap = wx.EmptyBitmap(rect.Width, rect.Height)
+        bitmap = wx.Bitmap(width=rect.Width, height=rect.Height)
         last = col == grid.GetTable().GetNumberCols() - 1
         only = grid.GetTable().GetNumberCols() == 1
         try:
@@ -1622,7 +1622,7 @@ class FilterPanelDlg(wx.Dialog):
 
         for button_text, fn, help_text in function_list:
             button = wx.Button(self, label=button_text)
-            button.SetToolTipString(help_text)
+            button.SetToolTip(help_text)
 
             def on_button(event, fn=fn):
                 current_channel = self.channel_choice.GetStringSelection()

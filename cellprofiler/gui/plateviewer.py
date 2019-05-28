@@ -10,6 +10,7 @@ import matplotlib
 import matplotlib.backends.backend_wx
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
+import matplotlib.figure
 import numpy
 import wx
 import wx.grid
@@ -162,7 +163,7 @@ class PlateViewer(object):
 
     def __init__(self, frame, data):
         self.data = data
-        self.palette = matplotlib.cm.jet
+        self.palette = matplotlib.cm.get_cmap("jet")
         data.register_for_updates(self.on_update)
         self.frame = frame
         self.plate_bitmap = None

@@ -7,18 +7,17 @@ import logging
 import sys
 
 import centrosome.cpmorphology
-import centrosome.cpmorphology
-import centrosome.cpmorphology
 import centrosome.index
 import matplotlib
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
+import matplotlib.cm
 import matplotlib.figure
 import matplotlib.lines
 import matplotlib.path
 import numpy
 import scipy.ndimage
-import scipy.ndimage
+import scipy.sparse
 import wx
 import wx.adv
 import wx.html
@@ -315,11 +314,11 @@ class EditObjectsDialog(wx.Dialog):
         #
         ########################################
         self.help_sash = wx.adv.SashLayoutWindow(self.sash_parent)
-        self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
-        self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
-        self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.help_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.on_help_sash_drag)
+        self.help_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
+        self.help_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
         self.help_sash.SetDefaultBorderSize(4)
-        self.help_sash.SetSashVisible(wx.SASH_TOP, True)
+        self.help_sash.SetSashVisible(wx.adv.SASH_TOP, True)
         self.html_panel = wx.html.HtmlWindow(self.help_sash)
         if sys.platform == "darwin":
             LEFT_MOUSE = "mouse"
@@ -2032,7 +2031,7 @@ class EditObjectsDialog(wx.Dialog):
         self.layout_sash()
 
     def layout_sash(self):
-        wx.LayoutAlgorithm().LayoutWindow(self.sash_parent, self.panel)
+        wx.adv.LayoutAlgorithm().LayoutWindow(self.sash_parent, self.panel)
         if self.help_sash.IsShown():
             self.help_sash.Layout()
             self.help_sash.Refresh()

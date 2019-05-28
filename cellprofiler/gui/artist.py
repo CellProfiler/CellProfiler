@@ -539,10 +539,10 @@ class CPImageArtist(matplotlib.artist.Artist):
     def mp_interpolation(self):
         """Matplotlib-based interpolation constant"""
         if self.interpolation == INTERPOLATION_BICUBIC:
-            return matplotlib.image.BICUBIC
+            return "bilinear"
         elif self.interpolation == INTERPOLATION_BILINEAR:
-            return matplotlib.image.BILINEAR
-        return matplotlib.image.NEAREST
+            return "bilinear"
+        return "nearest"
 
     def get_channel_values(self, x, y):
         """Return a map of channel name to intensity at the given location
@@ -762,7 +762,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
             if om.mode == MODE_LINES:
-                om.points.set_axes(self.axes)
+                om.points.axes = self.axes
                 om.points.set_transform(self.axes.transData)
                 om.points.set_clip_path(self.axes.patch)
                 om.points.draw(renderer)

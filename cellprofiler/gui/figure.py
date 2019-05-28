@@ -287,12 +287,12 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
 def get_matplotlib_interpolation_preference():
     interpolation = cellprofiler.preferences.get_interpolation_mode()
     if interpolation == cellprofiler.preferences.IM_NEAREST:
-        return matplotlib.image.NEAREST
+        return "nearest"
     elif interpolation == cellprofiler.preferences.IM_BILINEAR:
-        return matplotlib.image.BILINEAR
+        return "bilinear"
     elif interpolation == cellprofiler.preferences.IM_BICUBIC:
-        return matplotlib.image.BICUBIC
-    return matplotlib.image.NEAREST
+        return "bilinear"
+    return "nearest"
 
 
 def get_crosshair_cursor():
@@ -1108,9 +1108,9 @@ class Figure(wx.Frame):
             "Save just the display portion of this subplot",
         )
 
-        if params["interpolation"] == matplotlib.image.BILINEAR:
+        if params["interpolation"] == "bilinear":
             item_bilinear.Check()
-        elif params["interpolation"] == matplotlib.image.BICUBIC:
+        elif params["interpolation"] == "bilinear":
             item_bicubic.Check()
         else:
             item_nearest.Check()
@@ -1191,11 +1191,11 @@ class Figure(wx.Frame):
 
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:
-                params["interpolation"] = matplotlib.image.NEAREST
+                params["interpolation"] = "nearest"
             elif evt.Id == MENU_INTERPOLATION_BILINEAR:
-                params["interpolation"] = matplotlib.image.BILINEAR
+                params["interpolation"] = "bilinear"
             elif evt.Id == MENU_INTERPOLATION_BICUBIC:
-                params["interpolation"] = matplotlib.image.BICUBIC
+                params["interpolation"] = "bilinear"
             axes = self.subplot(x, y)
             for artist in axes.artists:
                 if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):

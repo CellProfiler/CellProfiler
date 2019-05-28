@@ -2597,7 +2597,7 @@ class FilterPanelController(object):
         assert isinstance(sizer, wx.Sizer)
         if len(address) == 0:
             return
-        sizer.AddSpacer((len(address) * 20, 0))
+        sizer.AddSpacer(len(address) * 20)
 
     def find_and_mark(self, name):
         """Find a control and mark it to be shown"""

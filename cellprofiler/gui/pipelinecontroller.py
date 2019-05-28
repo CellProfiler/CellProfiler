@@ -2179,12 +2179,12 @@ class PipelineController(object):
                     try:
                         while True:
                             urls += queue.get(block=False)
-                    except Queue.Empty:
+                    except six.moves.queue.Empty:
                         keep_going = update_pulse(
                             "Adding %d files to file list" % len(urls)
                         )
                         self.add_urls(urls)
-                except Queue.Empty as err:
+                except six.moves.queue.Empty as err:
                     if not thread.is_alive():
                         try:
                             self.add_urls(queue.get(block=False))
@@ -2759,11 +2759,6 @@ class PipelineController(object):
         # * Default input and output directories are valid
         #
         ##################################
-
-        if cellprofiler.preferences.get_wants_pony():
-            wx.Sound(
-                os.path.join(cellprofiler.icons.resources, "HorseWhinnying.wav")
-            ).Play()
 
         ok, reason = self.__frame.preferences_view.check_preferences()
 

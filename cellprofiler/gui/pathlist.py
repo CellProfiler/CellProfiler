@@ -832,7 +832,7 @@ class PathListCtrl(wx.ScrolledWindow):
         """Scroll the focus item into view"""
         idx_min = self.GetScrollPos(wx.SB_VERTICAL)
         current_x = self.GetScrollPos(wx.SB_HORIZONTAL)
-        _, height = self.GetSizeTuple()
+        _, height = self.GetSize()
         height = int(height / (self.line_height + self.leading))
         idx_max = idx_min + height
         if self.focus_item <= idx_min:

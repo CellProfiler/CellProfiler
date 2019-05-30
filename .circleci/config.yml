@@ -1,11 +1,5 @@
 version: 2
 jobs:
-#  macos-build-and-test:
-#    macos:
-#      xcode: "9.0"
-#    steps:
-#      - checkout
-#      - run: echo
   ubuntu-build-and-test:
     docker:
       - image: circleci/python:2.7
@@ -25,10 +19,9 @@ jobs:
       - run: sudo -H pip install --progress-bar off cython numpy
       - run: sudo -H pip install --find-links https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxpython
       - run: sudo -H pip install --progress-bar off .[test]
-      - run: py.test tests/modules
+      - run: py.test
 workflows:
   version: 2
   build_and_test:
     jobs:
-#      - macos-build-and-test
       - ubuntu-build-and-test

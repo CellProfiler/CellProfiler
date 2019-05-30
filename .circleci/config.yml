@@ -3,9 +3,9 @@ jobs:
   macos-build-and-test:
     macos:
       xcode: "9.0"
-      steps:
-        - checkout
-        - run: echo
+    steps:
+      - checkout
+      - run: echo
   ubuntu-build-and-test:
     docker:
       - image: circleci/python:2.7

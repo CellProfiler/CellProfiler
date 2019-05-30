@@ -7,22 +7,21 @@ import matplotlib
 import matplotlib.figure
 import matplotlib.transforms
 import numpy
-import scipy
-import scipy.misc
+import imageio
 import six.moves
 
 
 def figure_to_image(figure, *args, **kwargs):
     """Convert a figure to a numpy array"""
     #
-    # Save the figure as a .PNG and then load it using scipy.misc.imread
+    # Save the figure as a .PNG and then load it using imageio.imread
     #
     fd = six.moves.StringIO()
     kwargs = kwargs.copy()
     kwargs["format"] = "png"
     figure.savefig(fd, *args, **kwargs)
     fd.seek(0)
-    image = scipy.misc.imread(fd)
+    image = imageio.imread(fd)
     return image[:, :, :3]
 
 

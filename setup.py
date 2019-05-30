@@ -54,6 +54,7 @@ setuptools.setup(
         "centrosome",
         "docutils",
         "h5py>=2.9",
+        "imageio>=2.5",
         "inflect>=2.1",
         "javabridge>=1.0",
         "joblib>=0.13",

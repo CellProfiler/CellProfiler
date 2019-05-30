@@ -1,26 +1,23 @@
 '''test_knime_bridge.py - test the Knime bridge'''
 
-from six.moves import StringIO
 import json
-import numpy
 import unittest
 import uuid
+
+import numpy
+import six.moves
 import zmq
 
-from cellprofiler.worker import NOTIFY_STOP
-from cellprofiler.knime_bridge import KnimeBridgeServer, \
-    CONNECT_REQ_1, CONNECT_REPLY_1, \
-    PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1, \
-    RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1, \
-    CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
-import cellprofiler.pipeline
+import cellprofiler.knime_bridge
 import cellprofiler.measurement
-from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
-from cellprofiler.modules.threshold import TS_GLOBAL, TM_MANUAL
-from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
-from cellprofiler.modules.loadimages import LoadImages
-from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
-from cellprofiler.modules.saveimages import SaveImages
+import cellprofiler.modules.flagimage
+import cellprofiler.modules.identifyprimaryobjects
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.measureobjectsizeshape
+import cellprofiler.modules.saveimages
+import cellprofiler.modules.threshold
+import cellprofiler.pipeline
+import cellprofiler.worker
 
 
 class TestKnimeBridge(unittest.TestCase):
@@ -30,15 +27,15 @@ class TestKnimeBridge(unittest.TestCase):
         self.socket_addr = "inproc://" + uuid.uuid4().hex
         self.kill_pub = context.socket(zmq.PUB)
         self.kill_pub.bind(self.notify_addr)
-        self.server = KnimeBridgeServer(
-                context, self.socket_addr, self.notify_addr, NOTIFY_STOP)
+        self.server = cellprofiler.knime_bridge.KnimeBridgeServer(
+                context, self.socket_addr, self.notify_addr, cellprofiler.worker.NOTIFY_STOP)
         self.server.start()
         self.session_id = uuid.uuid4().hex
         self.socket = context.socket(zmq.REQ)
         self.socket.connect(self.socket_addr)
 
     def tearDown(self):
-        self.kill_pub.send(NOTIFY_STOP)
+        self.kill_pub.send(cellprofiler.worker.NOTIFY_STOP)
         self.server.join()
         self.kill_pub.close()
         self.socket.close()
@@ -51,38 +48,38 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(CONNECT_REQ_1)]
+            zmq.Frame(cellprofiler.knime_bridge.CONNECT_REQ_1)]
         self.socket.send_multipart(message)
         reply = self.socket.recv_multipart()
         self.assertEqual(reply.pop(0), self.session_id)
         self.assertEqual(reply.pop(0), "")
-        self.assertEqual(reply.pop(0), CONNECT_REPLY_1)
+        self.assertEqual(reply.pop(0), cellprofiler.knime_bridge.CONNECT_REPLY_1)
 
     def test_02_01_pipeline_info(self):
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.add_imagecb()
         load_images.images[0].channels[0].image_name.value = "Foo"
         load_images.images[1].channels[0].image_name.value = "Bar"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
         pipeline.add_module(identify)
 
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
         message = [zmq.Frame(self.session_id),
                    zmq.Frame(),
-                   zmq.Frame(PIPELINE_INFO_REQ_1),
+                   zmq.Frame(cellprofiler.knime_bridge.PIPELINE_INFO_REQ_1),
                    zmq.Frame(pipeline_txt.getvalue())]
         self.socket.send_multipart(message)
         message = self.socket.recv_multipart()
         self.assertEqual(message.pop(0), self.session_id)
         self.assertEqual(message.pop(0), "")
-        self.assertEqual(message.pop(0), PIPELINE_INFO_REPLY_1)
+        self.assertEqual(message.pop(0), cellprofiler.knime_bridge.PIPELINE_INFO_REPLY_1)
         body = json.loads(message.pop(0))
         self.assertEqual(len(body), 3)
         channels, type_names, measurements = body
@@ -104,75 +101,75 @@ class TestKnimeBridge(unittest.TestCase):
     def test_02_02_bad_pipeline(self):
         message = [zmq.Frame(self.session_id),
                    zmq.Frame(),
-                   zmq.Frame(PIPELINE_INFO_REQ_1),
+                   zmq.Frame(cellprofiler.knime_bridge.PIPELINE_INFO_REQ_1),
                    zmq.Frame("Freckles is a good dog but a bad pipeline")]
         self.socket.send_multipart(message)
         message = self.socket.recv_multipart()
         self.assertEqual(message.pop(0), self.session_id)
         self.assertEqual(message.pop(0), "")
-        self.assertEqual(message.pop(0), PIPELINE_EXCEPTION_1)
+        self.assertEqual(message.pop(0), cellprofiler.knime_bridge.PIPELINE_EXCEPTION_1)
 
     def test_02_03_clean_pipeline(self):
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.add_imagecb()
         load_images.images[0].channels[0].image_name.value = "Foo"
         load_images.images[1].channels[0].image_name.value = "Bar"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
         pipeline.add_module(identify)
-        saveimages = SaveImages()
+        saveimages = cellprofiler.modules.saveimages.SaveImages()
         saveimages.module_num = 3
         saveimages.image_name.value = "Foo"
         pipeline.add_module(saveimages)
-        measureobjectsizeshape = MeasureObjectSizeShape()
+        measureobjectsizeshape = cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape()
         measureobjectsizeshape.module_num = 4
         measureobjectsizeshape.object_groups[0].name.value = "dizzy"
         pipeline.add_module(measureobjectsizeshape)
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
-        module_names = json.dumps([SaveImages.module_name])
+        module_names = json.dumps([cellprofiler.modules.saveimages.SaveImages.module_name])
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(CLEAN_PIPELINE_REQ_1),
+            zmq.Frame(cellprofiler.knime_bridge.CLEAN_PIPELINE_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(module_names)]
         self.socket.send_multipart(message)
         message = self.socket.recv_multipart()
         self.assertEqual(message.pop(0), self.session_id)
         self.assertEqual(message.pop(0), "")
-        self.assertEqual(message.pop(0), CLEAN_PIPELINE_REPLY_1)
+        self.assertEqual(message.pop(0), cellprofiler.knime_bridge.CLEAN_PIPELINE_REPLY_1)
         pipeline_txt = message.pop(0)
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.loadtxt(StringIO(pipeline_txt))
+        pipeline.loadtxt(six.moves.StringIO(pipeline_txt))
         self.assertEqual(len(pipeline.modules()), 3)
-        self.assertIsInstance(pipeline.modules()[0], LoadImages)
-        self.assertIsInstance(pipeline.modules()[1], IdentifyPrimaryObjects)
-        self.assertIsInstance(pipeline.modules()[2], MeasureObjectSizeShape)
+        self.assertIsInstance(pipeline.modules()[0], cellprofiler.modules.loadimages.LoadImages)
+        self.assertIsInstance(pipeline.modules()[1], cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+        self.assertIsInstance(pipeline.modules()[2], cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape)
 
     def test_03_01_run_something(self):
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.use_advanced.value = True
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.threshold.threshold_scope.value = TS_GLOBAL
-        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        identify.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
 
         image = numpy.zeros((11, 17))
@@ -185,7 +182,7 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(RUN_REQ_1),
+            zmq.Frame(cellprofiler.knime_bridge.RUN_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
             zmq.Frame(image)]
@@ -193,7 +190,7 @@ class TestKnimeBridge(unittest.TestCase):
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
         self.assertEqual(response.pop(0), "")
-        self.assertEqual(response.pop(0), RUN_REPLY_1)
+        self.assertEqual(response.pop(0), cellprofiler.knime_bridge.RUN_REPLY_1)
         metadata = json.loads(response.pop(0))
         data = response.pop(0)
         measurements = self.decode_measurements(metadata, data)
@@ -202,21 +199,21 @@ class TestKnimeBridge(unittest.TestCase):
 
     def test_03_02_bad_cellprofiler(self):
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.threshold.threshold_scope.value = TS_GLOBAL
-        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        identify.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
 
         image = numpy.zeros((11, 17))
@@ -230,7 +227,7 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(RUN_REQ_1),
+            zmq.Frame(cellprofiler.knime_bridge.RUN_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
             zmq.Frame(image)]
@@ -238,7 +235,7 @@ class TestKnimeBridge(unittest.TestCase):
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
         self.assertEqual(response.pop(0), "")
-        self.assertEqual(response.pop(0), CELLPROFILER_EXCEPTION_1)
+        self.assertEqual(response.pop(0), cellprofiler.knime_bridge.CELLPROFILER_EXCEPTION_1)
 
     def test_03_03_run_missing_measurement(self):
         # Regression test of knime-bridge issue #6
@@ -246,38 +243,38 @@ class TestKnimeBridge(unittest.TestCase):
         # Missing measurement causes exception
         #
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.module_num = 2
         identify.use_advanced.value = True
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.threshold.threshold_scope.value = TS_GLOBAL
-        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        identify.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
-        flag_module = FlagImage()
+        flag_module = cellprofiler.modules.flagimage.FlagImage()
         flag_module.module_num = 3
         flag = flag_module.flags[0]
         flag.wants_skip.value = True
         criterion = flag.measurement_settings[0]
-        criterion.source_choice.value = S_IMAGE
+        criterion.source_choice.value = cellprofiler.modules.flagimage.S_IMAGE
         criterion.measurement.value = "Count_dizzy"
         criterion.wants_minimum.value = True
         criterion.minimum_value.value = 1000
         pipeline.add_module(flag_module)
 
-        measureobjectsizeshape = MeasureObjectSizeShape()
+        measureobjectsizeshape = cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape()
         measureobjectsizeshape.module_num = 4
         measureobjectsizeshape.object_groups[0].name.value = "dizzy"
         pipeline.add_module(measureobjectsizeshape)
 
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
 
         image = numpy.zeros((11, 17))
@@ -290,7 +287,7 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(RUN_REQ_1),
+            zmq.Frame(cellprofiler.knime_bridge.RUN_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
             zmq.Frame(image)]
@@ -298,7 +295,7 @@ class TestKnimeBridge(unittest.TestCase):
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
         self.assertEqual(response.pop(0), "")
-        self.assertEqual(response.pop(0), RUN_REPLY_1)
+        self.assertEqual(response.pop(0), cellprofiler.knime_bridge.RUN_REPLY_1)
         metadata = json.loads(response.pop(0))
         data = response.pop(0)
         measurements = self.decode_measurements(metadata, data)
@@ -308,22 +305,22 @@ class TestKnimeBridge(unittest.TestCase):
 
     def test_04_01_run_group(self):
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.use_advanced.value = True
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.threshold.threshold_scope.value = TS_GLOBAL
-        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        identify.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
 
         image = numpy.zeros((2, 11, 17))
@@ -339,7 +336,7 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(RUN_GROUP_REQ_1),
+            zmq.Frame(cellprofiler.knime_bridge.RUN_GROUP_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
             zmq.Frame(image)]
@@ -347,7 +344,7 @@ class TestKnimeBridge(unittest.TestCase):
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
         self.assertEqual(response.pop(0), "")
-        self.assertEqual(response.pop(0), RUN_REPLY_1)
+        self.assertEqual(response.pop(0), cellprofiler.knime_bridge.RUN_REPLY_1)
         metadata = json.loads(response.pop(0))
         data = response.pop(0)
         measurements = self.decode_measurements(metadata, data)
@@ -358,21 +355,21 @@ class TestKnimeBridge(unittest.TestCase):
 
     def test_04_02_bad_cellprofiler(self):
         pipeline = cellprofiler.pipeline.Pipeline()
-        load_images = LoadImages()
+        load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.module_num = 1
         load_images.images[0].channels[0].image_name.value = "Foo"
         pipeline.add_module(load_images)
-        identify = IdentifyPrimaryObjects()
+        identify = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         identify.module_num = 2
         identify.x_name.value = "Foo"
         identify.y_name.value = "dizzy"
-        identify.threshold.threshold_scope.value = TS_GLOBAL
-        identify.threshold.global_operation.value = TM_MANUAL
+        identify.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+        identify.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         identify.threshold.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
 
-        pipeline_txt = StringIO()
+        pipeline_txt = six.moves.StringIO()
         pipeline.savetxt(pipeline_txt)
 
         image = numpy.zeros((11, 17))
@@ -387,7 +384,7 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(RUN_GROUP_REQ_1),
+            zmq.Frame(cellprofiler.knime_bridge.RUN_GROUP_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
             zmq.Frame(image)]
@@ -395,7 +392,7 @@ class TestKnimeBridge(unittest.TestCase):
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
         self.assertEqual(response.pop(0), "")
-        self.assertEqual(response.pop(0), CELLPROFILER_EXCEPTION_1)
+        self.assertEqual(response.pop(0), cellprofiler.knime_bridge.CELLPROFILER_EXCEPTION_1)
 
     def decode_measurements(self, metadata, data):
         offset = 0

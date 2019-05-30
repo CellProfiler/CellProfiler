@@ -1,4 +1,4 @@
-"""test_analysisworker.py - test the analysis client framework"""
+"""test_worker.py - test the analysis client framework"""
 
 import six.moves.queue
 import six.moves

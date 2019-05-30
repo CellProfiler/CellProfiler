@@ -949,7 +949,7 @@ class Pipeline(object):
     def respond_to_version_mismatch_error(self, message):
         logging.warning(message)
 
-    def loadtxt(self, fd_or_filename, raise_on_error=False):
+    def loadtxt(self, fp_or_filename, raise_on_error=False):
         """Load a pipeline from a text file
 
         fd_or_filename - either a path to a file or a file-descriptor-like
@@ -963,10 +963,11 @@ class Pipeline(object):
         self.caption_for_user = None
         self.message_for_user = None
         module_count = sys.maxsize
-        if hasattr(fd_or_filename, "seek") and hasattr(fd_or_filename, "read"):
-            fd = fd_or_filename
+
+        if hasattr(fp_or_filename, "seek") and hasattr(fp_or_filename, "read"):
+            fd = fp_or_filename
         else:
-            fd = open(fd_or_filename, "r")
+            fd = open(fp_or_filename, "r")
 
         def rl():
             """Read a line from fd"""
@@ -982,8 +983,8 @@ class Pipeline(object):
         header = rl()
 
         # FIXME:
-        # if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
-        #     raise NotImplementedError('Invalid header: "%s"' % header)
+        if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
+            raise NotImplementedError('Invalid header: "%s"' % header)
 
         version = NATIVE_VERSION
         from_matlab = False

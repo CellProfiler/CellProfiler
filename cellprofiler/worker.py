@@ -367,12 +367,10 @@ class AnalysisWorker(object):
                 cpprefs.set_preferences_from_dict(preferences_dict)
 
                 logger.debug("Loading pipeline")
-                pipeline_blob = rep.pipeline_blob.tostring()
+
                 current_pipeline = cpp.Pipeline()
 
-                current_pipeline.loadtxt(
-                    six.moves.StringIO(pipeline_blob), raise_on_error=True
-                )
+                current_pipeline.loadtxt(six.moves.StringIO(rep.pipeline_blob), raise_on_error=True)
 
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)

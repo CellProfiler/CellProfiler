@@ -1,11 +1,11 @@
 version: 2
 jobs:
-  macos-build-and-test:
-    macos:
-      xcode: "9.0"
-    steps:
-      - checkout
-      - run: echo
+#  macos-build-and-test:
+#    macos:
+#      xcode: "9.0"
+#    steps:
+#      - checkout
+#      - run: echo
   ubuntu-build-and-test:
     docker:
       - image: circleci/python:2.7
@@ -30,5 +30,5 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - macos-build-and-test
+#      - macos-build-and-test
       - ubuntu-build-and-test

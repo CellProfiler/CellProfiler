@@ -1339,12 +1339,19 @@ class PipelineListCtrl(wx.ScrolledWindow):
         item - a PipelineListCtrlItem
         """
         self.items.insert(index, item)
-        if self.active_item >= index:
-            self.active_item += 1
-        if self.anchor >= index:
-            self.anchor += 1
-        if self.running_item >= index:
-            self.running_item += 1
+
+        if self.active_item:
+            if self.active_item >= index:
+                self.active_item += 1
+
+        if self.anchor:
+            if self.anchor >= index:
+                self.anchor += 1
+
+        if self.running_item:
+            if self.running_item >= index:
+                self.running_item += 1
+
         self.AdjustScrollbars()
 
         self.SetInitialSize(self.GetBestSize())

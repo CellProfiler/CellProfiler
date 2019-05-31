@@ -602,7 +602,7 @@ Enter the power by which you would like to raise the result.
         for binary.
         """
         if self.operation == O_NONE:
-            return (self.operands[0],)
+            return self.operands[0],
         else:
             return self.operands
 

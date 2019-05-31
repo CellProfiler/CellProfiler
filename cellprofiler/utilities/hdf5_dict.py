@@ -6,6 +6,7 @@ interface for measurements, backed by an HDF5 file.
 
 
 import bisect
+import functools
 import logging
 import os
 import sys
@@ -1149,7 +1150,7 @@ class HDF5FileList(object):
             url = str(url)
         import urllib.request, urllib.parse, urllib.error
 
-        schema, rest = urllib.parse.splittype(url)
+        schema, rest = urllib.parse.splittype(six.text_type(url))
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #
@@ -1201,9 +1202,7 @@ class HDF5FileList(object):
                         dest.extend(to_add)
                         sort_order = sorted(
                             list(range(len(leaves))),
-                            cmp=lambda x, y: cellprofiler.utilities.legacy.cmp(
-                                leaves[x], leaves[y]
-                            ),
+                            key=functools.cmp_to_key(lambda x, y: cellprofiler.utilities.legacy.cmp(leaves[x], leaves[y])),
                         )
                         dest.reorder(sort_order)
                         metadata.extend([None] * len(to_add))

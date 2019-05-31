@@ -340,7 +340,7 @@ class PathListCtrl(wx.ScrolledWindow):
         For files, the user expects to see a path, not a URL
         """
         if folder.startswith("file:"):
-            return six.moves.urllib.request.url2pathname(folder[5:]).decode("utf8")
+            return six.moves.urllib.request.url2pathname(folder[5:])
         return folder
 
     def recalc(self):

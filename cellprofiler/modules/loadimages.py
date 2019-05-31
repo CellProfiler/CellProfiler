@@ -4577,7 +4577,7 @@ PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
 
 def pathname2url(path):
     """Convert the unicode path to a file: url"""
-    utf8_path = path.encode("utf-8")
+    utf8_path = six.text_type(path)
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
     return FILE_SCHEME + six.moves.urllib.request.pathname2url(utf8_path)

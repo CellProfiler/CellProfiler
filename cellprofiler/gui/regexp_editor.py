@@ -538,7 +538,7 @@ def looking_at_repeat(s, state):
     if not state.any_tokens:
         raise ValueError("Invalid repeat placement: there is nothing to repeat")
     if s[0] == "{":
-        match = re.match("\\{([0-9]+)(,([0-9]+))?\\}", s)
+        match = re.match("{([0-9]+)(,([0-9]+))?\\}", s)
         if not match:
             raise ValueError("Incomplete or badly formatted repeat expression")
         if match.group(3) is not None:

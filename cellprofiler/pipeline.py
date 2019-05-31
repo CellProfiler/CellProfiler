@@ -690,7 +690,7 @@ class Pipeline(object):
         """
         h = hashlib.md5()
         for module in self.modules():
-            h.update(module.module_name)
+            h.update(module.module_name.encode("utf-8"))
             for setting in module.settings():
                 h.update(setting.unicode_value.encode("utf-8"))
             if module.module_name == until_module:

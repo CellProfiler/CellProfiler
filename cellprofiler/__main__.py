@@ -742,7 +742,7 @@ def run_pipeline_headless(options, args):
             cellprofiler.pipeline.M_PIPELINE
         )
 
-        pipeline_text = pipeline_text.encode("us-ascii")
+        pipeline_text = pipeline_text
 
         pipeline.load(six.moves.StringIO(pipeline_text))
 

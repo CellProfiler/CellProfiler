@@ -448,7 +448,7 @@ class ImagePlaneDetails(object):
     def path(self):
         """The file path if a file: URL, otherwise the URL"""
         if self.url.startswith("file:"):
-            return six.moves.urllib.request.url2pathname(self.url[5:]).decode("utf8")
+            return six.moves.urllib.request.url2pathname(self.url[5:])
         return self.url
 
     @property
@@ -601,11 +601,11 @@ def read_fields(line):
             state = RF_STATE_FIELD
         elif state == RF_STATE_SEPARATOR:
             if c == ":":
-                key = field.decode("string_escape")
+                key = field
                 kv = True
                 state = RF_STATE_PREQUOTE
             elif c in ",\n":
-                field = field.decode("string_escape")
+                field = field
                 if kv:
                     result.append((key, field))
                 else:
@@ -690,9 +690,9 @@ class Pipeline(object):
         """
         h = hashlib.md5()
         for module in self.modules():
-            h.update(module.module_name)
+            h.update(module.module_name.encode("utf-8"))
             for setting in module.settings():
-                h.update(setting.unicode_value)
+                h.update(setting.unicode_value.encode("utf-8"))
             if module.module_name == until_module:
                 break
         if as_string:
@@ -888,9 +888,12 @@ class Pipeline(object):
                 raise IOError("Could not find file, " + fd_or_filename)
             fd = six.moves.urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
+
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
+
             return
+
         header = fd.read(len(HDF5_HEADER))
         if needs_close:
             fd.close()
@@ -908,7 +911,7 @@ class Pipeline(object):
             else:
                 m = cellprofiler.measurement.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
-                pipeline_text = pipeline_text.encode("us-ascii")
+                pipeline_text = pipeline_text
                 self.load(six.moves.StringIO(pipeline_text))
                 return
 
@@ -1031,7 +1034,7 @@ class Pipeline(object):
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
                 has_image_plane_details = value == "True"
             elif kwd == H_MESSAGE_FOR_USER:
-                value = value.decode("string_escape")
+                value = value
                 self.caption_for_user, self.message_for_user = value.split("|", 1)
             elif kwd == H_GIT_HASH:
                 git_hash = value
@@ -1131,7 +1134,7 @@ class Pipeline(object):
                     if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":")
-                    setting = setting.decode("string_escape")
+                    setting = setting
 
                     if do_deprecated_utf16_decode:
                         setting = cellprofiler.utilities.utf16encode.utf16decode(
@@ -1144,7 +1147,7 @@ class Pipeline(object):
                 #
                 # Set up the module
                 #
-                module_name = module_name.decode("string_escape")
+                module_name = module_name
                 module = self.instantiate_module(module_name)
                 module.module_num = module_number
                 #
@@ -1171,7 +1174,7 @@ class Pipeline(object):
                     if len(a.split(":")) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
                     attribute, value = a.split(":")
-                    value = value.decode("string_escape")
+                    value = value
                     value = eval(value)
                     if attribute == "variable_revision_number":
                         variable_revision_number = value

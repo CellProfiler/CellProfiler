@@ -676,7 +676,7 @@ desired.
         elif self.delimiter == DELIMITER_COMMA:
             return ","
         else:
-            return self.delimiter.value.encode("ascii")
+            return self.delimiter.value
 
     def prepare_run(self, workspace):
         """Prepare an image set to be run
@@ -1019,7 +1019,7 @@ desired.
                 if isinstance(v, np.ndarray) and v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    six.text_type(v).encode("utf8")
+                    six.text_type(v)
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -1074,7 +1074,7 @@ desired.
                         if value is None:
                             row.append("")
                         elif isinstance(value, six.text_type):
-                            row.append(value.encode("utf8"))
+                            row.append(value)
                         elif isinstance(value, six.string_types):
                             row.append(value)
                         elif isinstance(value, np.ndarray) and value.dtype == np.uint8:

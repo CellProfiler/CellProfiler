@@ -2123,7 +2123,7 @@ class VStringArray(object):
                 return
 
             elif isinstance(value, six.text_type):
-                value = value.encode("utf8")
+                value = value
             else:
                 value = str(value)
             if idx >= self.index.shape[0]:

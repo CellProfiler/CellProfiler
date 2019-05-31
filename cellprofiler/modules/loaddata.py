@@ -828,7 +828,7 @@ safe to press it.""",
         for line in reader:
             list_ctl.Append(
                 [
-                    s.encode("utf8") if isinstance(s, str) else s
+                    s if isinstance(s, str) else s
                     for s in line[: len(header)]
                 ]
             )
@@ -932,7 +932,7 @@ safe to press it.""",
                     break
                 if len(row) == 0:
                     continue
-                row = [s.encode("utf8") if isinstance(s, str) else s for s in row]
+                row = [s if isinstance(s, str) else s for s in row]
                 if len(row) != len(header):
                     raise ValueError(
                         "Row # %d has the wrong number of elements: %d. Expected %d"
@@ -941,7 +941,7 @@ safe to press it.""",
                 rows.append(row)
         else:
             rows = [
-                [s.encode("utf8") if isinstance(s, str) else s for s in row]
+                [s if isinstance(s, str) else s for s in row]
                 for row in reader
                 if len(row) > 0
             ]

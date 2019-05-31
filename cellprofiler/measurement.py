@@ -540,7 +540,7 @@ class Measurements(object):
         Experiment measurements have one value per experiment
         """
         if isinstance(data, six.string_types):
-            data = six.text_type(data).encode("unicode_escape")
+            data = six.text_type(data)
         self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
     def get_group_number(self):
@@ -1005,7 +1005,7 @@ class Measurements(object):
         if isinstance(v, six.string_types):
             if getattr(v, "__class__") == str:
                 v = v
-            return v.encode("unicode_escape")
+            return v
         return v
 
     @staticmethod
@@ -1017,7 +1017,7 @@ class Measurements(object):
         # referenced with the dot syntax.
         #
         if getattr(v, "__class__") == str:
-            return v.decode("unicode_escape")
+            return v
         return v
 
     def get_measurement(self, object_name, feature_name, image_set_number=None):

@@ -1278,7 +1278,7 @@ class PipelineController(object):
         else:
             ftr = cellprofiler.pipeline.M_PIPELINE
         pipeline_text = m.get_experiment_measurement(ftr)
-        pipeline_text = pipeline_text.encode("us-ascii")
+        pipeline_text = pipeline_text
         self.__pipeline.load(io.StringIO(pipeline_text))
         return True
 

@@ -414,7 +414,7 @@ class Workspace(object):
             ):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                     M_PIPELINE
-                ).encode("utf-8")
+                )
                 self.pipeline.load(six.moves.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()

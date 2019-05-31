@@ -295,7 +295,7 @@ class KnimeBridgeServer(threading.Thread):
                     else:
                         s = data[0]
                         if isinstance(s, six.text_type):
-                            s = s.encode("utf-8")
+                            s = s
                         else:
                             s = str(s)
                         string_data.append(numpy.frombuffer(s, numpy.uint8))
@@ -561,7 +561,7 @@ class KnimeBridgeServer(threading.Thread):
 
     def raise_pipeline_exception(self, session_id, message):
         if isinstance(message, six.text_type):
-            message = message.encode("utf-8")
+            message = message
         else:
             message = str(message)
         self.socket.send_multipart(
@@ -575,7 +575,7 @@ class KnimeBridgeServer(threading.Thread):
 
     def raise_cellprofiler_exception(self, session_id, message):
         if isinstance(message, six.text_type):
-            message = message.encode("utf-8")
+            message = message
         else:
             message = str(message)
         self.socket.send_multipart(

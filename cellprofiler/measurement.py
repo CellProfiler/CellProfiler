@@ -1004,7 +1004,7 @@ class Measurements(object):
     def wrap_string(v):
         if isinstance(v, six.string_types):
             if getattr(v, "__class__") == str:
-                v = v.decode("utf-8")
+                v = v
             return v.encode("unicode_escape")
         return v
 
@@ -1430,12 +1430,12 @@ class Measurements(object):
         import csv
 
         reader = csv.reader(fd_or_file)
-        header = [x.decode("utf-8") for x in next(reader)]
+        header = [x for x in next(reader)]
         columns = [[] for _ in range(len(header))]
         column_is_all_none = numpy.ones(len(header), bool)
         last_image_number = 0
         for i, fields in enumerate(reader):
-            fields = [x.decode("utf-8") for x in fields]
+            fields = [x for x in fields]
             image_number = i + 1
             if start is not None and start < image_number:
                 continue
@@ -1526,7 +1526,7 @@ class Measurements(object):
                     field = ""
                 if isinstance(field, six.string_types):
                     if isinstance(field, six.text_type):
-                        field = field.encode("utf-8")
+                        field = field
                     field = '"' + field.replace('"', '""') + '"'
                 else:
                     field = str(field)
@@ -1565,7 +1565,7 @@ class Measurements(object):
         new_urls = []
         for url in urls:
             if url.lower().startswith("file:"):
-                full_name = url2pathname(url.encode("utf-8"))
+                full_name = url2pathname(url)
                 full_name = fn_alter_path(full_name)
                 new_url = pathname2url(full_name)
             else:
@@ -1629,7 +1629,7 @@ class Measurements(object):
             return url
         d = json.loads(self.get_experiment_measurement(M_PATH_MAPPINGS))
         os_url2pathname = __import__(d[K_URL2PATHNAME_PACKAGE_NAME]).url2pathname
-        full_name = os_url2pathname(url[5:].encode("utf-8"))
+        full_name = os_url2pathname(url[5:])
         full_name_c = full_name if d[K_CASE_SENSITIVE] else full_name.lower()
         if d[K_LOCAL_SEPARATOR] != os.path.sep:
             full_name = full_name.replace(d[K_LOCAL_SEPARATOR], os.path.sep)
@@ -1642,7 +1642,7 @@ class Measurements(object):
                     full_name = remote_directory + full_name[len(local_directory) :]
         url = "file:" + six.moves.urllib.request.pathname2url(full_name)
         if isinstance(url, six.text_type):
-            url = url.encode("utf-8")
+            url = url
         return url
 
     ###########################################################

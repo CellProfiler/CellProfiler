@@ -1501,7 +1501,7 @@ class PipelineController(object):
                 cellprofiler.measurement.IMAGE, url_feature, image_numbers
             )
             data.add_files(
-                [url.encode("utf-8") for url in urls],
+                [url for url in urls],
                 plate,
                 well,
                 site,
@@ -3227,7 +3227,7 @@ class PipelineController(object):
             pipeline_txt = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.M_PIPELINE
             )
-            self.__pipeline.loadtxt(io.StringIO(pipeline_txt.encode("utf-8")))
+            self.__pipeline.loadtxt(io.StringIO(pipeline_txt))
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()

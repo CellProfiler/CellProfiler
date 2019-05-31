@@ -806,7 +806,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             for row_idx in range(self.GetNumberRows()):
                 url = self.table.get_url(row_idx, col_idx)
                 if url is not None:
-                    url = url.encode("utf-8")
+                    url = url
                     if fn_filter(url):
                         self.SelectBlock(row_idx, col_idx, row_idx, col_idx, True)
 
@@ -815,7 +815,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             for row_idx in range(self.GetNumberRows()):
                 url = self.table.get_url(row_idx, col_idx)
                 if url is not None:
-                    url = url.encode("utf-8")
+                    url = url
                     if fn_filter(url):
                         self.DeselectCell(row_idx, col_idx)
 

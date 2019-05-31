@@ -455,7 +455,7 @@ class ImagePlaneDetails(object):
     def url(self):
         return javabridge.run_script(
             "o.getImagePlane().getImageFile().getURI().toString()", dict(o=self.jipd)
-        ).encode("utf-8")
+        )
 
     @property
     def series(self):
@@ -562,7 +562,7 @@ def write_file_list(file_or_fd, file_list):
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
             if isinstance(url, six.text_type):
-                url = url.encode("utf-8")
+                url = url
             url = url.encode("string_escape").replace('"', r"\"")
             line = '"%s",,,\n' % url
             fd.write(line)
@@ -601,11 +601,11 @@ def read_fields(line):
             state = RF_STATE_FIELD
         elif state == RF_STATE_SEPARATOR:
             if c == ":":
-                key = field.decode("string_escape").decode("utf-8")
+                key = field.decode("string_escape")
                 kv = True
                 state = RF_STATE_PREQUOTE
             elif c in ",\n":
-                field = field.decode("string_escape").decode("utf-8")
+                field = field.decode("string_escape")
                 if kv:
                     result.append((key, field))
                 else:
@@ -690,9 +690,9 @@ class Pipeline(object):
         """
         h = hashlib.md5()
         for module in self.modules():
-            h.update(module.module_name.encode("utf-8"))
+            h.update(module.module_name)
             for setting in module.settings():
-                h.update(setting.unicode_value.encode("utf-8"))
+                h.update(setting.unicode_value)
             if module.module_name == until_module:
                 break
         if as_string:
@@ -1138,7 +1138,7 @@ class Pipeline(object):
                             setting
                         )
                     elif do_utf16_decode:
-                        setting = setting.decode("utf-8")
+                        setting = setting
 
                     settings.append(setting)
                 #
@@ -1350,14 +1350,14 @@ class Pipeline(object):
             for setting in module.settings():
                 setting_text = setting.text
                 if isinstance(setting_text, six.text_type):
-                    setting_text = setting_text.encode("utf-8")
+                    setting_text = setting_text
                 else:
                     setting_text = str(setting_text)
 
                 encoded_setting_text = self.encode_txt(setting_text)
 
                 encoded_unicode_value = self.encode_txt(
-                    setting.unicode_value.encode("utf-8")
+                    setting.unicode_value
                 )
 
                 fd.write(

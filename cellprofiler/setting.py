@@ -201,7 +201,7 @@ class Setting(object):
         NOTE: strings are deprecated, use unicode_value instead.
         """
         if isinstance(self.__value, six.text_type):
-            return str(self.__value.encode("utf-8"))
+            return str(self.__value)
         if not isinstance(self.__value, str):
             raise ValidationError("%s was not a string" % self.__value, self)
         return self.__value
@@ -655,7 +655,7 @@ class ImagePlane(Setting):
         """The URL portion of the image plane descriptor"""
         uurl = self.__get_field(0)
         if uurl is not None:
-            uurl = uurl.encode("utf-8")
+            uurl = uurl
         return uurl
 
     @property

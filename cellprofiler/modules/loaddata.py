@@ -703,7 +703,7 @@ safe to press it.""",
             for h in header:
                 if not h.startswith("file_"):
                     if isinstance(h, six.text_type):
-                        output.append(h.encode("utf-8"))
+                        output.append(h)
                     else:
                         output.append(h)
             return output
@@ -1201,12 +1201,12 @@ safe to press it.""",
                         image_set_number=image_numbers,
                     )
                     for image_number, url in zip(image_numbers, urls):
-                        url = url.encode("utf-8")
+                        url = url
                         if url.lower().startswith("file:"):
                             fullname = loadimages.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = str(loadimages.pathname2url(fullname)).encode("utf-8")
+                            url = str(loadimages.pathname2url(fullname))
                             m.add_measurement(
                                 cellprofiler.measurement.IMAGE,
                                 url_feature,
@@ -1243,7 +1243,7 @@ safe to press it.""",
             series_feature = cellprofiler.measurement.C_OBJECTS_SERIES + "_" + name
             frame_feature = cellprofiler.measurement.C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cellprofiler.measurement.IMAGE, url_feature)
-        url = url.encode("utf-8")
+        url = url
         full_filename = loadimages.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(cellprofiler.measurement.IMAGE, series_feature):

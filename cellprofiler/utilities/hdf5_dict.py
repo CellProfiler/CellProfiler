@@ -1145,7 +1145,7 @@ class HDF5FileList(object):
         returns a two tuple of schema + path part sequence
         """
         if isinstance(url, six.text_type):
-            url = url.encode("utf-8")
+            url = url
         else:
             url = str(url)
         import urllib.request, urllib.parse, urllib.error
@@ -1386,7 +1386,7 @@ class HDF5FileList(object):
         """
         if path_tuple in self.__cache:
             return self.__cache[path_tuple].urls
-        a = tuple([x.encode("utf-8") for x in VStringArray(g)])
+        a = tuple([x for x in VStringArray(g)])
         is_not_none = VStringArray(g.require_group("metadata")).is_not_none()
         self.__cache[path_tuple] = self.__CacheEntry(g, a, is_not_none)
         return a
@@ -2162,7 +2162,7 @@ class VStringArray(object):
                 return None
             elif begin == end:
                 return ""
-            return self.data[begin:end].tostring().decode("utf-8")
+            return self.data[begin:end].tostring()
 
     def __delitem__(self, idx):
         with self.lock:
@@ -2190,7 +2190,7 @@ class VStringArray(object):
                 if begin > end
                 else ""
                 if begin == end
-                else data[begin:end].tostring().decode("utf-8")
+                else data[begin:end].tostring()
             )
 
     def set_all(self, strings):
@@ -2199,7 +2199,7 @@ class VStringArray(object):
         strings = [
             ""
             if s is None
-            else s.encode("utf-8")
+            else s
             if isinstance(s, six.text_type)
             else str(s)
             for s in strings
@@ -2309,7 +2309,7 @@ class VStringArray(object):
         strings = [
             ""
             if s is None
-            else s.encode("utf-8")
+            else s
             if isinstance(s, six.text_type)
             else str(s)
             for s in strings
@@ -2348,7 +2348,7 @@ class VStringArray(object):
         if s is None:
             return 0
         elif isinstance(s, six.text_type):
-            s = s.encode("utf-8")
+            s = s
         else:
             s = str(s)
         #
@@ -2557,7 +2557,7 @@ class StringReferencer(object):
     def string_to_uint8(s):
         """Convert a utf-8 encoded string to a np.uint8 array"""
         if isinstance(s, six.text_type):
-            s = s.encode("utf-8")
+            s = s
         elif not isinstance(s, str):
             s = str(s)
         result = numpy.zeros(len(s), numpy.uint8)
@@ -2581,7 +2581,7 @@ class StringReferencer(object):
             i, j, self.SR_BLOCK_OFF : (self.SR_BLOCK_LEN + 1)
         ]
         s = str(self.data[i, data_off : (data_off + data_len)].data)
-        return s.decode("utf-8")
+        return s
 
     def get_string_refs(self, strings):
         """Get references to strings

@@ -3177,7 +3177,7 @@ INSERT INTO %s (name) values ('%s')""" % (
         for p in properties:
             for k, v in list(p.properties.items()):
                 if isinstance(v, six.text_type):
-                    v = v.encode("utf-8")
+                    v = v
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
@@ -3230,7 +3230,7 @@ CREATE TABLE %s (
 
             if column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
                 if isinstance(value, six.text_type):
-                    value = value.encode("utf-8")
+                    value = value
                 if self.db_type != DB_SQLITE:
                     value = MySQLdb.escape_string(value)
                 else:

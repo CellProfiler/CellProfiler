@@ -2958,7 +2958,7 @@ to store the image.
                     m.get_current_image_measurement(file_feature),
                 ]
                 url = m.get_measurement(cellprofiler.measurement.IMAGE, feature)
-                full_name = url2pathname(url.encode("utf-8"))
+                full_name = url2pathname(url)
                 path, filename = os.path.split(full_name)
                 rescale = channel.rescale.value
                 metadata = self.get_filename_metadata(fd, filename, path)
@@ -4589,12 +4589,12 @@ def is_file_url(url):
 
 def url2pathname(url):
     if isinstance(url, six.text_type):
-        url = url.encode("utf-8")
+        url = url
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
     utf8_url = six.moves.urllib.request.url2pathname(url[len(FILE_SCHEME) :])
-    return utf8_url.encode("utf-8")
+    return utf8_url
 
 
 def urlfilename(url):

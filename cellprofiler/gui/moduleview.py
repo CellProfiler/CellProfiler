@@ -771,7 +771,7 @@ class ModuleView(object):
             if not self.__handle_change:
                 return
             if self.__module is not None:
-                notes = self.module_notes_control.GetValue().encode("utf-8")
+                notes = self.module_notes_control.GetValue()
                 self.__module.notes = notes.split("\n")
 
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed, self.module_notes_control)

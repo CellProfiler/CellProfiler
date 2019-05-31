@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -123,7 +123,7 @@ class TestThreshold(unittest.TestCase):
             Method to calculate adaptive window size:Image size
             Size of adaptive window:13
 """
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
@@ -220,7 +220,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|show_
     # of deviations:2.0
         """
 
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
@@ -372,7 +372,7 @@ Threshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_
     # of deviations:2.0
         """
 
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[4]
@@ -480,7 +480,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
     Thresholding method:Otsu
         """
 
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]

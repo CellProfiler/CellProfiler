@@ -368,10 +368,10 @@ class AnalysisRunner:
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
-            image_sets_to_process = filter(
+            image_sets_to_process = list(filter(
                 lambda x: image_set_start <= x <= image_set_end,
                 measurements.get_image_numbers(),
-            )
+            ))
 
             self.post_event(AnalysisStarted())
             posted_analysis_started = True

@@ -1,19 +1,19 @@
 """test_nowx.py - ensure that there's no dependency on wx when headless
 """
-import __builtin__
+import builtins
 import sys
 import tempfile
 import unittest
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 from tests.modules import example_images_directory
 
 
 def import_all_but_wx(name,
-                      globals=__builtin__.globals(),
-                      locals=__builtin__.locals(),
+                      globals=builtins.globals(),
+                      locals=builtins.locals(),
                       fromlist=[], level=-1,
-                      default_import=__builtin__.__import__):
+                      default_import=builtins.__import__):
     if name == "wx" or name.startswith("wx."):
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)
@@ -25,11 +25,11 @@ class TestNoWX(unittest.TestCase):
         from cellprofiler.preferences import set_headless, set_temporary_directory
         set_headless()
         set_temporary_directory(tempfile.gettempdir())
-        self.old_import = __builtin__.__import__
-        __builtin__.__import__ = import_all_but_wx
+        self.old_import = builtins.__import__
+        builtins.__import__ = import_all_but_wx
 
     def tearDown(self):
-        __builtin__.__import__ = self.old_import
+        builtins.__import__ = self.old_import
 
     def example_dir(self):
         return example_images_directory()

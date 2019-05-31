@@ -237,7 +237,7 @@ objects.""",
                 else (im.image_name,)
             )
             dict[key] = im
-        return dict.values()
+        return list(dict.values())
 
     def run(self, workspace):
         """Perform the measurements on the imageset"""

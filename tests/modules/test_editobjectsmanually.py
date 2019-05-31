@@ -190,20 +190,20 @@ EditObjectsManually:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
              "Foo": {}
              }
 
-        for object_name, category_d in d.iteritems():
+        for object_name, category_d in d.items():
             #
             # Check get_categories for the object
             #
             categories = module.get_categories(None, object_name)
-            self.assertEqual(len(categories), len([k for k in category_d.keys()
+            self.assertEqual(len(categories), len([k for k in list(category_d.keys())
                                                    if k != "Foo"]))
             for category in categories:
                 self.assertTrue(category in category_d)
-            for category in category_d.keys():
+            for category in list(category_d.keys()):
                 if category != "Foo":
                     self.assertTrue(category in categories)
 
-            for category, expected_features in category_d.iteritems():
+            for category, expected_features in category_d.items():
                 #
                 # check get_measurements for each category
                 #

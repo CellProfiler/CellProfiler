@@ -1,4 +1,4 @@
-import StringIO
+import io
 import unittest
 
 import centrosome.propagate
@@ -99,7 +99,7 @@ MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variabl
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution))
@@ -153,7 +153,7 @@ MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variabl
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution))
@@ -232,7 +232,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution))
@@ -342,7 +342,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution))

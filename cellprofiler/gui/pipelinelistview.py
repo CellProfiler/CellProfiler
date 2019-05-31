@@ -330,9 +330,9 @@ class PipelineListView(object):
 
     def set_debug_mode(self, mode):
         if (mode is True) and (self.__pipeline is not None):
-            modules = filter(
+            modules = list(filter(
                 (lambda m: not m.is_input_module()), self.__pipeline.modules()
-            )
+            ))
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)

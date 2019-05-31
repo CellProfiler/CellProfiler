@@ -6,7 +6,7 @@
            Create a function to save the preferences.
            Create a function to populate a handles structure with preferences.
 """
-from __future__ import print_function
+
 
 import logging
 import multiprocessing
@@ -1215,7 +1215,7 @@ def set_data_file(path):
 
 
 def standardize_default_folder_names(setting_values, slot):
-    if setting_values[slot] in FOLDER_CHOICE_TRANSLATIONS.keys():
+    if setting_values[slot] in list(FOLDER_CHOICE_TRANSLATIONS.keys()):
         replacement = FOLDER_CHOICE_TRANSLATIONS[setting_values[slot]]
     elif (
         setting_values[slot].startswith("Default Image")
@@ -2032,7 +2032,7 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
     uid = uuid.uuid4()
     for i in range(0, n_items, freq):
         report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
-        output += map(fn_map, sequence[i : i + freq])
+        output += list(map(fn_map, sequence[i : i + freq]))
     report_progress(uuid, 1, "Done")
     return output
 

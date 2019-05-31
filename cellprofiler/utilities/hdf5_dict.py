@@ -3,7 +3,7 @@
 This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 """
-from __future__ import print_function
+
 
 import bisect
 import logging
@@ -199,7 +199,7 @@ class HDF5Dict(object):
         try:
             if load_measurements:
                 if (
-                    VERSION not in self.hdf5_file.keys()
+                    VERSION not in list(self.hdf5_file.keys())
                     or top_level_group_name not in self.hdf5_file
                 ):
                     load_measurements = False
@@ -207,7 +207,7 @@ class HDF5Dict(object):
                 else:
                     mgroup = self.hdf5_file[top_level_group_name]
                     if run_group_name is None:
-                        if len(mgroup.keys()) > 0:
+                        if len(list(mgroup.keys())) > 0:
                             run_group_name = sorted(mgroup.keys())[-1]
                         else:
                             run_group_name = default_run_group_name
@@ -220,7 +220,7 @@ class HDF5Dict(object):
                         % hdf5_filename
                     )
             if not load_measurements:
-                if VERSION not in self.hdf5_file.keys():
+                if VERSION not in list(self.hdf5_file.keys()):
                     vdataset = self.hdf5_file.create_dataset(
                         VERSION, data=numpy.array([version_number], int)
                     )
@@ -239,13 +239,13 @@ class HDF5Dict(object):
             self.chunksize = 1024
             if copy is not None:
                 if image_numbers is None:
-                    for object_name in copy.keys():
+                    for object_name in list(copy.keys()):
                         object_group = copy[object_name]
                         self.top_group.copy(object_group, self.top_group)
-                        for feature_name in object_group.keys():
+                        for feature_name in list(object_group.keys()):
                             # some measurement objects are written at a higher level, and don't
                             # have an index (e.g., Relationship).
-                            if "index" in object_group[feature_name].keys():
+                            if "index" in list(object_group[feature_name].keys()):
                                 hdf5_index = object_group[feature_name]["index"][:]
                                 self.__cache_index(
                                     object_name, feature_name, hdf5_index
@@ -256,18 +256,18 @@ class HDF5Dict(object):
                     image_numbers = numpy.array(image_numbers)
                     mask = numpy.zeros(numpy.max(image_numbers) + 1, bool)
                     mask[image_numbers] = True
-                    for object_name in copy.keys():
+                    for object_name in list(copy.keys()):
                         src_object_group = copy[object_name]
                         if object_name == "Experiment":
                             self.top_group.copy(src_object_group, self.top_group)
-                            for feature_name in src_object_group.keys():
+                            for feature_name in list(src_object_group.keys()):
                                 hdf5_index = src_object_group[feature_name]["index"][:]
                                 self.__cache_index(
                                     object_name, feature_name, hdf5_index
                                 )
                             continue
                         dest_object_group = self.top_group.require_group(object_name)
-                        for feature_name in src_object_group.keys():
+                        for feature_name in list(src_object_group.keys()):
                             src_feature_group = src_object_group[feature_name]
                             if "index" not in src_object_group[feature_name]:
                                 dest_object_group.copy(
@@ -754,7 +754,7 @@ class HDF5Dict(object):
 
     def has_object(self, object_name):
         with self.lock:
-            return object_name in self.top_group.keys()
+            return object_name in list(self.top_group.keys())
 
     def add_object(self, object_name):
         with self.lock:
@@ -801,11 +801,11 @@ class HDF5Dict(object):
 
     def top_level_names(self):
         with self.lock:
-            return self.top_group.keys()
+            return list(self.top_group.keys())
 
     def second_level_names(self, object_name):
         with self.lock:
-            return self.top_group[object_name].keys()
+            return list(self.top_group[object_name].keys())
 
     def add_all(self, object_name, feature_name, values, idxs=None, data_type=None):
         """Add all imageset values for a given feature
@@ -972,10 +972,10 @@ class HDF5FileList(object):
         hdf5_file - an h5py.File
         """
         assert isinstance(hdf5_file, h5py.File)
-        if not FILE_LIST_GROUP in hdf5_file.keys():
+        if not FILE_LIST_GROUP in list(hdf5_file.keys()):
             return False
         flg = hdf5_file[FILE_LIST_GROUP]
-        for key in flg.keys():
+        for key in list(flg.keys()):
             g = flg[key]
             if g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
                 return True
@@ -998,7 +998,7 @@ class HDF5FileList(object):
             return
 
         flg = src[FILE_LIST_GROUP]
-        for key in flg.keys():
+        for key in list(flg.keys()):
             src_g = flg[key]
             if src_g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
                 break
@@ -1147,9 +1147,9 @@ class HDF5FileList(object):
             url = url.encode("utf-8")
         else:
             url = str(url)
-        import urllib
+        import urllib.request, urllib.parse, urllib.error
 
-        schema, rest = urllib.splittype(url)
+        schema, rest = urllib.parse.splittype(url)
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #
@@ -1200,7 +1200,7 @@ class HDF5FileList(object):
                         leaves += to_add
                         dest.extend(to_add)
                         sort_order = sorted(
-                            range(len(leaves)),
+                            list(range(len(leaves))),
                             cmp=lambda x, y: cellprofiler.utilities.legacy.cmp(
                                 leaves[x], leaves[y]
                             ),
@@ -1230,7 +1230,7 @@ class HDF5FileList(object):
         group = self.get_filelist_group()
         with self.lock:
             schemas = [
-                k for k in group.keys() if group[k].attrs[A_CLASS] == CLASS_DIRECTORY
+                k for k in list(group.keys()) if group[k].attrs[A_CLASS] == CLASS_DIRECTORY
             ]
             for key in schemas:
                 del group[key]
@@ -1299,7 +1299,7 @@ class HDF5FileList(object):
 
     def has_files(self):
         """Return True if there are files in the file list"""
-        if any([len(ce.urls) > 0 for ce in self.__cache.values()]):
+        if any([len(ce.urls) > 0 for ce in list(self.__cache.values())]):
             return True
         group_list = [self.get_filelist_group()]
         path_list = [[]]
@@ -1309,7 +1309,7 @@ class HDF5FileList(object):
             if VStringArray.has_vstring_array(g):
                 self.cache_urls(g, tuple(path))
                 return True
-            for k in g.keys():
+            for k in list(g.keys()):
                 g0 = g[k]
                 path0 = path + [self.decode(k)]
                 if self.is_dir(g0):
@@ -1339,7 +1339,7 @@ class HDF5FileList(object):
         group = self.get_filelist_group()
         with self.lock:
             if root_url is None:
-                schemas = [k for k in group.keys() if HDF5FileList.is_dir(group[k])]
+                schemas = [k for k in list(group.keys()) if HDF5FileList.is_dir(group[k])]
                 roots = [(s + ":", group[s], [s]) for s in schemas]
             else:
                 schema, path = self.split_url(root_url, is_directory=True)
@@ -1434,7 +1434,7 @@ class HDF5FileList(object):
                 if encoded_part not in group:
                     return []
                 group = group[encoded_part]
-        return [self.decode(x) for x in group.keys() if self.is_dir(group[x])]
+        return [self.decode(x) for x in list(group.keys()) if self.is_dir(group[x])]
 
     """URL is a file"""
     TYPE_FILE = "File"
@@ -1940,7 +1940,7 @@ class HDFCSV(object):
     def clear(self):
         """Clear all columns in the CSV"""
         with self.lock:
-            for key in self.top_level_group.keys():
+            for key in list(self.top_level_group.keys()):
                 column = self.top_level_group[key]
                 if column.attrs[self.CLASS] == self.COLUMN:
                     del column
@@ -1975,14 +1975,14 @@ class HDFCSV(object):
         """
         with self.lock:
             self.clear()
-            for k, v in d.items():
+            for k, v in list(d.items()):
                 self.add_column(k, v)
 
     def get_column_names(self):
         """Get the names of the columns"""
         return [
             key
-            for key in self.top_level_group.keys()
+            for key in list(self.top_level_group.keys())
             if self.top_level_group[key].attrs[self.CLASS] == self.COLUMN
         ]
 
@@ -2162,7 +2162,7 @@ class VStringArray(object):
             if begin > end:
                 return None
             elif begin == end:
-                return u""
+                return ""
             return self.data[begin:end].tostring().decode("utf-8")
 
     def __delitem__(self, idx):
@@ -2189,7 +2189,7 @@ class VStringArray(object):
             yield (
                 None
                 if begin > end
-                else u""
+                else ""
                 if begin == end
                 else data[begin:end].tostring().decode("utf-8")
             )

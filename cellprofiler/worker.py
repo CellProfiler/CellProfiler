@@ -17,7 +17,7 @@ the analysis worker runs three threads:
                    the read call throws an exception and the monitor thread
                    stops the main thread's run loop.
 """
-from __future__ import print_function
+
 
 import logging
 import os
@@ -277,7 +277,7 @@ class AnalysisWorker(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        for m in self.initial_measurements.values():
+        for m in list(self.initial_measurements.values()):
             m.close()
         self.initial_measurements = {}
 
@@ -551,13 +551,13 @@ class AnalysisWorker(object):
         # more complex data to be sent by the underlying zmq machinery.
         arg_kwarg_dict = dict(
             [("arg_%d" % idx, v) for idx, v in enumerate(args)]
-            + [("kwarg_%s" % name, v) for (name, v) in kwargs.items()]
+            + [("kwarg_%s" % name, v) for (name, v) in list(kwargs.items())]
         )
         req = InteractionRequest(
             self.current_analysis_id,
             module_num=module.module_num,
             num_args=len(args),
-            kwargs_names=kwargs.keys(),
+            kwargs_names=list(kwargs.keys()),
             **arg_kwarg_dict
         )
         rep = self.send(req)
@@ -687,7 +687,7 @@ class AnalysisWorker(object):
                         if self.current_analysis_id in announcement:
                             analysis_id = self.current_analysis_id
                         else:
-                            analysis_id = random.choice(announcement.keys())
+                            analysis_id = random.choice(list(announcement.keys()))
                         return analysis_id, announcement[analysis_id]
         finally:
             announce_socket.close()

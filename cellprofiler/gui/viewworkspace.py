@@ -667,7 +667,7 @@ class ViewWorkspace(object):
             self.axes.set_title("\n".join(title_lines))
         else:
             self.axes.set_title("Image set # %d" % m.image_number)
-        for object_name, value_rows in object_values.items():
+        for object_name, value_rows in list(object_values.items()):
             values = [vr[0] for vr in value_rows]
             measurement_rows = [vr[1] for vr in value_rows]
             x, y = [

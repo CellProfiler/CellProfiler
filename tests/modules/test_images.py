@@ -1,7 +1,7 @@
 import os
 import tempfile
 import unittest
-import cStringIO
+import io
 
 import cellprofiler.measurement
 import cellprofiler.modules.images
@@ -42,7 +42,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.images.Images))
@@ -70,7 +70,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                 self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
             pipeline.add_listener(callback)
-            pipeline.load(cStringIO.StringIO(data % fctext))
+            pipeline.load(io.StringIO(data % fctext))
             self.assertEqual(len(pipeline.modules()), 1)
             module = pipeline.modules()[0]
             self.assertTrue(isinstance(module, cellprofiler.modules.images.Images))

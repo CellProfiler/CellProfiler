@@ -1,7 +1,7 @@
 '''test_smooth.py - test the smooth module
 '''
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -64,7 +64,7 @@ class TestSmooth(unittest.TestCase):
                 '+OxWF+us6hvrfve+DF9F+5vvWQ5OD5WSuO9guXV9ucA/yq2s/29KodH7')
         data = zlib.decompress(data)
         pipeline = cpp.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         smooth = pipeline.modules()[1]
         self.assertEqual(smooth.module_name, 'Smooth')
@@ -92,7 +92,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
 """
         pipeline = cpp.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         smooth = pipeline.modules()[0]
         self.assertTrue(isinstance(smooth, S.Smooth))

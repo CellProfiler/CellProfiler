@@ -181,7 +181,7 @@ class AddModuleFrame(wx.Frame):
     def __on_category_selected(self, event):
         category = self.__get_selected_category()
         self.__module_list_box.Clear()
-        keys = self.__module_dict[category].keys()
+        keys = list(self.__module_dict[category].keys())
         sorted(keys)
         self.__module_list_box.AppendItems(keys)
         self.__module_list_box.Select(0)

@@ -370,7 +370,7 @@ measured and will result in a undefined value in the output file.
         for group in self.image_groups:
             if group.image_name.value in images:
                 raise cellprofiler.setting.ValidationError(
-                    u"{} has already been selected".format(group.image_name.value),
+                    "{} has already been selected".format(group.image_name.value),
                     group.image_name,
                 )
 
@@ -382,7 +382,7 @@ measured and will result in a undefined value in the output file.
             for group in self.object_groups:
                 if group.object_name.value in objects:
                     raise cellprofiler.setting.ValidationError(
-                        u"{} has already been selected".format(group.object_name.value),
+                        "{} has already been selected".format(group.object_name.value),
                         group.object_name,
                     )
 
@@ -393,7 +393,7 @@ measured and will result in a undefined value in the output file.
         for group in self.scale_groups:
             if group.scale.value in scales:
                 raise cellprofiler.setting.ValidationError(
-                    u"{} has already been selected".format(group.scale.value),
+                    "{} has already been selected".format(group.scale.value),
                     group.scale,
                 )
 

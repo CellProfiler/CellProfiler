@@ -3116,7 +3116,7 @@ def read_params(training_set_directory, training_set_file_name, d):
             fd_or_file = six.moves.urllib.request.urlopen(url)
 
         mat_params = loadmat(fd_or_file)["params"][0, 0]
-        field_names = mat_params.dtype.fields.keys()
+        field_names = list(mat_params.dtype.fields.keys())
 
         result = X()
 
@@ -3196,7 +3196,7 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     a vector of N lengths.
     """
 
-    all_object_numbers = [filter((lambda n: n > 0), np.unique(l)) for l in all_labels]
+    all_object_numbers = [list(filter((lambda n: n > 0), np.unique(l))) for l in all_labels]
     if all([len(object_numbers) == 0 for object_numbers in all_object_numbers]):
         return np.zeros((0, ncontrolpoints, 2), int), np.zeros(0, int)
     module = UntangleWorms()

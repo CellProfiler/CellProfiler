@@ -152,7 +152,7 @@ plotted linearly.
 """,
         )
 
-        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith("_r")]
+        maps = [m for m in list(matplotlib.cm.datad.keys()) if not m.endswith("_r")]
         maps.sort()
 
         self.colormap = cps.Choice(

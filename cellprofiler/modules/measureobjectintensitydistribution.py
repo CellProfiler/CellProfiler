@@ -1510,7 +1510,7 @@ class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
 
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
         """Return True if a choice should be displayed"""
@@ -1542,7 +1542,7 @@ class MORDImageNameSubscriber(cellprofiler.setting.ImageNameSubscriber):
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
 
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
         """Return True if a choice should be displayed"""

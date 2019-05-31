@@ -248,7 +248,7 @@ class Workspace(object):
 
     def get_outline_names(self):
         """The names of outlines of objects"""
-        return self.__outlines.keys()
+        return list(self.__outlines.keys())
 
     def add_outline(self, name, outline):
         """Add an object outline to the workspace"""

@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from __future__ import print_function
+
 
 import csv
 import logging
@@ -1021,7 +1021,7 @@ safe to press it.""",
                     cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                 ),
             ):
-                for name in d.keys():
+                for name in list(d.keys()):
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
                         if header[k].startswith(url_category):
@@ -1129,18 +1129,18 @@ safe to press it.""",
             #  loadimages)
             #
             image_numbers = m.match_metadata(
-                metadata_columns.keys(), [columns[k] for k in metadata_columns.keys()]
+                list(metadata_columns.keys()), [columns[k] for k in list(metadata_columns.keys())]
             )
             image_numbers = numpy.array(image_numbers, int).flatten()
             max_image_number = numpy.max(image_numbers)
             new_columns = {}
-            for key, values in columns.items():
+            for key, values in list(columns.items()):
                 new_values = [None] * max_image_number
                 for image_number, value in zip(image_numbers, values):
                     new_values[image_number - 1] = value
                 new_columns[key] = new_values
             columns = new_columns
-        for feature, values in columns.items():
+        for feature, values in list(columns.items()):
             m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, values)
         if self.wants_image_groupings and len(self.metadata_fields.selections) > 0:
             keys = [

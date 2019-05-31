@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import errno
 import json
@@ -101,7 +101,7 @@ def make_sendable_dictionary(d):
     """Make a dictionary that passes muster with JSON"""
     result = {}
     fake_key_idx = 1
-    for k, v in d.items():
+    for k, v in list(d.items()):
         if (isinstance(k, six.string_types) and k.startswith("_")) or callable(d[k]):
             continue
         if isinstance(v, dict):
@@ -136,7 +136,7 @@ def make_sendable_sequence(l):
 def decode_sendable_dictionary(d):
     """Decode the dictionary encoded by make_sendable_dictionary"""
     result = {}
-    for k, v in d.items():
+    for k, v in list(d.items()):
         if k == SD_KEY_DICT:
             continue
         if isinstance(v, dict):
@@ -750,9 +750,9 @@ class Boundary(object):
             # blocks?
             self.announce_socket.close()
             with self.analysis_dictionary_lock:
-                for analysis_context in self.analysis_dictionary.values():
+                for analysis_context in list(self.analysis_dictionary.values()):
                     analysis_context.cancel()
-                for request_class_queue in self.request_dictionary.values():
+                for request_class_queue in list(self.request_dictionary.values()):
                     #
                     # Tell each response class to stop. Wait for a reply
                     # which may be a thread instance. If so, join to the
@@ -800,7 +800,7 @@ class Boundary(object):
         with self.analysis_dictionary_lock:
             valid_analysis_ids = [
                 analysis_id
-                for analysis_id in self.analysis_dictionary.keys()
+                for analysis_id in list(self.analysis_dictionary.keys())
                 if not self.analysis_dictionary[analysis_id].cancelled
             ]
         self.announce_socket.send_json(
@@ -887,7 +887,7 @@ def start_lock_thread():
 def get_lock_path(path):
     """Return the path to the lockfile"""
     pathpart, filepart = os.path.split(path)
-    return os.path.join(pathpart, u"." + filepart + u".lock")
+    return os.path.join(pathpart, "." + filepart + ".lock")
 
 
 def lock_file(path, timeout=3):

@@ -1165,7 +1165,7 @@ of the straightened worms.""",
                     for ftr, group, segment in itertools.product(
                         (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                         self.images,
-                        range(nsegments),
+                        list(range(nsegments)),
                     )
                 ]
             if nstripes > 1:
@@ -1185,7 +1185,7 @@ of the straightened worms.""",
                     for ftr, group, stripe in itertools.product(
                         (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                         self.images,
-                        range(nstripes),
+                        list(range(nstripes)),
                     )
                 ]
             if nsegments > 1 and nstripes > 1:
@@ -1205,8 +1205,8 @@ of the straightened worms.""",
                     for ftr, group, stripe, segment in itertools.product(
                         (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                         self.images,
-                        range(nstripes),
-                        range(nsegments),
+                        list(range(nstripes)),
+                        list(range(nsegments)),
                     )
                 ]
         return result
@@ -1262,7 +1262,7 @@ of the straightened worms.""",
             if nstripes > 1 and nsegments > 1:
                 result += [
                     self.get_scale_name(h, v)
-                    for h, v in itertools.product(range(nstripes), range(nsegments))
+                    for h, v in itertools.product(list(range(nstripes)), list(range(nsegments)))
                 ]
         return result
 

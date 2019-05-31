@@ -503,7 +503,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 )
 
         for i, (object_name, feature_name) in enumerate(feature_set):
-            for statistic, value in expt_measurements.items():
+            for statistic, value in list(expt_measurements.items()):
                 sfeature_name = "_".join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
         if self.show_window:

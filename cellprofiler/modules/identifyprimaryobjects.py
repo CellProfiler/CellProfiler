@@ -1398,7 +1398,7 @@ If "*{NO}*" is selected, the following settings are used:
             areas = scipy.ndimage.measurements.sum(
                 numpy.ones(labeled_image.shape),
                 labeled_image,
-                numpy.array(range(0, object_count + 1), dtype=numpy.int32),
+                numpy.array(list(range(0, object_count + 1)), dtype=numpy.int32),
             )
             areas = numpy.array(areas, dtype=int)
             min_allowed_area = (

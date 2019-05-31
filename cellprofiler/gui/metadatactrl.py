@@ -22,7 +22,7 @@ def get_choice_id(index):
 class MetadataControl(wx.Control):
     class MetadataToken(object):
         def __init__(self):
-            self.value = u""
+            self.value = ""
 
     def __init__(self, pipeline, module, *args, **kwargs):
         """Initialize the field
@@ -389,7 +389,7 @@ class MetadataControl(wx.Control):
 
     def on_char(self, event):
         self.delete_selection()
-        c = six.unichr(event.GetUnicodeKey())
+        c = six.chr(event.GetUnicodeKey())
         self.__tokens.insert(self.__cursor_pos, c)
         self.move_cursor_pos(self.__cursor_pos + 1)
         self.on_token_change()

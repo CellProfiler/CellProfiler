@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import os
 import unittest
@@ -864,7 +864,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                                                 cellprofiler.pipeline.LoadExceptionEvent)))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         x = pipeline.modules()[0]
         self.assertTrue(isinstance(x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
 
@@ -1291,7 +1291,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
                     isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[4]
         self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
         self.assertEqual(module.x_name, "Channel0")
@@ -1547,7 +1547,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                     isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         for module, averaging_method, variance_method in zip(
                 pipeline.modules(),
                 (cellprofiler.modules.identify.RB_MEAN,
@@ -2298,7 +2298,7 @@ class TestWeightedVariance(unittest.TestCase):
         mask = numpy.array([[False, True, True], [False, True, True]])
         binary_image = numpy.array([[False, False, False], [True, True, True]])
         output = centrosome.threshold.weighted_variance(img, mask, binary_image)
-        self.assertAlmostEquals(output, .25)
+        self.assertAlmostEqual(output, .25)
 
 
 class TestSumOfEntropies(unittest.TestCase):

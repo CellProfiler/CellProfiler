@@ -563,7 +563,7 @@ class CPFrame(wx.Frame):
         )
         for eyedee in ids:
             d[eyedee] = True
-        for k, v in d.items():
+        for k, v in list(d.items()):
             self.menu_edit.Enable(k, v)
 
     def __add_menu(self):

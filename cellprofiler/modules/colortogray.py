@@ -552,7 +552,7 @@ Select the name of the output grayscale image.""",
         """Combine images to make a grayscale one
         """
         input_image = image.pixel_data
-        channels, contributions = zip(*self.channels_and_contributions())
+        channels, contributions = list(zip(*self.channels_and_contributions()))
         denominator = sum(contributions)
         channels = np.array(channels, int)
         contributions = np.array(contributions) / denominator

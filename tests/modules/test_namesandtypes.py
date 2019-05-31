@@ -1,9 +1,9 @@
-import cStringIO
+import io
 import hashlib
 import os
 import tempfile
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import six
 
@@ -110,7 +110,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         def callback(caller, event):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
@@ -195,7 +195,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|s
             def callback(caller, event):
                 self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
             pipeline.add_listener(callback)
-            pipeline.load(cStringIO.StringIO(data))
+            pipeline.load(io.StringIO(data))
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
@@ -278,7 +278,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
             def callback(caller, event):
                 self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
             pipeline.add_listener(callback)
-            pipeline.load(cStringIO.StringIO(data))
+            pipeline.load(io.StringIO(data))
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
@@ -372,7 +372,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             def callback(caller, event):
                 self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
             pipeline.add_listener(callback)
-            pipeline.load(cStringIO.StringIO(data))
+            pipeline.load(io.StringIO(data))
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
@@ -664,7 +664,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 #             first = False
 
 
-    url_root = "file:" + urllib.pathname2url(os.path.abspath(os.path.curdir))
+    url_root = "file:" + urllib.request.pathname2url(os.path.abspath(os.path.curdir))
 
     def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
         '''Ensure that NamesAndTypes recreates the column layout when run
@@ -702,7 +702,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         ipds.sort(key = lambda x: x.url)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.set_filtered_file_list(urls, module)
-        pipeline.set_image_plane_details(ipds, metadata.keys(), module)
+        pipeline.set_image_plane_details(ipds, list(metadata.keys()), module)
         module.module_num = 1
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
@@ -720,9 +720,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 self.fail("%s not in %s" % (tag, ",".join(expected_tag)))
         iscds = m.get_channel_descriptors()
         self.assertEqual(len(iscds), len(channels))
-        for channel_name in channels.keys():
-            iscd_match = filter(lambda x:x.name == channel_name, iscds)
-            self.assertEquals(len(iscd_match), 1)
+        for channel_name in list(channels.keys()):
+            iscd_match = [x for x in iscds if x.name == channel_name]
+            self.assertEqual(len(iscd_match), 1)
             iscd = iscd_match[0]
             assert isinstance(iscd, cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor)
             for i, (expected_url, metadata) in enumerate(channels[channel_name]):

@@ -35,7 +35,7 @@ class TestIntegerSetting(unittest.TestCase):
     def test_02_02_bad_min(self):
         s = cellprofiler.setting.Integer("foo", value=5, minval=0)
         s.value_text = "-1"
-        self.assertEquals(s, 5)
+        self.assertEqual(s, 5)
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_02_03_good_max(self):
@@ -47,7 +47,7 @@ class TestIntegerSetting(unittest.TestCase):
     def test_02_04_bad_max(self):
         s = cellprofiler.setting.Integer("foo", value=5, maxval=10)
         s.value_text = "11"
-        self.assertEquals(s.value, 5)
+        self.assertEqual(s.value, 5)
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
 
@@ -76,8 +76,8 @@ class TestFloatSetting(unittest.TestCase):
     def test_01_04_set_text_value(self):
         s = cellprofiler.setting.Float("foo", value=5)
         s.value = "6.00"
-        self.assertEquals(s, 6)
-        self.assertEquals(s.value_text, "6.00")
+        self.assertEqual(s, 6)
+        self.assertEqual(s.value_text, "6.00")
 
     def test_02_01_good_min(self):
         s = cellprofiler.setting.Float("foo", value=5, minval=0)
@@ -88,7 +88,7 @@ class TestFloatSetting(unittest.TestCase):
     def test_02_02_bad_min(self):
         s = cellprofiler.setting.Float("foo", value=5, minval=0)
         s.value_text = "-1"
-        self.assertEquals(s, 5)
+        self.assertEqual(s, 5)
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_02_03_good_max(self):
@@ -100,53 +100,53 @@ class TestFloatSetting(unittest.TestCase):
     def test_02_04_bad_max(self):
         s = cellprofiler.setting.Float("foo", value=5, maxval=10)
         s.value_text = "11"
-        self.assertEquals(s, 5)
+        self.assertEqual(s, 5)
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
 
 class TestIntegerRange(unittest.TestCase):
     def test_01_01_default(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15))
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "1")
-        self.assertEquals(s.max_text, "15")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "1")
+        self.assertEqual(s.max_text, "15")
         s.test_valid(None)
 
     def test_01_02_set_min(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15))
         s.value_text = s.compose_min_text("02")
-        self.assertEquals(s.min, 2)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "02")
-        self.assertEquals(s.max_text, "15")
+        self.assertEqual(s.min, 2)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "02")
+        self.assertEqual(s.max_text, "15")
         s.test_valid(None)
 
     def test_01_03_set_min_bad(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15))
         s.value_text = s.compose_min_text("a2")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "a2")
-        self.assertEquals(s.max_text, "15")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "a2")
+        self.assertEqual(s.max_text, "15")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_01_04_set_max(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15))
         s.value_text = s.compose_max_text("016")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 16)
-        self.assertEquals(s.min_text, "1")
-        self.assertEquals(s.max_text, "016")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 16)
+        self.assertEqual(s.min_text, "1")
+        self.assertEqual(s.max_text, "016")
         s.test_valid(None)
 
     def test_01_05_set_max_bad(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15))
         s.value_text = s.compose_max_text("a2")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "1")
-        self.assertEquals(s.max_text, "a2")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "1")
+        self.assertEqual(s.max_text, "a2")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_02_01_good_min(self):
@@ -158,8 +158,8 @@ class TestIntegerRange(unittest.TestCase):
     def test_02_02_bad_min(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15), minval=0)
         s.value_text = s.compose_min_text("-1")
-        self.assertEquals(s.min, 0)
-        self.assertEquals(s.min_text, "-1")
+        self.assertEqual(s.min, 0)
+        self.assertEqual(s.min_text, "-1")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_02_03_good_max(self):
@@ -171,54 +171,54 @@ class TestIntegerRange(unittest.TestCase):
     def test_02_04_bad_max(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15), maxval=20)
         s.value_text = s.compose_max_text("21")
-        self.assertEquals(s.max, 20)
-        self.assertEquals(s.max_text, "21")
+        self.assertEqual(s.max, 20)
+        self.assertEqual(s.max_text, "21")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
 
 class TestFloatRange(unittest.TestCase):
     def test_01_01_default(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15))
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "1.0")
-        self.assertEquals(s.max_text, "15.0")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "1.0")
+        self.assertEqual(s.max_text, "15.0")
         s.test_valid(None)
 
     def test_01_02_set_min(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15))
         s.value_text = s.compose_min_text("2.10")
-        self.assertEquals(s.min, 2.1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "2.10")
-        self.assertEquals(s.max_text, "15.0")
+        self.assertEqual(s.min, 2.1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "2.10")
+        self.assertEqual(s.max_text, "15.0")
         s.test_valid(None)
 
     def test_01_03_set_min_bad(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15))
         s.value_text = s.compose_min_text("a2")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "a2")
-        self.assertEquals(s.max_text, "15.0")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "a2")
+        self.assertEqual(s.max_text, "15.0")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_01_04_set_max(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15))
         s.value_text = s.compose_max_text("016")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 16)
-        self.assertEquals(s.min_text, "1.0")
-        self.assertEquals(s.max_text, "016")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 16)
+        self.assertEqual(s.min_text, "1.0")
+        self.assertEqual(s.max_text, "016")
         s.test_valid(None)
 
     def test_01_05_set_max_bad(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15))
         s.value_text = s.compose_max_text("a2")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.min_text, "1.0")
-        self.assertEquals(s.max_text, "a2")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.min_text, "1.0")
+        self.assertEqual(s.max_text, "a2")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_02_01_good_min(self):
@@ -230,23 +230,23 @@ class TestFloatRange(unittest.TestCase):
     def test_02_02_bad_min(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15), minval=0)
         s.value_text = s.compose_min_text("-1")
-        self.assertEquals(s.min, 0)
-        self.assertEquals(s.min_text, "-1")
+        self.assertEqual(s.min, 0)
+        self.assertEqual(s.min_text, "-1")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
     def test_02_03_good_max(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15), maxval=20)
         for test_case in ("18", "20.00"):
             s.value_text = s.compose_max_text(test_case)
-            self.assertEquals(s.max, float(test_case))
-            self.assertEquals(s.max_text, test_case)
+            self.assertEqual(s.max, float(test_case))
+            self.assertEqual(s.max_text, test_case)
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15), maxval=20)
         s.value_text = s.compose_max_text("21")
-        self.assertEquals(s.max, 20)
-        self.assertEquals(s.max_text, "21")
+        self.assertEqual(s.max, 20)
+        self.assertEqual(s.max_text, "21")
         self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
 
 
@@ -260,29 +260,29 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
                 (0, -15, 0, "0", -15, "15", False, False),
                 (0, "-" + cellprofiler.setting.END, 0, "0", cellprofiler.setting.END, cellprofiler.setting.END, True, False)):
             s = cellprofiler.setting.IntegerOrUnboundedRange("foo", (minval, maxval))
-            self.assertEquals(s.min, expected_min)
-            self.assertEquals(s.max, expected_max)
-            self.assertEquals(s.display_min, expected_min_text)
-            self.assertEquals(s.display_max, expected_max_text)
-            self.assertEquals(s.is_abs(), expected_abs)
+            self.assertEqual(s.min, expected_min)
+            self.assertEqual(s.max, expected_max)
+            self.assertEqual(s.display_min, expected_min_text)
+            self.assertEqual(s.display_max, expected_max_text)
+            self.assertEqual(s.is_abs(), expected_abs)
             s.test_valid(None)
 
     def test_01_02_set_min(self):
         s = cellprofiler.setting.IntegerOrUnboundedRange("foo")
         s.value_text = s.compose_min_text("01")
-        self.assertEquals(s.min, 1)
-        self.assertEquals(s.display_min, "01")
+        self.assertEqual(s.min, 1)
+        self.assertEqual(s.display_min, "01")
 
     def test_01_03_set_max(self):
         s = cellprofiler.setting.IntegerOrUnboundedRange("foo")
         s.value_text = s.compose_max_text("015")
-        self.assertEquals(s.max, 15)
-        self.assertEquals(s.display_max, "015")
+        self.assertEqual(s.max, 15)
+        self.assertEqual(s.display_max, "015")
 
     def test_01_04_set_end(self):
         s = cellprofiler.setting.IntegerOrUnboundedRange("foo", (0, 15))
         s.value_text = s.compose_max_text(cellprofiler.setting.END)
-        self.assertEquals(s.max, cellprofiler.setting.END)
+        self.assertEqual(s.max, cellprofiler.setting.END)
 
     def test_01_05_set_abs(self):
         s = cellprofiler.setting.IntegerOrUnboundedRange("foo", (0, -15))
@@ -385,7 +385,7 @@ class TestFilterSetting(unittest.TestCase):
         f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
                                                          [cellprofiler.setting.Filter.LITERAL_PREDICATE])
         f = cellprofiler.setting.Filter("", [f1])
-        f.build([cellprofiler.setting.Filter.OR_PREDICATE, [f1, "bar"], [f1, u"baz"]])
+        f.build([cellprofiler.setting.Filter.OR_PREDICATE, [f1, "bar"], [f1, "baz"]])
         self.assertEqual(f.value, 'or (foo "bar") (foo "baz")')
 
     def test_02_04_build_escaped_literal(self):

@@ -237,7 +237,7 @@ resized with the same settings as the first image.""",
                 visible_settings += [self.specific_width, self.specific_height]
         else:
             raise ValueError(
-                u"Unsupported size method: {}".format(self.size_method.value)
+                "Unsupported size method: {}".format(self.size_method.value)
             )
 
         visible_settings += [self.interpolation]

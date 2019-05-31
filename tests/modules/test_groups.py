@@ -3,7 +3,7 @@
 
 import os
 import unittest
-from cStringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -135,7 +135,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                         (cpmeas.C_PATH_NAME, os.pathsep + "images"),
                         (cpmeas.C_URL, "file://images/" + file_name)):
                     m[cpmeas.IMAGE, feature + "_" + iscd.name, image_number] = value
-                for key, value in metadata.iteritems():
+                for key, value in metadata.items():
                     feature = "_".join((cpmeas.C_METADATA, key))
                     m[cpmeas.IMAGE, feature, image_number] = value
 
@@ -199,8 +199,8 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             self.assertDictEqual(grouping, dict(Metadata_Plate=plate))
             self.assertEqual(len(image_set_list), 3 * 4)
             self.assertSequenceEqual(list(image_set_list),
-                                     range((group_number - 1) * 12 + 1,
-                                           group_number * 12 + 1))
+                                     list(range((group_number - 1) * 12 + 1,
+                                           group_number * 12 + 1)))
             for image_number in range(1 + (group_number - 1) * 12,
                                       1 + group_number * 12):
                 for image_name in ("DNA", "GFP"):

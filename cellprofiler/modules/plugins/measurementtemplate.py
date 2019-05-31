@@ -645,8 +645,8 @@ radial degree you enter here.
         )
         mask = (i * i + j * j) <= 1
 
-        zernike_indexes = numpy.array(feature_dictionary.keys())
-        zernike_features = numpy.array(feature_dictionary.values())
+        zernike_indexes = numpy.array(list(feature_dictionary.keys()))
+        zernike_features = numpy.array(list(feature_dictionary.values()))
 
         z = centrosome.zernike.construct_zernike_polynomials(
             j, i, numpy.abs(zernike_indexes), mask=mask

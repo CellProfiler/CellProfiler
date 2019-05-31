@@ -139,7 +139,7 @@ class Search(wx.Frame):
             html = search_module_help(search_text)
 
             if html is None:
-                no_results_message = u"""\
+                no_results_message = """\
 <html>
 <head>
     <title>"{search_text}" not found in help</title>
@@ -261,7 +261,7 @@ def search_module_help(text):
 
     count = 0
 
-    for menu_item, help_text in MENU_HELP.items():
+    for menu_item, help_text in list(MENU_HELP.items()):
         help_text = cellprofiler.gui.html.utils.rst_to_html_fragment(help_text)
 
         matches = __search_fn(help_text, text)
@@ -293,7 +293,7 @@ def search_module_help(text):
     if len(matching_help) == 0:
         return None
 
-    top = u"""\
+    top = """\
 <html style="font-family:arial">
 <head>
     <title>{count} match{es} found</title>
@@ -304,28 +304,28 @@ def search_module_help(text):
 </body>
 </html>
 """.format(
-        **{"count": count, "es": u"" if count == 1 else u"es"}
+        **{"count": count, "es": "" if count == 1 else "es"}
     )
 
-    body = u"<br>"
+    body = "<br>"
 
     match_num = 1
 
-    prev_link = u"""<a href="#match%d" title="Previous match"><img alt="previous match" src="memory:previous.png"></a>"""
+    prev_link = """<a href="#match%d" title="Previous match"><img alt="previous match" src="memory:previous.png"></a>"""
 
-    anchor = u"""<a name="match%d"><u>%s</u></a>"""
+    anchor = """<a name="match%d"><u>%s</u></a>"""
 
-    next_link = u"""<a href="#match%d" title="Next match"><img src="memory:next.png" alt="next match"></a>"""
+    next_link = """<a href="#match%d" title="Next match"><img src="memory:next.png" alt="next match"></a>"""
 
     for title, help_text, pairs in matching_help:
-        top += u"""<li><a href="#match{:d}">{}</a></li>\n""".format(match_num, title)
+        top += """<li><a href="#match{:d}">{}</a></li>\n""".format(match_num, title)
 
         start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
 
         # Some pages don't have in-line titles
         # Not matching "<h1>" here for cases that have "<h1 class='title'>", etc.
-        if not help_text.startswith(u"<h1"):
-            body += u"<h1>{}</h1>".format(title)
+        if not help_text.startswith("<h1"):
+            body += "<h1>{}</h1>".format(title)
 
         if start_match is None:
             start = 0
@@ -354,8 +354,8 @@ def search_module_help(text):
 
             match_num += 1
 
-        body += help_text[start:end] + u"<br>"
+        body += help_text[start:end] + "<br>"
 
-    result = u"{}</ul><br>\n{}</body></html>".format(top, body)
+    result = "{}</ul><br>\n{}</body></html>".format(top, body)
 
     return result

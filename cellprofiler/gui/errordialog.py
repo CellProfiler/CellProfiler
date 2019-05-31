@@ -1,7 +1,7 @@
 # coding=utf-8
 """errordialog - dialog box for reporting error.
 """
-from __future__ import print_function
+
 
 import io
 import logging

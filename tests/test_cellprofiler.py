@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import six.moves
 
 import dateutil.parser
@@ -87,7 +87,7 @@ class TestCellProfiler(unittest.TestCase):
             #
             fly_pipe = \
                 "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
-            urllib.URLopener().open(fly_pipe).close()
+            urllib.request.URLopener().open(fly_pipe).close()
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler("-c", "-r",

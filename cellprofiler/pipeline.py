@@ -1,6 +1,6 @@
 """Pipeline.py - an ordered set of modules to be executed
 """
-from __future__ import print_function
+
 
 import bisect
 import datetime
@@ -247,8 +247,8 @@ def add_all_images(handles, image_set, object_set):
                 "SmallRemovedSegmented" + object_name
             ] = objects.small_removed_segmented
 
-    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
-    for key, image in images.items():
+    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(images.keys())))
+    for key, image in list(images.items()):
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
 
@@ -338,7 +338,7 @@ def map_feature_names(feature_names, max_size=63):
                             break
                 if remove_count == to_remove:
                     break
-            if name in mapping.keys() or len(name) > max_size:
+            if name in list(mapping.keys()) or len(name) > max_size:
                 # Panic mode - a duplication
                 if not seeded:
                     np.random.seed(0)
@@ -349,7 +349,7 @@ def map_feature_names(feature_names, max_size=63):
                     indices.sort()
                     name = npname[indices]
                     name = name.tostring()
-                    if not name in mapping.keys():
+                    if not name in list(mapping.keys()):
                         break
         else:
             name = feature_name
@@ -377,10 +377,10 @@ def add_all_measurements(handles, measurements):
         if object_name == cellprofiler.measurement.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         object_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
-        for field, feature_name in mapping.items():
+        for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, max_image_number), dtype="object")
             object_measurements[field][0, 0] = feature_measurements
             for i in np.argwhere(~has_image_number[1:]).flatten():
@@ -397,12 +397,12 @@ def add_all_measurements(handles, measurements):
         mapping = map_feature_names(
             measurements.get_feature_names(cellprofiler.measurement.EXPERIMENT)
         )
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[cellprofiler.measurement.EXPERIMENT][
             0, 0
         ] = experiment_measurements
-        for field, feature_name in mapping.items():
+        for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, 1), dtype="object")
             feature_measurements[0, 0] = measurements.get_experiment_measurement(
                 feature_name
@@ -1411,9 +1411,9 @@ class Pipeline(object):
         # a single field named "handles"
         #
         root = {
-            "handles": np.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))
+            "handles": np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(handles.keys())))
         }
-        for key, value in handles.items():
+        for key, value in list(handles.items()):
             root["handles"][key][0, 0] = value
         self.savemat(filename, root)
 
@@ -1481,7 +1481,7 @@ class Pipeline(object):
             image_tools = []
         image_tools.insert(0, "Image tools")
         npy_image_tools = np.ndarray((1, len(image_tools)), dtype=np.dtype("object"))
-        for tool, idx in zip(image_tools, range(0, len(image_tools))):
+        for tool, idx in zip(image_tools, list(range(0, len(image_tools)))):
             npy_image_tools[0, idx] = tool
 
         current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
@@ -1543,7 +1543,7 @@ class Pipeline(object):
                     images[provider.name] = image.image
                 if image.mask is not None:
                     images["CropMask" + provider.name] = image.mask
-            for key, value in image_set.legacy_fields.items():
+            for key, value in list(image_set.legacy_fields.items()):
                 if key != NUMBER_OF_IMAGE_SETS:
                     images[key] = value
 
@@ -1558,10 +1558,10 @@ class Pipeline(object):
                     ] = objects.small_removed_segmented
 
         if len(images):
-            pipeline_dtype = make_cell_struct_dtype(images.keys())
+            pipeline_dtype = make_cell_struct_dtype(list(images.keys()))
             pipeline = np.ndarray((1, 1), dtype=pipeline_dtype)
             handles[PIPELINE] = pipeline
-            for name, image in images.items():
+            for name, image in list(images.items()):
                 pipeline[name][0, 0] = images[name]
 
         no_measurements = (
@@ -1835,7 +1835,7 @@ class Pipeline(object):
         if grouping is not None and set(keys) != set(grouping.keys()):
             raise ValueError(
                 "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"
-                % (", ".join(grouping.keys()), ", ".join(keys))
+                % (", ".join(list(grouping.keys())), ", ".join(keys))
             )
 
         for gn, (grouping_keys, image_numbers) in enumerate(groupings):
@@ -2705,7 +2705,7 @@ class Pipeline(object):
         if not m:
             m = re.findall("\\\\g[<](.+?)[>]", pattern)
         if m:
-            m = filter(
+            m = list(filter(
                 (
                     lambda x: not any(
                         [
@@ -2718,7 +2718,7 @@ class Pipeline(object):
                     )
                 ),
                 m,
-            )
+            ))
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -2966,7 +2966,7 @@ class Pipeline(object):
                     filename = path
                 filename = six.moves.urllib.request.url2pathname(filename)
                 cellprofiler.preferences.report_progress(
-                    uid, float(i) / n, u"Adding %s" % filename
+                    uid, float(i) / n, "Adding %s" % filename
                 )
             pos = bisect.bisect_left(self.__file_list, url, start)
             if pos == len(self.file_list) or self.__file_list[pos] != url:
@@ -3076,7 +3076,7 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
-            map((lambda x: x.strip()), filter((lambda x: len(x) > 0), path_or_fd)),
+            list(map((lambda x: x.strip()), list(filter((lambda x: len(x) > 0), path_or_fd)))),
             add_undo=add_undo,
         )
 
@@ -3460,7 +3460,7 @@ class Pipeline(object):
         idx = module_num - 1
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
         for module, mn in zip(
-            self.__modules[idx + 1 :], range(module_num + 1, len(self.__modules) + 1)
+            self.__modules[idx + 1 :], list(range(module_num + 1, len(self.__modules) + 1))
         ):
             module.module_num = mn
         self.notify_listeners(
@@ -4528,7 +4528,7 @@ def encapsulate_strings_in_arrays(handles):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
-        for field in handles.dtype.fields.keys():
+        for field in list(handles.dtype.fields.keys()):
             if isinstance(handles[field], six.string_types):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field], numpy.ndarray):

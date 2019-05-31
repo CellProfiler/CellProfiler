@@ -263,7 +263,7 @@ class KnimeBridgeServer(threading.Thread):
 
         no_data = ()
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -444,7 +444,7 @@ class KnimeBridgeServer(threading.Thread):
         string_data = []
         metadata = [double_features, float_features, int_features, string_features]
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -660,7 +660,7 @@ class KnimeBridgeServer(threading.Thread):
                     ofeatures[name] = type_idx
         for key in features:
             features[key][cellprofiler.measurement.IMAGE_NUMBER] = 0
-        features_out = dict([(k, v.items()) for k, v in features.items()])
+        features_out = dict([(k, list(v.items())) for k, v in list(features.items())])
         return jtypes, features_out
 
     def decode_image(self, channel_metadata, buf, grouping_allowed=False):

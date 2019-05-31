@@ -1,5 +1,5 @@
 import os.path
-import StringIO
+import io
 
 import numpy
 import numpy.random
@@ -151,7 +151,7 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
     pipeline.add_listener(callback)
 
-    pipeline.load(StringIO.StringIO(pipeline_txt))
+    pipeline.load(io.StringIO(pipeline_txt))
 
     module = pipeline.modules()[0]
 

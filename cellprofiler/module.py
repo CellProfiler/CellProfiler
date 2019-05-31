@@ -227,9 +227,9 @@ class Module(object):
 
     def _get_setting_help(self, setting):
         if isinstance(setting, cellprofiler.setting.HiddenCount):
-            return u""
+            return ""
 
-        return u"""\
+        return """\
 <div>
     <h4>{SETTING_NAME}</h4>
     <p>{SETTING_DOC}</p>
@@ -248,14 +248,14 @@ class Module(object):
         the settings.
         """
         settings_help = (
-            u"""\
+            """\
 <div>
     <h2>Settings:</h2>
     {SETTINGS_DOC}
 </div>
 """.format(
                 **{
-                    "SETTINGS_DOC": u"\n".join(
+                    "SETTINGS_DOC": "\n".join(
                         [
                             self._get_setting_help(setting)
                             for setting in self.help_settings()
@@ -264,10 +264,10 @@ class Module(object):
                 }
             )
             if len(self.help_settings())
-            else u""
+            else ""
         )
 
-        return u"""\
+        return """\
 <html style="font-family:arial">
     <body>
         <div>

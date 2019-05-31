@@ -410,9 +410,9 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
 
         m = cpmeas.Measurements()
         nimages = None
-        for object_name in mdict.keys():
+        for object_name in list(mdict.keys()):
             odict = mdict[object_name]
-            for feature in odict.keys():
+            for feature in list(odict.keys()):
                 m.add_all_measurements(object_name, feature, odict[feature])
                 if nimages is None:
                     nimages = len(odict[feature])

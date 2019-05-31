@@ -1,6 +1,6 @@
 '''test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
 '''
-from __future__ import print_function
+
 
 import base64
 import os

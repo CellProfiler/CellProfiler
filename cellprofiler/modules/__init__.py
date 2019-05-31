@@ -242,7 +242,7 @@ def find_cpmodule(m):
 
     returns the CPModule class
     """
-    for v, val in m.__dict__.items():
+    for v, val in list(m.__dict__.items()):
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
     raise ValueError(
@@ -384,7 +384,7 @@ def instantiate_module(module_name):
 
 
 def get_module_names():
-    return all_modules.keys()
+    return list(all_modules.keys())
 
 
 def get_data_tool_names():

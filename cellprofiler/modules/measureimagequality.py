@@ -1725,7 +1725,7 @@ to the foreground pixels or the background pixels.
                         d[threshold_image]["check_threshold"] = cellprofiler.setting.YES
                         d[threshold_image]["threshold_method"] = threshold_method
             setting_values = []
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 dd = d[image_name]
                 setting_values += [
                     image_name,
@@ -1825,7 +1825,7 @@ to the foreground pixels or the background pixels.
             # Uniquify the scales and threshold methods
             import itertools
 
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 d[image_name]["blur_scales"] = list(set(d[image_name]["blur_scales"]))
                 d[image_name]["threshold_methods"] = [
                     k
@@ -1884,10 +1884,10 @@ to the foreground pixels or the background pixels.
         if (not from_matlab) and variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
             thresh_dict = dict(
-                zip(
+                list(zip(
                     centrosome.threshold.TM_GLOBAL_METHODS,
                     centrosome.threshold.TM_METHODS,
-                )
+                ))
             )
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [

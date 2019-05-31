@@ -939,7 +939,7 @@ desired.
             object_providers = workspace.pipeline.get_provider_dictionary(
                 cps.OBJECT_GROUP, self
             )
-            object_names.update(object_providers.keys())
+            object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)
             for object_name in object_names:
                 for metadata_group in metadata_groups:
@@ -970,7 +970,7 @@ desired.
                 #
                 first_in_file = self.last_in_file(i)
 
-        files_to_overwrite = filter(os.path.isfile, files_to_check)
+        files_to_overwrite = list(filter(os.path.isfile, files_to_check))
         if len(files_to_overwrite) > 0:
             if get_headless():
                 logger.error(
@@ -1265,7 +1265,7 @@ desired.
             object_names[0], workspace, image_set_numbers[0], settings_group
         )
         features = [(IMAGE, IMAGE_NUMBER), (object_names[0], OBJECT_NUMBER)]
-        columns = map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
+        columns = list(map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns()))
         if self.add_metadata.value:
             mdfeatures = [
                 (IMAGE, name)

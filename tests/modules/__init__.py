@@ -13,8 +13,8 @@ import javabridge
 import numpy as np
 import os
 import unittest
-from urllib import urlretrieve, URLopener
-from urllib2 import HTTPError
+from urllib.request import urlretrieve, URLopener
+from urllib.error import HTTPError
 import tempfile
 
 import scipy.io.matlab.mio

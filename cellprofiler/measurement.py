@@ -357,7 +357,7 @@ class Measurements(object):
             # Discard the contents of the image cache,
             # "flush" in order to end any disk activity
             #
-            keys = self.__image_cache_file.keys()
+            keys = list(self.__image_cache_file.keys())
             for key in keys:
                 del self.__image_cache_file[key]
             self.__image_cache_file.flush()
@@ -485,10 +485,10 @@ class Measurements(object):
     def create_from_handles(self, handles):
         """Load measurements from a handles structure"""
         m = handles["handles"][0, 0][MEASUREMENTS_GROUP_NAME][0, 0]
-        for object_name in m.dtype.fields.keys():
+        for object_name in list(m.dtype.fields.keys()):
             omeas = m[object_name][0, 0]
             object_counts = numpy.zeros(0, int)
-            for feature_name in omeas.dtype.fields.keys():
+            for feature_name in list(omeas.dtype.fields.keys()):
                 if object_name == IMAGE:
                     values = [
                         None if len(x) == 0 else x.flatten()[0]
@@ -913,7 +913,7 @@ class Measurements(object):
             for n, d in (
                 ((image_set_number, data),)
                 if numpy.isscalar(image_set_number)
-                else zip(image_set_number, data)
+                else list(zip(image_set_number, data))
             ):
                 if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, n):
                     self.hdf5_dict[IMAGE, IMAGE_NUMBER, n] = n
@@ -961,7 +961,7 @@ class Measurements(object):
     def get_image_numbers(self):
         """Return the image numbers from the Image table"""
         image_numbers = numpy.array(
-            self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER).keys(), int
+            list(self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER).keys()), int
         )
         image_numbers.sort()
         return image_numbers
@@ -1257,7 +1257,7 @@ class Measurements(object):
                 flat_dictionary[key] = []
             flat_dictionary[key].append(image_number)
         result = []
-        for row in flat_dictionary.keys():
+        for row in list(flat_dictionary.keys()):
             tag_dictionary = dict(row)
             result.append(MetadataGroup(tag_dictionary, flat_dictionary[row]))
         return result
@@ -1332,7 +1332,7 @@ class Measurements(object):
             # match by order (assuming the user really did match
             # the metadata)
             #
-            if any([len(v) != 1 for v in groupings.values()]):
+            if any([len(v) != 1 for v in list(groupings.values())]):
                 return by_order
         #
         # Create a list of values that matches the common_features
@@ -1755,7 +1755,7 @@ class Measurements(object):
             if must_be_grayscale:
                 pd = image.pixel_data
 
-                pd = pd.transpose(-1, *range(pd.ndim - 1))
+                pd = pd.transpose(-1, *list(range(pd.ndim - 1)))
 
                 if (
                     pd.shape[-1] >= 3
@@ -1805,7 +1805,7 @@ class Measurements(object):
 
         name - return the image provider with this name
         """
-        providers = filter(lambda x: x.name == name, self.__image_providers)
+        providers = [x for x in self.__image_providers if x.name == name]
         assert len(providers) > 0, "No provider of the %s image" % name
         assert len(providers) == 1, "More than one provider of the %s image" % name
         return providers[0]
@@ -1814,9 +1814,7 @@ class Measurements(object):
         """Remove a named image provider
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(
-            lambda x: x.name != name, self.__image_providers
-        )
+        self.__image_providers = [x for x in self.__image_providers if x.name != name]
 
     def clear_image(self, name):
         """Remove the image memory associated with a provider
@@ -1982,7 +1980,7 @@ def load_measurements(
     if header == HDF5_HEADER:
         f, top_level = get_top_level_group(filename)
         try:
-            if VERSION in f.keys():
+            if VERSION in list(f.keys()):
                 if run_name is not None:
                     top_level = top_level[run_name]
                 else:

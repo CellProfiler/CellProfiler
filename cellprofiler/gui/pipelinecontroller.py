@@ -1,7 +1,7 @@
 # coding=utf-8
 """PipelineController.py - controls (modifies) a pipeline
 """
-from __future__ import print_function
+
 
 import csv
 import datetime
@@ -1110,15 +1110,15 @@ class PipelineController(object):
                 text = (
                     "Your pipeline contains the legacy module LoadImages, and legacy references\n"
                     "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-                    u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-                    u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
+                    "\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+                    "\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
                     "If you choose to convert the pipeline, you should then make sure of the \n"
                     "following:\n"
-                    u"\u2022 Images module: Provide your original images and/or folders as input.\n"
-                    u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-                    u"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
+                    "\u2022 Images module: Provide your original images and/or folders as input.\n"
+                    "\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
+                    "\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
                     "   color images under the 'Select the image type' setting.\n"
-                    u"\u2022 Groups: Confirm that that the expected number of images per group are present."
+                    "\u2022 Groups: Confirm that that the expected number of images per group are present."
                 )
                 CONVERT = 1
                 DONT_CONVERT = 2
@@ -1283,7 +1283,7 @@ class PipelineController(object):
         return True
 
     def __clear_errors(self):
-        for key, error in self.__setting_errors.items():
+        for key, error in list(self.__setting_errors.items()):
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
 
@@ -2058,7 +2058,7 @@ class PipelineController(object):
     def on_pathlist_refresh(self, urls):
         """Refresh the pathlist by checking for existence of file URLs"""
 
-        urls = filter((lambda url: url.startswith("file:")), urls)
+        urls = list(filter((lambda url: url.startswith("file:")), urls))
 
         def refresh_msg(idx):
             return "Checked %d of %d" % (idx, len(urls))
@@ -2428,7 +2428,7 @@ class PipelineController(object):
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
 
         assert isinstance(event, wx.CommandEvent)
-        if self.menu_id_to_module_name.has_key(event.GetId()):
+        if event.GetId() in self.menu_id_to_module_name:
             module_name = self.menu_id_to_module_name[event.GetId()]
 
             def loader(module_num, module_name=module_name):
@@ -2445,10 +2445,10 @@ class PipelineController(object):
 
     def __get_selected_modules(self):
         """Get the modules selected in the GUI, but not input modules"""
-        return filter(
+        return list(filter(
             lambda x: not x.is_input_module(),
             self.__pipeline_list_view.get_selected_modules(),
-        )
+        ))
 
     def ok_to_edit_pipeline(self):
         """Return True if ok to edit pipeline
@@ -2876,7 +2876,7 @@ class PipelineController(object):
             )
 
     def analysis_event_handler(self, evt):
-        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
+        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
         if isinstance(evt, cellprofiler.analysis.AnalysisStarted):
             wx.CallAfter(self.show_analysis_controls)
@@ -3671,7 +3671,7 @@ class PipelineController(object):
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s" % (k, v) for k, v in grouping.items()]
+            text = ["%s=%s" % (k, v) for k, v in list(grouping.items())]
             text = ", ".join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)
@@ -3763,7 +3763,7 @@ class PipelineController(object):
         if len(choices) > 1:
             # Get rid of columns with redundant info
             useless_columns = []
-            cvalues = choices.values()
+            cvalues = list(choices.values())
             for i, f in enumerate(features):
                 if all([cv[i] == cvalues[0][i] for cv in cvalues[1:]]):
                     useless_columns.insert(0, i)
@@ -3816,7 +3816,7 @@ class PipelineController(object):
                         )
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
-                    for row in choices.values():
+                    for row in list(choices.values()):
                         w, h, _, _ = self.list_ctrl.GetFullTextExtent(six.text_type(row[i]))
                         if w > width:
                             width = w
@@ -3831,9 +3831,9 @@ class PipelineController(object):
                         (
                             k,
                             [
-                                u"%06d" % v
+                                "%06d" % v
                                 if isinstance(v, int)
-                                else u"%020.10f" % v
+                                else "%020.10f" % v
                                 if isinstance(v, float)
                                 else six.text_type(v)
                                 for v in [k] + choices[k]
@@ -3905,7 +3905,7 @@ class PipelineController(object):
             if module.is_input_module():
                 if not self.do_step(module, False):
                     return False
-        modules = filter((lambda m: not m.is_input_module()), self.__pipeline.modules())
+        modules = list(filter((lambda m: not m.is_input_module()), self.__pipeline.modules()))
         #
         # Select the first executable module
         #

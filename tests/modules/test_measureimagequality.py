@@ -1,8 +1,8 @@
 '''test_measureimagequality.py - test the MeasureImageQuality module
 '''
-from __future__ import print_function
 
-import StringIO
+
+import io
 import base64
 import unittest
 
@@ -92,8 +92,8 @@ class TestMeasureImageQuality(unittest.TestCase):
                                    object_name=cellprofiler.measurement.IMAGE, pipeline=None):
         self.assertTrue(object_name in measurements.get_object_names())
         features = measurements.get_feature_names(object_name)
-        columns = filter((lambda x: x[0] == object_name),
-                         module.get_measurement_columns(pipeline))
+        columns = list(filter((lambda x: x[0] == object_name),
+                         module.get_measurement_columns(pipeline)))
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertTrue(column[1] in features, 'features_and_columns_match, %s not in %s' % (column[1], features))
@@ -346,7 +346,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         q = workspace.module
 
         for tm, idx in zip(centrosome.threshold.TM_GLOBAL_METHODS,
-                           range(len(centrosome.threshold.TM_GLOBAL_METHODS))):
+                           list(range(len(centrosome.threshold.TM_GLOBAL_METHODS)))):
             if idx != 0:
                 q.add_image_group()
             q.image_groups[idx].image_names.value = "my_image"
@@ -371,7 +371,7 @@ class TestMeasureImageQuality(unittest.TestCase):
             self.assertFalse(m.has_current_measurements(cellprofiler.measurement.IMAGE,
                                                         feature_name))
         for tm, idx in zip(centrosome.threshold.TM_GLOBAL_METHODS,
-                           range(len(centrosome.threshold.TM_GLOBAL_METHODS))):
+                           list(range(len(centrosome.threshold.TM_GLOBAL_METHODS)))):
             if tm == centrosome.threshold.TM_OTSU_GLOBAL:
                 feature_name = "ImageQuality_ThresholdOtsu_my_image_3FW"
             elif tm == centrosome.threshold.TM_MOG_GLOBAL:
@@ -519,7 +519,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, M.MeasureImageQuality))
@@ -673,7 +673,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
         for module in pipeline.modules():
             self.assertTrue(isinstance(module, M.MeasureImageQuality))
@@ -876,9 +876,9 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
                   0.,
                   0.00784313725490196,
                   0.]
-        expected = dict(zip(names, values))
+        expected = dict(list(zip(names, values)))
 
-        for feature, value in expected.items():
+        for feature, value in list(expected.items()):
             assert workspace.measurements.has_current_measurements(
                 cellprofiler.measurement.IMAGE,
                 feature

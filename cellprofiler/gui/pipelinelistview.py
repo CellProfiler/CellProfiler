@@ -1041,7 +1041,7 @@ class PipelineDropTarget(wx.DropTarget):
                 self.data_object.GetReceivedFormat().GetType()
                 == self.pipeline_data_object.GetFormat().GetType()
             ):
-                pipeline_data = self.pipeline_data_object.GetDataHere()
+                pipeline_data = str(self.pipeline_data_object.GetData().tobytes().replace(b'\00', ''))
                 if pipeline_data is not None:
                     self.window.on_data(x, y, action, pipeline_data)
             elif self.data_object.GetReceivedFormat().GetType() == wx.DF_FILENAME:

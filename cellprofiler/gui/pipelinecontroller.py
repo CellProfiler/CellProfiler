@@ -402,9 +402,11 @@ class PipelineController(object):
             self.on_pathlist_empty_command,
         )
         path_list_ctrl.set_delete_fn(self.on_pathlist_file_delete)
+
         self.path_list_drop_target = FLDropTarget(
             self.on_pathlist_drop_files, self.on_pathlist_drop_text
         )
+
         path_list_ctrl.SetDropTarget(self.path_list_drop_target)
 
         def show_disabled(event):

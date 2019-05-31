@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 
@@ -30,49 +30,6 @@ I_COLOR_OUT = "ColorOutput"
 
 
 class TestInvertForPrinting(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0sGpBQpGxgoGFlamllbGlgpGBgaWCiQDBkZPX34GBoZiJgaG'
-                'ijlXI3zzbxlIlCkEWKlcuShntnJy0Z3U+Fupx/OWvp5g1hUVkunufOdMkNDi'
-                'GoUbmftX3So8/nfO35abD1iOq5RKBS2YpvPa9P3vPed/HymTiWJoiM9leFWS'
-                'cyGOsTvs8Ta1krT4hQoH1j293sA37+NP+y3xzvyHF/auWyirJH9Ed9b7XeYp'
-                'BtLH7WuV0zIWy5W4pN+qWmjsMq++UJj10/zfFV1vtP8IN6Z039G7yPJ7xg6b'
-                'eY9Pby6ME/KojN7y/278qwWeViGZ+dyfz/xn0fn7VeQuH8t/5nvsGVJ7rGYf'
-                'CkywMJD4e6J5s/5Dg9+HDl/T3Nip/uHnggM3Jxd8szinavT8Y77oxyqlOPa5'
-                '/X/zLu5ZfkQySfzpJcPV/4r5FcNX7NeRDbUKEbYIfbCvceeX/IaUf2zn/3fm'
-                'zbT5M9/j45l3AodVGwV/ZZzcr9FfzH8u4o+4a010V3rZ9bkK+g5p7L+Tpc/d'
-                'mNT1c0ro9Fc7MzhlePc8LlxV1bfkj/vqr0e83xpeKdZ4ah+ztl1354zj217f'
-                'NOlf8zfarL/0/ONFu/adj3S/V1x6edeKcyc53Lfyz/OyOHNsXaf6DZ6FuQns'
-                'UR91F0w1WlWyXuWD9gL3rocnzr8vZZsvzOp36/OWFzPf9S/oDfrw6dPk76fL'
-                'V90y+xr09n7Gn+X3a+dnc31+ve7zz6RNNkJ9p4/fFNu/5fdroeMLojl75ZvC'
-                'b/4p432+8Mv90LspdZGP132u09nBq/v7zuTz5xf9/qbdmBZe0fjsYCbQGfPq'
-                'q3k5fn/pKOzac138++3zR15X30j9H8DxtfP95F1O/Vxbb539FfX95u9nqzNv'
-                'ndrrIbq8eP5t8fP96ce79+w/+Hfe79PWfxZv0/z/39JNhxUAgHNw/Q==')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, I.InvertForPrinting))
-        self.assertEqual(module.input_color_choice.value, I.CC_GRAYSCALE)
-        self.assertTrue(module.wants_red_input.value)
-        self.assertEqual(module.red_input_image.value, "OrigRed")
-        self.assertTrue(module.wants_green_input.value)
-        self.assertEqual(module.green_input_image.value, "OrigGreen")
-        self.assertTrue(module.wants_blue_input.value)
-        self.assertEqual(module.blue_input_image.value, "OrigBlue")
-        self.assertEqual(module.output_color_choice.value, I.CC_GRAYSCALE)
-        self.assertTrue(module.wants_red_output.value)
-        self.assertEqual(module.red_output_image.value, "InvertedDisplayRed")
-        self.assertTrue(module.wants_green_output.value)
-        self.assertEqual(module.green_output_image.value, "InvertedDisplayGreen")
-        self.assertTrue(module.wants_blue_output.value)
-        self.assertEqual(module.blue_output_image.value, "InvertedDisplayBlue")
-
     def test_01_02_load_v1(self):
         data = ('eJztWF1PGkEUHRCNVm00adI+zqO0QhBto6RBUPpBKpQI0Rij7QiDTLI7Q4Zd'
                 'i21M+tif1cf+nP6EzsAsu0yRhUXTalyzWe/de+6dc2ZnuTuFbGUvuwNfxhOw'

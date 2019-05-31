@@ -41,22 +41,18 @@ class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
             doc="""
             Specify the minimum and maximum diameters of objects (in pixels) to remove. Set the first value to 0 to
             keep small objects. Set the second value to "inf" to keep large objects.
-            """
+            """,
         )
 
     def settings(self):
         __settings__ = super(RemoveObjectsBySize, self).settings()
 
-        return __settings__ + [
-            self.size
-        ]
+        return __settings__ + [self.size]
 
     def visible_settings(self):
         __settings__ = super(RemoveObjectsBySize, self).visible_settings()
 
-        return __settings__ + [
-            self.size
-        ]
+        return __settings__ + [self.size]
 
     def run(self, workspace):
         self.function = lambda labels, diameter: remove_objects(labels, diameter)

@@ -43,23 +43,18 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
             "Select the input objects",
             cellprofiler.setting.NONE,
-            doc="Choose the name of the objects you want to convert to an image."
+            doc="Choose the name of the objects you want to convert to an image.",
         )
 
         self.image_name = cellprofiler.setting.ImageNameProvider(
             "Name the output image",
             "CellImage",
-            doc="Enter the name of the resulting image."
+            doc="Enter the name of the resulting image.",
         )
 
         self.image_mode = cellprofiler.setting.Choice(
             "Select the color format",
-            [
-                "Color",
-                "Binary (black & white)",
-                "Grayscale",
-                "uint16"
-            ],
+            ["Color", "Binary (black & white)", "Grayscale", "uint16"],
             doc="""\
 Select which colors the resulting image should use. You have the
 following options:
@@ -87,7 +82,7 @@ following options:
 
 You can choose *Color* with a *Gray* colormap to produce jumbled gray
 objects.
-            """
+            """,
         )
 
         self.colormap = cellprofiler.setting.Colormap(
@@ -98,28 +93,17 @@ objects.
 Choose the colormap to be used, which affects how the objects are
 colored. You can look up your default colormap under *File >
 Preferences*.
-"""
+""",
         )
 
     def settings(self):
-        return [
-            self.object_name,
-            self.image_name,
-            self.image_mode,
-            self.colormap
-        ]
+        return [self.object_name, self.image_name, self.image_mode, self.colormap]
 
     def visible_settings(self):
-        settings = [
-            self.object_name,
-            self.image_name,
-            self.image_mode
-        ]
+        settings = [self.object_name, self.image_name, self.image_mode]
 
         if self.image_mode == "Color":
-            settings = settings + [
-                self.colormap
-            ]
+            settings = settings + [self.colormap]
 
         return settings
 
@@ -142,7 +126,7 @@ Preferences*.
         for labels, _ in objects.get_labels():
             mask = labels != 0
 
-            if numpy.all(~ mask):
+            if numpy.all(~mask):
                 continue
 
             if self.image_mode == "Binary (black & white)":
@@ -205,7 +189,7 @@ Preferences*.
             pixel_data,
             parent_image=objects.parent_image,
             convert=convert,
-            dimensions=len(objects.shape)
+            dimensions=len(objects.shape),
         )
 
         workspace.image_set.add(self.image_name.value, image)
@@ -236,14 +220,14 @@ Preferences*.
                 0,
                 workspace.display_data.ijv,
                 shape=workspace.display_data.pixel_data.shape[:2],
-                title="Original: %s" % self.object_name.value
+                title="Original: %s" % self.object_name.value,
             )
         else:
             figure.subplot_imshow(
                 0,
                 0,
                 workspace.display_data.segmented,
-                title="Original: %s" % self.object_name.value
+                title="Original: %s" % self.object_name.value,
             )
 
         figure.subplot_imshow(
@@ -252,10 +236,12 @@ Preferences*.
             pixel_data,
             self.image_name.value,
             colormap=cmap,
-            sharexy=figure.subplot(0, 0)
+            sharexy=figure.subplot(0, 0),
         )
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1 and from_matlab:
             from_matlab = False
 
@@ -263,6 +249,7 @@ Preferences*.
 
     def volumetric(self):
         return True
+
 
 #
 # Backwards compatibility

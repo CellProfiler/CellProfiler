@@ -46,22 +46,18 @@ class RemoveHoles(cellprofiler.module.ImageProcessing):
             text="Size of holes to fill",
             value=1.0,
             doc="Holes smaller than this diameter will be filled. Note that for 3D\
-            images this module operates volumetrically so diameters should be given in voxels"
+            images this module operates volumetrically so diameters should be given in voxels",
         )
 
     def settings(self):
         __settings__ = super(RemoveHoles, self).settings()
 
-        return __settings__ + [
-            self.size
-        ]
+        return __settings__ + [self.size]
 
     def visible_settings(self):
         __settings__ = super(RemoveHoles, self).visible_settings()
 
-        return __settings__ + [
-            self.size
-        ]
+        return __settings__ + [self.size]
 
     def run(self, workspace):
         self.function = lambda image, diameter: fill_holes(image, diameter)

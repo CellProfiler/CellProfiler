@@ -147,9 +147,7 @@ class MeasureTexture(cellprofiler.module.Module):
         self.add_image(removable=False)
 
         self.add_images = cellprofiler.setting.DoSomething(
-            callback=self.add_image,
-            label="Add another image",
-            text=""
+            callback=self.add_image, label="Add another image", text=""
         )
 
         self.image_divider = cellprofiler.setting.Divider()
@@ -157,9 +155,7 @@ class MeasureTexture(cellprofiler.module.Module):
         self.add_object(removable=True)
 
         self.add_objects = cellprofiler.setting.DoSomething(
-            callback=self.add_object,
-            label="Add another object",
-            text=""
+            callback=self.add_object, label="Add another object", text=""
         )
 
         self.object_divider = cellprofiler.setting.Divider()
@@ -167,20 +163,14 @@ class MeasureTexture(cellprofiler.module.Module):
         self.add_scale(removable=False)
 
         self.add_scales = cellprofiler.setting.DoSomething(
-            callback=self.add_scale,
-            label="Add another scale",
-            text=""
+            callback=self.add_scale, label="Add another scale", text=""
         )
 
         self.scale_divider = cellprofiler.setting.Divider()
 
         self.images_or_objects = cellprofiler.setting.Choice(
             "Measure images or objects?",
-            [
-                IO_IMAGES,
-                IO_OBJECTS,
-                IO_BOTH
-            ],
+            [IO_IMAGES, IO_OBJECTS, IO_BOTH],
             value=IO_BOTH,
             doc="""\
 This setting determines whether the module computes image-wide
@@ -191,40 +181,24 @@ measurements, per-object measurements or both.
 -  *{IO_OBJECTS}:* Select if you want to measure the texture
    on a per-object basis only.
 -  *{IO_BOTH}:* Select to make both image and object measurements.
-""".format(**{
-                "IO_IMAGES": IO_IMAGES,
-                "IO_OBJECTS": IO_OBJECTS,
-                "IO_BOTH": IO_BOTH
-            })
+""".format(
+                **{"IO_IMAGES": IO_IMAGES, "IO_OBJECTS": IO_OBJECTS, "IO_BOTH": IO_BOTH}
+            ),
         )
 
     def settings(self):
-        settings = [
-            self.image_count,
-            self.object_count,
-            self.scale_count
-        ]
+        settings = [self.image_count, self.object_count, self.scale_count]
 
-        groups = [
-            self.image_groups,
-            self.object_groups,
-            self.scale_groups
-        ]
+        groups = [self.image_groups, self.object_groups, self.scale_groups]
 
-        elements = [
-            ["image_name"],
-            ["object_name"],
-            ["scale"]
-        ]
+        elements = [["image_name"], ["object_name"], ["scale"]]
 
         for groups, elements in zip(groups, elements):
             for group in groups:
                 for element in elements:
                     settings += [getattr(group, element)]
 
-        settings += [
-            self.images_or_objects
-        ]
+        settings += [self.images_or_objects]
 
         return settings
 
@@ -232,7 +206,7 @@ measurements, per-object measurements or both.
         counts_and_sequences = [
             (int(setting_values[0]), self.image_groups, self.add_image),
             (int(setting_values[1]), self.object_groups, self.add_object),
-            (int(setting_values[2]), self.scale_groups, self.add_scale)
+            (int(setting_values[2]), self.scale_groups, self.add_scale),
         ]
 
         for count, sequence, fn in counts_and_sequences:
@@ -248,22 +222,19 @@ measurements, per-object measurements or both.
             vs_groups = [
                 (self.image_groups, self.add_images, self.image_divider),
                 (self.object_groups, self.add_objects, self.object_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider)
+                (self.scale_groups, self.add_scales, self.scale_divider),
             ]
         else:
             vs_groups = [
                 (self.image_groups, self.add_images, self.image_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider)
+                (self.scale_groups, self.add_scales, self.scale_divider),
             ]
 
         for groups, add_button, div in vs_groups:
             for group in groups:
                 visible_settings += group.visible_settings()
 
-            visible_settings += [
-                add_button,
-                div
-            ]
+            visible_settings += [add_button, div]
 
             if groups == self.image_groups:
                 visible_settings += [self.images_or_objects]
@@ -287,26 +258,21 @@ measurements, per-object measurements or both.
         group = cellprofiler.setting.SettingsGroup()
 
         if removable:
-            divider = cellprofiler.setting.Divider(
-                line=False
-            )
+            divider = cellprofiler.setting.Divider(line=False)
 
             group.append("divider", divider)
 
         image = cellprofiler.setting.ImageNameSubscriber(
             doc="Select the grayscale images whose texture you want to measure.",
             text="Select an image to measure",
-            value=cellprofiler.setting.NONE
+            value=cellprofiler.setting.NONE,
         )
 
-        group.append('image_name', image)
+        group.append("image_name", image)
 
         if removable:
             remove_setting = cellprofiler.setting.RemoveSettingButton(
-                entry=group,
-                label="Remove this image",
-                list=self.image_groups,
-                text=""
+                entry=group, label="Remove this image", list=self.image_groups, text=""
             )
 
             group.append("remover", remove_setting)
@@ -341,7 +307,7 @@ are unnecessary. If you do not want this behavior, use multiple
 measures that you want.
 """,
             text="Select objects to measure",
-            value=cellprofiler.setting.NONE
+            value=cellprofiler.setting.NONE,
         )
 
         group.append("object_name", object_subscriber)
@@ -351,7 +317,7 @@ measures that you want.
                 entry=group,
                 label="Remove this object",
                 list=self.object_groups,
-                text=""
+                text="",
             )
 
             group.append("remover", remove_setting)
@@ -384,17 +350,14 @@ than the scale of texture you are measuring), the texture cannot be
 measured and will result in a undefined value in the output file.
 """,
             text="Texture scale to measure",
-            value=len(self.scale_groups) + 3
+            value=len(self.scale_groups) + 3,
         )
 
         group.append("scale", scale)
 
         if removable:
             remove_setting = cellprofiler.setting.RemoveSettingButton(
-                entry=group,
-                label="Remove this scale",
-                list=self.scale_groups,
-                text=""
+                entry=group, label="Remove this scale", list=self.scale_groups, text=""
             )
 
             group.append("remover", remove_setting)
@@ -408,7 +371,7 @@ measured and will result in a undefined value in the output file.
             if group.image_name.value in images:
                 raise cellprofiler.setting.ValidationError(
                     u"{} has already been selected".format(group.image_name.value),
-                    group.image_name
+                    group.image_name,
                 )
 
             images.add(group.image_name.value)
@@ -420,7 +383,7 @@ measured and will result in a undefined value in the output file.
                 if group.object_name.value in objects:
                     raise cellprofiler.setting.ValidationError(
                         u"{} has already been selected".format(group.object_name.value),
-                        group.object_name
+                        group.object_name,
                     )
 
                 objects.add(group.object_name.value)
@@ -431,18 +394,26 @@ measured and will result in a undefined value in the output file.
             if group.scale.value in scales:
                 raise cellprofiler.setting.ValidationError(
                     u"{} has already been selected".format(group.scale.value),
-                    group.scale
+                    group.scale,
                 )
 
             scales.add(group.scale.value)
 
     def get_categories(self, pipeline, object_name):
-        object_name_exists = any([object_name == object_group.object_name for object_group in self.object_groups])
+        object_name_exists = any(
+            [
+                object_name == object_group.object_name
+                for object_group in self.object_groups
+            ]
+        )
 
         if self.wants_object_measurements() and object_name_exists:
             return [TEXTURE]
 
-        if self.wants_image_measurements() and object_name == cellprofiler.measurement.IMAGE:
+        if (
+            self.wants_image_measurements()
+            and object_name == cellprofiler.measurement.IMAGE
+        ):
             return [TEXTURE]
 
         return []
@@ -464,17 +435,27 @@ measured and will result in a undefined value in the output file.
 
         return []
 
-    def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
+    def get_measurement_scales(
+        self, pipeline, object_name, category, measurement, image_name
+    ):
         def format_measurement(scale_group):
             return [
-                "{:d}_{:02d}".format(
-                    scale_group.scale.value,
-                    angle
-                ) for angle in range(13 if pipeline.volumetric() else 4)
+                "{:d}_{:02d}".format(scale_group.scale.value, angle)
+                for angle in range(13 if pipeline.volumetric() else 4)
             ]
 
-        if len(self.get_measurement_images(pipeline, object_name, category, measurement)) > 0:
-            return sum([format_measurement(scale_group) for scale_group in self.scale_groups], [])
+        if (
+            len(
+                self.get_measurement_images(
+                    pipeline, object_name, category, measurement
+                )
+            )
+            > 0
+        ):
+            return sum(
+                [format_measurement(scale_group) for scale_group in self.scale_groups],
+                [],
+            )
 
         return []
 
@@ -495,9 +476,9 @@ measured and will result in a undefined value in the output file.
                                         feature,
                                         image_group.image_name.value,
                                         scale_group.scale.value,
-                                        angle
+                                        angle,
                                     ),
-                                    cellprofiler.measurement.COLTYPE_FLOAT
+                                    cellprofiler.measurement.COLTYPE_FLOAT,
                                 )
                             ]
 
@@ -515,9 +496,9 @@ measured and will result in a undefined value in the output file.
                                             feature,
                                             image_group.image_name.value,
                                             scale_group.scale.value,
-                                            angle
+                                            angle,
                                         ),
-                                        cellprofiler.measurement.COLTYPE_FLOAT
+                                        cellprofiler.measurement.COLTYPE_FLOAT,
                                     )
                                 ]
 
@@ -529,7 +510,7 @@ measured and will result in a undefined value in the output file.
             "Object",
             "Measurement",
             "Scale",
-            "Value"
+            "Value",
         ]
 
         statistics = []
@@ -547,7 +528,9 @@ measured and will result in a undefined value in the output file.
                     for object_group in self.object_groups:
                         object_name = object_group.object_name.value
 
-                        statistics += self.run_one(image_name, object_name, scale, workspace)
+                        statistics += self.run_one(
+                            image_name, object_name, scale, workspace
+                        )
 
         if self.show_window:
             workspace.display_data.statistics = statistics
@@ -555,7 +538,12 @@ measured and will result in a undefined value in the output file.
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
 
-        figure.subplot_table(0, 0, workspace.display_data.statistics, col_labels=workspace.display_data.col_labels)
+        figure.subplot_table(
+            0,
+            0,
+            workspace.display_data.statistics,
+            col_labels=workspace.display_data.col_labels,
+        )
 
     def run_one(self, image_name, object_name, scale, workspace):
         statistics = []
@@ -580,17 +568,23 @@ measured and will result in a undefined value in the output file.
                         obj=object_name,
                         result=numpy.zeros((0,)),
                         scale="{:d}_{:02d}".format(scale, direction),
-                        workspace=workspace
+                        workspace=workspace,
                     )
 
             return statistics
 
         # IMG-961: Ensure image and objects have the same shape.
         try:
-            mask = image.mask if image.has_mask else numpy.ones_like(image.pixel_data, dtype=numpy.bool)
+            mask = (
+                image.mask
+                if image.has_mask
+                else numpy.ones_like(image.pixel_data, dtype=numpy.bool)
+            )
             pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = cellprofiler.object.size_similarly(labels, image.pixel_data)
+            pixel_data, m1 = cellprofiler.object.size_similarly(
+                labels, image.pixel_data
+            )
 
             if numpy.any(~m1):
                 if image.has_mask:
@@ -611,9 +605,7 @@ measured and will result in a undefined value in the output file.
 
             try:
                 features[:, :, index] = mahotas.features.haralick(
-                    label_data,
-                    distance=scale,
-                    ignore_zeros=True
+                    label_data, distance=scale, ignore_zeros=True
                 )
             except ValueError:
                 features[:, :, index] = numpy.nan
@@ -626,7 +618,7 @@ measured and will result in a undefined value in the output file.
                     obj=object_name,
                     result=feature,
                     scale="{:d}_{:02d}".format(scale, direction),
-                    workspace=workspace
+                    workspace=workspace,
                 )
 
         return statistics
@@ -650,7 +642,7 @@ measured and will result in a undefined value in the output file.
                     image_name=image_name,
                     result=feature,
                     scale=object_name,
-                    workspace=workspace
+                    workspace=workspace,
                 )
 
         return statistics
@@ -659,9 +651,7 @@ measured and will result in a undefined value in the output file.
         result[~numpy.isfinite(result)] = 0
 
         workspace.add_measurement(
-            obj,
-            "{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale)),
-            result
+            obj, "{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale)), result
         )
 
         # TODO: get outta crazee towne
@@ -670,7 +660,7 @@ measured and will result in a undefined value in the output file.
             ("max", numpy.max),
             ("mean", numpy.mean),
             ("median", numpy.median),
-            ("std dev", numpy.std)
+            ("std dev", numpy.std),
         ]
 
         # TODO: poop emoji
@@ -678,13 +668,18 @@ measured and will result in a undefined value in the output file.
             [
                 image,
                 obj,
-                "{} {}".format(aggregate, feature), scale, "{:.2}".format(fn(result)) if len(result) else "-"
-            ] for aggregate, fn in functions
+                "{} {}".format(aggregate, feature),
+                scale,
+                "{:.2}".format(fn(result)) if len(result) else "-",
+            ]
+            for aggregate, fn in functions
         ]
 
         return statistics
 
-    def record_image_measurement(self, workspace, image_name, scale, feature_name, result):
+    def record_image_measurement(
+        self, workspace, image_name, scale, feature_name, result
+    ):
         # TODO: this is very concerning
         if not numpy.isfinite(result):
             result = 0
@@ -693,16 +688,26 @@ measured and will result in a undefined value in the output file.
 
         workspace.measurements.add_image_measurement(feature, result)
 
-        statistics = [image_name, "-", feature_name, scale, "{:.2}".format(float(result))]
+        statistics = [
+            image_name,
+            "-",
+            feature_name,
+            scale,
+            "{:.2}".format(float(result)),
+        ]
 
         return [statistics]
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1:
             #
             # Added "wants_gabor"
             #
-            setting_values = setting_values[:-1] + [cellprofiler.setting.YES] + setting_values[-1:]
+            setting_values = (
+                setting_values[:-1] + [cellprofiler.setting.YES] + setting_values[-1:]
+            )
 
             variable_revision_number = 2
 
@@ -720,13 +725,10 @@ measured and will result in a undefined value in the output file.
 
             new_setting_values = setting_values[:scale_offset]
 
-            for scale in setting_values[scale_offset:scale_offset + scale_count]:
-                new_setting_values += [
-                    scale,
-                    "Horizontal"
-                ]
+            for scale in setting_values[scale_offset : scale_offset + scale_count]:
+                new_setting_values += [scale, "Horizontal"]
 
-            new_setting_values += setting_values[scale_offset + scale_count:]
+            new_setting_values += setting_values[scale_offset + scale_count :]
 
             setting_values = new_setting_values
 
@@ -746,7 +748,7 @@ measured and will result in a undefined value in the output file.
             #
             image_count, object_count, scale_count = setting_values[:3]
             scale_offset = 3 + int(image_count) + int(object_count)
-            scales = setting_values[scale_offset::2][:int(scale_count)]
+            scales = setting_values[scale_offset::2][: int(scale_count)]
             new_setting_values = setting_values[:scale_offset] + scales
 
             #

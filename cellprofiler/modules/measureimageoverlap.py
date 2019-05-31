@@ -129,7 +129,7 @@ FTR_ALL = [
     FTR_FALSE_POS_RATE,
     FTR_FALSE_NEG_RATE,
     FTR_RAND_INDEX,
-    FTR_ADJUSTED_RAND_INDEX
+    FTR_ADJUSTED_RAND_INDEX,
 ]
 
 O_OBJ = "Segmented objects"
@@ -155,7 +155,7 @@ class MeasureImageOverlap(cellprofiler.module.Module):
 This binary (black and white) image is known as the “ground truth”
 image. It can be the product of segmentation performed by hand, or the
 result of another segmentation algorithm whose results you would like to
-compare."""
+compare.""",
         )
 
         self.test_img = cellprofiler.setting.ImageNameSubscriber(
@@ -163,7 +163,7 @@ compare."""
             cellprofiler.setting.NONE,
             doc="""\
 This binary (black and white) image is what you will compare with the
-ground truth image. It is known as the “test image”."""
+ground truth image. It is known as the “test image”.""",
         )
 
         self.wants_emd = cellprofiler.setting.Binary(
@@ -181,7 +181,7 @@ representative foreground pixels in each image and assigns each
 foreground pixel to its closest representative. The earth mover’s
 distance is then computed for moving the foreground pixels associated
 with each representative in the test image to those in the reference
-image."""
+image.""",
         )
 
         self.max_points = cellprofiler.setting.Integer(
@@ -193,15 +193,12 @@ image."""
 
 This is the number of representative points that will be taken from the
 foreground of the test image and from the foreground of the reference
-image using the point selection method (see below)."""
+image using the point selection method (see below).""",
         )
 
         self.decimation_method = cellprofiler.setting.Choice(
             "Point selection method",
-            choices=[
-                DM_KMEANS,
-                DM_SKEL
-            ],
+            choices=[DM_KMEANS, DM_SKEL],
             doc="""\
 *(Used only when computing the earth mover’s distance)*
 
@@ -221,11 +218,13 @@ images. *{DM_SKEL}* is best suited to long, skinny objects such as
 worms or neurites.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                "DM_KMEANS": DM_KMEANS,
-                "DM_SKEL": DM_SKEL,
-                "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON
-            })
+""".format(
+                **{
+                    "DM_KMEANS": DM_KMEANS,
+                    "DM_SKEL": DM_SKEL,
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                }
+            ),
         )
 
         self.max_distance = cellprofiler.setting.Integer(
@@ -242,7 +241,7 @@ if the maximum distance were set to 50, the score would be 10\*50
 instead.
 
 The maximum distance should be set to the largest reasonable distance
-that pixels could be expected to move from one image to the next."""
+that pixels could be expected to move from one image to the next.""",
         )
 
         self.penalize_missing = cellprofiler.setting.Binary(
@@ -261,7 +260,7 @@ movement, for example between two frames in a time-lapse movie, because
 the discrepancy is likely caused by noise or artifacts in segmentation.
 Set this setting to “Yes” to assess a penalty equal to the maximum
 distance times the absolute difference in number of foreground pixels in
-the two images. Set this setting to “No” to assess no penalty."""
+the two images. Set this setting to “No” to assess no penalty.""",
         )
 
     def settings(self):
@@ -272,22 +271,18 @@ the two images. Set this setting to “No” to assess no penalty."""
             self.max_points,
             self.decimation_method,
             self.max_distance,
-            self.penalize_missing
+            self.penalize_missing,
         ]
 
     def visible_settings(self):
-        visible_settings = [
-            self.ground_truth,
-            self.test_img,
-            self.wants_emd
-        ]
+        visible_settings = [self.ground_truth, self.test_img, self.wants_emd]
 
         if self.wants_emd:
             visible_settings += [
                 self.max_points,
                 self.decimation_method,
                 self.max_distance,
-                self.penalize_missing
+                self.penalize_missing,
             ]
 
         return visible_settings
@@ -295,7 +290,9 @@ the two images. Set this setting to “No” to assess no penalty."""
     def run(self, workspace):
         image_set = workspace.image_set
 
-        ground_truth_image = image_set.get_image(self.ground_truth.value, must_be_binary=True)
+        ground_truth_image = image_set.get_image(
+            self.ground_truth.value, must_be_binary=True
+        )
 
         test_image = image_set.get_image(self.test_img.value, must_be_binary=True)
 
@@ -312,9 +309,11 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         test_pixels = test_image.pixel_data
 
-# In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
+        # In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
         if ground_truth_image.volumetric:
-            ground_truth_pixels = ground_truth_pixels.reshape(-1, ground_truth_pixels.shape[-1])
+            ground_truth_pixels = ground_truth_pixels.reshape(
+                -1, ground_truth_pixels.shape[-1]
+            )
 
             mask = mask.reshape(-1, mask.shape[-1])
 
@@ -383,32 +382,28 @@ the two images. Set this setting to “No” to assess no penalty."""
 
             true_negative_rate = 1.0
         else:
-            false_positive_rate = (float(false_positive_count) / float(negative_count))
+            false_positive_rate = float(false_positive_count) / float(negative_count)
 
-            true_negative_rate = (float(true_negative_count) / float(negative_count))
+            true_negative_rate = float(true_negative_count) / float(negative_count)
         if true_count == 0:
             false_negative_rate = 0.0
 
             true_positive_rate = 1.0
         else:
-            false_negative_rate = (float(false_negative_count) / float(true_count))
+            false_negative_rate = float(false_negative_count) / float(true_count)
 
-            true_positive_rate = (float(true_positive_count) / float(true_count))
+            true_positive_rate = float(true_positive_count) / float(true_count)
 
         ground_truth_labels, ground_truth_count = scipy.ndimage.label(
-            ground_truth_pixels & mask,
-            numpy.ones((3, 3), bool)
+            ground_truth_pixels & mask, numpy.ones((3, 3), bool)
         )
 
         test_labels, test_count = scipy.ndimage.label(
-            test_pixels & mask,
-            numpy.ones((3, 3), bool)
+            test_pixels & mask, numpy.ones((3, 3), bool)
         )
 
         rand_index, adjusted_rand_index = self.compute_rand_index(
-            test_labels,
-            ground_truth_labels,
-            mask
+            test_labels, ground_truth_labels, mask
         )
 
         m = workspace.measurements
@@ -419,17 +414,27 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
 
-        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE), true_positive_rate)
+        m.add_image_measurement(
+            self.measurement_name(FTR_TRUE_POS_RATE), true_positive_rate
+        )
 
-        m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE), false_positive_rate)
+        m.add_image_measurement(
+            self.measurement_name(FTR_FALSE_POS_RATE), false_positive_rate
+        )
 
-        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE), true_negative_rate)
+        m.add_image_measurement(
+            self.measurement_name(FTR_TRUE_NEG_RATE), true_negative_rate
+        )
 
-        m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE), false_negative_rate)
+        m.add_image_measurement(
+            self.measurement_name(FTR_FALSE_NEG_RATE), false_negative_rate
+        )
 
         m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX), rand_index)
 
-        m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX), adjusted_rand_index)
+        m.add_image_measurement(
+            self.measurement_name(FTR_ADJUSTED_RAND_INDEX), adjusted_rand_index
+        )
 
         if self.wants_emd:
             test_objects = cellprofiler.object.Objects()
@@ -442,7 +447,9 @@ the two images. Set this setting to “No” to assess no penalty."""
 
             emd = self.compute_emd(test_objects, ground_truth_objects)
 
-            m.add_image_measurement(self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd)
+            m.add_image_measurement(
+                self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd
+            )
 
         if self.show_window:
             workspace.display_data.true_positives = true_positives
@@ -464,11 +471,13 @@ the two images. Set this setting to “No” to assess no penalty."""
                 (FTR_FALSE_POS_RATE, false_positive_rate),
                 (FTR_FALSE_NEG_RATE, false_negative_rate),
                 (FTR_RAND_INDEX, rand_index),
-                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index)
+                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index),
             ]
 
             if self.wants_emd:
-                workspace.display_data.statistics.append((FTR_EARTH_MOVERS_DISTANCE, emd))
+                workspace.display_data.statistics.append(
+                    (FTR_EARTH_MOVERS_DISTANCE, emd)
+                )
 
     def compute_rand_index(self, test_labels, ground_truth_labels, mask):
         """Calculate the Rand Index
@@ -521,11 +530,12 @@ the two images. Set this setting to “No” to assess no penalty."""
             # labeled with label I in the ground truth and label J in the
             # test set.
             #
-            N_ij = scipy.sparse.coo_matrix((numpy.ones(len(test_labels)),
-                                            (ground_truth_labels, test_labels))).toarray()
+            N_ij = scipy.sparse.coo_matrix(
+                (numpy.ones(len(test_labels)), (ground_truth_labels, test_labels))
+            ).toarray()
 
             def choose2(x):
-                '''Compute # of pairs of x things = x * (x-1) / 2'''
+                """Compute # of pairs of x things = x * (x-1) / 2"""
                 return x * (x - 1) / 2
 
             #
@@ -562,26 +572,29 @@ the two images. Set this setting to “No” to assess no penalty."""
             expected_index = numpy.sum(choose2(N_i)) * numpy.sum(choose2(N_j))
             max_index = (numpy.sum(choose2(N_i)) + numpy.sum(choose2(N_j))) * total / 2
 
-            adjusted_rand_index = \
-                (A * total - expected_index) / (max_index - expected_index)
+            adjusted_rand_index = (A * total - expected_index) / (
+                max_index - expected_index
+            )
         else:
             rand_index = adjusted_rand_index = numpy.nan
         return rand_index, adjusted_rand_index
 
     def compute_emd(self, src_objects, dest_objects):
-        '''Compute the earthmovers distance between two sets of objects
+        """Compute the earthmovers distance between two sets of objects
 
         src_objects - move pixels from these objects
 
         dest_objects - move pixels to these objects
 
         returns the earth mover's distance
-        '''
+        """
         #
         # if either foreground set is empty, the emd is the penalty.
         #
-        for angels, demons in ((src_objects, dest_objects),
-                               (dest_objects, src_objects)):
+        for angels, demons in (
+            (src_objects, dest_objects),
+            (dest_objects, src_objects),
+        ):
             if angels.count == 0:
                 if self.penalize_missing:
                     return numpy.sum(demons.areas) * self.max_distance.value
@@ -595,19 +608,24 @@ the two images. Set this setting to “No” to assess no penalty."""
             idest, jdest = self.get_skeleton_points(dest_objects)
         src_weights, dest_weights = [
             self.get_weights(i, j, self.get_labels_mask(objects))
-            for i, j, objects in ((isrc, jsrc, src_objects),
-                                  (idest, jdest, dest_objects))]
-        ioff, joff = [src[:, numpy.newaxis] - dest[numpy.newaxis, :]
-                      for src, dest in ((isrc, idest), (jsrc, jdest))]
+            for i, j, objects in (
+                (isrc, jsrc, src_objects),
+                (idest, jdest, dest_objects),
+            )
+        ]
+        ioff, joff = [
+            src[:, numpy.newaxis] - dest[numpy.newaxis, :]
+            for src, dest in ((isrc, idest), (jsrc, jdest))
+        ]
         c = numpy.sqrt(ioff * ioff + joff * joff).astype(numpy.int32)
         c[c > self.max_distance.value] = self.max_distance.value
-        extra_mass_penalty = \
-            self.max_distance.value if self.penalize_missing else 0
+        extra_mass_penalty = self.max_distance.value if self.penalize_missing else 0
         return centrosome.fastemd.emd_hat_int32(
-                src_weights.astype(numpy.int32),
-                dest_weights.astype(numpy.int32),
-                c,
-                extra_mass_penalty=extra_mass_penalty)
+            src_weights.astype(numpy.int32),
+            dest_weights.astype(numpy.int32),
+            c,
+            extra_mass_penalty=extra_mass_penalty,
+        )
 
     def get_labels_mask(self, obj):
         labels_mask = numpy.zeros(obj.shape, bool)
@@ -616,7 +634,7 @@ the two images. Set this setting to “No” to assess no penalty."""
         return labels_mask
 
     def get_skeleton_points(self, obj):
-        '''Get points by skeletonizing the objects and decimating'''
+        """Get points by skeletonizing the objects and decimating"""
         ii = []
         jj = []
         total_skel = numpy.zeros(obj.shape, bool)
@@ -625,9 +643,10 @@ the two images. Set this setting to “No” to assess no penalty."""
             for color in range(1, numpy.max(colors) + 1):
                 labels_mask = colors == color
                 skel = centrosome.cpmorphology.skeletonize(
-                        labels_mask,
-                        ordering=scipy.ndimage.distance_transform_edt(labels_mask) *
-                                 centrosome.filter.poisson_equation(labels_mask))
+                    labels_mask,
+                    ordering=scipy.ndimage.distance_transform_edt(labels_mask)
+                    * centrosome.filter.poisson_equation(labels_mask),
+                )
                 total_skel = total_skel | skel
         n_pts = numpy.sum(total_skel)
         if n_pts == 0:
@@ -639,28 +658,31 @@ the two images. Set this setting to “No” to assess no penalty."""
             # skeleton and propagating from those.
             #
             markers = numpy.zeros(total_skel.shape, numpy.int32)
-            branchpoints = \
-                centrosome.cpmorphology.branchpoints(total_skel) | centrosome.cpmorphology.endpoints(total_skel)
+            branchpoints = centrosome.cpmorphology.branchpoints(
+                total_skel
+            ) | centrosome.cpmorphology.endpoints(total_skel)
             markers[branchpoints] = numpy.arange(numpy.sum(branchpoints)) + 1
             #
             # We compute the propagation distance to that point, then impose
             # a slightly arbitrary order to get an unambiguous ordering
             # which should number the pixels in a skeleton branch monotonically
             #
-            ts_labels, distances = centrosome.propagate.propagate(numpy.zeros(markers.shape),
-                                                                  markers, total_skel, 1)
+            ts_labels, distances = centrosome.propagate.propagate(
+                numpy.zeros(markers.shape), markers, total_skel, 1
+            )
             order = numpy.lexsort((j, i, distances[i, j], ts_labels[i, j]))
             #
             # Get a linear space of self.max_points elements with bounds at
             # 0 and len(order)-1 and use that to select the points.
             #
             order = order[
-                numpy.linspace(0, len(order) - 1, self.max_points.value).astype(int)]
+                numpy.linspace(0, len(order) - 1, self.max_points.value).astype(int)
+            ]
             return i[order], j[order]
         return i, j
 
     def get_kmeans_points(self, src_obj, dest_obj):
-        '''Get representative points in the objects using K means
+        """Get representative points in the objects using K means
 
         src_obj - get some of the foreground points from the source objects
         dest_obj - get the rest of the foreground points from the destination
@@ -668,7 +690,7 @@ the two images. Set this setting to “No” to assess no penalty."""
 
         returns a vector of i coordinates of representatives and a vector
                 of j coordinates
-        '''
+        """
         from sklearn.cluster import KMeans
 
         ijv = numpy.vstack((src_obj.ijv, dest_obj.ijv))
@@ -676,18 +698,21 @@ the two images. Set this setting to “No” to assess no penalty."""
             return ijv[:, 0], ijv[:, 1]
         random_state = numpy.random.RandomState()
         random_state.seed(ijv.astype(int).flatten())
-        kmeans = KMeans(n_clusters=self.max_points.value, tol=2,
-                        random_state=random_state)
+        kmeans = KMeans(
+            n_clusters=self.max_points.value, tol=2, random_state=random_state
+        )
         kmeans.fit(ijv[:, :2])
-        return kmeans.cluster_centers_[:, 0].astype(numpy.uint32), \
-               kmeans.cluster_centers_[:, 1].astype(numpy.uint32)
+        return (
+            kmeans.cluster_centers_[:, 0].astype(numpy.uint32),
+            kmeans.cluster_centers_[:, 1].astype(numpy.uint32),
+        )
 
     def get_weights(self, i, j, labels_mask):
-        '''Return the weights to assign each i,j point
+        """Return the weights to assign each i,j point
 
         Assign each pixel in the labels mask to the nearest i,j and return
         the number of pixels assigned to each i,j
-        '''
+        """
         #
         # Create a mapping of chosen points to their index in the i,j array
         #
@@ -698,9 +723,8 @@ the two images. Set this setting to “No” to assess no penalty."""
         # return the nearest point.
         #
         ii, jj = scipy.ndimage.distance_transform_edt(
-                total_skel == 0,
-                return_indices=True,
-                return_distances=False)
+            total_skel == 0, return_indices=True, return_distances=False
+        )
         #
         # Filter out all unmasked points
         #
@@ -713,33 +737,33 @@ the two images. Set this setting to “No” to assess no penalty."""
         #
         result = numpy.zeros(len(i), numpy.int32)
         bc = numpy.bincount(total_skel[ii, jj])[1:]
-        result[:len(bc)] = bc
+        result[: len(bc)] = bc
         return result
 
     def display(self, workspace, figure):
-        '''Display the image confusion matrix & statistics'''
+        """Display the image confusion matrix & statistics"""
         figure.set_subplots((3, 2))
 
         for x, y, image, label in (
-                (0, 0, workspace.display_data.true_positives, "True positives"),
-                (0, 1, workspace.display_data.false_positives, "False positives"),
-                (1, 0, workspace.display_data.false_negatives, "False negatives"),
-                (1, 1, workspace.display_data.true_negatives, "True negatives")
+            (0, 0, workspace.display_data.true_positives, "True positives"),
+            (0, 1, workspace.display_data.false_positives, "False positives"),
+            (1, 0, workspace.display_data.false_negatives, "False negatives"),
+            (1, 1, workspace.display_data.true_negatives, "True negatives"),
         ):
             figure.subplot_imshow_bw(
-                x, y, image,
-                title=label,
-                sharexy=figure.subplot(0, 0)
+                x, y, image, title=label, sharexy=figure.subplot(0, 0)
             )
 
         figure.subplot_table(
-            2, 0, workspace.display_data.statistics,
+            2,
+            0,
+            workspace.display_data.statistics,
             col_labels=("Measurement", "Value"),
-            n_rows=2
+            n_rows=2,
         )
 
     def measurement_name(self, feature):
-        return '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
+        return "_".join((C_IMAGE_OVERLAP, feature, self.test_img.value))
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
@@ -748,7 +772,10 @@ the two images. Set this setting to “No” to assess no penalty."""
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler.measurement.IMAGE and category == C_IMAGE_OVERLAP:
+        if (
+            object_name == cellprofiler.measurement.IMAGE
+            and category == C_IMAGE_OVERLAP
+        ):
             return self.all_features()
 
         return []
@@ -768,19 +795,30 @@ the two images. Set this setting to “No” to assess no penalty."""
         return all_features
 
     def get_measurement_columns(self, pipeline):
-        return [(
-                    cellprofiler.measurement.IMAGE,
-                    self.measurement_name(feature),
-                    cellprofiler.measurement.COLTYPE_FLOAT
-                ) for feature in self.all_features()]
+        return [
+            (
+                cellprofiler.measurement.IMAGE,
+                self.measurement_name(feature),
+                cellprofiler.measurement.COLTYPE_FLOAT,
+            )
+            for feature in self.all_features()
+        ]
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1:
             # no object choice before rev 2
             old_setting_values = setting_values
             setting_values = [
-                O_IMG, old_setting_values[0], old_setting_values[1],
-                "None", "None", "None", "None"]
+                O_IMG,
+                old_setting_values[0],
+                old_setting_values[1],
+                "None",
+                "None",
+                "None",
+                "None",
+            ]
             variable_revision_number = 2
 
         if variable_revision_number == 2:
@@ -799,7 +837,7 @@ the two images. Set this setting to “No” to assess no penalty."""
                 250,  # max points
                 DM_KMEANS,  # decimation method
                 250,  # max distance
-                cellprofiler.setting.NO  # penalize missing
+                cellprofiler.setting.NO,  # penalize missing
             ]
             variable_revision_number = 4
 
@@ -807,12 +845,13 @@ the two images. Set this setting to “No” to assess no penalty."""
             obj_or_img = setting_values[0]
 
             if obj_or_img == O_OBJ:
-                raise RuntimeError("""\
+                raise RuntimeError(
+                    """\
 MeasureImageOverlap does not compute object measurements.
 
 Please update your pipeline to use MeasureObjectOverlap to compute object measurements.
 """
-                                   )
+                )
 
             setting_values = setting_values[1:]
             variable_revision_number = 5

@@ -5,7 +5,7 @@ import base64
 import sys
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 
@@ -942,41 +942,6 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(image.pixel_data == expected_image))
-
-    def test_06_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1PwTSxSMDBUMDSxMrW0MrRQMDIwNFAgGTAwevryMzAwLGdk'
-                'YKiYczZkr99hA4F9S17yd4TJRk44dCxC7AiHCBvbrVWuoj4nfO9emSTs3tnL'
-                'Jdx/QPmjgA1Df9NltVyhRcda+OaUeL37U3s/Mv13FMOHUPYVJ/Odd/Fpr3bb'
-                'OO2DgVziuc5s9lCDBwan6j3klecv4Dya7MLKl5Bb+O/a3I2/xfP3lhxf1vRI'
-                'rmhSQqbtQ58N8l/SDQ2j5CawLlP+1KWYa5jTMd/TYYb0R+W/OWWx0z/63J32'
-                'xTX1Mrvucv6zLnZH4g+w5T958F3oR5nI/SCtOdo3F7ecq2z0U158uaP0V9Pq'
-                'D68l6yT4N+pqfJr+1Zq1Rvfo9WkVovPmPXpZcC3wcWjQHi6bU5uDHkpqzmM0'
-                'PzFr+tv3DRUzhMRXz/ns2CZ/zDaNjS+5Rk+e2+Hn7yJNi2IB9bAp4Rdvnn/R'
-                '8tHUOPaYr+CD/6s/r3v77e/Tq6p8mza+NX648vUWY6u3U/o872h+i+qs/ft1'
-                '9+q/b7ye826b711k1/LD0fHuYp+7Bu+M7h8Xi+8zfXSK+/yd5XqLpskEyRw+'
-                'vzNQ+0a73v9ZljZTf5ZFbYrby3J+wpnzj0XfP5xea3ezqV/3XD3zpczepQDs'
-                'fe/W')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
-        self.assertEqual(module.image_name, "IllumBlue")
-        self.assertEqual(module.illumination_image_name, "IllumOut")
-        self.assertEqual(module.intensity_choice, calc.IC_REGULAR)
-        self.assertFalse(module.dilate_objects)
-        self.assertEqual(module.rescale_option, cps.YES)
-        self.assertEqual(module.each_or_all, calc.EA_EACH)
-        self.assertEqual(module.smoothing_method, calc.SM_NONE)
-        self.assertEqual(module.automatic_object_width, calc.FI_AUTOMATIC)
-        self.assertFalse(module.save_average_image)
-        self.assertFalse(module.save_dilated_image)
 
     def test_06_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org

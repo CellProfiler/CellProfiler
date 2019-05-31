@@ -1,4 +1,4 @@
-class Grid(object):
+class Grid:
     def __init__(self):
         self.x_location_of_lowest_x_spot = None
         self.y_location_of_lowest_y_spot = None
@@ -21,7 +21,7 @@ class Grid(object):
         self.image_height = None
 
     def serialize(self):
-        return dict((k, v) for k, v in self.__dict__.items() if not k.startswith('_'))
+        return dict((k, v) for k, v in self.__dict__.items() if not k.startswith("_"))
 
     def deserialize(self, serialized_info):
         self.__dict__.update(serialized_info)

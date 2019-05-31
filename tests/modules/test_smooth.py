@@ -47,32 +47,6 @@ class TestSmooth(unittest.TestCase):
         module.filtered_image_name.value = OUTPUT_IMAGE_NAME
         return workspace, module
 
-    def test_01_01_load_matlab(self):
-        data = base64.b64decode(
-                'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9u'
-                'OiBGcmkgTWF5IDA4IDE0OjU1OjE0IDIwMDkgICAgICAgICAgICAgICAgICAgICAg'
-                'ICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAAgIAAHic3VW7TsMw'
-                'FL0NKRSEymNiYMjIQmmFhBh5i0rQVhQhIbGY1KSWErtKHNQiPoCRz2Hk07AhaRNT'
-                'yIOoA46s6Dr3nHtzfOJUAeB1GWBe3CtiavA1ykFcikwZdzHnhFpeGXTYCNbfxbxB'
-                'LkH3Nr5Bto89GI9wvUkf2PVoMH50yXq+jVvIiSaL0fKde+x67YcQGDzukCG2u+QJ'
-                'Q3yEaVf4kXiE0QAf8Kur47qMK3WrYm4sTHQoKTpIXdYj6zL/ACb5+hTdViP5q8G8'
-                'xkO+fTpEJjccxM2+5NlP4KkoPDJuu8Q6ElJLfD0Br8fwOpwcdpp56x4z1w3r/rXv'
-                'JP2qCl7GZ4QbHWaPKHMIstPtw5LCI+MTZlDGDd8LDJWGZ1HhkfGhz5nYSGJCep6i'
-                '+pk1T5LPtBiPBi022/qqzxt7tfos68/FeOagXmsU+v5p+yjF+Eqwq+CL7uc8gW9N'
-                '4ZMxoT3ySHo+sg3iIGt8Gmd5z5/8llenWkadpp0HlotGnolsHOFJ24/qn1uhyiz1'
-                'UOvTHRTD72u//x+jevzVb5+msFzmD7LzTfvvTvgMYT08KJJH7a/oPv8L/xv87B/V'
-                'v3l9c8FQrxk5UNLwrCg8Mu46jPF+2z2lfURN/O37mU/oXxPXeiXfOdSA77g09crl'
-                '7DhdXHebz5sS9wLZ9mfrl/xw5M3/AOjFxSA=')
-        pipeline = cpp.Pipeline()
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
-        smooth = pipeline.modules()[1]
-        self.assertEqual(smooth.module_name, 'Smooth')
-        self.assertEqual(smooth.image_name.value, 'OrigBlue')
-        self.assertEqual(smooth.filtered_image_name.value, 'CorrBlue')
-        self.assertEqual(smooth.smoothing_method.value, S.FIT_POLYNOMIAL)
-        self.assertTrue(smooth.wants_automatic_object_size)
-
     def test_01_02_load_v01(self):
         data = base64.b64decode(
                 'eJztWN1u0zAUdrqsbCDt5wourV0hxKJ0iGr0hnUrE5GWrqLVBHd4rdtZcuLKcaaWJ'
@@ -226,7 +200,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         mask = np.ones(image.shape, bool)
         mask[40:60, 45:65] = False
         expected = skimage.restoration.denoise_bilateral(
-            image=image,
+            image=image.astype(np.float),
             multichannel=False,
             sigma_color=sigma_range,
             sigma_spatial=sigma,

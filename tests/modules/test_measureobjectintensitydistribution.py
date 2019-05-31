@@ -74,7 +74,7 @@ class TestMeasureObjectIntensityDistribution(unittest.TestCase):
 Version:2
 DateRevision:20120126174947
 
-MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
     Hidden:2
     Hidden:2
     Hidden:2
@@ -125,7 +125,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
 Version:2
 DateRevision:20120126174947
 
-MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
     Hidden:2
     Hidden:3
     Hidden:2
@@ -185,7 +185,7 @@ GitHash:200cfc0
 ModuleCount:1
 HasImagePlaneDetails:False
 
-MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Hidden:2
     Hidden:2
     Hidden:2
@@ -319,7 +319,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
     Save display as image?:No
     Output image name:B
 
-    MeasureObjectRadialDistribution:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    MeasureObjectIntensityDistribution:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
         Hidden:2
         Hidden:1
         Hidden:1
@@ -923,7 +923,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
     def test_04_01_img_607(self):
         '''Regression test of bug IMG-607
 
-        MeasureObjectRadialDistribution fails if there are no pixels for
+        MeasureObjectIntensityDistribution fails if there are no pixels for
         some of the objects.
         '''
         numpy.random.seed(41)
@@ -945,7 +945,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 self.assertTrue(numpy.isnan(data[1]))
 
     def test_04_02_center_outside_of_object(self):
-        '''Make sure MeasureObjectRadialDistribution can handle oddly shaped objects'''
+        '''Make sure MeasureObjectIntensityDistribution can handle oddly shaped objects'''
         numpy.random.seed(42)
         labels = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],

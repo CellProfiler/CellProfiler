@@ -23,53 +23,6 @@ OUTPUT_IMAGE_NAME = 'output'
 
 
 class TestResize(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwKs1RMDJWMDS1MjWyAjKMDAwsFUgGDIyevvwMDAwBTAwM'
-                'FXPeTr/rd9tA5Li/V1CCc8fG2bFvlKbHMHh3a73dJKLGm3lazcFjctljNbWt'
-                'U26F2gUk6h9/KpfYv+H4DN6fW5zm1mWsFejTeW1ht7/4T3+y+m2Ggv3cF568'
-                'ZVvPW6HjlpTdqvWGW8a1pWoho9Ue71/vK/c6MTrWyscr2h9TTFF9a7/4+ptP'
-                'ZVPu/jp158ZxMykx9s9Jxw/b8R3Kv74yuei3tWTy/6Y7iRrTS25Y7lNUTDT5'
-                '6P+jKF9sumvQndy4/znPrDIm8Vmtz+f+m1Qj/uljVWuedetHa8+9Rx6/eHBZ'
-                'wnKipctEYwEZ74OR2oXXHlyxa0v9sfLZ76hZ6zf4s3UEvdnOvyYs926cp0zi'
-                '/McT7GvClwTN3qxauK3Ir3/9pbJYv6t7PtX0bar5d/2zRU551s9MVXveKONn'
-                'M48Fvwz5esdvpmdkyrHET4+4zrmzpsc+4tidGvl7z7l39x/+m2v5h/uj+NLm'
-                'ruCt9TckWC16fKSF8y+kO879meMhk/i9w18j/ewq936LwvkW3Fcfr/zWaj/T'
-                '/q1dwZYnNfbaP/JV9m3gLD3JW5j8ZHZKx543X+a5T3fT9GPO2RYxl1/0Z6no'
-                'Hl9P9sRqxl28sk8ec93b8vPU7z/8615pvdR87m6/oNMm9Hf0/D+14THln/fx'
-                '83df4Y6wiYr1i427ajnls8+/rEcXi5+dqLqaG/9I3/xfcb7u25d/fW5YTfm+'
-                'Wc9nf35N4glbbZkdTYt/xeV4ySTa/9Nf21b/8U6mVkl2QfZ1g57Ic/9X/V9r'
-                '9ZHH9/KTylV/viz5//x3PP/0D/+5L6/t38v5+PKmVY//M5ac/+oEAKjKSvo=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        #
-        # 4 modules - first resizes by factor, second resizes to a fixed size
-        #             interpolation is different for each
-        #
-        for module in pipeline.modules()[1:]:
-            self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))
-        module = pipeline.modules()[1]
-        self.assertEqual(module.x_name, 'DNA')
-        self.assertEqual(module.y_name, 'ResizedDNA')
-        self.assertEqual(module.size_method, cellprofiler.modules.resize.R_BY_FACTOR)
-        self.assertAlmostEqual(module.resizing_factor.value, .25)
-        self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
-
-        module = pipeline.modules()[2]
-        self.assertEqual(module.size_method, cellprofiler.modules.resize.R_TO_SIZE)
-        self.assertEqual(module.specific_width.value, 150)
-        self.assertEqual(module.specific_height.value, 150)
-        self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_BILINEAR)
-
-        module = pipeline.modules()[3]
-        self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_BICUBIC)
-
     def test_01_02_load_v1(self):
         data = ('eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS'
                 'EleJM1bQJB75WHykfQTsLmkSE5a03RBITRWld7nf/e7OzsVOrdzcL7+CG4oK'

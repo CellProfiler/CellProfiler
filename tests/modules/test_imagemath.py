@@ -7,6 +7,7 @@ import numpy
 import numpy.testing
 import pytest
 import skimage.util
+import six.moves
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -287,244 +288,6 @@ class TestBinaryImages(object):
 
 
 class TestImageMath(unittest.TestCase):
-    def test_01_000_load_subtract(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-Subtract:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
-    Subtract this image\x3A:MySubtrahend
-    From this image\x3A:MyMinuend
-    What do you want to call the resulting image?:MyOutput
-    Enter the factor to multiply the first image by before subtracting\x3A:1.5
-    Enter the factor to multiply the second image by before subtracting\x3A:2.6
-    Do you want negative values in the image to be set to zero?:Yes
-    """
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 2)
-        self.assertEqual(module.images[0].image_name, "MyMinuend")
-        self.assertEqual(module.images[1].image_name, "MySubtrahend")
-        self.assertEqual(module.output_image_name, "MyOutput")
-        self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_SUBTRACT)
-        self.assertAlmostEqual(module.images[0].factor.value, 2.6)
-        self.assertAlmostEqual(module.images[1].factor.value, 1.5)
-        self.assertTrue(module.truncate_low)
-        self.assertFalse(module.truncate_high)
-
-    def test_01_001_load_combine(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
-    What did you call the first image to be combined?:MyFirstImage
-    What did you call the second image to be combined?:MySecondImage
-    What did you call the third image to be combined?:Do not use
-    What do you want to call the combined image?:MyOutputImage
-    Enter the weight you want to give the first image:0.2
-    Enter the weight you want to give the second image:0.7
-    Enter the weight you want to give the third image:.10
-    """
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 2)
-        self.assertEqual(module.images[0].image_name, "MyFirstImage")
-        self.assertEqual(module.images[1].image_name, "MySecondImage")
-        self.assertAlmostEqual(module.images[0].factor.value, 0.2)
-        self.assertAlmostEqual(module.images[1].factor.value, 0.7)
-        self.assertAlmostEqual(module.after_factor.value, 1.0 / 0.9)
-        self.assertEqual(module.operation.value, cellprofiler.modules.imagemath.O_ADD)
-        self.assertEqual(module.output_image_name, "MyOutputImage")
-
-    def test_01_002_load_invert_intensity(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-InvertIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
-    What did you call the image to be inverted (made negative)?:MyImage
-    What do you want to call the inverted image?:MyInvertedImage
-"""
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 2)  # there are two, but only 1 shown
-        self.assertEqual(module.images[0].image_name, "MyImage")
-        self.assertEqual(module.output_image_name, "MyInvertedImage")
-        self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_INVERT)
-
-    def test_01_003_load_multiply(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
-    What is the name of the first image you would like to use:MyFirstImage
-    What is the name of the second image you would like to use:MySecondImage
-    What do you want to call the resulting image?:MyOutputImage
-"""
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 2)
-        self.assertEqual(module.images[0].image_name, "MyFirstImage")
-        self.assertEqual(module.images[1].image_name, "MySecondImage")
-        self.assertEqual(module.images[0].factor, 1)
-        self.assertEqual(module.images[1].factor, 1)
-        self.assertEqual(module.output_image_name, "MyOutputImage")
-
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwKs1RMDQDIitDCytjMwUjAwNLBZIBA6OnLz8DA0MWEwND'
-                'xZy3EXfzLhuIlG1aIr0i5HaehJD4zidt9RN25EQ4dh+5lTVbTbHwsVleumbn'
-                '4iMro+Z1HH9QWMHzZtKWzqkm9ryKHDGRFwvPfa+1O26/8TYzQ48804XE88ph'
-                'qR9Wr1ioe1Rr+3rBpTdm/tYKOBB549/cq9EvEi02XtDdwvSk2bfzFm+6W17Y'
-                'u2dXVQ2ZuXkXypanpUrcEH7yc3EkC098/0ehyOs/tJlOCu2MXcj6zbDQqeaE'
-                '/ra8Ek7Rkuo1u/i3VU5osdFYM+/YrZ318jl/p07ZI3v8T//hquZpX162q84J'
-                'OttWUnW8Mu7JBxmVCr4DCSuazR5NYfFjZK7NebN4+vT71U51O2v3LTqydUF+'
-                '+9vST1t070fuKLe0CO2YfvvXFN3XXYV1Mr1cL8tYYvOkzzFVbpm1Lm9Wawk/'
-                'a2zefOHqJtkrL/5MELIRqrgZNGfG8++/Qhf/rdmaXrO/+t910eevbb/+stzx'
-                '22nOHTmBs4oh3H8+ON9K2ZP/b2PFfbM14SV2na9/G1tzix48yTmHpy3Ffm8d'
-                '37p1H3O894hb7hBWjMtLPn6EO4ftwqUNvM9nB2dP/FPKape32bjJbvGJ3S1f'
-                '1mn4+z94uO2gtXDyqsnLX+1w+dhxftPrF5Fs/hdrls4VfyYX8zM4Y6HIvk1/'
-                'z86KD/356tzyG/bPLe+c/O57t/Z91/nHRo8nbKtfI37xjnLj7bh5276t1py3'
-                'pfrzNPfkaKWi/8d2nOqrv7Z53R/Rq7/X/0//fdNsHrdm9f5pDp/qF6x6/Ui4'
-                'cZmg9YeQv+/WWS467Odd+ej+ZT8/u9S0uWW77+56J+r6JSRy2tHqUjk/ztv7'
-                'beq2/Cv8wx+Qd8/m5kP5qdt+/WfJeirzEgCAxWF+')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        #
-        # There are 3 ImageMath modules:
-        # 1)
-        #   image_name[0] = DNA, factor[0] = 1, operation = invert, truncation
-        #   output_image_name = DNAAfterMath
-        # 2)
-        #   image_name[0] = DNA, factor[0] = 1
-        #   image_name[1] = Cytoplasm, factor[1] = 2
-        #   operation = add, exponent = 4, multiply = 5, no truncation
-        #   output_image_name = ImageAfterMath
-        # 3)  DNA, Cytoplasm, Actin
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 2)
-        self.assertEqual(module.images[0].image_name.value, 'DNA')
-        self.assertEqual(module.output_image_name.value, 'DNAAfterMath')
-        self.assertEqual(module.operation.value, cellprofiler.modules.imagemath.O_INVERT)
-        self.assertTrue(module.truncate_low.value)
-        self.assertTrue(module.truncate_high.value)
-
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 2)
-        self.assertEqual(module.images[0].image_name.value, 'DNA')
-        self.assertEqual(module.images[0].factor.value, 1)
-        self.assertEqual(module.images[1].image_name.value, 'Cytoplasm')
-        self.assertEqual(module.images[1].factor.value, 2)
-        self.assertEqual(module.output_image_name.value, 'ImageAfterMath')
-        self.assertEqual(module.operation.value, cellprofiler.modules.imagemath.O_ADD)
-        self.assertEqual(module.exponent.value, 4)
-        self.assertEqual(module.after_factor.value, 5)
-        self.assertFalse(module.truncate_low.value)
-        self.assertFalse(module.truncate_high.value)
-
-        module = pipeline.modules()[3]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(len(module.images), 3)
-        self.assertEqual(module.images[0].image_name.value, 'DNA')
-        self.assertEqual(module.images[1].image_name.value, 'Cytoplasm')
-        self.assertEqual(module.images[2].image_name.value, 'Actin')
-        self.assertEqual(module.output_image_name.value, 'ImageAfterMath')
-        self.assertEqual(module.operation.value, cellprofiler.modules.imagemath.O_ADD)
-
-    def test_01_02_load_wierd_matlab(self):
-        '''Load some ImageMath modules with constants typed in instead of images'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwKs1RMDQDIisTSysTMwUjAwNLBZIBA6OnLz8DA8M2JgaG'
-                'ijlvIvzzbxmI1C88cCNk4brdOZf4LN9teuevbz1pmq+rVMDW0KWeuyWSDgQJ'
-                'uXcGH7S72/eb47dFt2LjEe5ez5NebnKb1jz/8f1z9flzj4/6MvxYynTl776H'
-                '27l0loi98FpS+FfK2G3NxuhmrT08x+p/vRWzZOHlqenm4d+9YUrBnuTeF2fP'
-                'xNm9CrprXMA/8+LJfV9sihtkt9tzNR587G109Jjpz0ZFvYdbtGvcY5zWMsh/'
-                '6F58ulRT+FruL9/ajV3NSkca++Xdj/38I7bmWbjwozKRmfUiW6RtUvPt/S9O'
-                'WKmWdJjzeeX8Q8UCjy0byvybhbZLRD9cdeGanrWRhWpb8APmhitVtw/VnpEM'
-                'n/L3ttm7YK51Yod1S3JfLDc+uSMs6QfXnDlpt/v1/9apzVn2OqjOTOHdc5v8'
-                'auZnPyLVtfe9luy5ccyHLV78Q0z+ZOtFyRM2/e9seP7L0pT9yKGgyu8rgeyf'
-                'PYG3HdZJ9ogr+r/R8rOZnn7rqt+tndo79ny+tO7Hz/WFa0XuGCuui8kPvrrI'
-                '5+udBRN0Ju1PrfkuXa7VKfz5s/n/aHX/ORHiX188vnHT62Du6z3vsmv0gwrO'
-                't/4omhthtf6PTcqKIy6Pn4ZvP1Mny1UT8z27NvfIhsuuOUqnL4tU7Lj38JjL'
-                'jH/p89Y81+7Jj9qfKWc98Qnv7y0WKld/J7OfvaNoVMB03/lv5Pe6nG77938F'
-                '3m6/t7D3h3rv7/cnF71/q/Z7xpT5zz2T3wSc16tMqSy7uq72qecu9riPK/7F'
-                'q2zrfhEeWGn29vK1qXfvr3k9/dvT7PvJv0M/3Tn/OToyPl9DYH/+uVnq+4KW'
-                'lCvJa0S+Pmfp/qMw6JPHR5f37q85bS7+Xcvy66Pi9Pa7+1Mit4c9/LT9f2ZF'
-                'nvj67v3767b+af0Xn1Ox7/6BXz8Xnjj3n5mB4f//5AYmN42z7EekHM6wHZHx'
-                'eLQm4F9COD8Dk26hOwCE1ox/')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        #
-        # Modules:
-        # 1) Add, 1
-        # 2) Subtract, 1
-        # 3) Multiply, 2
-        # 4) Divide, 2
-        # 5) Combine, .3
-        self.assertEqual(len(pipeline.modules()), 6)
-        for i in range(1, 5):
-            module = pipeline.modules()[i]
-            self.assertEqual(len(module.images), 2)
-            self.assertEqual(module.operation.value, cellprofiler.modules.imagemath.O_NONE)
-        self.assertEqual(pipeline.modules()[1].addend.value, 1)
-        self.assertEqual(pipeline.modules()[2].addend.value, -1)
-        self.assertAlmostEqual(pipeline.modules()[3].after_factor.value, 2)
-        self.assertAlmostEqual(pipeline.modules()[4].after_factor.value, .5)
-        module = pipeline.modules()[5]
-        self.assertEqual(len(module.images), 2)
-        self.assertAlmostEqual(module.addend.value, .3)
-
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -599,7 +362,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
         self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY)
@@ -691,7 +454,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
         self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM)

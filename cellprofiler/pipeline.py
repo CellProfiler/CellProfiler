@@ -1243,7 +1243,7 @@ class Pipeline(object):
         We encode the special characters, '[', ':', '|' and ']' using the '\\x'
         syntax.
         """
-        s = s.encode("string_escape")
+        s = six.text_type(s)
         s = s.replace(":", "\\x3A")
         s = s.replace("|", "\\x7C")
         s = s.replace("[", "\\x5B").replace("]", "\\x5D")

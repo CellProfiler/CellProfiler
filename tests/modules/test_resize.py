@@ -18,44 +18,50 @@ import skimage.transform
 cellprofiler.preferences.set_headless()
 
 
-INPUT_IMAGE_NAME = 'input'
-OUTPUT_IMAGE_NAME = 'output'
+INPUT_IMAGE_NAME = "input"
+OUTPUT_IMAGE_NAME = "output"
 
 
 class TestResize(unittest.TestCase):
     def test_01_02_load_v1(self):
-        data = ('eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS'
-                'EleJM1bQJB75WHykfQTsLmkSE5a03RBITRWld7nf/e7OzsVOrdzcL7+CG4oK'
-                'a+VmXiM6hg0dMY1aRgmabBXuWRgx3IbULMFm14FvHR0W12Bho1TcLBXWYVFV'
-                't8B4R6pae8Qv8AkAc/y6wM+0e2vWlVOBU8iHmDFiduxZkAHPXP1Pfh4hi6CW'
-                'jo+Q7mDbp/D0VVOjzX5veKtG246O68gIGvOj7hgtbNnvNQ/o3m6QS6wfkq9Y'
-                'SsEzO8AXxCbUdPGuf1k75KVM4hV1aCz4dUhJdRB1yQb0wv4N8O0zEXV7HLDP'
-                'ujIx2+SCtB2kQ2KgzjAK4U+N8TcT8jcDKvXyALcbg8uCcBzibOJLln99ic4Z'
-                'NBA77ybx80DyI+QDbPNBaYtQEueRCvlJgTUXdxyDW5b4l4f8sNWHCGo8G2pB'
-                'qkHWxZBapENMXmdhkKhOUflVKDQpg46Nk+eXCfnJAFUpbiTBpUO4NKjT8eZF'
-                'QVUTzc+nUr5CrmANOTqDVTE5YYVYWNS0P1EcQdychPMOD7cI/DrvxvBFzes6'
-                'Rha2Gaxj0um2qDVO3Cf8qZwk7n+NL8m8GoVvM4ZvDoTHRch7OjVFs/ubdfX6'
-                '433xyX2sEIG7Sz65r9R5SSfh+x7D9w6Ex1HIH1d2Gi/FAgVvKy9yn4T0Aev6'
-                'Af2yfVrON85ynmaP6o5hbp+q+a2zb4XV4tWN8SHhyIEyF5n3KPF3Y+LflOIX'
-                'sojhhPcIN7D1q1xeqGrUZF1XV3R1FdT3NZPEeTw/2rrivvpl1PttsAjpWNTp'
-                '3T9/VL/2+SFfGuHeXT0/U9wUN8X9H7jdAG7aN6a4UXHXAZz8fpXXv8L+M7h9'
-                'vj0H4fkm5HO+pOlZVHyfsRRj8BHBVnSK2je7eGWf/60GNvRJ9rNLEs/Sn3is'
-                'wSZXudnrRtdrMcJ/MO80/2Xnb6+zXF+/7tc74/DNpH7nexiDy7iVErgfYLRx'
-                'XbnF3sttXPtf+3UFIg==')
+        data = (
+            "eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS"
+            "EleJM1bQJB75WHykfQTsLmkSE5a03RBITRWld7nf/e7OzsVOrdzcL7+CG4oK"
+            "a+VmXiM6hg0dMY1aRgmabBXuWRgx3IbULMFm14FvHR0W12Bho1TcLBXWYVFV"
+            "t8B4R6pae8Qv8AkAc/y6wM+0e2vWlVOBU8iHmDFiduxZkAHPXP1Pfh4hi6CW"
+            "jo+Q7mDbp/D0VVOjzX5veKtG246O68gIGvOj7hgtbNnvNQ/o3m6QS6wfkq9Y"
+            "SsEzO8AXxCbUdPGuf1k75KVM4hV1aCz4dUhJdRB1yQb0wv4N8O0zEXV7HLDP"
+            "ujIx2+SCtB2kQ2KgzjAK4U+N8TcT8jcDKvXyALcbg8uCcBzibOJLln99ic4Z"
+            "NBA77ybx80DyI+QDbPNBaYtQEueRCvlJgTUXdxyDW5b4l4f8sNWHCGo8G2pB"
+            "qkHWxZBapENMXmdhkKhOUflVKDQpg46Nk+eXCfnJAFUpbiTBpUO4NKjT8eZF"
+            "QVUTzc+nUr5CrmANOTqDVTE5YYVYWNS0P1EcQdychPMOD7cI/DrvxvBFzes6"
+            "Rha2Gaxj0um2qDVO3Cf8qZwk7n+NL8m8GoVvM4ZvDoTHRch7OjVFs/ubdfX6"
+            "433xyX2sEIG7Sz65r9R5SSfh+x7D9w6Ex1HIH1d2Gi/FAgVvKy9yn4T0Aev6"
+            "Af2yfVrON85ynmaP6o5hbp+q+a2zb4XV4tWN8SHhyIEyF5n3KPF3Y+LflOIX"
+            "sojhhPcIN7D1q1xeqGrUZF1XV3R1FdT3NZPEeTw/2rrivvpl1PttsAjpWNTp"
+            "3T9/VL/2+SFfGuHeXT0/U9wUN8X9H7jdAG7aN6a4UXHXAZz8fpXXv8L+M7h9"
+            "vj0H4fkm5HO+pOlZVHyfsRRj8BHBVnSK2je7eGWf/60GNvRJ9rNLEs/Sn3is"
+            "wSZXudnrRtdrMcJ/MO80/2Xnb6+zXF+/7tc74/DNpH7nexiDy7iVErgfYLRx"
+            "XbnF3sttXPtf+3UFIg=="
+        )
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertEqual(module.x_name, 'DNA')
-        self.assertEqual(module.y_name, 'ResizedDNA')
+        self.assertEqual(module.x_name, "DNA")
+        self.assertEqual(module.y_name, "ResizedDNA")
         self.assertEqual(module.size_method, cellprofiler.modules.resize.R_BY_FACTOR)
-        self.assertAlmostEqual(module.resizing_factor.value, .25)
-        self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_NEAREST_NEIGHBOR)
+        self.assertAlmostEqual(module.resizing_factor.value, 0.25)
+        self.assertEqual(
+            module.interpolation, cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+        )
 
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -87,7 +93,9 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
@@ -110,8 +118,9 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))
         self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_BICUBIC)
 
-    def make_workspace(self, image, size_method, interpolation,
-                       mask=None, cropping=None, dimensions=2):
+    def make_workspace(
+        self, image, size_method, interpolation, mask=None, cropping=None, dimensions=2
+    ):
         module = cellprofiler.modules.resize.Resize()
         module.x_name.value = INPUT_IMAGE_NAME
         module.y_name.value = OUTPUT_IMAGE_NAME
@@ -124,10 +133,14 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image_set = image_set_list.get_image_set(0)
         image = cellprofiler.image.Image(image, mask, cropping, dimensions=dimensions)
         image_set.add(INPUT_IMAGE_NAME, image)
-        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
-                                                     cellprofiler.object.ObjectSet(),
-                                                     cellprofiler.measurement.Measurements(),
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline,
+            module,
+            image_set,
+            cellprofiler.object.ObjectSet(),
+            cellprofiler.measurement.Measurements(),
+            image_set_list,
+        )
         return workspace, module
 
     def test_02_01_rescale_triple_color(self):
@@ -144,14 +157,16 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         )
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         result = result_image.pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
-        assert result_image.parent_image is workspace.image_set.get_image(INPUT_IMAGE_NAME)
+        assert result_image.parent_image is workspace.image_set.get_image(
+            INPUT_IMAGE_NAME
+        )
 
     def test_02_02_rescale_triple_bw(self):
         i, j = numpy.mgrid[0:10, 0:10].astype(float)
@@ -161,7 +176,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         )
         module.resizing_factor.value = 3.0
         module.run(workspace)
@@ -171,16 +186,11 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
     def test_02_03_third(self):
         i, j = numpy.mgrid[0:30, 0:30]
         image = skimage.exposure.rescale_intensity(1.0 * i)
-        expected = skimage.transform.resize(
-            image,
-            (10, 10),
-            order=0,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (10, 10), order=0, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         )
         module.resizing_factor.value = 1.0 / 3.0
         module.run(workspace)
@@ -190,16 +200,11 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
     def test_03_01_bilinear(self):
         i, j = numpy.mgrid[0:10, 0:10]
         image = skimage.exposure.rescale_intensity(1.0 * i)
-        expected = skimage.transform.resize(
-            image,
-            (30, 30),
-            order=1,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (30, 30), order=1, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.resizing_factor.value = 3.0
         module.run(workspace)
@@ -209,16 +214,11 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
     def test_03_02_bicubic(self):
         i, j = numpy.mgrid[0:10, 0:10]
         image = skimage.exposure.rescale_intensity(1.0 * i)
-        expected = skimage.transform.resize(
-            image,
-            (30, 30),
-            order=3,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (30, 30), order=3, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_BICUBIC
+            cellprofiler.modules.resize.I_BICUBIC,
         )
         module.resizing_factor.value = 3.0
         module.run(workspace)
@@ -226,19 +226,14 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_01_reshape_double(self):
-        '''Make an image twice as large by changing the shape'''
+        """Make an image twice as large by changing the shape"""
         i, j = numpy.mgrid[0:10, 0:10].astype(float)
         image = skimage.exposure.rescale_intensity(i + j * 10.0)
-        expected = skimage.transform.resize(
-            image,
-            (19, 19),
-            order=1,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (19, 19), order=1, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_TO_SIZE,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.specific_width.value = 19
         module.specific_height.value = 19
@@ -247,19 +242,14 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_02_reshape_half(self):
-        '''Make an image half as large by changing the shape'''
+        """Make an image half as large by changing the shape"""
         i, j = numpy.mgrid[0:19, 0:19].astype(float) / 2.0
         image = skimage.exposure.rescale_intensity(i + j * 10)
-        expected = skimage.transform.resize(
-            image,
-            (10, 10),
-            order=1,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (10, 10), order=1, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_TO_SIZE,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.specific_width.value = 10
         module.specific_height.value = 10
@@ -268,19 +258,14 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_03_reshape_half_and_double(self):
-        '''Make an image twice as large in one dimension and half in other'''
+        """Make an image twice as large in one dimension and half in other"""
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
         image = skimage.exposure.rescale_intensity(i + j * 5.0)
-        expected = skimage.transform.resize(
-            image,
-            (19, 10),
-            order=1,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (19, 10), order=1, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_TO_SIZE,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.specific_width.value = 10
         module.specific_height.value = 19
@@ -289,23 +274,20 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_04_reshape_using_another_images_dimensions(self):
-        ''''Resize to another image's dimensions'''
+        """'Resize to another image's dimensions"""
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
         image = skimage.exposure.rescale_intensity(1.0 * i + j)
-        expected = skimage.transform.resize(
-            image,
-            (19, 10),
-            order=1,
-            mode="symmetric"
-        )
+        expected = skimage.transform.resize(image, (19, 10), order=1, mode="symmetric")
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_TO_SIZE,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
-        module.specific_image.value = 'AnotherImage'
-        workspace.image_set.add(module.specific_image.value, cellprofiler.image.Image(expected))
+        module.specific_image.value = "AnotherImage"
+        workspace.image_set.add(
+            module.specific_image.value, cellprofiler.image.Image(expected)
+        )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(expected.shape == result.shape)
@@ -316,7 +298,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         r.seed(501)
         i, j = numpy.mgrid[0:10, 0:20]
         image = i + j
-        mask = r.uniform(size=image.shape) > .5
+        mask = r.uniform(size=image.shape) > 0.5
         imask = mask.astype(int)
         cropping = numpy.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
@@ -325,9 +307,9 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.R_BY_FACTOR,
             cellprofiler.modules.resize.I_BILINEAR,
             mask,
-            cropping
+            cropping,
         )
-        module.resizing_factor.value = .5
+        module.resizing_factor.value = 0.5
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.mask.shape), (5, 10))
@@ -341,7 +323,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         r.seed(501)
         i, j = numpy.mgrid[0:10, 0:20]
         image = i + j
-        mask = r.uniform(size=image.shape) > .5
+        mask = r.uniform(size=image.shape) > 0.5
         imask = mask.astype(int)
         cropping = numpy.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
@@ -350,7 +332,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.R_BY_FACTOR,
             cellprofiler.modules.resize.I_BILINEAR,
             mask,
-            cropping
+            cropping,
         )
         module.resizing_factor.value = 2
         module.run(workspace)
@@ -366,9 +348,9 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
-        module.resizing_factor.value = .5
+        module.resizing_factor.value = 0.5
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))
@@ -380,13 +362,12 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_TO_SIZE,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
-        module.specific_image.value = 'AnotherImage'
+        module.specific_image.value = "AnotherImage"
         workspace.image_set.add(
-            module.specific_image.value,
-            cellprofiler.image.Image(tgt_image)
+            module.specific_image.value, cellprofiler.image.Image(tgt_image)
         )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -399,13 +380,12 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace, module = self.make_workspace(
             image,
             cellprofiler.modules.resize.R_TO_SIZE,
-            cellprofiler.modules.resize.I_BILINEAR
+            cellprofiler.modules.resize.I_BILINEAR,
         )
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
-        module.specific_image.value = 'AnotherImage'
+        module.specific_image.value = "AnotherImage"
         workspace.image_set.add(
-            module.specific_image.value,
-            cellprofiler.image.Image(tgt_image)
+            module.specific_image.value, cellprofiler.image.Image(tgt_image)
         )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -428,7 +408,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.resizing_factor.value = 0.5
@@ -438,28 +418,15 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
         expected_data = skimage.transform.resize(
-            data,
-            (10, 5, 5),
-            order=0,
-            mode="symmetric"
+            data, (10, 5, 5), order=0, mode="symmetric"
         )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 5, 5),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 5, 5), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 5, 5),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 5, 5), order=0, mode="constant")
         )
 
         assert actual.volumetric
@@ -487,7 +454,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.resizing_factor.value = 2.5
@@ -500,28 +467,15 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         for idx in range(3):
             expected_data[:, :, :, idx] = skimage.transform.resize(
-                data[:, :, :, idx],
-                (10, 25, 25),
-                order=0,
-                mode="symmetric"
+                data[:, :, :, idx], (10, 25, 25), order=0, mode="symmetric"
             )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 25, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 25, 25), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 25, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 25, 25), order=0, mode="constant")
         )
 
         assert actual.volumetric
@@ -549,7 +503,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_MANUAL
@@ -563,28 +517,15 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
         expected_data = skimage.transform.resize(
-            data,
-            (10, 30, 25),
-            order=0,
-            mode="symmetric"
+            data, (10, 30, 25), order=0, mode="symmetric"
         )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 30, 25), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
         )
 
         assert actual.volumetric
@@ -612,7 +553,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_MANUAL
@@ -629,28 +570,15 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         for idx in range(3):
             expected_data[:, :, :, idx] = skimage.transform.resize(
-                data[:, :, :, idx],
-                (10, 8, 5),
-                order=0,
-                mode="symmetric"
+                data[:, :, :, idx], (10, 8, 5), order=0, mode="symmetric"
             )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 8, 5),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 8, 5), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 8, 5),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 8, 5), order=0, mode="constant")
         )
 
         assert actual.volumetric
@@ -678,7 +606,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
@@ -686,35 +614,22 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.specific_image.value = "Other Image"
 
         expected_data = skimage.transform.resize(
-            data,
-            (10, 30, 25),
-            order=0,
-            mode="symmetric"
+            data, (10, 30, 25), order=0, mode="symmetric"
         )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 30, 25), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
         )
 
         other_image = cellprofiler.image.Image(
             expected_data,
             mask=expected_mask,
             crop_mask=expected_crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         workspace.image_set.add(module.specific_image.value, other_image)
@@ -748,7 +663,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
@@ -756,35 +671,22 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.specific_image.value = "Other Image"
 
         expected_data = skimage.transform.resize(
-            data,
-            (10, 30, 25),
-            order=0,
-            mode="symmetric"
+            data, (10, 30, 25), order=0, mode="symmetric"
         )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 30, 25), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
         )
 
         other_image = cellprofiler.image.Image(
             numpy.random.rand(10, 30, 25, 3),
             mask=expected_mask,
             crop_mask=expected_crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         workspace.image_set.add(module.specific_image.value, other_image)
@@ -818,7 +720,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
@@ -829,35 +731,22 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         for idx in range(3):
             expected_data[:, :, :, idx] = skimage.transform.resize(
-                data[:, :, :, idx],
-                (10, 30, 25),
-                order=0,
-                mode="symmetric"
+                data[:, :, :, idx], (10, 30, 25), order=0, mode="symmetric"
             )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 30, 25), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
         )
 
         other_image = cellprofiler.image.Image(
             expected_data,
             mask=expected_mask,
             crop_mask=expected_crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         workspace.image_set.add(module.specific_image.value, other_image)
@@ -891,7 +780,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
             mask=mask,
             cropping=crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
@@ -902,35 +791,22 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         for idx in range(3):
             expected_data[:, :, :, idx] = skimage.transform.resize(
-                data[:, :, :, idx],
-                (10, 30, 25),
-                order=0,
-                mode="symmetric"
+                data[:, :, :, idx], (10, 30, 25), order=0, mode="symmetric"
             )
 
         expected_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(mask, (10, 30, 25), order=0, mode="constant")
         )
 
         expected_crop_mask = skimage.img_as_bool(
-            skimage.transform.resize(
-                crop_mask,
-                (10, 30, 25),
-                order=0,
-                mode="constant"
-            )
+            skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
         )
 
         other_image = cellprofiler.image.Image(
             numpy.random.rand(10, 30, 25, 3),
             mask=expected_mask,
             crop_mask=expected_crop_mask,
-            dimensions=3
+            dimensions=3,
         )
 
         workspace.image_set.add(module.specific_image.value, other_image)
@@ -954,23 +830,26 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace, module = self.make_workspace(
             data,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         )
 
         module.resizing_factor.value = 0.25
 
         module.run(workspace)
 
-        assert workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data.shape == (25, 25)
+        assert workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data.shape == (
+            25,
+            25,
+        )
 
     # https://github.com/CellProfiler/CellProfiler/issues/3531
     def test_resize_float(self):
-        data = numpy.ones((10,10), dtype=numpy.float32)*2
-        expected = numpy.ones((5,5), dtype=numpy.float32)*2
+        data = numpy.ones((10, 10), dtype=numpy.float32) * 2
+        expected = numpy.ones((5, 5), dtype=numpy.float32) * 2
         workspace, module = self.make_workspace(
             data,
             cellprofiler.modules.resize.R_BY_FACTOR,
-            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
+            cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         )
 
         module.resizing_factor.value = 0.5

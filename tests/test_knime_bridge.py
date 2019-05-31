@@ -1,4 +1,4 @@
-'''test_knime_bridge.py - test the Knime bridge'''
+"""test_knime_bridge.py - test the Knime bridge"""
 
 import json
 import unittest
@@ -28,7 +28,8 @@ class TestKnimeBridge(unittest.TestCase):
         self.kill_pub = context.socket(zmq.PUB)
         self.kill_pub.bind(self.notify_addr)
         self.server = cellprofiler.knime_bridge.KnimeBridgeServer(
-                context, self.socket_addr, self.notify_addr, cellprofiler.worker.NOTIFY_STOP)
+            context, self.socket_addr, self.notify_addr, cellprofiler.worker.NOTIFY_STOP
+        )
         self.server.start()
         self.session_id = uuid.uuid4().hex
         self.socket = context.socket(zmq.REQ)
@@ -48,7 +49,8 @@ class TestKnimeBridge(unittest.TestCase):
         message = [
             zmq.Frame(self.session_id),
             zmq.Frame(),
-            zmq.Frame(cellprofiler.knime_bridge.CONNECT_REQ_1)]
+            zmq.Frame(cellprofiler.knime_bridge.CONNECT_REQ_1),
+        ]
         self.socket.send_multipart(message)
         reply = self.socket.recv_multipart()
         self.assertEqual(reply.pop(0), self.session_id)
@@ -100,10 +102,12 @@ class TestKnimeBridge(unittest.TestCase):
     #     self.assertTrue(found_object_number)
 
     def test_02_02_bad_pipeline(self):
-        message = [zmq.Frame(self.session_id),
-                   zmq.Frame(),
-                   zmq.Frame(cellprofiler.knime_bridge.PIPELINE_INFO_REQ_1),
-                   zmq.Frame("Freckles is a good dog but a bad pipeline")]
+        message = [
+            zmq.Frame(self.session_id),
+            zmq.Frame(),
+            zmq.Frame(cellprofiler.knime_bridge.PIPELINE_INFO_REQ_1),
+            zmq.Frame("Freckles is a good dog but a bad pipeline"),
+        ]
         self.socket.send_multipart(message)
         message = self.socket.recv_multipart()
         self.assertEqual(message.pop(0), self.session_id)

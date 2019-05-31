@@ -24,18 +24,19 @@ class TestWorkspace(unittest.TestCase):
             try:
                 os.remove(path)
             except:
-                logger.warn("Failed to close file %s" % path,
-                            exc_info=1)
+                logger.warn("Failed to close file %s" % path, exc_info=1)
 
     def make_workspace_file(self):
-        '''Make a very basic workspace file'''
+        """Make a very basic workspace file"""
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.init_modules()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(pipeline, None, m, None, m, None)
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()
-        file_list.add_files_to_filelist([os.path.join(os.path.dirname(__file__), 'resources/01_POS002_D.TIF')])
+        file_list.add_files_to_filelist(
+            [os.path.join(os.path.dirname(__file__), "resources/01_POS002_D.TIF")]
+        )
         workspace.save(path)
         self.workspace_files.append(path)
         os.close(fd)

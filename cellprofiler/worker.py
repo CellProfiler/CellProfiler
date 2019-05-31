@@ -370,7 +370,9 @@ class AnalysisWorker(object):
 
                 current_pipeline = cpp.Pipeline()
 
-                current_pipeline.loadtxt(six.moves.StringIO(rep.pipeline_blob), raise_on_error=True)
+                current_pipeline.loadtxt(
+                    six.moves.StringIO(rep.pipeline_blob), raise_on_error=True
+                )
 
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)

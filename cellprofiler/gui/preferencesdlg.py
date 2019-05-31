@@ -128,9 +128,9 @@ class PreferencesDlg(wx.Dialog):
                     parent=scrollpanel, id=-1, value=current, validator=validator
                 )
                 min_height = ctl.GetMinHeight()
-                min_width = ctl.GetFullTextExtent("Make sure the window can display this")[
-                    0
-                ]
+                min_width = ctl.GetFullTextExtent(
+                    "Make sure the window can display this"
+                )[0]
                 ctl.SetMinSize((min_width, min_height))
             controls.append(ctl)
             sizer.Add(ctl, (index, 1), flag=wx.EXPAND)
@@ -147,7 +147,10 @@ class PreferencesDlg(wx.Dialog):
 
                         dlg.Destroy()
 
-            elif isinstance(ui_info, six.string_types) and ui_info.startswith(FILEBROWSE):
+            elif isinstance(ui_info, six.string_types) and ui_info.startswith(
+                FILEBROWSE
+            ):
+
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)
 
@@ -168,7 +171,11 @@ class PreferencesDlg(wx.Dialog):
                     name, size = ctl.Value.split(",")
                     fd = wx.FontData()
                     fd.SetInitialFont(
-                        wx.FFont(pointSize=float(size), family=wx.FONTFAMILY_DEFAULT, faceName=name)
+                        wx.FFont(
+                            pointSize=float(size),
+                            family=wx.FONTFAMILY_DEFAULT,
+                            faceName=name,
+                        )
                     )
                     dlg = wx.FontDialog(parent, fd)
                     if dlg.ShowModal() == wx.ID_OK:

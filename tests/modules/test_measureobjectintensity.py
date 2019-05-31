@@ -94,15 +94,23 @@ def workspace(image, measurements, module, objects):
         image_set,
         object_set,
         measurements,
-        image_set_list
+        image_set_list,
     )
 
 
 @pytest.fixture()
 def assert_features_and_columns_match(measurements, module):
-    object_names = [x for x in measurements.get_object_names() if x not in (cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT)]
+    object_names = [
+        x
+        for x in measurements.get_object_names()
+        if x
+        not in (cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT)
+    ]
 
-    features = [[f for f in measurements.get_feature_names(object_name) if f != 'Exit_Status'] for object_name in object_names]
+    features = [
+        [f for f in measurements.get_feature_names(object_name) if f != "Exit_Status"]
+        for object_name in object_names
+    ]
 
     columns = module.get_measurement_columns(None)
 
@@ -118,65 +126,99 @@ def assert_features_and_columns_match(measurements, module):
 
 def test_supplied_measurements(module):
     """Test the get_category / get_measurements, get_measurement_images functions"""
-    module.images[0].name.value = 'MyImage'
+    module.images[0].name.value = "MyImage"
 
     module.add_object()
 
-    module.objects[0].name.value = 'MyObjects1'
+    module.objects[0].name.value = "MyObjects1"
 
-    module.objects[1].name.value = 'MyObjects2'
+    module.objects[1].name.value = "MyObjects2"
 
     expected_categories = tuple(
-        sorted([
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.measurement.C_LOCATION
-        ])
+        sorted(
+            [
+                cellprofiler.modules.measureobjectintensity.INTENSITY,
+                cellprofiler.measurement.C_LOCATION,
+            ]
+        )
     )
 
-    assert tuple(sorted(module.get_categories(None, 'MyObjects1'))) == expected_categories
+    assert (
+        tuple(sorted(module.get_categories(None, "MyObjects1"))) == expected_categories
+    )
 
-    assert module.get_categories(None, 'Foo') == []
+    assert module.get_categories(None, "Foo") == []
 
-    measurements = module.get_measurements(None, 'MyObjects1', cellprofiler.modules.measureobjectintensity.INTENSITY)
+    measurements = module.get_measurements(
+        None, "MyObjects1", cellprofiler.modules.measureobjectintensity.INTENSITY
+    )
 
-    assert len(measurements) == len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS)
+    assert len(measurements) == len(
+        cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS
+    )
 
-    measurements = module.get_measurements(None, 'MyObjects1', cellprofiler.measurement.C_LOCATION)
+    measurements = module.get_measurements(
+        None, "MyObjects1", cellprofiler.measurement.C_LOCATION
+    )
 
-    assert len(measurements) == len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)
+    assert len(measurements) == len(
+        cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS
+    )
 
-    assert all([m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS for m in measurements])
+    assert all(
+        [
+            m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS
+            for m in measurements
+        ]
+    )
 
-    assert module.get_measurement_images(None, 'MyObjects1', cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAX_INTENSITY) == ['MyImage']
+    assert module.get_measurement_images(
+        None,
+        "MyObjects1",
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MAX_INTENSITY,
+    ) == ["MyImage"]
 
 
 def test_get_measurement_columns(module):
-    '''test the get_measurement_columns method'''
-    module.images[0].name.value = 'MyImage'
+    """test the get_measurement_columns method"""
+    module.images[0].name.value = "MyImage"
 
     module.add_object()
 
-    module.objects[0].name.value = 'MyObjects1'
+    module.objects[0].name.value = "MyObjects1"
 
-    module.objects[1].name.value = 'MyObjects2'
+    module.objects[1].name.value = "MyObjects2"
 
     columns = module.get_measurement_columns(None)
 
-    assert len(columns) == 2 * (len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS) + len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS))
+    assert len(columns) == 2 * (
+        len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS)
+        + len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)
+    )
 
     for column in columns:
-        assert column[0] in ('MyObjects1', 'MyObjects2')
+        assert column[0] in ("MyObjects1", "MyObjects2")
 
         assert column[2], cellprofiler.measurement.COLTYPE_FLOAT
 
-        category = column[1].split('_')[0]
+        category = column[1].split("_")[0]
 
-        assert category in (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.measurement.C_LOCATION)
+        assert category in (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.measurement.C_LOCATION,
+        )
 
         if category == cellprofiler.modules.measureobjectintensity.INTENSITY:
-            assert column[1][column[1].find('_') + 1:] in [m + '_MyImage' for m in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS]
+            assert column[1][column[1].find("_") + 1 :] in [
+                m + "_MyImage"
+                for m in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS
+            ]
         else:
-            assert column[1][column[1].find('_') + 1:] in [m + '_MyImage' for m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS]
+            assert column[1][column[1].find("_") + 1 :] in [
+                m + "_MyImage"
+                for m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS
+            ]
 
 
 def test_zero(image, measurements, module, objects, workspace):
@@ -187,16 +229,24 @@ def test_zero(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    for category, features in ((cellprofiler.modules.measureobjectintensity.INTENSITY,
-                                cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS),
-                               (cellprofiler.measurement.C_LOCATION,
-                                cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)):
+    for category, features in (
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
+        ),
+        (
+            cellprofiler.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
+        ),
+    ):
         for meas_name in features:
-            feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
+            feature_name = "%s_%s_%s" % (category, meas_name, "MyImage")
 
-            data = measurements.get_current_measurement('MyObjects', feature_name)
+            data = measurements.get_current_measurement("MyObjects", feature_name)
 
-            assert numpy.product(data.shape) == 0, "Got data for feature %s" % feature_name
+            assert numpy.product(data.shape) == 0, (
+                "Got data for feature %s" % feature_name
+            )
 
         assert_features_and_columns_match(measurements, module)
 
@@ -215,9 +265,13 @@ def test_masked(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     for meas_name in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS:
-        feature_name = "%s_%s_%s" % (cellprofiler.modules.measureobjectintensity.INTENSITY, meas_name, 'MyImage')
+        feature_name = "%s_%s_%s" % (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            meas_name,
+            "MyImage",
+        )
 
-        data = measurements.get_current_measurement('MyObjects', feature_name)
+        data = measurements.get_current_measurement("MyObjects", feature_name)
 
         assert numpy.product(data.shape) == 1
 
@@ -228,11 +282,15 @@ def test_masked(image, measurements, module, objects, workspace):
 
 def test_one(image, measurements, module, objects, workspace):
     """Check measurements on a 3x3 square of 1's"""
-    data = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 1, 1, 1, 0, 0],
-                       [0, 0, 1, 1, 1, 0, 0],
-                       [0, 0, 1, 1, 1, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0]])
+    data = numpy.array(
+        [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+        ]
+    )
 
     image.pixel_data = data.astype(float)
 
@@ -241,39 +299,111 @@ def test_one(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     for category, meas_name, value in (
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, 9),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY, 0),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MIN_INTENSITY, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAX_INTENSITY, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE, 8),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, 0),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 0),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
-            (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1),
-            (cellprofiler.measurement.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_X, 3),
-            (cellprofiler.measurement.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_Y, 2)
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY,
+            9,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.STD_INTENSITY,
+            0,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MIN_INTENSITY,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MAX_INTENSITY,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE,
+            8,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE,
+            0,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+            0,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+            1,
+        ),
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+            1,
+        ),
+        (
+            cellprofiler.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.LOC_CMI_X,
+            3,
+        ),
+        (
+            cellprofiler.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.LOC_CMI_Y,
+            2,
+        ),
     ):
-        feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
+        feature_name = "%s_%s_%s" % (category, meas_name, "MyImage")
 
-        data = measurements.get_current_measurement('MyObjects', feature_name)
+        data = measurements.get_current_measurement("MyObjects", feature_name)
 
         assert numpy.product(data.shape) == 1
 
-        assert data[0] == value, "%s expected %f != actual %f" % (meas_name, value, data[0])
+        assert data[0] == value, "%s expected %f != actual %f" % (
+            meas_name,
+            value,
+            data[0],
+        )
 
 
 def test_one_masked(image, measurements, module, objects, workspace):
     """Check measurements on a 3x3 square of 1's"""
-    img = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 1, 1, 1, 0, 0],
-                       [0, 0, 1, 1, 1, 0, 0],
-                       [0, 0, 1, 1, 1, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0]])
+    img = numpy.array(
+        [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+        ]
+    )
 
     mask = img > 0
 
@@ -285,39 +415,55 @@ def test_one_masked(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    for meas_name, value in ((cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, 9),
-                             (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY, 1),
-                             (cellprofiler.modules.measureobjectintensity.STD_INTENSITY, 0),
-                             (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY, 1),
-                             (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY, 1),
-                             (cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE, 8),
-                             (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE, 1),
-                             (cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, 0),
-                             (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE, 1),
-                             (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE, 1),
-                             (cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 0),
-                             (cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
-                             (cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
-                             (cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 0),
-                             (cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1)):
-        feature_name = "%s_%s_%s" % (cellprofiler.modules.measureobjectintensity.INTENSITY, meas_name, 'MyImage')
+    for meas_name, value in (
+        (cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, 9),
+        (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY, 1),
+        (cellprofiler.modules.measureobjectintensity.STD_INTENSITY, 0),
+        (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY, 1),
+        (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY, 1),
+        (cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE, 8),
+        (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE, 1),
+        (cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, 0),
+        (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE, 1),
+        (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE, 1),
+        (cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 0),
+        (cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
+        (cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
+        (cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 0),
+        (cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1),
+    ):
+        feature_name = "%s_%s_%s" % (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            meas_name,
+            "MyImage",
+        )
 
-        data = measurements.get_current_measurement('MyObjects', feature_name)
+        data = measurements.get_current_measurement("MyObjects", feature_name)
 
         assert numpy.product(data.shape) == 1
 
-        assert data[0] == value, "%s expected %f != actual %f" % (meas_name, value, data[0])
+        assert data[0] == value, "%s expected %f != actual %f" % (
+            meas_name,
+            value,
+            data[0],
+        )
 
 
 def test_intensity_location(image, measurements, module, objects, workspace):
-    data = numpy.array([
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 0],
-        [0, 1, 1, 1, 1, 2, 0],
-        [0, 1, 1, 1, 1, 1, 0],
-        [0, 1, 1, 1, 1, 1, 0],
-        [0, 1, 1, 1, 1, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0]]).astype(float) / 2.0
+    data = (
+        numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 2, 0],
+                [0, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        ).astype(float)
+        / 2.0
+    )
 
     image.pixel_data = data
 
@@ -327,9 +473,15 @@ def test_intensity_location(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    for feature, value in ((cellprofiler.modules.measureobjectintensity.LOC_MAX_X, 5),
-                           (cellprofiler.modules.measureobjectintensity.LOC_MAX_Y, 2)):
-        feature_name = "%s_%s_%s" % (cellprofiler.measurement.C_LOCATION, feature, 'MyImage')
+    for feature, value in (
+        (cellprofiler.modules.measureobjectintensity.LOC_MAX_X, 5),
+        (cellprofiler.modules.measureobjectintensity.LOC_MAX_Y, 2),
+    ):
+        feature_name = "%s_%s_%s" % (
+            cellprofiler.measurement.C_LOCATION,
+            feature,
+            "MyImage",
+        )
 
         values = measurements.get_current_measurement(OBJECT_NAME, feature_name)
 
@@ -341,25 +493,29 @@ def test_intensity_location(image, measurements, module, objects, workspace):
 def test_mass_displacement(image, measurements, module, objects, workspace):
     """Check the mass displacement of three squares"""
 
-    labels = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 0, 0, 0, 0, 0, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 0, 0, 0, 0, 0, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 0, 0, 0, 0, 0, 0]])
+    labels = numpy.array(
+        [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+        ]
+    )
 
     data = numpy.zeros(labels.shape, dtype=float)
     #
@@ -383,9 +539,13 @@ def test_mass_displacement(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+        "MyImage",
+    )
 
-    mass_displacement = measurements.get_current_measurement('MyObjects', feature_name)
+    mass_displacement = measurements.get_current_measurement("MyObjects", feature_name)
 
     assert numpy.product(mass_displacement.shape) == 3
 
@@ -398,25 +558,29 @@ def test_mass_displacement(image, measurements, module, objects, workspace):
 
 def test_mass_displacement_masked(image, measurements, module, objects, workspace):
     """Regression test IMG-766 - mass displacement of a masked image"""
-    labels = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 1, 1, 1, 1, 1, 0],
-                          [0, 0, 0, 0, 0, 0, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 2, 2, 2, 2, 2, 0],
-                          [0, 0, 0, 0, 0, 0, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 0],
-                          [0, 0, 0, 0, 0, 0, 0]])
+    labels = numpy.array(
+        [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 2, 2, 2, 2, 2, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 3, 3, 3, 3, 3, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+        ]
+    )
 
     data = numpy.zeros(labels.shape, dtype=float)
 
@@ -447,9 +611,13 @@ def test_mass_displacement_masked(image, measurements, module, objects, workspac
 
     module.run(workspace)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+        "MyImage",
+    )
 
-    mass_displacement = measurements.get_current_measurement('MyObjects', feature_name)
+    mass_displacement = measurements.get_current_measurement("MyObjects", feature_name)
 
     assert numpy.product(mass_displacement.shape) == 3
 
@@ -474,31 +642,45 @@ def test_quartiles_uniform(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+        "MyImage",
+    )
 
-    data = measurements.get_current_measurement('MyObjects', feature_name)
-
-    numpy.testing.assert_almost_equal(data[0], .25, 2)
-
-    feature_name = '%s_%s_%s' % (
-
-    cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 'MyImage')
-
-    data = measurements.get_current_measurement('MyObjects', feature_name)
-
-    numpy.testing.assert_almost_equal(data[0], .50, 2)
-
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 'MyImage')
-
-    data = measurements.get_current_measurement('MyObjects', feature_name)
+    data = measurements.get_current_measurement("MyObjects", feature_name)
 
     numpy.testing.assert_almost_equal(data[0], 0.25, 2)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+        "MyImage",
+    )
 
-    data = measurements.get_current_measurement('MyObjects', feature_name)
+    data = measurements.get_current_measurement("MyObjects", feature_name)
 
-    numpy.testing.assert_almost_equal(data[0], .75, 2)
+    numpy.testing.assert_almost_equal(data[0], 0.50, 2)
+
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MAD_INTENSITY,
+        "MyImage",
+    )
+
+    data = measurements.get_current_measurement("MyObjects", feature_name)
+
+    numpy.testing.assert_almost_equal(data[0], 0.25, 2)
+
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+        "MyImage",
+    )
+
+    data = measurements.get_current_measurement("MyObjects", feature_name)
+
+    numpy.testing.assert_almost_equal(data[0], 0.75, 2)
 
 
 def test_quartiles_one_pixel(image, module, objects, workspace):
@@ -544,9 +726,13 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
 
     module.run(workspace)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+        "MyImage",
+    )
 
-    data = measurements.get_current_measurement('MyObjects', feature_name)
+    data = measurements.get_current_measurement("MyObjects", feature_name)
 
     numpy.testing.assert_almost_equal(data[0], 1.0 / 4.0, 2)
 
@@ -556,9 +742,13 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
 
     numpy.testing.assert_almost_equal(data[3], 1.0 / 16.0, 2)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+        "MyImage",
+    )
 
-    data = measurements.get_current_measurement('MyObjects', feature_name)
+    data = measurements.get_current_measurement("MyObjects", feature_name)
 
     numpy.testing.assert_almost_equal(data[0], 1.0 / 2.0, 2)
 
@@ -568,9 +758,13 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
 
     numpy.testing.assert_almost_equal(data[3], 1.0 / 8.0, 2)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+        "MyImage",
+    )
 
-    data = measurements.get_current_measurement('MyObjects', feature_name)
+    data = measurements.get_current_measurement("MyObjects", feature_name)
 
     numpy.testing.assert_almost_equal(data[0], 3.0 / 4.0, 2)
 
@@ -580,9 +774,13 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
 
     numpy.testing.assert_almost_equal(data[3], 3.0 / 16.0, 2)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 'MyImage')
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.MAD_INTENSITY,
+        "MyImage",
+    )
 
-    data = measurements.get_current_measurement('MyObjects', feature_name)
+    data = measurements.get_current_measurement("MyObjects", feature_name)
 
     numpy.testing.assert_almost_equal(data[0], 1.0 / 4.0, 2)
 
@@ -620,7 +818,16 @@ def test_median_intensity_masked(image, measurements, module, objects, workspace
 
     assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
-    values = measurements.get_current_measurement(OBJECT_NAME, '_'.join((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, IMAGE_NAME)))
+    values = measurements.get_current_measurement(
+        OBJECT_NAME,
+        "_".join(
+            (
+                cellprofiler.modules.measureobjectintensity.INTENSITY,
+                cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+                IMAGE_NAME,
+            )
+        ),
+    )
 
     assert len(values) == 1
 
@@ -644,7 +851,16 @@ def test_std_intensity(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    values = measurements.get_current_measurement(OBJECT_NAME, '_'.join((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY, IMAGE_NAME)))
+    values = measurements.get_current_measurement(
+        OBJECT_NAME,
+        "_".join(
+            (
+                cellprofiler.modules.measureobjectintensity.INTENSITY,
+                cellprofiler.modules.measureobjectintensity.STD_INTENSITY,
+                IMAGE_NAME,
+            )
+        ),
+    )
 
     assert len(values) == 4
 
@@ -675,12 +891,23 @@ def test_std_intensity_edge(image, measurements, module, objects, workspace):
 
     assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
-    values = measurements.get_current_measurement(OBJECT_NAME, '_'.join((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, IMAGE_NAME)))
+    values = measurements.get_current_measurement(
+        OBJECT_NAME,
+        "_".join(
+            (
+                cellprofiler.modules.measureobjectintensity.INTENSITY,
+                cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE,
+                IMAGE_NAME,
+            )
+        ),
+    )
 
     assert len(values) == 4
 
     for i in range(1, 5):
-        numpy.testing.assert_almost_equal(values[i - 1], numpy.std(pixel_data[elabels == i]))
+        numpy.testing.assert_almost_equal(
+            values[i - 1], numpy.std(pixel_data[elabels == i])
+        )
 
 
 def test_ijv(image, module, objects, workspace):
@@ -697,7 +924,12 @@ def test_ijv(image, module, objects, workspace):
 
     o3 = numpy.argwhere((i - 15) ** 2 + (j - 25) ** 2 < 49)  # circle radius 7 at 15, 25
 
-    labels = numpy.vstack([numpy.column_stack([x, n * numpy.ones(x.shape[0], int)]) for n, x in ((1, o1), (2, o2), (3, o3))])
+    labels = numpy.vstack(
+        [
+            numpy.column_stack([x, n * numpy.ones(x.shape[0], int)])
+            for n, x in ((1, o1), (2, o2), (3, o3))
+        ]
+    )
 
     pixel_data = numpy.random.uniform(size=i.shape)
 
@@ -711,10 +943,16 @@ def test_ijv(image, module, objects, workspace):
 
     expected = {}
 
-    for cname, fnames in ((cellprofiler.modules.measureobjectintensity.INTENSITY,
-                           cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS),
-                          (cellprofiler.measurement.C_LOCATION,
-                           cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)):
+    for cname, fnames in (
+        (
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
+        ),
+        (
+            cellprofiler.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
+        ),
+    ):
         for fname in fnames:
             mname = "_".join([cname, fname, IMAGE_NAME])
 
@@ -722,9 +960,13 @@ def test_ijv(image, module, objects, workspace):
 
             expected[mname] = m0
 
-    for i, ijv in enumerate([numpy.column_stack([o1, numpy.ones(o1.shape[0], int)]),
-                             numpy.column_stack([o2, numpy.ones(o2.shape[0], int)]),
-                             numpy.column_stack([o3, numpy.ones(o3.shape[0], int)])]):
+    for i, ijv in enumerate(
+        [
+            numpy.column_stack([o1, numpy.ones(o1.shape[0], int)]),
+            numpy.column_stack([o2, numpy.ones(o2.shape[0], int)]),
+            numpy.column_stack([o3, numpy.ones(o3.shape[0], int)]),
+        ]
+    ):
         objects.ijv = ijv
 
         module.run(workspace)
@@ -734,15 +976,21 @@ def test_ijv(image, module, objects, workspace):
         for mname, m0 in expected.iteritems():
             m1 = measurements1.get_measurement(OBJECT_NAME, mname)
 
-            assert len(m0) == 3, "{} feature expected 3 measurements, got {}".format(mname, len(m0))
+            assert len(m0) == 3, "{} feature expected 3 measurements, got {}".format(
+                mname, len(m0)
+            )
 
-            assert len(m1) == 1, "{} feature expected 1 measurement, got {}".format(mname, len(m1))
+            assert len(m1) == 1, "{} feature expected 1 measurement, got {}".format(
+                mname, len(m1)
+            )
 
-            assert m0[i] == m1[0], "{} feature expected {}, got {}".format(mname, m0[i], m1[0])
+            assert m0[i] == m1[0], "{} feature expected {}, got {}".format(
+                mname, m0[i], m1[0]
+            )
 
 
 def test_wrong_image_size(image, measurements, module, objects, workspace):
-    '''Regression test of IMG-961 - object and image size differ'''
+    """Regression test of IMG-961 - object and image size differ"""
     numpy.random.seed(41)
 
     labels = numpy.ones((20, 50), int)
@@ -755,7 +1003,11 @@ def test_wrong_image_size(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, "MyImage")
+    feature_name = "%s_%s_%s" % (
+        cellprofiler.modules.measureobjectintensity.INTENSITY,
+        cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY,
+        "MyImage",
+    )
 
     m = measurements.get_current_measurement("MyObjects", feature_name)
 
@@ -775,7 +1027,7 @@ def test_masked_edge(image, module, objects, workspace):
     #
     # Mask the edge of the object
     #
-    mask = ~ centrosome.outline.outline(labels).astype(bool)
+    mask = ~centrosome.outline.outline(labels).astype(bool)
 
     image.pixel_data = pixel_data
 
@@ -830,7 +1082,7 @@ def test_image(measurements, module, objects, image, workspace):
         "Location_CenterMassIntensity_Z_MyImage": [0.0, 0.0],
         "Location_MaxIntensity_X_MyImage": [5.0, 15.0],
         "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
-        "Location_MaxIntensity_Z_MyImage": [0.0, 0.0]
+        "Location_MaxIntensity_Z_MyImage": [0.0, 0.0],
     }
 
     for feature, value in expected.iteritems():
@@ -839,7 +1091,7 @@ def test_image(measurements, module, objects, image, workspace):
         numpy.testing.assert_array_almost_equal(
             value,
             actual,
-            err_msg="{} expected {}, got {}".format(feature, value, actual)
+            err_msg="{} expected {}, got {}".format(feature, value, actual),
         )
 
 
@@ -890,7 +1142,7 @@ def test_image_masked(measurements, module, objects, image, workspace):
         "Location_CenterMassIntensity_Z_MyImage": [0.0, numpy.nan],
         "Location_MaxIntensity_X_MyImage": [5.0, 5.0],
         "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
-        "Location_MaxIntensity_Z_MyImage": [0.0, 0.0]
+        "Location_MaxIntensity_Z_MyImage": [0.0, 0.0],
     }
 
     for feature, value in expected.iteritems():
@@ -899,7 +1151,7 @@ def test_image_masked(measurements, module, objects, image, workspace):
         numpy.testing.assert_array_almost_equal(
             value,
             actual,
-            err_msg="{} expected {}, got {}".format(feature, value, actual)
+            err_msg="{} expected {}, got {}".format(feature, value, actual),
         )
 
 
@@ -931,7 +1183,7 @@ def test_volume(measurements, module, objects, volume, workspace):
         "Location_CenterMassIntensity_Z_MyImage": [5.0, 5.0],
         "Location_MaxIntensity_X_MyImage": [5.0, 15.0],
         "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
-        "Location_MaxIntensity_Z_MyImage": [5.0, 5.0]
+        "Location_MaxIntensity_Z_MyImage": [5.0, 5.0],
     }
 
     for feature, value in expected.iteritems():
@@ -940,7 +1192,7 @@ def test_volume(measurements, module, objects, volume, workspace):
         numpy.testing.assert_array_almost_equal(
             value,
             actual,
-            err_msg="{} expected {}, got {}".format(feature, value, actual)
+            err_msg="{} expected {}, got {}".format(feature, value, actual),
         )
 
 
@@ -978,7 +1230,7 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
         "Location_CenterMassIntensity_Z_MyImage": [5.0, numpy.nan],
         "Location_MaxIntensity_X_MyImage": [5.0, 5.0],
         "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
-        "Location_MaxIntensity_Z_MyImage": [5.0, 0.0]
+        "Location_MaxIntensity_Z_MyImage": [5.0, 0.0],
     }
 
     for feature, value in expected.iteritems():
@@ -987,5 +1239,5 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
         numpy.testing.assert_array_almost_equal(
             value,
             actual,
-            err_msg="{} expected {}, got {}".format(feature, value, actual)
+            err_msg="{} expected {}, got {}".format(feature, value, actual),
         )

@@ -48,7 +48,10 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     entry_points={"console_scripts": ["cellprofiler=cellprofiler.__main__:main"]},
-    extras_require={"build": ["pyinstaller", "twine"], "test": ["pytest>=3.3.2,<4"]},
+    extras_require={
+        "build": ["pyinstaller", "twine"],
+        "test": ["black", "pytest>=3.3.2,<4"],
+    },
     install_requires=[
         "boto3",
         "centrosome",

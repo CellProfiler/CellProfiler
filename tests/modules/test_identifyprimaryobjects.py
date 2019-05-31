@@ -30,17 +30,15 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.fail(event.error.message)
 
-    def make_workspace(self, image,
-                       mask=None,
-                       labels=None):
-        '''Make a workspace and IdentifyPrimaryObjects module
+    def make_workspace(self, image, mask=None, labels=None):
+        """Make a workspace and IdentifyPrimaryObjects module
 
         image - the intensity image for thresholding
 
         mask - if present, the "don't analyze" mask of the intensity image
 
         labels - if thresholding per-object, the labels matrix needed
-        '''
+        """
         module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         module.module_num = 1
         module.x_name.value = IMAGE_NAME
@@ -57,7 +55,8 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             o.segmented = labels
             object_set.add_objects(o, MASKING_OBJECTS_NAME)
         workspace = cellprofiler.workspace.Workspace(
-                pipeline, module, m, object_set, m, None)
+            pipeline, module, m, object_set, m, None
+        )
         return workspace, module
 
     def test_00_00_init(self):
@@ -67,18 +66,24 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .1
+        x.threshold.threshold_range.min = 0.1
         x.threshold.threshold_range.max = 1
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         img = numpy.zeros((25, 25))
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -86,16 +91,27 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(numpy.all(segmented == 0))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
+        self.assertTrue(
+            "Threshold_FinalThreshold_my_object"
+            in measurements.get_feature_names("Image")
+        )
         self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
         count = measurements.get_current_measurement("Image", "Count_my_object")
         self.assertEqual(count, 0)
-        self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertTrue(
+            "Location_Center_X" in measurements.get_feature_names("my_object")
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 0)
-        self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
-        location_center_y = measurements.get_current_measurement("my_object", "Location_Center_Y")
+        self.assertTrue(
+            "Location_Center_Y" in measurements.get_feature_names("my_object")
+        )
+        location_center_y = measurements.get_current_measurement(
+            "my_object", "Location_Center_Y"
+        )
         self.assertTrue(isinstance(location_center_y, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_y.shape), 0)
 
@@ -103,19 +119,29 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .1
+        x.threshold.threshold_range.min = 0.1
         x.threshold.threshold_range.max = 1
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        x.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        )
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
         img = numpy.zeros((25, 25))
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -126,19 +152,27 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .1
+        x.threshold.threshold_range.min = 0.1
         x.threshold.threshold_range.max = 1
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
         img = numpy.zeros((25, 25))
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -149,19 +183,27 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .1
+        x.threshold.threshold_range.min = 0.1
         x.threshold.threshold_range.max = 1
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        x.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        )
         x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
         img = numpy.zeros((25, 25))
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -172,7 +214,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .1
+        x.threshold.threshold_range.min = 0.1
         x.threshold.threshold_range.max = 1
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
         x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
@@ -180,11 +222,17 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -205,11 +253,17 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -218,20 +272,33 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(numpy.all(img[segmented == 1] > 0))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
-        threshold = measurements.get_current_measurement("Image", "Threshold_FinalThreshold_my_object")
-        self.assertTrue(threshold < .5)
+        self.assertTrue(
+            "Threshold_FinalThreshold_my_object"
+            in measurements.get_feature_names("Image")
+        )
+        threshold = measurements.get_current_measurement(
+            "Image", "Threshold_FinalThreshold_my_object"
+        )
+        self.assertTrue(threshold < 0.5)
         self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
         count = measurements.get_current_measurement("Image", "Count_my_object")
         self.assertEqual(count, 1)
-        self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
-        location_center_y = measurements.get_current_measurement("my_object", "Location_Center_Y")
+        self.assertTrue(
+            "Location_Center_Y" in measurements.get_feature_names("my_object")
+        )
+        location_center_y = measurements.get_current_measurement(
+            "my_object", "Location_Center_Y"
+        )
         self.assertTrue(isinstance(location_center_y, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_y.shape), 1)
         self.assertTrue(location_center_y[0] > 8)
         self.assertTrue(location_center_y[0] < 12)
-        self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertTrue(
+            "Location_Center_X" in measurements.get_feature_names("my_object")
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 1)
         self.assertTrue(location_center_x[0] > 13)
@@ -257,32 +324,51 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
-        threshold = measurements.get_current_measurement("Image", "Threshold_FinalThreshold_my_object")
-        self.assertTrue(threshold < .6)
+        self.assertTrue(
+            "Threshold_FinalThreshold_my_object"
+            in measurements.get_feature_names("Image")
+        )
+        threshold = measurements.get_current_measurement(
+            "Image", "Threshold_FinalThreshold_my_object"
+        )
+        self.assertTrue(threshold < 0.6)
         self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
         count = measurements.get_current_measurement("Image", "Count_my_object")
         self.assertEqual(count, 2)
-        self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
-        location_center_y = measurements.get_current_measurement("my_object", "Location_Center_Y")
+        self.assertTrue(
+            "Location_Center_Y" in measurements.get_feature_names("my_object")
+        )
+        location_center_y = measurements.get_current_measurement(
+            "my_object", "Location_Center_Y"
+        )
         self.assertTrue(isinstance(location_center_y, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_y.shape), 2)
         self.assertTrue(location_center_y[0] > 8)
         self.assertTrue(location_center_y[0] < 12)
         self.assertTrue(location_center_y[1] > 28)
         self.assertTrue(location_center_y[1] < 32)
-        self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertTrue(
+            "Location_Center_Y" in measurements.get_feature_names("my_object")
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 2)
         self.assertTrue(location_center_x[0] > 33)
@@ -295,9 +381,9 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.use_advanced.value = True
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .7
+        x.threshold.threshold_range.min = 0.7
         x.threshold.threshold_range.max = 1
-        x.threshold.threshold_correction_factor.value = .95
+        x.threshold.threshold_correction_factor.value = 0.95
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
         x.exclude_size.value = False
@@ -306,31 +392,50 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
-        threshold = measurements.get_current_measurement("Image", "Threshold_FinalThreshold_my_object")
-        self.assertTrue(threshold < .8)
-        self.assertTrue(threshold > .6)
+        self.assertTrue(
+            "Threshold_FinalThreshold_my_object"
+            in measurements.get_feature_names("Image")
+        )
+        threshold = measurements.get_current_measurement(
+            "Image", "Threshold_FinalThreshold_my_object"
+        )
+        self.assertTrue(threshold < 0.8)
+        self.assertTrue(threshold > 0.6)
         self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
         count = measurements.get_current_measurement("Image", "Count_my_object")
         self.assertEqual(count, 1)
-        self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
-        location_center_y = measurements.get_current_measurement("my_object", "Location_Center_Y")
+        self.assertTrue(
+            "Location_Center_Y" in measurements.get_feature_names("my_object")
+        )
+        location_center_y = measurements.get_current_measurement(
+            "my_object", "Location_Center_Y"
+        )
         self.assertTrue(isinstance(location_center_y, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_y.shape), 1)
         self.assertTrue(location_center_y[0] > 8)
         self.assertTrue(location_center_y[0] < 12)
-        self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertTrue(
+            "Location_Center_X" in measurements.get_feature_names("my_object")
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 1)
         self.assertTrue(location_center_x[0] > 33)
@@ -348,18 +453,24 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
         img = numpy.zeros((40, 40))
-        draw_circle(img, (10, 10), 7, .5)
-        draw_circle(img, (30, 30), 7, .5)
+        draw_circle(img, (10, 10), 7, 0.5)
+        draw_circle(img, (30, 30), 7, 0.5)
         img[10, 10] = 0
         img[30, 30] = 0
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertTrue(objects.segmented[10, 10] > 0)
         self.assertTrue(objects.segmented[30, 30] > 0)
@@ -369,7 +480,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.use_advanced.value = True
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
-        x.threshold.threshold_range.min = .7
+        x.threshold.threshold_range.min = 0.7
         x.threshold.threshold_range.max = 1
         x.exclude_size.value = False
         x.fill_holes.value = False
@@ -377,24 +488,30 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_smoothing.value = False
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         img = numpy.zeros((40, 40))
-        draw_circle(img, (10, 10), 7, .5)
-        draw_circle(img, (30, 30), 7, .5)
+        draw_circle(img, (10, 10), 7, 0.5)
+        draw_circle(img, (30, 30), 7, 0.5)
         img[10, 10] = 0
         img[30, 30] = 0
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertTrue(objects.segmented[10, 10] == 0)
         self.assertTrue(objects.segmented[30, 30] == 0)
 
     def test_02_05_01_fill_holes_within_holes(self):
-        'Regression test of img-1431'
+        "Regression test of img-1431"
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -408,17 +525,23 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
         img = numpy.zeros((40, 40))
-        draw_circle(img, (20, 20), 10, .5)
+        draw_circle(img, (20, 20), 10, 0.5)
         draw_circle(img, (20, 20), 4, 0)
         img[20, 20] = 1
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertTrue(objects.segmented[20, 20] == 1)
         self.assertTrue(objects.segmented[22, 20] == 1)
@@ -444,36 +567,181 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .6, .6, .6, .6, .6, .6, .6, .6, .6, .6, 0, 0, 0],
-                           [0, 0, 0, 0, .7, .7, .7, .7, .7, .7, .7, .7, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .8, .9, 1, 1, .9, .8, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .7, .7, .7, .7, .7, .7, .7, .7, 0, 0, 0, 0],
-                           [0, 0, 0, .6, .6, .6, .6, .6, .6, .6, .6, .6, .6, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0, 0, 0],
+                [0, 0, 0, 0, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.8, 0.9, 1, 1, 0.9, 0.8, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0, 0, 0, 0],
+                [0, 0, 0, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 2)
 
@@ -493,40 +761,187 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False
         x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        x.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        )
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0],
-                           [0, 0, 0, .4, .4, .4, .5, .5, .5, .4, .4, .4, .4, 0, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .4, .4, .4, .4, .4, .4, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 2)
         self.assertEqual(objects.segmented[7, 11], objects.segmented[7, 4])
@@ -546,44 +961,191 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.fill_holes.value = False
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .6, .6, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .6, .7, .7, .6, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .6, .7, .8, .8, .7, .6, .5, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .7, .8, .9, .9, .8, .7, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .6, .7, .8, .8, .7, .6, .5, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .6, .7, .7, .6, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .6, .6, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6,
+                    0.6,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.6, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.6, 0.7, 0.8, 0.8, 0.7, 0.6, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.7, 0.8, 0.9, 0.9, 0.8, 0.7, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.6, 0.7, 0.8, 0.8, 0.7, 0.6, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.6, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6,
+                    0.6,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         # We do a little blur here so that there's some monotonic decrease
         # from the central peak
-        img = scipy.ndimage.gaussian_filter(img, .25, mode='constant')
+        img = scipy.ndimage.gaussian_filter(img, 0.25, mode="constant")
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 1)
 
@@ -604,41 +1166,188 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_smoothing.value = False
         x.maxima_suppression_size.value = 7.1
         x.automatic_suppression.value = False
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .8, .8, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .6, .6, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .6, .7, .7, .6, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .6, .7, .8, .8, .7, .6, .5, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .7, .8, .9, .9, .8, .7, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .6, .7, .8, .8, .7, .6, .5, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .6, .7, .7, .6, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .6, .6, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .8, .8, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.8, 0.8, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6,
+                    0.6,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.6, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.6, 0.7, 0.8, 0.8, 0.7, 0.6, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.7, 0.8, 0.9, 0.9, 0.8, 0.7, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.6, 0.7, 0.8, 0.8, 0.7, 0.6, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.6, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6,
+                    0.6,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.8, 0.8, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 3)
 
@@ -659,41 +1368,188 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_smoothing.value = 1
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
         x.threshold.threshold_smoothing_scale.value = 0
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .6, .6, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .6, .7, .7, .6, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .6, .7, .8, .8, .7, .6, .5, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .7, .8, .9, .9, .8, .7, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .6, .7, .8, .8, .7, .6, .5, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .6, .7, .7, .6, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .6, .6, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6,
+                    0.6,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.6, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.6, 0.7, 0.8, 0.8, 0.7, 0.6, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.7, 0.8, 0.9, 0.9, 0.8, 0.7, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.6, 0.7, 0.8, 0.8, 0.7, 0.6, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.6, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.6,
+                    0.6,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 1)
 
@@ -717,41 +1573,188 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_smoothing.value = 0
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .9, .9, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0],
-                           [0, 0, 0, .4, .4, .4, .5, .5, .5, .4, .4, .4, .4, 0, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .9, .9, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .4, .4, .4, .4, .4, .4, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.9,
+                    0.9,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0],
+                [0, 0, 0, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.9,
+                    0.9,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         # We do a little blur here so that there's some monotonic decrease
         # from the central peak
-        img = scipy.ndimage.gaussian_filter(img, .5, mode='constant')
+        img = scipy.ndimage.gaussian_filter(img, 0.5, mode="constant")
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 2)
         self.assertNotEqual(objects.segmented[12, 7], objects.segmented[4, 7])
@@ -769,45 +1772,177 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_smoothing.value = 0
         x.maxima_suppression_size.value = 7
         x.automatic_suppression.value = False
-        x.threshold.manual_threshold.value = .3
-        x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+        x.threshold.manual_threshold.value = 0.3
+        x.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        )
+        x.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+        )
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         x.threshold.threshold_smoothing_scale.value = 0
-        img = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, .5, .9, .9, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0, 0, .5, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, .5, 0, 0],
-                           [0, 0, 0, 0, 0, 0, .5, .5, .5, .5, .5, .5, .5, .5, 0, 0],
-                           [0, 0, 0, 0, 0, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, .5, .5, .5, .5, .5, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, .4, .4, .4, .5, .5, .5, .4, .4, .4, .4, 0, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .9, .9, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0],
-                           [0, 0, 0, .4, .4, .4, .4, .4, .4, .4, .4, .4, .4, 0, 0, 0],
-                           [0, 0, 0, 0, 0, .4, .4, .4, .4, .4, .4, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                           ])
+        img = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.9,
+                    0.9,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0.5,
+                    0,
+                    0,
+                ],
+                [0, 0, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0],
+                [0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4, 0, 0, 0],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.9,
+                    0.9,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [
+                    0,
+                    0,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0,
+                    0,
+                ],
+                [0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         # We do a little blur here so that there's some monotonic decrease
         # from the central peak
-        img = scipy.ndimage.gaussian_filter(img, .5, mode='constant')
+        img = scipy.ndimage.gaussian_filter(img, 0.5, mode="constant")
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(objects.segmented), 2)
         # This point has a closer "crow-fly" distance to the upper object
@@ -815,7 +1950,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         self.assertEqual(objects.segmented[14, 9], objects.segmented[9, 9])
 
     def test_02_12_fly(self):
-        '''Run identify on the fly image'''
+        """Run identify on the fly image"""
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -860,13 +1995,24 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(pipeline, event):
-            self.assertFalse(isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
-                                                cellprofiler.pipeline.LoadExceptionEvent)))
+            self.assertFalse(
+                isinstance(
+                    event,
+                    (
+                        cellprofiler.pipeline.RunExceptionEvent,
+                        cellprofiler.pipeline.LoadExceptionEvent,
+                    ),
+                )
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         x = pipeline.modules()[0]
-        self.assertTrue(isinstance(x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
+        self.assertTrue(
+            isinstance(
+                x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+            )
+        )
 
         img = fly_image()
         image = cellprofiler.image.Image(img)
@@ -879,14 +2025,14 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             #
             x.size_range.min = min_size
             for unclump_method in (
-                    cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
-                    cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
+                cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+                cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
             ):
                 x.unclump_method.value = unclump_method
                 for watershed_method in (
-                        cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
-                        cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
-                        cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+                    cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
+                    cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
+                    cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
                 ):
                     x.watershed_method.value = watershed_method
                     image_set_list = cellprofiler.image.ImageSetList()
@@ -894,7 +2040,11 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                     image_set.add(x.x_name.value, image)
                     object_set = cellprofiler.object.ObjectSet()
                     measurements = cellprofiler.measurement.Measurements()
-                    x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+                    x.run(
+                        cellprofiler.workspace.Workspace(
+                            pipeline, x, image_set, object_set, measurements, None
+                        )
+                    )
 
     def test_02_13_maxima_suppression_zero(self):
         # Regression test for issue #877
@@ -902,17 +2052,23 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         # element.
         #
         img = numpy.array(
-                [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, .1, 0, 0, .1, 0, 0, .1, 0, 0],
-                 [0, .1, 0, 0, 0, .2, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, .1, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0.1, 0, 0, 0.1, 0, 0, 0.1, 0, 0],
+                [0, 0.1, 0, 0, 0, 0.2, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         expected = numpy.array(
-                [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 1, 0, 0, 2, 0, 0, 3, 0, 0],
-                 [0, 1, 0, 0, 0, 2, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 2, 0, 0, 3, 0, 0],
+                [0, 1, 0, 0, 0, 2, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         for distance in (0, 1):
             x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
             x.use_advanced.value = True
@@ -925,11 +2081,17 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             x.automatic_smoothing.value = 0
             x.maxima_suppression_size.value = distance
             x.automatic_suppression.value = False
-            x.threshold.manual_threshold.value = .05
-            x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-            x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+            x.threshold.manual_threshold.value = 0.05
+            x.unclump_method.value = (
+                cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+            )
+            x.watershed_method.value = (
+                cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+            )
             x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-            x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+            x.threshold.global_operation.value = (
+                cellprofiler.modules.threshold.TM_MANUAL
+            )
             x.threshold.threshold_smoothing_scale.value = 0
             pipeline = cellprofiler.pipeline.Pipeline()
             x.module_num = 1
@@ -937,8 +2099,11 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             object_set = cellprofiler.object.ObjectSet()
             measurements = cellprofiler.measurement.Measurements()
             measurements.add(x.x_name.value, cellprofiler.image.Image(img))
-            x.run(cellprofiler.workspace.Workspace(pipeline, x, measurements, object_set, measurements,
-                                                   None))
+            x.run(
+                cellprofiler.workspace.Workspace(
+                    pipeline, x, measurements, object_set, measurements, None
+                )
+            )
             output = object_set.get_objects(x.y_name.value)
             self.assertEqual(output.count, 4)
             self.assertTrue(numpy.all(output.segmented[expected == 0] == 0))
@@ -1288,103 +2453,217 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
 
         def callback(caller, event):
             self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         module = pipeline.modules()[4]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
         self.assertEqual(module.x_name, "Channel0")
         self.assertEqual(module.y_name, "Cells")
         self.assertEqual(module.size_range.min, 15)
         self.assertEqual(module.size_range.max, 45)
         self.assertTrue(module.exclude_size)
         self.assertTrue(module.exclude_border_objects)
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY)
-        self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY)
+        self.assertEqual(
+            module.unclump_method,
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+        )
+        self.assertEqual(
+            module.watershed_method,
+            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
+        )
         self.assertTrue(module.automatic_smoothing)
         self.assertEqual(module.smoothing_filter_size, 11)
         self.assertTrue(module.automatic_suppression)
         self.assertEqual(module.maxima_suppression_size, 9)
         self.assertTrue(module.low_res_maxima)
-        self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING)
-        self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE)
+        self.assertEqual(
+            module.fill_holes,
+            cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING,
+        )
+        self.assertEqual(
+            module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
+        )
         self.assertEqual(module.maximum_object_count, 499)
         #
-        self.assertEqual(module.threshold.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE)
-        self.assertEqual(module.threshold.local_operation.value, centrosome.threshold.TM_OTSU)
+        self.assertEqual(
+            module.threshold.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE
+        )
+        self.assertEqual(
+            module.threshold.local_operation.value, centrosome.threshold.TM_OTSU
+        )
         self.assertEqual(module.threshold.threshold_smoothing_scale, 1.3488)
-        self.assertAlmostEqual(module.threshold.threshold_correction_factor, .80)
+        self.assertAlmostEqual(module.threshold.threshold_correction_factor, 0.80)
         self.assertAlmostEqual(module.threshold.threshold_range.min, 0.01)
         self.assertAlmostEqual(module.threshold.threshold_range.max, 0.90)
         self.assertAlmostEqual(module.threshold.manual_threshold, 0.03)
-        self.assertEqual(module.threshold.thresholding_measurement, "Metadata_Threshold")
-        self.assertEqual(module.threshold.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.threshold.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
+        self.assertEqual(
+            module.threshold.thresholding_measurement, "Metadata_Threshold"
+        )
+        self.assertEqual(
+            module.threshold.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS
+        )
+        self.assertEqual(
+            module.threshold.assign_middle_to_foreground,
+            cellprofiler.modules.identify.O_FOREGROUND,
+        )
         self.assertEqual(module.threshold.adaptive_window_size, 12)
         #
         # Test alternate settings using subsequent instances of IDPrimary
         #
         module = pipeline.modules()[5]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
         self.assertFalse(module.exclude_size)
         self.assertFalse(module.exclude_border_objects)
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY)
-        self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_NONE)
+        self.assertEqual(
+            module.unclump_method,
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+        )
+        self.assertEqual(
+            module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        )
         self.assertFalse(module.automatic_smoothing)
         self.assertFalse(module.automatic_suppression)
         self.assertFalse(module.low_res_maxima)
-        self.assertEqual(module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_NEVER)
-        self.assertEqual(module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE)
-        self.assertEqual(module.threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
-        self.assertEqual(module.threshold.global_operation.value, cellprofiler.modules.threshold.TM_LI)
-        self.assertEqual(module.threshold.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS)
-        self.assertEqual(module.threshold.assign_middle_to_foreground, cellprofiler.modules.identify.O_BACKGROUND)
+        self.assertEqual(
+            module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_NEVER
+        )
+        self.assertEqual(
+            module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
+        )
+        self.assertEqual(
+            module.threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL
+        )
+        self.assertEqual(
+            module.threshold.global_operation.value,
+            cellprofiler.modules.threshold.TM_LI,
+        )
+        self.assertEqual(
+            module.threshold.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS
+        )
+        self.assertEqual(
+            module.threshold.assign_middle_to_foreground,
+            cellprofiler.modules.identify.O_BACKGROUND,
+        )
         self.assertTrue(module.use_advanced.value)
 
         module = pipeline.modules()[6]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_NONE)
-        self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE)
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
+        self.assertEqual(
+            module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_NONE
+        )
+        self.assertEqual(
+            module.watershed_method,
+            cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
+        )
         self.assertEqual(module.limit_choice, "None")
         self.assertEqual(module.threshold.global_operation.value, "None")
         self.assertEqual(module.threshold.threshold_smoothing_scale, 0)
         self.assertTrue(module.use_advanced.value)
 
         module = pipeline.modules()[7]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE)
-        self.assertEqual(module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_SHAPE)
-        self.assertEqual(module.threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
-        self.assertEqual(module.threshold.global_operation.value, centrosome.threshold.TM_ROBUST_BACKGROUND)
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
+        self.assertEqual(
+            module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
+        )
+        self.assertEqual(
+            module.watershed_method,
+            cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
+        )
+        self.assertEqual(
+            module.threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL
+        )
+        self.assertEqual(
+            module.threshold.global_operation.value,
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
+        )
         self.assertEqual(module.threshold.lower_outlier_fraction.value, 0.02)
         self.assertEqual(module.threshold.upper_outlier_fraction.value, 0.02)
-        self.assertEqual(module.threshold.averaging_method.value, cellprofiler.modules.identify.RB_MODE)
-        self.assertEqual(module.threshold.variance_method.value, cellprofiler.modules.identify.RB_SD)
+        self.assertEqual(
+            module.threshold.averaging_method.value,
+            cellprofiler.modules.identify.RB_MODE,
+        )
+        self.assertEqual(
+            module.threshold.variance_method.value, cellprofiler.modules.identify.RB_SD
+        )
         self.assertEqual(module.threshold.number_of_deviations.value, 0)
         self.assertEqual(module.threshold.threshold_correction_factor.value, 1.6)
         self.assertTrue(module.use_advanced.value)
 
         module = pipeline.modules()[8]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.threshold.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL)
-        self.assertEqual(module.threshold.global_operation.value, cellprofiler.modules.threshold.TM_MANUAL)
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
+        self.assertEqual(
+            module.threshold.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        )
+        self.assertEqual(
+            module.threshold.global_operation.value,
+            cellprofiler.modules.threshold.TM_MANUAL,
+        )
         self.assertTrue(module.use_advanced.value)
 
         module = pipeline.modules()[9]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
-        self.assertEqual(module.threshold.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL)
-        self.assertEqual(module.threshold.global_operation.value, cellprofiler.modules.threshold.TM_MEASUREMENT)
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
+        self.assertEqual(
+            module.threshold.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        )
+        self.assertEqual(
+            module.threshold.global_operation.value,
+            cellprofiler.modules.threshold.TM_MEASUREMENT,
+        )
         self.assertTrue(module.use_advanced.value)
 
         module = pipeline.modules()[10]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects))
+        self.assertTrue(
+            isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+        )
         self.assertEqual(module.threshold.threshold_scope, "None")
-        self.assertEqual(module.threshold.global_operation.value, centrosome.threshold.TM_ROBUST_BACKGROUND)
-        self.assertEqual(module.threshold.lower_outlier_fraction, .05)
-        self.assertEqual(module.threshold.upper_outlier_fraction, .05)
-        self.assertEqual(module.threshold.averaging_method, cellprofiler.modules.identify.RB_MEAN)
-        self.assertEqual(module.threshold.variance_method, cellprofiler.modules.identify.RB_SD)
+        self.assertEqual(
+            module.threshold.global_operation.value,
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
+        )
+        self.assertEqual(module.threshold.lower_outlier_fraction, 0.05)
+        self.assertEqual(module.threshold.upper_outlier_fraction, 0.05)
+        self.assertEqual(
+            module.threshold.averaging_method, cellprofiler.modules.identify.RB_MEAN
+        )
+        self.assertEqual(
+            module.threshold.variance_method, cellprofiler.modules.identify.RB_SD
+        )
         self.assertEqual(module.threshold.number_of_deviations, 2)
         self.assertTrue(module.use_advanced.value)
 
@@ -1544,22 +2823,30 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
         def callback(caller, event):
             self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         for module, averaging_method, variance_method in zip(
-                pipeline.modules(),
-                (cellprofiler.modules.identify.RB_MEAN,
-                 cellprofiler.modules.identify.RB_MEDIAN,
-                 cellprofiler.modules.identify.RB_MODE),
-                (cellprofiler.modules.identify.RB_SD,
-                 cellprofiler.modules.identify.RB_MAD,
-                 cellprofiler.modules.identify.RB_MAD)
+            pipeline.modules(),
+            (
+                cellprofiler.modules.identify.RB_MEAN,
+                cellprofiler.modules.identify.RB_MEDIAN,
+                cellprofiler.modules.identify.RB_MODE,
+            ),
+            (
+                cellprofiler.modules.identify.RB_SD,
+                cellprofiler.modules.identify.RB_MAD,
+                cellprofiler.modules.identify.RB_MAD,
+            ),
         ):
-            assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
-            self.assertEqual(module.threshold.lower_outlier_fraction, .1)
-            self.assertEqual(module.threshold.upper_outlier_fraction, .2)
+            assert isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
+            self.assertEqual(module.threshold.lower_outlier_fraction, 0.1)
+            self.assertEqual(module.threshold.upper_outlier_fraction, 0.2)
             self.assertEqual(module.threshold.number_of_deviations, 2.5)
             self.assertEqual(module.threshold.averaging_method, averaging_method)
             self.assertEqual(module.threshold.variance_method, variance_method)
@@ -1576,28 +2863,48 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
-        x.threshold.manual_threshold.value = .3
+        x.threshold.manual_threshold.value = 0.3
         img = numpy.zeros((200, 200))
-        draw_circle(img, (100, 100), 25, .5)
-        draw_circle(img, (25, 25), 10, .5)
+        draw_circle(img, (100, 100), 25, 0.5)
+        draw_circle(img, (25, 25), 10, 0.5)
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertEqual(objects.segmented[25, 25], 1, "The small object was not there")
-        self.assertEqual(objects.segmented[100, 100], 0, "The large object was not filtered out")
-        self.assertTrue(objects.small_removed_segmented[25, 25] > 0,
-                        "The small object was not in the small_removed label set")
-        self.assertTrue(objects.small_removed_segmented[100, 100] > 0,
-                        "The large object was not in the small-removed label set")
-        self.assertTrue(objects.unedited_segmented[25, 25], "The small object was not in the unedited set")
-        self.assertTrue(objects.unedited_segmented[100, 100], "The large object was not in the unedited set")
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertEqual(
+            objects.segmented[100, 100], 0, "The large object was not filtered out"
+        )
+        self.assertTrue(
+            objects.small_removed_segmented[25, 25] > 0,
+            "The small object was not in the small_removed label set",
+        )
+        self.assertTrue(
+            objects.small_removed_segmented[100, 100] > 0,
+            "The large object was not in the small-removed label set",
+        )
+        self.assertTrue(
+            objects.unedited_segmented[25, 25],
+            "The small object was not in the unedited set",
+        )
+        self.assertTrue(
+            objects.unedited_segmented[100, 100],
+            "The large object was not in the unedited set",
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 1)
 
@@ -1612,24 +2919,40 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
-        x.threshold.manual_threshold.value = .3
+        x.threshold.manual_threshold.value = 0.3
         img = numpy.zeros((200, 200))
-        draw_circle(img, (100, 100), 25, .5)
-        draw_circle(img, (25, 25), 10, .5)
+        draw_circle(img, (100, 100), 25, 0.5)
+        draw_circle(img, (25, 25), 10, 0.5)
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         self.assertTrue(objects.segmented[25, 25], "The small object was not there")
-        self.assertTrue(objects.segmented[100, 100], "The large object was filtered out")
-        self.assertTrue(objects.unedited_segmented[25, 25], "The small object was not in the unedited set")
-        self.assertTrue(objects.unedited_segmented[100, 100], "The large object was not in the unedited set")
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertTrue(
+            objects.segmented[100, 100], "The large object was filtered out"
+        )
+        self.assertTrue(
+            objects.unedited_segmented[25, 25],
+            "The small object was not in the unedited set",
+        )
+        self.assertTrue(
+            objects.unedited_segmented[100, 100],
+            "The large object was not in the unedited set",
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 2)
 
@@ -1644,28 +2967,50 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
-        x.threshold.manual_threshold.value = .3
+        x.threshold.manual_threshold.value = 0.3
         img = numpy.zeros((200, 200))
-        draw_circle(img, (100, 100), 25, .5)
-        draw_circle(img, (25, 25), 10, .5)
+        draw_circle(img, (100, 100), 25, 0.5)
+        draw_circle(img, (25, 25), 10, 0.5)
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(objects.segmented[25, 25], 0, "The small object was not filtered out")
-        self.assertEqual(objects.segmented[100, 100], 1, "The large object was not present")
-        self.assertTrue(objects.small_removed_segmented[25, 25] == 0,
-                        "The small object was in the small_removed label set")
-        self.assertTrue(objects.small_removed_segmented[100, 100] > 0,
-                        "The large object was not in the small-removed label set")
-        self.assertTrue(objects.unedited_segmented[25, 25], "The small object was not in the unedited set")
-        self.assertTrue(objects.unedited_segmented[100, 100], "The large object was not in the unedited set")
-        location_center_x = measurements.get_current_measurement("my_object", "Location_Center_X")
+        self.assertEqual(
+            objects.segmented[25, 25], 0, "The small object was not filtered out"
+        )
+        self.assertEqual(
+            objects.segmented[100, 100], 1, "The large object was not present"
+        )
+        self.assertTrue(
+            objects.small_removed_segmented[25, 25] == 0,
+            "The small object was in the small_removed label set",
+        )
+        self.assertTrue(
+            objects.small_removed_segmented[100, 100] > 0,
+            "The large object was not in the small-removed label set",
+        )
+        self.assertTrue(
+            objects.unedited_segmented[25, 25],
+            "The small object was not in the unedited set",
+        )
+        self.assertTrue(
+            objects.unedited_segmented[100, 100],
+            "The large object was not in the unedited set",
+        )
+        location_center_x = measurements.get_current_measurement(
+            "my_object", "Location_Center_X"
+        )
         self.assertTrue(isinstance(location_center_x, numpy.ndarray))
         self.assertEqual(numpy.product(location_center_x.shape), 1)
 
@@ -1678,28 +3023,38 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.size_range.max = 40
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
-        x.threshold.manual_threshold.value = .3
+        x.threshold.manual_threshold.value = 0.3
         img = numpy.zeros((100, 100))
         centers = [(50, 50), (10, 50), (50, 10), (90, 50), (50, 90)]
         present = [True, False, False, False, False]
         for center in centers:
-            draw_circle(img, center, 15, .5)
+            draw_circle(img, center, 15, 0.5)
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         for center, p in zip(centers, present):
             if p:
                 self.assertTrue(objects.segmented[center[0], center[1]] > 0)
-                self.assertTrue(objects.small_removed_segmented[center[0], center[1]] > 0)
+                self.assertTrue(
+                    objects.small_removed_segmented[center[0], center[1]] > 0
+                )
             else:
                 self.assertTrue(objects.segmented[center[0], center[1]] == 0)
-                self.assertTrue(objects.small_removed_segmented[center[0], center[1]] == 0)
+                self.assertTrue(
+                    objects.small_removed_segmented[center[0], center[1]] == 0
+                )
             self.assertTrue(objects.unedited_segmented[center[0], center[1]] > 0)
 
     def test_05_03_discard_with_mask(self):
@@ -1712,30 +3067,40 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.size_range.max = 40
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
-        x.threshold.manual_threshold.value = .3
+        x.threshold.manual_threshold.value = 0.3
         img = numpy.zeros((200, 200))
         centers = [(100, 100), (30, 100), (100, 30), (170, 100), (100, 170)]
         present = [True, False, False, False, False]
         for center in centers:
-            draw_circle(img, center, 15, .5)
+            draw_circle(img, center, 15, 0.5)
         mask = numpy.zeros((200, 200))
         mask[25:175, 25:175] = 1
         image = cellprofiler.image.Image(img, mask)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         objects = object_set.get_objects("my_object")
         for center, p in zip(centers, present):
             if p:
                 self.assertTrue(objects.segmented[center[0], center[1]] > 0)
-                self.assertTrue(objects.small_removed_segmented[center[0], center[1]] > 0)
+                self.assertTrue(
+                    objects.small_removed_segmented[center[0], center[1]] > 0
+                )
             else:
                 self.assertTrue(objects.segmented[center[0], center[1]] == 0)
-                self.assertTrue(objects.small_removed_segmented[center[0], center[1]] == 0)
+                self.assertTrue(
+                    objects.small_removed_segmented[center[0], center[1]] == 0
+                )
             self.assertTrue(objects.unedited_segmented[center[0], center[1]] > 0)
 
     def test_06_01_regression_diagonal(self):
@@ -1751,18 +3116,24 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         x.threshold.threshold_smoothing_scale.value = 0
-        x.threshold.manual_threshold.value = .5
+        x.threshold.manual_threshold.value = 0.5
         img = numpy.zeros((10, 10))
         img[4, 4] = 1
         img[5, 5] = 1
         image = cellprofiler.image.Image(img)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -1785,11 +3156,17 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image = cellprofiler.image.Image(img, mask)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider("my_image", image))
+        image_set.providers.append(
+            cellprofiler.image.VanillaImageProvider("my_image", image)
+        )
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements, None))
+        x.run(
+            cellprofiler.workspace.Workspace(
+                pipeline, x, image_set, object_set, measurements, None
+            )
+        )
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
@@ -1807,7 +3184,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     #     self.assertTrue(threshold < 0.095)
 
     def test_16_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns method'''
+        """Test the get_measurement_columns method"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         oname = "my_object"
         x.y_name.value = oname
@@ -1816,92 +3193,137 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         expected_columns = [
             (cellprofiler.measurement.IMAGE, format % oname, coltype)
             for format, coltype in (
-                (cellprofiler.measurement.FF_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.measurement.FF_FINAL_THRESHOLD, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.measurement.FF_ORIG_THRESHOLD, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.measurement.FF_WEIGHTED_VARIANCE, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.measurement.FF_SUM_OF_ENTROPIES, cellprofiler.measurement.COLTYPE_FLOAT)
-            )]
-        expected_columns += [(oname, feature, cellprofiler.measurement.COLTYPE_FLOAT)
-                             for feature in (cellprofiler.measurement.M_LOCATION_CENTER_X,
-                                             cellprofiler.measurement.M_LOCATION_CENTER_Y,
-                                             cellprofiler.measurement.M_LOCATION_CENTER_Z)]
-        expected_columns += [(oname,
-                              cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-                              cellprofiler.measurement.COLTYPE_INTEGER)]
+                (
+                    cellprofiler.measurement.FF_COUNT,
+                    cellprofiler.measurement.COLTYPE_INTEGER,
+                ),
+                (
+                    cellprofiler.measurement.FF_FINAL_THRESHOLD,
+                    cellprofiler.measurement.COLTYPE_FLOAT,
+                ),
+                (
+                    cellprofiler.measurement.FF_ORIG_THRESHOLD,
+                    cellprofiler.measurement.COLTYPE_FLOAT,
+                ),
+                (
+                    cellprofiler.measurement.FF_WEIGHTED_VARIANCE,
+                    cellprofiler.measurement.COLTYPE_FLOAT,
+                ),
+                (
+                    cellprofiler.measurement.FF_SUM_OF_ENTROPIES,
+                    cellprofiler.measurement.COLTYPE_FLOAT,
+                ),
+            )
+        ]
+        expected_columns += [
+            (oname, feature, cellprofiler.measurement.COLTYPE_FLOAT)
+            for feature in (
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.M_LOCATION_CENTER_Z,
+            )
+        ]
+        expected_columns += [
+            (
+                oname,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler.measurement.COLTYPE_INTEGER,
+            )
+        ]
         self.assertEqual(len(columns), len(expected_columns))
         for column in columns:
-            self.assertTrue(any(all([colval == exval for colval, exval in zip(column, expected)])
-                                for expected in expected_columns))
+            self.assertTrue(
+                any(
+                    all([colval == exval for colval, exval in zip(column, expected)])
+                    for expected in expected_columns
+                )
+            )
 
     def test_17_01_regression_holes(self):
-        '''Regression test - fill holes caused by filtered object
+        """Regression test - fill holes caused by filtered object
 
         This was created as a regression test for the bug, IMG-191, but
         didn't exercise the bug. It's a good test of watershed and filling
         labeled holes in an odd case, so I'm leaving it in.
-        '''
+        """
         #
         # This array has two intensity peaks separated by a border.
         # You should get two objects, one within the other.
         #
-        pixels = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                              [0, 0, 2, 1, 2, 2, 2, 2, 1, 2, 0, 0],
-                              [0, 0, 2, 1, 2, 9, 2, 2, 1, 2, 0, 0],
-                              [0, 0, 2, 1, 2, 2, 2, 2, 1, 2, 0, 0],
-                              [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 9, 9, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 9, 9, 0, 0],
-                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], float) / 10.0
-        expected = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-        mask = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], bool)
+        pixels = (
+            numpy.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                    [0, 0, 2, 1, 2, 2, 2, 2, 1, 2, 0, 0],
+                    [0, 0, 2, 1, 2, 9, 2, 2, 1, 2, 0, 0],
+                    [0, 0, 2, 1, 2, 2, 2, 2, 1, 2, 0, 0],
+                    [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 1, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 9, 9, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 9, 9, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ],
+                float,
+            )
+            / 10.0
+        )
+        expected = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                [0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+        mask = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+                [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+                [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ],
+            bool,
+        )
         workspace, x = self.make_workspace(pixels)
         x.use_advanced.value = True
         x.exclude_size.value = True
@@ -1909,11 +3331,13 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.size_range.max = 50
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False
-        x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        x.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        )
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         x.threshold.threshold_smoothing_scale.value = 0
-        x.threshold.manual_threshold.value = .05
+        x.threshold.manual_threshold.value = 0.05
         x.threshold.threshold_correction_factor.value = 1
         measurements = workspace.measurements
         x.run(workspace)
@@ -1926,68 +3350,85 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(numpy.all(unedited_segmented[mask] == expected[mask]))
 
     def test_17_02_regression_holes(self):
-        '''Regression test - fill holes caused by filtered object
+        """Regression test - fill holes caused by filtered object
 
         This is the real regression test for IMG-191. The smaller object
         is surrounded by pixels below threshold. This prevents filling in
         the unedited case.
-        '''
+        """
         # An update to fill_labeled_holes will remove both the filtered object
         # and the hole
         #
         if True:
             return
-        pixels = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
-                              [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
-                              [0, 0, 3, 0, 0, 9, 2, 0, 0, 3, 0, 0],
-                              [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
-                              [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
-                              [0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 9, 2, 0, 0],
-                              [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
-                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], float) / 10.0
-        expected = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-        mask = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-                            [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], bool)
+        pixels = (
+            numpy.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+                    [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+                    [0, 0, 3, 0, 0, 9, 2, 0, 0, 3, 0, 0],
+                    [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+                    [0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+                    [0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 3, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 9, 2, 0, 0],
+                    [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ],
+                float,
+            )
+            / 10.0
+        )
+        expected = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+        mask = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ],
+            bool,
+        )
         image = cellprofiler.image.Image(pixels)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -2005,27 +3446,28 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.automatic_suppression.value = False
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.local_operation.value = centrosome.threshold.TM_MANUAL
-        x.threshold.manual_threshold.value = .1
+        x.threshold.manual_threshold.value = 0.1
         x.threshold.threshold_correction_factor.value = 1
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
         measurements = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements,
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, x, image_set, object_set, measurements, image_set_list
+        )
         x.run(workspace)
         my_objects = object_set.get_objects("my_object")
         self.assertTrue(my_objects.segmented[3, 3] != 0)
         self.assertTrue(numpy.all(my_objects.segmented[mask] == expected[mask]))
 
     def test_18_02_erase_objects(self):
-        '''Set up a limit on the # of objects and exceed it - erasing objects'''
+        """Set up a limit on the # of objects and exceed it - erasing objects"""
         maximum_object_count = 3
         pixels = numpy.zeros((20, 21))
-        pixels[2:8, 2:8] = .5
-        pixels[12:18, 2:8] = .5
-        pixels[2:8, 12:18] = .5
-        pixels[12:18, 12:18] = .5
+        pixels[2:8, 2:8] = 0.5
+        pixels[12:18, 2:8] = 0.5
+        pixels[2:8, 12:18] = 0.5
+        pixels[12:18, 12:18] = 0.5
         image = cellprofiler.image.Image(pixels)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -2041,7 +3483,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
-        x.threshold.manual_threshold.value = .25
+        x.threshold.manual_threshold.value = 0.25
         x.threshold.threshold_correction_factor.value = 1
         x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
         x.maximum_object_count.value = maximum_object_count
@@ -2049,23 +3491,25 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
         measurements = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements,
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, x, image_set, object_set, measurements, image_set_list
+        )
         x.run(workspace)
-        self.assertEqual(measurements.get_current_image_measurement(
-                "Count_my_object"), 0)
+        self.assertEqual(
+            measurements.get_current_image_measurement("Count_my_object"), 0
+        )
         my_objects = object_set.get_objects("my_object")
         self.assertTrue(numpy.all(my_objects.segmented == 0))
         self.assertEqual(numpy.max(my_objects.unedited_segmented), 4)
 
     def test_18_03_dont_erase_objects(self):
-        '''Ask to erase objects, but don't'''
+        """Ask to erase objects, but don't"""
         maximum_object_count = 5
         pixels = numpy.zeros((20, 21))
-        pixels[2:8, 2:8] = .5
-        pixels[12:18, 2:8] = .5
-        pixels[2:8, 12:18] = .5
-        pixels[12:18, 12:18] = .5
+        pixels[2:8, 2:8] = 0.5
+        pixels[12:18, 2:8] = 0.5
+        pixels[2:8, 12:18] = 0.5
+        pixels[12:18, 12:18] = 0.5
         image = cellprofiler.image.Image(pixels)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -2081,7 +3525,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
-        x.threshold.manual_threshold.value = .25
+        x.threshold.manual_threshold.value = 0.25
         x.threshold.threshold_correction_factor.value = 1
         x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
         x.maximum_object_count.value = maximum_object_count
@@ -2089,18 +3533,20 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
         measurements = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements,
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, x, image_set, object_set, measurements, image_set_list
+        )
         x.run(workspace)
-        self.assertEqual(measurements.get_current_image_measurement(
-                "Count_my_object"), 4)
+        self.assertEqual(
+            measurements.get_current_image_measurement("Count_my_object"), 4
+        )
         my_objects = object_set.get_objects("my_object")
         self.assertEqual(numpy.max(my_objects.segmented), 4)
 
     def test_19_01_threshold_by_measurement(self):
-        '''Set threshold based on mean image intensity'''
+        """Set threshold based on mean image intensity"""
         pixels = numpy.zeros((10, 10))
-        pixels[2:6, 2:6] = .5
+        pixels[2:6, 2:6] = 0.5
 
         image = cellprofiler.image.Image(pixels)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -2120,106 +3566,165 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-        x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MEASUREMENT
+        x.threshold.global_operation.value = (
+            cellprofiler.modules.threshold.TM_MEASUREMENT
+        )
         x.threshold.threshold_smoothing_scale.value = 0
         x.threshold.thresholding_measurement.value = "MeanIntensity_MyImage"
         x.threshold.threshold_correction_factor.value = 1
         x.module_num = 1
         pipeline.add_module(x)
 
-        workspace = cellprofiler.workspace.Workspace(pipeline, x, image_set, object_set, measurements,
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, x, image_set, object_set, measurements, image_set_list
+        )
         x.run(workspace)
-        self.assertEqual(measurements.get_current_image_measurement("Count_MyObject"), 1)
-        self.assertEqual(measurements.get_current_image_measurement("Threshold_FinalThreshold_MyObject"),
-                         numpy.mean(pixels))
+        self.assertEqual(
+            measurements.get_current_image_measurement("Count_MyObject"), 1
+        )
+        self.assertEqual(
+            measurements.get_current_image_measurement(
+                "Threshold_FinalThreshold_MyObject"
+            ),
+            numpy.mean(pixels),
+        )
 
     def test_20_01_threshold_smoothing_automatic(self):
-        image = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, .4, .4, .4, 0, 0],
-                             [0, 0, .4, .5, .4, 0, 0],
-                             [0, 0, .4, .4, .4, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0]])
-        expected = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 1, 0, 0, 0],
-                                [0, 0, 1, 1, 1, 0, 0],
-                                [0, 0, 0, 1, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0]])
+        image = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0.4, 0.4, 0.4, 0, 0],
+                [0, 0, 0.4, 0.5, 0.4, 0, 0],
+                [0, 0, 0.4, 0.4, 0.4, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+        expected = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         workspace, module = self.make_workspace(image)
-        assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        )
         module.use_advanced.value = True
         module.exclude_size.value = False
-        module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-        module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        module.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_NONE
+        )
+        module.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        )
         # MCT on this image is zero, so set the threshold at .225
         # with the threshold minimum (manual = no smoothing)
         module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
-        module.threshold.threshold_range.min = .225
+        module.threshold.threshold_range.min = 0.225
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         numpy.testing.assert_array_equal(expected, labels)
 
     def test_20_02_threshold_smoothing_manual(self):
-        image = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, .4, .4, .4, 0, 0],
-                             [0, 0, .4, .5, .4, 0, 0],
-                             [0, 0, .4, .4, .4, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0]])
-        expected = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 1, 0, 0, 0],
-                                [0, 0, 1, 1, 1, 0, 0],
-                                [0, 0, 0, 1, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0]])
+        image = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0.4, 0.4, 0.4, 0, 0],
+                [0, 0, 0.4, 0.5, 0.4, 0, 0],
+                [0, 0, 0.4, 0.4, 0.4, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+        expected = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
         workspace, module = self.make_workspace(image)
-        assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        )
         module.use_advanced.value = True
         module.exclude_size.value = False
-        module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-        module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        module.unclump_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.UN_NONE
+        )
+        module.watershed_method.value = (
+            cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        )
         module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
-        module.threshold.threshold_range.min = .125
+        module.threshold.threshold_range.min = 0.125
         module.threshold.threshold_smoothing_scale.value = 3
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         numpy.testing.assert_array_equal(expected, labels)
 
     def test_20_03_threshold_no_smoothing(self):
-        image = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, .4, .4, .4, 0, 0],
-                             [0, 0, .4, .5, .4, 0, 0],
-                             [0, 0, .4, .4, .4, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0]])
-        expected = numpy.array([[0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 0, 0],
-                                [0, 0, 1, 1, 1, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0]])
-        for tm in cellprofiler.modules.identify.TS_MANUAL, cellprofiler.modules.identify.TS_MEASUREMENT:
+        image = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0.4, 0.4, 0.4, 0, 0],
+                [0, 0, 0.4, 0.5, 0.4, 0, 0],
+                [0, 0, 0.4, 0.4, 0.4, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+        expected = numpy.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+        for tm in (
+            cellprofiler.modules.identify.TS_MANUAL,
+            cellprofiler.modules.identify.TS_MEASUREMENT,
+        ):
             workspace, module = self.make_workspace(image)
-            assert isinstance(module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
+            assert isinstance(
+                module,
+                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
+            )
             module.use_advanced.value = True
             module.exclude_size.value = False
-            module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-            module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-            module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+            module.unclump_method.value = (
+                cellprofiler.modules.identifyprimaryobjects.UN_NONE
+            )
+            module.watershed_method.value = (
+                cellprofiler.modules.identifyprimaryobjects.WA_NONE
+            )
+            module.threshold.threshold_scope.value = (
+                cellprofiler.modules.threshold.TS_GLOBAL
+            )
             module.threshold.global_operation.value = tm
-            module.threshold.manual_threshold.value = .125
+            module.threshold.manual_threshold.value = 0.125
             module.threshold.thresholding_measurement.value = MEASUREMENT_NAME
-            workspace.measurements[cellprofiler.measurement.IMAGE, MEASUREMENT_NAME] = .125
+            workspace.measurements[
+                cellprofiler.measurement.IMAGE, MEASUREMENT_NAME
+            ] = 0.125
             module.threshold.threshold_smoothing_scale.value = 3
             module.run(workspace)
             labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
@@ -2227,56 +3732,63 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
 
 def add_noise(img, fraction):
-    '''Add a fractional amount of noise to an image to make it look real'''
+    """Add a fractional amount of noise to an image to make it look real"""
     numpy.random.seed(0)
-    noise = numpy.random.uniform(low=1 - fraction / 2, high=1 + fraction / 2,
-                                 size=img.shape)
+    noise = numpy.random.uniform(
+        low=1 - fraction / 2, high=1 + fraction / 2, size=img.shape
+    )
     return img * noise
 
 
 def one_cell_image():
     img = numpy.zeros((25, 25))
-    draw_circle(img, (10, 15), 5, .5)
-    return add_noise(img, .01)
+    draw_circle(img, (10, 15), 5, 0.5)
+    return add_noise(img, 0.01)
 
 
 def two_cell_image():
     img = numpy.zeros((50, 50))
-    draw_circle(img, (10, 35), 5, .8)
-    draw_circle(img, (30, 15), 5, .6)
-    return add_noise(img, .01)
+    draw_circle(img, (10, 35), 5, 0.8)
+    draw_circle(img, (30, 15), 5, 0.6)
+    return add_noise(img, 0.01)
 
 
 def fly_image():
     from bioformats import load_image
-    path = os.path.join(os.path.dirname(__file__), '../resources/01_POS002_D.TIF')
+
+    path = os.path.join(os.path.dirname(__file__), "../resources/01_POS002_D.TIF")
     return load_image(path)
 
 
 def draw_circle(img, center, radius, value):
-    x, y = numpy.mgrid[0:img.shape[0], 0:img.shape[1]]
-    distance = numpy.sqrt((x - center[0]) * (x - center[0]) + (y - center[1]) * (y - center[1]))
+    x, y = numpy.mgrid[0 : img.shape[0], 0 : img.shape[1]]
+    distance = numpy.sqrt(
+        (x - center[0]) * (x - center[0]) + (y - center[1]) * (y - center[1])
+    )
     img[distance <= radius] = value
 
 
 class TestWeightedVariance(unittest.TestCase):
     def test_01_masked_wv(self):
-        output = centrosome.threshold.weighted_variance(numpy.zeros((3, 3)),
-                                                        numpy.zeros((3, 3), bool), 1)
+        output = centrosome.threshold.weighted_variance(
+            numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
+        )
         self.assertEqual(output, 0)
 
     def test_02_zero_wv(self):
-        output = centrosome.threshold.weighted_variance(numpy.zeros((3, 3)),
-                                                        numpy.ones((3, 3), bool),
-                                                        numpy.ones((3, 3), bool))
+        output = centrosome.threshold.weighted_variance(
+            numpy.zeros((3, 3)), numpy.ones((3, 3), bool), numpy.ones((3, 3), bool)
+        )
         self.assertEqual(output, 0)
 
     def test_03_fg_0_bg_0(self):
         """Test all foreground pixels same, all background same, wv = 0"""
         img = numpy.zeros((4, 4))
         img[:, 2:4] = 1
-        binary_image = img > .5
-        output = centrosome.threshold.weighted_variance(img, numpy.ones(img.shape, bool), binary_image)
+        binary_image = img > 0.5
+        output = centrosome.threshold.weighted_variance(
+            img, numpy.ones(img.shape, bool), binary_image
+        )
         self.assertEqual(output, 0)
 
     def test_04_values(self):
@@ -2284,40 +3796,45 @@ class TestWeightedVariance(unittest.TestCase):
         #
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25 *2 + .25 *2)/4 = .25
-        img = numpy.array([[1.0 / 16., 1.0 / 8.0], [1.0 / 4.0, 1.0 / 2.0]])
+        img = numpy.array([[1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 2.0]])
         binary_image = numpy.array([[False, False], [True, True]])
-        output = centrosome.threshold.weighted_variance(img, numpy.ones((2, 2), bool), binary_image)
-        self.assertAlmostEqual(output, .25)
+        output = centrosome.threshold.weighted_variance(
+            img, numpy.ones((2, 2), bool), binary_image
+        )
+        self.assertAlmostEqual(output, 0.25)
 
     def test_05_mask(self):
         """Test, masking out one of the background values"""
         #
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25*2 + .25 *2)/4 = .25
-        img = numpy.array([[1.0 / 16., 1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 4.0, 1.0 / 2.0]])
+        img = numpy.array(
+            [[1.0 / 16.0, 1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 4.0, 1.0 / 2.0]]
+        )
         mask = numpy.array([[False, True, True], [False, True, True]])
         binary_image = numpy.array([[False, False, False], [True, True, True]])
         output = centrosome.threshold.weighted_variance(img, mask, binary_image)
-        self.assertAlmostEquals(output, .25)
+        self.assertAlmostEquals(output, 0.25)
 
 
 class TestSumOfEntropies(unittest.TestCase):
     def test_01_all_masked(self):
-        output = centrosome.threshold.sum_of_entropies(numpy.zeros((3, 3)),
-                                                       numpy.zeros((3, 3), bool), 1)
+        output = centrosome.threshold.sum_of_entropies(
+            numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
+        )
         self.assertEqual(output, 0)
 
     def test_020_all_zero(self):
         """Can't take the log of zero, so all zero matrix = 0"""
-        output = centrosome.threshold.sum_of_entropies(numpy.zeros((4, 2)),
-                                                       numpy.ones((4, 2), bool),
-                                                       numpy.ones((4, 2), bool))
+        output = centrosome.threshold.sum_of_entropies(
+            numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
+        )
         self.assertAlmostEqual(output, 0)
 
     def test_03_fg_bg_equal(self):
         img = numpy.ones((128, 128))
-        img[0:64, :] *= .15
-        img[64:128, :] *= .85
+        img[0:64, :] *= 0.15
+        img[64:128, :] *= 0.85
         img[0, 0] = img[-1, 0] = 0
         img[0, -1] = img[-1, -1] = 1
         binary_mask = numpy.zeros(img.shape, bool)
@@ -2328,22 +3845,34 @@ class TestSumOfEntropies(unittest.TestCase):
         #
         one_of_each = numpy.zeros(img.shape, bool)
         one_of_each[0, 0] = one_of_each[-1, -1] = True
-        output = centrosome.threshold.sum_of_entropies(img, numpy.ones((128, 128), bool), binary_mask)
-        ob = centrosome.threshold.sum_of_entropies(img, one_of_each | ~binary_mask, binary_mask)
-        of = centrosome.threshold.sum_of_entropies(img, one_of_each | binary_mask, binary_mask)
+        output = centrosome.threshold.sum_of_entropies(
+            img, numpy.ones((128, 128), bool), binary_mask
+        )
+        ob = centrosome.threshold.sum_of_entropies(
+            img, one_of_each | ~binary_mask, binary_mask
+        )
+        of = centrosome.threshold.sum_of_entropies(
+            img, one_of_each | binary_mask, binary_mask
+        )
         self.assertAlmostEqual(output, ob + of)
 
     def test_04_fg_bg_different(self):
         img = numpy.ones((128, 128))
-        img[0:64, 0:64] *= .15
-        img[0:64, 64:128] *= .3
-        img[64:128, 0:64] *= .7
-        img[64:128, 64:128] *= .85
+        img[0:64, 0:64] *= 0.15
+        img[0:64, 64:128] *= 0.3
+        img[64:128, 0:64] *= 0.7
+        img[64:128, 64:128] *= 0.85
         binary_mask = numpy.zeros(img.shape, bool)
         binary_mask[64:, :] = True
         one_of_each = numpy.zeros(img.shape, bool)
         one_of_each[0, 0] = one_of_each[-1, -1] = True
-        output = centrosome.threshold.sum_of_entropies(img, numpy.ones((128, 128), bool), binary_mask)
-        ob = centrosome.threshold.sum_of_entropies(img, one_of_each | ~binary_mask, binary_mask)
-        of = centrosome.threshold.sum_of_entropies(img, one_of_each | binary_mask, binary_mask)
+        output = centrosome.threshold.sum_of_entropies(
+            img, numpy.ones((128, 128), bool), binary_mask
+        )
+        ob = centrosome.threshold.sum_of_entropies(
+            img, one_of_each | ~binary_mask, binary_mask
+        )
+        of = centrosome.threshold.sum_of_entropies(
+            img, one_of_each | binary_mask, binary_mask
+        )
         self.assertAlmostEqual(output, ob + of)

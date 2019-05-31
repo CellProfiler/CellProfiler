@@ -3817,7 +3817,9 @@ class PipelineController(object):
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in choices.values():
-                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(six.text_type(row[i]))
+                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(
+                            six.text_type(row[i])
+                        )
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
@@ -3870,7 +3872,9 @@ class PipelineController(object):
 
                 assert isinstance(event, wx.SizeEvent)
 
-                cellprofiler.preferences.set_choose_image_set_frame_size(size.width, size.height)
+                cellprofiler.preferences.set_choose_image_set_frame_size(
+                    size.width, size.height
+                )
 
                 event.Skip(True)
 

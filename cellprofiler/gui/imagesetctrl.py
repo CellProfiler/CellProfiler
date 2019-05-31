@@ -294,7 +294,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
     def DeleteCols(self, pos=0, numCols=1, updateLabels=True):
         if self.controller is None:
             return False
-        channels = [x.channel for x in self.columns[pos: (pos + numCols)]]
+        channels = [x.channel for x in self.columns[pos : (pos + numCols)]]
         for channel in channels:
             self.controller.remove_channel(channel)
         return True

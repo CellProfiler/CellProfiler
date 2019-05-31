@@ -1041,7 +1041,9 @@ class PipelineDropTarget(wx.DropTarget):
                 self.data_object.GetReceivedFormat().GetType()
                 == self.pipeline_data_object.GetFormat().GetType()
             ):
-                pipeline_data = str(self.pipeline_data_object.GetData().tobytes().replace(b'\00', ''))
+                pipeline_data = str(
+                    self.pipeline_data_object.GetData().tobytes().replace(b"\00", "")
+                )
                 if pipeline_data is not None:
                     self.window.on_data(x, y, action, pipeline_data)
             elif self.data_object.GetReceivedFormat().GetType() == wx.DF_FILENAME:
@@ -1166,7 +1168,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
         # Gap before and after text
         self.text_gap = 3
         # The height of one row in the display
-        self.line_height = max(16 + self.border + self.gap, self.GetFullTextExtent("M")[1])
+        self.line_height = max(
+            16 + self.border + self.gap, self.GetFullTextExtent("M")[1]
+        )
         # The width of a icon column
         self.column_width = self.line_height
         # The row # of the currently pressed icon button

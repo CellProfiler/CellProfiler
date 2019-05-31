@@ -9,20 +9,24 @@ from urllib2 import urlopen
 from tests.modules import example_images_directory
 
 
-def import_all_but_wx(name,
-                      globals=__builtin__.globals(),
-                      locals=__builtin__.locals(),
-                      fromlist=[], level=-1,
-                      default_import=__builtin__.__import__):
+def import_all_but_wx(
+    name,
+    globals=__builtin__.globals(),
+    locals=__builtin__.locals(),
+    fromlist=[],
+    level=-1,
+    default_import=__builtin__.__import__,
+):
     if name == "wx" or name.startswith("wx."):
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)
 
 
-@unittest.skipIf(sys.platform.startswith('linux'), "Do not test under Linux")
+@unittest.skipIf(sys.platform.startswith("linux"), "Do not test under Linux")
 class TestNoWX(unittest.TestCase):
     def setUp(self):
         from cellprofiler.preferences import set_headless, set_temporary_directory
+
         set_headless()
         set_temporary_directory(tempfile.gettempdir())
         self.old_import = __builtin__.__import__
@@ -36,6 +40,7 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_01_can_import(self):
         import os
+
         self.assertTrue(hasattr(os, "environ"))
 
     # FIXME: wxPython 4 PR
@@ -46,7 +51,7 @@ class TestNoWX(unittest.TestCase):
     #     self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
-        '''Import cellprofiler.modules and make sure it doesn't import wx'''
+        """Import cellprofiler.modules and make sure it doesn't import wx"""
 
     # def test_01_04_instantiate_all(self):
     #     '''Instantiate each module and make sure none import wx'''
@@ -62,6 +67,7 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
@@ -70,6 +76,7 @@ class TestNoWX(unittest.TestCase):
         try:
             fd = urlopen(self.fly_url)
         except IOError as e:
+
             def bad_url(e=e):
                 raise e
 

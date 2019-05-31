@@ -36,12 +36,7 @@ def labeled_volume():
     return data
 
 
-@pytest.fixture(
-    params=[
-        "labeled_image",
-        "labeled_volume"
-    ]
-)
+@pytest.fixture(params=["labeled_image", "labeled_volume"])
 def image(request):
     data = request.getfixturevalue(request.param)
 
@@ -68,11 +63,18 @@ def test_run_labels(image, module, workspace):
 
     measurements = workspace.measurements
 
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_LOCATION_CENTER_X)
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_LOCATION_CENTER_Y)
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_LOCATION_CENTER_Z)
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
     assert measurements.has_current_measurements(
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.FF_COUNT % "labeled"
+        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_X
+    )
+    assert measurements.has_current_measurements(
+        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_Y
+    )
+    assert measurements.has_current_measurements(
+        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_Z
+    )
+    assert measurements.has_current_measurements(
+        "labeled", cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+    )
+    assert measurements.has_current_measurements(
+        cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_COUNT % "labeled"
     )

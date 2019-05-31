@@ -26,18 +26,20 @@ TEST_FTR = "my_measurement"
 
 class TestFilterObjects(unittest.TestCase):
     def make_workspace(self, object_dict={}, image_dict={}):
-        '''Make a workspace for testing FilterByObjectMeasurement'''
+        """Make a workspace for testing FilterByObjectMeasurement"""
         module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         object_set = cellprofiler.object.ObjectSet()
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cellprofiler.workspace.Workspace(pipeline,
-                                                     module,
-                                                     image_set,
-                                                     object_set,
-                                                     cellprofiler.measurement.Measurements(),
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline,
+            module,
+            image_set,
+            object_set,
+            cellprofiler.measurement.Measurements(),
+            image_set_list,
+        )
         for key in image_dict.keys():
             image_set.add(key, cellprofiler.image.Image(image_dict[key]))
         for key in object_dict.keys():
@@ -47,14 +49,17 @@ class TestFilterObjects(unittest.TestCase):
         return workspace, module
 
     @contextlib.contextmanager
-    def make_classifier(self, module,
-                        answers,
-                        classes=None,
-                        class_names = None,
-                        rules_class = None,
-                        name = "Classifier",
-                        feature_names = ["Foo_"+TEST_FTR]):
-        '''Returns the filename of the classifier pickle'''
+    def make_classifier(
+        self,
+        module,
+        answers,
+        classes=None,
+        class_names=None,
+        rules_class=None,
+        name="Classifier",
+        feature_names=["Foo_" + TEST_FTR],
+    ):
+        """Returns the filename of the classifier pickle"""
         assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
         if classes is None:
             classes = numpy.arange(1, numpy.max(answers) + 1)
@@ -62,8 +67,7 @@ class TestFilterObjects(unittest.TestCase):
             class_names = ["Class%d" for _ in classes]
         if rules_class is None:
             rules_class = class_names[0]
-        s = make_classifier_pickle(answers, classes, class_names, name,
-                                  feature_names)
+        s = make_classifier_pickle(answers, classes, class_names, name, feature_names)
         fd, filename = tempfile.mkstemp(".model")
         os.write(fd, s)
         os.close(fd)
@@ -79,8 +83,10 @@ class TestFilterObjects(unittest.TestCase):
             pass
 
     def test_00_01_zeros_single(self):
-        '''Test keep single object on an empty labels matrix'''
-        workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
+        """Test keep single object on an empty labels matrix"""
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: numpy.zeros((10, 10), int)}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
@@ -92,15 +98,20 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == 0))
 
     def test_00_02_zeros_per_object(self):
-        '''Test keep per object filtering on an empty labels matrix'''
+        """Test keep per object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace(
-                {INPUT_OBJECTS: numpy.zeros((10, 10), int),
-                 ENCLOSING_OBJECTS: numpy.zeros((10, 10), int)})
+            {
+                INPUT_OBJECTS: numpy.zeros((10, 10), int),
+                ENCLOSING_OBJECTS: numpy.zeros((10, 10), int),
+            }
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        )
         m = workspace.measurements
         m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.zeros((0,)))
         module.run(workspace)
@@ -108,8 +119,10 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == 0))
 
     def test_00_03_zeros_filter(self):
-        '''Test object filtering on an empty labels matrix'''
-        workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
+        """Test object filtering on an empty labels matrix"""
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: numpy.zeros((10, 10), int)}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
@@ -123,7 +136,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == 0))
 
     def test_01_01_keep_single_min(self):
-        '''Keep a single object (min) from among two'''
+        """Keep a single object (min) from among two"""
         labels = numpy.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
         labels[6:9, 5:8] = 2
@@ -141,11 +154,16 @@ class TestFilterObjects(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(numpy.all(labels.segmented == expected))
         parents = m.get_current_measurement(
-                OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS)
+            OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS
+        )
         self.assertEqual(len(parents), 1)
         self.assertEqual(parents[0], 2)
-        self.assertEqual(m.get_current_image_measurement(
-            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS), 1)
+        self.assertEqual(
+            m.get_current_image_measurement(
+                cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+            ),
+            1,
+        )
         feature = cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
         child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
         self.assertEqual(len(child_count), 2)
@@ -153,7 +171,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertEqual(child_count[1], 1)
 
     def test_01_02_keep_single_max(self):
-        '''Keep a single object (max) from among two'''
+        """Keep a single object (max) from among two"""
         labels = numpy.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
         labels[6:9, 5:8] = 2
@@ -172,22 +190,25 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_02_01_keep_one_min(self):
-        '''Keep two sub-objects (min) from among four enclosed by two'''
+        """Keep two sub-objects (min) from among four enclosed by two"""
         sub_labels = numpy.zeros((20, 20), int)
         expected = numpy.zeros((20, 20), int)
         for i, j, k, e in ((0, 0, 1, 0), (10, 0, 2, 1), (0, 10, 3, 2), (10, 10, 4, 0)):
-            sub_labels[i + 2:i + 5, j + 3:j + 7] = k
-            expected[i + 2:i + 5, j + 3:j + 7] = e
+            sub_labels[i + 2 : i + 5, j + 3 : j + 7] = k
+            expected[i + 2 : i + 5, j + 3 : j + 7] = e
         labels = numpy.zeros((20, 20), int)
         labels[:, :10] = 1
         labels[:, 10:] = 2
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
-                                                 ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
+        )
         m = workspace.measurements
         m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([2, 1, 3, 4]))
         module.run(workspace)
@@ -195,22 +216,25 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_02_02_keep_one_max(self):
-        '''Keep two sub-objects (max) from among four enclosed by two'''
+        """Keep two sub-objects (max) from among four enclosed by two"""
         sub_labels = numpy.zeros((20, 20), int)
         expected = numpy.zeros((20, 20), int)
         for i, j, k, e in ((0, 0, 1, 0), (10, 0, 2, 1), (0, 10, 3, 2), (10, 10, 4, 0)):
-            sub_labels[i + 2:i + 5, j + 3:j + 7] = k
-            expected[i + 2:i + 5, j + 3:j + 7] = e
+            sub_labels[i + 2 : i + 5, j + 3 : j + 7] = k
+            expected[i + 2 : i + 5, j + 3 : j + 7] = e
         labels = numpy.zeros((20, 20), int)
         labels[:, :10] = 1
         labels[:, 10:] = 2
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
-                                                 ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        )
         m = workspace.measurements
         m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 2, 4, 3]))
         module.run(workspace)
@@ -226,14 +250,19 @@ class TestFilterObjects(unittest.TestCase):
         sub_labels[4:6, 8:15] = 2
         sub_labels[8, 15] = 3
         expected = sub_labels * (sub_labels != 3)
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
-                                                 ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
-        module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        )
+        module.per_object_assignment.value = (
+            cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        )
         m = workspace.measurements
         m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
         module.run(workspace)
@@ -249,14 +278,19 @@ class TestFilterObjects(unittest.TestCase):
         sub_labels[4:6, 8:15] = 2
         sub_labels[8, 15] = 3
         expected = sub_labels * (sub_labels != 3)
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels,
-                                                 ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
-        module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
+        )
+        module.per_object_assignment.value = (
+            cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        )
         m = workspace.measurements
         m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([4, 2, 3]))
         module.run(workspace)
@@ -264,16 +298,16 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_01_filter(self):
-        '''Filter objects by limits'''
+        """Filter objects by limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
-            labels[2:5, i * 10 + 3:i * 10 + 7] = i + 1
+            labels[2:5, i * 10 + 3 : i * 10 + 7] = i + 1
         numpy.random.seed(0)
         values = numpy.random.uniform(size=n)
         idx = 1
-        my_min = .3
-        my_max = .7
+        my_min = 0.3
+        my_max = 0.7
         expected = numpy.zeros(labels.shape, int)
         for i, value in zip(range(n), values):
             if my_min <= value <= my_max:
@@ -295,15 +329,15 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_02_filter(self):
-        '''Filter objects by min limits'''
+        """Filter objects by min limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
-            labels[2:5, i * 10 + 3:i * 10 + 7] = i + 1
+            labels[2:5, i * 10 + 3 : i * 10 + 7] = i + 1
         numpy.random.seed(0)
         values = numpy.random.uniform(size=n)
         idx = 1
-        my_min = .3
+        my_min = 0.3
         expected = numpy.zeros(labels.shape, int)
         for i, value in zip(range(n), values):
             if value >= my_min:
@@ -315,7 +349,7 @@ class TestFilterObjects(unittest.TestCase):
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
-        module.measurements[0].max_limit.value = .7
+        module.measurements[0].max_limit.value = 0.7
         module.measurements[0].wants_maximum.value = False
         m = workspace.measurements
         m.add_measurement(INPUT_OBJECTS, TEST_FTR, values)
@@ -324,15 +358,15 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_03_filter(self):
-        '''Filter objects by maximum limits'''
+        """Filter objects by maximum limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
-            labels[2:5, i * 10 + 3:i * 10 + 7] = i + 1
+            labels[2:5, i * 10 + 3 : i * 10 + 7] = i + 1
         numpy.random.seed(0)
         values = numpy.random.uniform(size=n)
         idx = 1
-        my_max = .7
+        my_max = 0.7
         expected = numpy.zeros(labels.shape, int)
         for i, value in zip(range(n), values):
             if value <= my_max:
@@ -343,7 +377,7 @@ class TestFilterObjects(unittest.TestCase):
         module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
-        module.measurements[0].min_limit.value = .3
+        module.measurements[0].min_limit.value = 0.3
         module.measurements[0].wants_minimum.value = False
         module.measurements[0].max_limit.value = my_max
         m = workspace.measurements
@@ -353,16 +387,16 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_04_filter_two(self):
-        '''Filter objects by two measurements'''
+        """Filter objects by two measurements"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
-            labels[2:5, i * 10 + 3:i * 10 + 7] = i + 1
+            labels[2:5, i * 10 + 3 : i * 10 + 7] = i + 1
         numpy.random.seed(0)
         values = numpy.zeros((n, 2))
         values = numpy.random.uniform(size=(n, 2))
         idx = 1
-        my_max = numpy.array([.7, .5])
+        my_max = numpy.array([0.7, 0.5])
         expected = numpy.zeros(labels.shape, int)
         for i, v1, v2 in zip(range(n), values[:, 0], values[:, 1]):
             if v1 <= my_max[0] and v2 <= my_max[1]:
@@ -377,7 +411,7 @@ class TestFilterObjects(unittest.TestCase):
             measurement_name = "measurement%d" % (i + 1)
             module.measurements[i].measurement.value = measurement_name
             module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
-            module.measurements[i].min_limit.value = .3
+            module.measurements[i].min_limit.value = 0.3
             module.measurements[i].wants_minimum.value = False
             module.measurements[i].max_limit.value = my_max[i]
             m.add_measurement(INPUT_OBJECTS, measurement_name, values[:, i])
@@ -386,18 +420,18 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_04_01_renumber_other(self):
-        '''Renumber an associated object'''
+        """Renumber an associated object"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         alternates = numpy.zeros((10, n * 10), int)
         for i in range(40):
-            labels[2:5, i * 10 + 3:i * 10 + 7] = i + 1
-            alternates[3:7, i * 10 + 2:i * 10 + 5] = i + 1
+            labels[2:5, i * 10 + 3 : i * 10 + 7] = i + 1
+            alternates[3:7, i * 10 + 2 : i * 10 + 5] = i + 1
         numpy.random.seed(0)
         values = numpy.random.uniform(size=n)
         idx = 1
-        my_min = .3
-        my_max = .7
+        my_min = 0.3
+        my_max = 0.7
         expected = numpy.zeros(labels.shape, int)
         expected_alternates = numpy.zeros(alternates.shape, int)
         for i, value in zip(range(n), values):
@@ -405,8 +439,9 @@ class TestFilterObjects(unittest.TestCase):
                 expected[labels == i + 1] = idx
                 expected_alternates[alternates == i + 1] = idx
                 idx += 1
-        workspace, module = self.make_workspace({INPUT_OBJECTS: labels,
-                                                 "my_alternates": alternates})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: labels, "my_alternates": alternates}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
@@ -449,21 +484,33 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
+        )
         self.assertEqual(module.x_name, "Things")
         self.assertEqual(module.y_name, "FilteredThings")
-        self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
-        self.assertEqual(module.rules_directory.dir_choice,
-                         cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+        )
+        self.assertEqual(
+            module.rules_directory.dir_choice,
+            cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+        )
         self.assertEqual(module.rules_file_name, "myrules.txt")
-        self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA")
-        self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_MINIMAL)
+        self.assertEqual(
+            module.measurements[0].measurement, "Intensity_MeanIntensity_DNA"
+        )
+        self.assertEqual(
+            module.filter_choice, cellprofiler.modules.filterobjects.FI_MINIMAL
+        )
 
     def test_05_06_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -505,35 +552,48 @@ FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:4|show
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
+        )
         self.assertEqual(module.y_name, "MyFilteredObjects")
         self.assertEqual(module.x_name, "MyObjects")
-        self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
-        self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
-        self.assertEqual(module.rules_directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+        )
+        self.assertEqual(
+            module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS
+        )
+        self.assertEqual(
+            module.rules_directory.dir_choice,
+            cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertEqual(module.rules_directory.custom_path, "./rules")
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
-        self.assertEqual(module.measurements[0].measurement,
-                         "Intensity_LowerQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[0].measurement, "Intensity_LowerQuartileIntensity_DNA"
+        )
         self.assertTrue(module.measurements[0].wants_minimum)
         self.assertFalse(module.measurements[0].wants_maximum)
         self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
         self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
-        self.assertEqual(module.measurements[1].measurement,
-                         "Intensity_UpperQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[1].measurement, "Intensity_UpperQuartileIntensity_DNA"
+        )
         self.assertFalse(module.measurements[1].wants_minimum)
         self.assertTrue(module.measurements[1].wants_maximum)
         self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
         self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
-        for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
+        for group, name in zip(module.additional_objects, ("Cells", "Cytoplasm")):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
 
@@ -576,36 +636,49 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
+        )
         self.assertEqual(module.y_name, "MyFilteredObjects")
         self.assertEqual(module.x_name, "MyObjects")
-        self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
-        self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
-        self.assertEqual(module.rules_directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+        )
+        self.assertEqual(
+            module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS
+        )
+        self.assertEqual(
+            module.rules_directory.dir_choice,
+            cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertEqual(module.rules_directory.custom_path, "./rules")
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.rules_class, "1")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
-        self.assertEqual(module.measurements[0].measurement,
-                         "Intensity_LowerQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[0].measurement, "Intensity_LowerQuartileIntensity_DNA"
+        )
         self.assertTrue(module.measurements[0].wants_minimum)
         self.assertFalse(module.measurements[0].wants_maximum)
         self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
         self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
-        self.assertEqual(module.measurements[1].measurement,
-                         "Intensity_UpperQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[1].measurement, "Intensity_UpperQuartileIntensity_DNA"
+        )
         self.assertFalse(module.measurements[1].wants_minimum)
         self.assertTrue(module.measurements[1].wants_maximum)
         self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
         self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
-        for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
+        for group, name in zip(module.additional_objects, ("Cells", "Cytoplasm")):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
 
@@ -649,37 +722,52 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
+        )
         self.assertEqual(module.y_name, "MyFilteredObjects")
         self.assertEqual(module.x_name, "MyObjects")
-        self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
-        self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
-        self.assertEqual(module.per_object_assignment, cellprofiler.modules.filterobjects.PO_BOTH)
-        self.assertEqual(module.rules_directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+        )
+        self.assertEqual(
+            module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS
+        )
+        self.assertEqual(
+            module.per_object_assignment, cellprofiler.modules.filterobjects.PO_BOTH
+        )
+        self.assertEqual(
+            module.rules_directory.dir_choice,
+            cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertEqual(module.rules_directory.custom_path, "./rules")
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.rules_class, "1")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
-        self.assertEqual(module.measurements[0].measurement,
-                         "Intensity_LowerQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[0].measurement, "Intensity_LowerQuartileIntensity_DNA"
+        )
         self.assertTrue(module.measurements[0].wants_minimum)
         self.assertFalse(module.measurements[0].wants_maximum)
         self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
         self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
-        self.assertEqual(module.measurements[1].measurement,
-                         "Intensity_UpperQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[1].measurement, "Intensity_UpperQuartileIntensity_DNA"
+        )
         self.assertFalse(module.measurements[1].wants_minimum)
         self.assertTrue(module.measurements[1].wants_maximum)
         self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
         self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
-        for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
+        for group, name in zip(module.additional_objects, ("Cells", "Cytoplasm")):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
 
@@ -724,37 +812,53 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterObjects))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
+        )
         self.assertEqual(module.y_name, "MyFilteredObjects")
         self.assertEqual(module.x_name, "MyObjects")
-        self.assertEqual(module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS)
-        self.assertEqual(module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS)
-        self.assertEqual(module.per_object_assignment, cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP)
-        self.assertEqual(module.rules_directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.mode, cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+        )
+        self.assertEqual(
+            module.filter_choice, cellprofiler.modules.filterobjects.FI_LIMITS
+        )
+        self.assertEqual(
+            module.per_object_assignment,
+            cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP,
+        )
+        self.assertEqual(
+            module.rules_directory.dir_choice,
+            cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertEqual(module.rules_directory.custom_path, "./rules")
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.rules_class, "1")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
-        self.assertEqual(module.measurements[0].measurement,
-                         "Intensity_LowerQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[0].measurement, "Intensity_LowerQuartileIntensity_DNA"
+        )
         self.assertTrue(module.measurements[0].wants_minimum)
         self.assertFalse(module.measurements[0].wants_maximum)
         self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
         self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
-        self.assertEqual(module.measurements[1].measurement,
-                         "Intensity_UpperQuartileIntensity_DNA")
+        self.assertEqual(
+            module.measurements[1].measurement, "Intensity_UpperQuartileIntensity_DNA"
+        )
         self.assertFalse(module.measurements[1].wants_minimum)
         self.assertTrue(module.measurements[1].wants_maximum)
         self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
         self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
-        for group, name in zip(module.additional_objects, ('Cells', 'Cytoplasm')):
+        for group, name in zip(module.additional_objects, ("Cells", "Cytoplasm")):
             self.assertEqual(group.object_name, name)
             self.assertEqual(group.target_name, "Filtered%s" % name)
 
@@ -764,13 +868,18 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         labels[7:9, 6:12] = 2
         labels[4:9, 14:18] = 3
         workspace, module = self.make_workspace({"MyObjects": labels})
-        self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement))
+        self.assertTrue(
+            isinstance(
+                module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement
+            )
+        )
         m = workspace.measurements
-        m.add_measurement("MyObjects", "MyMeasurement",
-                          numpy.array([1.5, 2.3, 1.8]))
-        rules_file_contents = "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0], [-1.0,1.0])\n"
+        m.add_measurement("MyObjects", "MyMeasurement", numpy.array([1.5, 2.3, 1.8]))
+        rules_file_contents = (
+            "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0], [-1.0,1.0])\n"
+        )
         rules_path = tempfile.mktemp()
-        fd = open(rules_path, 'wt')
+        fd = open(rules_path, "wt")
         try:
             fd.write(rules_file_contents)
             fd.close()
@@ -778,7 +887,9 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.x_name.value = "MyObjects"
             module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
             module.rules_file_name.value = rules_file
-            module.rules_directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+            module.rules_directory.dir_choice = (
+                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.rules_directory.custom_path = rules_dir
             module.y_name.value = "MyTargetObjects"
             module.run(workspace)
@@ -792,10 +903,11 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
     def test_08_02_filter_by_3_class_rule(self):
         rules_file_contents = (
             "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
-            "IF (MyObjects_MyMeasurement > 1.6, [0.5,0.5,-0.5], [-1.0,-1.0,1.0])\n")
+            "IF (MyObjects_MyMeasurement > 1.6, [0.5,0.5,-0.5], [-1.0,-1.0,1.0])\n"
+        )
         expected_class = [None, "3", "1", "2"]
         rules_path = tempfile.mktemp()
-        fd = open(rules_path, 'wt')
+        fd = open(rules_path, "wt")
         fd.write(rules_file_contents)
         fd.close()
         try:
@@ -805,15 +917,23 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 labels[7:9, 6:12] = 2
                 labels[4:9, 14:18] = 3
                 workspace, module = self.make_workspace({"MyObjects": labels})
-                self.assertTrue(isinstance(module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement))
+                self.assertTrue(
+                    isinstance(
+                        module,
+                        cellprofiler.modules.filterobjects.FilterByObjectMeasurement,
+                    )
+                )
                 m = workspace.measurements
-                m.add_measurement("MyObjects", "MyMeasurement",
-                                  numpy.array([1.5, 2.3, 1.8]))
+                m.add_measurement(
+                    "MyObjects", "MyMeasurement", numpy.array([1.5, 2.3, 1.8])
+                )
                 rules_dir, rules_file = os.path.split(rules_path)
                 module.x_name.value = "MyObjects"
                 module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
                 module.rules_file_name.value = rules_file
-                module.rules_directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                module.rules_directory.dir_choice = (
+                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                )
                 module.rules_directory.custom_path = rules_dir
                 module.rules_class.value = rules_class
                 module.y_name.value = "MyTargetObjects"
@@ -827,7 +947,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             os.remove(rules_path)
 
     def test_09_01_discard_border_objects(self):
-        '''Test the mode to discard border objects'''
+        """Test the mode to discard border objects"""
         labels = numpy.zeros((10, 10), int)
         labels[1:4, 0:3] = 1
         labels[4:8, 1:5] = 2
@@ -845,7 +965,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertTrue(numpy.all(expected == output_objects.segmented))
 
     def test_09_02_discard_mask_objects(self):
-        '''Test discarding objects that touch the mask of objects parent img'''
+        """Test discarding objects that touch the mask of objects parent img"""
         mask = numpy.ones((10, 10), bool)
         mask[5, 5] = False
         labels = numpy.zeros((10, 10), int)
@@ -934,10 +1054,11 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
     def test_11_00_classify_none(self):
         workspace, module = self.make_workspace(
-            {INPUT_OBJECTS : numpy.zeros((10, 10), int)})
+            {INPUT_OBJECTS: numpy.zeros((10, 10), int)}
+        )
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
-        with self.make_classifier(module, numpy.zeros(0, int), classes = [1]):
+        with self.make_classifier(module, numpy.zeros(0, int), classes=[1]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(0)
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -946,11 +1067,10 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
     def test_11_01_classify_true(self):
         labels = numpy.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
-        workspace, module = self.make_workspace(
-            {INPUT_OBJECTS : labels})
+        workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
-        with self.make_classifier(module, numpy.ones(1, int), classes = [1, 2]):
+        with self.make_classifier(module, numpy.ones(1, int), classes=[1, 2]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(1)
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -959,11 +1079,10 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
     def test_11_02_classify_false(self):
         labels = numpy.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
-        workspace, module = self.make_workspace(
-            {INPUT_OBJECTS : labels})
+        workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
-        with self.make_classifier(module, numpy.ones(1, int)*2, classes = [1, 2]):
+        with self.make_classifier(module, numpy.ones(1, int) * 2, classes=[1, 2]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(1)
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -973,12 +1092,10 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         labels = numpy.zeros((10, 10), int)
         labels[1:4, 1:4] = 1
         labels[5:7, 5:7] = 2
-        workspace, module = self.make_workspace(
-            {INPUT_OBJECTS : labels})
+        workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
-        with self.make_classifier(
-            module, numpy.array([1, 2]), classes = [1, 2]):
+        with self.make_classifier(module, numpy.array([1, 2]), classes=[1, 2]):
             workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(2)
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -988,10 +1105,12 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
 
     def test_measurements(self):
-        workspace, module = self.make_workspace(object_dict={
-            INPUT_OBJECTS: numpy.zeros((10, 10), dtype=numpy.uint8),
-            "additional_objects": numpy.zeros((10, 10), dtype=numpy.uint8)
-        })
+        workspace, module = self.make_workspace(
+            object_dict={
+                INPUT_OBJECTS: numpy.zeros((10, 10), dtype=numpy.uint8),
+                "additional_objects": numpy.zeros((10, 10), dtype=numpy.uint8),
+            }
+        )
 
         module.x_name.value = INPUT_OBJECTS
 
@@ -1013,17 +1132,20 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
         module.run(workspace)
 
-        object_names = [(INPUT_OBJECTS, OUTPUT_OBJECTS), ("additional_objects", "additional_result")]
+        object_names = [
+            (INPUT_OBJECTS, OUTPUT_OBJECTS),
+            ("additional_objects", "additional_result"),
+        ]
 
         for input_object_name, output_object_name in object_names:
             assert measurements.has_current_measurements(
                 cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_COUNT % output_object_name
+                cellprofiler.measurement.FF_COUNT % output_object_name,
             )
 
             assert measurements.has_current_measurements(
                 input_object_name,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name
+                cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name,
             )
 
             output_object_features = [
@@ -1031,19 +1153,21 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 cellprofiler.measurement.M_LOCATION_CENTER_X,
                 cellprofiler.measurement.M_LOCATION_CENTER_Y,
                 cellprofiler.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
             ]
 
             for feature in output_object_features:
-                assert measurements.has_current_measurements(output_object_name, feature)
+                assert measurements.has_current_measurements(
+                    output_object_name, feature
+                )
 
     def test_discard_border_objects_volume(self):
         labels = numpy.zeros((9, 16, 16), dtype=numpy.uint8)
-        labels[:3, 1:5, 1:5] = 1       # touches bottom z-slice
+        labels[:3, 1:5, 1:5] = 1  # touches bottom z-slice
         labels[-3:, -5:-1, -5:-1] = 2  # touches top z-slice
         labels[2:7, 6:10, 6:10] = 3
-        labels[2:5, :5, -5:-1] = 4     # touches top edge
-        labels[6:9, -5:-1, :5] = 5     # touches left edge
+        labels[2:5, :5, -5:-1] = 4  # touches top edge
+        labels[6:9, -5:-1, :5] = 5  # touches left edge
 
         expected = numpy.zeros_like(labels)
         expected[2:7, 6:10, 6:10] = 1
@@ -1075,14 +1199,20 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
         expected = sub_labels * (sub_labels != 3)
 
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
 
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
-        module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        )
+        module.per_object_assignment.value = (
+            cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        )
 
         m = workspace.measurements
 
@@ -1108,13 +1238,17 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         expected[2, 4] = 1
         expected[8, 15] = 2
 
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
 
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
+        )
         module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_BOTH
 
         m = workspace.measurements
@@ -1140,13 +1274,17 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         expected = numpy.zeros_like(sub_labels)
         expected[sub_labels == 2] = 1
 
-        workspace, module = self.make_workspace({INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels})
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS: sub_labels, ENCLOSING_OBJECTS: labels}
+        )
 
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
         module.enclosing_object_name.value = ENCLOSING_OBJECTS
         module.measurements[0].measurement.value = TEST_FTR
-        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        module.filter_choice.value = (
+            cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
+        )
         module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_BOTH
 
         m = workspace.measurements
@@ -1188,26 +1326,27 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
 class FakeClassifier(object):
     def __init__(self, answers, classes):
-        '''initializer
+        """initializer
 
         answers - a vector of answers to be returned by "predict"
 
         classes - a vector of class numbers to be used to populate self.classes_
-        '''
+        """
         self.answers_ = answers
         self.classes_ = classes
 
     def predict(self, *args, **kwargs):
         return self.answers_
 
+
 def make_classifier_pickle(answers, classes, class_names, name, feature_names):
-    '''Make a pickle of a fake classifier
+    """Make a pickle of a fake classifier
 
     answers - the answers you want to get back after calling classifier.predict
     classes - the class #s for the answers.
     class_names - one name per class in the order they appear in classes
     name - the name of the classifier
     feature_names - the names of the features fed into the classifier
-    '''
+    """
     classifier = FakeClassifier(answers, classes)
     return cPickle.dumps([classifier, class_names, name, feature_names])

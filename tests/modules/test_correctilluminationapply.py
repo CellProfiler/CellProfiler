@@ -55,20 +55,18 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.rescale_option = cpmcia.RE_NONE
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, None, None, None, measurements, image_set_list
+        )
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, input_module, image_set, object_set, measurements, image_set_list
+        )
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
@@ -102,20 +100,18 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, None, None, None, measurements, image_set_list
+        )
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, input_module, image_set, object_set, measurements, image_set_list
+        )
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
@@ -123,7 +119,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         self.assertTrue(np.all(output_image.pixel_data == expected))
 
     def test_02_01_color_by_bw(self):
-        '''Correct a color image with a black & white illumination fn'''
+        """Correct a color image with a black & white illumination fn"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         illum = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -149,20 +145,18 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, None, None, None, measurements, image_set_list
+        )
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, input_module, image_set, object_set, measurements, image_set_list
+        )
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
@@ -170,7 +164,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         self.assertTrue(np.all(output_image.pixel_data == expected))
 
     def test_02_02_color_by_color(self):
-        '''Correct a color image with a black & white illumination fn'''
+        """Correct a color image with a black & white illumination fn"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         illum = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
@@ -196,20 +190,18 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, None, None, None, measurements, image_set_list
+        )
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, input_module, image_set, object_set, measurements, image_set_list
+        )
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)

@@ -20,15 +20,15 @@ import cellprofiler.workspace
 cellprofiler.preferences.set_headless()
 
 
-INPUT_IMAGE_NAME = 'inputimage'
-OUTPUT_IMAGE_NAME = 'outputimage'
-OUTLINE_NAME = 'outlineimage'
-OBJECTS_NAME = 'objectsname'
+INPUT_IMAGE_NAME = "inputimage"
+OUTPUT_IMAGE_NAME = "outputimage"
+OUTLINE_NAME = "outlineimage"
+OBJECTS_NAME = "objectsname"
 
 
 class TestOverlayOutlines(unittest.TestCase):
     def make_workspace(self, image, labels=None, dimensions=2):
-        '''Make a workspace for testing Threshold'''
+        """Make a workspace for testing Threshold"""
         m = cellprofiler.measurement.Measurements()
         object_set = cellprofiler.object.ObjectSet()
         module = cellprofiler.modules.overlayoutlines.OverlayOutlines()
@@ -38,7 +38,12 @@ class TestOverlayOutlines(unittest.TestCase):
 
         objects = cellprofiler.object.Objects()
         if len(labels) > 1:
-            ijv = numpy.vstack([numpy.column_stack(list(numpy.where(l > 0)) + [l[l > 0]]) for l in labels])
+            ijv = numpy.vstack(
+                [
+                    numpy.column_stack(list(numpy.where(l > 0)) + [l[l > 0]])
+                    for l in labels
+                ]
+            )
             objects.set_ijv(ijv, shape=labels[0].shape)
         else:
             objects.segmented = labels[0]
@@ -46,7 +51,9 @@ class TestOverlayOutlines(unittest.TestCase):
         module.outlines[0].objects_name.value = OBJECTS_NAME
 
         pipeline = cellprofiler.pipeline.Pipeline()
-        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, object_set, m, None)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, module, m, object_set, m, None
+        )
         m.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, dimensions=dimensions))
         return workspace, module
 
@@ -71,17 +78,21 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines)
+        )
         self.assertFalse(module.blank_image)
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.output_image_name, "PrimaryOverlay")
         self.assertEqual(module.wants_color, "Color")
-        self.assertEqual(module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE)
+        self.assertEqual(
+            module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE
+        )
         self.assertEqual(module.line_mode.value, "Inner")
         self.assertEqual(len(module.outlines), 2)
-        for outline, name, color in zip(module.outlines,
-                                        ("PrimaryOutlines", "SecondaryOutlines"),
-                                        ("Red", "Green")):
+        for outline, name, color in zip(
+            module.outlines, ("PrimaryOutlines", "SecondaryOutlines"), ("Red", "Green")
+        ):
             self.assertEqual(outline.objects_name.value, cellprofiler.setting.NONE)
             self.assertEqual(outline.color, color)
 
@@ -114,19 +125,34 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines))
+        self.assertTrue(
+            isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines)
+        )
         self.assertFalse(module.blank_image)
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.output_image_name, "PrimaryOverlay")
         self.assertEqual(module.wants_color, "Color")
-        self.assertEqual(module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE)
+        self.assertEqual(
+            module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE
+        )
         self.assertEqual(module.line_mode.value, "Inner")
         self.assertEqual(len(module.outlines), 2)
         for outline, name, color, choice, objects_name in (
-                (module.outlines[0], "PrimaryOutlines", "Red",
-                 cellprofiler.modules.overlayoutlines.FROM_IMAGES, "Nuclei"),
-                (module.outlines[1], "SecondaryOutlines", "Green",
-                 cellprofiler.modules.overlayoutlines.FROM_OBJECTS, "Cells")):
+            (
+                module.outlines[0],
+                "PrimaryOutlines",
+                "Red",
+                cellprofiler.modules.overlayoutlines.FROM_IMAGES,
+                "Nuclei",
+            ),
+            (
+                module.outlines[1],
+                "SecondaryOutlines",
+                "Green",
+                cellprofiler.modules.overlayoutlines.FROM_OBJECTS,
+                "Cells",
+            ),
+        ):
             self.assertEqual(outline.color, color)
             self.assertEqual(outline.objects_name, objects_name)
 
@@ -189,7 +215,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_02_04_wrong_size_gray_to_color(self):
-        '''Regression test of img-961'''
+        """Regression test of img-961"""
         numpy.random.seed(24)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32)
         image[0, 0] = 1
@@ -247,7 +273,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
     def test_03_02_gray_max_image(self):
         numpy.random.seed(0)
-        image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * .5
+        image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
         outline = numpy.zeros((50, 50), bool)
         outline[20:31, 20:31] = 1
         outline[21:30, 21:30] = 0
@@ -264,7 +290,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
     def test_03_02_gray_max_possible(self):
         numpy.random.seed(0)
-        image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * .5
+        image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
         outline = numpy.zeros((50, 50), bool)
         outline[20:31, 20:31] = 1
         outline[21:30, 21:30] = 0
@@ -280,9 +306,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
     def test_03_03_wrong_size_gray(self):
-        '''Regression test of IMG-961 - image and outline size differ'''
+        """Regression test of IMG-961 - image and outline size differ"""
         numpy.random.seed(41)
-        image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * .5
+        image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
         outline = numpy.zeros((60, 40), bool)
         outline[20:31, 20:31] = True
         outline[21:30, 21:30] = False
@@ -335,7 +361,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+        workspace, module = self.make_workspace(
+            image, labels=[labels.astype(int)], dimensions=3
+        )
 
         module.blank_image.value = True
 
@@ -351,10 +379,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         for index, plane in enumerate(labels):
             expected[index] = skimage.segmentation.mark_boundaries(
-                image[index],
-                plane,
-                color=(1, 0, 0),
-                mode="inner"
+                image[index], plane, color=(1, 0, 0), mode="inner"
             )
 
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -370,7 +395,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+        workspace, module = self.make_workspace(
+            image, labels=[labels.astype(int)], dimensions=3
+        )
 
         module.blank_image.value = False
 
@@ -386,10 +413,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         for index, plane in enumerate(labels):
             expected[index] = skimage.segmentation.mark_boundaries(
-                image[index],
-                plane,
-                color=(1, 0, 0),
-                mode="inner"
+                image[index], plane, color=(1, 0, 0), mode="inner"
             )
 
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -405,7 +429,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+        workspace, module = self.make_workspace(
+            image, labels=[labels.astype(int)], dimensions=3
+        )
 
         module.blank_image.value = False
 
@@ -421,10 +447,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         for index, plane in enumerate(labels):
             expected[index] = skimage.segmentation.mark_boundaries(
-                image[index],
-                plane,
-                color=(1, 0, 0),
-                mode="inner"
+                image[index], plane, color=(1, 0, 0), mode="inner"
             )
 
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -438,7 +461,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+        workspace, module = self.make_workspace(
+            image, labels=[labels.astype(int)], dimensions=3
+        )
 
         module.blank_image.value = True
 
@@ -452,10 +477,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         for index, plane in enumerate(labels):
             expected[index] = skimage.segmentation.mark_boundaries(
-                image[index],
-                plane,
-                color=1.0,
-                mode="inner"
+                image[index], plane, color=1.0, mode="inner"
             )
 
         expected = skimage.color.rgb2gray(expected)
@@ -473,7 +495,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+        workspace, module = self.make_workspace(
+            image, labels=[labels.astype(int)], dimensions=3
+        )
 
         module.blank_image.value = False
 
@@ -489,10 +513,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         for index, plane in enumerate(labels):
             expected[index] = skimage.segmentation.mark_boundaries(
-                image[index],
-                plane,
-                color=1.0,
-                mode="inner"
+                image[index], plane, color=1.0, mode="inner"
             )
 
         expected = skimage.color.rgb2gray(expected)
@@ -512,7 +533,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-        workspace, module = self.make_workspace(image, labels=[labels.astype(int)], dimensions=3)
+        workspace, module = self.make_workspace(
+            image, labels=[labels.astype(int)], dimensions=3
+        )
 
         module.blank_image.value = False
 
@@ -528,10 +551,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 
         for index, plane in enumerate(labels):
             expected[index] = skimage.segmentation.mark_boundaries(
-                image[index],
-                plane,
-                color=image_max,
-                mode="inner"
+                image[index], plane, color=image_max, mode="inner"
             )
 
         expected = skimage.color.rgb2gray(expected)

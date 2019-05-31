@@ -22,7 +22,7 @@ def test_run(image, module, workspace):
     actual = workspace.image_set.get_image("output").pixel_data
 
     if image.dimensions == 2:
-        factor = ((3.0 / 2.0) ** 2)
+        factor = (3.0 / 2.0) ** 2
     else:
         factor = (4.0 / 3.0) * ((3.0 / 2.0) ** 3)
 
@@ -39,10 +39,7 @@ def test_run_label_image(module):
     data[3:8, 3:8] = 1
     data[5, 5] = 0
 
-    image = cellprofiler.image.Image(
-        image=data,
-        convert=False
-    )
+    image = cellprofiler.image.Image(image=data, convert=False)
 
     image_set_list = cellprofiler.image.ImageSetList()
 
@@ -55,7 +52,7 @@ def test_run_label_image(module):
         image_set=image_set,
         object_set=None,
         measurements=None,
-        image_set_list=image_set_list
+        image_set_list=image_set_list,
     )
 
     module.x_name.value = "example"

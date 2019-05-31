@@ -746,7 +746,7 @@ of the straightened worms.""",
             orig_objects = object_set.get_objects(input_object_name)
 
             i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-            min_i, max_i, _, _ = extrema(i, labels, orig_objects.indices)
+            (min_i, max_i), (_, _) = extrema(i, labels, orig_objects.indices)
             min_i = np.hstack(([0], min_i))
             max_i = np.hstack(([labels.shape[0]], max_i)) + 1
             heights = max_i - min_i

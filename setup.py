@@ -64,7 +64,7 @@ setuptools.setup(
         "numpy>=1.16",
         "prokaryote==2.4.1",
         "python-bioformats==1.5.2",
-        "pyzmq==15.3.0",
+        "pyzmq==18.0.1",
         "raven>=6.10",
         "requests>=2.22",
         "scikit-image>=0.14",

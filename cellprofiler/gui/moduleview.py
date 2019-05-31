@@ -443,9 +443,7 @@ class ModuleView(object):
             #
             #################################
             if self.notes_panel is not None:
-                self.module_notes_control.SetValue(
-                    "\n".join([_.decode("utf-8") for _ in self.__module.notes])
-                )
+                self.module_notes_control.SetValue("\n".join([six.text_type(note) for note in self.__module.notes]))
 
             #################################
             #

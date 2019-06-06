@@ -25,8 +25,6 @@ install_aliases()
 import six.moves.urllib.parse
 
 
-buffer = memoryview
-
 logger = logging.getLogger(__name__)
 
 version_number = 1
@@ -391,7 +389,7 @@ class HDF5Dict(object):
         with self.lock:
             self.flush()
             with open(self.filename, "rb") as f:
-                return buffer(f.read())
+                return memoryview(f.read())
 
     @classmethod
     def has_hdf5_dict(cls, h5file):

@@ -18,7 +18,6 @@ import cellprofiler.grid
 
 logger = logging.getLogger(__name__)
 
-buffer = memoryview
 
 NOTIFY_SOCKET_ADDR = "inproc://BoundaryNotifications"
 SD_KEY_DICT = "__keydict__"
@@ -64,7 +63,7 @@ def make_CP_encoder(buffers):
             d = data.serialize()
             d["__CPGridInfo__"] = True
             return d
-        if isinstance(data, buffer):
+        if isinstance(data, memoryview):
             # arbitrary data
             idx = len(buffers)
             buffers.append(data)
@@ -77,14 +76,14 @@ def make_CP_encoder(buffers):
 def make_CP_decoder(buffers):
     def decoder(dct, buffers=buffers):
         if "__ndarray__" in dct:
-            buf = buffer(buffers[dct["idx"]])
+            buf = memoryview(buffers[dct["idx"]])
             shape = dct["shape"]
             dtype = dct["dtype"]
             if numpy.prod(shape) == 0:
                 return numpy.zeros(shape, dtype)
             return numpy.frombuffer(buf, dtype=dtype).reshape(shape).copy()
         if "__buffer__" in dct:
-            return buffer(buffers[dct["idx"]])
+            return memoryview(buffers[dct["idx"]])
         if "__CPGridInfo__" in dct:
             grid = cellprofiler.grid.Grid()
             grid.deserialize(dct)

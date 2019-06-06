@@ -18,10 +18,7 @@ import cellprofiler.grid
 
 logger = logging.getLogger(__name__)
 
-try:
-    buffer  # Python 2
-except NameError:  # Python 3
-    buffer = memoryview
+buffer = memoryview
 
 NOTIFY_SOCKET_ADDR = "inproc://BoundaryNotifications"
 SD_KEY_DICT = "__keydict__"

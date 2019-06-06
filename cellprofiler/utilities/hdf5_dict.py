@@ -25,10 +25,7 @@ install_aliases()
 import six.moves.urllib.parse
 
 
-try:
-    buffer  # Python 2
-except NameError:  # Python 3
-    buffer = memoryview
+buffer = memoryview
 
 logger = logging.getLogger(__name__)
 

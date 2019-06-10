@@ -1812,7 +1812,7 @@ class PipelineController(object):
         if event.settings is None or len(event.settings) == 0:
             message = "Error while loading %s: %s\nDo you want to stop processing?" % (
                 module_name,
-                event.error.message,
+                str(event.error),
             )
         else:
             message = (
@@ -1820,7 +1820,7 @@ class PipelineController(object):
                 "Do you want to stop processing?\n\n"
                 "Module settings:\n"
                 "\t%s"
-            ) % (module_name, event.error.message, "\n\t".join(event.settings))
+            ) % (module_name, str(event.error), "\n\t".join(event.settings))
         error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status is wx.ID_CANCEL:

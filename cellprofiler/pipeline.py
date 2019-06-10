@@ -878,7 +878,7 @@ class Pipeline(object):
             fd.seek(0)
             needs_close = False
         elif os.path.exists(fd_or_filename):
-            fd = open(fd_or_filename, "rb")
+            fd = open(fd_or_filename, "r")
             needs_close = True
             filename = fd_or_filename
         else:

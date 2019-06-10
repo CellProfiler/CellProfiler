@@ -1147,9 +1147,8 @@ class Pipeline(object):
                 #
                 # Set up the module
                 #
-                module_name = module_name
                 module = self.instantiate_module(module_name)
-                module.module_num = module_number
+                module.set_module_num(module_number)
                 #
                 # Decode the attributes. These are turned into strings using
                 # repr, so True -> 'True', etc. They are then encoded using
@@ -1174,12 +1173,11 @@ class Pipeline(object):
                     if len(a.split(":")) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
                     attribute, value = a.split(":")
-                    value = value
+                    if attribute in skip_attributes:
+                        continue
                     value = eval(value)
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
-                    elif attribute in skip_attributes:
-                        pass
                     else:
                         setattr(module, attribute, value)
                 if variable_revision_number is None:

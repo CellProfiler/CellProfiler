@@ -1175,7 +1175,8 @@ class Pipeline(object):
                     attribute, value = a.split(":")
                     if attribute in skip_attributes:
                         continue
-                    value = eval(value)
+                    # En/decode needed to read example cppipe format
+                    value = eval(value.encode().decode('unicode_escape'))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
                     else:

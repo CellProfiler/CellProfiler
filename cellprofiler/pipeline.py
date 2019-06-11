@@ -1134,7 +1134,9 @@ class Pipeline(object):
                     if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":")
-                    setting = setting
+                    # En/decode needed to read example cppipe format
+                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
+                    setting = setting.encode().decode('unicode_escape')
 
                     if do_deprecated_utf16_decode:
                         setting = cellprofiler.utilities.utf16encode.utf16decode(
@@ -1176,6 +1178,7 @@ class Pipeline(object):
                     if attribute in skip_attributes:
                         continue
                     # En/decode needed to read example cppipe format
+                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
                     value = eval(value.encode().decode('unicode_escape'))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value

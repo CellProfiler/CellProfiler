@@ -2335,7 +2335,7 @@ class VStringArray(object):
                 for idx in idx_not_nulls[i:iend]:
                     sbegin = index[idx, 0] - begin
                     send = index[idx, 1] - begin
-                    scat[sbegin:send] = numpy.frombuffer(strings[idx], "S1")
+                    scat[sbegin:send] = numpy.fromstring(strings[idx], "S1")
                 self.data[begin:end] = scat
 
     def bisect_left(self, s):

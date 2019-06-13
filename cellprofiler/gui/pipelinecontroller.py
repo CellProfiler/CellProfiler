@@ -2152,7 +2152,7 @@ class PipelineController(object):
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, filenames in os.walk(pathname):
                             for filename in filenames:
-                                if interrupt[0]:
+                                if interrupt and interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(

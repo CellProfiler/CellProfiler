@@ -814,10 +814,10 @@ segmentation.""",
                 numpy.arange(1, object_count + 1),
             )
             areas.sort()
-            low_diameter = numpy.sqrt(float(areas[object_count / 10]) / numpy.pi) * 2
-            median_diameter = numpy.sqrt(float(areas[object_count / 2]) / numpy.pi) * 2
+            low_diameter = numpy.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
+            median_diameter = numpy.sqrt(float(areas[object_count // 2]) / numpy.pi) * 2
             high_diameter = (
-                numpy.sqrt(float(areas[object_count * 9 / 10]) / numpy.pi) * 2
+                numpy.sqrt(float(areas[object_count * 9 // 10]) / numpy.pi) * 2
             )
             statistics.append(["10th pctile diameter", "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter", "%.1f pixels" % median_diameter])

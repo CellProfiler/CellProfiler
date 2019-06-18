@@ -4,6 +4,7 @@ import matplotlib.cm
 import numpy
 import scipy.ndimage
 import scipy.sparse
+import scipy.stats
 import skimage.color
 
 import cellprofiler.preferences
@@ -308,10 +309,22 @@ class Objects(object):
         """
         if self.volumetric:
             histogram = self.histogram_from_labels(self.segmented, children.segmented)
+	    return self.relate_histogram(histogram)
         else:
-            histogram = self.histogram_from_ijv(self.ijv, children.ijv)
-
-        return self.relate_histogram(histogram)
+	    try:
+		child_hist=[]
+		parent_list=[]
+		parent_labels=self.segmented
+		parent_labels=numpy.where(parent_labels==0, numpy.NaN, parent_labels) #ignore the background
+		child_labels=children.segmented
+		for eachchild in range(1,numpy.max(child_labels)+1):
+		    child_hist.append(int(scipy.stats.mode((numpy.where(child_labels==eachchild, 1, numpy.NaN)) * parent_labels, axis=None, nan_policy='omit')[0][0]))
+		for eachparent in range(1,numpy.max(child_labels)+1):
+                    parent_list.append(child_hist.count(eachparent))
+		return numpy.array(child_hist), numpy.array(parent_list)		
+	    except:
+                histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+                return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
         """relate the object numbers in one label to those in another

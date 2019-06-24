@@ -77,13 +77,13 @@ The choices are:
 
         self.file_format = cellprofiler.setting.Choice(
             "Saved file format",
-
             [O_PNG, O_TIFF_8, O_TIFF_16],
             value=O_TIFF_8,
             doc="""\
 **{O_PNG}** files do not support 3D. **{O_TIFF_8}** files use zlib compression level 6.""".format(
                 O_PNG=O_PNG, O_TIFF_8=O_TIFF_8, O_TIFF_16=O_TIFF_16,
-            )
+            ),
+        )
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

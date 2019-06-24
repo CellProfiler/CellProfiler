@@ -32,7 +32,8 @@ import cellprofiler.module
 import cellprofiler.setting
 
 O_PNG = "png"
-O_TIFF = "tiff"
+O_TIFF_8 = "8-bit tiff"
+O_TIFF_16 = "16-bit tiff"
 SAVE_PER_OBJECT = "Images"
 SAVE_MASK = "Masks"
 
@@ -83,13 +84,15 @@ The choices are:
             "Saved file format",
             [
                 O_PNG,
-                O_TIFF
+                O_TIFF_8,
+                O_TIFF_16
             ],
-            value=O_TIFF,
+            value=O_TIFF_8,
             doc="""\
-**{O_PNG}** files do not support 3D. **{O_TIFF}** files use zlib compression level 6.""".format(
+**{O_PNG}** files do not support 3D. **{O_TIFF_8}** files use zlib compression level 6.""".format(
                 O_PNG=O_PNG,
-                O_TIFF=O_TIFF
+                O_TIFF_8=O_TIFF_8,
+                O_TIFF_16=O_TIFF_16,
             )
         )
 
@@ -134,13 +137,21 @@ The choices are:
 
                 skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
 
-            elif self.file_format.value == O_TIFF:
+            elif self.file_format.value == O_TIFF_8:
                 filename = os.path.join(
                     directory,
-                    "{}_{}.{}".format(self.objects_name.value, label, O_TIFF)
+                    "{}_{}.{}".format(self.objects_name.value, label, 'tiff')
                     )
 
                 skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
+
+            elif self.file_format.value == O_TIFF_16:
+                filename = os.path.join(
+                    directory,
+                    "{}_{}.{}".format(self.objects_name.value, label, 'tiff')
+                    )
+
+                skimage.io.imsave(filename, skimage.img_as_uint(mask), compress=6)
 
             filenames.append(filename)
 

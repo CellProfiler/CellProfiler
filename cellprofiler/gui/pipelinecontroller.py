@@ -2112,36 +2112,30 @@ class PipelineController(object):
             style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT,
         ) as dlg:
             assert isinstance(dlg, wx.ProgressDialog)
+
+            # Set dialog width to at least 480
+            min_width = 480
             h, w = dlg.GetSize()
-            if w < 480:
-                dlg.SetSize((max(w, 480), h))
+            if w < min_width:
+                dlg.SetSize(min_width, h)
+
             queue = six.moves.queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
 
             def fn(filenames=filenames, interrupt=None, message=None, queue=queue):
-                if message is None:
-                    message = message
-                if interrupt is None:
-                    interrupt = interrupt
                 urls = []
                 for pathname in filenames:
-                    # FIXME:
-                    # if interrupt[0]:
-                    #     break
+                    if interrupt[0]:
+                        break
 
                     # Hack - convert drive names to lower case in
                     #        Windows to normalize them.
-                    if (
-                        sys.platform == "win32"
-                        and pathname[0].isalpha()
-                        and pathname[1] == ":"
-                    ):
+                    isWindows = sys.platform == "win32" and pathname[0].isalpha() and pathname[1] == ":"
+                    if (isWindows):
                         pathname = os.path.normpath(pathname[:2]) + pathname[2:]
 
-                    # FIXME:
-                    # message[0] = "Processing " + pathname
-
+                    message[0] = "Processing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(
                             cellprofiler.modules.loadimages.pathname2url(pathname)
@@ -2152,7 +2146,7 @@ class PipelineController(object):
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, filenames in os.walk(pathname):
                             for filename in filenames:
-                                if interrupt and interrupt[0]:
+                                if interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(
@@ -2167,7 +2161,7 @@ class PipelineController(object):
                             break
                 queue.put(urls)
 
-            thread = threading.Thread(target=fn)
+            thread = threading.Thread(target=fn, args=(filenames, interrupt, message, queue))
             thread.setDaemon(True)
             thread.start()
 

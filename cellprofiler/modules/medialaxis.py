@@ -20,12 +20,13 @@ YES          YES          NO
 .. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/edges/plot_skeleton.html
 """
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
 import numpy
 import skimage.color
 import skimage.morphology
+
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
 
 
 class MedialAxis(cellprofiler.module.ImageProcessing):
@@ -58,9 +59,7 @@ class MedialAxis(cellprofiler.module.ImageProcessing):
             y_data = skimage.morphology.medial_axis(x_data)
 
         y = cellprofiler.image.Image(
-            dimensions=x.dimensions,
-            image=y_data,
-            parent_image=x
+            dimensions=x.dimensions, image=y_data, parent_image=x
         )
 
         images.add(y_name, y)

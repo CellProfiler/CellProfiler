@@ -18,14 +18,16 @@ the analysis worker runs three threads:
                    stops the main thread's run loop.
 """
 from __future__ import print_function
+
 import logging
 import os
 import sys
+
 import pkg_resources
 
 logger = logging.getLogger(__name__)
 
-'''Set the log level through the environment by specifying AW_LOG_LEVEL'''
+"""Set the log level through the environment by specifying AW_LOG_LEVEL"""
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 
 work_announce_address = None
@@ -33,46 +35,65 @@ knime_bridge_address = None
 
 
 def aw_parse_args():
-    '''Parse the application arguments into setup parameters'''
-    from cellprofiler.preferences import \
-        set_headless, set_awt_headless, \
-        set_plugin_directory, set_ij_plugin_directory
+    """Parse the application arguments into setup parameters"""
+    from cellprofiler.preferences import (
+        set_headless,
+        set_awt_headless,
+        set_plugin_directory,
+        set_ij_plugin_directory,
+    )
     import optparse
+
     global work_announce_address
     global knime_bridge_address
     set_headless()
     set_awt_headless(True)
     parser = optparse.OptionParser()
-    parser.add_option("--work-announce",
-                      dest="work_announce_address",
-                      help="ZMQ port where work announcements are published",
-                      default=None)
-    parser.add_option("--log-level",
-                      dest="log_level",
-                      help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
-                      default=os.environ.get(AW_LOG_LEVEL, logging.INFO))
-    parser.add_option("--plugins-directory",
-                      dest="plugins_directory",
-                      help="Folder containing the CellProfiler plugin modules needed by client pipelines",
-                      default=None)
-    parser.add_option("--ij-plugins-directory",
-                      dest="ij_plugins_directory",
-                      help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines",
-                      default=None)
-    parser.add_option("--jvm-heap-size",
-                      dest="jvm_heap_size",
-                      default=None,
-                      help=("This is the amount of memory reserved for the "
-                            "Java Virtual Machine (similar to the java -Xmx switch)."
-                            "Example formats: 512000k, 512m, 1g"))
-    parser.add_option("--knime-bridge-address",
-                      dest="knime_bridge_address",
-                      help="Open up a port to handle the Knime bridge protocol",
-                      default=None)
+    parser.add_option(
+        "--work-announce",
+        dest="work_announce_address",
+        help="ZMQ port where work announcements are published",
+        default=None,
+    )
+    parser.add_option(
+        "--log-level",
+        dest="log_level",
+        help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
+        default=os.environ.get(AW_LOG_LEVEL, logging.INFO),
+    )
+    parser.add_option(
+        "--plugins-directory",
+        dest="plugins_directory",
+        help="Folder containing the CellProfiler plugin modules needed by client pipelines",
+        default=None,
+    )
+    parser.add_option(
+        "--ij-plugins-directory",
+        dest="ij_plugins_directory",
+        help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines",
+        default=None,
+    )
+    parser.add_option(
+        "--jvm-heap-size",
+        dest="jvm_heap_size",
+        default=None,
+        help=(
+            "This is the amount of memory reserved for the "
+            "Java Virtual Machine (similar to the java -Xmx switch)."
+            "Example formats: 512000k, 512m, 1g"
+        ),
+    )
+    parser.add_option(
+        "--knime-bridge-address",
+        dest="knime_bridge_address",
+        help="Open up a port to handle the Knime bridge protocol",
+        default=None,
+    )
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
         from cellprofiler.preferences import set_jvm_heap_mb
+
         set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
@@ -106,11 +127,11 @@ if __name__ == "__main__":
         #     let you selectively inherit file descriptors, so we close them here.
         #
         try:
-            maxfd = os.sysconf('SC_OPEN_MAX')
+            maxfd = os.sysconf("SC_OPEN_MAX")
         except:
             maxfd = 256
         os.closerange(3, maxfd)
-    if not hasattr(sys, 'frozen'):
+    if not hasattr(sys, "frozen"):
         # In the development version, maybe the bioformats package is installed?
         # Add the root to the pythonpath
         root = os.path.split(os.path.split(__file__)[0])[0]
@@ -129,21 +150,33 @@ import six.moves
 import cellprofiler.workspace as cpw
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
-from cellprofiler.analysis import \
-    PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
-    NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
-    DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
-    ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
-    OmeroLoginRequest, OmeroLoginReply
+from cellprofiler.analysis import (
+    PipelinePreferencesRequest,
+    InitialMeasurementsRequest,
+    WorkRequest,
+    NoWorkReply,
+    MeasurementsReport,
+    InteractionRequest,
+    DisplayRequest,
+    DisplayPostGroupRequest,
+    AnalysisCancelRequest,
+    ExceptionReport,
+    DebugWaiting,
+    DebugComplete,
+    ImageSetSuccess,
+    ImageSetSuccessWithDictionary,
+    SharedDictionaryRequest,
+    UpstreamExit,
+    OmeroLoginRequest,
+)
 import javabridge as J
+
 #
 # CellProfiler expects NaN as a result during calculation
 #
 import numpy as np
 
-np.seterr(all='ignore')
+np.seterr(all="ignore")
 
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
@@ -167,34 +200,36 @@ def main():
     # an app.
     #
     if sys.platform == "darwin":
-        from cellprofiler.icons import get_builtin_images_path
         import os.path
-        icon_path = pkg_resources.resource_filename("cellprofiler", os.path.join("data", "icons", "CellProfiler.png"))
+
+        icon_path = pkg_resources.resource_filename(
+            "cellprofiler", os.path.join("data", "icons", "CellProfiler.png")
+        )
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
 
     # Start the JVM
     from cellprofiler.utilities.cpjvm import cp_start_vm, cp_stop_vm
+
     cp_start_vm()
 
     deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
     deadman_start_socket.bind(DEADMAN_START_ADDR)
 
     # Start the deadman switch thread.
-    start_daemon_thread(target=exit_on_stdin_close,
-                        name="exit_on_stdin_close")
+    start_daemon_thread(target=exit_on_stdin_close, name="exit_on_stdin_close")
     deadman_start_socket.recv()
     deadman_start_socket.close()
 
     from cellprofiler.knime_bridge import KnimeBridgeServer
+
     with AnalysisWorker(work_announce_address) as worker:
-        worker_thread = threading.Thread(target=worker.run,
-                                         name="WorkerThread")
+        worker_thread = threading.Thread(target=worker.run, name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()
-        with KnimeBridgeServer(the_zmq_context,
-                               knime_bridge_address,
-                               NOTIFY_ADDR, NOTIFY_STOP):
+        with KnimeBridgeServer(
+            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+        ):
             worker_thread.join()
 
     #
@@ -207,12 +242,13 @@ def main():
 
 
 class AnalysisWorker(object):
-    '''An analysis worker processing work at a given address
+    """An analysis worker processing work at a given address
 
-    '''
+    """
 
     def __init__(self, work_announce_address, with_stop_run_loop=True):
         from bioformats.formatreader import set_omero_login_hook
+
         self.work_announce_address = work_announce_address
         self.cancelled = False
         self.with_stop_run_loop = with_stop_run_loop
@@ -246,9 +282,9 @@ class AnalysisWorker(object):
         self.initial_measurements = {}
 
     class AnalysisWorkerThreadObject(object):
-        '''Provide the scope needed by the analysis worker thread
+        """Provide the scope needed by the analysis worker thread
 
-        '''
+        """
 
         def __init__(self, worker):
             self.worker = worker
@@ -271,21 +307,25 @@ class AnalysisWorker(object):
 
     def exit_thread(self):
         from bioformats.formatreader import clear_image_reader_cache
+
         self.notify_socket.close()
         clear_image_reader_cache()
         J.detach()
 
     def run(self):
         from cellprofiler.pipeline import CancelledException
+
         t0 = 0
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
                 try:
-                    self.current_analysis_id, \
-                    self.work_request_address = self.get_announcement()
+                    self.current_analysis_id, self.work_request_address = (
+                        self.get_announcement()
+                    )
                     if t0 is None or time.time() - t0 > 30:
-                        logger.debug("Connecting at address %s" %
-                                     self.work_request_address)
+                        logger.debug(
+                            "Connecting at address %s" % self.work_request_address
+                        )
                         t0 = time.time()
                     self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
@@ -303,40 +343,42 @@ class AnalysisWorker(object):
                     self.work_socket.close()
 
     def do_job(self, job):
-        '''Handle a work request to its completion
+        """Handle a work request to its completion
 
         job - WorkRequest
-        '''
+        """
         import cellprofiler.pipeline as cpp
+
         job_measurements = []
         try:
             send_dictionary = job.wants_dictionary
 
             logger.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
-            current_pipeline, current_preferences = \
-                self.pipelines_and_preferences.get(
-                        self.current_analysis_id, (None, None))
+            current_pipeline, current_preferences = self.pipelines_and_preferences.get(
+                self.current_analysis_id, (None, None)
+            )
             if not current_pipeline:
                 logger.debug("Fetching pipeline and preferences")
-                rep = self.send(PipelinePreferencesRequest(
-                        self.current_analysis_id))
+                rep = self.send(PipelinePreferencesRequest(self.current_analysis_id))
                 logger.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 cpprefs.set_preferences_from_dict(preferences_dict)
 
                 logger.debug("Loading pipeline")
-                pipeline_blob = rep.pipeline_blob.tostring()
+
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(six.moves.StringIO(pipeline_blob),
-                                         raise_on_error=True)
+
+                current_pipeline.loadtxt(six.moves.StringIO(rep.pipeline_blob), raise_on_error=True)
+
                 logger.debug("Pipeline loaded")
-                current_pipeline.add_listener(
-                        self.pipeline_listener.handle_event)
+                current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipelines_and_preferences[self.current_analysis_id] = (
-                    current_pipeline, current_preferences)
+                    current_pipeline,
+                    current_preferences,
+                )
             else:
                 # update preferences to match remote values
                 cpprefs.set_preferences_from_dict(current_preferences)
@@ -346,15 +388,15 @@ class AnalysisWorker(object):
             logger.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
             current_measurements = self.initial_measurements.get(
-                    self.current_analysis_id)
+                self.current_analysis_id
+            )
             if current_measurements is None:
                 logger.debug("Sending initial measurements request")
-                rep = self.send(InitialMeasurementsRequest(
-                        self.current_analysis_id))
+                rep = self.send(InitialMeasurementsRequest(self.current_analysis_id))
                 logger.debug("Got initial measurements")
-                current_measurements = \
-                    self.initial_measurements[self.current_analysis_id] = \
-                    cpmeas.load_measurements_from_buffer(rep.buf)
+                current_measurements = self.initial_measurements[
+                    self.current_analysis_id
+                ] = cpmeas.load_measurements_from_buffer(rep.buf)
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
@@ -372,10 +414,10 @@ class AnalysisWorker(object):
             if not worker_runs_post_group:
                 # Get the shared state from the first imageset in this run.
                 shared_dicts = self.send(
-                        SharedDictionaryRequest(self.current_analysis_id)).dictionaries
+                    SharedDictionaryRequest(self.current_analysis_id)
+                ).dictionaries
                 assert len(shared_dicts) == len(current_pipeline.modules())
-                for module, new_dict in zip(current_pipeline.modules(),
-                                            shared_dicts):
+                for module, new_dict in zip(current_pipeline.modules(), shared_dicts):
                     module.set_dictionary_for_worker(new_dict)
 
             # Run prepare group if this is the first image in the group.  We do
@@ -383,15 +425,20 @@ class AnalysisWorker(object):
             # that any changes to the modules' shared state dictionaries get
             # propagated correctly.
             should_process = True
-            if current_measurements[cpmeas.IMAGE,
-                                    cpmeas.GROUP_INDEX,
-                                    image_set_numbers[0]] == 1:
-                workspace = cpw.Workspace(current_pipeline, None, None, None,
-                                          current_measurements, None, None)
+            if (
+                current_measurements[
+                    cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_numbers[0]
+                ]
+                == 1
+            ):
+                workspace = cpw.Workspace(
+                    current_pipeline, None, None, None, current_measurements, None, None
+                )
                 if not current_pipeline.prepare_group(
-                        workspace,
-                        current_measurements.get_grouping_keys(),
-                        image_set_numbers):
+                    workspace,
+                    current_measurements.get_grouping_keys(),
+                    image_set_numbers,
+                ):
                     # exception handled elsewhere, possibly cancelling this run.
                     should_process = False
                 del workspace
@@ -403,11 +450,12 @@ class AnalysisWorker(object):
                     try:
                         self.pipeline_listener.image_set_number = image_set_number
                         last_workspace = current_pipeline.run_image_set(
-                                current_measurements,
-                                image_set_number,
-                                self.interaction_handler,
-                                self.display_handler,
-                                self.cancel_handler)
+                            current_measurements,
+                            image_set_number,
+                            self.interaction_handler,
+                            self.display_handler,
+                            self.cancel_handler,
+                        )
                         if self.pipeline_listener.should_abort:
                             abort = True
                             break
@@ -422,16 +470,20 @@ class AnalysisWorker(object):
                         if send_dictionary:
                             # The jobserver would like a copy of our modules'
                             # run_state dictionaries.
-                            dicts = [m.get_dictionary_for_worker()
-                                     for m in current_pipeline.modules()]
+                            dicts = [
+                                m.get_dictionary_for_worker()
+                                for m in current_pipeline.modules()
+                            ]
                             req = ImageSetSuccessWithDictionary(
-                                    self.current_analysis_id,
-                                    image_set_number=image_set_number,
-                                    shared_dicts=dicts)
+                                self.current_analysis_id,
+                                image_set_number=image_set_number,
+                                shared_dicts=dicts,
+                            )
                         else:
                             req = ImageSetSuccess(
-                                    self.current_analysis_id,
-                                    image_set_number=image_set_number)
+                                self.current_analysis_id,
+                                image_set_number=image_set_number,
+                            )
                         rep = self.send(req)
                     except cpp.CancelledException:
                         logging.info("Aborting job after cancellation")
@@ -439,12 +491,16 @@ class AnalysisWorker(object):
                     except Exception:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
-                            if self.handle_exception(
-                                    image_set_number=image_set_number) == ED_STOP:
+                            if (
+                                self.handle_exception(image_set_number=image_set_number)
+                                == ED_STOP
+                            ):
                                 abort = True
                                 break
                         except:
-                            logging.error("Error in handling of pipeline exception", exc_info=True)
+                            logging.error(
+                                "Error in handling of pipeline exception", exc_info=True
+                            )
                             # this is bad.  We can't handle nested exceptions
                             # remotely so we just fail on this run.
                             abort = True
@@ -455,23 +511,25 @@ class AnalysisWorker(object):
                     return
 
                 if worker_runs_post_group:
-                    last_workspace.interaction_handler = \
-                        self.interaction_handler
+                    last_workspace.interaction_handler = self.interaction_handler
                     last_workspace.cancel_handler = self.cancel_handler
-                    last_workspace.post_group_display_handler = \
+                    last_workspace.post_group_display_handler = (
                         self.post_group_display_handler
+                    )
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it
                     # here.
                     current_pipeline.post_group(
-                            last_workspace,
-                            current_measurements.get_grouping_keys())
+                        last_workspace, current_measurements.get_grouping_keys()
+                    )
                     del last_workspace
 
             # send measurements back to server
-            req = MeasurementsReport(self.current_analysis_id,
-                                     buf=current_measurements.file_contents(),
-                                     image_set_numbers=image_set_numbers)
+            req = MeasurementsReport(
+                self.current_analysis_id,
+                buf=current_measurements.file_contents(),
+                image_set_numbers=image_set_numbers,
+            )
             rep = self.send(req)
 
         except cpp.CancelledException:
@@ -488,58 +546,68 @@ class AnalysisWorker(object):
                 m.close()
 
     def interaction_handler(self, module, *args, **kwargs):
-        '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
+        """handle interaction requests by passing them to the jobserver and wait for the reply."""
         # we write args and kwargs into the InteractionRequest to allow
         # more complex data to be sent by the underlying zmq machinery.
-        arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] +
-                              [('kwarg_%s' % name, v) for (name, v) in kwargs.items()])
+        arg_kwarg_dict = dict(
+            [("arg_%d" % idx, v) for idx, v in enumerate(args)]
+            + [("kwarg_%s" % name, v) for (name, v) in kwargs.items()]
+        )
         req = InteractionRequest(
-                self.current_analysis_id,
-                module_num=module.module_num,
-                num_args=len(args),
-                kwargs_names=kwargs.keys(),
-                **arg_kwarg_dict)
+            self.current_analysis_id,
+            module_num=module.module_num,
+            num_args=len(args),
+            kwargs_names=kwargs.keys(),
+            **arg_kwarg_dict
+        )
         rep = self.send(req)
         return rep.result
 
     def cancel_handler(self):
-        '''Handle a cancel request by sending AnalysisCancelRequest
+        """Handle a cancel request by sending AnalysisCancelRequest
 
-        '''
+        """
         self.send(AnalysisCancelRequest(self.current_analysis_id))
 
     def display_handler(self, module, display_data, image_set_number):
-        '''handle display requests'''
-        req = DisplayRequest(self.current_analysis_id,
-                             module_num=module.module_num,
-                             display_data_dict=display_data.__dict__,
-                             image_set_number=image_set_number)
+        """handle display requests"""
+        req = DisplayRequest(
+            self.current_analysis_id,
+            module_num=module.module_num,
+            display_data_dict=display_data.__dict__,
+            image_set_number=image_set_number,
+        )
         rep = self.send(req)
 
     def post_group_display_handler(self, module, display_data, image_set_number):
         req = DisplayPostGroupRequest(
-                self.current_analysis_id,
-                module.module_num, display_data.__dict__, image_set_number)
+            self.current_analysis_id,
+            module.module_num,
+            display_data.__dict__,
+            image_set_number,
+        )
         rep = self.send(req)
 
     def omero_login_handler(self):
-        '''Handle requests for an Omero login'''
+        """Handle requests for an Omero login"""
         from bioformats.formatreader import use_omero_credentials
+
         req = OmeroLoginRequest(self.current_analysis_id)
         rep = self.send(req)
         use_omero_credentials(rep.credentials)
 
     def send(self, req, work_socket=None):
-        '''Send a request and receive a reply
+        """Send a request and receive a reply
 
         req - request to send
 
         socket - socket to use for send. Default is current work socket
 
         returns a reply on success. If cancelled, throws a CancelledException
-        '''
+        """
         if self.current_analysis_id is None:
             from cellprofiler.pipeline import CancelledException
+
             raise CancelledException("Can't send after cancelling")
         if work_socket is None:
             work_socket = self.work_socket
@@ -555,26 +623,29 @@ class AnalysisWorker(object):
                     if notify_msg == NOTIFY_STOP:
                         self.cancelled = True
                         self.raise_cancel(
-                                "Received stop notification while waiting for "
-                                "response from %s" % str(req))
+                            "Received stop notification while waiting for "
+                            "response from %s" % str(req)
+                        )
                 if socket == work_socket and state == zmq.POLLIN:
                     response = req.recv(work_socket)
         if isinstance(response, UpstreamExit):
             self.raise_cancel(
-                    "Received UpstreamExit for analysis %s during request %s" %
-                    (self.current_analysis_id, str(req)))
+                "Received UpstreamExit for analysis %s during request %s"
+                % (self.current_analysis_id, str(req))
+            )
         return response
 
     def raise_cancel(self, msg="Cancelling analysis"):
-        '''Handle the cleanup after some proximate cause of cancellation
+        """Handle the cleanup after some proximate cause of cancellation
 
         msg - reason for cancellation
 
         This should only be called upon detection of a server-driven
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
-        '''
+        """
         from cellprofiler.pipeline import CancelledException
+
         logger.debug(msg)
         self.cancelled = True
         if self.current_analysis_id in self.initial_measurements:
@@ -586,12 +657,12 @@ class AnalysisWorker(object):
         raise CancelledException(msg)
 
     def get_announcement(self):
-        '''Connect to the announcing socket and get an analysis announcement
+        """Connect to the announcing socket and get an analysis announcement
 
         returns an analysis_id / worker_request address pair
 
         raises a CancelledException if we detect cancellation.
-        '''
+        """
         poller = zmq.Poller()
         poller.register(self.notify_socket, zmq.POLLIN)
         announce_socket = the_zmq_context.socket(zmq.SUB)
@@ -605,6 +676,7 @@ class AnalysisWorker(object):
                         msg = self.notify_socket.recv()
                         if msg == NOTIFY_STOP:
                             from cellprofiler.pipeline import CancelledException
+
                             self.cancelled = True
                             raise CancelledException()
                     elif socket == announce_socket and state == zmq.POLLIN:
@@ -620,14 +692,13 @@ class AnalysisWorker(object):
         finally:
             announce_socket.close()
 
-    def handle_exception(self, image_set_number=None,
-                         module_name=None, exc_info=None):
-        '''report and handle an exception, possibly by remote debugging, returning
+    def handle_exception(self, image_set_number=None, module_name=None, exc_info=None):
+        """report and handle an exception, possibly by remote debugging, returning
         how to proceed (skip or abort).
 
         A new socket is created for each exception report, to allow us to sidestep
         any REP/REQ state in the worker.
-        '''
+        """
         if self.current_analysis_id is None:
             # Analysis has been cancelled - don't initiate server interactions
             return ED_STOP
@@ -643,16 +714,18 @@ class AnalysisWorker(object):
             return ED_STOP  # nothing to do but give up
         try:
             req = ExceptionReport(
-                    self.current_analysis_id,
-                    image_set_number,
-                    module_name,
-                    exc_type=t.__name__,
-                    exc_message=str(exc),
-                    exc_traceback="".join(traceback.format_exception(t, exc, tb)),
-                    filename=filename, line_number=line_number)
+                self.current_analysis_id,
+                image_set_number,
+                module_name,
+                exc_type=t.__name__,
+                exc_message=str(exc),
+                exc_traceback="".join(traceback.format_exception(t, exc, tb)),
+                filename=filename,
+                line_number=line_number,
+            )
             reply = self.send(req, report_socket)
             while True:
-                if reply.disposition == 'DEBUG':
+                if reply.disposition == "DEBUG":
                     #
                     # Send DebugWaiting after we know the port #
                     #
@@ -661,13 +734,15 @@ class AnalysisWorker(object):
                     def pc(port):
                         print("GOT PORT ", port)
                         debug_reply[0] = self.send(
-                                DebugWaiting(self.current_analysis_id, port),
-                                report_socket)
+                            DebugWaiting(self.current_analysis_id, port), report_socket
+                        )
 
                     print("HASH", reply.verification_hash)
 
                     # We get a new reply at the end, which might be "DEBUG" again.
-                    reply = self.send(DebugComplete(self.current_analysis_id), report_socket)
+                    reply = self.send(
+                        DebugComplete(self.current_analysis_id), report_socket
+                    )
                 else:
                     return reply.disposition
         finally:
@@ -690,11 +765,13 @@ class PipelineEventListener(object):
 
     def handle_event(self, pipeline, event):
         from cellprofiler.pipeline import RunExceptionEvent
+
         if isinstance(event, RunExceptionEvent):
             disposition = self.handle_exception_fn(
-                    image_set_number=self.image_set_number,
-                    module_name=event.module.module_name,
-                    exc_info=(type(event.error), event.error, event.tb))
+                image_set_number=self.image_set_number,
+                module_name=event.module.module_name,
+                exc_info=(type(event.error), event.error, event.tb),
+            )
             if disposition == ED_STOP:
                 self.should_abort = True
                 event.cancel_run = True
@@ -708,7 +785,7 @@ __the_notify_pub_socket = None
 
 
 def get_the_notify_pub_socket():
-    '''Get the socket used to publish the worker stop message'''
+    """Get the socket used to publish the worker stop message"""
     global __the_notify_pub_socket
     if __the_notify_pub_socket is None or __the_notify_pub_socket.closed:
         __the_notify_pub_socket = the_zmq_context.socket(zmq.PUB)
@@ -717,7 +794,7 @@ def get_the_notify_pub_socket():
 
 
 def exit_on_stdin_close():
-    '''Read until EOF, then exit, possibly without cleanup.'''
+    """Read until EOF, then exit, possibly without cleanup."""
     notify_pub_socket = get_the_notify_pub_socket()
     deadman_socket = the_zmq_context.socket(zmq.PAIR)
     deadman_socket.connect(DEADMAN_START_ADDR)

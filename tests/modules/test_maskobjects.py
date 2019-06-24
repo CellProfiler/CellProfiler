@@ -5,7 +5,7 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import PIL.Image as PILImage
 import cellprofiler.measurement

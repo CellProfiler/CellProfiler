@@ -9,7 +9,7 @@ import sys
 import tempfile
 import unittest
 import urllib
-from cStringIO import StringIO
+import six.moves
 
 import dateutil.parser
 
@@ -52,7 +52,7 @@ class TestCellProfiler(unittest.TestCase):
                      "Code statistics are not available in frozen-mode")
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
-        fake_stdout = StringIO(
+        fake_stdout = six.moves.StringIO(
                 self.run_cellprofiler("--code-statistics"))
         fake_stdout.seek(0)
         found_module_stats = False

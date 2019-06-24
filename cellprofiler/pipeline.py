@@ -3,15 +3,40 @@
 from __future__ import print_function
 
 import bisect
-import csv
+import datetime
 import hashlib
 import json
 import logging
+import os
+import re
+import sys
+import tempfile
+import timeit
 import uuid
 
+import javabridge
+import numpy
 import numpy as np
 import scipy
 import scipy.io.matlab
+import six
+import six.moves
+import six.moves.urllib.parse
+import six.moves.urllib.request
+from bioformats.formatreader import clear_image_reader_cache
+from future.standard_library import install_aliases
+
+import cellprofiler
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.object
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.utilities.legacy
+import cellprofiler.utilities.utf16encode
+import cellprofiler.workspace
+
+install_aliases()
 
 try:
     # implemented in scipy.io.matlab.miobase.py@5582
@@ -21,91 +46,65 @@ try:
 except:
     has_mat_read_error = False
 
-import os
-import sys
-import tempfile
-import traceback
-import datetime
-import timeit
-import traceback
-import threading
-import re
-import numpy
-import six
-import six.moves
-
-from future.standard_library import install_aliases
-install_aliases()
-import urllib.parse
-import urllib.request
-
 logger = logging.getLogger(__name__)
-pipeline_stats_logger = logging.getLogger("PipelineStatistics")
-import cellprofiler
-import cellprofiler.preferences as cpprefs
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
-import cellprofiler.setting as cps
-import cellprofiler.utilities.utf16encode
-import cellprofiler.utilities.legacy
-from bioformats.omexml import OMEXML
-from bioformats.formatreader import clear_image_reader_cache
-import javabridge as J
 
-'''The measurement name of the image number'''
-IMAGE_NUMBER = cpmeas.IMAGE_NUMBER
-GROUP_NUMBER = cpmeas.GROUP_NUMBER
-GROUP_INDEX = cpmeas.GROUP_INDEX
-CURRENT = 'Current'
-NUMBER_OF_IMAGE_SETS = 'NumberOfImageSets'
-NUMBER_OF_MODULES = 'NumberOfModules'
-SET_BEING_ANALYZED = 'SetBeingAnalyzed'
-SAVE_OUTPUT_HOW_OFTEN = 'SaveOutputHowOften'
-TIME_STARTED = 'TimeStarted'
-STARTING_IMAGE_SET = 'StartingImageSet'
-STARTUP_DIRECTORY = 'StartupDirectory'
-DEFAULT_MODULE_DIRECTORY = 'DefaultModuleDirectory'
-DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
-DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
-IMAGE_TOOLS_FILENAMES = 'ImageToolsFilenames'
-IMAGE_TOOL_HELP = 'ImageToolHelp'
-PREFERENCES = 'Preferences'
-PIXEL_SIZE = 'PixelSize'
-SKIP_ERRORS = 'SkipErrors'
-INTENSITY_COLOR_MAP = 'IntensityColorMap'
-LABEL_COLOR_MAP = 'LabelColorMap'
-STRIP_PIPELINE = 'StripPipeline'
-DISPLAY_MODE_VALUE = 'DisplayModeValue'
-DISPLAY_WINDOWS = 'DisplayWindows'
-FONT_SIZE = 'FontSize'
-IMAGES = 'Images'
-MEASUREMENTS = 'Measurements'
-PIPELINE = 'Pipeline'
-SETTINGS = 'Settings'
-VARIABLE_VALUES = 'VariableValues'
-VARIABLE_INFO_TYPES = 'VariableInfoTypes'
-MODULE_NAMES = 'ModuleNames'
-PIXEL_SIZE = 'PixelSize'
-NUMBERS_OF_VARIABLES = 'NumbersOfVariables'
-VARIABLE_REVISION_NUMBERS = 'VariableRevisionNumbers'
-MODULE_REVISION_NUMBERS = 'ModuleRevisionNumbers'
-MODULE_NOTES = 'ModuleNotes'
-CURRENT_MODULE_NUMBER = 'CurrentModuleNumber'
-SHOW_WINDOW = 'ShowFrame'
-BATCH_STATE = 'BatchState'
-EXIT_STATUS = 'Exit_Status'
-SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'),
-                           (VARIABLE_INFO_TYPES, '|O4'),
-                           (MODULE_NAMES, '|O4'),
-                           (NUMBERS_OF_VARIABLES, '|O4'),
-                           (PIXEL_SIZE, '|O4'),
-                           (VARIABLE_REVISION_NUMBERS, '|O4'),
-                           (MODULE_REVISION_NUMBERS, '|O4'),
-                           (MODULE_NOTES, '|O4'),
-                           (SHOW_WINDOW, '|O4'),
-                           (BATCH_STATE, '|O4')])
+pipeline_stats_logger = logging.getLogger("PipelineStatistics")
+
+"""The measurement name of the image number"""
+IMAGE_NUMBER = cellprofiler.measurement.IMAGE_NUMBER
+GROUP_NUMBER = cellprofiler.measurement.GROUP_NUMBER
+GROUP_INDEX = cellprofiler.measurement.GROUP_INDEX
+CURRENT = "Current"
+NUMBER_OF_IMAGE_SETS = "NumberOfImageSets"
+NUMBER_OF_MODULES = "NumberOfModules"
+SET_BEING_ANALYZED = "SetBeingAnalyzed"
+SAVE_OUTPUT_HOW_OFTEN = "SaveOutputHowOften"
+TIME_STARTED = "TimeStarted"
+STARTING_IMAGE_SET = "StartingImageSet"
+STARTUP_DIRECTORY = "StartupDirectory"
+DEFAULT_MODULE_DIRECTORY = "DefaultModuleDirectory"
+DEFAULT_IMAGE_DIRECTORY = "DefaultImageDirectory"
+DEFAULT_OUTPUT_DIRECTORY = "DefaultOutputDirectory"
+IMAGE_TOOLS_FILENAMES = "ImageToolsFilenames"
+IMAGE_TOOL_HELP = "ImageToolHelp"
+PREFERENCES = "Preferences"
+PIXEL_SIZE = "PixelSize"
+SKIP_ERRORS = "SkipErrors"
+INTENSITY_COLOR_MAP = "IntensityColorMap"
+LABEL_COLOR_MAP = "LabelColorMap"
+STRIP_PIPELINE = "StripPipeline"
+DISPLAY_MODE_VALUE = "DisplayModeValue"
+DISPLAY_WINDOWS = "DisplayWindows"
+FONT_SIZE = "FontSize"
+IMAGES = "Images"
+MEASUREMENTS = "Measurements"
+PIPELINE = "Pipeline"
+SETTINGS = "Settings"
+VARIABLE_VALUES = "VariableValues"
+VARIABLE_INFO_TYPES = "VariableInfoTypes"
+MODULE_NAMES = "ModuleNames"
+NUMBERS_OF_VARIABLES = "NumbersOfVariables"
+VARIABLE_REVISION_NUMBERS = "VariableRevisionNumbers"
+MODULE_REVISION_NUMBERS = "ModuleRevisionNumbers"
+MODULE_NOTES = "ModuleNotes"
+CURRENT_MODULE_NUMBER = "CurrentModuleNumber"
+SHOW_WINDOW = "ShowFrame"
+BATCH_STATE = "BatchState"
+EXIT_STATUS = "Exit_Status"
+SETTINGS_DTYPE = np.dtype(
+    [
+        (VARIABLE_VALUES, "|O4"),
+        (VARIABLE_INFO_TYPES, "|O4"),
+        (MODULE_NAMES, "|O4"),
+        (NUMBERS_OF_VARIABLES, "|O4"),
+        (PIXEL_SIZE, "|O4"),
+        (VARIABLE_REVISION_NUMBERS, "|O4"),
+        (MODULE_REVISION_NUMBERS, "|O4"),
+        (MODULE_NOTES, "|O4"),
+        (SHOW_WINDOW, "|O4"),
+        (BATCH_STATE, "|O4"),
+    ]
+)
 
 
 def make_cell_struct_dtype(fields):
@@ -113,84 +112,97 @@ def make_cell_struct_dtype(fields):
 
     fields - the names of the fields in the struct
     """
-    return numpy.dtype([(str(x), '|O4') for x in fields])
+    return numpy.dtype([(str(x), "|O4") for x in fields])
 
 
-CURRENT_DTYPE = make_cell_struct_dtype([NUMBER_OF_IMAGE_SETS,
-                                        SET_BEING_ANALYZED, NUMBER_OF_MODULES,
-                                        SAVE_OUTPUT_HOW_OFTEN, TIME_STARTED,
-                                        STARTING_IMAGE_SET,
-                                        STARTUP_DIRECTORY,
-                                        DEFAULT_OUTPUT_DIRECTORY,
-                                        DEFAULT_IMAGE_DIRECTORY,
-                                        IMAGE_TOOLS_FILENAMES,
-                                        IMAGE_TOOL_HELP])
-PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE,
-                                            DEFAULT_MODULE_DIRECTORY,
-                                            DEFAULT_OUTPUT_DIRECTORY,
-                                            DEFAULT_IMAGE_DIRECTORY,
-                                            INTENSITY_COLOR_MAP,
-                                            LABEL_COLOR_MAP,
-                                            STRIP_PIPELINE, SKIP_ERRORS,
-                                            DISPLAY_MODE_VALUE, FONT_SIZE,
-                                            DISPLAY_WINDOWS])
+CURRENT_DTYPE = make_cell_struct_dtype(
+    [
+        NUMBER_OF_IMAGE_SETS,
+        SET_BEING_ANALYZED,
+        NUMBER_OF_MODULES,
+        SAVE_OUTPUT_HOW_OFTEN,
+        TIME_STARTED,
+        STARTING_IMAGE_SET,
+        STARTUP_DIRECTORY,
+        DEFAULT_OUTPUT_DIRECTORY,
+        DEFAULT_IMAGE_DIRECTORY,
+        IMAGE_TOOLS_FILENAMES,
+        IMAGE_TOOL_HELP,
+    ]
+)
+PREFERENCES_DTYPE = make_cell_struct_dtype(
+    [
+        PIXEL_SIZE,
+        DEFAULT_MODULE_DIRECTORY,
+        DEFAULT_OUTPUT_DIRECTORY,
+        DEFAULT_IMAGE_DIRECTORY,
+        INTENSITY_COLOR_MAP,
+        LABEL_COLOR_MAP,
+        STRIP_PIPELINE,
+        SKIP_ERRORS,
+        DISPLAY_MODE_VALUE,
+        FONT_SIZE,
+        DISPLAY_WINDOWS,
+    ]
+)
 
-'''Save pipeline in Matlab format'''
+"""Save pipeline in Matlab format"""
 FMT_MATLAB = "Matlab"
 
-'''Save pipeline in native format'''
+"""Save pipeline in native format"""
 FMT_NATIVE = "Native"
 
-'''The current pipeline file format version'''
+"""The current pipeline file format version"""
 NATIVE_VERSION = 4
 
-'''The version of the image plane descriptor section'''
+"""The version of the image plane descriptor section"""
 IMAGE_PLANE_DESCRIPTOR_VERSION = 1
 
-H_VERSION = 'Version'
-H_SVN_REVISION = 'SVNRevision'
-H_DATE_REVISION = 'DateRevision'
-'''A pipeline file header variable for faking a matlab pipeline file'''
-H_FROM_MATLAB = 'FromMatlab'
-'''The GIT hash of the revision'''
-H_GIT_HASH = 'GitHash'
+H_VERSION = "Version"
+H_SVN_REVISION = "SVNRevision"
+H_DATE_REVISION = "DateRevision"
+"""A pipeline file header variable for faking a matlab pipeline file"""
+H_FROM_MATLAB = "FromMatlab"
+"""The GIT hash of the revision"""
+H_GIT_HASH = "GitHash"
 
-'''The number of image planes in the file'''
+"""The number of image planes in the file"""
 H_PLANE_COUNT = "PlaneCount"
 
-'''URL column header'''
+"""URL column header"""
 H_URL = "URL"
 
-'''Series column header'''
+"""Series column header"""
 H_SERIES = "Series"
 
-'''Index column header'''
+"""Index column header"""
 H_INDEX = "Index"
 
-'''Channel column header'''
+"""Channel column header"""
 H_CHANNEL = "Channel"
 
-'''The number of modules in the pipeline'''
+"""The number of modules in the pipeline"""
 H_MODULE_COUNT = "ModuleCount"
 
-'''Indicates whether the pipeline has an image plane details section'''
+"""Indicates whether the pipeline has an image plane details section"""
 H_HAS_IMAGE_PLANE_DETAILS = "HasImagePlaneDetails"
 
-'''A message for a user, to be displayed when pipeline is loaded'''
+"""A message for a user, to be displayed when pipeline is loaded"""
 H_MESSAGE_FOR_USER = "MessageForUser"
 
-'''The cookie that identifies a file as a CellProfiler pipeline'''
+"""The cookie that identifies a file as a CellProfiler pipeline"""
 COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
 
-'''Sad proofpoint cookie: see issue #1318'''
+"""Sad proofpoint cookie: see issue #1318"""
 SAD_PROOFPOINT_COOKIE = r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.cellprofiler\.org"
 
-'''HDF5 file header according to the specification
+"""HDF5 file header according to the specification
 
 see http://www.hdfgroup.org/HDF5/doc/H5.format.html#FileMetaData
-'''
-HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
-               chr(26) + chr(10))
+"""
+HDF5_HEADER = (
+    chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) + chr(26) + chr(10)
+)
 C_PIPELINE = "Pipeline"
 C_CELLPROFILER = "CellProfiler"
 F_PIPELINE = "Pipeline"
@@ -223,48 +235,104 @@ def add_all_images(handles, image_set, object_set):
         image = image_set.get_image(name)
         images[name] = image.image
         if image.has_mask:
-            images['CropMask' + name] = image.mask
+            images["CropMask" + name] = image.mask
 
     for object_name in object_set.object_names:
         objects = object_set.get_objects(object_name)
-        images['Segmented' + object_name] = objects.segmented
+        images["Segmented" + object_name] = objects.segmented
         if objects.has_unedited_segmented():
-            images['UneditedSegmented' + object_name] = objects.unedited_segmented
+            images["UneditedSegmented" + object_name] = objects.unedited_segmented
         if objects.has_small_removed_segmented():
-            images['SmallRemovedSegmented' + object_name] = objects.small_removed_segmented
+            images[
+                "SmallRemovedSegmented" + object_name
+            ] = objects.small_removed_segmented
 
     npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
-    for key, image in images.iteritems():
+    for key, image in images.items():
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
 
 
 def map_feature_names(feature_names, max_size=63):
-    '''Map feature names to legal Matlab field names
+    """Map feature names to legal Matlab field names
 
     returns a dictionary where the key is the field name and
     the value is the feature name.
-    '''
+    """
     mapping = {}
     seeded = False
 
     def shortest_first(a, b):
-        return -1 if len(a) < len(b) else 1 if len(b) < len(a) else cellprofiler.utilities.legacy.cmp(a, b)
+        return (
+            -1
+            if len(a) < len(b)
+            else 1
+            if len(b) < len(a)
+            else cellprofiler.utilities.legacy.cmp(a, b)
+        )
 
     for feature_name in sorted(feature_names, shortest_first):
         if len(feature_name) > max_size:
             name = feature_name
             to_remove = len(feature_name) - max_size
             remove_count = 0
-            for to_drop in (('a', 'e', 'i', 'o', 'u'),
-                            ('b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n',
-                             'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'),
-                            ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
-                             'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-                             'W', 'X', 'Y', 'Z')):
+            for to_drop in (
+                ("a", "e", "i", "o", "u"),
+                (
+                    "b",
+                    "c",
+                    "d",
+                    "f",
+                    "g",
+                    "h",
+                    "j",
+                    "k",
+                    "l",
+                    "m",
+                    "n",
+                    "p",
+                    "q",
+                    "r",
+                    "s",
+                    "t",
+                    "v",
+                    "w",
+                    "x",
+                    "y",
+                    "z",
+                ),
+                (
+                    "A",
+                    "B",
+                    "C",
+                    "D",
+                    "E",
+                    "F",
+                    "G",
+                    "H",
+                    "I",
+                    "J",
+                    "K",
+                    "L",
+                    "M",
+                    "N",
+                    "O",
+                    "P",
+                    "Q",
+                    "R",
+                    "S",
+                    "T",
+                    "U",
+                    "V",
+                    "W",
+                    "X",
+                    "Y",
+                    "Z",
+                ),
+            ):
                 for index in range(len(name) - 1, -1, -1):
                     if name[index] in to_drop:
-                        name = name[:index] + name[index + 1:]
+                        name = name[:index] + name[index + 1 :]
                         remove_count += 1
                         if remove_count == to_remove:
                             break
@@ -276,7 +344,7 @@ def map_feature_names(feature_names, max_size=63):
                     np.random.seed(0)
                     seeded = True
                 while True:
-                    npname = np.fromstring(feature_name, '|S1')
+                    npname = np.fromstring(feature_name, "|S1")
                     indices = np.random.permutation(len(name))[:max_size]
                     indices.sort()
                     name = npname[indices]
@@ -293,8 +361,11 @@ def add_all_measurements(handles, measurements):
     """Add all measurements from our measurements object into the numpy structure passed
 
     """
-    object_names = [name for name in measurements.get_object_names()
-                    if len(measurements.get_feature_names(name)) > 0]
+    object_names = [
+        name
+        for name in measurements.get_object_names()
+        if len(measurements.get_feature_names(name)) > 0
+    ]
     measurements_dtype = make_cell_struct_dtype(object_names)
     npy_measurements = np.ndarray((1, 1), dtype=measurements_dtype)
     handles[MEASUREMENTS] = npy_measurements
@@ -303,17 +374,16 @@ def add_all_measurements(handles, measurements):
     has_image_number = np.zeros(max_image_number + 1, bool)
     has_image_number[image_numbers] = True
     for object_name in object_names:
-        if object_name == cpmeas.EXPERIMENT:
+        if object_name == cellprofiler.measurement.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
         object_dtype = make_cell_struct_dtype(mapping.keys())
         object_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
-        for field, feature_name in mapping.iteritems():
-            feature_measurements = np.ndarray((1, max_image_number),
-                                              dtype='object')
+        for field, feature_name in mapping.items():
+            feature_measurements = np.ndarray((1, max_image_number), dtype="object")
             object_measurements[field][0, 0] = feature_measurements
-            for i in np.argwhere(~ has_image_number[1:]).flatten():
+            for i in np.argwhere(~has_image_number[1:]).flatten():
                 feature_measurements[0, i] = np.zeros(0)
             dddata = measurements[object_name, feature_name, image_numbers]
             for i, ddata in zip(image_numbers, dddata):
@@ -323,19 +393,25 @@ def add_all_measurements(handles, measurements):
                     feature_measurements[0, i - 1] = ddata
                 else:
                     feature_measurements[0, i - 1] = np.zeros(0)
-    if cpmeas.EXPERIMENT in measurements.object_names:
-        mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
+    if cellprofiler.measurement.EXPERIMENT in measurements.object_names:
+        mapping = map_feature_names(
+            measurements.get_feature_names(cellprofiler.measurement.EXPERIMENT)
+        )
         object_dtype = make_cell_struct_dtype(mapping.keys())
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements[cpmeas.EXPERIMENT][0, 0] = experiment_measurements
-        for field, feature_name in mapping.iteritems():
-            feature_measurements = np.ndarray((1, 1), dtype='object')
-            feature_measurements[0, 0] = measurements.get_experiment_measurement(feature_name)
+        npy_measurements[cellprofiler.measurement.EXPERIMENT][
+            0, 0
+        ] = experiment_measurements
+        for field, feature_name in mapping.items():
+            feature_measurements = np.ndarray((1, 1), dtype="object")
+            feature_measurements[0, 0] = measurements.get_experiment_measurement(
+                feature_name
+            )
             experiment_measurements[field][0, 0] = feature_measurements
 
 
 class ImagePlaneDetails(object):
-    '''This class represents the location and metadata for a 2-d image plane
+    """This class represents the location and metadata for a 2-d image plane
 
     You need four pieces of information to reference an image plane:
 
@@ -349,7 +425,8 @@ class ImagePlaneDetails(object):
 
     In addition, image planes have associated metadata which is represented
     as a dictionary of keys and values.
-    '''
+    """
+
     MD_COLOR_FORMAT = "ColorFormat"
     MD_MONOCHROME = "monochrome"
     MD_RGB = "RGB"
@@ -369,37 +446,38 @@ class ImagePlaneDetails(object):
 
     @property
     def path(self):
-        '''The file path if a file: URL, otherwise the URL'''
+        """The file path if a file: URL, otherwise the URL"""
         if self.url.startswith("file:"):
-            return urllib.request.url2pathname(self.url[5:]).decode('utf8')
+            return six.moves.urllib.request.url2pathname(self.url[5:]).decode("utf8")
         return self.url
 
     @property
     def url(self):
-        return J.run_script(
-                "o.getImagePlane().getImageFile().getURI().toString()",
-                dict(o=self.jipd)).encode("utf-8")
+        return javabridge.run_script(
+            "o.getImagePlane().getImageFile().getURI().toString()", dict(o=self.jipd)
+        ).encode("utf-8")
 
     @property
     def series(self):
-        return J.run_script(
-                "o.getImagePlane().getSeries().getSeries()",
-                dict(o=self.jipd))
+        return javabridge.run_script(
+            "o.getImagePlane().getSeries().getSeries()", dict(o=self.jipd)
+        )
 
     @property
     def index(self):
-        return J.run_script("o.getImagePlane().getIndex()",
-                            dict(o=self.jipd))
+        return javabridge.run_script("o.getImagePlane().getIndex()", dict(o=self.jipd))
 
     @property
     def channel(self):
-        return J.run_script("o.getImagePlane().getChannel()",
-                            dict(o=self.jipd))
+        return javabridge.run_script(
+            "o.getImagePlane().getChannel()", dict(o=self.jipd)
+        )
 
     @property
     def metadata(self):
         return json.loads(
-                J.call(self.jipd, "jsonSerialize", "()Ljava/lang/String;"))
+            javabridge.call(self.jipd, "jsonSerialize", "()Ljava/lang/String;")
+        )
 
 
 def read_file_list(file_or_fd):
@@ -442,15 +520,16 @@ def read_file_list(file_or_fd):
             raise ValueError("Image plane details header is missing its version #")
         version = int(properties[H_VERSION])
         if version != IMAGE_PLANE_DESCRIPTOR_VERSION:
-            raise ValueError("Unable to read image plane details version # %d" % version)
+            raise ValueError(
+                "Unable to read image plane details version # %d" % version
+            )
         plane_count = int(properties[H_PLANE_COUNT])
         header = read_fields(next(fd))
         result = []
         pattern = r'(?:"((?:[^\\]|\\.)+?)")?(?:,|\s+)'
         for i in range(plane_count):
             fields = [x.groups()[0] for x in re.finditer(pattern, next(fd))]
-            fields = [None if x is None else x.decode('string-escape')
-                      for x in fields]
+            fields = [None if x is None else x.decode("string-escape") for x in fields]
             url = fields[0]
             result.append(url)
         return result
@@ -460,7 +539,7 @@ def read_file_list(file_or_fd):
 
 
 def write_file_list(file_or_fd, file_list):
-    '''Write the file list out to a file.
+    """Write the file list out to a file.
 
     See read_image_plane_details for the file format.
 
@@ -468,7 +547,7 @@ def write_file_list(file_or_fd, file_list):
 
     file_list - collection of URLs to be output
 
-    '''
+    """
     if isinstance(file_or_fd, six.string_types):
         fd = open(file_or_fd, "w")
         needs_close = True
@@ -476,15 +555,16 @@ def write_file_list(file_or_fd, file_list):
         fd = file_or_fd
         needs_close = False
     try:
-        fd.write('"%s":"%d","%s":"%d"\n' % (
-            H_VERSION, IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT,
-            len(file_list)))
+        fd.write(
+            '"%s":"%d","%s":"%d"\n'
+            % (H_VERSION, IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT, len(file_list))
+        )
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
             if isinstance(url, six.text_type):
                 url = url.encode("utf-8")
-            url = url.encode("string_escape").replace('"', r'\"')
-            line = "\"%s\",,,\n" % url
+            url = url.encode("string_escape").replace('"', r"\"")
+            line = '"%s",,,\n' % url
             fd.write(line)
     finally:
         if needs_close:
@@ -504,7 +584,7 @@ def read_fields(line):
     field = ""
     for c in line:
         if state == RF_STATE_PREQUOTE:
-            if c == "\"":
+            if c == '"':
                 state = RF_STATE_FIELD
                 field = ""
             elif c == ":":
@@ -535,7 +615,7 @@ def read_fields(line):
         elif c == "\\":
             field += c
             state = RF_STATE_BACKSLASH_ESCAPE
-        elif c == "\"":
+        elif c == '"':
             state = RF_STATE_SEPARATOR
         else:
             field += c
@@ -590,7 +670,7 @@ class Pipeline(object):
         return self.__volumetric
 
     def copy(self, save_image_plane_details=True):
-        '''Create a copy of the pipeline modules and settings'''
+        """Create a copy of the pipeline modules and settings"""
         fd = six.moves.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
@@ -599,7 +679,7 @@ class Pipeline(object):
         return pipeline
 
     def settings_hash(self, until_module=None, as_string=False):
-        '''Return a hash of the module settings
+        """Return a hash of the module settings
 
         This function can be used to invalidate a cached calculation
         that's based on pipeline settings - if the settings change, the
@@ -607,12 +687,12 @@ class Pipeline(object):
 
         We use secure hashing functions which are really good at avoiding
         collisions for small changes in data.
-        '''
+        """
         h = hashlib.md5()
         for module in self.modules():
             h.update(module.module_name)
             for setting in module.settings():
-                h.update(setting.unicode_value.encode('utf-8'))
+                h.update(setting.unicode_value.encode("utf-8"))
             if module.module_name == until_module:
                 break
         if as_string:
@@ -645,15 +725,20 @@ class Pipeline(object):
             except Exception as instance:
                 logger.error("Failed to load pipeline", exc_info=True)
                 number_of_variables = settings[NUMBERS_OF_VARIABLES][0, idx]
-                module_settings = [settings[VARIABLE_VALUES][idx, i]
-                                   for i in range(number_of_variables)]
-                module_settings = [('' if np.product(x.shape) == 0
-                                    else str(x[0])) if isinstance(x, np.ndarray)
-                                   else str(x)
-                                   for x in module_settings]
+                module_settings = [
+                    settings[VARIABLE_VALUES][idx, i]
+                    for i in range(number_of_variables)
+                ]
+                module_settings = [
+                    ("" if np.product(x.shape) == 0 else str(x[0]))
+                    if isinstance(x, np.ndarray)
+                    else str(x)
+                    for x in module_settings
+                ]
 
-                event = LoadExceptionEvent(instance, module, module_name,
-                                           module_settings)
+                event = LoadExceptionEvent(
+                    instance, module, module_name, module_settings
+                )
                 self.notify_listeners(event)
                 if event.cancel_run:
                     # The pipeline is somewhat loaded at this point
@@ -669,6 +754,7 @@ class Pipeline(object):
 
     def instantiate_module(self, module_name):
         import cellprofiler.modules
+
         return cellprofiler.modules.instantiate_module(module_name)
 
     def reload_modules(self):
@@ -678,6 +764,7 @@ class Pipeline(object):
         """
         # clear previously seen errors on reload
         import cellprofiler.modules
+
         six.moves.reload_module(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
@@ -689,7 +776,10 @@ class Pipeline(object):
             self.loadtxt(fd, raise_on_error=True)
             return True
         except Exception as e:
-            logging.warning("Modules reloaded, but could not reinstantiate pipeline with new versions.", exc_info=True)
+            logging.warning(
+                "Modules reloaded, but could not reinstantiate pipeline with new versions.",
+                exc_info=True,
+            )
             return False
 
     def save_to_handles(self):
@@ -703,31 +793,38 @@ class Pipeline(object):
         # where an empty cell is a (1,0) array of float64
 
         try:
-            variable_count = max([len(module.settings()) for module in self.modules(False)])
+            variable_count = max(
+                [len(module.settings()) for module in self.modules(False)]
+            )
         except:
             for module in self.modules(False):
                 if not isinstance(module.settings(), list):
-                    raise ValueError('Module %s.settings() did not return a list\n value: %s' % (
-                        module.module_name, module.settings()))
+                    raise ValueError(
+                        "Module %s.settings() did not return a list\n value: %s"
+                        % (module.module_name, module.settings())
+                    )
                 raise
 
         module_count = len(self.modules(False))
         setting[VARIABLE_VALUES] = new_string_cell_array((module_count, variable_count))
         # The variable info types are similarly shaped
-        setting[VARIABLE_INFO_TYPES] = new_string_cell_array((module_count, variable_count))
+        setting[VARIABLE_INFO_TYPES] = new_string_cell_array(
+            (module_count, variable_count)
+        )
         setting[MODULE_NAMES] = new_string_cell_array((1, module_count))
-        setting[NUMBERS_OF_VARIABLES] = np.ndarray((1, module_count),
-                                                   dtype=np.dtype('uint8'))
-        setting[PIXEL_SIZE] = cpprefs.get_pixel_size()
-        setting[VARIABLE_REVISION_NUMBERS] = np.ndarray((1, module_count),
-                                                        dtype=np.dtype('uint8'))
-        setting[MODULE_REVISION_NUMBERS] = np.ndarray((1, module_count),
-                                                      dtype=np.dtype('uint16'))
+        setting[NUMBERS_OF_VARIABLES] = np.ndarray(
+            (1, module_count), dtype=np.dtype("uint8")
+        )
+        setting[PIXEL_SIZE] = cellprofiler.preferences.get_pixel_size()
+        setting[VARIABLE_REVISION_NUMBERS] = np.ndarray(
+            (1, module_count), dtype=np.dtype("uint8")
+        )
+        setting[MODULE_REVISION_NUMBERS] = np.ndarray(
+            (1, module_count), dtype=np.dtype("uint16")
+        )
         setting[MODULE_NOTES] = new_string_cell_array((1, module_count))
-        setting[SHOW_WINDOW] = np.ndarray((1, module_count),
-                                          dtype=np.dtype('uint8'))
-        setting[BATCH_STATE] = np.ndarray((1, module_count),
-                                          dtype=np.dtype('object'))
+        setting[SHOW_WINDOW] = np.ndarray((1, module_count), dtype=np.dtype("uint8"))
+        setting[BATCH_STATE] = np.ndarray((1, module_count), dtype=np.dtype("object"))
         for i in range(module_count):
             setting[BATCH_STATE][0, i] = np.zeros((0,), np.uint8)
 
@@ -737,12 +834,12 @@ class Pipeline(object):
 
     @staticmethod
     def is_pipeline_txt_file(filename):
-        '''Test a file to see if it can be loaded by Pipeline.loadtxt
+        """Test a file to see if it can be loaded by Pipeline.loadtxt
 
         filename - path to the file
 
         returns True if the file starts with the CellProfiler cookie.
-        '''
+        """
         with open(filename, "rb") as fd:
             return Pipeline.is_pipeline_txt_fd(fd)
 
@@ -753,8 +850,7 @@ class Pipeline(object):
         if header.startswith(COOKIE):
             return True
         if re.search(SAD_PROOFPOINT_COOKIE, header):
-            logger.info(
-                    "print_emoji(\":cat_crying_because_of_proofpoint:\")")
+            logger.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
 
@@ -767,10 +863,10 @@ class Pipeline(object):
         self.__undo_stack = []
         self.__undo_start = None
         filename = None
-        if hasattr(fd_or_filename, 'seek') and hasattr(fd_or_filename, 'read'):
+        if hasattr(fd_or_filename, "seek") and hasattr(fd_or_filename, "read"):
             fd = fd_or_filename
             needs_close = False
-        elif hasattr(fd_or_filename, 'read') and hasattr(fd_or_filename, 'url'):
+        elif hasattr(fd_or_filename, "read") and hasattr(fd_or_filename, "url"):
             # This is a URL file descriptor. Read into a StringIO so that
             # seek is available.
             fd = six.moves.StringIO()
@@ -782,15 +878,15 @@ class Pipeline(object):
             fd.seek(0)
             needs_close = False
         elif os.path.exists(fd_or_filename):
-            fd = open(fd_or_filename, 'rb')
+            fd = open(fd_or_filename, "rb")
             needs_close = True
             filename = fd_or_filename
         else:
             # Assume is string URL
-            parsed_path = urllib.parse.urlparse(fd_or_filename)
+            parsed_path = six.moves.urllib.parse.urlparse(fd_or_filename)
             if len(parsed_path.scheme) < 2:
                 raise IOError("Could not find file, " + fd_or_filename)
-            fd = urllib.request.urlopen(fd_or_filename)
+            fd = six.moves.urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
@@ -810,31 +906,34 @@ class Pipeline(object):
                 os.unlink(filename)
                 return
             else:
-                m = cpmeas.load_measurements(filename)
+                m = cellprofiler.measurement.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
-                pipeline_text = pipeline_text.encode('us-ascii')
+                pipeline_text = pipeline_text.encode("us-ascii")
                 self.load(six.moves.StringIO(pipeline_text))
                 return
 
         if has_mat_read_error:
             try:
-                handles = scipy.io.matlab.mio.loadmat(fd_or_filename,
-                                                      struct_as_record=True)
+                handles = scipy.io.matlab.mio.loadmat(
+                    fd_or_filename, struct_as_record=True
+                )
             except MatReadError:
                 logging.error("Caught exception in Matlab reader\n", exc_info=True)
                 e = MatReadError(
-                        "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
-                        fd_or_filename)
+                    "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n"
+                    % fd_or_filename
+                )
                 self.notify_listeners(LoadExceptionEvent(e, None))
                 return
             except Exception as e:
-                logging.error("Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
-                              exc_info=True)
+                logging.error(
+                    "Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
+                    exc_info=True,
+                )
                 self.notify_listeners(LoadExceptionEvent(e, None))
                 return
         else:
-            handles = scipy.io.matlab.mio.loadmat(fd_or_filename,
-                                                  struct_as_record=True)
+            handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
 
         if "handles" in handles:
             #
@@ -842,15 +941,16 @@ class Pipeline(object):
             #
             handles = handles["handles"][0, 0]
         self.create_from_handles(handles)
-        self.__settings = [self.capture_module_settings(module)
-                           for module in self.modules(False)]
+        self.__settings = [
+            self.capture_module_settings(module) for module in self.modules(False)
+        ]
         self.__undo_stack = []
 
     def respond_to_version_mismatch_error(self, message):
         logging.warning(message)
 
-    def loadtxt(self, fd_or_filename, raise_on_error=False):
-        '''Load a pipeline from a text file
+    def loadtxt(self, fp_or_filename, raise_on_error=False):
+        """Load a pipeline from a text file
 
         fd_or_filename - either a path to a file or a file-descriptor-like
                          object.
@@ -858,18 +958,19 @@ class Pipeline(object):
                          exception rather than generating a LoadException event.
 
         See savetxt for more comprehensive documentation.
-        '''
+        """
         self.__modules = []
         self.caption_for_user = None
         self.message_for_user = None
         module_count = sys.maxsize
-        if hasattr(fd_or_filename, 'seek') and hasattr(fd_or_filename, 'read'):
-            fd = fd_or_filename
+
+        if hasattr(fp_or_filename, "seek") and hasattr(fp_or_filename, "read"):
+            fd = fp_or_filename
         else:
-            fd = open(fd_or_filename, 'r')
+            fd = open(fp_or_filename, "r")
 
         def rl():
-            '''Read a line from fd'''
+            """Read a line from fd"""
             try:
                 line = next(fd)
                 if line is None:
@@ -880,8 +981,11 @@ class Pipeline(object):
                 return None
 
         header = rl()
+
+        # FIXME:
         if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
+
         version = NATIVE_VERSION
         from_matlab = False
         do_deprecated_utf16_decode = False
@@ -895,27 +999,37 @@ class Pipeline(object):
             if line is None:
                 if module_count == 0:
                     break
-                raise ValueError("Pipeline file unexpectedly truncated before module section")
+                raise ValueError(
+                    "Pipeline file unexpectedly truncated before module section"
+                )
             elif len(line.strip()) == 0:
                 break
-            kwd, value = line.split(':')
+
+            kwd, value = line.split(":")
+
             if kwd == H_VERSION:
                 version = int(value)
                 if version > NATIVE_VERSION:
-                    raise ValueError("Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(version, NATIVE_VERSION))
-                elif version > 1 and version < 4:
+                    raise ValueError(
+                        "Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(
+                            version, NATIVE_VERSION
+                        )
+                    )
+                elif 1 < version < 4:
                     do_deprecated_utf16_decode = True
                 elif version >= 4:
                     do_utf16_decode = True
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
-                CURRENT_VERSION = int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
+                CURRENT_VERSION = int(
+                    re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__)
+                )
             elif kwd == H_FROM_MATLAB:
-                from_matlab = (value == "True")
+                from_matlab = value == "True"
             elif kwd == H_MODULE_COUNT:
                 module_count = int(value)
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
-                has_image_plane_details = (value == "True")
+                has_image_plane_details = value == "True"
             elif kwd == H_MESSAGE_FOR_USER:
                 value = value.decode("string_escape")
                 self.caption_for_user, self.message_for_user = value.split("|", 1)
@@ -924,26 +1038,30 @@ class Pipeline(object):
             else:
                 print(line)
 
-        if pipeline_version > 20080101000000 and\
-           pipeline_version < 30080101000000:
+        if 20080101000000 < pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
-                int(pipeline_version / (100 ** i)) % 100
-                for i in range(5)]
+                int(pipeline_version / (100 ** i)) % 100 for i in range(5)
+            ]
             year = int(pipeline_version / (100 ** 5))
             pipeline_date = datetime.datetime(
-                year, month, day, hour, minute, second).strftime(" @ %c")
+                year, month, day, hour, minute, second
+            ).strftime(" @ %c")
         else:
             pipeline_date = ""
 
         if CURRENT_VERSION is None:
             pass
         if pipeline_version > CURRENT_VERSION:
-            message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(pipeline_version, CURRENT_VERSION)
+            message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(
+                pipeline_version, CURRENT_VERSION
+            )
 
             self.respond_to_version_mismatch_error(message)
         else:
-            if (not cpprefs.get_headless()) and pipeline_version < CURRENT_VERSION:
+            if (
+                not cellprofiler.preferences.get_headless()
+            ) and pipeline_version < CURRENT_VERSION:
                 if git_hash is not None:
                     message = (
                         "Your pipeline was saved using an old version\n"
@@ -961,7 +1079,9 @@ class Pipeline(object):
                 else:
                     # pipeline versions pre-3.0.0 have unpredictable formatting
                     if pipeline_version == 300:
-                        pipeline_version = ".".join([version for version in str(pipeline_version)])
+                        pipeline_version = ".".join(
+                            [version for version in str(pipeline_version)]
+                        )
                     else:
                         pipeline_version = str(pipeline_version)
 
@@ -983,7 +1103,7 @@ class Pipeline(object):
         #
         new_modules = []
         module_number = 1
-        skip_attributes = ['svn_version', 'module_num']
+        skip_attributes = ["svn_version", "module_num"]
         for i in six.moves.xrange(module_count):
             line = rl()
             if line is None:
@@ -992,11 +1112,11 @@ class Pipeline(object):
             try:
                 module = None
                 module_name = None
-                split_loc = line.find(':')
+                split_loc = line.find(":")
                 if split_loc == -1:
                     raise ValueError("Invalid format for module header: %s" % line)
                 module_name = line[:split_loc].strip()
-                attribute_string = line[(split_loc + 1):]
+                attribute_string = line[(split_loc + 1) :]
                 #
                 # Decode the settings
                 #
@@ -1008,19 +1128,23 @@ class Pipeline(object):
                         break
                     if len(line.strip()) == 0:
                         break
-                    if len(line.split(':')) != 2:
+                    if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
-                    text, setting = line.split(':')
-                    setting = setting.decode('string_escape')
+                    text, setting = line.split(":")
+                    setting = setting.decode("string_escape")
+
                     if do_deprecated_utf16_decode:
-                        setting = cellprofiler.utilities.utf16encode.utf16decode(setting)
+                        setting = cellprofiler.utilities.utf16encode.utf16decode(
+                            setting
+                        )
                     elif do_utf16_decode:
-                        setting = setting.decode('utf-16')
+                        setting = setting.decode("utf-8")
+
                     settings.append(setting)
                 #
                 # Set up the module
                 #
-                module_name = module_name.decode('string_escape')
+                module_name = module_name.decode("string_escape")
                 module = self.instantiate_module(module_name)
                 module.module_num = module_number
                 #
@@ -1028,11 +1152,15 @@ class Pipeline(object):
                 # repr, so True -> 'True', etc. They are then encoded using
                 # Pipeline.encode_txt.
                 #
-                if (len(attribute_string) < 2 or attribute_string[0] != '[' or
-                            attribute_string[-1] != ']'):
-                    raise ValueError("Invalid format for attributes: %s" %
-                                     attribute_string)
-                attribute_strings = attribute_string[1:-1].split('|')
+                if (
+                    len(attribute_string) < 2
+                    or attribute_string[0] != "["
+                    or attribute_string[-1] != "]"
+                ):
+                    raise ValueError(
+                        "Invalid format for attributes: %s" % attribute_string
+                    )
+                attribute_strings = attribute_string[1:-1].split("|")
                 variable_revision_number = None
                 # make batch_state decodable from text pipelines
                 # NOTE, MAGIC HERE: These variables are **necessary**, even though they
@@ -1040,22 +1168,25 @@ class Pipeline(object):
                 array = np.array
                 uint8 = np.uint8
                 for a in attribute_strings:
-                    if len(a.split(':')) != 2:
+                    if len(a.split(":")) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
-                    attribute, value = a.split(':')
-                    value = value.decode('string_escape')
+                    attribute, value = a.split(":")
+                    value = value.decode("string_escape")
                     value = eval(value)
-                    if attribute == 'variable_revision_number':
+                    if attribute == "variable_revision_number":
                         variable_revision_number = value
                     elif attribute in skip_attributes:
                         pass
                     else:
                         setattr(module, attribute, value)
                 if variable_revision_number is None:
-                    raise ValueError("Module %s did not have a variable revision # attribute" % module_name)
-                module.set_settings_from_values(settings,
-                                                variable_revision_number,
-                                                module_name, from_matlab)
+                    raise ValueError(
+                        "Module %s did not have a variable revision # attribute"
+                        % module_name
+                    )
+                module.set_settings_from_values(
+                    settings, variable_revision_number, module_name, from_matlab
+                )
 
                 if module_name == "NamesAndTypes":
                     self.__volumetric = module.process_as_3d.value
@@ -1064,8 +1195,7 @@ class Pipeline(object):
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
-                event = LoadExceptionEvent(instance, module, module_name,
-                                           settings)
+                event = LoadExceptionEvent(instance, module, module_name, settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
                     break
@@ -1079,20 +1209,18 @@ class Pipeline(object):
             self.__filtered_image_plane_details_metadata_settings = None
 
         self.__modules = new_modules
-        self.__settings = [self.capture_module_settings(module)
-                           for module in self.modules(False)]
+        self.__settings = [
+            self.capture_module_settings(module) for module in self.modules(False)
+        ]
         for module in self.modules(False):
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
         if has_image_plane_details:
-            self.notify_listeners(URLsAddedEvent(
-                    self.__file_list))
+            self.notify_listeners(URLsAddedEvent(self.__file_list))
         self.__undo_stack = []
         return pipeline_version, git_hash
 
-    def save(self, fd_or_filename,
-             format=FMT_NATIVE,
-             save_image_plane_details=True):
+    def save(self, fd_or_filename, format=FMT_NATIVE, save_image_plane_details=True):
         """Save the pipeline to a file
 
         fd_or_filename - either a file descriptor or the name of the file
@@ -1101,30 +1229,30 @@ class Pipeline(object):
             handles = self.save_to_handles()
             self.savemat(fd_or_filename, handles)
         elif format == FMT_NATIVE:
-            self.savetxt(fd_or_filename,
-                         save_image_plane_details=save_image_plane_details)
+            self.savetxt(
+                fd_or_filename, save_image_plane_details=save_image_plane_details
+            )
         else:
-            raise NotImplementedError("Unknown pipeline file format: %s" %
-                                      format)
+            raise NotImplementedError("Unknown pipeline file format: %s" % format)
 
     def encode_txt(self, s):
-        '''Encode a string for saving in the text format
+        """Encode a string for saving in the text format
 
         s - input string
         Encode for automatic decoding using the 'string_escape' decoder.
         We encode the special characters, '[', ':', '|' and ']' using the '\\x'
         syntax.
-        '''
-        s = s.encode('string_escape')
-        s = s.replace(':', '\\x3A')
-        s = s.replace('|', '\\x7C')
-        s = s.replace('[', '\\x5B').replace(']', '\\x5D')
+        """
+        s = s.encode("string_escape")
+        s = s.replace(":", "\\x3A")
+        s = s.replace("|", "\\x7C")
+        s = s.replace("[", "\\x5B").replace("]", "\\x5D")
         return s
 
-    def savetxt(self, fd_or_filename,
-                modules_to_save=None,
-                save_image_plane_details=True):
-        '''Save the pipeline in a text format
+    def savetxt(
+        self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
+    ):
+        """Save the pipeline in a text format
 
         fd_or_filename - can be either a "file descriptor" with a "write"
                          attribute or the path to the file to write.
@@ -1160,7 +1288,7 @@ class Pipeline(object):
         The image plane details can be saved along with the pipeline. These
         are a collection of images and their metadata.
         See read_image_plane_details for the file format
-        '''
+        """
         if hasattr(fd_or_filename, "write"):
             fd = fd_or_filename
             needs_close = False
@@ -1172,41 +1300,73 @@ class Pipeline(object):
         if len(self.__file_list) == 0:
             save_image_plane_details = False
 
-        fd.write("%s\n" % COOKIE)
-        fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
-        fd.write("%s:%d\n" % (H_DATE_REVISION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))))
-        fd.write("%s:%s\n" % (H_GIT_HASH, ""))
-        fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
-        fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
+        fd.write("%s\n" % six.text_type(COOKIE))
+        fd.write("%s:%d\n" % (six.text_type(H_VERSION), NATIVE_VERSION))
+        fd.write(
+            "%s:%d\n"
+            % (
+                six.text_type(H_DATE_REVISION),
+                int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__)),
+            )
+        )
+        fd.write("%s:%s\n" % (six.text_type(H_GIT_HASH), ""))
+        fd.write("%s:%d\n" % (six.text_type(H_MODULE_COUNT), len(self.__modules)))
+        fd.write(
+            "%s:%s\n"
+            % (six.text_type(H_HAS_IMAGE_PLANE_DETAILS), str(save_image_plane_details))
+        )
         attributes = (
-            'module_num', 'svn_version', 'variable_revision_number',
-            'show_window', 'notes', 'batch_state', 'enabled', 'wants_pause')
+            "module_num",
+            "svn_version",
+            "variable_revision_number",
+            "show_window",
+            "notes",
+            "batch_state",
+            "enabled",
+            "wants_pause",
+        )
         notes_idx = 4
         for module in self.__modules:
-            if ((modules_to_save is not None) and
-                        module.module_num not in modules_to_save):
+            if (
+                modules_to_save is not None
+            ) and module.module_num not in modules_to_save:
                 continue
-            fd.write("\n")
-            attribute_values = [repr(getattr(module, attribute))
-                                for attribute in attributes]
+            fd.write(six.text_type("\n"))
+            attribute_values = [
+                repr(getattr(module, attribute)) for attribute in attributes
+            ]
             attribute_values = [self.encode_txt(v) for v in attribute_values]
-            attribute_strings = [attribute + ':' + value
-                                 for attribute, value
-                                 in zip(attributes, attribute_values)]
-            attribute_string = '[%s]' % ('|'.join(attribute_strings))
-            fd.write('%s:%s\n' % (self.encode_txt(module.module_name),
-                                  attribute_string))
+            attribute_strings = [
+                attribute + ":" + value
+                for attribute, value in zip(attributes, attribute_values)
+            ]
+            attribute_string = "[%s]" % ("|".join(attribute_strings))
+
+            fd.write(
+                "%s:%s\n"
+                % (self.encode_txt(module.module_name), six.text_type(attribute_string))
+            )
+
             for setting in module.settings():
                 setting_text = setting.text
                 if isinstance(setting_text, six.text_type):
-                    # setting_text = setting_text.encode('utf-16')
-                    setting_text = setting_text.encode('utf-8')
+                    setting_text = setting_text.encode("utf-8")
                 else:
                     setting_text = str(setting_text)
-                fd.write('    %s:%s\n' % (
-                    self.encode_txt(setting_text),
-                    # self.encode_txt(utf16encode(setting.unicode_value))))
-                    self.encode_txt(setting.unicode_value.encode('utf-16'))))
+
+                encoded_setting_text = self.encode_txt(setting_text)
+
+                encoded_unicode_value = self.encode_txt(
+                    setting.unicode_value.encode("utf-8")
+                )
+
+                fd.write(
+                    "    %s:%s\n"
+                    % (
+                        six.text_type(encoded_setting_text),
+                        six.text_type(encoded_unicode_value),
+                    )
+                )
         if save_image_plane_details:
             fd.write("\n")
             write_file_list(fd, self.__file_list)
@@ -1214,12 +1374,12 @@ class Pipeline(object):
             fd.close()
 
     def save_pipeline_notes(self, fd, indent=2):
-        '''Save pipeline notes to a text file
+        """Save pipeline notes to a text file
 
         fd - file descriptor of the file.
 
         indent - indent of the notes relative to module header.
-        '''
+        """
         lines = []
         for module in self.modules(exclude_disabled=False):
             if module.enabled:
@@ -1240,19 +1400,25 @@ class Pipeline(object):
         """
         handles = self.build_matlab_handles()
         add_all_measurements(handles, measurements)
-        handles[CURRENT][NUMBER_OF_IMAGE_SETS][0, 0] = float(measurements.image_set_number + 1)
-        handles[CURRENT][SET_BEING_ANALYZED][0, 0] = float(measurements.image_set_number + 1)
+        handles[CURRENT][NUMBER_OF_IMAGE_SETS][0, 0] = float(
+            measurements.image_set_number + 1
+        )
+        handles[CURRENT][SET_BEING_ANALYZED][0, 0] = float(
+            measurements.image_set_number + 1
+        )
         #
         # For the output file, you have to bury it a little deeper - the root has to have
         # a single field named "handles"
         #
-        root = {'handles': np.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))}
-        for key, value in handles.iteritems():
-            root['handles'][key][0, 0] = value
+        root = {
+            "handles": np.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))
+        }
+        for key, value in handles.items():
+            root["handles"][key][0, 0] = value
         self.savemat(filename, root)
 
     def write_pipeline_measurement(self, m, user_pipeline=False):
-        '''Write the pipeline experiment measurement to the measurements
+        """Write the pipeline experiment measurement to the measurements
 
         m - write into these measurements
 
@@ -1260,80 +1426,114 @@ class Pipeline(object):
                         M_USER_PIPELINE is the pipeline that should be loaded
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
-        '''
-        assert (isinstance(m, cpmeas.Measurements))
+        """
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         fd = six.moves.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
-        m.add_measurement(cpmeas.EXPERIMENT,
-                          M_USER_PIPELINE if user_pipeline else M_PIPELINE,
-                          fd.getvalue(),
-                          can_overwrite=True)
+        m.add_measurement(
+            cellprofiler.measurement.EXPERIMENT,
+            M_USER_PIPELINE if user_pipeline else M_PIPELINE,
+            fd.getvalue(),
+            can_overwrite=True,
+        )
 
     def clear_measurements(self, m):
-        '''Erase all measurements, but make sure to re-establish the pipeline one
+        """Erase all measurements, but make sure to re-establish the pipeline one
 
         m - measurements to be cleared
-        '''
+        """
         m.clear()
         self.write_experiment_measurements(m)
 
     def savemat(self, filename, root):
-        '''Save a handles structure accounting for scipy version compatibility to a filename or file-like object'''
-        sver = scipy.__version__.split('.')
-        if (len(sver) >= 2 and sver[0].isdigit() and int(sver[0]) == 0 and
-                sver[1].isdigit() and int(sver[1]) < 8):
+        """Save a handles structure accounting for scipy version compatibility to a filename or file-like object"""
+        sver = scipy.__version__.split(".")
+        if (
+            len(sver) >= 2
+            and sver[0].isdigit()
+            and int(sver[0]) == 0
+            and sver[1].isdigit()
+            and int(sver[1]) < 8
+        ):
             #
             # 1-d -> 2-d not done
             #
-            scipy.io.matlab.mio.savemat(filename, root, format='5',
-                                        long_field_names=True)
+            scipy.io.matlab.mio.savemat(
+                filename, root, format="5", long_field_names=True
+            )
         else:
-            scipy.io.matlab.mio.savemat(filename, root, format='5',
-                                        long_field_names=True,
-                                        oned_as='column')
+            scipy.io.matlab.mio.savemat(
+                filename, root, format="5", long_field_names=True, oned_as="column"
+            )
 
     def build_matlab_handles(self, image_set=None, object_set=None, measurements=None):
         handles = self.save_to_handles()
-        image_tools_dir = os.path.join(cpprefs.cell_profiler_root_directory(), 'ImageTools')
+        image_tools_dir = os.path.join(
+            cellprofiler.preferences.cell_profiler_root_directory(), "ImageTools"
+        )
         if os.access(image_tools_dir, os.R_OK):
-            image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
-                           for filename in os.listdir(image_tools_dir)
-                           if os.path.splitext(filename)[1] == '.m']
+            image_tools = [
+                str(os.path.split(os.path.splitext(filename)[0])[1])
+                for filename in os.listdir(image_tools_dir)
+                if os.path.splitext(filename)[1] == ".m"
+            ]
         else:
             image_tools = []
-        image_tools.insert(0, 'Image tools')
-        npy_image_tools = np.ndarray((1, len(image_tools)), dtype=np.dtype('object'))
+        image_tools.insert(0, "Image tools")
+        npy_image_tools = np.ndarray((1, len(image_tools)), dtype=np.dtype("object"))
         for tool, idx in zip(image_tools, range(0, len(image_tools))):
             npy_image_tools[0, idx] = tool
 
         current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
         handles[CURRENT] = current
-        current[NUMBER_OF_IMAGE_SETS][0, 0] = [(image_set is not None and NUMBER_OF_IMAGE_SETS in image_set.legacy_fields and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
-        current[SET_BEING_ANALYZED][0, 0] = [(measurements and measurements.image_set_number) or 1]
+        current[NUMBER_OF_IMAGE_SETS][0, 0] = [
+            (
+                image_set is not None
+                and NUMBER_OF_IMAGE_SETS in image_set.legacy_fields
+                and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]
+            )
+            or 1
+        ]
+        current[SET_BEING_ANALYZED][0, 0] = [
+            (measurements and measurements.image_set_number) or 1
+        ]
         current[NUMBER_OF_MODULES][0, 0] = [len(self.__modules)]
         current[SAVE_OUTPUT_HOW_OFTEN][0, 0] = [1]
         current[TIME_STARTED][0, 0] = str(datetime.datetime.now())
         current[STARTING_IMAGE_SET][0, 0] = [1]
-        current[STARTUP_DIRECTORY][0, 0] = cpprefs.cell_profiler_root_directory()
-        current[DEFAULT_OUTPUT_DIRECTORY][0, 0] = cpprefs.get_default_output_directory()
-        current[DEFAULT_IMAGE_DIRECTORY][0, 0] = cpprefs.get_default_image_directory()
+        current[STARTUP_DIRECTORY][
+            0, 0
+        ] = cellprofiler.preferences.cell_profiler_root_directory()
+        current[DEFAULT_OUTPUT_DIRECTORY][
+            0, 0
+        ] = cellprofiler.preferences.get_default_output_directory()
+        current[DEFAULT_IMAGE_DIRECTORY][
+            0, 0
+        ] = cellprofiler.preferences.get_default_image_directory()
         current[IMAGE_TOOLS_FILENAMES][0, 0] = npy_image_tools
         current[IMAGE_TOOL_HELP][0, 0] = []
 
         preferences = np.ndarray(shape=(1, 1), dtype=PREFERENCES_DTYPE)
         handles[PREFERENCES] = preferences
-        preferences[PIXEL_SIZE][0, 0] = cpprefs.get_pixel_size()
-        preferences[DEFAULT_MODULE_DIRECTORY][0, 0] = cpprefs.module_directory()
-        preferences[DEFAULT_OUTPUT_DIRECTORY][0, 0] = cpprefs.get_default_output_directory()
-        preferences[DEFAULT_IMAGE_DIRECTORY][0, 0] = cpprefs.get_default_image_directory()
-        preferences[INTENSITY_COLOR_MAP][0, 0] = 'gray'
-        preferences[LABEL_COLOR_MAP][0, 0] = 'jet'
-        preferences[STRIP_PIPELINE][0, 0] = 'Yes'  # TODO - get from preferences
-        preferences[SKIP_ERRORS][0, 0] = 'No'  # TODO - get from preferences
+        preferences[PIXEL_SIZE][0, 0] = cellprofiler.preferences.get_pixel_size()
+        preferences[DEFAULT_MODULE_DIRECTORY][
+            0, 0
+        ] = cellprofiler.preferences.module_directory()
+        preferences[DEFAULT_OUTPUT_DIRECTORY][
+            0, 0
+        ] = cellprofiler.preferences.get_default_output_directory()
+        preferences[DEFAULT_IMAGE_DIRECTORY][
+            0, 0
+        ] = cellprofiler.preferences.get_default_image_directory()
+        preferences[INTENSITY_COLOR_MAP][0, 0] = "gray"
+        preferences[LABEL_COLOR_MAP][0, 0] = "jet"
+        preferences[STRIP_PIPELINE][0, 0] = "Yes"  # TODO - get from preferences
+        preferences[SKIP_ERRORS][0, 0] = "No"  # TODO - get from preferences
         preferences[DISPLAY_MODE_VALUE][0, 0] = [1]  # TODO - get from preferences
         preferences[FONT_SIZE][0, 0] = [10]  # TODO - get from preferences
-        preferences[DISPLAY_WINDOWS][0, 0] = [1 for module in
-                                              self.__modules]  # TODO - UI allowing user to choose whether to display a window
+        preferences[DISPLAY_WINDOWS][0, 0] = [
+            1 for module in self.__modules
+        ]  # TODO - UI allowing user to choose whether to display a window
 
         images = {}
         if image_set:
@@ -1342,18 +1542,20 @@ class Pipeline(object):
                 if image.image is not None:
                     images[provider.name] = image.image
                 if image.mask is not None:
-                    images['CropMask' + provider.name] = image.mask
-            for key, value in image_set.legacy_fields.iteritems():
+                    images["CropMask" + provider.name] = image.mask
+            for key, value in image_set.legacy_fields.items():
                 if key != NUMBER_OF_IMAGE_SETS:
                     images[key] = value
 
         if object_set:
             for name, objects in object_set.all_objects:
-                images['Segmented' + name] = objects.segmented
+                images["Segmented" + name] = objects.segmented
                 if objects.has_unedited_segmented():
-                    images['UneditedSegmented' + name] = objects.unedited_segmented
+                    images["UneditedSegmented" + name] = objects.unedited_segmented
                 if objects.has_small_removed_segmented():
-                    images['SmallRemovedSegmented' + name] = objects.small_removed_segmented
+                    images[
+                        "SmallRemovedSegmented" + name
+                    ] = objects.small_removed_segmented
 
         if len(images):
             pipeline_dtype = make_cell_struct_dtype(images.keys())
@@ -1362,35 +1564,45 @@ class Pipeline(object):
             for name, image in images.items():
                 pipeline[name][0, 0] = images[name]
 
-        no_measurements = (measurements is None or len(measurements.get_object_names()) == 0)
+        no_measurements = (
+            measurements is None or len(measurements.get_object_names()) == 0
+        )
         if not no_measurements:
             measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
             npy_measurements = np.ndarray((1, 1), dtype=measurements_dtype)
-            handles['Measurements'] = npy_measurements
+            handles["Measurements"] = npy_measurements
             for object_name in measurements.get_object_names():
-                object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
+                object_dtype = make_cell_struct_dtype(
+                    measurements.get_feature_names(object_name)
+                )
                 object_measurements = np.ndarray((1, 1), dtype=object_dtype)
                 npy_measurements[object_name][0, 0] = object_measurements
                 for feature_name in measurements.get_feature_names(object_name):
-                    feature_measurements = np.ndarray((1, measurements.image_set_number), dtype='object')
+                    feature_measurements = np.ndarray(
+                        (1, measurements.image_set_number), dtype="object"
+                    )
                     object_measurements[feature_name][0, 0] = feature_measurements
-                    data = measurements.get_current_measurement(object_name, feature_name)
+                    data = measurements.get_current_measurement(
+                        object_name, feature_name
+                    )
                     feature_measurements.fill(np.ndarray((0,), dtype=np.float64))
                     if data is not None:
-                        feature_measurements[0, measurements.image_set_number - 1] = data
+                        feature_measurements[
+                            0, measurements.image_set_number - 1
+                        ] = data
         return handles
 
     def find_external_input_images(self):
-        '''Find the names of the images that need to be supplied externally
+        """Find the names of the images that need to be supplied externally
 
         run_external needs a dictionary of name -> image pixels with
         one name entry for every external image that must be provided.
         This function returns a list of those names.
-        '''
+        """
         result = []
         for module in self.modules():
             for setting in module.settings():
-                if isinstance(setting, cps.ExternalImageNameProvider):
+                if isinstance(setting, cellprofiler.setting.ExternalImageNameProvider):
                     result.append(setting.value)
         return result
 
@@ -1398,16 +1610,18 @@ class Pipeline(object):
         result = []
         for module in self.modules():
             for setting in module.settings():
-                if isinstance(setting, cps.ExternalImageNameSubscriber):
+                if isinstance(
+                    setting, cellprofiler.setting.ExternalImageNameSubscriber
+                ):
                     result.append(setting.value)
         return result
 
     def can_convert_legacy_input_modules(self):
-        '''Can legacy modules like LoadImages be converted to modern form?
+        """Can legacy modules like LoadImages be converted to modern form?
 
         Returns True if all legacy input modules can be converted to
         Images / Metadata / NamesAndTypes / Groups.
-        '''
+        """
         needs_conversion = False
         try:
             for module in self.__modules:
@@ -1418,20 +1632,25 @@ class Pipeline(object):
             return False
 
     def convert_legacy_input_modules(self):
-        '''Convert a pipeline from legacy to using Images, NamesAndTypes etc'''
+        """Convert a pipeline from legacy to using Images, NamesAndTypes etc"""
         if not self.can_convert_legacy_input_modules():
             return
         from cellprofiler.modules.images import Images, FILTER_CHOICE_NONE
         from cellprofiler.modules.metadata import Metadata
         from cellprofiler.modules.namesandtypes import NamesAndTypes
         from cellprofiler.modules.groups import Groups
+
         with self.undoable_action("Legacy modules converted"):
             images, metadata, namesandtypes, groups = (
-                Images(), Metadata(), NamesAndTypes(), Groups())
+                Images(),
+                Metadata(),
+                NamesAndTypes(),
+                Groups(),
+            )
             images.filter_choice.value = FILTER_CHOICE_NONE
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
-                module.show_window = cpprefs.get_headless()
+                module.show_window = cellprofiler.preferences.get_headless()
                 if module.notes:
                     module.notes += ["---"]
                 module.notes += ["Settings converted from legacy pipeline."]
@@ -1443,30 +1662,41 @@ class Pipeline(object):
             self.notify_listeners(PipelineLoadedEvent())
 
     def convert_default_input_folder(self, path):
-        '''Convert all references to the default input folder to abolute paths
+        """Convert all references to the default input folder to abolute paths
 
         path - the path to use in place of the default input folder
-        '''
+        """
         with self.undoable_action("Convert default input folder"):
             for module in self.modules(False):
                 was_edited = False
                 for setting in module.settings():
-                    if isinstance(setting, cps.DirectoryPath):
-                        if setting.dir_choice == cpprefs.DEFAULT_INPUT_FOLDER_NAME:
-                            setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                    if isinstance(setting, cellprofiler.setting.DirectoryPath):
+                        if (
+                            setting.dir_choice
+                            == cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+                        ):
+                            setting.dir_choice = (
+                                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                            )
                             setting.custom_path = path
                             was_edited = True
-                        elif setting.dir_choice == cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME:
+                        elif (
+                            setting.dir_choice
+                            == cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                        ):
                             subpath = os.path.join(path, setting.custom_path)
-                            setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                            setting.dir_choice = (
+                                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                            )
                             setting.custom_path = subpath
                 if was_edited:
                     self.edit_module(module.module_num, True)
             self.notify_listeners(PipelineLoadedEvent())
 
     def fix_legacy_pipeline(self):
-        '''Perform inter-module fixes needed for some legacy pipelines'''
+        """Perform inter-module fixes needed for some legacy pipelines"""
         from cellprofiler.modules.loadsingleimage import LoadSingleImage
+
         #
         # LoadSingleImage used to work if placed before LoadImages or
         # LoadData, but doesn't any more
@@ -1474,10 +1704,9 @@ class Pipeline(object):
         while True:
             for i, module in enumerate(self.modules()):
                 if isinstance(module, LoadSingleImage):
-                    for other_module in self.modules()[(i + 1):]:
+                    for other_module in self.modules()[(i + 1) :]:
                         if other_module.is_load_module():
-                            self.move_module(other_module.module_num,
-                                             DIRECTION_UP)
+                            self.move_module(other_module.module_num, DIRECTION_UP)
                             break
                     else:
                         continue
@@ -1486,22 +1715,22 @@ class Pipeline(object):
                 break
 
     def requires_aggregation(self):
-        '''Return True if the pipeline requires aggregation across image sets
+        """Return True if the pipeline requires aggregation across image sets
 
         If a pipeline has aggregation modules, the image sets in a group
         need to be run sequentially on the same worker.
-        '''
+        """
         for module in self.modules():
             if module.is_aggregation_module():
                 return True
         return False
 
     def obfuscate(self):
-        '''Tell all modules in the pipeline to obfuscate any sensitive info
+        """Tell all modules in the pipeline to obfuscate any sensitive info
 
         This call is designed to erase any information that users might
         not like to see uploaded. You should copy a pipeline before obfuscating.
-        '''
+        """
         for module in self.modules(False):
             module.obfuscate()
 
@@ -1513,8 +1742,6 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.setting as cps
-        from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()
         input_image_names = self.find_external_input_images()
@@ -1522,21 +1749,24 @@ class Pipeline(object):
         # Check that the incoming dictionary matches the names expected by the
         # ExternalImageProviders
         for name in input_image_names:
-            assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % name
+            assert name in image_dict, (
+                'Image named "%s" was not provided in the input dictionary' % name
+            )
 
         # Create image set from provided dict
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, cpi.Image(input_pixels))
-        object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+            image_set.add(image_name, cellprofiler.image.Image(input_pixels))
+        object_set = cellprofiler.object.ObjectSet()
+        measurements = cellprofiler.measurement.Measurements()
 
         # Run the modules
         for module in self.modules():
-            workspace = cpw.Workspace(self, module, image_set, object_set,
-                                      measurements, image_set_list)
+            workspace = cellprofiler.workspace.Workspace(
+                self, module, image_set, object_set, measurements, image_set_list
+            )
             self.run_module(module, workspace)
 
         # Populate a dictionary for output with the images to be exported
@@ -1546,13 +1776,15 @@ class Pipeline(object):
 
         return output_dict
 
-    def run(self,
-            frame=None,
-            image_set_start=1,
-            image_set_end=None,
-            grouping=None,
-            measurements_filename=None,
-            initial_measurements=None):
+    def run(
+        self,
+        frame=None,
+        image_set_start=1,
+        image_set_end=None,
+        grouping=None,
+        measurements_filename=None,
+        initial_measurements=None,
+    ):
         """Run the pipeline
 
         Run the pipeline, returning the measurements made
@@ -1564,15 +1796,17 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cpmeas.Measurements(
-                image_set_start=image_set_start,
-                filename=measurements_filename,
-                copy=initial_measurements)
+        measurements = cellprofiler.measurement.Measurements(
+            image_set_start=image_set_start,
+            filename=measurements_filename,
+            copy=initial_measurements,
+        )
         if not self.in_batch_mode() and initial_measurements is not None:
             #
             # Need file list in order to call prepare_run
             #
             from cellprofiler.utilities.hdf5_dict import HDF5FileList
+
             src = initial_measurements.hdf5_dict.hdf5_file
             dest = measurements.hdf5_dict.hdf5_file
             if HDF5FileList.has_file_list(src):
@@ -1580,20 +1814,29 @@ class Pipeline(object):
                 self.add_urls(HDF5FileList(dest).get_filelist())
 
         measurements.is_first_image = True
-        for m in self.run_with_yield(frame, image_set_start, image_set_end,
-                                     grouping,
-                                     run_in_background=False,
-                                     initial_measurements=measurements):
+        for m in self.run_with_yield(
+            frame,
+            image_set_start,
+            image_set_end,
+            grouping,
+            run_in_background=False,
+            initial_measurements=measurements,
+        ):
             measurements = m
         return measurements
 
-    def group(self, grouping, image_set_start, image_set_end, initial_measurements, workspace):
+    def group(
+        self, grouping, image_set_start, image_set_end, initial_measurements, workspace
+    ):
         """Enumerate relevant image sets.  This function is side-effect free, so it can be called more than once."""
 
         keys, groupings = self.get_groupings(workspace)
 
         if grouping is not None and set(keys) != set(grouping.keys()):
-            raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (", ".join(grouping.keys()), ", ".join(keys)))
+            raise ValueError(
+                "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"
+                % (", ".join(grouping.keys()), ", ".join(keys))
+            )
 
         for gn, (grouping_keys, image_numbers) in enumerate(groupings):
             if grouping is not None and grouping != grouping_keys:
@@ -1608,24 +1851,49 @@ class Pipeline(object):
                 if image_set_end is not None and image_number > image_set_end:
                     continue
 
-                if initial_measurements is not None and all([initial_measurements.has_feature(cpmeas.IMAGE, f) for f in (GROUP_NUMBER, GROUP_INDEX)]):
-                    group_number, group_index = [initial_measurements[cpmeas.IMAGE, f, image_number] for f in (GROUP_NUMBER, GROUP_INDEX)]
+                if initial_measurements is not None and all(
+                    [
+                        initial_measurements.has_feature(
+                            cellprofiler.measurement.IMAGE, f
+                        )
+                        for f in (GROUP_NUMBER, GROUP_INDEX)
+                    ]
+                ):
+                    group_number, group_index = [
+                        initial_measurements[
+                            cellprofiler.measurement.IMAGE, f, image_number
+                        ]
+                        for f in (GROUP_NUMBER, GROUP_INDEX)
+                    ]
                 else:
                     group_number = gn + 1
 
                     group_index = gi + 1
 
                 if need_to_run_prepare_group:
-                    yield group_number, group_index, image_number, lambda: self.prepare_group(workspace, grouping_keys, image_numbers)
+                    yield group_number, group_index, image_number, lambda: self.prepare_group(
+                        workspace, grouping_keys, image_numbers
+                    )
                 else:
                     yield group_number, group_index, image_number, lambda: True
 
                 need_to_run_prepare_group = False
 
             if not need_to_run_prepare_group:
-                yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
+                yield None, None, None, lambda workspace: self.post_group(
+                    workspace, grouping_keys
+                )
 
-    def run_with_yield(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, run_in_background=True, status_callback=None, initial_measurements=None):
+    def run_with_yield(
+        self,
+        frame=None,
+        image_set_start=1,
+        image_set_end=None,
+        grouping=None,
+        run_in_background=True,
+        status_callback=None,
+        initial_measurements=None,
+    ):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
 
@@ -1637,24 +1905,28 @@ class Pipeline(object):
         Run the pipeline, returning the measurements made
         """
 
-        can_display = not cpprefs.get_headless()
+        can_display = not cellprofiler.preferences.get_headless()
 
         columns = self.get_measurement_columns()
 
         if image_set_start is not None:
-            assert isinstance(image_set_start, int), "Image set start must be an integer"
+            assert isinstance(
+                image_set_start, int
+            ), "Image set start must be an integer"
 
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
 
         if initial_measurements is None:
-            measurements = cpmeas.Measurements(image_set_start)
+            measurements = cellprofiler.measurement.Measurements(image_set_start)
         else:
             measurements = initial_measurements
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
 
-        workspace = cpw.Workspace(self, None, None, None, measurements, image_set_list, frame)
+        workspace = cellprofiler.workspace.Workspace(
+            self, None, None, None, measurements, image_set_list, frame
+        )
 
         try:
             if not self.prepare_run(workspace):
@@ -1684,9 +1956,15 @@ class Pipeline(object):
                     if grouping_keys != grouping:
                         to_remove += list(grouping_image_numbers)
 
-            if len(to_remove) > 0 and measurements.has_feature(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER):
+            if len(to_remove) > 0 and measurements.has_feature(
+                cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER
+            ):
                 for image_number in np.unique(to_remove):
-                    measurements.remove_measurement(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, image_number)
+                    measurements.remove_measurement(
+                        cellprofiler.measurement.IMAGE,
+                        cellprofiler.measurement.IMAGE_NUMBER,
+                        image_number,
+                    )
 
             # Keep track of progress for the benefit of the progress window.
             num_image_sets = len(measurements.get_image_numbers())
@@ -1697,9 +1975,17 @@ class Pipeline(object):
 
             last_image_number = None
 
-            pipeline_stats_logger.info("Times reported are CPU and Wall-clock times for each module")
+            pipeline_stats_logger.info(
+                "Times reported are CPU and Wall-clock times for each module"
+            )
 
-            __group = self.group(grouping, image_set_start, image_set_end, initial_measurements, workspace)
+            __group = self.group(
+                grouping,
+                image_set_start,
+                image_set_end,
+                initial_measurements,
+                workspace,
+            )
 
             for group_number, group_index, image_number, closure in __group:
                 if image_number is None:
@@ -1739,7 +2025,7 @@ class Pipeline(object):
 
                 slot_number = 0
 
-                object_set = cpo.ObjectSet()
+                object_set = cellprofiler.object.ObjectSet()
 
                 image_set = measurements
 
@@ -1753,9 +2039,15 @@ class Pipeline(object):
                     if module.should_stop_writing_measurements():
                         should_write_measurements = False
                     else:
-                        module_error_measurement = ('ModuleError_%02d%s' % (module.module_num, module.module_name))
+                        module_error_measurement = "ModuleError_%02d%s" % (
+                            module.module_num,
+                            module.module_name,
+                        )
 
-                        execution_time_measurement = ('ExecutionTime_%02d%s' % (module.module_num, module.module_name))
+                        execution_time_measurement = "ExecutionTime_%02d%s" % (
+                            module.module_num,
+                            module.module_name,
+                        )
 
                     failure = 1
 
@@ -1765,12 +2057,23 @@ class Pipeline(object):
 
                     frame_if_shown = frame if module.show_window else None
 
-                    workspace = cpw.Workspace(self, module, image_set, object_set, measurements, image_set_list, frame_if_shown, outlines=outlines)
+                    workspace = cellprofiler.workspace.Workspace(
+                        self,
+                        module,
+                        image_set,
+                        object_set,
+                        measurements,
+                        image_set_list,
+                        frame_if_shown,
+                        outlines=outlines,
+                    )
 
                     grids = workspace.set_grids(grids)
 
                     if status_callback:
-                        status_callback(module, len(self.modules()), image_set_count, num_image_sets)
+                        status_callback(
+                            module, len(self.modules()), image_set_count, num_image_sets
+                        )
 
                     start_time = datetime.datetime.now()
 
@@ -1781,7 +2084,11 @@ class Pipeline(object):
                     try:
                         self.run_module(module, workspace)
                     except Exception as instance:
-                        logger.error("Error detected during run of module %s", module.module_name, exc_info=True)
+                        logger.error(
+                            "Error detected during run of module %s",
+                            module.module_name,
+                            exc_info=True,
+                        )
 
                         exception = instance
 
@@ -1796,7 +2103,17 @@ class Pipeline(object):
                     cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
                     wall_delta_sec = max(0, wall_t1 - wall_t0)
 
-                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs" % (start_time.ctime(), image_number, module.module_name, module.module_num, cpu_delta_sec, wall_delta_sec))
+                    pipeline_stats_logger.info(
+                        "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
+                        % (
+                            start_time.ctime(),
+                            image_number,
+                            module.module_name,
+                            module.module_num,
+                            cpu_delta_sec,
+                            wall_delta_sec,
+                        )
+                    )
 
                     if module.show_window and can_display and (exception is None):
                         try:
@@ -1806,7 +2123,11 @@ class Pipeline(object):
 
                             fig.Refresh()
                         except Exception as instance:
-                            logger.error("Failed to display results for module %s", module.module_name, exc_info=True)
+                            logger.error(
+                                "Failed to display results for module %s",
+                                module.module_name,
+                                exc_info=True,
+                            )
 
                             exception = instance
 
@@ -1825,7 +2146,9 @@ class Pipeline(object):
                             return
                         elif event.skip_thisset:
                             # Skip this image, continue to others
-                            workspace.set_disposition(cpw.DISPOSITION_SKIP)
+                            workspace.set_disposition(
+                                cellprofiler.workspace.DISPOSITION_SKIP
+                            )
 
                             should_write_measurements = False
 
@@ -1834,20 +2157,33 @@ class Pipeline(object):
                     # Paradox: ExportToDatabase must write these columns in order
                     #  to complete, but in order to do so, the module needs to
                     #  have already completed. So we don't report them for it.
-                    if module.module_name != 'Restart' and should_write_measurements:
-                        measurements.add_measurement('Image', module_error_measurement, np.array([failure]))
+                    if module.module_name != "Restart" and should_write_measurements:
+                        measurements.add_measurement(
+                            "Image", module_error_measurement, np.array([failure])
+                        )
 
-                        measurements.add_measurement('Image', execution_time_measurement, np.array([cpu_delta_sec]))
+                        measurements.add_measurement(
+                            "Image",
+                            execution_time_measurement,
+                            np.array([cpu_delta_sec]),
+                        )
 
-                    while workspace.disposition == cpw.DISPOSITION_PAUSE and frame is not None:
+                    while (
+                        workspace.disposition
+                        == cellprofiler.workspace.DISPOSITION_PAUSE
+                        and frame is not None
+                    ):
                         # try to leave measurements temporary file in a readable state
                         measurements.flush()
 
                         yield measurements
 
-                    if workspace.disposition == cpw.DISPOSITION_SKIP:
+                    if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
                         break
-                    elif workspace.disposition == cpw.DISPOSITION_CANCEL:
+                    elif (
+                        workspace.disposition
+                        == cellprofiler.workspace.DISPOSITION_CANCEL
+                    ):
                         measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
                         return
@@ -1856,7 +2192,9 @@ class Pipeline(object):
             # by freeing up memory and resources.
             clear_image_reader_cache()
             if measurements is not None:
-                workspace = cpw.Workspace(self, None, None, None, measurements, image_set_list, frame)
+                workspace = cellprofiler.workspace.Workspace(
+                    self, None, None, None, measurements, image_set_list, frame
+                )
 
                 exit_status = self.post_run(workspace)
 
@@ -1875,7 +2213,14 @@ class Pipeline(object):
 
             self.end_run()
 
-    def run_image_set(self, measurements, image_set_number, interaction_handler, display_handler, cancel_handler):
+    def run_image_set(
+        self,
+        measurements,
+        image_set_number,
+        interaction_handler,
+        display_handler,
+        cancel_handler,
+    ):
         """Run the pipeline for a single image set storing the results in measurements.
 
         Arguments:
@@ -1890,9 +2235,13 @@ class Pipeline(object):
         Returns a workspace suitable for use in self.post_group()
         """
         measurements.next_image_set(image_set_number)
-        measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
-        measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
-        object_set = cpo.ObjectSet()
+        measurements.group_number = measurements[
+            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+        ]
+        measurements.group_index = measurements[
+            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX
+        ]
+        object_set = cellprofiler.object.ObjectSet()
         image_set = measurements
         measurements.clear_cache()
         for provider in measurements.providers:
@@ -1904,13 +2253,15 @@ class Pipeline(object):
             print("Running module", module.module_name, module.module_num)
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
-            workspace = cpw.Workspace(self,
-                                      module,
-                                      image_set,
-                                      object_set,
-                                      measurements,
-                                      None,
-                                      outlines=outlines)
+            workspace = cellprofiler.workspace.Workspace(
+                self,
+                module,
+                image_set,
+                object_set,
+                measurements,
+                None,
+                outlines=outlines,
+            )
             workspace.interaction_handler = interaction_handler
             workspace.cancel_handler = cancel_handler
 
@@ -1929,11 +2280,17 @@ class Pipeline(object):
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
-                logger.error("Error detected during run of module %s#%d",
-                             module.module_name, module.module_num, exc_info=True)
+                logger.error(
+                    "Error detected during run of module %s#%d",
+                    module.module_name,
+                    module.module_num,
+                    exc_info=True,
+                )
                 if should_write_measurements:
-                    measurements[cpmeas.IMAGE,
-                                 'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 1
+                    measurements[
+                        cellprofiler.measurement.IMAGE,
+                        "ModuleError_%02d%s" % (module.module_num, module.module_name),
+                    ] = 1
                 evt = RunExceptionEvent(exception, module, sys.exc_info()[2])
                 self.notify_listeners(evt)
                 if evt.cancel_run or evt.skip_thisset:
@@ -1945,31 +2302,45 @@ class Pipeline(object):
             cpu_t1 = sum(os_times[:-1])
             cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
             wall_delta_secs = max(0, wall_t1 - wall_t0)
-            pipeline_stats_logger.info("%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs" %
-                                       (start_time.ctime(), image_set_number,
-                                        module.module_name, module.module_num,
-                                        cpu_delta_secs, wall_delta_secs))
+            pipeline_stats_logger.info(
+                "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
+                % (
+                    start_time.ctime(),
+                    image_set_number,
+                    module.module_name,
+                    module.module_num,
+                    cpu_delta_secs,
+                    wall_delta_secs,
+                )
+            )
             # Paradox: ExportToDatabase must write these columns in order
             #  to complete, but in order to do so, the module needs to
             #  have already completed. So we don't report them for it.
             if should_write_measurements:
-                measurements[cpmeas.IMAGE,
-                             'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 0
-                measurements[cpmeas.IMAGE,
-                             'ExecutionTime_%02d%s' % (module.module_num, module.module_name)] = cpu_delta_secs
+                measurements[
+                    cellprofiler.measurement.IMAGE,
+                    "ModuleError_%02d%s" % (module.module_num, module.module_name),
+                ] = 0
+                measurements[
+                    cellprofiler.measurement.IMAGE,
+                    "ExecutionTime_%02d%s" % (module.module_num, module.module_name),
+                ] = cpu_delta_secs
 
             measurements.flush()
-            if workspace.disposition == cpw.DISPOSITION_SKIP:
+            if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
                 break
-        return cpw.Workspace(self, None, measurements, object_set,
-                             measurements, None, outlines=outlines)
+        return cellprofiler.workspace.Workspace(
+            self, None, measurements, object_set, measurements, None, outlines=outlines
+        )
 
     def end_run(self):
-        '''Tell everyone that a run is ending'''
+        """Tell everyone that a run is ending"""
         self.notify_listeners(EndRunEvent())
 
-    def run_group_with_yield(self, workspace, grouping, image_numbers, stop_module, title, message):
-        '''Run the modules for the image_numbers in a group up to an agg module
+    def run_group_with_yield(
+        self, workspace, grouping, image_numbers, stop_module, title, message
+    ):
+        """Run the modules for the image_numbers in a group up to an agg module
 
         This method runs a pipeline up to an aggregation step on behalf of
         an aggregation module. At present, you can call this within
@@ -1987,7 +2358,7 @@ class Pipeline(object):
         The function yields the current workspace at the end of processing
         each image set. The workspace has a valid image_set and the
         measurements' image_number is the current image number.
-        '''
+        """
         m = workspace.measurements
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -1999,11 +2370,12 @@ class Pipeline(object):
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number
                 image_set = m
-                object_set = cpo.ObjectSet()
+                object_set = cellprofiler.object.ObjectSet()
                 old_providers = list(image_set.providers)
                 for module in pipeline.modules():
-                    w = cpw.Workspace(self, module, image_set, object_set, m,
-                                      image_set_list)
+                    w = cellprofiler.workspace.Workspace(
+                        self, module, image_set, object_set, m, image_set_list
+                    )
                     if module == stop_module:
                         yield w
                         # Reset state of image set
@@ -2026,23 +2398,22 @@ class Pipeline(object):
         return None
 
     def run_module(self, module, workspace):
-        '''Run one CellProfiler module
+        """Run one CellProfiler module
 
         Run the CellProfiler module with whatever preparation and cleanup
         needs to be done before and after.
-        '''
+        """
         module.run(workspace)
 
     def write_experiment_measurements(self, m):
-        '''Write the standard experiment measurments to the measurements file
+        """Write the standard experiment measurments to the measurements file
 
         Write the pipeline, version # and timestamp.
-        '''
-        assert isinstance(m, cpmeas.Measurements)
+        """
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, cellprofiler.__version__)
-        m.add_experiment_measurement(M_TIMESTAMP,
-                                     datetime.datetime.now().isoformat())
+        m.add_experiment_measurement(M_TIMESTAMP, datetime.datetime.now().isoformat())
         m.flush()
 
     def prepare_run(self, workspace, end_module=None):
@@ -2069,20 +2440,24 @@ class Pipeline(object):
 
         end_module - if present, terminate before executing this module
         """
-        assert (isinstance(workspace, cpw.Workspace))
+        assert isinstance(workspace, cellprofiler.workspace.Workspace)
         m = workspace.measurements
         if self.has_legacy_loaders():
             # Legacy - there may be cached group number/group index
             #          image measurements which may be incorrect.
-            m.remove_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX)
-            m.remove_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER)
+            m.remove_measurement(
+                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX
+            )
+            m.remove_measurement(
+                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+            )
         self.write_experiment_measurements(m)
 
         prepare_run_error_detected = [False]
 
-        def on_pipeline_event(
-                pipeline, event,
-                prepare_run_error_detected=prepare_run_error_detected):
+        def on_pipeline_event(pipeline, event, prepare_run_error_detected=None):
+            if prepare_run_error_detected is None:
+                prepare_run_error_detected = prepare_run_error_detected
             if isinstance(event, PrepareRunErrorEvent):
                 prepare_run_error_detected[0] = True
 
@@ -2094,16 +2469,22 @@ class Pipeline(object):
                 try:
                     workspace.set_module(module)
                     workspace.show_frame(module.show_window)
-                    if ((not module.prepare_run(workspace)) or
-                            prepare_run_error_detected[0]):
+                    if (
+                        not module.prepare_run(workspace)
+                    ) or prepare_run_error_detected[0]:
                         if workspace.measurements.image_set_count > 0:
                             had_image_sets = True
                         self.clear_measurements(workspace.measurements)
                         break
                 except Exception as instance:
-                    logging.error("Failed to prepare run for module %s",
-                                  module.module_name, exc_info=True)
-                    event = PrepareRunExceptionEvent(instance, module, sys.exc_info()[2])
+                    logging.error(
+                        "Failed to prepare run for module %s",
+                        module.module_name,
+                        exc_info=True,
+                    )
+                    event = PrepareRunExceptionEvent(
+                        instance, module, sys.exc_info()[2]
+                    )
                     self.notify_listeners(event)
                     if event.cancel_run:
                         self.clear_measurements(workspace.measurements)
@@ -2111,13 +2492,16 @@ class Pipeline(object):
         if workspace.measurements.image_set_count == 0:
             if not had_image_sets:
                 self.report_prepare_run_error(
-                        None,
-                        "The pipeline did not identify any image sets.\n"
-                        "Please correct any problems in your input module settings\n"
-                        "and try again.")
+                    None,
+                    "The pipeline did not identify any image sets.\n"
+                    "Please correct any problems in your input module settings\n"
+                    "and try again.",
+                )
             return False
 
-        if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
+        if not m.has_feature(
+            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+        ):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)
             image_numbers = m.get_image_numbers()
@@ -2128,12 +2512,17 @@ class Pipeline(object):
             for i, (key, group_image_numbers) in enumerate(groupings):
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
-                group_indexes[iii] = np.arange(
-                        len(iii)) + 1
+                group_indexes[iii] = np.arange(len(iii)) + 1
             m.add_all_measurements(
-                    cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.GROUP_NUMBER,
+                group_numbers,
+            )
             m.add_all_measurements(
-                    cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.GROUP_INDEX,
+                group_indexes,
+            )
             #
             # The grouping for legacy pipelines may not be monotonically
             # increasing by group number and index.
@@ -2142,13 +2531,18 @@ class Pipeline(object):
             order = np.lexsort((group_indexes, group_numbers))
             if np.any(order[1:] != order[:-1] + 1):
                 new_image_numbers = np.zeros(max(image_numbers) + 1, int)
-                new_image_numbers[image_numbers[order]] = \
+                new_image_numbers[image_numbers[order]] = (
                     np.arange(len(image_numbers)) + 1
+                )
                 m.reorder_image_measurements(new_image_numbers)
         m.flush()
 
         if self.volumetric():
-            unsupported = [module.module_name for module in self.__modules if not module.volumetric()]
+            unsupported = [
+                module.module_name
+                for module in self.__modules
+                if not module.volumetric()
+            ]
 
             if len(unsupported) > 0:
                 self.report_prepare_run_error(
@@ -2156,11 +2550,10 @@ class Pipeline(object):
                     "Cannot run pipeline. "
                     "The pipeline is configured to process data as 3D. "
                     "The pipeline contains modules which do not support 3D processing:"
-                    "\n\n{}".format(", ".join(unsupported))
+                    "\n\n{}".format(", ".join(unsupported)),
                 )
 
                 return False
-
 
         return True
 
@@ -2177,15 +2570,12 @@ class Pipeline(object):
         frame - the topmost frame window or None if no GUI
         """
         from cellprofiler.module import Module
+
         if len(args) == 3:
             measurements, image_set_list, frame = args
-            workspace = cpw.Workspace(self,
-                                      None,
-                                      None,
-                                      None,
-                                      measurements,
-                                      image_set_list,
-                                      frame)
+            workspace = cellprofiler.workspace.Workspace(
+                self, None, None, None, measurements, image_set_list, frame
+            )
         else:
             workspace = args[0]
         for module in self.modules():
@@ -2194,28 +2584,35 @@ class Pipeline(object):
                 module.post_run(workspace)
             except Exception as instance:
                 logging.error(
-                        "Failed to complete post_run processing for module %s." %
-                        module.module_name, exc_info=True)
+                    "Failed to complete post_run processing for module %s."
+                    % module.module_name,
+                    exc_info=True,
+                )
                 event = PostRunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
-            if module.show_window and \
-                            module.__class__.display_post_run != Module.display_post_run:
+            if (
+                module.show_window
+                and module.__class__.display_post_run != Module.display_post_run
+            ):
                 try:
                     workspace.post_run_display(module)
                 except Exception as instance:
                     # Warn about display failure but keep going.
                     logging.warn(
-                            "Caught exception during post_run_display for module %s." %
-                            module.module_name, exc_info=True)
+                        "Caught exception during post_run_display for module %s."
+                        % module.module_name,
+                        exc_info=True,
+                    )
         workspace.measurements.add_experiment_measurement(
-                M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat())
+            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat()
+        )
 
         return "Complete"
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -2228,23 +2625,25 @@ class Pipeline(object):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         assert workspace.pipeline == self
         for module in self.modules():
             try:
                 workspace.set_module(module)
-                module.prepare_to_create_batch(workspace,
-                                               fn_alter_path)
+                module.prepare_to_create_batch(workspace, fn_alter_path)
             except Exception as instance:
-                logger.error("Failed to collect batch information for module %s",
-                             module.module_name, exc_info=True)
+                logger.error(
+                    "Failed to collect batch information for module %s",
+                    module.module_name,
+                    exc_info=True,
+                )
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets in an image set list
+        """Return the image groupings of the image sets in an image set list
 
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings
@@ -2257,7 +2656,7 @@ class Pipeline(object):
         and 'Metadata_Column' and a group_list of:
         [ (('A','01'), [0,96,192]),
           (('A','02'), [1,97,193]),... ]
-        '''
+        """
         groupings = None
         grouping_module = None
         for module in self.modules():
@@ -2269,12 +2668,16 @@ class Pipeline(object):
                 groupings = new_groupings
                 grouping_module = module
             else:
-                raise ValueError("The pipeline has two grouping modules: # %d "
-                                 "(%s) and # %d (%s)" %
-                                 (grouping_module.module_num,
-                                  grouping_module.module_name,
-                                  module.module_num,
-                                  module.module_name))
+                raise ValueError(
+                    "The pipeline has two grouping modules: # %d "
+                    "(%s) and # %d (%s)"
+                    % (
+                        grouping_module.module_num,
+                        grouping_module.module_name,
+                        module.module_num,
+                        module.module_name,
+                    )
+                )
         if groupings is None:
             return (), (((), workspace.measurements.get_image_numbers()),)
         return groupings
@@ -2291,34 +2694,53 @@ class Pipeline(object):
         current_metadata = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            if object_name == cpmeas.IMAGE and feature.startswith(cpmeas.C_METADATA):
-                current_metadata.append(feature[(len(cpmeas.C_METADATA) + 1):])
+            if object_name == cellprofiler.measurement.IMAGE and feature.startswith(
+                cellprofiler.measurement.C_METADATA
+            ):
+                current_metadata.append(
+                    feature[(len(cellprofiler.measurement.C_METADATA) + 1) :]
+                )
 
-        m = re.findall('\\(\\?[<](.+?)[>]\\)', pattern)
+        m = re.findall("\\(\\?[<](.+?)[>]\\)", pattern)
         if not m:
-            m = re.findall('\\\\g[<](.+?)[>]', pattern)
+            m = re.findall("\\\\g[<](.+?)[>]", pattern)
         if m:
-            m = filter((lambda x: not any(
-                    [x.startswith(y) for y in (cpmeas.C_SERIES, cpmeas.C_FRAME)])), m)
+            m = filter(
+                (
+                    lambda x: not any(
+                        [
+                            x.startswith(y)
+                            for y in (
+                                cellprofiler.measurement.C_SERIES,
+                                cellprofiler.measurement.C_FRAME,
+                            )
+                        ]
+                    )
+                ),
+                m,
+            )
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
             return []
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to start processing a new group
+        """Prepare to start processing a new group
 
         workspace - the workspace containing the measurements and image set list
         grouping - a dictionary giving the keys and values for the group
 
         returns true if the group should be run
-        '''
+        """
         for module in self.modules():
             try:
                 module.prepare_group(workspace, grouping, image_numbers)
             except Exception as instance:
-                logger.error("Failed to prepare group in module %s",
-                             module.module_name, exc_info=True)
+                logger.error(
+                    "Failed to prepare group in module %s",
+                    module.module_name,
+                    exc_info=True,
+                )
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -2326,30 +2748,37 @@ class Pipeline(object):
         return True
 
     def post_group(self, workspace, grouping):
-        '''Do post-processing after a group completes
+        """Do post-processing after a group completes
 
         workspace - the last workspace run
-        '''
+        """
         from cellprofiler.module import Module
+
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
             except Exception as instance:
                 logging.error(
-                        "Failed during post-group processing for module %s" %
-                        module.module_name, exc_info=True)
+                    "Failed during post-group processing for module %s"
+                    % module.module_name,
+                    exc_info=True,
+                )
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
-            if module.show_window and \
-                            module.__class__.display_post_group != Module.display_post_group:
+            if (
+                module.show_window
+                and module.__class__.display_post_group != Module.display_post_group
+            ):
                 try:
                     workspace.post_group_display(module)
                 except:
                     logging.warn(
-                            "Failed during post group display for module %s" %
-                            module.module_name, exc_info=True)
+                        "Failed during post group display for module %s"
+                        % module.module_name,
+                        exc_info=True,
+                    )
         return True
 
     def has_create_batch_module(self):
@@ -2359,14 +2788,14 @@ class Pipeline(object):
         return False
 
     def in_batch_mode(self):
-        '''Return True if the pipeline is in batch mode'''
+        """Return True if the pipeline is in batch mode"""
         for module in self.modules():
             batch_mode = module.in_batch_mode()
             if batch_mode is not None:
                 return batch_mode
 
     def turn_off_batch_mode(self):
-        '''Reset the pipeline to an editable state if batch mode is on
+        """Reset the pipeline to an editable state if batch mode is on
 
         A module is allowed to create hidden information that it uses
         to turn batch mode on or to save state to be used in batch mode.
@@ -2374,7 +2803,7 @@ class Pipeline(object):
         even if it is a batch pipeline; all modules should be restored
         to a state that's appropriate for creating a batch file, not
         for running a batch file.
-        '''
+        """
         for module in self.modules():
             module.turn_off_batch_mode()
 
@@ -2397,18 +2826,18 @@ class Pipeline(object):
             self.stop_undoable_action()
 
     def init_modules(self):
-        '''Initialize the module list
+        """Initialize the module list
 
         Initialize the modules list to contain the four file modules.
-        '''
+        """
         from cellprofiler.modules.images import Images
         from cellprofiler.modules.metadata import Metadata
         from cellprofiler.modules.namesandtypes import NamesAndTypes
         from cellprofiler.modules.groups import Groups
-        for i, module in enumerate(
-                (Images(), Metadata(), NamesAndTypes(), Groups())):
+
+        for i, module in enumerate((Images(), Metadata(), NamesAndTypes(), Groups())):
             module.set_module_num(i + 1)
-            module.show_window = cpprefs.get_headless()
+            module.show_window = cellprofiler.preferences.get_headless()
             self.add_module(module)
 
     def move_module(self, module_num, direction):
@@ -2421,8 +2850,9 @@ class Pipeline(object):
         if direction == DIRECTION_DOWN:
             if module_num >= len(self.__modules):
                 raise ValueError(
-                        '%(module_num)d is at or after the last module in the pipeline and can''t move down' % (
-                            locals()))
+                    "%(module_num)d is at or after the last module in the pipeline and can"
+                    "t move down" % (locals())
+                )
             module = self.__modules[idx]
             new_module_num = module_num + 1
             module.set_module_num(module_num + 1)
@@ -2435,7 +2865,9 @@ class Pipeline(object):
             self.__settings[idx] = next_settings
         elif direction == DIRECTION_UP:
             if module_num <= 1:
-                raise ValueError('The module is at the top of the pipeline and can''t move up')
+                raise ValueError(
+                    "The module is at the top of the pipeline and can" "t move up"
+                )
             module = self.__modules[idx]
             prev_module = self.__modules[idx - 1]
             new_module_num = prev_module.module_num
@@ -2447,23 +2879,27 @@ class Pipeline(object):
             self.__settings[idx - 1] = self.__settings[idx]
             self.__settings[idx] = prev_settings
         else:
-            raise ValueError('Unknown direction: %s' % direction)
-        self.notify_listeners(ModuleMovedPipelineEvent(new_module_num, direction, False))
+            raise ValueError("Unknown direction: %s" % direction)
+        self.notify_listeners(
+            ModuleMovedPipelineEvent(new_module_num, direction, False)
+        )
 
         def undo():
-            self.move_module(module.module_num,
-                             DIRECTION_DOWN if direction == DIRECTION_UP
-                             else DIRECTION_UP)
+            self.move_module(
+                module.module_num,
+                DIRECTION_DOWN if direction == DIRECTION_UP else DIRECTION_UP,
+            )
 
         message = "Move %s %s" % (module.module_name, direction)
         self.__undo_stack.append((undo, message))
 
     def enable_module(self, module):
-        '''Enable a module = make it executable'''
+        """Enable a module = make it executable"""
         if module.enabled:
             logger.warn(
-                    "Asked to enable module %s, but it was already enabled" %
-                    module.module_name)
+                "Asked to enable module %s, but it was already enabled"
+                % module.module_name
+            )
             return
         module.enabled = True
         self.notify_listeners(ModuleEnabledEvent(module))
@@ -2475,11 +2911,12 @@ class Pipeline(object):
         self.__undo_stack.append((undo, message))
 
     def disable_module(self, module):
-        '''Disable a module = prevent it from being executed'''
+        """Disable a module = prevent it from being executed"""
         if not module.enabled:
             logger.warn(
-                    "Asked to disable module %s, but it was already disabled" %
-                    module.module_name)
+                "Asked to disable module %s, but it was already disabled"
+                % module.module_name
+            )
         module.enabled = False
         self.notify_listeners(ModuleDisabledEvent(module))
 
@@ -2490,12 +2927,12 @@ class Pipeline(object):
         self.__undo_stack.append((undo, message))
 
     def show_module_window(self, module, state=True):
-        '''Set the module's show_window state
+        """Set the module's show_window state
 
         module - module to show or hide
 
         state - True to show, False to hide
-        '''
+        """
         if state != module.show_window:
             module.show_window = state
             self.notify_listeners(ModuleShowWindowEvent(module))
@@ -2504,15 +2941,17 @@ class Pipeline(object):
                 self.show_module_window(module, not state)
 
             message = "%s %s window" % (
-                ("Show" if state else "Hide"), module.module_name)
+                ("Show" if state else "Hide"),
+                module.module_name,
+            )
             self.__undo_stack.append((undo, message))
 
     def add_urls(self, urls, add_undo=True):
-        '''Add URLs to the file list
+        """Add URLs to the file list
 
         urls - a collection of URLs
         add_undo - True to add the undo operation of this to the undo stack
-        '''
+        """
         real_list = []
         urls = sorted(urls)
         start = 0
@@ -2520,29 +2959,29 @@ class Pipeline(object):
         n = len(urls)
         for i, url in enumerate(urls):
             if i % 100 == 0:
-                path = urllib.parse.urlparse(url).path
+                path = six.moves.urllib.parse.urlparse(url).path
                 if "/" in path:
                     filename = path.rsplit("/", 1)[1]
                 else:
                     filename = path
-                filename = urllib.request.url2pathname(filename)
-                cpprefs.report_progress(
-                        uid, float(i) / n,
-                             u"Adding %s" % filename)
+                filename = six.moves.urllib.request.url2pathname(filename)
+                cellprofiler.preferences.report_progress(
+                    uid, float(i) / n, u"Adding %s" % filename
+                )
             pos = bisect.bisect_left(self.__file_list, url, start)
-            if (pos == len(self.file_list) or
-                        self.__file_list[pos] != url):
+            if pos == len(self.file_list) or self.__file_list[pos] != url:
                 real_list.append(url)
                 self.__file_list.insert(pos, url)
             start = pos
         if n > 0:
-            cpprefs.report_progress(uid, 1, "Done")
+            cellprofiler.preferences.report_progress(uid, 1, "Done")
         # Invalidate caches
         self.__file_list_generation = uid
         self.__filtered_file_list_images_settings = None
         self.__image_plane_details_metadata_settings = None
         self.notify_listeners(URLsAddedEvent(real_list))
         if add_undo:
+
             def undo():
                 self.remove_urls(real_list)
 
@@ -2554,8 +2993,7 @@ class Pipeline(object):
         start = 0
         for url in urls:
             pos = bisect.bisect_left(self.__file_list, url, start)
-            if (pos != len(self.__file_list) and
-                        self.__file_list[pos] == url):
+            if pos != len(self.__file_list) and self.__file_list[pos] == url:
                 real_list.append(url)
                 del self.__file_list[pos]
             start = pos
@@ -2572,7 +3010,7 @@ class Pipeline(object):
             self.__undo_stack.append((undo, "Remove images"))
 
     def clear_urls(self, add_undo=True):
-        '''Remove all URLs from the pipeline'''
+        """Remove all URLs from the pipeline"""
         old_urls = list(self.__file_list)
         self.__file_list = []
         if len(old_urls):
@@ -2581,15 +3019,16 @@ class Pipeline(object):
             self.__image_plane_details = []
             self.notify_listeners(URLsRemovedEvent(old_urls))
             if add_undo:
+
                 def undo():
                     self.add_urls(old_urls, False)
 
                 self.__undo_stack.append((undo, "Remove images"))
 
     def load_file_list(self, workspace):
-        '''Load the pipeline's file_list from the workspace file list
+        """Load the pipeline's file_list from the workspace file list
 
-        '''
+        """
         file_list = workspace.file_list
         if self.__file_list_generation == file_list.generation:
             return
@@ -2610,13 +3049,17 @@ class Pipeline(object):
         self.__image_plane_details_generation = file_list.generation
 
     def read_file_list(self, path_or_fd, add_undo=True):
-        '''Read a file of one file or URL per line into the file list
+        """Read a file of one file or URL per line into the file list
 
         path - a path to a file or a URL
-        '''
+        """
         if isinstance(path_or_fd, six.string_types):
-            from cellprofiler.modules.loadimages import \
-                url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
+            from cellprofiler.modules.loadimages import (
+                url2pathname,
+                FILE_SCHEME,
+                PASSTHROUGH_SCHEMES,
+            )
+
             pathname = path_or_fd
             if pathname.startswith(FILE_SCHEME):
                 pathname = url2pathname(pathname)
@@ -2624,7 +3067,7 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
                 try:
-                    fd = urllib.request.urlopen(pathname)
+                    fd = six.moves.urllib.request.urlopen(pathname)
                     self.read_file_list(fd, add_undo=add_undo)
                 finally:
                     fd.close()
@@ -2633,13 +3076,14 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
-                map((lambda x: x.strip()),
-                    filter((lambda x: len(x) > 0), path_or_fd)),
-                add_undo=add_undo)
+            map((lambda x: x.strip()), filter((lambda x: len(x) > 0), path_or_fd)),
+            add_undo=add_undo,
+        )
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
-        '''Add a sequence of paths or URLs to the file list'''
+        """Add a sequence of paths or URLs to the file list"""
         from cellprofiler.modules.loadimages import pathname2url
+
         urls = []
         for pathname in pathnames:
             if len(pathname) == 0:
@@ -2651,16 +3095,19 @@ class Pipeline(object):
         self.add_urls(urls, add_undo=add_undo)
 
     def get_module_state(self, module_name_or_module):
-        '''Return an object representing the state of the named module
+        """Return an object representing the state of the named module
 
         module_name - the name of the module
 
         returns an object that represents the state of the first instance
         of the named module or None if not in pipeline
-        '''
+        """
         if isinstance(module_name_or_module, six.string_types):
-            modules = [module for module in self.modules()
-                       if module.module_name == module_name_or_module]
+            modules = [
+                module
+                for module in self.modules()
+                if module.module_name == module_name_or_module
+            ]
             if len(modules) == 0:
                 return None
             module = modules[0]
@@ -2669,31 +3116,32 @@ class Pipeline(object):
         return tuple([s.unicode_value for s in module.settings()])
 
     def __prepare_run_module(self, module_name, workspace):
-        '''Execute "prepare_run" on the first instance of the named module'''
-        modules = [module for module in self.modules()
-                   if module.module_name == module_name]
+        """Execute "prepare_run" on the first instance of the named module"""
+        modules = [
+            module for module in self.modules() if module.module_name == module_name
+        ]
         if len(modules) == 0:
             return False
         return modules[0].prepare_run(workspace)
 
     def has_cached_filtered_file_list(self):
-        '''True if the filtered file list is currently cached'''
+        """True if the filtered file list is currently cached"""
         images_settings = self.get_module_state("Images")
         if images_settings is None:
             return False
         return self.__filtered_file_list_images_settings == images_settings
 
     def get_filtered_file_list(self, workspace):
-        '''Return the file list as filtered by the Images module
+        """Return the file list as filtered by the Images module
 
-        '''
+        """
         if not self.has_cached_filtered_file_list():
             self.__image_plane_details_metadata_settings = None
             self.__prepare_run_module("Images", workspace)
         return self.__filtered_file_list
 
     def has_cached_image_plane_details(self):
-        '''Return True if we have up-to-date image plane details cached'''
+        """Return True if we have up-to-date image plane details cached"""
         if not self.has_cached_filtered_file_list():
             return False
         metadata_settings = self.get_module_state("Metadata")
@@ -2702,9 +3150,9 @@ class Pipeline(object):
         return self.__image_plane_details_metadata_settings == metadata_settings
 
     def get_image_plane_details(self, workspace):
-        '''Return the image plane details with metadata computed
+        """Return the image plane details with metadata computed
 
-        '''
+        """
         if self.has_cached_image_plane_details():
             return self.__image_plane_details
         self.__available_metadata_keys = set()
@@ -2712,47 +3160,47 @@ class Pipeline(object):
         return self.__image_plane_details
 
     def get_available_metadata_keys(self):
-        '''Get the metadata keys from extraction and their types
+        """Get the metadata keys from extraction and their types
 
         Returns a dictionary of metadata key to measurements COLTYPE
-        '''
-        modules = [module for module in self.modules()
-                   if module.module_name == "Metadata"]
+        """
+        modules = [
+            module for module in self.modules() if module.module_name == "Metadata"
+        ]
         if len(modules) == 0:
             return {}
         module = modules[0]
         return module.get_data_type(module.get_metadata_keys())
 
     def use_case_insensitive_metadata_matching(self, key):
-        '''Return TRUE if metadata should be matched without regard to case'''
-        modules = [module for module in self.modules()
-                   if module.module_name == "Metadata"]
+        """Return TRUE if metadata should be matched without regard to case"""
+        modules = [
+            module for module in self.modules() if module.module_name == "Metadata"
+        ]
         if len(modules) == 0:
             return False
         return modules[0].wants_case_insensitive_matching(key)
 
     def set_filtered_file_list(self, file_list, module):
-        '''The Images module calls this to report its list of filtered files'''
+        """The Images module calls this to report its list of filtered files"""
         self.__filtered_file_list = file_list
-        self.__filtered_file_list_images_settings = \
-            self.get_module_state(module)
+        self.__filtered_file_list_images_settings = self.get_module_state(module)
 
     def set_image_plane_details(self, ipds, available_metadata_keys, module):
-        '''The Metadata module calls this to report on the extracted IPDs
+        """The Metadata module calls this to report on the extracted IPDs
 
         ipds - the image plane details to be fed into NamesAndTypes
         available_metadata_keys - the metadata keys collected during IPD
                                   metadata extraction.
         module - the metadata module that made them (so we can cache based
                  on the module's settings.
-        '''
+        """
         self.__image_plane_details = ipds
         self.__available_metadata_keys = available_metadata_keys
-        self.__image_plane_details_metadata_settings = \
-            self.get_module_state(module)
+        self.__image_plane_details_metadata_settings = self.get_module_state(module)
 
     class ImageSetChannelDescriptor(object):
-        '''This class represents the metadata for one image set channel
+        """This class represents the metadata for one image set channel
 
         An image set has a collection of channels which are either planar
         images or objects. The ImageSetChannelDescriptor describes one
@@ -2762,7 +3210,8 @@ class Pipeline(object):
 
         The channel's type - grayscale image / color image / objects / mask
         or illumination function
-        '''
+        """
+
         # Channel types
         CT_GRAYSCALE = "Grayscale"
         CT_COLOR = "Color"
@@ -2780,14 +3229,14 @@ class Pipeline(object):
         return any(m.module_name in self.LEGACY_LOAD_MODULES for m in self.modules())
 
     def needs_default_image_folder(self):
-        '''Return True if this pipeline makes use of the default image folder'''
+        """Return True if this pipeline makes use of the default image folder"""
         for module in self.modules():
             if module.needs_default_image_folder(self):
                 return True
         return False
 
     def get_image_sets(self, workspace, end_module=None):
-        '''Return the pipeline's image sets
+        """Return the pipeline's image sets
 
         end_module - if present, build the image sets by scanning up to this module
 
@@ -2806,18 +3255,23 @@ class Pipeline(object):
         image set.
 
         This function leaves out any image set that is ill-defined.
-        '''
+        """
 
         pipeline = self.copy(save_image_plane_details=False)
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cpmeas.Measurements(mode="memory")
+        temp_measurements = cellprofiler.measurement.Measurements(mode="memory")
         new_workspace = None
         try:
-            new_workspace = cpw.Workspace(
-                    pipeline, None, None, None,
-                    temp_measurements, cpi.ImageSetList())
+            new_workspace = cellprofiler.workspace.Workspace(
+                pipeline,
+                None,
+                None,
+                None,
+                temp_measurements,
+                cellprofiler.image.ImageSetList(),
+            )
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
 
@@ -2830,8 +3284,10 @@ class Pipeline(object):
                 return iscds, metadata_key_names, {}
             metadata_columns = [
                 temp_measurements.get_measurement(
-                        cpmeas.IMAGE, feature, all_image_numbers)
-                for feature in metadata_key_names]
+                    cellprofiler.measurement.IMAGE, feature, all_image_numbers
+                )
+                for feature in metadata_key_names
+            ]
 
             def get_column(image_category, objects_category, iscd):
                 if iscd.channel_type == iscd.CT_OBJECTS:
@@ -2839,28 +3295,58 @@ class Pipeline(object):
                 else:
                     category = image_category
                 feature_name = "_".join((category, iscd.name))
-                if feature_name in temp_measurements.get_feature_names(cpmeas.IMAGE):
+                if feature_name in temp_measurements.get_feature_names(
+                    cellprofiler.measurement.IMAGE
+                ):
                     return temp_measurements.get_measurement(
-                            cpmeas.IMAGE, feature_name, all_image_numbers)
+                        cellprofiler.measurement.IMAGE, feature_name, all_image_numbers
+                    )
                 else:
                     return [None] * len(all_image_numbers)
 
-            url_columns = [get_column(cpmeas.C_URL, cpmeas.C_OBJECTS_URL, iscd)
-                           for iscd in iscds]
-            series_columns = [get_column(cpmeas.C_SERIES, cpmeas.C_OBJECTS_SERIES, iscd)
-                              for iscd in iscds]
-            index_columns = [get_column(cpmeas.C_FRAME, cpmeas.C_OBJECTS_FRAME, iscd)
-                             for iscd in iscds]
-            channel_columns = [get_column(cpmeas.C_CHANNEL, cpmeas.C_OBJECTS_CHANNEL, iscd)
-                               for iscd in iscds]
+            url_columns = [
+                get_column(
+                    cellprofiler.measurement.C_URL,
+                    cellprofiler.measurement.C_OBJECTS_URL,
+                    iscd,
+                )
+                for iscd in iscds
+            ]
+            series_columns = [
+                get_column(
+                    cellprofiler.measurement.C_SERIES,
+                    cellprofiler.measurement.C_OBJECTS_SERIES,
+                    iscd,
+                )
+                for iscd in iscds
+            ]
+            index_columns = [
+                get_column(
+                    cellprofiler.measurement.C_FRAME,
+                    cellprofiler.measurement.C_OBJECTS_FRAME,
+                    iscd,
+                )
+                for iscd in iscds
+            ]
+            channel_columns = [
+                get_column(
+                    cellprofiler.measurement.C_CHANNEL,
+                    cellprofiler.measurement.C_OBJECTS_CHANNEL,
+                    iscd,
+                )
+                for iscd in iscds
+            ]
             d = {}
             for idx in range(len(all_image_numbers)):
                 key = tuple([mc[idx] for mc in metadata_columns])
                 value = [
                     pipeline.find_image_plane_details(
-                            ImagePlaneDetails(u[idx], s[idx], i[idx], c[idx]))
-                    for u, s, i, c in zip(url_columns, series_columns,
-                                          index_columns, channel_columns)]
+                        ImagePlaneDetails(u[idx], s[idx], i[idx], c[idx])
+                    )
+                    for u, s, i, c in zip(
+                        url_columns, series_columns, index_columns, channel_columns
+                    )
+                ]
                 d[key] = value
             return iscds, metadata_key_names, d
         finally:
@@ -2869,11 +3355,11 @@ class Pipeline(object):
             temp_measurements.close()
 
     def has_undo(self):
-        '''True if an undo action can be performed'''
+        """True if an undo action can be performed"""
         return len(self.__undo_stack)
 
     def undo(self):
-        '''Undo the last action'''
+        """Undo the last action"""
         if len(self.__undo_stack):
             action = self.__undo_stack.pop()[0]
             real_undo_stack = self.__undo_stack
@@ -2884,13 +3370,13 @@ class Pipeline(object):
                 self.__undo_stack = real_undo_stack
 
     def undo_action(self):
-        '''A user-interpretable string telling the user what the action was'''
+        """A user-interpretable string telling the user what the action was"""
         if len(self.__undo_stack) == 0:
             return "Nothing to undo"
         return self.__undo_stack[-1][1]
 
     def undoable_action(self, name="Composite edit"):
-        '''Return an object that starts and stops an undoable action
+        """Return an object that starts and stops an undoable action
 
         Use this with the "with" statement to create a scope where all
         actions are collected for undo:
@@ -2898,7 +3384,7 @@ class Pipeline(object):
         with pipeline.undoable_action():
             pipeline.add_module(module1)
             pipeline.add_module(module2)
-        '''
+        """
 
         class UndoableAction:
             def __init__(self, pipeline, name):
@@ -2914,19 +3400,19 @@ class Pipeline(object):
         return UndoableAction(self, name)
 
     def start_undoable_action(self):
-        '''Start editing the pipeline
+        """Start editing the pipeline
 
         This marks a start of a series of actions which will be undone
         all at once.
-        '''
+        """
         self.__undo_start = len(self.__undo_stack)
 
     def stop_undoable_action(self, name="Composite edit"):
-        '''Stop editing the pipeline, combining many actions into one'''
+        """Stop editing the pipeline, combining many actions into one"""
         if len(self.__undo_stack) > self.__undo_start + 1:
             # Only combine if two or more edits
-            actions = self.__undo_stack[self.__undo_start:]
-            del self.__undo_stack[self.__undo_start:]
+            actions = self.__undo_stack[self.__undo_start :]
+            del self.__undo_stack[self.__undo_start :]
 
             def undo():
                 for action, message in reversed(actions):
@@ -2935,10 +3421,10 @@ class Pipeline(object):
             self.__undo_stack.append((undo, name))
 
     def modules(self, exclude_disabled=True):
-        '''Return the list of modules
+        """Return the list of modules
 
         exclude_disabled - only return enabled modules if True (default)
-        '''
+        """
         if exclude_disabled:
             return [m for m in self.__modules if m.enabled]
         else:
@@ -2946,19 +3432,20 @@ class Pipeline(object):
 
     def module(self, module_num):
         module = self.__modules[module_num - 1]
-        assert module.module_num == module_num, 'Misnumbered module. Expected %d, got %d' % (
-            module_num, module.module_num)
+        assert (
+            module.module_num == module_num
+        ), "Misnumbered module. Expected %d, got %d" % (module_num, module.module_num)
         return module
 
     @staticmethod
     def capture_module_settings(module):
-        '''Capture a module's settings for later undo
+        """Capture a module's settings for later undo
 
         module - module in question
 
         Return a list of setting values that can be fed into the module's
         set_settings_from_values method to reconstruct the module in its original form.
-        '''
+        """
         return [setting.get_unicode_value() for setting in module.settings()]
 
     def add_module(self, new_module):
@@ -2972,17 +3459,21 @@ class Pipeline(object):
         module_num = new_module.module_num
         idx = module_num - 1
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
-        for module, mn in zip(self.__modules[idx + 1:], range(module_num + 1, len(self.__modules) + 1)):
+        for module, mn in zip(
+            self.__modules[idx + 1 :], range(module_num + 1, len(self.__modules) + 1)
+        ):
             module.module_num = mn
-        self.notify_listeners(ModuleAddedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+        self.notify_listeners(
+            ModuleAddedPipelineEvent(
+                module_num, is_image_set_modification=is_image_set_modification
+            )
+        )
         self.__settings.insert(idx, self.capture_module_settings(new_module))
 
         def undo():
             self.remove_module(new_module.module_num)
 
-        self.__undo_stack.append((undo,
-                                  "Add %s module" % new_module.module_name))
+        self.__undo_stack.append((undo, "Add %s module" % new_module.module_name))
 
     def remove_module(self, module_num):
         """Remove a module from the pipeline
@@ -2993,18 +3484,22 @@ class Pipeline(object):
         idx = module_num - 1
         removed_module = self.__modules[idx]
         is_image_set_modification = removed_module.is_load_module()
-        self.__modules = self.__modules[:idx] + self.__modules[idx + 1:]
+        self.__modules = self.__modules[:idx] + self.__modules[idx + 1 :]
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
-        self.notify_listeners(ModuleRemovedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+        self.notify_listeners(
+            ModuleRemovedPipelineEvent(
+                module_num, is_image_set_modification=is_image_set_modification
+            )
+        )
         del self.__settings[idx]
 
         def undo():
             self.add_module(removed_module)
 
-        self.__undo_stack.append((undo, "Remove %s module" %
-                                  removed_module.module_name))
+        self.__undo_stack.append(
+            (undo, "Remove %s module" % removed_module.module_name)
+        )
 
     def edit_module(self, module_num, is_image_set_modification):
         """Notify listeners of a module edit
@@ -3014,17 +3509,20 @@ class Pipeline(object):
         old_settings = self.__settings[idx]
         module = self.__modules[idx]
         new_settings = self.capture_module_settings(module)
-        self.notify_listeners(ModuleEditedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+        self.notify_listeners(
+            ModuleEditedPipelineEvent(
+                module_num, is_image_set_modification=is_image_set_modification
+            )
+        )
         self.__settings[idx] = new_settings
         variable_revision_number = module.variable_revision_number
         module_name = module.module_name
 
         def undo():
             module = self.__modules[idx]
-            module.set_settings_from_values(old_settings,
-                                            variable_revision_number,
-                                            module_name, False)
+            module.set_settings_from_values(
+                old_settings, variable_revision_number, module_name, False
+            )
             self.notify_listeners(ModuleEditedPipelineEvent(module_num))
             self.__settings[idx] = old_settings
 
@@ -3045,13 +3543,15 @@ class Pipeline(object):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            url = "file:" + urllib.request.pathname2url(path)
+            url = "file:" + six.moves.urllib.request.pathname2url(path)
             ipd = ImagePlaneDetails(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
+        self.add_image_metadata(
+            "file:" + six.moves.urllib.request.pathname2url(path), metadata
+        )
 
     def add_image_metadata(self, url, metadata, ipd=None):
         if metadata.image_count == 1:
@@ -3065,8 +3565,7 @@ class Pipeline(object):
                 #
                 # Monochrome image
                 #
-                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                    ImagePlaneDetails.MD_MONOCHROME
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = ImagePlaneDetails.MD_MONOCHROME
                 channel = pixels.Channel(0)
                 channel_name = channel.Name
                 if channel_name is not None:
@@ -3075,11 +3574,9 @@ class Pipeline(object):
                 #
                 # Oh contradictions! It's interleaved, really RGB or RGBA
                 #
-                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                    ImagePlaneDetails.MD_RGB
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = ImagePlaneDetails.MD_RGB
             else:
-                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                    ImagePlaneDetails.MD_PLANAR
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = ImagePlaneDetails.MD_PLANAR
             exemplar = ImagePlaneDetails(url, None, None, None)
             if ipd is None:
                 ipd = self.find_image_plane_details(exemplar)
@@ -3108,11 +3605,13 @@ class Pipeline(object):
                         if channel_name is not None:
                             m[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
                         if channel.SamplesPerPixel == 1:
-                            m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                                ImagePlaneDetails.MD_MONOCHROME
+                            m[
+                                ImagePlaneDetails.MD_COLOR_FORMAT
+                            ] = ImagePlaneDetails.MD_MONOCHROME
                         else:
-                            m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                                ImagePlaneDetails.MD_RGB
+                            m[
+                                ImagePlaneDetails.MD_COLOR_FORMAT
+                            ] = ImagePlaneDetails.MD_RGB
                     exemplar = ImagePlaneDetails(url, series, index, None)
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:
@@ -3137,37 +3636,39 @@ class Pipeline(object):
                 n = 1
                 dims = []
                 for d in pixels.DimensionOrder[2:]:
-                    if d == 'C':
+                    if d == "C":
                         dim = n_channels
                         c_idx = len(dims)
-                    elif d == 'Z':
+                    elif d == "Z":
                         dim = pixels.SizeZ
                         z_idx = len(dims)
-                    elif d == 'T':
+                    elif d == "T":
                         dim = pixels.SizeT
                         t_idx = len(dims)
                     else:
                         raise ValueError(
-                                "Unsupported dimension order for file %s: %s" %
-                                (url, pixels.DimensionOrder))
+                            "Unsupported dimension order for file %s: %s"
+                            % (url, pixels.DimensionOrder)
+                        )
                     dims.append(dim)
-                index_order = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
+                index_order = np.mgrid[0 : dims[0], 0 : dims[1], 0 : dims[2]]
                 c_indexes = index_order[c_idx].flatten()
                 z_indexes = index_order[z_idx].flatten()
                 t_indexes = index_order[t_idx].flatten()
-                for index, (c_idx, z_idx, t_idx) in \
-                        enumerate(zip(c_indexes, z_indexes, t_indexes)):
+                for index, (c_idx, z_idx, t_idx) in enumerate(
+                    zip(c_indexes, z_indexes, t_indexes)
+                ):
                     channel = pixels.Channel(c_idx)
                     exemplar = ImagePlaneDetails(url, series, index, None)
                     metadata = {
                         ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
                         ImagePlaneDetails.MD_SIZE_Z: 1,
                         ImagePlaneDetails.MD_SIZE_T: 1,
-                        ImagePlaneDetails.MD_COLOR_FORMAT: color_format}
+                        ImagePlaneDetails.MD_COLOR_FORMAT: color_format,
+                    }
                     channel_name = channel.Name
                     if channel_name is not None and len(channel_name) > 0:
-                        metadata[ImagePlaneDetails.MD_CHANNEL_NAME] = \
-                            channel_name
+                        metadata[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:
                         exemplar.metadata.update(metadata)
@@ -3198,7 +3699,7 @@ class Pipeline(object):
         self.__listeners.remove(listener)
 
     class PipelineListener(object):
-        '''A class to wrap add/remove listener for use with "with"
+        """A class to wrap add/remove listener for use with "with"
 
         Usage:
         def my_listener(pipeline, event):
@@ -3207,7 +3708,7 @@ class Pipeline(object):
             # listener has been added
             .....
         # listener has been removed
-        '''
+        """
 
         def __init__(self, pipeline, listener):
             self.pipeline = pipeline
@@ -3221,14 +3722,14 @@ class Pipeline(object):
             self.pipeline.remove_listener(self.listener)
 
     def report_prepare_run_error(self, module, message):
-        '''Report an error during prepare_run that prevents image set construction
+        """Report an error during prepare_run that prevents image set construction
 
         module - the module that failed
 
         message - the message for the user
 
         Report errors due to misconfiguration, such as no files found.
-        '''
+        """
         event = PrepareRunErrorEvent(module, message)
         self.notify_listeners(event)
 
@@ -3241,7 +3742,7 @@ class Pipeline(object):
         return False
 
     def get_measurement_columns(self, terminating_module=None):
-        '''Return a sequence describing the measurement columns for this pipeline
+        """Return a sequence describing the measurement columns for this pipeline
 
         This call returns one element per image or object measurement
         made by each module during image set analysis. The element itself
@@ -3256,43 +3757,86 @@ class Pipeline(object):
         fourth entry (optional): attribute dictionary. This tags
                      the column with attributes such as MCA_AVAILABLE_POST_GROUP
                      (column values are only added in post_group).
-        '''
+        """
         hash = self.settings_hash()
         if hash != self.__measurement_column_hash:
             self.__measurement_columns = {}
             self.__measurement_column_hash = hash
 
-        terminating_module_num = (sys.maxsize
-                                  if terminating_module is None
-                                  else terminating_module.module_num)
+        terminating_module_num = (
+            sys.maxsize if terminating_module is None else terminating_module.module_num
+        )
         if terminating_module_num in self.__measurement_columns:
             return self.__measurement_columns[terminating_module_num]
         columns = [
-            (cpmeas.EXPERIMENT, M_PIPELINE, cpmeas.COLTYPE_LONGBLOB),
-            (cpmeas.EXPERIMENT, M_VERSION, cpmeas.COLTYPE_VARCHAR),
-            (cpmeas.EXPERIMENT, M_TIMESTAMP, cpmeas.COLTYPE_VARCHAR),
-            (cpmeas.EXPERIMENT, M_MODIFICATION_TIMESTAMP,
-             cpmeas.COLTYPE_VARCHAR, {cpmeas.MCA_AVAILABLE_POST_RUN: True}),
-            (cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
+            (
+                cellprofiler.measurement.EXPERIMENT,
+                M_PIPELINE,
+                cellprofiler.measurement.COLTYPE_LONGBLOB,
+            ),
+            (
+                cellprofiler.measurement.EXPERIMENT,
+                M_VERSION,
+                cellprofiler.measurement.COLTYPE_VARCHAR,
+            ),
+            (
+                cellprofiler.measurement.EXPERIMENT,
+                M_TIMESTAMP,
+                cellprofiler.measurement.COLTYPE_VARCHAR,
+            ),
+            (
+                cellprofiler.measurement.EXPERIMENT,
+                M_MODIFICATION_TIMESTAMP,
+                cellprofiler.measurement.COLTYPE_VARCHAR,
+                {cellprofiler.measurement.MCA_AVAILABLE_POST_RUN: True},
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                GROUP_NUMBER,
+                cellprofiler.measurement.COLTYPE_INTEGER,
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                GROUP_INDEX,
+                cellprofiler.measurement.COLTYPE_INTEGER,
+            ),
+        ]
         should_write_columns = True
         for module in self.modules():
-            if (terminating_module is not None and
-                        terminating_module_num <= module.module_num):
+            if (
+                terminating_module is not None
+                and terminating_module_num <= module.module_num
+            ):
                 break
             columns += module.get_measurement_columns(self)
             if module.should_stop_writing_measurements():
                 should_write_columns = False
             if should_write_columns:
-                module_error_measurement = 'ModuleError_%02d%s' % (module.module_num, module.module_name)
-                execution_time_measurement = 'ExecutionTime_%02d%s' % (module.module_num, module.module_name)
-                columns += [(cpmeas.IMAGE, module_error_measurement, cpmeas.COLTYPE_INTEGER),
-                            (cpmeas.IMAGE, execution_time_measurement, cpmeas.COLTYPE_INTEGER)]
+                module_error_measurement = "ModuleError_%02d%s" % (
+                    module.module_num,
+                    module.module_name,
+                )
+                execution_time_measurement = "ExecutionTime_%02d%s" % (
+                    module.module_num,
+                    module.module_name,
+                )
+                columns += [
+                    (
+                        cellprofiler.measurement.IMAGE,
+                        module_error_measurement,
+                        cellprofiler.measurement.COLTYPE_INTEGER,
+                    ),
+                    (
+                        cellprofiler.measurement.IMAGE,
+                        execution_time_measurement,
+                        cellprofiler.measurement.COLTYPE_INTEGER,
+                    ),
+                ]
         self.__measurement_columns[terminating_module_num] = columns
         return columns
 
     def get_object_relationships(self):
-        '''Return a sequence of five-tuples describing all object relationships
+        """Return a sequence of five-tuples describing all object relationships
 
         This returns all relationship categories produced by modules via
         Measurements.add_relate_measurement. The format is:
@@ -3301,16 +3845,17 @@ class Pipeline(object):
           <object-name-1>, # the subject of the relationship
           <object-name-2>, # the object of the relationship
           <when>)] # cpmeas.MCA_AVAILABLE_{EVERY_CYCLE, POST_GROUP}
-        '''
+        """
         result = []
         for module in self.modules():
             result += [
                 (module.module_num, i1, o1, i2, o2)
-                for i1, o1, i2, o2 in module.get_object_relationships(self)]
+                for i1, o1, i2, o2 in module.get_object_relationships(self)
+            ]
         return result
 
     def get_provider_dictionary(self, groupname, module=None):
-        '''Get a dictionary of all providers for a given category
+        """Get a dictionary of all providers for a given category
 
         groupname - the name of the category from cellprofiler.settings:
             IMAGE_GROUP for image providers, OBJECT_GROUP for object providers
@@ -3325,15 +3870,17 @@ class Pipeline(object):
         the name and the setting is the setting that controls the name (and
         the setting can be None).
 
-        '''
+        """
         target_module = module
         result = {}
         #
         # Walk through the modules to find subscriber and provider settings
         #
         for module in self.modules():
-            if (target_module is not None and
-                        target_module.module_num <= module.module_num):
+            if (
+                target_module is not None
+                and target_module.module_num <= module.module_num
+            ):
                 break
             #
             # Find "other_providers" - providers that aren't specified
@@ -3344,7 +3891,7 @@ class Pipeline(object):
                 if (name not in result) or target_module is not None:
                     result[name] = []
                 result[name].append((module, None))
-            if groupname == cps.MEASUREMENTS_GROUP:
+            if groupname == cellprofiler.setting.MEASUREMENTS_GROUP:
                 for c in module.get_measurement_columns(self):
                     object_name, feature_name = c[:2]
                     k = (object_name, feature_name)
@@ -3352,10 +3899,12 @@ class Pipeline(object):
                         result[k] = []
                     result[k].append((module, None))
             for setting in module.visible_settings():
-                if (isinstance(setting, cps.NameProvider) and
-                            setting.get_group() == groupname):
+                if (
+                    isinstance(setting, cellprofiler.setting.NameProvider)
+                    and setting.get_group() == groupname
+                ):
                     name = setting.value
-                    if name == cps.DO_NOT_USE:
+                    if name == cellprofiler.setting.DO_NOT_USE:
                         continue
                     if name not in result or target_module is not None:
                         result[name] = []
@@ -3363,11 +3912,11 @@ class Pipeline(object):
         return result
 
     def get_dependency_graph(self):
-        '''Create a graph that describes the producers and consumers of objects
+        """Create a graph that describes the producers and consumers of objects
 
         returns a list of Dependency objects. These can be used to create a
         directed graph that describes object and image dependencies.
-        '''
+        """
         #
         # These dictionaries have the following structure:
         # * top level dictionary key indicates whether it is an object, image
@@ -3378,50 +3927,60 @@ class Pipeline(object):
         #   where the first element of the tuple is the module and the
         #   second is either None or the setting.
         #
-        all_groups = (cps.OBJECT_GROUP, cps.IMAGE_GROUP, cps.MEASUREMENTS_GROUP)
-        providers = dict([(g, self.get_provider_dictionary(g))
-                          for g in all_groups])
+        all_groups = (
+            cellprofiler.setting.OBJECT_GROUP,
+            cellprofiler.setting.IMAGE_GROUP,
+            cellprofiler.setting.MEASUREMENTS_GROUP,
+        )
+        providers = dict([(g, self.get_provider_dictionary(g)) for g in all_groups])
         #
         # Now match subscribers against providers.
         #
         result = []
         for module in self.modules():
             for setting in module.visible_settings():
-                if isinstance(setting, cps.NameSubscriber):
+                if isinstance(setting, cellprofiler.setting.NameSubscriber):
                     group = setting.get_group()
                     name = setting.value
-                    if (group in providers and
-                            name in providers[group]):
+                    if group in providers and name in providers[group]:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
-                                if group == cps.OBJECT_GROUP:
+                                if group == cellprofiler.setting.OBJECT_GROUP:
                                     dependency = ObjectDependency(
-                                            pmodule, module, name,
-                                            psetting, setting)
+                                        pmodule, module, name, psetting, setting
+                                    )
                                     result.append(dependency)
-                                elif group == cps.IMAGE_GROUP:
+                                elif group == cellprofiler.setting.IMAGE_GROUP:
                                     dependency = ImageDependency(
-                                            pmodule, module, name,
-                                            psetting, setting)
+                                        pmodule, module, name, psetting, setting
+                                    )
                                     result.append(dependency)
                                 break
-                elif isinstance(setting, cps.Measurement):
+                elif isinstance(setting, cellprofiler.setting.Measurement):
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     key = (object_name, feature_name)
-                    if key in providers[cps.MEASUREMENTS_GROUP]:
-                        for pmodule, psetting in providers[cps.MEASUREMENTS_GROUP][key]:
+                    if key in providers[cellprofiler.setting.MEASUREMENTS_GROUP]:
+                        for pmodule, psetting in providers[
+                            cellprofiler.setting.MEASUREMENTS_GROUP
+                        ][key]:
                             if pmodule.module_num < module.module_num:
                                 dependency = MeasurementDependency(
-                                        pmodule, module, object_name, feature_name,
-                                        psetting, setting)
+                                    pmodule,
+                                    module,
+                                    object_name,
+                                    feature_name,
+                                    psetting,
+                                    setting,
+                                )
                                 result.append(dependency)
                                 break
         return result
 
-    def synthesize_measurement_name(self, module, object, category,
-                                    feature, image, scale):
-        '''Turn a measurement requested by a Matlab module into a measurement name
+    def synthesize_measurement_name(
+        self, module, object, category, feature, image, scale
+    ):
+        """Turn a measurement requested by a Matlab module into a measurement name
 
         Some Matlab modules specify measurement names as a combination
         of category, feature, image name and scale, but not all measurements
@@ -3437,26 +3996,29 @@ class Pipeline(object):
         feature - a descriptive name for the measurement
         image - the measurement should be made on this image (optional)
         scale - the measurement should be made at this scale
-        '''
+        """
         measurement_columns = self.get_measurement_columns(module)
-        measurements = [x[1] for x in measurement_columns
-                        if x[0] == object]
-        for measurement in ("_".join((category, feature, image, scale)),
-                            "_".join((category, feature, image)),
-                            "_".join((category, feature, scale)),
-                            "_".join((category, feature))):
+        measurements = [x[1] for x in measurement_columns if x[0] == object]
+        for measurement in (
+            "_".join((category, feature, image, scale)),
+            "_".join((category, feature, image)),
+            "_".join((category, feature, scale)),
+            "_".join((category, feature)),
+        ):
             if measurement in measurements:
                 return measurement
-        raise ValueError("No such measurement in pipeline: " +
-                         ("Category = %s" % category) +
-                         (", Feature = %s" % feature) +
-                         (", Image (optional) = %s" % image) +
-                         (", Scale (optional) = %s" % scale))
+        raise ValueError(
+            "No such measurement in pipeline: "
+            + ("Category = %s" % category)
+            + (", Feature = %s" % feature)
+            + (", Image (optional) = %s" % image)
+            + (", Scale (optional) = %s" % scale)
+        )
 
     def loaders_settings_hash(self):
-        '''Return a hash for the settings that control image loading, or None
+        """Return a hash for the settings that control image loading, or None
         for legacy pipelines (which can't be hashed)
-        '''
+        """
 
         # legacy pipelines can't be cached, because they can load from the
         # Default Image or Output directories.  We could fix this by including
@@ -3469,7 +4031,7 @@ class Pipeline(object):
 
 
 def find_image_plane_details(exemplar, ipds):
-    '''Find the ImagePlaneDetails instance matching the exemplar
+    """Find the ImagePlaneDetails instance matching the exemplar
 
     The point of this function is to retrieve the ImagePlaneDetails from
     the list provided and, in doing so, get the attached metadata and the
@@ -3480,10 +4042,9 @@ def find_image_plane_details(exemplar, ipds):
     ipds - an ordered list of ImagePlaneDetails instances
 
     Returns the match or None if not found
-    '''
+    """
     pos = bisect.bisect_left(ipds, exemplar)
-    if (pos == len(ipds) or
-            cellprofiler.utilities.legacy.cmp(ipds[pos], exemplar)):
+    if pos == len(ipds) or cellprofiler.utilities.legacy.cmp(ipds[pos], exemplar):
         return None
     return ipds[pos]
 
@@ -3492,14 +4053,14 @@ class AbstractPipelineEvent(object):
     """Something that happened to the pipeline and was indicated to the listeners
     """
 
-    def __init__(self,
-                 is_pipeline_modification=False,
-                 is_image_set_modification=False):
+    def __init__(self, is_pipeline_modification=False, is_image_set_modification=False):
         self.is_pipeline_modification = is_pipeline_modification
         self.is_image_set_modification = is_image_set_modification
 
     def event_type(self):
-        raise NotImplementedError("AbstractPipelineEvent does not implement an event type")
+        raise NotImplementedError(
+            "AbstractPipelineEvent does not implement an event type"
+        )
 
 
 class PipelineLoadedEvent(AbstractPipelineEvent):
@@ -3509,8 +4070,8 @@ class PipelineLoadedEvent(AbstractPipelineEvent):
 
     def __init__(self):
         super(PipelineLoadedEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=True)
+            is_pipeline_modification=True, is_image_set_modification=True
+        )
 
     def event_type(self):
         return "PipelineLoaded"
@@ -3523,8 +4084,8 @@ class PipelineClearedEvent(AbstractPipelineEvent):
 
     def __init__(self):
         super(PipelineClearedEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=True)
+            is_pipeline_modification=True, is_image_set_modification=True
+        )
 
     def event_type(self):
         return "PipelineCleared"
@@ -3541,8 +4102,9 @@ class ModuleMovedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, direction, is_image_set_modification):
         super(ModuleMovedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification,
+        )
         self.module_num = module_num
         self.direction = direction
 
@@ -3557,8 +4119,9 @@ class ModuleAddedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, is_image_set_modification=False):
         super(ModuleAddedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification,
+        )
         self.module_num = module_num
 
     def event_type(self):
@@ -3572,8 +4135,9 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, is_image_set_modification=False):
         super(ModuleRemovedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification,
+        )
         self.module_num = module_num
 
     def event_type(self):
@@ -3587,8 +4151,9 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, is_image_set_modification=False):
         super(ModuleEditedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification,
+        )
         self.module_num = module_num
 
     def event_type(self):
@@ -3644,14 +4209,14 @@ class RunExceptionEvent(AbstractPipelineEvent):
 
 
 class PrepareRunExceptionEvent(RunExceptionEvent):
-    '''An event indicating an uncaught exception during the prepare_run phase'''
+    """An event indicating an uncaught exception during the prepare_run phase"""
 
     def event_type(self):
         return "Prepare run exception"
 
 
 class PostRunExceptionEvent(RunExceptionEvent):
-    '''An event indicating an uncaught exception during the post_run phase'''
+    """An event indicating an uncaught exception during the post_run phase"""
 
     def event_type(self):
         return "Post run exception"
@@ -3704,15 +4269,17 @@ class IPDLoadExceptionEvent(AbstractPipelineEvent):
 
 
 class CancelledException(Exception):
-    '''Exception issued by the analysis worker indicating cancellation by UI
+    """Exception issued by the analysis worker indicating cancellation by UI
 
     This is here in order to solve some import dependency problems
-    '''
+    """
+
     pass
 
 
 class PipelineLoadCancelledException(Exception):
-    '''Exception thrown if user cancels pipeline load'''
+    """Exception thrown if user cancels pipeline load"""
+
     pass
 
 
@@ -3774,23 +4341,28 @@ class ModuleShowWindowEvent(AbstractPipelineEvent):
 
 
 class Dependency(object):
-    '''This class documents the dependency of one module on another
+    """This class documents the dependency of one module on another
 
     A module is dependent on another if the dependent module requires
     data from the producer module. That data can be objects (label matrices),
     a derived image or measurements.
-    '''
+    """
 
-    def __init__(self, source_module, destination_module,
-                 source_setting=None, destination_setting=None):
-        '''Constructor
+    def __init__(
+        self,
+        source_module,
+        destination_module,
+        source_setting=None,
+        destination_setting=None,
+    ):
+        """Constructor
 
         source_module - the module that produces the data
         destination_module - the module that uses the data
         source_setting - the module setting that names the item (can be None)
         destination_setting - the module setting in the destination that
         picks the setting
-        '''
+        """
         self.__source_module = source_module
         self.__destination_module = destination_module
         self.__source_setting = source_setting
@@ -3798,43 +4370,50 @@ class Dependency(object):
 
     @property
     def source(self):
-        '''The source of the data item'''
+        """The source of the data item"""
         return self.__source_module
 
     @property
     def source_setting(self):
-        '''The setting that names the data item
+        """The setting that names the data item
 
         This can be None if it's ambiguous.
-        '''
+        """
         return self.__source_setting
 
     @property
     def destination(self):
-        '''The user of the data item'''
+        """The user of the data item"""
         return self.__destination_module
 
     @property
     def destination_setting(self):
-        '''The setting that picks the data item
+        """The setting that picks the data item
 
         This can be None if it's ambiguous.
-        '''
+        """
         return self.__destination_setting
 
 
 class ObjectDependency(Dependency):
-    '''A dependency on an object labeling'''
+    """A dependency on an object labeling"""
 
-    def __init__(self, source_module, destination_module, object_name,
-                 source_setting=None, destination_setting=None):
-        super(type(self), self).__init__(source_module, destination_module,
-                                         source_setting, destination_setting)
+    def __init__(
+        self,
+        source_module,
+        destination_module,
+        object_name,
+        source_setting=None,
+        destination_setting=None,
+    ):
+        super(type(self), self).__init__(
+            source_module, destination_module, source_setting, destination_setting
+        )
         self.__object_name = object_name
 
     @property
     def object_name(self):
-        '''The name of the objects produced by the source and used by the dest'''
+        """The name of the objects produced by the source and used by the dest"""
         return self.__object_name
 
     def __str__(self):
@@ -3842,17 +4421,24 @@ class ObjectDependency(Dependency):
 
 
 class ImageDependency(Dependency):
-    '''A dependency on an image'''
+    """A dependency on an image"""
 
-    def __init__(self, source_module, destination_module, image_name,
-                 source_setting=None, destination_setting=None):
-        super(type(self), self).__init__(source_module, destination_module,
-                                         source_setting, destination_setting)
+    def __init__(
+        self,
+        source_module,
+        destination_module,
+        image_name,
+        source_setting=None,
+        destination_setting=None,
+    ):
+        super(type(self), self).__init__(
+            source_module, destination_module, source_setting, destination_setting
+        )
         self.__image_name = image_name
 
     @property
     def image_name(self):
-        '''The name of the image produced by the source and used by the dest'''
+        """The name of the image produced by the source and used by the dest"""
         return self.__image_name
 
     def __str__(self):
@@ -3860,11 +4446,18 @@ class ImageDependency(Dependency):
 
 
 class MeasurementDependency(Dependency):
-    '''A dependency on a measurement'''
+    """A dependency on a measurement"""
 
-    def __init__(self, source_module, destination_module, object_name,
-                 feature, source_setting=None, destination_setting=None):
-        '''Initialize using source, destination and measurement
+    def __init__(
+        self,
+        source_module,
+        destination_module,
+        object_name,
+        feature,
+        source_setting=None,
+        destination_setting=None,
+    ):
+        """Initialize using source, destination and measurement
 
         source_module - module producing the measurement
 
@@ -3880,20 +4473,21 @@ class MeasurementDependency(Dependency):
 
         destination_setting - the module setting that chooses the measurement
         for the user of the data, for instance a MeasurementSetting
-        '''
-        super(type(self), self).__init__(source_module, destination_module,
-                                         source_setting, destination_setting)
+        """
+        super(type(self), self).__init__(
+            source_module, destination_module, source_setting, destination_setting
+        )
         self.__object_name = object_name
         self.__feature = feature
 
     @property
     def object_name(self):
-        '''The objects / labels used when producing the measurement'''
+        """The objects / labels used when producing the measurement"""
         return self.__object_name
 
     @property
     def feature(self):
-        '''The name of the measurement'''
+        """The name of the measurement"""
         return self.__feature
 
     def __str__(self):
@@ -3912,7 +4506,7 @@ def new_string_cell_array(shape):
     and dtype=dtype('float64'). This appears to be the form that's created in matlab
     for this sort of object.
     """
-    result = numpy.ndarray(shape, dtype=numpy.dtype('object'))
+    result = numpy.ndarray(shape, dtype=numpy.dtype("object"))
     for i in range(0, shape[0]):
         for j in range(0, shape[1]):
             result[i, j] = numpy.empty((0, 0))
@@ -3924,7 +4518,7 @@ def encapsulate_strings_in_arrays(handles):
 
     This function makes the handles structure loaded through the sandwich compatible with loadmat. It operates on the array in-place.
     """
-    if handles.dtype.kind == 'O':
+    if handles.dtype.kind == "O":
         # cells - descend recursively
         flat = handles.flat
         for i in range(0, len(flat)):
@@ -3945,8 +4539,8 @@ def encapsulate_string(s):
     """Encapsulate a string in an array of shape 1 of the length of the string
     """
     if isinstance(s, str):
-        result = numpy.ndarray((1,), '<S%d' % (len(s)))
+        result = numpy.ndarray((1,), "<S%d" % (len(s)))
     else:
-        result = numpy.ndarray((1,), '<U%d' % (len(s)))
+        result = numpy.ndarray((1,), "<U%d" % (len(s)))
     result[0] = s
     return result

@@ -5,7 +5,7 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -30,47 +30,6 @@ PROJECTED_IMAGE_NAME = 'projectedimage'
 
 
 class TestMakeProjection(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwKs1RMDRTMLC0MjSxMjZXMDIwsFQgGTAwevryMzAw/Gdk'
-                'YKiY8zbc2/+Qg4BcBuNThwmT2fltqz6K6ssdTFDqVBB0SnqU2sgaflvvZbNI'
-                '/Uz3+lm7L1zaxNT9dKEh38ycNOvPb88cP1c2m5lBn31C2mO5yyo+Kk9vd3YU'
-                '7W6UbZ9Ra82qJfPrs7xP9AmlFWsfi12KzTkc0vSz6+bisxcTfq3w2r2uL/tE'
-                'h5Xxyp1u0tHfavU5vshf72z/ylZ52EC78TaznNDsgMv93z8evfly1xXBa6ki'
-                'B6rVnigqflhgoOvybGe9oFN9KV/+z476e9fVvs2ZLM1fKnPWwe/5zMdzvAum'
-                'SMqwntoqlGPsN7czeGHMqvCKO1NV9JSvnH57SSB6Rb9iXo1o5ZGC3q2vdL0e'
-                'bTq066ZBPp/hNNNP+9NkBa37ja76vMpY13vYJk/VgpWx/Xa5SOnWroNem0yT'
-                '7zDfPnw7ZO6jH/27Y2Mi61mtDvoeeNr3efLby8yM028feTNJ8eUuj+snKraf'
-                'Oxi79d8TnjqhrBJjm3nHnhTGr5h+u5a79w0f1y3DsLpHlr9ORPz23Hek5oyx'
-                'iXi7tV51vfvPqPL9febB9xe9S/hs0e0m+W/Pb7eO9RvDDjTf79j8tip1z7+d'
-                'X4W6fzu8Wb7j97T9/7UnMpeKzpnTcPitVtXR0u59D/oOv3s5+2jnPO1MTn7P'
-                'NNEQ02s/axk/XvPWPDW9eqmO39faeX1Rb57Xbz/w/d/7x6r/Gt+c+i/ct++O'
-                'NwB/3SPw')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        #
-        # Module 2 - image name = DNA, projection_image_name = AverageDNA
-        #            projection_type = Average
-        #
-        # Module 3 - image name = DNA, projection_image_name = MaxBlue
-        #            projection_type = Maximum
-        #
-        for i, projection_image_name, projection_type \
-                in ((1, "AverageDNA", M.P_AVERAGE),
-                    (2, "MaxBlue", M.P_MAXIMUM)):
-            module = pipeline.modules()[i]
-            self.assertTrue(isinstance(module, M.MakeProjection))
-            self.assertEqual(module.image_name.value, "DNA")
-            self.assertEqual(module.projection_image_name.value,
-                             projection_image_name)
-            self.assertEqual(module.projection_type, projection_type)
-
     def test_01_02_load_v1(self):
         data = ('eJztWd1OGkEUHn60WtuGXrVJb+ZSWtgsaBskjYLStLSiRImNMbYdYYBpd3fI'
                 'MGuljUkfq5d9lD5CH6EzuAvsCiwgupqwyQTP2fPNN+c7O7szYyFb2s5uwpeK'

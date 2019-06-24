@@ -59,8 +59,8 @@ def volume_segmentation():
 @pytest.fixture(
     scope="module",
     params=[
-        image_segmentation(),
-        volume_segmentation()
+        "image_segmentation",
+        "volume_segmentation"
     ],
     ids=[
         "image_segmentation",
@@ -70,7 +70,7 @@ def volume_segmentation():
 def objects(request):
     objects = cellprofiler.object.Objects()
 
-    objects.segmented = request.param
+    objects.segmented = request.getfixturevalue(request.param)
 
     return objects
 

@@ -484,59 +484,6 @@ class TestMeasureImageQuality(unittest.TestCase):
     def check_error(self, caller, event):
         self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
-    def test_04_01_load_matlab_pipeline(self):
-        p = cellprofiler.pipeline.Pipeline()
-        p.add_listener(self.check_error)
-        data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBXZWQgQXByIDE1IDE1OjI2OjU0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAFwIAAHic7VbNTuMwEJ60aVV2RWDLZSX2kONedpefC8eyArGVaMufkJD24rZusJTGVeJULU/Ao/AYvAMvsY+wR2xIUscCknojKNI6sqxx5vtmxh57bAHAnxWAKh9rvJfgsVUi2ZC6kE8xY8RzggqY8Dmav+X9HPkEdV18jtwQB5C0eL7pDejZdJT8atF+6OI2GsrKvLXDYRf7QWcQA6PfR2SC3VNyhSHdYrUTPCYBoV6Ej/jV2cQuZYpdi/eb2mwdDGUdxLrUpXmh34CZvvnEuq1K+qtRP8MT9m1/gnrMHiLWuxQ8Gxk85RRPGS6473lwZgpnwt7uUTMPrpTClWBr4zHenQxcDdLxCrnjE+cnT4ki8Fnr/UHBC3mP2h5ldhhEibNIfujwtOiBfeDSLnL/jacof/7zzHg+KjxC7rAglDdsEePKug+MFI8B2wsaRxZP3v35lcHzSeERMvH6ZEz6IXJtMkROUl1ec5/Ue7tN3zZPvueMv6hzs6TwCNnx0TToITd+N1jSqFt38+Kf2w9d+94PlML/Lb/8XlmW5q0cYyPDn6feMw/J7vg0HNn8COCRbr7NeOb3Ky9fUfEtun9F+TNvnO89P3Tjfit/b+H586/eP7p2DynqN6WClqc+rik8Qm5hFIQ+fqA65lWSsGnCJ9+D1Yw4SvyrW3r1aFPTXsWYH2fy7/eXu3WBu4b59unrC/px09W/B+9W/qo='
-        p.load(StringIO.StringIO(base64.b64decode(data)))
-        self.assertEqual(len(p.modules()), 2)
-        q = p.modules()[1]
-        self.assertEqual(len(q.image_groups), 1)
-        ig = q.image_groups[0]
-        sg = ig.scale_groups[0]
-        tg = ig.threshold_groups[0]
-        self.assertEqual(ig.image_names.value, 'OrigBlue')
-        self.assertTrue(ig.check_blur.value)
-        self.assertEqual(sg.scale.value, 20)
-        self.assertTrue(ig.check_saturation.value)
-        self.assertTrue(ig.calculate_threshold.value)
-        self.assertEqual(tg.threshold_algorithm, centrosome.threshold.TM_MOG)
-
-    def test_04_02_load_saturation_blur(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8925
-FromMatlab:True
-
-MeasureImageSaturationBlur:[module_num:1|svn_version:\'8913\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
-    What did you call the image you want to check for saturation?:Image1
-    What did you call the image you want to check for saturation?:Image2
-    What did you call the image you want to check for saturation?:Image3
-    What did you call the image you want to check for saturation?:Do not use
-    What did you call the image you want to check for saturation?:Do not use
-    What did you call the image you want to check for saturation?:Do not use
-    Do you want to also check the above images for image quality (called blur earlier)?:Yes
-    If you chose to check images for image quality above, enter the window size of LocalFocusScore measurement (A suggested value is 2 times ObjectSize)?:25
-"""
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, M.MeasureImageQuality))
-        self.assertEqual(len(module.image_groups), 3)
-        for i in range(3):
-            group = module.image_groups[i]
-            self.assertEqual(group.image_names, "Image%d" % (i + 1))
-            self.assertTrue(group.check_blur)
-            self.assertEqual(group.scale_groups[0].scale, 25)
-            self.assertTrue(group.check_saturation)
-            self.assertFalse(group.calculate_threshold)
-
     def test_04_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -36,8 +36,8 @@ def volume_skeleton():
 @pytest.fixture(
     scope="module",
     params=[
-        (image_skeleton(), 2),
-        (volume_skeleton(), 3)
+        ("image_skeleton", 2),
+        ("volume_skeleton", 3)
     ],
     ids=[
         "image_skeleton",
@@ -46,6 +46,7 @@ def volume_skeleton():
 )
 def image(request):
     data, dimensions = request.param
+    data = request.getfixturevalue(data)
 
     return cellprofiler.image.Image(image=data, dimensions=dimensions, convert=False)
 

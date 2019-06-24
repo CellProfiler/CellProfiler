@@ -5,7 +5,7 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 import scipy.ndimage
@@ -25,36 +25,6 @@ import cellprofiler.modules.labelimages as L
 
 
 class TestLabelImages(unittest.TestCase):
-    def test_01_00_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1PwTaxUMDRXMDS1Mja3MjFQMDIwNFAgGTAwevryMzAwPGdk'
-                'YKiY8zbstN8hB5G9uq0PlF0idxps9Bbf55Ac03TQRchl0bEjTxmS5y4p8bBW'
-                'fSD+w1Pv7i/2uj7jW4dKFn17mH04N+/E3HvF5+Za9wcxNUxPbWD6r1t0/eHd'
-                'T45rPPUeeZ+RKNTR52dbw/rY/876id4B149dP/FtI3sw9/HZ53T3zuJZvv5c'
-                'xv3thdK8T1LycusvHF1XXifN1Hxd1ujYN9WdxwW2Grxl6u9wXyH8gLmutGSV'
-                '98xF0Y/2hc/46hj8S+FX0LRjrnW8aT+PsddGT/wUzrT/UPK2WiM32zQ+gdd3'
-                'VR9GBlW43NkoeFjXZKHd7Kvyh5NdKngyrlj7Nlp3HXwqWisYzrd9FXtjnsy+'
-                'FQ9ca94JvZ6RP1Wl9LnSD5kr31d1/tq/4kXXDkffdqPL35t6p7jEd3/ICGhN'
-                'eT0/RP5Zjf2h6WWy3+t3zrsssS+01f/IkZeTBV/+PmF2kiHycrTWWZuvHOv5'
-                'cn/ttXu75M3lJiN9wWi9WRW2Kcmd6pm2r37ufxj783Tdil/n9LoevC+Krzd/'
-                'UlezLDqgYGGrReyhWvH47pnv3e+v3X42Y+cV+Vk13Y8e7vlX+fd/6H/lmrp7'
-                'Vz7P+xqXH3gl30u84Nr/TN0rR7e5iJjnb62ba5+qfHtv7MkV069feszzTybP'
-                'Zj33HeYl0fPP6n9yPj3rP1fMtVVHANI9Gb4=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, L.LabelImages))
-        self.assertEqual(module.row_count.value, 16)
-        self.assertEqual(module.column_count.value, 24)
-        self.assertEqual(module.site_count.value, 2)
-        self.assertEqual(module.order, L.O_COLUMN)
-
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -8,7 +8,7 @@ import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import numpy as np
 import six

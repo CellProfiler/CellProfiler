@@ -81,7 +81,7 @@ The choices are:
             value=O_TIFF_8,
             doc="""\
 **{O_PNG}** files do not support 3D. **{O_TIFF_8}** files use zlib compression level 6.""".format(
-                O_PNG=O_PNG, O_TIFF_8=O_TIFF_8, O_TIFF_16=O_TIFF_16,
+                O_PNG=O_PNG, O_TIFF_8=O_TIFF_8, O_TIFF_16=O_TIFF_16
             ),
         )
 

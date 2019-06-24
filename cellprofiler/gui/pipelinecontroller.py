@@ -1214,7 +1214,7 @@ class PipelineController(object):
         except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception as instance:
-            error = cellprofiler.gui.dialog.Error("Error", instance.message)
+            error = cellprofiler.gui.dialog.Error("Error", str(instance))
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -2152,7 +2152,7 @@ class PipelineController(object):
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, filenames in os.walk(pathname):
                             for filename in filenames:
-                                if interrupt[0]:
+                                if interrupt and interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(

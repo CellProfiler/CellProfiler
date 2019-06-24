@@ -142,7 +142,7 @@ class PipelineListView(object):
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.SetSizer(wx.BoxSizer())
-        self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
+        self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.outputs_button = wx.Button(
             self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT
         )

@@ -1134,7 +1134,9 @@ class Pipeline(object):
                     if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":")
-                    setting = setting
+                    # En/decode needed to read example cppipe format
+                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
+                    setting = setting.encode().decode('unicode_escape')
 
                     if do_deprecated_utf16_decode:
                         setting = cellprofiler.utilities.utf16encode.utf16decode(
@@ -1147,9 +1149,8 @@ class Pipeline(object):
                 #
                 # Set up the module
                 #
-                module_name = module_name
                 module = self.instantiate_module(module_name)
-                module.module_num = module_number
+                module.set_module_num(module_number)
                 #
                 # Decode the attributes. These are turned into strings using
                 # repr, so True -> 'True', etc. They are then encoded using
@@ -1174,12 +1175,13 @@ class Pipeline(object):
                     if len(a.split(":")) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
                     attribute, value = a.split(":")
-                    value = value
-                    value = eval(value)
+                    if attribute in skip_attributes:
+                        continue
+                    # En/decode needed to read example cppipe format
+                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
+                    value = eval(value.encode().decode('unicode_escape'))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
-                    elif attribute in skip_attributes:
-                        pass
                     else:
                         setattr(module, attribute, value)
                 if variable_revision_number is None:

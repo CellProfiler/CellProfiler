@@ -30,7 +30,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 
-    def OnOpeningURL(self, url_type, url, redirect):
+    def OnOpeningURL(self, url_type, url, redirect=None):
         if url_type == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
                 path = cellprofiler.icons.get_builtin_images_path()

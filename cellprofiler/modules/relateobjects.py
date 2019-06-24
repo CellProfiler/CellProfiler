@@ -875,7 +875,7 @@ parents or children of the parent object.""",
 
         step_parent_count = (
             setting_count - FIXED_SETTING_COUNT
-        ) / VARIABLE_SETTING_COUNT
+        ) // VARIABLE_SETTING_COUNT
 
         assert len(self.step_parent_names) > 0
 

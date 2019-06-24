@@ -153,7 +153,7 @@ FMT_MATLAB = "Matlab"
 FMT_NATIVE = "Native"
 
 """The current pipeline file format version"""
-NATIVE_VERSION = 4
+NATIVE_VERSION = 5
 
 """The version of the image plane descriptor section"""
 IMAGE_PLANE_DESCRIPTOR_VERSION = 1
@@ -1020,8 +1020,10 @@ class Pipeline(object):
                     )
                 elif 1 < version < 4:
                     do_deprecated_utf16_decode = True
-                elif version >= 4:
+                elif version == 4:
                     do_utf16_decode = True
+                elif version == 5:
+                    pass
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
                 CURRENT_VERSION = int(
@@ -1153,8 +1155,7 @@ class Pipeline(object):
                 module.set_module_num(module_number)
                 #
                 # Decode the attributes. These are turned into strings using
-                # repr, so True -> 'True', etc. They are then encoded using
-                # Pipeline.encode_txt.
+                # repr, so True -> 'True', etc.
                 #
                 if (
                     len(attribute_string) < 2
@@ -1240,20 +1241,6 @@ class Pipeline(object):
         else:
             raise NotImplementedError("Unknown pipeline file format: %s" % format)
 
-    def encode_txt(self, s):
-        """Encode a string for saving in the text format
-
-        s - input string
-        Encode for automatic decoding using the 'string_escape' decoder.
-        We encode the special characters, '[', ':', '|' and ']' using the '\\x'
-        syntax.
-        """
-        s = six.text_type(s)
-        s = s.replace(":", "\\x3A")
-        s = s.replace("|", "\\x7C")
-        s = s.replace("[", "\\x5B").replace("]", "\\x5D")
-        return s
-
     def savetxt(
         self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
     ):
@@ -1268,9 +1255,6 @@ class Pipeline(object):
                           URL, series, index, channel and metadata)
 
         The format of the file is the following:
-        Strings are encoded using a backslash escape sequence. The colon
-        character is encoded as \\x3A if it should happen to appear in a string
-        and any non-printing character is encoded using the \\x## convention.
 
         Line 1: The cookie, identifying this as a CellProfiler pipeline file.
         The header, i
@@ -1340,7 +1324,6 @@ class Pipeline(object):
             attribute_values = [
                 repr(getattr(module, attribute)) for attribute in attributes
             ]
-            attribute_values = [self.encode_txt(v) for v in attribute_values]
             attribute_strings = [
                 attribute + ":" + value
                 for attribute, value in zip(attributes, attribute_values)
@@ -1349,7 +1332,7 @@ class Pipeline(object):
 
             fd.write(
                 "%s:%s\n"
-                % (self.encode_txt(module.module_name), six.text_type(attribute_string))
+                % (module.module_name, six.text_type(attribute_string))
             )
 
             for setting in module.settings():
@@ -1359,17 +1342,11 @@ class Pipeline(object):
                 else:
                     setting_text = str(setting_text)
 
-                encoded_setting_text = self.encode_txt(setting_text)
-
-                encoded_unicode_value = self.encode_txt(
-                    setting.unicode_value
-                )
-
                 fd.write(
                     "    %s:%s\n"
                     % (
-                        six.text_type(encoded_setting_text),
-                        six.text_type(encoded_unicode_value),
+                        six.text_type(setting_text),
+                        six.text_type(setting.unicode_value),
                     )
                 )
         if save_image_plane_details:

@@ -2119,14 +2119,15 @@ class PipelineController(object):
             if w < min_width:
                 dlg.SetSize(min_width, h)
 
+            # Content needs to be in containers to be shared between threads
             queue = six.moves.queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
 
-            def fn(filenames=filenames, interrupt=None, message=None, queue=queue):
+            def fn(filenames=filenames, interrupt=[True], message=["Default"], queue=queue):
                 urls = []
                 for pathname in filenames:
-                    if interrupt[0]:
+                    if not interrupt or interrupt[0]:
                         break
 
                     # Hack - convert drive names to lower case in
@@ -2146,7 +2147,7 @@ class PipelineController(object):
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, filenames in os.walk(pathname):
                             for filename in filenames:
-                                if interrupt[0]:
+                                if not interrupt or interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(

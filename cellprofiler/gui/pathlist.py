@@ -114,7 +114,7 @@ class PathListCtrl(wx.ScrolledWindow):
             self.SetFont(self.DROP_FILES_AND_FOLDERS_FONT)
             self.drop_files_and_folders_text_extent = self.GetFullTextExtent(
                 self.DROP_FILES_AND_FOLDERS_HERE
-            )
+            )[:2]
         except:
             logger.warn(
                 'Failed to get text extend for "%s" message'
@@ -549,7 +549,7 @@ class PathListCtrl(wx.ScrolledWindow):
         #
         assert isinstance(event, wx.ScrollWinEvent)
         if event.GetOrientation() == wx.VERTICAL:
-            width, _ = self.GetSizeTuple()
+            width, _ = self.GetSize()
             r = wx.Rect(0, 0, width, (self.line_height + self.leading) * 2)
             self.Refresh(eraseBackground=False, rect=r)
         event.Skip(True)
@@ -624,7 +624,7 @@ class PathListCtrl(wx.ScrolledWindow):
             y = self.GetScrollPos(wx.SB_VERTICAL)
             line_height = self.line_height + self.leading
             yline = min(y, len(self))
-            yline_max = min(yline + (height + line_height - 1) / line_height, len(self))
+            yline_max = min(yline + (height + line_height - 1) // line_height, len(self))
             sel_width = 0
             #
             # Precompute the width of the selection rectangle
@@ -709,7 +709,7 @@ class PathListCtrl(wx.ScrolledWindow):
         """
         total_height = self.line_height + self.leading
         y = (idx - self.GetScrollPos(wx.SB_VERTICAL)) * total_height
-        width, _ = self.GetSizeTuple()
+        width, _ = self.GetSize()
         self.Refresh(eraseBackground=False, rect=wx.Rect(0, y, width, total_height))
 
     def get_mouse_idx(self, event):

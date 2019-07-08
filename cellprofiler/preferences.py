@@ -258,8 +258,9 @@ def config_exists(key):
     if not get_config().Exists(key):
         return False
     # FIXME: Issue reported at https://github.com/wxWidgets/Phoenix/issues/1292; quick hack for it to work for now
-    # if get_config().GetEntryType(key) == 1:
-    #     return get_config().Read(key) is not None
+    if sys.platform != "win32":
+        if get_config().GetEntryType(key) == 1:
+            return get_config().Read(key) is not None
     return True
 
 

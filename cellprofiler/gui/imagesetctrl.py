@@ -4,6 +4,7 @@
 
 
 import re
+import functools
 
 import numpy
 import six
@@ -202,7 +203,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 COL_ORDER.index(a.column_type), COL_ORDER.index(b.column_type)
             )
 
-        columns.sort(cmp=ordering_fn)
+        columns = sorted(columns, key=functools.cmp_to_key(ordering_fn))
 
         return columns
 

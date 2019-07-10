@@ -1424,7 +1424,7 @@ class ModuleView(object):
             #
             text_ctrl.Bind(wx.EVT_KILL_FOCUS, on_kill_focus)
         else:
-            text_control = control.FindWindowByName(text_control_name(v))
+            text_control = control.FindWindow(text_control_name(v))
             if v.value != text_control.Value:
                 text_control.Value = v.value
         return control

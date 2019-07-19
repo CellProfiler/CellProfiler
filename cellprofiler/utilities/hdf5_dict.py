@@ -1326,7 +1326,7 @@ class HDF5FileList(object):
         return (
             isinstance(g, h5py.Group)
             and A_CLASS in g.attrs
-            and g.attrs[A_CLASS] == CLASS_DIRECTORY
+            and cellprofiler.utilities.legacy.equals(g.attrs[A_CLASS], CLASS_DIRECTORY)
         )
 
     def get_filelist(self, root_url=None):
@@ -1354,9 +1354,10 @@ class HDF5FileList(object):
                 urls = []
                 path_tuple = tuple(path)
                 if path_tuple in self.__cache:
-                    urls += [root + x for x in self.__cache[path_tuple].urls]
+                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(self.__cache[path_tuple].urls)
+                    urls += [root + x for x in a]
                 elif VStringArray.has_vstring_array(g):
-                    a = self.cache_urls(g, path_tuple)
+                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(self.cache_urls(g, path_tuple))
                     urls += [root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
@@ -2061,9 +2062,11 @@ class VStringArray(object):
     def has_vstring_array(group):
         return (
             ("index" in group)
-            and (group["index"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX)
+            # and (group["index"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX)
+            and cellprofiler.utilities.legacy.equals(group["index"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX)
             and ("data" in group)
-            and (group["data"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA)
+            # and (group["data"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA)
+            and cellprofiler.utilities.legacy.equals(group["data"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA)
         )
 
     def __init__(self, group, lock=None):
@@ -2077,7 +2080,8 @@ class VStringArray(object):
         self.group = group
         if "index" in group:
             self.index = group["index"]
-            assert self.index.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX
+            # assert self.index.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX
+            assert cellprofiler.utilities.legacy.equals(self.index.attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX)
         else:
             self.index = group.create_dataset(
                 "index",
@@ -2090,7 +2094,8 @@ class VStringArray(object):
             self.index.attrs[A_CLASS] = CLASS_VSTRING_ARRAY_INDEX
         if "data" in group:
             self.data = group["data"]
-            assert self.data.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA
+            # assert self.data.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA
+            assert cellprofiler.utilities.legacy.equals(self.data.attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA)
         else:
             self.data = group.create_dataset(
                 "data",
@@ -2163,7 +2168,10 @@ class VStringArray(object):
                 return None
             elif begin == end:
                 return ""
-            return self.data[begin:end].tostring()
+            retval = self.data[begin:end].tostring()
+            if retval and isinstance(retval, bytes):
+                retval = retval.decode()
+            return retval
 
     def __delitem__(self, idx):
         with self.lock:
@@ -2191,7 +2199,7 @@ class VStringArray(object):
                 if begin > end
                 else ""
                 if begin == end
-                else data[begin:end].tostring()
+                else data[begin:end].tostring().decode()
             )
 
     def set_all(self, strings):

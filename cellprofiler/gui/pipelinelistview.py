@@ -648,12 +648,10 @@ class PipelineListView(object):
         fd = six.moves.StringIO()
         self.__pipeline.savetxt(fd, modules_to_save, save_image_plane_details=False)
         pipeline_data_object = PipelineDataObject()
-        fd.seek(0)
-        pipeline_data_object.SetData(fd.read())
+        pipeline_data_object.SetData(fd.getvalue().encode())
 
         text_data_object = wx.TextDataObject()
-        fd.seek(0)
-        text_data_object.SetData(wx.DF_UNICODETEXT, fd.read())
+        text_data_object.SetText(fd.getvalue())
 
         data_object = wx.DataObjectComposite()
         data_object.Add(pipeline_data_object)
@@ -1041,7 +1039,7 @@ class PipelineDropTarget(wx.DropTarget):
                 self.data_object.GetReceivedFormat().GetType()
                 == self.pipeline_data_object.GetFormat().GetType()
             ):
-                pipeline_data = str(self.pipeline_data_object.GetData().tobytes().replace(b'\00', ''))
+                pipeline_data = self.pipeline_data_object.GetData().tobytes().decode()
                 if pipeline_data is not None:
                     self.window.on_data(x, y, action, pipeline_data)
             elif self.data_object.GetReceivedFormat().GetType() == wx.DF_FILENAME:

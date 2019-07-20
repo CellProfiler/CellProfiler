@@ -1024,13 +1024,8 @@ class HDF5FileList(object):
         g = self.hdf5_file.require_group(FILE_LIST_GROUP)
         if filelist_name in g:
             g = g[filelist_name]
-            # In Python 2, some hdf5 vals are stored as bytes. Convert to Python 3 unicode string
-            if g.attrs.get(A_CLASS, None):
-                try:
-                    g.attrs[A_CLASS] = g.attrs[A_CLASS].decode()
-                except AttributeError:
-                    pass
-            assert g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP
+            # When loading CP 3.1.8 cpprojs, A_CLASS val is in bytes, thus the legacy.equals()
+            assert cellprofiler.utilities.legacy.equals(g.attrs.get(A_CLASS, None), CLASS_FILELIST_GROUP)
         else:
             g = g.require_group(filelist_name)
             g.attrs[A_CLASS] = CLASS_FILELIST_GROUP

@@ -13,6 +13,7 @@ import sys
 import tempfile
 import timeit
 import uuid
+import string
 
 import javabridge
 import numpy
@@ -1136,16 +1137,17 @@ class Pipeline(object):
                     if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":")
-                    # En/decode needed to read example cppipe format
+
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
+                    # En/decode needed to read example cppipe format
                     setting = setting.encode().decode('unicode_escape')
 
                     if do_deprecated_utf16_decode:
-                        setting = cellprofiler.utilities.utf16encode.utf16decode(
-                            setting
-                        )
+                        # decoding with 'unicode_escape' appears to be sufficient
+                        pass
                     elif do_utf16_decode:
-                        setting = setting
+                        # Real hack-y way to do utf-16 decoding; was read as str so can't .decode('utf-16')
+                        setting = ''.join(filter(lambda x: x in string.printable, setting))
 
                     settings.append(setting)
                 #

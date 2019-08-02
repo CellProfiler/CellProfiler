@@ -257,9 +257,22 @@ def config_exists(key):
         return True
     if not get_config().Exists(key):
         return False
-    # FIXME: Issue reported at https://github.com/wxWidgets/Phoenix/issues/1292; quick hack for it to work for now
+    # FIXME: Issue reported at https://github.com/wxWidgets/Phoenix/issues/1292, use respective .Read()
     if sys.platform != "win32":
         if get_config().GetEntryType(key) == 1:
+            return get_config().Read(key) is not None
+    else:
+        # Bool keys
+        if key in [SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB]:
+            return get_config().ReadBool(key) is not None
+        # Int keys
+        elif key in [SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB]:
+            return get_config().ReadInt(key) is not None
+        # Double keys
+        elif key in [TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE]:
+            return get_config.ReadDouble(key) is not None
+        # String keys
+        else:
             return get_config().Read(key) is not None
     return True
 

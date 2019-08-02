@@ -2057,10 +2057,8 @@ class VStringArray(object):
     def has_vstring_array(group):
         return (
             ("index" in group)
-            # and (group["index"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX)
             and cellprofiler.utilities.legacy.equals(group["index"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX)
             and ("data" in group)
-            # and (group["data"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA)
             and cellprofiler.utilities.legacy.equals(group["data"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA)
         )
 

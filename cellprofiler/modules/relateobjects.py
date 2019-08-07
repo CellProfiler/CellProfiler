@@ -4,6 +4,8 @@ import re
 import numpy
 import scipy.ndimage
 import skimage.segmentation
+from cellprofiler.modules.identify import add_object_count_measurements
+from cellprofiler.modules.identify import add_object_location_measurements
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
@@ -396,7 +398,7 @@ parents or children of the parent object."""
 
                 m.add_measurement(self.x_name.value, mean_feature_name, means)
 
-        if self.wants_child_objects_saved:
+        if self.wants_child_objects_saved.value:
             #most of this is lifted wholesale from FilterObjects
             parent_labels = parents.segmented
 
@@ -433,15 +435,17 @@ parents or children of the parent object."""
             # if present. "small_removed_segmented" should really be
             # "filtered_removed_segmented".
             #
-            small_removed = children.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) &
+            '''small_removed = children.small_removed_segmented.copy()
+            #small_removed[(target_labels == 0) &
                           (children.segmented != 0)] = 0
             target_objects.small_removed_segmented = small_removed
             if children.has_parent_image:
-                target_objects.parent_image = children.parent_image
+                target_objects.parent_image = children.parent_image'''
             workspace.object_set.add_objects(target_objects, self.output_child_objects_name.value)
+            add_object_count_measurements(workspace.measurements,self.output_child_objects_name.value, new_object_count)
+            add_object_location_measurements(workspace.measurements,self.output_child_objects_name.value, target_objects.segmented)
+            #self.add_measurements(workspace, self.y_name.value, self.output_child_objects_name.value)
 
-            self.add_measurements(workspace, self.y_name.value, self.output_child_objects_name.value)
 
         if self.show_window:
             workspace.display_data.parent_labels = parents.segmented

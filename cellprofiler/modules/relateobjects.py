@@ -508,7 +508,8 @@ parents or children of the parent object."""
             title=self.y_name.value,
             sharexy=figure.subplot(0, 0),
             max_label=max_label,
-            seed=seed
+            seed=seed,
+            colormap=cmap
         )
 
         figure.subplot_imshow_labels(

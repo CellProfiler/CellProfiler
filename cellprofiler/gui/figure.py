@@ -1319,6 +1319,7 @@ class Figure(wx.Frame):
 
             if normalize is None:
                 normalize = cellprofiler.preferences.get_intensity_mode()
+
                 if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
                     normalize = False
                 elif normalize == False:
@@ -1396,6 +1397,7 @@ class Figure(wx.Frame):
             kwargs.update(self.subplot_user_params[(x, y)])
 
             self.subplot_params[(x, y)].update(kwargs)
+
             if kwargs["colormap"] is None:
                 kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
 
@@ -1474,6 +1476,7 @@ class Figure(wx.Frame):
                 colormap.autoscale()
 
             image = self.images[(x, y)]
+            
             subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)

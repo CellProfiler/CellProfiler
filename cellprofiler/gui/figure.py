@@ -1319,8 +1319,9 @@ class Figure(wx.Frame):
 
             if normalize is None:
                 normalize = cellprofiler.preferences.get_intensity_mode()
-
                 if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
+                    normalize = False
+                elif normalize == False:
                     normalize = False
                 elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
                     normalize = "log"
@@ -1395,7 +1396,6 @@ class Figure(wx.Frame):
             kwargs.update(self.subplot_user_params[(x, y)])
 
             self.subplot_params[(x, y)].update(kwargs)
-
             if kwargs["colormap"] is None:
                 kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
 
@@ -1450,7 +1450,6 @@ class Figure(wx.Frame):
 
             if isinstance(colormap, six.string_types):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
-
             # NOTE: We bind this event each time imshow is called to a new closure
             #    of on_release so that each function will be called when a
             #    button_release_event is fired.  It might be cleaner to bind the
@@ -1475,7 +1474,6 @@ class Figure(wx.Frame):
                 colormap.autoscale()
 
             image = self.images[(x, y)]
-
             subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
@@ -1586,7 +1584,8 @@ class Figure(wx.Frame):
             use_imshow=False,
             background_image=None,
             max_label=None,
-            seed=None
+            seed=None,
+            colormap=None
     ):
         """
         Show a labels matrix using a custom colormap which better showcases the individual label values
@@ -1605,6 +1604,7 @@ class Figure(wx.Frame):
                           (useful for generating consistent label colors in displays with varying # of objects)
         :param seed: shuffle label colors with this seed, or None for completely random (useful for generating
                      consistent label colors in multiple displays)
+        :param colormap: load a shared cmap if provided
         :return:
         """
         if background_image is not None:
@@ -1620,22 +1620,10 @@ class Figure(wx.Frame):
         else:
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-            # Get the colormap from the user preferences
-            colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-            # Initialize the colormap so we have access to the LUT
-            colormap._init()
-            # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
-            # I think because there are "under" and "over" values. Regardless, we only one this
-            # part of the LUT
-            n = colormap.N
-            # Get the LUT (only the part we care about)
-            lut = colormap._lut[:n].copy()
-            # Shuffle the colors so adjacently labeled objects are different colors
-            numpy.random.shuffle(lut)
-            # Set the LUT
-            colormap._lut[:n] = lut
-            # Make sure the background is black
-            colormap.set_bad(color='black')
+            if colormap == None:
+                self.return_cmap()
+            else:
+                colormap = colormap
 
         return self.subplot_imshow(
             x,
@@ -1651,6 +1639,25 @@ class Figure(wx.Frame):
             use_imshow=use_imshow,
             colormap=colormap
         )
+
+    def return_cmap(self):
+        # Get the colormap from the user preferences
+        colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        # Initialize the colormap so we have access to the LUT
+        colormap._init()
+        # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
+        # I think because there are "under" and "over" values. Regardless, we only one this
+        # part of the LUT
+        n = colormap.N
+        # Get the LUT (only the part we care about)
+        lut = colormap._lut[:n].copy()
+        # Shuffle the colors so adjacently labeled objects are different colors
+        numpy.random.shuffle(lut)
+        # Set the LUT
+        colormap._lut[:n] = lut
+        # Make sure the background is black
+        colormap.set_bad(color='black')
+        return colormap
 
     @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,
@@ -1802,7 +1809,11 @@ class Figure(wx.Frame):
                                    image[:, :, 1],
                                       numpy.zeros(image.shape[:2], image.dtype)])
         if not is_color_image(image):
-            mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
+            if not normalize:
+                norm = matplotlib.colors.Normalize(vmin=0,vmax=255)
+            else:
+                norm = None
+            mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)
             mappable.set_clim(vmin, vmax)
             image = mappable.to_rgba(image)[:, :, :3]
         #

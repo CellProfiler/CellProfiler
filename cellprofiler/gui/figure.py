@@ -1452,6 +1452,7 @@ class Figure(wx.Frame):
 
             if isinstance(colormap, six.string_types):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
+                
             # NOTE: We bind this event each time imshow is called to a new closure
             #    of on_release so that each function will be called when a
             #    button_release_event is fired.  It might be cleaner to bind the
@@ -1476,7 +1477,7 @@ class Figure(wx.Frame):
                 colormap.autoscale()
 
             image = self.images[(x, y)]
-            
+
             subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)

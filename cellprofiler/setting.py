@@ -201,7 +201,7 @@ class Setting(object):
         NOTE: strings are deprecated, use unicode_value instead.
         """
         if isinstance(self.__value, six.text_type):
-            return str(self.__value.encode("utf-8"))
+            return str(self.__value)
         if not isinstance(self.__value, str):
             raise ValidationError("%s was not a string" % self.__value, self)
         return self.__value
@@ -655,7 +655,7 @@ class ImagePlane(Setting):
         """The URL portion of the image plane descriptor"""
         uurl = self.__get_field(0)
         if uurl is not None:
-            uurl = uurl.encode("utf-8")
+            uurl = uurl
         return uurl
 
     @property
@@ -843,7 +843,7 @@ class Integer(Number):
         return int(str_value)
 
     def value_to_str(self, value):
-        return u"%d" % value
+        return "%d" % value
 
 
 class OddInteger(Integer):
@@ -1237,7 +1237,7 @@ class Float(Number):
         return float(str_value)
 
     def value_to_str(self, value):
-        text_value = (u"%f" % value).rstrip("0")
+        text_value = ("%f" % value).rstrip("0")
         if text_value.endswith("."):
             text_value += "0"
         return text_value
@@ -1256,7 +1256,7 @@ class FloatRange(Range):
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        smin, smax = [(u"%f" % v).rstrip("0") for v in value]
+        smin, smax = [("%f" % v).rstrip("0") for v in value]
         text_value = ",".join([x + "0" if x.endswith(".") else x for x in (smin, smax)])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
@@ -1482,7 +1482,7 @@ class NameSubscriber(Setting):
             [
                 setting.provided_attributes.get(key, None)
                 == self.__required_attributes[key]
-                for key in self.__required_attributes.keys()
+                for key in list(self.__required_attributes.keys())
             ]
         )
 
@@ -1502,7 +1502,7 @@ class NameSubscriber(Setting):
 
 def filter_duplicate_names(name_list):
     """remove any repeated names from a list of (name, ...) keeping the last occurrence."""
-    name_dict = dict(zip((n[0] for n in name_list), name_list))
+    name_dict = dict(list(zip((n[0] for n in name_list), name_list)))
     return [name_dict[n[0]] for n in name_list]
 
 
@@ -1757,7 +1757,7 @@ class Binary(Setting):
             x = False
         return (self.value and x) or (not self.value and not x)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Return the value when testing for True / False"""
         return self.value
 
@@ -3304,10 +3304,10 @@ class Filter(Setting):
                     cls.FilterPredicate.encode_symbol(six.text_type(element.symbol))
                 )
             elif isinstance(element, six.string_types):
-                s.append(u'"' + cls.encode_literal(element) + u'"')
+                s.append('"' + cls.encode_literal(element) + '"')
             else:
-                s.append(u"(" + cls.build_string(element) + ")")
-        return u" ".join(s)
+                s.append("(" + cls.build_string(element) + ")")
+        return " ".join(s)
 
     def test_valid(self, pipeline):
         try:
@@ -3524,7 +3524,7 @@ class FileCollectionDisplay(Setting):
         if file_tree is None:
             file_tree = self.file_tree
         count = 0
-        for key in file_tree.keys():
+        for key in list(file_tree.keys()):
             if key is None:
                 pass
             elif isinstance(file_tree[key], dict):
@@ -3558,7 +3558,7 @@ class FileCollectionDisplay(Setting):
     def get_all_modpaths(self, tree):
         """Get all sub-modpaths from the branches of the given tree"""
         result = []
-        for key in tree.keys():
+        for key in list(tree.keys()):
             if key is None:
                 continue
             elif not isinstance(tree[key], dict):
@@ -3604,7 +3604,7 @@ class FileCollectionDisplay(Setting):
                     #
                     # Remove whole tree
                     #
-                    for key in subtree.keys():
+                    for key in list(subtree.keys()):
                         if key is None:
                             continue
                         if isinstance(subtree[key], dict):
@@ -3647,7 +3647,7 @@ class FileCollectionDisplay(Setting):
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
         kept = [
             tree[k][None] if isinstance(tree[k], dict) else tree[k]
-            for k in tree.keys()
+            for k in list(tree.keys())
             if k is not None
         ]
         tree[None] = any(kept)
@@ -3957,7 +3957,7 @@ class Joiner(Setting):
         all_names = {}
         best_name = None
         best_count = 0
-        for value_list in self.entities.values():
+        for value_list in list(self.entities.values()):
             for value in value_list:
                 if value in all_names:
                     all_names[value] += 1
@@ -3973,7 +3973,7 @@ class Joiner(Setting):
                 dict(
                     [
                         (k, best_name if best_name in self.entities[k] else None)
-                        for k in self.entities.keys()
+                        for k in list(self.entities.keys())
                     ]
                 )
             ]
@@ -3997,7 +3997,7 @@ class Joiner(Setting):
                 self,
             )
         for d in join:
-            for column_name, value in d.items():
+            for column_name, value in list(d.items()):
                 if column_name in self.entities and (
                     value not in self.entities[column_name] and value is not None
                 ):

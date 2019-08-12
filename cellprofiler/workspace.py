@@ -248,7 +248,7 @@ class Workspace(object):
 
     def get_outline_names(self):
         """The names of outlines of objects"""
-        return self.__outlines.keys()
+        return list(self.__outlines.keys())
 
     def add_outline(self, name, outline):
         """Add an object outline to the workspace"""
@@ -414,7 +414,11 @@ class Workspace(object):
             ):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                     M_PIPELINE
-                ).encode("utf-8")
+                )
+                # CP 3.1.8 cpproj (and possibly before) saved info in bytes; converting to python 3 string
+                if type(pipeline_txt) == bytes:
+                    pipeline_txt = pipeline_txt.decode('unicode_escape').encode('utf-8').replace(b'\\x00', b'').decode(
+                        'unicode_escape').replace('ÿþ', '')
                 self.pipeline.load(six.moves.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()

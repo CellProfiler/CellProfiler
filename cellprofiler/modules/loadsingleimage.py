@@ -459,7 +459,7 @@ pipeline.
 
         for image_number in image_numbers:
             dict = self.get_file_names(workspace, image_set_number=image_number)
-            for image_name in dict.keys():
+            for image_name in list(dict.keys()):
                 file_settings = self.get_file_settings(image_name)
                 if file_settings.image_objects_choice == IO_IMAGES:
                     #
@@ -853,7 +853,7 @@ pipeline.
             if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
                 joins = namesandtypes.join.parse()
                 for d in joins:
-                    for v in d.values():
+                    for v in list(d.values()):
                         if v in tags:
                             d[name] = v
                             tags.remove(v)

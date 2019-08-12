@@ -437,10 +437,10 @@ available colormaps can be seen `here`_.
             # away
             if dimensions == 2:
                 i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-                min_i, max_i, min_i_pos, max_i_pos = scind.extrema(
+                (min_i, max_i), (min_i_pos, max_i_pos) = scind.extrema(
                     i, labels, object_indexes
                 )
-                min_j, max_j, min_j_pos, max_j_pos = scind.extrema(
+                (min_j, max_j), (min_j_pos, max_j_pos) = scind.extrema(
                     j, labels, object_indexes
                 )
                 min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
@@ -455,13 +455,13 @@ available colormaps can be seen `here`_.
                 k, i, j = np.mgrid[
                     0 : labels.shape[0], 0 : labels.shape[1], 0 : labels.shape[2]
                 ]
-                min_k, max_k, min_k_pos, max_k_pos = scind.extrema(
+                (min_k, max_k), (min_k_pos, max_k_pos) = scind.extrema(
                     k, labels, object_indexes
                 )
-                min_i, max_i, min_i_pos, max_i_pos = scind.extrema(
+                (min_i, max_i), (min_i_pos, max_i_pos) = scind.extrema(
                     i, labels, object_indexes
                 )
-                min_j, max_j, min_j_pos, max_j_pos = scind.extrema(
+                (min_j, max_j), (min_j_pos, max_j_pos) = scind.extrema(
                     j, labels, object_indexes
                 )
                 min_k = np.maximum(fix(min_k) - distance, 0).astype(int)
@@ -809,7 +809,7 @@ available colormaps can be seen `here`_.
         if self.neighbors_are_objects:
             return M_ALL
         else:
-            return filter(lambda x: x != M_PERCENT_TOUCHING, M_ALL)
+            return [x for x in M_ALL if x != M_PERCENT_TOUCHING]
 
     def get_measurement_name(self, feature):
         if self.distance_method == D_EXPAND:
@@ -873,10 +873,10 @@ available colormaps can be seen `here`_.
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name and category == C_NEIGHBORS:
-            return filter(
+            return list(filter(
                 lambda x: (x is not M_PERCENT_TOUCHING or self.neighbors_are_objects),
                 M_ALL,
-            )
+            ))
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):

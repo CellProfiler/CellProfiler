@@ -1085,12 +1085,12 @@ If "*{NO}*" is selected, the following settings are used:
                     numpy.arange(1, object_count + 1),
                 )
                 areas.sort()
-                low_diameter = math.sqrt(float(areas[object_count / 10]) / numpy.pi) * 2
+                low_diameter = math.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
                 median_diameter = (
-                    math.sqrt(float(areas[object_count / 2]) / numpy.pi) * 2
+                    math.sqrt(float(areas[object_count // 2]) / numpy.pi) * 2
                 )
                 high_diameter = (
-                    math.sqrt(float(areas[object_count * 9 / 10]) / numpy.pi) * 2
+                    math.sqrt(float(areas[object_count * 9 // 10]) / numpy.pi) * 2
                 )
                 statistics.append(
                     ["10th pctile diameter", "%.1f pixels" % low_diameter]
@@ -1398,7 +1398,7 @@ If "*{NO}*" is selected, the following settings are used:
             areas = scipy.ndimage.measurements.sum(
                 numpy.ones(labeled_image.shape),
                 labeled_image,
-                numpy.array(range(0, object_count + 1), dtype=numpy.int32),
+                numpy.array(list(range(0, object_count + 1)), dtype=numpy.int32),
             )
             areas = numpy.array(areas, dtype=int)
             min_allowed_area = (

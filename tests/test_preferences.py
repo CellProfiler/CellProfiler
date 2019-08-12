@@ -1,7 +1,7 @@
 # coding: latin-1
 """test_preferences.py - test the preferences module
 """
-from __future__ import print_function
+
 
 import tempfile
 import unittest
@@ -22,7 +22,7 @@ class TestPreferences(unittest.TestCase):
                 (cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
                 (cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
                 (cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
-            self.assertTrue(value in cellprofiler.preferences.FOLDER_CHOICE_TRANSLATIONS.keys(), "%s not in dictionary" % value)
+            self.assertTrue(value in list(cellprofiler.preferences.FOLDER_CHOICE_TRANSLATIONS.keys()), "%s not in dictionary" % value)
             self.assertEqual(expected, cellprofiler.preferences.FOLDER_CHOICE_TRANSLATIONS[value])
 
     def test_01_02_slot_translations(self):
@@ -48,7 +48,7 @@ class TestPreferences(unittest.TestCase):
 
     def test_01_03_unicode_directory(self):
         old = cellprofiler.preferences.get_default_image_directory()
-        unicode_dir = u'P125 � 144 Crible Chimioth�que HBEC'
+        unicode_dir = 'P125 � 144 Crible Chimioth�que HBEC'
         unicode_dir = tempfile.mkdtemp(prefix=unicode_dir)
         cellprofiler.preferences.set_default_image_directory(unicode_dir)
         self.assertEqual(cellprofiler.preferences.config_read(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
@@ -65,7 +65,7 @@ class TestPreferences(unittest.TestCase):
 
     def test_01_05_unicode_value(self):
         # If the item is already in unicode, don't re-decode
-        gotcha = u"c:\\users\\default"
+        gotcha = "c:\\users\\default"
         cellprofiler.preferences.set_preferences_from_dict({})  # clear cache
         cellprofiler.preferences.get_config().Write("test_preferences", gotcha)
         result = cellprofiler.preferences.config_read("test_preferences")

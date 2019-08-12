@@ -194,7 +194,7 @@ somewhat empirical.
         # Figure out how many images there are based on the number of setting_values
         #
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
-        image_count = len(setting_values) / SETTINGS_PER_IMAGE
+        image_count = len(setting_values) // SETTINGS_PER_IMAGE
         del self.images[image_count:]
         while len(self.images) < image_count:
             self.add_image()

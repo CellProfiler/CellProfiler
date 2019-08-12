@@ -225,7 +225,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
     data = numpy.zeros(plate_shape)
     data[:] = numpy.nan
     display_error = True
-    for well, val in plate_dict.items():
+    for well, val in list(plate_dict.items()):
         r = alphabet.index(well[0].upper())
         c = int(well[1:]) - 1
         if r >= data.shape[0] or c >= data.shape[1]:
@@ -252,18 +252,18 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
         image = provider.provide_image(None).pixel_data
     except IOError:
         wx.MessageBox(
-            u'Failed to open file, "{}"'.format(filename), caption="File open error"
+            'Failed to open file, "{}"'.format(filename), caption="File open error"
         )
         return
     except javabridge.JavaException as je:
         wx.MessageBox(
-            u'Could not open "{}" as an image.'.format(filename),
+            'Could not open "{}" as an image.'.format(filename),
             caption="File format error",
         )
         return
     except Exception as e:
         cellprofiler.gui.errordialog.display_error_dialog(
-            None, e, None, u"Failed to load {}".format(url), continue_only=True
+            None, e, None, "Failed to load {}".format(url), continue_only=True
         )
         return
 
@@ -787,7 +787,7 @@ class Figure(wx.Frame):
                     if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                         fields += [
                             "%s: %.4f" % (k, v)
-                            for k, v in artist.get_channel_values(xi, yi).items()
+                            for k, v in list(artist.get_channel_values(xi, yi).items())
                         ]
         else:
             fields = []
@@ -2481,9 +2481,9 @@ class Figure(wx.Frame):
             clean_data, cmap=cmap, interpolation="nearest", shape=data.shape
         )
         axes.set_title(title)
-        axes.set_xticks(range(ncols))
-        axes.set_yticks(range(nrows))
-        axes.set_xticklabels(range(1, ncols + 1), minor=False)
+        axes.set_xticks(list(range(ncols)))
+        axes.set_yticks(list(range(nrows)))
+        axes.set_xticklabels(list(range(1, ncols + 1)), minor=False)
         axes.set_yticklabels(alphabet[:nrows], minor=False)
         axes.axis("image")
 

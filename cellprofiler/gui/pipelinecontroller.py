@@ -1,7 +1,7 @@
 # coding=utf-8
 """PipelineController.py - controls (modifies) a pipeline
 """
-from __future__ import print_function
+
 
 import csv
 import datetime
@@ -1110,15 +1110,15 @@ class PipelineController(object):
                 text = (
                     "Your pipeline contains the legacy module LoadImages, and legacy references\n"
                     "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-                    u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-                    u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
+                    "\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+                    "\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
                     "If you choose to convert the pipeline, you should then make sure of the \n"
                     "following:\n"
-                    u"\u2022 Images module: Provide your original images and/or folders as input.\n"
-                    u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-                    u"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
+                    "\u2022 Images module: Provide your original images and/or folders as input.\n"
+                    "\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
+                    "\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
                     "   color images under the 'Select the image type' setting.\n"
-                    u"\u2022 Groups: Confirm that that the expected number of images per group are present."
+                    "\u2022 Groups: Confirm that that the expected number of images per group are present."
                 )
                 CONVERT = 1
                 DONT_CONVERT = 2
@@ -1214,7 +1214,7 @@ class PipelineController(object):
         except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception as instance:
-            error = cellprofiler.gui.dialog.Error("Error", instance.message)
+            error = cellprofiler.gui.dialog.Error("Error", str(instance))
 
             if error.status is wx.ID_CANCEL:
                 cellprofiler.preferences.cancel_progress()
@@ -1278,12 +1278,12 @@ class PipelineController(object):
         else:
             ftr = cellprofiler.pipeline.M_PIPELINE
         pipeline_text = m.get_experiment_measurement(ftr)
-        pipeline_text = pipeline_text.encode("us-ascii")
+        pipeline_text = pipeline_text
         self.__pipeline.load(io.StringIO(pipeline_text))
         return True
 
     def __clear_errors(self):
-        for key, error in self.__setting_errors.items():
+        for key, error in list(self.__setting_errors.items()):
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
 
@@ -1501,7 +1501,7 @@ class PipelineController(object):
                 cellprofiler.measurement.IMAGE, url_feature, image_numbers
             )
             data.add_files(
-                [url.encode("utf-8") for url in urls],
+                [url for url in urls],
                 plate,
                 well,
                 site,
@@ -1812,7 +1812,7 @@ class PipelineController(object):
         if event.settings is None or len(event.settings) == 0:
             message = "Error while loading %s: %s\nDo you want to stop processing?" % (
                 module_name,
-                event.error.message,
+                str(event.error),
             )
         else:
             message = (
@@ -1820,7 +1820,7 @@ class PipelineController(object):
                 "Do you want to stop processing?\n\n"
                 "Module settings:\n"
                 "\t%s"
-            ) % (module_name, event.error.message, "\n\t".join(event.settings))
+            ) % (module_name, str(event.error), "\n\t".join(event.settings))
         error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status is wx.ID_CANCEL:
@@ -2058,7 +2058,7 @@ class PipelineController(object):
     def on_pathlist_refresh(self, urls):
         """Refresh the pathlist by checking for existence of file URLs"""
 
-        urls = filter((lambda url: url.startswith("file:")), urls)
+        urls = list(filter((lambda url: url.startswith("file:")), urls))
 
         def refresh_msg(idx):
             return "Checked %d of %d" % (idx, len(urls))
@@ -2112,36 +2112,31 @@ class PipelineController(object):
             style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT,
         ) as dlg:
             assert isinstance(dlg, wx.ProgressDialog)
+
+            # Set dialog width to at least 480
+            min_width = 480
             h, w = dlg.GetSize()
-            if w < 480:
-                dlg.SetSize((max(w, 480), h))
+            if w < min_width:
+                dlg.SetSize(min_width, h)
+
+            # Content needs to be in containers to be shared between threads
             queue = six.moves.queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
 
-            def fn(filenames=filenames, interrupt=None, message=None, queue=queue):
-                if message is None:
-                    message = message
-                if interrupt is None:
-                    interrupt = interrupt
+            def fn(filenames=filenames, interrupt=[True], message=["Default"], queue=queue):
                 urls = []
                 for pathname in filenames:
-                    # FIXME:
-                    # if interrupt[0]:
-                    #     break
+                    if not interrupt or interrupt[0]:
+                        break
 
                     # Hack - convert drive names to lower case in
                     #        Windows to normalize them.
-                    if (
-                        sys.platform == "win32"
-                        and pathname[0].isalpha()
-                        and pathname[1] == ":"
-                    ):
+                    isWindows = sys.platform == "win32" and pathname[0].isalpha() and pathname[1] == ":"
+                    if (isWindows):
                         pathname = os.path.normpath(pathname[:2]) + pathname[2:]
 
-                    # FIXME:
-                    # message[0] = "Processing " + pathname
-
+                    message[0] = "Processing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(
                             cellprofiler.modules.loadimages.pathname2url(pathname)
@@ -2152,7 +2147,7 @@ class PipelineController(object):
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, filenames in os.walk(pathname):
                             for filename in filenames:
-                                if interrupt[0]:
+                                if not interrupt or interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(
@@ -2167,7 +2162,7 @@ class PipelineController(object):
                             break
                 queue.put(urls)
 
-            thread = threading.Thread(target=fn)
+            thread = threading.Thread(target=fn, args=(filenames, interrupt, message, queue))
             thread.setDaemon(True)
             thread.start()
 
@@ -2428,7 +2423,7 @@ class PipelineController(object):
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
 
         assert isinstance(event, wx.CommandEvent)
-        if self.menu_id_to_module_name.has_key(event.GetId()):
+        if event.GetId() in self.menu_id_to_module_name:
             module_name = self.menu_id_to_module_name[event.GetId()]
 
             def loader(module_num, module_name=module_name):
@@ -2445,10 +2440,10 @@ class PipelineController(object):
 
     def __get_selected_modules(self):
         """Get the modules selected in the GUI, but not input modules"""
-        return filter(
+        return list(filter(
             lambda x: not x.is_input_module(),
             self.__pipeline_list_view.get_selected_modules(),
-        )
+        ))
 
     def ok_to_edit_pipeline(self):
         """Return True if ok to edit pipeline
@@ -2876,7 +2871,7 @@ class PipelineController(object):
             )
 
     def analysis_event_handler(self, evt):
-        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
+        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
         if isinstance(evt, cellprofiler.analysis.AnalysisStarted):
             wx.CallAfter(self.show_analysis_controls)
@@ -3227,7 +3222,7 @@ class PipelineController(object):
             pipeline_txt = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.M_PIPELINE
             )
-            self.__pipeline.loadtxt(io.StringIO(pipeline_txt.encode("utf-8")))
+            self.__pipeline.loadtxt(io.StringIO(pipeline_txt))
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
@@ -3671,7 +3666,7 @@ class PipelineController(object):
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s" % (k, v) for k, v in grouping.items()]
+            text = ["%s=%s" % (k, v) for k, v in list(grouping.items())]
             text = ", ".join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)
@@ -3763,7 +3758,7 @@ class PipelineController(object):
         if len(choices) > 1:
             # Get rid of columns with redundant info
             useless_columns = []
-            cvalues = choices.values()
+            cvalues = list(choices.values())
             for i, f in enumerate(features):
                 if all([cv[i] == cvalues[0][i] for cv in cvalues[1:]]):
                     useless_columns.insert(0, i)
@@ -3816,7 +3811,7 @@ class PipelineController(object):
                         )
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
-                    for row in choices.values():
+                    for row in list(choices.values()):
                         w, h, _, _ = self.list_ctrl.GetFullTextExtent(six.text_type(row[i]))
                         if w > width:
                             width = w
@@ -3831,9 +3826,9 @@ class PipelineController(object):
                         (
                             k,
                             [
-                                u"%06d" % v
+                                "%06d" % v
                                 if isinstance(v, int)
-                                else u"%020.10f" % v
+                                else "%020.10f" % v
                                 if isinstance(v, float)
                                 else six.text_type(v)
                                 for v in [k] + choices[k]
@@ -3905,7 +3900,7 @@ class PipelineController(object):
             if module.is_input_module():
                 if not self.do_step(module, False):
                     return False
-        modules = filter((lambda m: not m.is_input_module()), self.__pipeline.modules())
+        modules = list(filter((lambda m: not m.is_input_module()), self.__pipeline.modules()))
         #
         # Select the first executable module
         #

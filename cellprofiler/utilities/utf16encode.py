@@ -10,7 +10,7 @@ import six
 def utf16decode(x):
     """Decode an escaped utf8-encoded string
     """
-    y = u""
+    y = ""
     state = -1
     for z in x:
         if state == -1:
@@ -30,5 +30,5 @@ def utf16decode(x):
             acc += z
         else:
             state = -1
-            y += six.unichr(int(acc + z, 16))
+            y += six.chr(int(acc + z, 16))
     return y

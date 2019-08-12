@@ -307,9 +307,9 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
              INPUT_OBJECTS: {"Foo": [],
                              cellprofiler.measurement.C_CHILDREN: [ftr_count]}
              }
-        for object_name in d.keys():
+        for object_name in list(d.keys()):
             od = d[object_name]
-            for category in od.keys():
+            for category in list(od.keys()):
                 features = module.get_measurements(workspace.pipeline,
                                                    object_name,
                                                    category)

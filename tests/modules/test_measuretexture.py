@@ -1,4 +1,4 @@
-import StringIO
+import io
 import unittest
 
 import numpy
@@ -78,7 +78,7 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         for i, wants_gabor in enumerate((True, False)):
             module = pipeline.modules()[i]
@@ -134,7 +134,7 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         for i, wants_gabor in enumerate((True, False)):
             module = pipeline.modules()[i]
@@ -212,7 +212,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         for i, (wants_gabor, io_choice) in enumerate(
                 ((True, cellprofiler.modules.measuretexture.IO_IMAGES),

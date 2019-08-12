@@ -180,7 +180,7 @@ like to measure the area occupied by the foreground in the image.
             if (group.operand_choice.value, group.operand_objects.value) in settings:
                 if group.operand_choice.value == O_OBJECTS:
                     raise cellprofiler.setting.ValidationError(
-                        u"{} has already been selected".format(
+                        "{} has already been selected".format(
                             group.operand_objects.value
                         ),
                         group.operand_objects,

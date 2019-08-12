@@ -1,9 +1,10 @@
 # coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
-from __future__ import print_function
+
 
 import re
+import functools
 
 import numpy
 import six
@@ -202,7 +203,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 COL_ORDER.index(a.column_type), COL_ORDER.index(b.column_type)
             )
 
-        columns.sort(cmp=ordering_fn)
+        columns = sorted(columns, key=functools.cmp_to_key(ordering_fn))
 
         return columns
 
@@ -229,7 +230,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             or col >= len(self.columns)
             or row >= len(self.image_numbers)
         ):
-            return u""
+            return ""
         image_set = self.image_numbers[row]
         column = self.columns[col]
         value = self.cache[column.feature, image_set]
@@ -379,7 +380,7 @@ class ImageSetCache:
     def decimate(self):
         """Reduce the cache size by 1/2"""
         # Get the cache, sorted from low values to high
-        cache_kv = sorted(self.cache.items(), key=lambda x: x[1][1])
+        cache_kv = sorted(list(self.cache.items()), key=lambda x: x[1][1])
         # Take 1/2 of the max size
         self.cache = dict(cache_kv[-int(self.max_size / 2) :])
 
@@ -806,7 +807,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             for row_idx in range(self.GetNumberRows()):
                 url = self.table.get_url(row_idx, col_idx)
                 if url is not None:
-                    url = url.encode("utf-8")
+                    url = url
                     if fn_filter(url):
                         self.SelectBlock(row_idx, col_idx, row_idx, col_idx, True)
 
@@ -815,7 +816,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             for row_idx in range(self.GetNumberRows()):
                 url = self.table.get_url(row_idx, col_idx)
                 if url is not None:
-                    url = url.encode("utf-8")
+                    url = url
                     if fn_filter(url):
                         self.DeselectCell(row_idx, col_idx)
 
@@ -1135,7 +1136,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
                     test_size = field_size + increment
                     if len(s) > test_size:
                         half = int(test_size / 2)
-                        stest = s[:half] + u"..." + s[-half:]
+                        stest = s[:half] + "..." + s[-half:]
                     else:
                         stest = s
                     width, _ = dc.GetTextExtent(stest)

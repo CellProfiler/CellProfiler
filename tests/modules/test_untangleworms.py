@@ -1,6 +1,6 @@
 '''test_untangleworms.py - test the UntangleWorms module'''
 
-import StringIO
+import io
 import base64
 import bioformats
 import os
@@ -376,7 +376,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, U.UntangleWorms))
@@ -571,7 +571,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, U.UntangleWorms))
@@ -632,7 +632,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
         class X(object):
             def __init__(self, d):
-                for key in d.keys():
+                for key in list(d.keys()):
                     value = d[key]
                     if isinstance(value, dict):
                         value = X(value)

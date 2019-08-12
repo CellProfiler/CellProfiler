@@ -1354,7 +1354,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         recolored_labels = indexer[labels]
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0, 0, 0))
-        norm = matplotlib.colors.BoundaryNorm(range(256), 256)
+        norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(
             numpy.ma.array(recolored_labels, mask=(labels == 0)), cmap=cm, norm=norm
         )
@@ -3131,12 +3131,12 @@ Enter a name to give the color-coded image of tracked labels.""",
             for this_label, this_lifetime in zip(label[index], lifetimes[index]):
                 age[this_label] = this_lifetime
 
-        all_labels = age.keys()
-        all_ages = age.values()
+        all_labels = list(age.keys())
+        all_ages = list(age.values())
         if self.wants_lifetime_filtering.value:
             labels_to_filter = [
                 k
-                for k, v in age.items()
+                for k, v in list(age.items())
                 if v <= minimum_lifetime or v >= maximum_lifetime
             ]
         for image_number in image_numbers:

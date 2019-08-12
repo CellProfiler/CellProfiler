@@ -446,7 +446,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             path = path.replace("/", "\\")
         elif regexp_substitution:
             path = re.subn("\\\\\\\\", "/", path)[0]
-            path = re.subn("\\\\(?!g\\<[^>]*\\>)", "/", path)[0]
+            path = re.subn("\\\\(?!g<[^>]*>)", "/", path)[0]
         else:
             path = path.replace("\\", "/")
         return path

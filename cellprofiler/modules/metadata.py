@@ -1148,14 +1148,14 @@ not being applied, your choice on this setting may be the culprit.
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 idx = max(
-                    *map(
+                    *list(map(
                         visible_settings.index,
                         [
                             group.csv_joiner,
                             group.csv_location,
                             group.wants_case_insensitive,
                         ],
-                    )
+                    ))
                 )
                 if idx < setting_idx:
                     continue
@@ -1264,9 +1264,9 @@ not being applied, your choice on this setting may be the culprit.
         """Get the metadata keys which can have flexible datatyping
 
         """
-        return filter(
+        return list(filter(
             (lambda k: k not in self.NUMERIC_DATA_TYPES), self.get_metadata_keys()
-        )
+        ))
 
     NUMERIC_DATA_TYPES = (
         cellprofiler.pipeline.ImagePlaneDetails.MD_T,
@@ -1326,7 +1326,7 @@ not being applied, your choice on this setting may be the culprit.
             ):
                 joins = group.csv_joiner.parse()
                 for join in joins:
-                    if key in join.values():
+                    if key in list(join.values()):
                         return True
         return False
 
@@ -1334,7 +1334,7 @@ not being applied, your choice on this setting may be the culprit.
         """Get the metadata measurements collected by this module"""
         key_types = pipeline.get_available_metadata_keys()
         result = []
-        for key, coltype in key_types.items():
+        for key, coltype in list(key_types.items()):
             if self.data_type_choice == DTC_CHOOSE:
                 data_type = self.get_data_type(key)
                 if data_type == cellprofiler.setting.DataTypes.DT_NONE:

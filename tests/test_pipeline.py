@@ -1,5 +1,5 @@
 """test_Pipeline.py - test the CellProfiler.Pipeline module"""
-from __future__ import print_function
+
 
 import cProfile
 import os
@@ -575,7 +575,7 @@ HasImagePlaneDetails:False"""
         measurements = cellprofiler.measurement.load_measurements(fd)
         reverse_mapping = cellprofiler.pipeline.map_feature_names([m1_name, m2_name, m3_name])
         mapping = {}
-        for key in reverse_mapping.keys():
+        for key in list(reverse_mapping.keys()):
             mapping[reverse_mapping[key]] = key
         for name, expected in ((m1_name, my_measurement),
                                (m2_name, my_other_measurement),
@@ -723,9 +723,9 @@ HasImagePlaneDetails:False"""
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = u"\\\u2211"
+        module.my_variable.value = "\\\u2211"
         module.module_num = 1
-        module.notes = u"\u03B1\\\u03B2"
+        module.notes = "\u03B1\\\u03B2"
         pipeline.add_module(module)
         fd = six.moves.StringIO()
         pipeline.savetxt(fd)
@@ -743,9 +743,9 @@ HasImagePlaneDetails:False"""
                                                                  'resources/pipelineV3.cppipe'))
         pipeline.loadtxt(deprecated_pipeline_file)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = u"\\\u2211"
+        module.my_variable.value = "\\\u2211"
         module.module_num = 1
-        module.notes = u"\u03B1\\\u03B2"
+        module.notes = "\u03B1\\\u03B2"
         self.assertEqual(len(pipeline.modules()), 1)
         result_module = pipeline.modules()[0]
         self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
@@ -821,7 +821,7 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertEqual(d.keys()[0], IMAGE_NAME)
+        self.assertEqual(list(d.keys())[0], IMAGE_NAME)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -838,7 +838,7 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.OBJECT_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertEqual(d.keys()[0], OBJECT_NAME)
+        self.assertEqual(list(d.keys())[0], OBJECT_NAME)
         providers = d[OBJECT_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -855,7 +855,7 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.MEASUREMENTS_GROUP)
         self.assertEqual(len(d), 1)
-        key = d.keys()[0]
+        key = list(d.keys())[0]
         self.assertEqual(len(key), 2)
         self.assertEqual(key[0], OBJECT_NAME)
         self.assertEqual(key[1], FEATURE_NAME)
@@ -873,7 +873,7 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertEqual(d.keys()[0], IMAGE_NAME)
+        self.assertEqual(list(d.keys())[0], IMAGE_NAME)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -919,7 +919,7 @@ HasImagePlaneDetails:False"""
 
         d = pipeline.get_provider_dictionary(cellprofiler.setting.MEASUREMENTS_GROUP)
         self.assertEqual(len(d), 1)
-        key = d.keys()[0]
+        key = list(d.keys())[0]
         self.assertEqual(len(key), 2)
         self.assertEqual(key[0], OBJECT_NAME)
         self.assertEqual(key[1], FEATURE_NAME)
@@ -1050,7 +1050,7 @@ HasImagePlaneDetails:False"""
               ("baz", 7, 8, None, {"Well": "A03"}))),
             (["Well"],
              ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-             [("foo", 1, 2, 3, {"Well": u"\u03b1\u03b2"})]),
+             [("foo", 1, 2, 3, {"Well": "\u03b1\u03b2"})]),
             ([],
              [r'"\\foo\"bar","4","5","6"'],
              [(r'\foo"bar', 4, 5, 6)]))
@@ -1070,7 +1070,7 @@ HasImagePlaneDetails:False"""
 
     def test_18_02_write_image_plane_details(self):
         test_data = (
-            "foo", u"\u03b1\u03b2",
+            "foo", "\u03b1\u03b2",
             "".join([chr(i) for i in range(128)]))
         fd = six.moves.StringIO()
         cellprofiler.pipeline.write_file_list(fd, test_data)
@@ -1079,7 +1079,7 @@ HasImagePlaneDetails:False"""
         for rr, tt in zip(result, test_data):
             if isinstance(tt, six.text_type):
                 tt = tt.encode("utf-8")
-            self.assertEquals(rr, tt)
+            self.assertEqual(rr, tt)
 
     def test_19_01_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]
@@ -1278,7 +1278,7 @@ class ATestModule(cellprofiler.module.Module):
         return self.__measurement_columns
 
     def other_providers(self, group):
-        if group not in self.__other_providers.keys():
+        if group not in list(self.__other_providers.keys()):
             return []
         return self.__other_providers[group]
 
@@ -1439,39 +1439,39 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(a[0] == 'Hello')
 
     def test_02_001_EncapsulateUnicode(self):
-        a = cellprofiler.pipeline.encapsulate_string(u'Hello')
+        a = cellprofiler.pipeline.encapsulate_string('Hello')
         self.assertTrue(a.shape == (1,))
         self.assertTrue(a.dtype.kind == 'U')
-        self.assertTrue(a[0] == u'Hello')
+        self.assertTrue(a[0] == 'Hello')
 
     def test_02_01_EncapsulateCell(self):
         cell = numpy.ndarray((1, 1), dtype=object)
-        cell[0, 0] = u'Hello, world'
+        cell[0, 0] = 'Hello, world'
         cellprofiler.pipeline.encapsulate_strings_in_arrays(cell)
         self.assertTrue(isinstance(cell[0, 0], numpy.ndarray))
-        self.assertTrue(cell[0, 0][0] == u'Hello, world')
+        self.assertTrue(cell[0, 0][0] == 'Hello, world')
 
     def test_02_02_EncapsulateStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[('foo', object)])
-        struct['foo'][0, 0] = u'Hello, world'
+        struct['foo'][0, 0] = 'Hello, world'
         cellprofiler.pipeline.encapsulate_strings_in_arrays(struct)
         self.assertTrue(isinstance(struct['foo'][0, 0], numpy.ndarray))
-        self.assertTrue(struct['foo'][0, 0][0] == u'Hello, world')
+        self.assertTrue(struct['foo'][0, 0][0] == 'Hello, world')
 
     def test_02_03_EncapsulateCellInStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[('foo', object)])
         cell = numpy.ndarray((1, 1), dtype=object)
-        cell[0, 0] = u'Hello, world'
+        cell[0, 0] = 'Hello, world'
         struct['foo'][0, 0] = cell
         cellprofiler.pipeline.encapsulate_strings_in_arrays(struct)
         self.assertTrue(isinstance(cell[0, 0], numpy.ndarray))
-        self.assertTrue(cell[0, 0][0] == u'Hello, world')
+        self.assertTrue(cell[0, 0][0] == 'Hello, world')
 
     def test_02_04_EncapsulateStructInCell(self):
         struct = numpy.ndarray((1, 1), dtype=[('foo', object)])
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = struct
-        struct['foo'][0, 0] = u'Hello, world'
+        struct['foo'][0, 0] = 'Hello, world'
         cellprofiler.pipeline.encapsulate_strings_in_arrays(cell)
         self.assertTrue(isinstance(struct['foo'][0, 0], numpy.ndarray))
-        self.assertTrue(struct['foo'][0, 0][0] == u'Hello, world')
+        self.assertTrue(struct['foo'][0, 0][0] == 'Hello, world')

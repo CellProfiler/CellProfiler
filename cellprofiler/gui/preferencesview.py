@@ -277,11 +277,11 @@ class PreferencesView(object):
                     cellprofiler.preferences.WRITE_HDF5
                 )
                 if output_filename.lower().endswith(".mat"):
-                    output_filename = output_filename[:-4] + u".h5"
+                    output_filename = output_filename[:-4] + ".h5"
             elif sel == WRITE_MAT_FILE_TEXT:
                 cellprofiler.preferences.set_write_MAT_files(True)
                 if output_filename.lower().endswith(".h5"):
-                    output_filename = output_filename[:-3] + u".mat"
+                    output_filename = output_filename[:-3] + ".mat"
             else:
                 cellprofiler.preferences.set_write_MAT_files(False)
 
@@ -597,9 +597,13 @@ class PreferencesView(object):
                 edit_box.Select(0)
                 edit_box.SetInsertionPoint(ins)
                 abspath = os.path.abspath(path)
-                for i, item in enumerate(items):
-                    if os.path.abspath(item) == abspath:
-                        edit_box.Delete(i + 1)
+
+                # Remove items that are simply the abspath
+                filtered_items = list(filter(lambda item: os.path.abspath(item)!=abspath, items))
+
+                # Clear the edit_box items and re-add the filtered items
+                edit_box.Clear()
+                edit_box.AppendItems(filtered_items)
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)

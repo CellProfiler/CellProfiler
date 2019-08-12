@@ -1,5 +1,5 @@
-from __future__ import print_function
-import StringIO
+
+import io
 import base64
 import glob
 import hashlib
@@ -10,7 +10,7 @@ import tempfile
 import time
 import traceback
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import zlib
 
 import cellprofiler.image
@@ -53,7 +53,7 @@ class ConvtesterMixin:
         '''
         cellprofiler.preferences.set_default_image_directory(directory)
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(StringIO.StringIO(pipeline_text))
+        pipeline.load(io.StringIO(pipeline_text))
 
         def callback(caller, event):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
@@ -91,8 +91,8 @@ class ConvtesterMixin:
         for feature in ff1:
             if feature.startswith(cellprofiler.measurement.C_METADATA):
                 self.assertTrue(m2.has_feature(cellprofiler.measurement.IMAGE, feature))
-        ff1a = filter((lambda x: not x.startswith(cellprofiler.measurement.C_METADATA)),
-                      ff1)
+        ff1a = list(filter((lambda x: not x.startswith(cellprofiler.measurement.C_METADATA)),
+                      ff1))
         self.assertEqual(m1.image_set_count, m2.image_set_count)
         image_numbers = m1.get_image_numbers()
         #
@@ -792,7 +792,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_07_01_get_measurement_columns(self):
         data = self.get_example_pipeline_data()
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
@@ -839,7 +839,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_07_02_get_measurements(self):
         data = self.get_example_pipeline_data()
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
@@ -847,18 +847,18 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                       'PathName': ['DNA', 'Cytoplasm'],
                       'MD5Digest': ['DNA', 'Cytoplasm'],
                       'Metadata': ['WellRow', 'WellCol', 'Well']}
-        for cat, expected in categories.items():
+        for cat, expected in list(categories.items()):
             assert set(expected) == set(module.get_measurements(pipeline,
                                                                 cellprofiler.measurement.IMAGE, cat))
         module.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_BOTH
         categories['Metadata'] += ['Year', 'Month', 'Day']
-        for cat, expected in categories.items():
+        for cat, expected in list(categories.items()):
             assert set(expected) == set(module.get_measurements(
                     pipeline, cellprofiler.measurement.IMAGE, cat))
 
     def test_07_03_get_categories(self):
         data = self.get_example_pipeline_data()
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         module = pipeline.module(1)
@@ -911,7 +911,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     if category not in category_dict:
                         category_dict[category] = []
                     category_dict[category].append(feature)
-                for category in category_dict.keys():
+                for category in list(category_dict.keys()):
                     self.assertTrue(category in categories)
                     expected_features = category_dict[category]
                     features = module.get_measurements(None, cellprofiler.measurement.IMAGE,
@@ -966,7 +966,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 if category not in category_dict:
                     category_dict[category] = []
                 category_dict[category].append(feature)
-            for category in category_dict.keys():
+            for category in list(category_dict.keys()):
                 self.assertTrue(category in categories)
                 expected_features = category_dict[category]
                 features = module.get_measurements(None, cellprofiler.measurement.IMAGE,
@@ -1977,7 +1977,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
                 filename = "channel%d-A0%d.png" % (j, i)
                 full_path = os.path.join(self.directory, filename)
-                url = "file:" + urllib.pathname2url(full_path)
+                url = "file:" + urllib.request.pathname2url(full_path)
                 for category, expected in (
                         (cellprofiler.measurement.C_FILE_NAME, filename),
                         (cellprofiler.measurement.C_PATH_NAME, self.directory),

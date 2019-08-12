@@ -1,7 +1,7 @@
 # coding=utf-8
 """ModuleView.py - implements a view on a module
 """
-from __future__ import print_function
+
 
 import logging
 import os
@@ -443,9 +443,7 @@ class ModuleView(object):
             #
             #################################
             if self.notes_panel is not None:
-                self.module_notes_control.SetValue(
-                    u"\n".join([_.decode("utf-8") for _ in self.__module.notes])
-                )
+                self.module_notes_control.SetValue("\n".join([six.text_type(note) for note in self.__module.notes]))
 
             #################################
             #
@@ -773,7 +771,7 @@ class ModuleView(object):
             if not self.__handle_change:
                 return
             if self.__module is not None:
-                notes = self.module_notes_control.GetValue().encode("utf-8")
+                notes = self.module_notes_control.GetValue()
                 self.__module.notes = notes.split("\n")
 
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed, self.module_notes_control)
@@ -939,7 +937,7 @@ class ModuleView(object):
                 #
                 def get_state(d):
                     leaf_state = d[None]
-                    for subtree_key in [x for x in d.keys() if x is not None]:
+                    for subtree_key in [x for x in list(d.keys()) if x is not None]:
                         subtree_state = get_state(d[subtree_key])
                         if leaf_state == 0:
                             leaf_state = subtree_state
@@ -963,7 +961,7 @@ class ModuleView(object):
                             name = v.make_measurement_choice(object_name, prefix)
                             if name in choices:
                                 result.append(name)
-                        for key in [x for x in d.keys() if x is not None]:
+                        for key in [x for x in list(d.keys()) if x is not None]:
                             if prefix is None:
                                 sub_prefix = key
                             else:
@@ -972,7 +970,7 @@ class ModuleView(object):
                         return result
 
                     selections = []
-                    for object_name in [x for x in d.keys() if x is not None]:
+                    for object_name in [x for x in list(d.keys()) if x is not None]:
                         selections += collect_state(object_name, None, d[object_name])
                     proposed_value = v.get_value_string(selections)
                     setting_edited_event = SettingEditedEvent(
@@ -1064,14 +1062,14 @@ class ModuleView(object):
                         elif d[None] is False:
                             return [prefix]
                         result = []
-                        for key in d.keys():
+                        for key in list(d.keys()):
                             if key is None:
                                 continue
                             result += collect_state(os.path.join(prefix, key), d[key])
                         return result
 
                     selections = []
-                    for object_name in [x for x in d.keys() if x is not None]:
+                    for object_name in [x for x in list(d.keys()) if x is not None]:
                         selections += collect_state(object_name, d[object_name])
                     proposed_value = v.get_value_string(selections)
                     setting_edited_event = SettingEditedEvent(
@@ -1426,7 +1424,7 @@ class ModuleView(object):
             #
             text_ctrl.Bind(wx.EVT_KILL_FOCUS, on_kill_focus)
         else:
-            text_control = control.FindWindowByName(text_control_name(v))
+            text_control = control.FindWindow(text_control_name(v))
             if v.value != text_control.Value:
                 text_control.Value = v.value
         return control
@@ -2222,7 +2220,7 @@ class ModuleView(object):
         if not self.__handle_change:
             return
 
-        proposed_value = u",".join([control.Items[i] for i in control.Selections])
+        proposed_value = ",".join([control.Items[i] for i in control.Selections])
         self.on_value_change(setting, control, proposed_value, event)
 
     def __on_cell_change(self, event, setting, control):
@@ -2576,7 +2574,7 @@ class FilterPanelController(object):
             for key in self.hide_show_dict:
                 self.hide_show_dict[key] = False
             self.populate_subpanel(structure, [])
-            for key, value in self.hide_show_dict.items():
+            for key, value in list(self.hide_show_dict.items()):
                 self.panel.FindWindowByName(key).Show(value)
             self.panel.Layout()
         except:
@@ -3359,7 +3357,7 @@ class FileCollectionDisplayController(object):
 
     def on_delete_selected(self, event):
         mods = [self.get_item_address(item) for item in self.tree_ctrl.GetSelections()]
-        mods = filter(lambda x: x is not None, mods)
+        mods = [x for x in mods if x is not None]
         self.v.on_remove([self.v.get_tree_modpaths(mod) for mod in mods])
 
     def get_item_address(self, item):
@@ -3614,7 +3612,7 @@ class FileCollectionDisplayController(object):
 
             color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
             self.tree_ctrl.SetItemTextColour(item_id, color)
-        for last_part, (item_id, keep) in existing_items.items():
+        for last_part, (item_id, keep) in list(existing_items.items()):
             if not keep:
                 self.remove_item(modpath + [last_part])
         if needs_sort:
@@ -3879,7 +3877,7 @@ class JoinerController(object):
                 )
                 all_subcontrols[move_down_button_name] = True
 
-        for key, value in all_subcontrols.items():
+        for key, value in list(all_subcontrols.items()):
             ctrl = self.panel.FindWindowByName(key)
             ctrl.Show(value)
 
@@ -4300,7 +4298,7 @@ class DataTypeController(object):
             value = self.DT_TO_DTC.get(d[feature], self.DTC_TEXT)
             if choice.GetStringSelection() != value:
                 choice.SetStringSelection(value)
-        self.n_items = len(d.keys())
+        self.n_items = len(list(d.keys()))
         for choice in needs_bind:
             choice.Bind(wx.EVT_CHOICE, self.on_choice_changed)
 

@@ -200,7 +200,7 @@ maximal brightness already occurring in the image.
         self.outlines.append(group)
 
     def prepare_settings(self, setting_values):
-        num_settings = (len(setting_values) - NUM_FIXED_SETTINGS) / NUM_OUTLINE_SETTINGS
+        num_settings = (len(setting_values) - NUM_FIXED_SETTINGS) // NUM_OUTLINE_SETTINGS
         if len(self.outlines) == 0:
             self.add_outline(False)
         elif len(self.outlines) > num_settings:

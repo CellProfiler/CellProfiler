@@ -368,10 +368,10 @@ class AnalysisRunner:
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
-            image_sets_to_process = filter(
+            image_sets_to_process = list(filter(
                 lambda x: image_set_start <= x <= image_set_end,
                 measurements.get_image_numbers(),
-            )
+            ))
 
             self.post_event(AnalysisStarted())
             posted_analysis_started = True
@@ -929,7 +929,7 @@ def find_worker_env(idx):
             added_paths += [p for p in sys.path if isinstance(p, six.string_types)]
     if "PYTHONPATH" in newenv:
         added_paths.insert(0, newenv["PYTHONPATH"])
-    newenv["PYTHONPATH"] = os.pathsep.join([x.encode("utf-8") for x in added_paths])
+    newenv["PYTHONPATH"] = os.pathsep.join([x for x in added_paths])
     if "CP_JDWP_PORT" in newenv:
         del newenv["CP_JDWP_PORT"]
     if "AW_JDWP_PORT" in newenv:
@@ -938,7 +938,7 @@ def find_worker_env(idx):
         del newenv["AW_JDWP_PORT"]
     for key in newenv:
         if isinstance(newenv[key], six.text_type):
-            newenv[key] = newenv[key].encode("utf-8")
+            newenv[key] = newenv[key]
     return newenv
 
 

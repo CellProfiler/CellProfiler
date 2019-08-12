@@ -201,7 +201,7 @@ secondary object and completely contained within it."""
             "Select the method to identify the secondary objects",
             [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
             M_PROPAGATION,
-            doc=u"""\
+            doc="""\
 There are several methods available to find the dividing lines between
 secondary objects that touch each other:
 
@@ -287,7 +287,7 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select the input image",
             cellprofiler.setting.NONE,
-            doc=u"""\
+            doc="""\
 The selected image will be used to find the edges of the secondary
 objects. For *{M_DISTANCE_N:s}* this will not affect object
 identification, only the module's display.
@@ -300,7 +300,7 @@ identification, only the module's display.
             "Number of pixels by which to expand the primary objects",
             10,
             minval=1,
-            doc=u"""\
+            doc="""\
 *(Used only if "{M_DISTANCE_B:s}" or "{M_DISTANCE_N:s}" method is selected)*
 
 This option allows you to define the number of pixels by which the primary objects
@@ -316,7 +316,7 @@ measurements.
             "Regularization factor",
             0.05,
             minval=0,
-            doc=u"""\
+            doc="""\
 *(Used only if "{M_PROPAGATION:s}" method is selected)*
 
 The regularization factor λ can be anywhere in the range 0 to
@@ -344,7 +344,7 @@ balance between these two considerations:
         self.wants_discard_edge = cellprofiler.setting.Binary(
             "Discard secondary objects touching the border of the image?",
             False,
-            doc=u"""\
+            doc="""\
 Select *{YES:s}* to discard secondary objects that touch the image
 border. Select *{NO:s}* to retain objects regardless of whether they
 touch the image edge or not.
@@ -361,7 +361,7 @@ segmentation.
         self.fill_holes = cellprofiler.setting.Binary(
             "Fill holes in identified objects?",
             True,
-            doc=u"""\
+            doc="""\
 Select *{YES:s}* to fill any holes inside objects.
 
 Please note that if an object is located within a hole and this option is
@@ -374,7 +374,7 @@ enabled, the object will be lost when the hole is filled in.
         self.wants_discard_primary = cellprofiler.setting.Binary(
             "Discard the associated primary objects?",
             False,
-            doc=u"""\
+            doc="""\
 *(Used only if discarding secondary objects touching the image
 border)*
 
@@ -673,7 +673,7 @@ segmentation.""",
             lookup = scipy.ndimage.maximum(
                 segmented_out,
                 objects.segmented,
-                range(numpy.max(objects.segmented) + 1),
+                list(range(numpy.max(objects.segmented) + 1)),
             )
             lookup = centrosome.cpmorphology.fixup_scipy_ndimage_result(lookup)
             lookup[0] = 0
@@ -814,10 +814,10 @@ segmentation.""",
                 numpy.arange(1, object_count + 1),
             )
             areas.sort()
-            low_diameter = numpy.sqrt(float(areas[object_count / 10]) / numpy.pi) * 2
-            median_diameter = numpy.sqrt(float(areas[object_count / 2]) / numpy.pi) * 2
+            low_diameter = numpy.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
+            median_diameter = numpy.sqrt(float(areas[object_count // 2]) / numpy.pi) * 2
             high_diameter = (
-                numpy.sqrt(float(areas[object_count * 9 / 10]) / numpy.pi) * 2
+                numpy.sqrt(float(areas[object_count * 9 // 10]) / numpy.pi) * 2
             )
             statistics.append(["10th pctile diameter", "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter", "%.1f pixels" % median_diameter])
@@ -876,7 +876,7 @@ segmentation.""",
             )
             segmented_labels[~m1] = 0
             lookup = scipy.ndimage.maximum(
-                segmented_labels, labels_out, range(max_out + 1)
+                segmented_labels, labels_out, list(range(max_out + 1))
             )
             lookup = numpy.array(lookup, int)
             lookup[0] = 0

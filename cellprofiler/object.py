@@ -712,7 +712,7 @@ class Segmentation(object):
                 self.__shape = tuple(
                     [
                         numpy.max(sparse[axis]) + 2
-                        if axis in sparse.dtype.fields.keys()
+                        if axis in list(sparse.dtype.fields.keys())
                         else 1
                         for axis in ("c", "t", "z", "y", "x")
                     ]
@@ -845,7 +845,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
         for axis in ("c", "t", "z", "y", "x"):
-            if axis in sparse.dtype.fields.keys():
+            if axis in list(sparse.dtype.fields.keys()):
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
@@ -999,7 +999,7 @@ class ObjectSet(object):
             objects, Objects
         ), "objects must be an instance of CellProfiler.Objects"
         assert (
-            name not in self.__objects_by_name.keys()
+            name not in list(self.__objects_by_name.keys())
         ) or self.__can_overwrite, (
             "The object, {}, is already in the object set".format(name)
         )
@@ -1008,7 +1008,7 @@ class ObjectSet(object):
     def get_object_names(self):
         """Return the names of all of the objects
         """
-        return self.__objects_by_name.keys()
+        return list(self.__objects_by_name.keys())
 
     object_names = property(get_object_names)
 
@@ -1021,7 +1021,7 @@ class ObjectSet(object):
     def all_objects(self):
         """Return a list of name / objects tuples
         """
-        return self.__objects_by_name.items()
+        return list(self.__objects_by_name.items())
 
     def get_types(self):
         """Get then names of types of per-image set "things"
@@ -1030,7 +1030,7 @@ class ObjectSet(object):
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
         """
-        return self.__types_and_instances.keys()
+        return list(self.__types_and_instances.keys())
 
     def add_type_instance(self, type_name, instance_name, instance):
         """Add a named instance of a type

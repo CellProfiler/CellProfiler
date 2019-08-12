@@ -581,7 +581,7 @@ class ImageSet(object):
             if must_be_grayscale:
                 pd = image.pixel_data
 
-                pd = pd.transpose(-1, *range(pd.ndim - 1))
+                pd = pd.transpose(-1, *list(range(pd.ndim - 1)))
 
                 if (
                     pd.shape[-1] >= 3
@@ -630,7 +630,7 @@ class ImageSet(object):
 
         name - return the image provider with this name
         """
-        providers = filter(lambda x: x.name == name, self.__image_providers)
+        providers = [x for x in self.__image_providers if x.name == name]
         assert len(providers) > 0, "No provider of the %s image" % name
         assert len(providers) == 1, "More than one provider of the %s image" % name
         return providers[0]
@@ -640,9 +640,7 @@ class ImageSet(object):
 
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(
-            lambda x: x.name != name, self.__image_providers
-        )
+        self.__image_providers = [x for x in self.__image_providers if x.name != name]
 
     def clear_image(self, name):
         """Remove the image memory associated with a provider
@@ -767,7 +765,7 @@ class ImageSetList(object):
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i + 1)
-        return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
+        return keys, [(dict(list(zip(keys, k))), d[k]) for k in sort_order]
 
     def save_state(self):
         """Return a string that can be used to load the image_set_list's state
@@ -827,6 +825,6 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     """Make a dictionary into a stable key for another dictionary"""
-    return u", ".join(
-        [u":".join([six.text_type(y) for y in x]) for x in sorted(key.items())]
+    return ", ".join(
+        [":".join([six.text_type(y) for y in x]) for x in sorted(key.items())]
     )

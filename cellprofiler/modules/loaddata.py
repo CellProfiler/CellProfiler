@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from __future__ import print_function
+
 
 import csv
 import logging
@@ -703,7 +703,7 @@ safe to press it.""",
             for h in header:
                 if not h.startswith("file_"):
                     if isinstance(h, six.text_type):
-                        output.append(h.encode("utf-8"))
+                        output.append(h)
                     else:
                         output.append(h)
             return output
@@ -828,7 +828,7 @@ safe to press it.""",
         for line in reader:
             list_ctl.Append(
                 [
-                    s.encode("utf8") if isinstance(s, str) else s
+                    s if isinstance(s, str) else s
                     for s in line[: len(header)]
                 ]
             )
@@ -932,7 +932,7 @@ safe to press it.""",
                     break
                 if len(row) == 0:
                     continue
-                row = [s.encode("utf8") if isinstance(s, str) else s for s in row]
+                row = [s if isinstance(s, str) else s for s in row]
                 if len(row) != len(header):
                     raise ValueError(
                         "Row # %d has the wrong number of elements: %d. Expected %d"
@@ -941,7 +941,7 @@ safe to press it.""",
                 rows.append(row)
         else:
             rows = [
-                [s.encode("utf8") if isinstance(s, str) else s for s in row]
+                [s if isinstance(s, str) else s for s in row]
                 for row in reader
                 if len(row) > 0
             ]
@@ -1021,7 +1021,7 @@ safe to press it.""",
                     cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                 ),
             ):
-                for name in d.keys():
+                for name in list(d.keys()):
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
                         if header[k].startswith(url_category):
@@ -1129,18 +1129,18 @@ safe to press it.""",
             #  loadimages)
             #
             image_numbers = m.match_metadata(
-                metadata_columns.keys(), [columns[k] for k in metadata_columns.keys()]
+                list(metadata_columns.keys()), [columns[k] for k in list(metadata_columns.keys())]
             )
             image_numbers = numpy.array(image_numbers, int).flatten()
             max_image_number = numpy.max(image_numbers)
             new_columns = {}
-            for key, values in columns.items():
+            for key, values in list(columns.items()):
                 new_values = [None] * max_image_number
                 for image_number, value in zip(image_numbers, values):
                     new_values[image_number - 1] = value
                 new_columns[key] = new_values
             columns = new_columns
-        for feature, values in columns.items():
+        for feature, values in list(columns.items()):
             m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, values)
         if self.wants_image_groupings and len(self.metadata_fields.selections) > 0:
             keys = [
@@ -1201,12 +1201,12 @@ safe to press it.""",
                         image_set_number=image_numbers,
                     )
                     for image_number, url in zip(image_numbers, urls):
-                        url = url.encode("utf-8")
+                        url = url
                         if url.lower().startswith("file:"):
                             fullname = loadimages.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = str(loadimages.pathname2url(fullname)).encode("utf-8")
+                            url = str(loadimages.pathname2url(fullname))
                             m.add_measurement(
                                 cellprofiler.measurement.IMAGE,
                                 url_feature,
@@ -1243,7 +1243,7 @@ safe to press it.""",
             series_feature = cellprofiler.measurement.C_OBJECTS_SERIES + "_" + name
             frame_feature = cellprofiler.measurement.C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cellprofiler.measurement.IMAGE, url_feature)
-        url = url.encode("utf-8")
+        url = url
         full_filename = loadimages.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(cellprofiler.measurement.IMAGE, series_feature):

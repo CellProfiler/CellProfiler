@@ -546,7 +546,7 @@ parents or children of the parent object.""",
             perim_idx = pperim[perim_loc.transpose().tolist()]
 
             # Sort the points by label #
-            reverse_column_order = range(children.dimensions)[::-1]
+            reverse_column_order = list(range(children.dimensions))[::-1]
 
             coordinates = perim_loc[:, reverse_column_order].transpose().tolist()
 
@@ -724,7 +724,7 @@ parents or children of the parent object.""",
             for group in self.step_parent_names:
                 if group.step_parent_name.value in step_parents:
                     raise cellprofiler.setting.ValidationError(
-                        u"{} has already been chosen".format(
+                        "{} has already been chosen".format(
                             group.step_parent_name.value
                         ),
                         group.step_parent_name,
@@ -839,7 +839,7 @@ parents or children of the parent object.""",
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.x_name.value:
-            if category == u"Mean_{}".format(self.x_child_name.value):
+            if category == "Mean_{}".format(self.x_child_name.value):
                 measurements = []
 
                 child_columns = self.get_child_columns(pipeline)
@@ -848,7 +848,7 @@ parents or children of the parent object.""",
 
                 return measurements
             elif category == "Children":
-                return [u"{}_Count".format(self.x_child_name.value)]
+                return ["{}_Count".format(self.x_child_name.value)]
         elif object_name == self.x_child_name.value and category == "Parent":
             return [self.x_name.value]
         elif object_name == self.x_child_name.value and category == C_DISTANCE:
@@ -875,7 +875,7 @@ parents or children of the parent object.""",
 
         step_parent_count = (
             setting_count - FIXED_SETTING_COUNT
-        ) / VARIABLE_SETTING_COUNT
+        ) // VARIABLE_SETTING_COUNT
 
         assert len(self.step_parent_names) > 0
 

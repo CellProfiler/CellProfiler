@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import json
 import logging
@@ -655,7 +655,7 @@ def get_batch_commands(filename, n_per_job=1):
 
             for grouping in groupings:
                 group_string = ",".join(
-                    ["%s=%s" % (k, v) for k, v in grouping[0].items()]
+                    ["%s=%s" % (k, v) for k, v in list(grouping[0].items())]
                 )
 
                 print("CellProfiler -c -r -p %s -g %s" % (filename, group_string))
@@ -742,7 +742,7 @@ def run_pipeline_headless(options, args):
             cellprofiler.pipeline.M_PIPELINE
         )
 
-        pipeline_text = pipeline_text.encode("us-ascii")
+        pipeline_text = pipeline_text
 
         pipeline.load(six.moves.StringIO(pipeline_text))
 

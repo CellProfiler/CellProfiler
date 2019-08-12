@@ -5,7 +5,7 @@ Author: AJ Pretorius
         University of Leeds
         a.j.pretorius@leeds.ac.uk
 """
-from __future__ import print_function
+
 
 import os
 import traceback

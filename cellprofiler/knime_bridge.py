@@ -263,7 +263,7 @@ class KnimeBridgeServer(threading.Thread):
 
         no_data = ()
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -295,7 +295,7 @@ class KnimeBridgeServer(threading.Thread):
                     else:
                         s = data[0]
                         if isinstance(s, six.text_type):
-                            s = s.encode("utf-8")
+                            s = s
                         else:
                             s = str(s)
                         string_data.append(numpy.frombuffer(s, numpy.uint8))
@@ -444,7 +444,7 @@ class KnimeBridgeServer(threading.Thread):
         string_data = []
         metadata = [double_features, float_features, int_features, string_features]
 
-        for object_name, features in feature_dict.items():
+        for object_name, features in list(feature_dict.items()):
             df = []
             double_features.append((object_name, df))
             ff = []
@@ -561,7 +561,7 @@ class KnimeBridgeServer(threading.Thread):
 
     def raise_pipeline_exception(self, session_id, message):
         if isinstance(message, six.text_type):
-            message = message.encode("utf-8")
+            message = message
         else:
             message = str(message)
         self.socket.send_multipart(
@@ -575,7 +575,7 @@ class KnimeBridgeServer(threading.Thread):
 
     def raise_cellprofiler_exception(self, session_id, message):
         if isinstance(message, six.text_type):
-            message = message.encode("utf-8")
+            message = message
         else:
             message = str(message)
         self.socket.send_multipart(
@@ -660,7 +660,7 @@ class KnimeBridgeServer(threading.Thread):
                     ofeatures[name] = type_idx
         for key in features:
             features[key][cellprofiler.measurement.IMAGE_NUMBER] = 0
-        features_out = dict([(k, v.items()) for k, v in features.items()])
+        features_out = dict([(k, list(v.items())) for k, v in list(features.items())])
         return jtypes, features_out
 
     def decode_image(self, channel_metadata, buf, grouping_allowed=False):

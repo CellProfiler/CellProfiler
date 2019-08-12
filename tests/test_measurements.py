@@ -1,6 +1,6 @@
 """ test_Measurements.py - tests for CellProfiler.Measurements
 """
-from __future__ import print_function
+
 
 import base64
 import functools
@@ -23,7 +23,7 @@ class TestMeasurements(unittest.TestCase):
         x = cellprofiler.measurement.Measurements()
 
     def test_00_01_wrap_unwrap(self):
-        test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test0 = ["foo", "foo\\", "foo\\u0384", "foo\u0384"]
         test = test0 + [x.encode("utf-8") for x in test0]
         # numpy.object_
         test += numpy.array(test0, object).tolist()
@@ -207,7 +207,7 @@ class TestMeasurements(unittest.TestCase):
         r = numpy.random.RandomState()
         m = cellprofiler.measurement.Measurements()
         r.seed(42)
-        vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
+        vals = ["\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(cellprofiler.measurement.IMAGE, "Feature",
@@ -220,7 +220,7 @@ class TestMeasurements(unittest.TestCase):
         r = numpy.random.RandomState()
         m = cellprofiler.measurement.Measurements()
         r.seed(42)
-        vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
+        vals = ["\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m[cellprofiler.measurement.IMAGE, "Feature", image_number] = vals[image_number - 1]
@@ -906,7 +906,7 @@ class TestMeasurements(unittest.TestCase):
     def test_18_02_test_add_all_measurements_unicode(self):
         m = cellprofiler.measurement.Measurements()
         try:
-            values = [u"Foo", u"Bar", u"Baz", u"-\u221E < \u221E"]
+            values = ["Foo", "Bar", "Baz", "-\u221E < \u221E"]
             m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(cellprofiler.measurement.IMAGE, FEATURE_NAME,
@@ -932,7 +932,7 @@ class TestMeasurements(unittest.TestCase):
     def test_18_04_test_add_all_measurements_nulls(self):
         m = cellprofiler.measurement.Measurements()
         try:
-            values = [u"Foo", u"Bar", None, u"Baz", None, u"-\u221E < \u221E"]
+            values = ["Foo", "Bar", None, "Baz", None, "-\u221E < \u221E"]
             m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(cellprofiler.measurement.IMAGE, FEATURE_NAME,
@@ -1176,7 +1176,7 @@ class TestMeasurements(unittest.TestCase):
 
             rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
                   for x in m.get_relationship_groups()]
-            self.assertItemsEqual(d.keys(), rg)
+            self.assertItemsEqual(list(d.keys()), rg)
 
             for key in d:
                 image_numbers2, object_numbers2 = d[key]
@@ -1254,9 +1254,8 @@ class TestMeasurements(unittest.TestCase):
                     numpy.logical_or,
                     [(image_numbers1 if ii == 0 else image_numbers2) == image_numbers[jj]
                      for ii, jj in zip(i, j)])
-            ei1, eo1, ei2, eo2 = map(
-                    lambda x: x[mask], (image_numbers1, object_numbers1,
-                                        image_numbers2, object_numbers2))
+            ei1, eo1, ei2, eo2 = [x[mask] for x in (image_numbers1, object_numbers1,
+                                        image_numbers2, object_numbers2)]
             eorder = numpy.lexsort((eo2, ei2, eo1, ei1))
             numpy.testing.assert_array_equal(ri1[rorder], ei1[eorder])
             numpy.testing.assert_array_equal(ri2[rorder], ei2[eorder])

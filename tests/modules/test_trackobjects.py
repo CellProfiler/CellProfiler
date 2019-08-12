@@ -326,7 +326,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER,
                                           [1] * len(labels_list))
         measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX,
-                                          range(1, len(labels_list) + 1))
+                                          list(range(1, len(labels_list) + 1)))
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
@@ -337,7 +337,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                          measurements, image_set_list))
 
         first = True
-        for labels, index in zip(labels_list, range(len(labels_list))):
+        for labels, index in zip(labels_list, list(range(len(labels_list)))):
             object_set = cpo.ObjectSet()
             objects = cpo.Objects()
             objects.segmented = labels
@@ -1021,7 +1021,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         module = workspace.module
         self.assertTrue(isinstance(module, T.TrackObjects))
-        for feature, expected in d.iteritems():
+        for feature, expected in d.items():
             if np.isscalar(expected[0]):
                 mname = module.image_measurement_name(feature)
                 values = m.get_all_measurements(cpmeas.IMAGE, mname)

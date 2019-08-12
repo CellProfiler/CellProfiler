@@ -563,8 +563,8 @@ class TestAnalysis(unittest.TestCase):
             result = response.dictionaries
             self.assertEqual(len(dictionaries), len(result))
             for ed, d in zip(dictionaries, result):
-                self.assertItemsEqual(ed.keys(), d.keys())
-                for k in ed.keys():
+                self.assertItemsEqual(list(ed.keys()), list(d.keys()))
+                for k in list(ed.keys()):
                     numpy.testing.assert_almost_equal(ed[k], d[k])
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 

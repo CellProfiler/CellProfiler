@@ -676,7 +676,7 @@ desired.
         elif self.delimiter == DELIMITER_COMMA:
             return ","
         else:
-            return self.delimiter.value.encode("ascii")
+            return self.delimiter.value
 
     def prepare_run(self, workspace):
         """Prepare an image set to be run
@@ -939,7 +939,7 @@ desired.
             object_providers = workspace.pipeline.get_provider_dictionary(
                 cps.OBJECT_GROUP, self
             )
-            object_names.update(object_providers.keys())
+            object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)
             for object_name in object_names:
                 for metadata_group in metadata_groups:
@@ -970,7 +970,7 @@ desired.
                 #
                 first_in_file = self.last_in_file(i)
 
-        files_to_overwrite = filter(os.path.isfile, files_to_check)
+        files_to_overwrite = list(filter(os.path.isfile, files_to_check))
         if len(files_to_overwrite) > 0:
             if get_headless():
                 logger.error(
@@ -1019,7 +1019,7 @@ desired.
                 if isinstance(v, np.ndarray) and v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    six.text_type(v).encode("utf8")
+                    six.text_type(v)
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -1074,7 +1074,7 @@ desired.
                         if value is None:
                             row.append("")
                         elif isinstance(value, six.text_type):
-                            row.append(value.encode("utf8"))
+                            row.append(value)
                         elif isinstance(value, six.string_types):
                             row.append(value)
                         elif isinstance(value, np.ndarray) and value.dtype == np.uint8:
@@ -1265,7 +1265,7 @@ desired.
             object_names[0], workspace, image_set_numbers[0], settings_group
         )
         features = [(IMAGE, IMAGE_NUMBER), (object_names[0], OBJECT_NUMBER)]
-        columns = map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
+        columns = list(map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns()))
         if self.add_metadata.value:
             mdfeatures = [
                 (IMAGE, name)

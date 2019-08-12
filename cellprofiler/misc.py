@@ -14,7 +14,7 @@ def generate_presigned_url(url):
         client = boto3.client("s3")
 
         bucket_name, filename = (
-            re.compile("s3://([\w\d\-\.]+)/(.*)").search(url).groups()
+            re.compile("s3://([\w\d\-.]+)/(.*)").search(url).groups()
         )
 
         url = client.generate_presigned_url(

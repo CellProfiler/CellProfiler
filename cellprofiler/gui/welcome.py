@@ -27,7 +27,7 @@ GO_BACK = """<p>Go <a href=help://{}>back</a> to the welcome screen.</p>""".form
     WELCOME_MAIN_REF
 )
 
-CONFIGURE_IMAGES_HELP = u"""\
+CONFIGURE_IMAGES_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,7 +46,7 @@ CONFIGURE_IMAGES_HELP = u"""\
     }
 )
 
-EXPORTING_RESULTS_HELP = u"""\
+EXPORTING_RESULTS_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -87,7 +87,7 @@ EXPORTING_RESULTS_HELP = u"""\
     }
 )
 
-IDENTIFY_FEATUREES_HELP = u"""\
+IDENTIFY_FEATUREES_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -160,7 +160,7 @@ IDENTIFY_FEATUREES_HELP = u"""\
     }
 )
 
-IN_APP_HELP = u"""\
+IN_APP_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -182,7 +182,7 @@ IN_APP_HELP = u"""\
     }
 )
 
-MAKING_MEASUREMENTS_HELP = u"""\
+MAKING_MEASUREMENTS_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -266,7 +266,7 @@ MAKING_MEASUREMENTS_HELP = u"""\
     }
 )
 
-RUNNING_YOUR_PIPELINE_HELP = u"""\
+RUNNING_YOUR_PIPELINE_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -285,7 +285,7 @@ RUNNING_YOUR_PIPELINE_HELP = u"""\
     }
 )
 
-TEST_MODE_HELP = u"""\
+TEST_MODE_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -304,7 +304,7 @@ TEST_MODE_HELP = u"""\
     }
 )
 
-SELECTING_IMAGES_HELP = u"""\
+SELECTING_IMAGES_HELP = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -323,7 +323,7 @@ SELECTING_IMAGES_HELP = u"""\
     }
 )
 
-WELCOME_MAIN = u"""\
+WELCOME_MAIN = """\
 <!DOCTYPE html>
 <html>
 <head>

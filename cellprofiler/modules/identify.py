@@ -91,7 +91,7 @@ class Identify(cellprofiler.module.Module):
             ]
             if len(object_dictionary[object_name]) > 0:
                 result += [cellprofiler.measurement.C_PARENT]
-        if object_name in reduce(lambda x, y: x + y, object_dictionary.values()):
+        if object_name in reduce(lambda x, y: x + y, list(object_dictionary.values())):
             result += [cellprofiler.measurement.C_CHILDREN]
         return result
 
@@ -124,7 +124,7 @@ class Identify(cellprofiler.module.Module):
                 return list(object_dictionary[object_name])
         if category == cellprofiler.measurement.C_CHILDREN:
             result = []
-            for child_object_name in object_dictionary.keys():
+            for child_object_name in list(object_dictionary.keys()):
                 if object_name in object_dictionary[child_object_name]:
                     result += ["%s_Count" % child_object_name]
             return result
@@ -150,7 +150,7 @@ def add_object_location_measurements(
     #
     if object_count:
         centers = scipy.ndimage.center_of_mass(
-            numpy.ones(labels.shape), labels, range(1, object_count + 1)
+            numpy.ones(labels.shape), labels, list(range(1, object_count + 1))
         )
         centers = numpy.array(centers)
         centers = centers.reshape((object_count, 2))

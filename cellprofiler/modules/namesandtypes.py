@@ -808,7 +808,7 @@ times.
             if image_name not in all_image_names:
                 return image_name
         else:
-            for i in xrange(1, 1000):
+            for i in range(1, 1000):
                 image_name = "Channel%d" % i
                 if image_name not in all_image_names:
                     return image_name
@@ -823,7 +823,7 @@ times.
             if object_name not in all_object_names:
                 return object_name
         else:
-            for i in xrange(1, 1000):
+            for i in range(1, 1000):
                 object_name = "Object%d" % i
                 if object_name not in all_object_names:
                     return object_name
@@ -1158,13 +1158,13 @@ requests an object selection.
             return True
 
         image_set_channel_names = [None] * len(column_names)
-        for name, idx in channel_map.items():
+        for name, idx in list(channel_map.items()):
             image_set_channel_names[idx] = name
 
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
 
-        image_numbers = range(1, len(image_sets) + 1)
+        image_numbers = list(range(1, len(image_sets) + 1))
         if len(image_numbers) == 0:
             return False
         m.add_all_measurements(
@@ -2572,7 +2572,7 @@ requests an object selection.
                 if len(joins) > 0:
                     for join in joins:
                         best_value = None
-                        for key in join.keys():
+                        for key in list(join.keys()):
                             if key not in self.get_column_names():
                                 del join[key]
                             elif join[key] is not None and best_value is None:
@@ -2591,7 +2591,7 @@ requests an object selection.
         if self.matching_method == MATCH_BY_METADATA:
             joins = self.join.parse()
             metadata_columns = [
-                " / ".join(set([k for k in join.values() if k is not None]))
+                " / ".join(set([k for k in list(join.values()) if k is not None]))
                 for join in joins
             ]
         else:
@@ -2775,7 +2775,7 @@ class ObjectsImageProvider(loadimages.LoadImagesImageProviderURL):
                 0 if self.series is None else self.series
             ).Pixels
             nplanes = pixel_metadata.SizeC * pixel_metadata.SizeZ * pixel_metadata.SizeT
-            indexes = range(nplanes)
+            indexes = list(range(nplanes))
         elif numpy.isscalar(self.index):
             indexes = [self.index]
         else:

@@ -694,7 +694,7 @@ input for a measurement module."""
             rescale = setting_values[13::12]
 
             new_setting_values = list(
-                sum(zip(functions, repeats, repeat_counts, rescale), ())
+                sum(list(zip(functions, repeats, repeat_counts, rescale)), ())
             )
 
             setting_values = setting_values[:2] + new_setting_values

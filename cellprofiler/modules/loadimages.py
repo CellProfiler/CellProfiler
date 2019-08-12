@@ -64,7 +64,7 @@ Measurements made by this module
 -  *Height, Width:* The height and width of the current image.
 
 """
-from __future__ import print_function
+
 
 import hashlib
 import logging
@@ -2247,11 +2247,11 @@ to store the image.
                     d = self.write_measurements(
                         None, image_number, self.images[i], full_path
                     )
-                    for k, v in d.items():
+                    for k, v in list(d.items()):
                         if k not in features:
                             features[k] = [None] * n_image_sets
                         features[k][image_number - 1] = v
-        for k, v in features.items():
+        for k, v in list(features.items()):
             workspace.measurements.add_all_measurements(
                 cellprofiler.measurement.IMAGE, k, v
             )
@@ -2277,7 +2277,7 @@ to store the image.
         values = set()
         for dd in d:
             if dd is not None:
-                values.update([x for x in dd.keys() if x is not None])
+                values.update([x for x in list(dd.keys()) if x is not None])
         result = []
         for value in sorted(values):
             subgroup = tuple(
@@ -2385,7 +2385,7 @@ to store the image.
             table = wx.ListCtrl(panel, style=wx.LC_REPORT)
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND | wx.ALL, 3)
-            for tag, index in zip(tags, range(tag_ct)):
+            for tag, index in zip(tags, list(range(tag_ct))):
                 table.InsertColumn(index, tag)
             table.InsertColumn(index + 1, "First path")
             table.InsertColumn(index + 2, "First file name")
@@ -2414,9 +2414,9 @@ to store the image.
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND | wx.ALL, 3)
             if self.do_group_by_metadata:
-                for tag, index in zip(tags, range(tag_ct)):
+                for tag, index in zip(tags, list(range(tag_ct))):
                     table.InsertColumn(index, tag)
-            for fd, index in zip(self.images, range(len(self.images))):
+            for fd, index in zip(self.images, list(range(len(self.images)))):
                 table.InsertColumn(
                     index * 2 + tag_ct, "%s path" % fd.channels[0].image_name.value
                 )
@@ -2594,7 +2594,7 @@ to store the image.
                             image_numbers = [image_set_count + 1]
                             if match_metadata:
                                 key = dict(
-                                    [(k, str(v)) for k, v in frame_metadata.items()]
+                                    [(k, str(v)) for k, v in list(frame_metadata.items())]
                                 )
                                 if key not in md_dict:
                                     message = (
@@ -2602,7 +2602,7 @@ to store the image.
                                         % ", ".join(
                                             [
                                                 "%s=%s%" % kv
-                                                for kv in frame_metadata.items()
+                                                for kv in list(frame_metadata.items())
                                             ]
                                         )
                                     )
@@ -2667,7 +2667,7 @@ to store the image.
                                         cidx,
                                         image_set_number=image_number,
                                     )
-                                for k in frame_metadata.keys():
+                                for k in list(frame_metadata.keys()):
                                     m.add_measurement(
                                         cellprofiler.measurement.IMAGE,
                                         "_".join(
@@ -2698,7 +2698,7 @@ to store the image.
                                 image_numbers = [image_set_count + 1]
                                 if match_metadata:
                                     key = dict(
-                                        [(k, str(v)) for k, v in frame_metadata.items()]
+                                        [(k, str(v)) for k, v in list(frame_metadata.items())]
                                     )
                                     if key not in md_dict:
                                         message = (
@@ -2706,7 +2706,7 @@ to store the image.
                                             % ", ".join(
                                                 [
                                                     "%s=%s%" % kv
-                                                    for kv in frame_metadata.items()
+                                                    for kv in list(frame_metadata.items())
                                                 ]
                                             )
                                         )
@@ -2785,7 +2785,7 @@ to store the image.
                                             index,
                                             image_set_number=image_number,
                                         )
-                                    for k in frame_metadata.keys():
+                                    for k in list(frame_metadata.keys()):
                                         m.add_measurement(
                                             cellprofiler.measurement.IMAGE,
                                             "_".join(
@@ -2958,7 +2958,7 @@ to store the image.
                     m.get_current_image_measurement(file_feature),
                 ]
                 url = m.get_measurement(cellprofiler.measurement.IMAGE, feature)
-                full_name = url2pathname(url.encode("utf-8"))
+                full_name = url2pathname(url)
                 path, filename = os.path.split(full_name)
                 rescale = channel.rescale.value
                 metadata = self.get_filename_metadata(fd, filename, path)
@@ -3146,8 +3146,8 @@ to store the image.
             metadata.update(
                 cellprofiler.measurement.extract_metadata(fd.path_metadata.value, path)
             )
-        if needs_well_metadata(metadata.keys()):
-            well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
+        if needs_well_metadata(list(metadata.keys())):
+            well_row_token, well_column_token = well_metadata_tokens(list(metadata.keys()))
             metadata[cellprofiler.measurement.FTR_WELL] = (
                 metadata[well_row_token] + metadata[well_column_token]
             )
@@ -3224,7 +3224,7 @@ to store the image.
                 image_data.append((C_FRAME, frame))
             for category, value in image_data:
                 add_fn("_".join((category, channel.get_image_name())), value)
-        for key in metadata.keys():
+        for key in list(metadata.keys()):
             add_fn("_".join((cellprofiler.measurement.C_METADATA, key)), metadata[key])
         if measurements is None:
             return d
@@ -3971,7 +3971,7 @@ to store the image.
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()
                     for d in current:
-                        for v in d.values():
+                        for v in list(d.values()):
                             if v in my_tags:
                                 d[name] = v
                                 my_tags.remove(v)
@@ -4577,7 +4577,7 @@ PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
 
 def pathname2url(path):
     """Convert the unicode path to a file: url"""
-    utf8_path = path.encode("utf-8")
+    utf8_path = six.text_type(path)
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
     return FILE_SCHEME + six.moves.urllib.request.pathname2url(utf8_path)
@@ -4589,12 +4589,12 @@ def is_file_url(url):
 
 def url2pathname(url):
     if isinstance(url, six.text_type):
-        url = url.encode("utf-8")
+        url = url
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
     utf8_url = six.moves.urllib.request.url2pathname(url[len(FILE_SCHEME) :])
-    return utf8_url.encode("utf-8")
+    return utf8_url
 
 
 def urlfilename(url):

@@ -73,8 +73,8 @@ class RegexpDialog(wx.Dialog):
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
-        self.font = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
-        self.error_font = wx.SystemSettings.GetFont(wx.SYS_ANSI_VAR_FONT)
+        self.font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
+        self.error_font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
         temp = wx.ClientDC(self)
         temp.SetFont(self.font)
         edit_size = temp.GetTextExtent("                                        ")
@@ -87,8 +87,9 @@ class RegexpDialog(wx.Dialog):
 
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
         self.regexp_display.SetBufferedDraw(True)
+        o = self.regexp_display.GetFullTextExtent("".join(["M"] * 50))
         w, h = self.regexp_display.ClientToWindowSize(
-            self.regexp_display.GetFullTextExtent("".join(["M"] * 50))
+            wx.Size(o[1], o[2])
         )
         self.regexp_display.SetMinSize(wx.Size(w, h))
         self.regexp_display.Text = self.value
@@ -538,7 +539,7 @@ def looking_at_repeat(s, state):
     if not state.any_tokens:
         raise ValueError("Invalid repeat placement: there is nothing to repeat")
     if s[0] == "{":
-        match = re.match("\\{([0-9]+)(,([0-9]+))?\\}", s)
+        match = re.match("{([0-9]+)(,([0-9]+))?\\}", s)
         if not match:
             raise ValueError("Incomplete or badly formatted repeat expression")
         if match.group(3) is not None:

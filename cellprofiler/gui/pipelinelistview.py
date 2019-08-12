@@ -142,7 +142,7 @@ class PipelineListView(object):
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.SetSizer(wx.BoxSizer())
-        self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_COLOUR)
+        self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_ERASE)
         self.outputs_button = wx.Button(
             self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT
         )
@@ -330,9 +330,9 @@ class PipelineListView(object):
 
     def set_debug_mode(self, mode):
         if (mode is True) and (self.__pipeline is not None):
-            modules = filter(
+            modules = list(filter(
                 (lambda m: not m.is_input_module()), self.__pipeline.modules()
-            )
+            ))
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)
@@ -648,12 +648,10 @@ class PipelineListView(object):
         fd = six.moves.StringIO()
         self.__pipeline.savetxt(fd, modules_to_save, save_image_plane_details=False)
         pipeline_data_object = PipelineDataObject()
-        fd.seek(0)
-        pipeline_data_object.SetData(fd.read())
+        pipeline_data_object.SetData(fd.getvalue().encode())
 
         text_data_object = wx.TextDataObject()
-        fd.seek(0)
-        text_data_object.SetData(wx.DF_UNICODETEXT, fd.read())
+        text_data_object.SetText(fd.getvalue())
 
         data_object = wx.DataObjectComposite()
         data_object.Add(pipeline_data_object)
@@ -1041,7 +1039,7 @@ class PipelineDropTarget(wx.DropTarget):
                 self.data_object.GetReceivedFormat().GetType()
                 == self.pipeline_data_object.GetFormat().GetType()
             ):
-                pipeline_data = str(self.pipeline_data_object.GetData().tobytes().replace(b'\00', ''))
+                pipeline_data = self.pipeline_data_object.GetData().tobytes().decode()
                 if pipeline_data is not None:
                     self.window.on_data(x, y, action, pipeline_data)
             elif self.data_object.GetReceivedFormat().GetType() == wx.DF_FILENAME:
@@ -1318,17 +1316,25 @@ class PipelineListCtrl(wx.ScrolledWindow):
     def DeleteItem(self, index):
         """Remove the item at the given index"""
         del self.items[index]
-        if self.active_item == index:
-            self.active_item = None
-        elif self.active_item > index:
-            self.active_item -= 1
-        if self.anchor == index:
-            self.anchor = None
-        elif self.anchor > index:
-            self.anchor -= 1
-        if self.running_item > index:
-            self.running_item -= 1
+
+        if self.active_item:
+            if self.active_item == index:
+                self.active_item = None
+            elif self.active_item > index:
+                self.active_item -= 1
+
+        if self.anchor:
+            if self.anchor == index:
+                self.anchor = None
+            elif self.anchor > index:
+                self.anchor -= 1
+
+        if self.running_item:
+            if self.running_item > index:
+                self.running_item -= 1
+
         self.AdjustScrollbars()
+
         self.Refresh(eraseBackground=False)
 
     def InsertItem(self, index, item):
@@ -1339,12 +1345,19 @@ class PipelineListCtrl(wx.ScrolledWindow):
         item - a PipelineListCtrlItem
         """
         self.items.insert(index, item)
-        if self.active_item >= index:
-            self.active_item += 1
-        if self.anchor >= index:
-            self.anchor += 1
-        if self.running_item >= index:
-            self.running_item += 1
+
+        if self.active_item:
+            if self.active_item >= index:
+                self.active_item += 1
+
+        if self.anchor:
+            if self.anchor >= index:
+                self.anchor += 1
+
+        if self.running_item:
+            if self.running_item >= index:
+                self.running_item += 1
+
         self.AdjustScrollbars()
 
         self.SetInitialSize(self.GetBestSize())

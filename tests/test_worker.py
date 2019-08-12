@@ -526,7 +526,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
         # Possibly, this will break if someone edits FlipAndRotate. Sorry.
-        self.assertItemsEqual(d.keys(),
+        self.assertItemsEqual(list(d.keys()),
                               ['vmax', 'output_image_pixel_data',
                                'image_pixel_data', 'vmin'])
         self.assertIsInstance(d['output_image_pixel_data'], numpy.ndarray)

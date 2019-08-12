@@ -20,7 +20,7 @@ def test_get_batch_commands_grouped_batch_data(resources, capsys):
 
     assert len(batch_commands) == 3
 
-    expected_groups = [(u"1", u"3"), (u"4", u"6"), (u"7", u"9")]
+    expected_groups = [("1", "3"), ("4", "6"), ("7", "9")]
 
     groups = [re.match(".* -f ([0-9]) -l ([0-9])", batch_command).groups() for batch_command in batch_commands]
 
@@ -53,7 +53,7 @@ def test_get_batch_commands_grouped_by_metadata_batch_data(resources, capsys):
 
     assert len(batch_commands) == 3
 
-    expected_groups = [u"g01", u"g02", u"g03"]
+    expected_groups = ["g01", "g02", "g03"]
 
     groups = [re.match(".* -g Metadata_Plate=(g0[0-9])", batch_command).groups()[0] for batch_command in batch_commands]
 

@@ -1,6 +1,6 @@
 '''test_measuregranularity - Test the MeasureGranularity module
 '''
-from __future__ import print_function
+
 
 import base64
 import unittest

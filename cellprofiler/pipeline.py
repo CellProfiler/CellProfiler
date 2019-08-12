@@ -1,6 +1,6 @@
 """Pipeline.py - an ordered set of modules to be executed
 """
-from __future__ import print_function
+
 
 import bisect
 import datetime
@@ -13,6 +13,7 @@ import sys
 import tempfile
 import timeit
 import uuid
+import string
 
 import javabridge
 import numpy
@@ -153,7 +154,7 @@ FMT_MATLAB = "Matlab"
 FMT_NATIVE = "Native"
 
 """The current pipeline file format version"""
-NATIVE_VERSION = 4
+NATIVE_VERSION = 5
 
 """The version of the image plane descriptor section"""
 IMAGE_PLANE_DESCRIPTOR_VERSION = 1
@@ -247,8 +248,8 @@ def add_all_images(handles, image_set, object_set):
                 "SmallRemovedSegmented" + object_name
             ] = objects.small_removed_segmented
 
-    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
-    for key, image in images.items():
+    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(images.keys())))
+    for key, image in list(images.items()):
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
 
@@ -338,7 +339,7 @@ def map_feature_names(feature_names, max_size=63):
                             break
                 if remove_count == to_remove:
                     break
-            if name in mapping.keys() or len(name) > max_size:
+            if name in list(mapping.keys()) or len(name) > max_size:
                 # Panic mode - a duplication
                 if not seeded:
                     np.random.seed(0)
@@ -349,7 +350,7 @@ def map_feature_names(feature_names, max_size=63):
                     indices.sort()
                     name = npname[indices]
                     name = name.tostring()
-                    if not name in mapping.keys():
+                    if not name in list(mapping.keys()):
                         break
         else:
             name = feature_name
@@ -377,10 +378,10 @@ def add_all_measurements(handles, measurements):
         if object_name == cellprofiler.measurement.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         object_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
-        for field, feature_name in mapping.items():
+        for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, max_image_number), dtype="object")
             object_measurements[field][0, 0] = feature_measurements
             for i in np.argwhere(~has_image_number[1:]).flatten():
@@ -397,12 +398,12 @@ def add_all_measurements(handles, measurements):
         mapping = map_feature_names(
             measurements.get_feature_names(cellprofiler.measurement.EXPERIMENT)
         )
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[cellprofiler.measurement.EXPERIMENT][
             0, 0
         ] = experiment_measurements
-        for field, feature_name in mapping.items():
+        for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, 1), dtype="object")
             feature_measurements[0, 0] = measurements.get_experiment_measurement(
                 feature_name
@@ -448,14 +449,14 @@ class ImagePlaneDetails(object):
     def path(self):
         """The file path if a file: URL, otherwise the URL"""
         if self.url.startswith("file:"):
-            return six.moves.urllib.request.url2pathname(self.url[5:]).decode("utf8")
+            return six.moves.urllib.request.url2pathname(self.url[5:])
         return self.url
 
     @property
     def url(self):
         return javabridge.run_script(
             "o.getImagePlane().getImageFile().getURI().toString()", dict(o=self.jipd)
-        ).encode("utf-8")
+        )
 
     @property
     def series(self):
@@ -562,7 +563,7 @@ def write_file_list(file_or_fd, file_list):
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
             if isinstance(url, six.text_type):
-                url = url.encode("utf-8")
+                url = url
             url = url.encode("string_escape").replace('"', r"\"")
             line = '"%s",,,\n' % url
             fd.write(line)
@@ -601,11 +602,11 @@ def read_fields(line):
             state = RF_STATE_FIELD
         elif state == RF_STATE_SEPARATOR:
             if c == ":":
-                key = field.decode("string_escape").decode("utf-8")
+                key = field
                 kv = True
                 state = RF_STATE_PREQUOTE
             elif c in ",\n":
-                field = field.decode("string_escape").decode("utf-8")
+                field = field
                 if kv:
                     result.append((key, field))
                 else:
@@ -690,7 +691,7 @@ class Pipeline(object):
         """
         h = hashlib.md5()
         for module in self.modules():
-            h.update(module.module_name)
+            h.update(module.module_name.encode("utf-8"))
             for setting in module.settings():
                 h.update(setting.unicode_value.encode("utf-8"))
             if module.module_name == until_module:
@@ -878,7 +879,7 @@ class Pipeline(object):
             fd.seek(0)
             needs_close = False
         elif os.path.exists(fd_or_filename):
-            fd = open(fd_or_filename, "rb")
+            fd = open(fd_or_filename, "r")
             needs_close = True
             filename = fd_or_filename
         else:
@@ -888,9 +889,12 @@ class Pipeline(object):
                 raise IOError("Could not find file, " + fd_or_filename)
             fd = six.moves.urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
+
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
+
             return
+
         header = fd.read(len(HDF5_HEADER))
         if needs_close:
             fd.close()
@@ -908,7 +912,7 @@ class Pipeline(object):
             else:
                 m = cellprofiler.measurement.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
-                pipeline_text = pipeline_text.encode("us-ascii")
+                pipeline_text = pipeline_text
                 self.load(six.moves.StringIO(pipeline_text))
                 return
 
@@ -1017,8 +1021,10 @@ class Pipeline(object):
                     )
                 elif 1 < version < 4:
                     do_deprecated_utf16_decode = True
-                elif version >= 4:
+                elif version == 4:
                     do_utf16_decode = True
+                elif version == 5:
+                    pass
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
                 CURRENT_VERSION = int(
@@ -1031,7 +1037,7 @@ class Pipeline(object):
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
                 has_image_plane_details = value == "True"
             elif kwd == H_MESSAGE_FOR_USER:
-                value = value.decode("string_escape")
+                value = value
                 self.caption_for_user, self.message_for_user = value.split("|", 1)
             elif kwd == H_GIT_HASH:
                 git_hash = value
@@ -1131,26 +1137,27 @@ class Pipeline(object):
                     if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":")
-                    setting = setting.decode("string_escape")
+
+                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
+                    # En/decode needed to read example cppipe format
+                    setting = setting.encode().decode('unicode_escape')
 
                     if do_deprecated_utf16_decode:
-                        setting = cellprofiler.utilities.utf16encode.utf16decode(
-                            setting
-                        )
+                        # decoding with 'unicode_escape' appears to be sufficient
+                        pass
                     elif do_utf16_decode:
-                        setting = setting.decode("utf-8")
+                        # Real hack-y way to do utf-16 decoding; was read as str so can't .decode('utf-16')
+                        setting = ''.join(filter(lambda x: x in string.printable, setting))
 
                     settings.append(setting)
                 #
                 # Set up the module
                 #
-                module_name = module_name.decode("string_escape")
                 module = self.instantiate_module(module_name)
-                module.module_num = module_number
+                module.set_module_num(module_number)
                 #
                 # Decode the attributes. These are turned into strings using
-                # repr, so True -> 'True', etc. They are then encoded using
-                # Pipeline.encode_txt.
+                # repr, so True -> 'True', etc.
                 #
                 if (
                     len(attribute_string) < 2
@@ -1171,12 +1178,13 @@ class Pipeline(object):
                     if len(a.split(":")) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
                     attribute, value = a.split(":")
-                    value = value.decode("string_escape")
-                    value = eval(value)
+                    if attribute in skip_attributes:
+                        continue
+                    # En/decode needed to read example cppipe format
+                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
+                    value = eval(value.encode().decode('unicode_escape'))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
-                    elif attribute in skip_attributes:
-                        pass
                     else:
                         setattr(module, attribute, value)
                 if variable_revision_number is None:
@@ -1235,20 +1243,6 @@ class Pipeline(object):
         else:
             raise NotImplementedError("Unknown pipeline file format: %s" % format)
 
-    def encode_txt(self, s):
-        """Encode a string for saving in the text format
-
-        s - input string
-        Encode for automatic decoding using the 'string_escape' decoder.
-        We encode the special characters, '[', ':', '|' and ']' using the '\\x'
-        syntax.
-        """
-        s = s.encode("string_escape")
-        s = s.replace(":", "\\x3A")
-        s = s.replace("|", "\\x7C")
-        s = s.replace("[", "\\x5B").replace("]", "\\x5D")
-        return s
-
     def savetxt(
         self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
     ):
@@ -1263,9 +1257,6 @@ class Pipeline(object):
                           URL, series, index, channel and metadata)
 
         The format of the file is the following:
-        Strings are encoded using a backslash escape sequence. The colon
-        character is encoded as \\x3A if it should happen to appear in a string
-        and any non-printing character is encoded using the \\x## convention.
 
         Line 1: The cookie, identifying this as a CellProfiler pipeline file.
         The header, i
@@ -1335,7 +1326,6 @@ class Pipeline(object):
             attribute_values = [
                 repr(getattr(module, attribute)) for attribute in attributes
             ]
-            attribute_values = [self.encode_txt(v) for v in attribute_values]
             attribute_strings = [
                 attribute + ":" + value
                 for attribute, value in zip(attributes, attribute_values)
@@ -1344,27 +1334,21 @@ class Pipeline(object):
 
             fd.write(
                 "%s:%s\n"
-                % (self.encode_txt(module.module_name), six.text_type(attribute_string))
+                % (module.module_name, six.text_type(attribute_string))
             )
 
             for setting in module.settings():
                 setting_text = setting.text
                 if isinstance(setting_text, six.text_type):
-                    setting_text = setting_text.encode("utf-8")
+                    setting_text = setting_text
                 else:
                     setting_text = str(setting_text)
-
-                encoded_setting_text = self.encode_txt(setting_text)
-
-                encoded_unicode_value = self.encode_txt(
-                    setting.unicode_value.encode("utf-8")
-                )
 
                 fd.write(
                     "    %s:%s\n"
                     % (
-                        six.text_type(encoded_setting_text),
-                        six.text_type(encoded_unicode_value),
+                        six.text_type(setting_text),
+                        six.text_type(setting.unicode_value),
                     )
                 )
         if save_image_plane_details:
@@ -1411,9 +1395,9 @@ class Pipeline(object):
         # a single field named "handles"
         #
         root = {
-            "handles": np.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))
+            "handles": np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(handles.keys())))
         }
-        for key, value in handles.items():
+        for key, value in list(handles.items()):
             root["handles"][key][0, 0] = value
         self.savemat(filename, root)
 
@@ -1481,7 +1465,7 @@ class Pipeline(object):
             image_tools = []
         image_tools.insert(0, "Image tools")
         npy_image_tools = np.ndarray((1, len(image_tools)), dtype=np.dtype("object"))
-        for tool, idx in zip(image_tools, range(0, len(image_tools))):
+        for tool, idx in zip(image_tools, list(range(0, len(image_tools)))):
             npy_image_tools[0, idx] = tool
 
         current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
@@ -1543,7 +1527,7 @@ class Pipeline(object):
                     images[provider.name] = image.image
                 if image.mask is not None:
                     images["CropMask" + provider.name] = image.mask
-            for key, value in image_set.legacy_fields.items():
+            for key, value in list(image_set.legacy_fields.items()):
                 if key != NUMBER_OF_IMAGE_SETS:
                     images[key] = value
 
@@ -1558,10 +1542,10 @@ class Pipeline(object):
                     ] = objects.small_removed_segmented
 
         if len(images):
-            pipeline_dtype = make_cell_struct_dtype(images.keys())
+            pipeline_dtype = make_cell_struct_dtype(list(images.keys()))
             pipeline = np.ndarray((1, 1), dtype=pipeline_dtype)
             handles[PIPELINE] = pipeline
-            for name, image in images.items():
+            for name, image in list(images.items()):
                 pipeline[name][0, 0] = images[name]
 
         no_measurements = (
@@ -1835,7 +1819,7 @@ class Pipeline(object):
         if grouping is not None and set(keys) != set(grouping.keys()):
             raise ValueError(
                 "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"
-                % (", ".join(grouping.keys()), ", ".join(keys))
+                % (", ".join(list(grouping.keys())), ", ".join(keys))
             )
 
         for gn, (grouping_keys, image_numbers) in enumerate(groupings):
@@ -2705,7 +2689,7 @@ class Pipeline(object):
         if not m:
             m = re.findall("\\\\g[<](.+?)[>]", pattern)
         if m:
-            m = filter(
+            m = list(filter(
                 (
                     lambda x: not any(
                         [
@@ -2718,7 +2702,7 @@ class Pipeline(object):
                     )
                 ),
                 m,
-            )
+            ))
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -2966,7 +2950,7 @@ class Pipeline(object):
                     filename = path
                 filename = six.moves.urllib.request.url2pathname(filename)
                 cellprofiler.preferences.report_progress(
-                    uid, float(i) / n, u"Adding %s" % filename
+                    uid, float(i) / n, "Adding %s" % filename
                 )
             pos = bisect.bisect_left(self.__file_list, url, start)
             if pos == len(self.file_list) or self.__file_list[pos] != url:
@@ -3076,7 +3060,7 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
-            map((lambda x: x.strip()), filter((lambda x: len(x) > 0), path_or_fd)),
+            list(map((lambda x: x.strip()), list(filter((lambda x: len(x) > 0), path_or_fd)))),
             add_undo=add_undo,
         )
 
@@ -3460,7 +3444,7 @@ class Pipeline(object):
         idx = module_num - 1
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
         for module, mn in zip(
-            self.__modules[idx + 1 :], range(module_num + 1, len(self.__modules) + 1)
+            self.__modules[idx + 1 :], list(range(module_num + 1, len(self.__modules) + 1))
         ):
             module.module_num = mn
         self.notify_listeners(
@@ -4528,7 +4512,7 @@ def encapsulate_strings_in_arrays(handles):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
-        for field in handles.dtype.fields.keys():
+        for field in list(handles.dtype.fields.keys()):
             if isinstance(handles[field], six.string_types):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field], numpy.ndarray):

@@ -19,3 +19,4 @@ settings.json
 venv/
 *venv/
 .vscode/
+pip-wheel-metadata/

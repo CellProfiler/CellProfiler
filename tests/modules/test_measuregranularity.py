@@ -24,7 +24,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import sys
 
-print(sys.path)
+print((sys.path))
 
 IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"

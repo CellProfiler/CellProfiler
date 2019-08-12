@@ -389,9 +389,13 @@ class TestMeasureImageQuality(unittest.TestCase):
                 m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
             )
             print(
-                feature_name,
-                expected_value,
-                m.get_current_measurement(cellprofiler.measurement.IMAGE, feature_name),
+                (
+                    feature_name,
+                    expected_value,
+                    m.get_current_measurement(
+                        cellprofiler.measurement.IMAGE, feature_name
+                    ),
+                )
             )
             self.assertAlmostEqual(
                 m.get_current_measurement(cellprofiler.measurement.IMAGE, feature_name),
@@ -1091,4 +1095,4 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
             )
 
             np.testing.assert_almost_equal(actual, value, decimal=5)
-            print("{} expected {}, got {}".format(feature, value, actual))
+            print(("{} expected {}, got {}".format(feature, value, actual)))

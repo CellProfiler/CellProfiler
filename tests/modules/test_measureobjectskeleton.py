@@ -45,7 +45,7 @@ class TestMeasureObjectSkeleton(unittest.TestCase):
                     if os.path.exists(p):
                         os.remove(p)
                 except:
-                    print("Failed to remove %s" % p)
+                    print(("Failed to remove %s" % p))
                     traceback.print_exc()
             os.rmdir(self.temp_dir)
 

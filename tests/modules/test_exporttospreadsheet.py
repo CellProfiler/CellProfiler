@@ -1749,7 +1749,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements(mode="memory")
-        metadata_value = "\u2211(Hello, world)"
+        metadata_value = "\\u2211(Hello, world)"
         m.add_image_measurement("my_measurement", metadata_value)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -2448,7 +2448,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         if d is None:
             d = {cpmeas.GROUP_NUMBER: [0], cpmeas.GROUP_INDEX: [0]}
         m = cpmeas.Measurements()
-        for k, v in d.items():
+        for k, v in list(d.items()):
             m[cpmeas.IMAGE, k, np.arange(len(v)) + 1] = v
         image_numbers = m.get_image_numbers()
         if cpmeas.GROUP_NUMBER not in d:

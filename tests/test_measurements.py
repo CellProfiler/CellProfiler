@@ -23,7 +23,7 @@ class TestMeasurements(unittest.TestCase):
         x = cellprofiler.measurement.Measurements()
 
     def test_00_01_wrap_unwrap(self):
-        test0 = ["foo", "foo\\", "foo\\u0384", "foo\u0384"]
+        test0 = ["foo", "foo\\", "foo\\u0384", "foo\\u0384"]
         test = test0 + [x.encode("utf-8") for x in test0]
         # numpy.object_
         test += numpy.array(test0, object).tolist()
@@ -221,7 +221,7 @@ class TestMeasurements(unittest.TestCase):
         r = numpy.random.RandomState()
         m = cellprofiler.measurement.Measurements()
         r.seed(42)
-        vals = ["\u2211" + str(r.uniform()) for _ in range(100)]
+        vals = ["\\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(
@@ -237,7 +237,7 @@ class TestMeasurements(unittest.TestCase):
         r = numpy.random.RandomState()
         m = cellprofiler.measurement.Measurements()
         r.seed(42)
-        vals = ["\u2211" + str(r.uniform()) for _ in range(100)]
+        vals = ["\\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m[cellprofiler.measurement.IMAGE, "Feature", image_number] = vals[
@@ -534,7 +534,7 @@ class TestMeasurements(unittest.TestCase):
             try:
                 os.unlink(filename)
             except:
-                print("Failed to remove file %s" % filename)
+                print(("Failed to remove file %s" % filename))
 
     def test_09_01_group_by_metadata(self):
         m = cellprofiler.measurement.Measurements()
@@ -1098,7 +1098,7 @@ class TestMeasurements(unittest.TestCase):
     def test_18_02_test_add_all_measurements_unicode(self):
         m = cellprofiler.measurement.Measurements()
         try:
-            values = ["Foo", "Bar", "Baz", "-\u221E < \u221E"]
+            values = ["Foo", "Bar", "Baz", "-\\u221E < \\u221E"]
             m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(
@@ -1126,7 +1126,7 @@ class TestMeasurements(unittest.TestCase):
     def test_18_04_test_add_all_measurements_nulls(self):
         m = cellprofiler.measurement.Measurements()
         try:
-            values = ["Foo", "Bar", None, "Baz", None, "-\u221E < \u221E"]
+            values = ["Foo", "Bar", None, "Baz", None, "-\\u221E < \\u221E"]
             m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(

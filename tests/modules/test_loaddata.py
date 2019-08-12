@@ -656,9 +656,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         fmt = "%15s %30s %20s"
-        print(fmt % ("Object", "Feature", "Type"))
+        print((fmt % ("Object", "Feature", "Type")))
         for object_name, feature, coltype in columns:
-            print(fmt % (object_name, feature, coltype))
+            print((fmt % (object_name, feature, coltype)))
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(
                 any(

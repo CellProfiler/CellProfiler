@@ -183,5 +183,5 @@ class TestPreferences_02(unittest.TestCase):
         ] = self.old_headless_config
 
     def test_01_01_default_directory_none(self):
-        print(cellprofiler.preferences.get_default_image_directory())
+        print((cellprofiler.preferences.get_default_image_directory()))
         self.assertTrue(True)

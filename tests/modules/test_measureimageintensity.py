@@ -90,7 +90,7 @@ def test_volume_zeros(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 0.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -119,7 +119,7 @@ def test_volume(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 0.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -152,7 +152,7 @@ def test_volume_and_mask(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 1.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -187,7 +187,7 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
         "Intensity_LowerQuartileIntensity_image_objects": 1.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -226,7 +226,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
         "Intensity_LowerQuartileIntensity_image_objects": 1.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )

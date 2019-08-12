@@ -240,7 +240,7 @@ EditObjectsManually:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             "Foo": {},
         }
 
-        for object_name, category_d in d.items():
+        for object_name, category_d in list(d.items()):
             #
             # Check get_categories for the object
             #
@@ -254,7 +254,7 @@ EditObjectsManually:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 if category != "Foo":
                     self.assertTrue(category in categories)
 
-            for category, expected_features in category_d.items():
+            for category, expected_features in list(category_d.items()):
                 #
                 # check get_measurements for each category
                 #

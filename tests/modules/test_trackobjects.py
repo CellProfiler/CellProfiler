@@ -1115,7 +1115,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         module = workspace.module
         self.assertTrue(isinstance(module, T.TrackObjects))
-        for feature, expected in d.items():
+        for feature, expected in list(d.items()):
             if np.isscalar(expected[0]):
                 mname = module.image_measurement_name(feature)
                 values = m.get_all_measurements(cpmeas.IMAGE, mname)

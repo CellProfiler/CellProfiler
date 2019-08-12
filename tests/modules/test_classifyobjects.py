@@ -118,13 +118,13 @@ class TestClassifyObjects(unittest.TestCase):
             Classify_Measurement1_Bin_3_PctObjectsPerBin=25.0,
         )
         module.run(workspace)
-        for measurement, expected_values in expected_obj.items():
+        for measurement, expected_values in list(expected_obj.items()):
             values = workspace.measurements.get_current_measurement(
                 OBJECTS_NAME, measurement
             )
             self.assertEqual(len(values), 4)
             self.assertTrue(np.all(values == np.array(expected_values)))
-        for measurement, expected_values in expected_img.items():
+        for measurement, expected_values in list(expected_img.items()):
             values = workspace.measurements.get_current_measurement(
                 cpmeas.IMAGE, measurement
             )
@@ -222,13 +222,13 @@ class TestClassifyObjects(unittest.TestCase):
             Classify_Mice=(0, 0, 1, 0),
         )
         module.run(workspace)
-        for measurement, expected_values in expected_obj.items():
+        for measurement, expected_values in list(expected_obj.items()):
             values = workspace.measurements.get_current_measurement(
                 OBJECTS_NAME, measurement
             )
             self.assertEqual(len(values), 4)
             self.assertTrue(np.all(values == np.array(expected_values)))
-        for measurement, expected_values in expected_img.items():
+        for measurement, expected_values in list(expected_img.items()):
             values = workspace.measurements.get_current_measurement(
                 cpmeas.IMAGE, measurement
             )
@@ -331,13 +331,13 @@ class TestClassifyObjects(unittest.TestCase):
                 Classify_Mice=(0, 0, 1, 0),
             )
             module.run(workspace)
-            for measurement, expected_values in expected_obj.items():
+            for measurement, expected_values in list(expected_obj.items()):
                 values = workspace.measurements.get_current_measurement(
                     OBJECTS_NAME, measurement
                 )
                 self.assertEqual(len(values), 4)
                 self.assertTrue(np.all(values == np.array(expected_values)))
-            for measurement, expected_values in expected_img.items():
+            for measurement, expected_values in list(expected_img.items()):
                 values = workspace.measurements.get_current_measurement(
                     cpmeas.IMAGE, measurement
                 )

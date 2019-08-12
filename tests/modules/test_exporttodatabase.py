@@ -1788,7 +1788,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                         cursor.execute(statement)
                     except Exception:
                         traceback.print_exc()
-                        print("Failed to drop table %s" % table_name)
+                        print(("Failed to drop table %s" % table_name))
         except:
             traceback.print_exc()
             print("Failed to drop all tables")
@@ -4963,7 +4963,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertRaises(StopIteration, self.cursor.__next__)
             properties = module.get_property_file_text(workspace)
             self.assertEqual(len(properties), 1)
-            for k, v in properties[0].properties.items():
+            for k, v in list(properties[0].properties.items()):
                 statement = """
                 select max(value) from Experiment_Properties where
                 field = '%s' and experiment_id = %d and object_name = '%s'
@@ -5010,7 +5010,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertRaises(StopIteration, self.cursor.__next__)
             properties = module.get_property_file_text(workspace)
             self.assertEqual(len(properties), 2)
-            for k, v in properties[0].properties.items():
+            for k, v in list(properties[0].properties.items()):
                 statement = """
                 select max(value) from Experiment_Properties where
                 field = '%s' and experiment_id = %d and object_name = '%s'
@@ -5624,7 +5624,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     os.remove(os.path.join(output_dir, filename))
                 os.rmdir(output_dir)
             except:
-                print("Failed to remove %s" % output_dir)
+                print(("Failed to remove %s" % output_dir))
 
     def test_15_01_post_run_experiment_measurement_mysql(self):
         if not self.__test_mysql:

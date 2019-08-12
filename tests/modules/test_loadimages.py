@@ -783,11 +783,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print("Failed to remove %s" % p)
+                        print(("Failed to remove %s" % p))
                 try:
                     os.rmdir(directory)
                 except:
-                    print("Failed to remove " + directory)
+                    print(("Failed to remove " + directory))
 
     def test_06_07_subfolders(self):
         """Test recursion down the list of subfolders"""
@@ -814,7 +814,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     os.path.join(directory, filenames[-1][0], filenames[0][0]),
                 )
             except Exception as e:
-                print("ignoring symlink exception:", e)
+                print(("ignoring symlink exception:", e))
             load_images = cellprofiler.modules.loadimages.LoadImages()
             load_images.module_num = 1
             load_images.file_types.value = (
@@ -870,12 +870,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print("Failed to remove " + p)
+                        print(("Failed to remove " + p))
                         traceback.print_exc()
                 try:
                     os.rmdir(path)
                 except:
-                    print("Failed to remove " + path)
+                    print(("Failed to remove " + path))
                     traceback.print_exc()
 
     def test_06_08_some_subfolders(self):
@@ -958,12 +958,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print("Failed to remove " + p)
+                        print(("Failed to remove " + p))
                         traceback.print_exc()
                 try:
                     os.rmdir(path)
                 except:
-                    print("Failed to remove " + path)
+                    print(("Failed to remove " + path))
                     traceback.print_exc()
 
     def get_example_pipeline_data(self):

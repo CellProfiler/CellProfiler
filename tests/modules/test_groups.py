@@ -143,7 +143,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                     (cpmeas.C_URL, "file://images/" + file_name),
                 ):
                     m[cpmeas.IMAGE, feature + "_" + iscd.name, image_number] = value
-                for key, value in metadata.items():
+                for key, value in list(metadata.items()):
                     feature = "_".join((cpmeas.C_METADATA, key))
                     m[cpmeas.IMAGE, feature, image_number] = value
 

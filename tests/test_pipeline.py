@@ -576,7 +576,7 @@ HasImagePlaneDetails:False"""
             try:
                 v.module_name
             except:
-                print("%s needs to define module_name as a class variable" % k)
+                print(("%s needs to define module_name as a class variable" % k))
                 success = False
         self.assertTrue(success)
 
@@ -837,9 +837,9 @@ HasImagePlaneDetails:False"""
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\u2211"
+        module.my_variable.value = "\\\\u2211"
         module.module_num = 1
-        module.notes = "\u03B1\\\u03B2"
+        module.notes = "\\u03B1\\\\u03B2"
         pipeline.add_module(module)
         fd = six.moves.StringIO()
         pipeline.savetxt(fd)
@@ -858,9 +858,9 @@ HasImagePlaneDetails:False"""
         )
         pipeline.loadtxt(deprecated_pipeline_file)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\u2211"
+        module.my_variable.value = "\\\\u2211"
         module.module_num = 1
-        module.notes = "\u03B1\\\u03B2"
+        module.notes = "\\u03B1\\\\u03B2"
         self.assertEqual(len(pipeline.modules()), 1)
         result_module = pipeline.modules()[0]
         self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
@@ -1236,7 +1236,7 @@ HasImagePlaneDetails:False"""
             (
                 ["Well"],
                 ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-                [("foo", 1, 2, 3, {"Well": "\u03b1\u03b2"})],
+                [("foo", 1, 2, 3, {"Well": "\\u03b1\\u03b2"})],
             ),
             ([], [r'"\\foo\"bar","4","5","6"'], [(r'\foo"bar', 4, 5, 6)]),
         )
@@ -1268,7 +1268,7 @@ HasImagePlaneDetails:False"""
                 self.assertEqual(r, e[0])
 
     def test_18_02_write_image_plane_details(self):
-        test_data = ("foo", "\u03b1\u03b2", "".join([chr(i) for i in range(128)]))
+        test_data = ("foo", "\\u03b1\\u03b2", "".join([chr(i) for i in range(128)]))
         fd = six.moves.StringIO()
         cellprofiler.pipeline.write_file_list(fd, test_data)
         fd.seek(0)
@@ -1467,7 +1467,7 @@ def profile_pipeline(pipeline_filename, output_filename=None, always_run=True):
         )
 
     if not os.path.exists(output_filename) or always_run:
-        print("Profiling %s" % pipeline_filename)
+        print(("Profiling %s" % pipeline_filename))
         cProfile.runctx(
             "run_pipeline(pipeline_filename)", globals(), locals(), output_filename
         )

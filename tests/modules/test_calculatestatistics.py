@@ -426,8 +426,9 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         image_set_list = cpi.ImageSetList()
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), m, image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, module, image_set, cpo.ObjectSet(), m, image_set_list
+        )
         return workspace, module
 
     def test_02_02_NAN(self):
@@ -439,20 +440,24 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         mdict = {
             cpmeas.IMAGE: {
                 "Metadata_Controls": [1, 0, -1],
-                "Metadata_Doses": [0, .5, 1]},
+                "Metadata_Doses": [0, 0.5, 1],
+            },
             INPUT_OBJECTS: {
-                TEST_FTR: [np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
-                           np.array([5.3, 2.4, np.NaN, 3.2]),
-                           np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1])]
-            }}
-        workspace, module = self.make_workspace(mdict,
-                                                "Metadata_Controls",
-                                                ["Metadata_Doses"])
+                TEST_FTR: [
+                    np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
+                    np.array([5.3, 2.4, np.NaN, 3.2]),
+                    np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1]),
+                ]
+            },
+        }
+        workspace, module = self.make_workspace(
+            mdict, "Metadata_Controls", ["Metadata_Doses"]
+        )
         module.post_run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
-            feature = '_'.join((category, INPUT_OBJECTS, TEST_FTR))
+            feature = "_".join((category, INPUT_OBJECTS, TEST_FTR))
             value = m.get_experiment_measurement(feature)
             self.assertFalse(np.isnan(value))
 
@@ -463,15 +468,19 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         mdict = {
             cpmeas.IMAGE: {
                 "Metadata_Controls": [1, 0, -1],
-                "Metadata_Doses": [0, .5, 1]},
+                "Metadata_Doses": [0, 0.5, 1],
+            },
             INPUT_OBJECTS: {
-                TEST_FTR: [np.array([1.0, 2.3, 3.4, 2.9]),
-                           np.array([5.3, 2.4, 3.2]),
-                           np.array([3.1, 4.3, 2.2, 1.1, 0.1])]
-            }}
-        workspace, module = self.make_workspace(mdict,
-                                                "Metadata_Controls",
-                                                ["Metadata_Doses"])
+                TEST_FTR: [
+                    np.array([1.0, 2.3, 3.4, 2.9]),
+                    np.array([5.3, 2.4, 3.2]),
+                    np.array([3.1, 4.3, 2.2, 1.1, 0.1]),
+                ]
+            },
+        }
+        workspace, module = self.make_workspace(
+            mdict, "Metadata_Controls", ["Metadata_Doses"]
+        )
         assert isinstance(module, C.CalculateStatistics)
         my_dir = tempfile.mkdtemp()
         my_subdir = os.path.join(my_dir, "foo")

@@ -18,10 +18,10 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
 from centrosome.cpmorphology import centers_of_labels
 
-INPUT_IMAGE_NAME = 'inputimage'
-OUTPUT_IMAGE_NAME = 'outputimage'
-OBJECTS_NAME = 'objects'
-MEASUREMENT_NAME = 'measurement'
+INPUT_IMAGE_NAME = "inputimage"
+OUTPUT_IMAGE_NAME = "outputimage"
+OBJECTS_NAME = "objects"
+MEASUREMENT_NAME = "measurement"
 
 
 class TestDisplayDataOnImage(unittest.TestCase):
@@ -115,8 +115,7 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.color_or_text, D.CT_COLOR)
         self.assertEqual(module.colormap, "jet")
         self.assertFalse(module.wants_image)
-        self.assertEqual(module.color_map_scale_choice,
-                         D.CMS_USE_MEASUREMENT_RANGE)
+        self.assertEqual(module.color_map_scale_choice, D.CMS_USE_MEASUREMENT_RANGE)
         self.assertEqual(module.color_map_scale.min, 0)
         self.assertEqual(module.color_map_scale.max, 1)
 
@@ -174,8 +173,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, D.DisplayDataOnImage))
         self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
         self.assertEqual(module.objects_name, "Nuclei")
-        self.assertEqual(
-                module.measurement, "Texture_AngularSecondMoment_CropBlue_3_0")
+        self.assertEqual(module.measurement, "Texture_AngularSecondMoment_CropBlue_3_0")
         self.assertEqual(module.image_name, "RGBImage")
         self.assertEqual(module.display_image, "Whatever")
         self.assertEqual(module.font_size, 11)
@@ -185,13 +183,11 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.color_or_text, D.CT_COLOR)
         self.assertEqual(module.colormap, "jet")
         self.assertTrue(module.wants_image)
-        self.assertEqual(module.color_map_scale_choice,
-                         D.CMS_MANUAL)
+        self.assertEqual(module.color_map_scale_choice, D.CMS_MANUAL)
         self.assertEqual(module.color_map_scale.min, 0.05)
         self.assertEqual(module.color_map_scale.max, 1.5)
         module = pipeline.modules()[1]
-        self.assertEqual(module.color_map_scale_choice,
-                         D.CMS_USE_MEASUREMENT_RANGE)
+        self.assertEqual(module.color_map_scale_choice, D.CMS_USE_MEASUREMENT_RANGE)
 
     def make_workspace(self, measurement, labels=None, image=None):
         object_set = cpo.ObjectSet()
@@ -231,8 +227,9 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         image_set = image_set_list.get_image_set(0)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
 
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  m, image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, module, image_set, object_set, m, image_set_list
+        )
         return workspace, module
 
     def test_02_01_display_image(self):

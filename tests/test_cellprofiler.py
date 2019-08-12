@@ -13,13 +13,13 @@ import urllib.request
 
 import six.moves
 
-if hasattr(sys, 'frozen'):
+if hasattr(sys, "frozen"):
     ARGLIST_START = [sys.executable]
 else:
     ARGLIST_START = ["-m", "cellprofiler", "-b"]
 
 
-@unittest.skipIf(sys.platform != 'win32', "Skip tests on all but Windows")
+@unittest.skipIf(sys.platform != "win32", "Skip tests on all but Windows")
 class TestCellProfiler(unittest.TestCase):
     def run_cellprofiler(self, *args):
         """Run CellProfiler with the given arguments list
@@ -29,14 +29,20 @@ class TestCellProfiler(unittest.TestCase):
         if hasattr(sys, "frozen"):
             args = [sys.argv[0]] + list(args)
             return subprocess.check_output(args)
-        elif sys.platform == 'darwin':
+        elif sys.platform == "darwin":
             # hopeless to try and find the right homebrew command
             self.skipTest("Can't start Python properly on OS/X + homebrew")
         else:
             test_dir = os.path.dirname(__file__)
             cellprofiler_dir = os.path.dirname(test_dir)
             root_dir = os.path.dirname(cellprofiler_dir)
-            args = [sys.executable, "-m", "cellprofiler", "--do-not-build", "--do-not-fetch"] + list(args)
+            args = [
+                sys.executable,
+                "-m",
+                "cellprofiler",
+                "--do-not-build",
+                "--do-not-fetch",
+            ] + list(args)
             return subprocess.check_output(args, cwd=root_dir)
 
     def test_01_01_html(self):
@@ -48,12 +54,12 @@ class TestCellProfiler(unittest.TestCase):
         finally:
             shutil.rmtree(path)
 
-    @unittest.skipIf(hasattr(sys, "frozen"),
-                     "Code statistics are not available in frozen-mode")
+    @unittest.skipIf(
+        hasattr(sys, "frozen"), "Code statistics are not available in frozen-mode"
+    )
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
-        fake_stdout = six.moves.StringIO(
-                self.run_cellprofiler("--code-statistics"))
+        fake_stdout = six.moves.StringIO(self.run_cellprofiler("--code-statistics"))
         fake_stdout.seek(0)
         found_module_stats = False
         found_setting_stats = False
@@ -71,10 +77,15 @@ class TestCellProfiler(unittest.TestCase):
 
     def test_01_03_version(self):
         import cellprofiler
+
         output = self.run_cellprofiler("--version")
-        version = dict([tuple(line.strip().split(" "))
-                        for line in output.split("\n")
-                        if " " in line])
+        version = dict(
+            [
+                tuple(line.strip().split(" "))
+                for line in output.split("\n")
+                if " " in line
+            ]
+        )
         self.assertEqual(version["CellProfiler"], cellprofiler.__version__)
 
     def test_02_01_run_headless(self):
@@ -85,35 +96,51 @@ class TestCellProfiler(unittest.TestCase):
             #
             # Run with a .cp file
             #
-            fly_pipe = \
-                "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
+            fly_pipe = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
             urllib.request.URLopener().open(fly_pipe).close()
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
-            self.run_cellprofiler("-c", "-r",
-                                  "-o", output_directory,
-                                  "-p", fly_pipe,
-                                  "-d", done_file,
-                                  "-t", temp_directory,
-                                  "-f", "1",
-                                  "-l", "1",
-                                  measurements_file)
+            self.run_cellprofiler(
+                "-c",
+                "-r",
+                "-o",
+                output_directory,
+                "-p",
+                fly_pipe,
+                "-d",
+                done_file,
+                "-t",
+                temp_directory,
+                "-f",
+                "1",
+                "-l",
+                "1",
+                measurements_file,
+            )
             import cellprofiler.preferences as cpprefs
+
             self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))
             #
             # Re-run using the measurements file.
             #
             m2_file = os.path.join(output_directory, "M2.h5")
-            self.run_cellprofiler("-c", "-r",
-                                  "-o", output_directory,
-                                  "-f", "1",
-                                  "-l", "1",
-                                  "-p", measurements_file,
-                                  m2_file)
+            self.run_cellprofiler(
+                "-c",
+                "-r",
+                "-o",
+                output_directory,
+                "-f",
+                "1",
+                "-l",
+                "1",
+                "-p",
+                measurements_file,
+                m2_file,
+            )
             self.assertTrue(os.path.exists(m2_file))
         except IOError as e:
-            if e.args[0] != 'http error':
+            if e.args[0] != "http error":
                 raise e
 
             def bad_url(e=e):

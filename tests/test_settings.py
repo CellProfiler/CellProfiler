@@ -24,7 +24,9 @@ class TestIntegerSetting(unittest.TestCase):
         s = cellprofiler.setting.Integer("foo", value=5)
         s.value_text = "bad"
         self.assertEqual(s, 5)
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_01_good_min(self):
         s = cellprofiler.setting.Integer("foo", value=5, minval=0)
@@ -36,7 +38,9 @@ class TestIntegerSetting(unittest.TestCase):
         s = cellprofiler.setting.Integer("foo", value=5, minval=0)
         s.value_text = "-1"
         self.assertEqual(s, 5)
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_03_good_max(self):
         s = cellprofiler.setting.Integer("foo", value=5, maxval=10)
@@ -48,7 +52,9 @@ class TestIntegerSetting(unittest.TestCase):
         s = cellprofiler.setting.Integer("foo", value=5, maxval=10)
         s.value_text = "11"
         self.assertEqual(s.value, 5)
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
 
 class TestFloatSetting(unittest.TestCase):
@@ -71,7 +77,9 @@ class TestFloatSetting(unittest.TestCase):
         s = cellprofiler.setting.Float("foo", value=5)
         s.value_text = "bad"
         self.assertEqual(s, 5)
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_01_04_set_text_value(self):
         s = cellprofiler.setting.Float("foo", value=5)
@@ -89,7 +97,9 @@ class TestFloatSetting(unittest.TestCase):
         s = cellprofiler.setting.Float("foo", value=5, minval=0)
         s.value_text = "-1"
         self.assertEqual(s, 5)
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_03_good_max(self):
         s = cellprofiler.setting.Float("foo", value=5, maxval=10)
@@ -101,7 +111,9 @@ class TestFloatSetting(unittest.TestCase):
         s = cellprofiler.setting.Float("foo", value=5, maxval=10)
         s.value_text = "11"
         self.assertEqual(s, 5)
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
 
 class TestIntegerRange(unittest.TestCase):
@@ -129,7 +141,9 @@ class TestIntegerRange(unittest.TestCase):
         self.assertEqual(s.max, 15)
         self.assertEqual(s.min_text, "a2")
         self.assertEqual(s.max_text, "15")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_01_04_set_max(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15))
@@ -147,7 +161,9 @@ class TestIntegerRange(unittest.TestCase):
         self.assertEqual(s.max, 15)
         self.assertEqual(s.min_text, "1")
         self.assertEqual(s.max_text, "a2")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_01_good_min(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15), minval=0)
@@ -160,7 +176,9 @@ class TestIntegerRange(unittest.TestCase):
         s.value_text = s.compose_min_text("-1")
         self.assertEqual(s.min, 0)
         self.assertEqual(s.min_text, "-1")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_03_good_max(self):
         s = cellprofiler.setting.IntegerRange("foo", (1, 15), maxval=20)
@@ -173,7 +191,9 @@ class TestIntegerRange(unittest.TestCase):
         s.value_text = s.compose_max_text("21")
         self.assertEqual(s.max, 20)
         self.assertEqual(s.max_text, "21")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
 
 class TestFloatRange(unittest.TestCase):
@@ -201,7 +221,9 @@ class TestFloatRange(unittest.TestCase):
         self.assertEqual(s.max, 15)
         self.assertEqual(s.min_text, "a2")
         self.assertEqual(s.max_text, "15.0")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_01_04_set_max(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15))
@@ -219,7 +241,9 @@ class TestFloatRange(unittest.TestCase):
         self.assertEqual(s.max, 15)
         self.assertEqual(s.min_text, "1.0")
         self.assertEqual(s.max_text, "a2")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_01_good_min(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15), minval=0)
@@ -232,7 +256,9 @@ class TestFloatRange(unittest.TestCase):
         s.value_text = s.compose_min_text("-1")
         self.assertEqual(s.min, 0)
         self.assertEqual(s.min_text, "-1")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
     def test_02_03_good_max(self):
         s = cellprofiler.setting.FloatRange("foo", (1, 15), maxval=20)
@@ -247,18 +273,55 @@ class TestFloatRange(unittest.TestCase):
         s.value_text = s.compose_max_text("21")
         self.assertEqual(s.max, 20)
         self.assertEqual(s.max_text, "21")
-        self.assertRaises(cellprofiler.setting.ValidationError, (lambda: s.test_valid(None)))
+        self.assertRaises(
+            cellprofiler.setting.ValidationError, (lambda: s.test_valid(None))
+        )
 
 
 class TestIntegerOrUnboundedRange(unittest.TestCase):
     def test_01_01_default(self):
-        for minval, maxval, expected_min, expected_min_text, \
-            expected_max, expected_max_text, expected_unbounded_max, \
-            expected_abs in (
-                (0, cellprofiler.setting.END, 0, "0", cellprofiler.setting.END, cellprofiler.setting.END, True, True),
-                (cellprofiler.setting.BEGIN, 15, 0, cellprofiler.setting.BEGIN, 15, "15", False, True),
-                (0, -15, 0, "0", -15, "15", False, False),
-                (0, "-" + cellprofiler.setting.END, 0, "0", cellprofiler.setting.END, cellprofiler.setting.END, True, False)):
+        for (
+            minval,
+            maxval,
+            expected_min,
+            expected_min_text,
+            expected_max,
+            expected_max_text,
+            expected_unbounded_max,
+            expected_abs,
+        ) in (
+            (
+                0,
+                cellprofiler.setting.END,
+                0,
+                "0",
+                cellprofiler.setting.END,
+                cellprofiler.setting.END,
+                True,
+                True,
+            ),
+            (
+                cellprofiler.setting.BEGIN,
+                15,
+                0,
+                cellprofiler.setting.BEGIN,
+                15,
+                "15",
+                False,
+                True,
+            ),
+            (0, -15, 0, "0", -15, "15", False, False),
+            (
+                0,
+                "-" + cellprofiler.setting.END,
+                0,
+                "0",
+                cellprofiler.setting.END,
+                cellprofiler.setting.END,
+                True,
+                False,
+            ),
+        ):
             s = cellprofiler.setting.IntegerOrUnboundedRange("foo", (minval, maxval))
             self.assertEqual(s.min, expected_min)
             self.assertEqual(s.max, expected_max)
@@ -292,7 +355,9 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
         self.assertEqual(s.max, 15)
 
     def test_01_06_set_abs_end(self):
-        s = cellprofiler.setting.IntegerOrUnboundedRange("foo", (0, "-" + cellprofiler.setting.END))
+        s = cellprofiler.setting.IntegerOrUnboundedRange(
+            "foo", (0, "-" + cellprofiler.setting.END)
+        )
         self.assertFalse(s.is_abs())
         s.value_text = s.compose_abs()
         self.assertTrue(s.is_abs())
@@ -305,7 +370,9 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
         self.assertEqual(s.max, -15)
 
     def test_01_06_set_rel_end(self):
-        s = cellprofiler.setting.IntegerOrUnboundedRange("foo", (0, cellprofiler.setting.END))
+        s = cellprofiler.setting.IntegerOrUnboundedRange(
+            "foo", (0, cellprofiler.setting.END)
+        )
         s.value_text = s.compose_rel()
         self.assertFalse(s.is_abs())
         self.assertEqual(s.max, cellprofiler.setting.END)
@@ -313,21 +380,31 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
 
 class TestFilterSetting(unittest.TestCase):
     def test_01_01_simple(self):
-        filters = [cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a: a == "x", [])]
+        filters = [
+            cellprofiler.setting.Filter.FilterPredicate(
+                "foo", "Foo", lambda a: a == "x", []
+            )
+        ]
         f = cellprofiler.setting.Filter("", filters, "foo")
         self.assertTrue(f.evaluate("x"))
         self.assertFalse(f.evaluate("y"))
 
     def test_01_02_compound(self):
         f2 = cellprofiler.setting.Filter.FilterPredicate("bar", "Bar", lambda: "y", [])
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b(), [f2])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo", "Foo", lambda a, b: a == b(), [f2]
+        )
         f = cellprofiler.setting.Filter("", [f1], "foo bar")
         self.assertFalse(f.evaluate("x"))
         self.assertTrue(f.evaluate("y"))
 
     def test_01_03_literal(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1], 'foo "x"')
         self.assertTrue(f.evaluate("x"))
         self.assertFalse(f.evaluate("y"))
@@ -336,32 +413,52 @@ class TestFilterSetting(unittest.TestCase):
         self.assertFalse(f.evaluate("x"))
 
     def test_01_04_escaped_literal(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1], 'foo "\\\\"')
         self.assertTrue(f.evaluate("\\"))
         self.assertFalse(f.evaluate("/"))
 
     def test_01_05_literal_with_quote(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1], 'foo "\\""')
-        self.assertTrue(f.evaluate("\""))
+        self.assertTrue(f.evaluate('"'))
         self.assertFalse(f.evaluate("/"))
 
     def test_01_06_parentheses(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("eq", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
-        f2 = cellprofiler.setting.Filter.FilterPredicate("ne", "Bar", lambda a, b: a != b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "eq",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
+        f2 = cellprofiler.setting.Filter.FilterPredicate(
+            "ne",
+            "Bar",
+            lambda a, b: a != b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1, f2], 'and (eq "x") (ne "y")')
         self.assertTrue(f.evaluate("x"))
         self.assertFalse(f.evaluate("y"))
         self.assertFalse(f.evaluate("z"))
 
     def test_01_07_or(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("eq", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "eq",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
 
         f = cellprofiler.setting.Filter("", [f1], 'or (eq "x") (eq "y")')
         self.assertTrue(f.evaluate("x"))
@@ -369,28 +466,42 @@ class TestFilterSetting(unittest.TestCase):
         self.assertFalse(f.evaluate("z"))
 
     def test_02_01_build_one(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a: a == "foo", [])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo", "Foo", lambda a: a == "foo", []
+        )
         f = cellprofiler.setting.Filter("", [f1])
         f.build([f1])
         self.assertEqual(f.value, "foo")
 
     def test_02_02_build_literal(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1])
         f.build([f1, "bar"])
         self.assertEqual(f.value, 'foo "bar"')
 
     def test_02_03_build_nested(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1])
         f.build([cellprofiler.setting.Filter.OR_PREDICATE, [f1, "bar"], [f1, "baz"]])
         self.assertEqual(f.value, 'or (foo "bar") (foo "baz")')
 
     def test_02_04_build_escaped_literal(self):
-        f1 = cellprofiler.setting.Filter.FilterPredicate("foo", "Foo", lambda a, b: a == b,
-                                                         [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            "foo",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+        )
         f = cellprofiler.setting.Filter("", [f1])
         f.build([f1, '"12\\'])
         self.assertEqual(f.value, 'foo "\\"12\\\\"')
@@ -400,7 +511,9 @@ class TestFilterSetting(unittest.TestCase):
     def test_02_05_build_escaped_symbol(self):
         ugly = '(\\")'
         expected = '\\(\\\\\\"\\)'
-        f1 = cellprofiler.setting.Filter.FilterPredicate(ugly, "Foo", lambda a, b: a == b, [])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            ugly, "Foo", lambda a, b: a == b, []
+        )
         f = cellprofiler.setting.Filter("", [f1])
         f.build([f1])
         self.assertEqual(f.value, '\\(\\\\\\"\\)')
@@ -408,7 +521,9 @@ class TestFilterSetting(unittest.TestCase):
     def test_02_06_parse_escaped_symbol(self):
         ugly = '(\\")'
         encoded_ugly = '\\(\\\\\\"\\)'
-        f1 = cellprofiler.setting.Filter.FilterPredicate(ugly, "Foo", lambda a, b: a == b, [])
+        f1 = cellprofiler.setting.Filter.FilterPredicate(
+            ugly, "Foo", lambda a, b: a == b, []
+        )
         f = cellprofiler.setting.Filter("", [f1], encoded_ugly)
         result = f.parse()
         self.assertEqual(len(result), 1)

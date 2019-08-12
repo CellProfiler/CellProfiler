@@ -8,16 +8,18 @@ import numpy as np
 
 gray4 = np.array([[0, 0, 1, 1], [0, 0, 1, 1], [0, 2, 2, 2], [2, 2, 3, 3]])
 gray = gray4 / (1.0 * gray4.max())
-labels = np.ones((4, 4), dtype='int32')
+labels = np.ones((4, 4), dtype="int32")
 
 
 # labels = np.array[[1,1,1,1],[1,1,1,2],[1,1,2,2],[1,2,2,2]], dtype=int32)
 
+
 class TestHaralick(unittest.TestCase):
     def test_quantize(self):
         q = haralick.quantize(gray, 7)
-        correct = np.array([[0, 0, 2, 2], [0, 0, 2, 2], [0, 4, 4, 4], [4, 4, 6, 6]],
-                           dtype='i4')
+        correct = np.array(
+            [[0, 0, 2, 2], [0, 0, 2, 2], [0, 4, 4, 4], [4, 4, 6, 6]], dtype="i4"
+        )
         self.assertTrue((q == correct).all())
 
     def test_quantize_fixpoint(self):
@@ -30,7 +32,9 @@ class TestHaralick(unittest.TestCase):
 
     def test_cooccurrence(self):
         P, levels = haralick.cooccurrence(gray4, labels, 0, 1)
-        correct = np.array([[[2, 2, 1, 0], [0, 2, 0, 0], [0, 0, 3, 1], [0, 0, 0, 1]]], float)
+        correct = np.array(
+            [[[2, 2, 1, 0], [0, 2, 0, 0], [0, 0, 3, 1], [0, 0, 0, 1]]], float
+        )
         correct = correct / np.sum(correct)
         self.assertEqual(levels, 4)
         self.assertTrue((P == correct).all())
@@ -116,7 +120,7 @@ class TestHaralick(unittest.TestCase):
         labels = np.ones((10, 20), int)
         np.random.seed(12)
         image = np.random.uniform(size=(10, 20)).astype(np.float32)
-        image[:, :10] *= .5
+        image[:, :10] *= 0.5
         mask = np.ones((10, 20), bool)
         mask[:, 10:] = False
         # Masked haralick

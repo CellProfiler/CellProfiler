@@ -23,11 +23,11 @@ def test_run(image, module, image_set, workspace):
 
     desired = skimage.restoration.denoise_nl_means(
         fast_mode=True,
-        h = 0.1,
+        h=0.1,
         image=image.pixel_data,
         multichannel=image.multichannel,
         patch_distance=11,
-        patch_size=7
+        patch_size=7,
     )
 
     numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)

@@ -40,8 +40,12 @@ class TestMatchTemplate:
         return cellprofiler.pipeline.Pipeline()
 
     @pytest.fixture()
-    def workspace(self, pipeline, module, image_set, object_set, measurements, image_set_list):
-        return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set, measurements, image_set_list)
+    def workspace(
+        self, pipeline, module, image_set, object_set, measurements, image_set_list
+    ):
+        return cellprofiler.workspace.Workspace(
+            pipeline, module, image_set, object_set, measurements, image_set_list
+        )
 
     def test_run(self, module, image_set, workspace):
         coins = skimage.data.coins()
@@ -54,6 +58,8 @@ class TestMatchTemplate:
 
         module.output_image_name.value = "output"
 
-        module.template_name.value = os.path.join(os.path.dirname(__file__), "../resources/template.png")
+        module.template_name.value = os.path.join(
+            os.path.dirname(__file__), "../resources/template.png"
+        )
 
         module.run(workspace)

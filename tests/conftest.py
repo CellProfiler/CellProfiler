@@ -32,13 +32,9 @@ def pytest_sessionfinish(session, exitstatus):
     params=[
         (skimage.data.camera()[0:128, 0:128], 2),
         (skimage.data.astronaut()[0:128, 0:128, :], 2),
-        (numpy.tile(skimage.data.camera()[0:32, 0:32], (2, 1)).reshape(2, 32, 32), 3)
+        (numpy.tile(skimage.data.camera()[0:32, 0:32], (2, 1)).reshape(2, 32, 32), 3),
     ],
-    ids=[
-        "grayscale_image",
-        "multichannel_image",
-        "grayscale_volume"
-    ]
+    ids=["grayscale_image", "multichannel_image", "grayscale_volume"],
 )
 def image(request):
     data, dimensions = request.param
@@ -94,18 +90,32 @@ def pipeline():
 
 @pytest.fixture(scope="function")
 def workspace(pipeline, module, image_set, object_set, measurements, image_set_list):
-    return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set, measurements, image_set_list)
+    return cellprofiler.workspace.Workspace(
+        pipeline, module, image_set, object_set, measurements, image_set_list
+    )
 
 
 @pytest.fixture(scope="function")
-def workspace_empty(pipeline, module, image_set_empty, object_set_empty, measurements, image_set_list):
-    return cellprofiler.workspace.Workspace(pipeline, module, image_set_empty, object_set_empty, measurements, image_set_list)
+def workspace_empty(
+    pipeline, module, image_set_empty, object_set_empty, measurements, image_set_list
+):
+    return cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set_empty,
+        object_set_empty,
+        measurements,
+        image_set_list,
+    )
 
 
 @pytest.fixture(scope="function")
-def workspace_with_data(pipeline, module, image_set, object_set_with_data, measurements, image_set_list):
-    return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set_with_data,
-                                            measurements, image_set_list)
+def workspace_with_data(
+    pipeline, module, image_set, object_set_with_data, measurements, image_set_list
+):
+    return cellprofiler.workspace.Workspace(
+        pipeline, module, image_set, object_set_with_data, measurements, image_set_list
+    )
 
 
 @pytest.fixture(scope="function")

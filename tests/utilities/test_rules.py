@@ -56,8 +56,11 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 0,
-                                     np.array([[1.0, -1.0], [-1.0, 1.0]]))]
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -1.0], [-1.0, 1.0]])
+            )
+        ]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 0)
         self.assertEqual(score.shape[1], 2)
@@ -66,8 +69,11 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 0,
-                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]])
+            )
+        ]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
@@ -78,8 +84,15 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 2.0,
-                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME,
+                M_FEATURES[0],
+                ">",
+                2.0,
+                np.array([[1.0, -0.5], [-2.0, 0.6]]),
+            )
+        ]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
@@ -90,23 +103,34 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([np.NaN], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 2.0,
-                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME,
+                M_FEATURES[0],
+                ">",
+                2.0,
+                np.array([[1.0, -0.5], [-2.0, 0.6]]),
+            )
+        ]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertTrue(score[0, 0], -2)
-        self.assertTrue(score[0, 1], .6)
+        self.assertTrue(score[0, 1], 0.6)
 
     def test_03_01_score_two_rules(self):
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         m.add_measurement(OBJECT_NAME, M_FEATURES[1], np.array([-1.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 0,
-                                     np.array([[1.0, -0.5], [-2.0, 0.6]])),
-                        R.Rules.Rule(OBJECT_NAME, M_FEATURES[1], ">", 0,
-                                     np.array([[1.5, -0.7], [-2.3, 0.9]]))]
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]])
+            ),
+            R.Rules.Rule(
+                OBJECT_NAME, M_FEATURES[1], ">", 0, np.array([[1.5, -0.7], [-2.3, 0.9]])
+            ),
+        ]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
@@ -117,8 +141,15 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5, 2.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], "<", 2.0,
-                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME,
+                M_FEATURES[0],
+                "<",
+                2.0,
+                np.array([[1.0, -0.5], [-2.0, 0.6]]),
+            )
+        ]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 2)
         self.assertEqual(score.shape[1], 2)

@@ -19,8 +19,8 @@ import centrosome.filter as FIL
 from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 
-INPUT_IMAGE_NAME = 'inputimage'
-OUTPUT_IMAGE_NAME = 'outputimage'
+INPUT_IMAGE_NAME = "inputimage"
+OUTPUT_IMAGE_NAME = "outputimage"
 
 
 class TestEnhanceEdges(unittest.TestCase):
@@ -33,15 +33,18 @@ class TestEnhanceEdges(unittest.TestCase):
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  cpmeas.Measurements(),
-                                  image_set_list)
-        image_set.add(INPUT_IMAGE_NAME,
-                      cpi.Image(image) if mask is None
-                      else cpi.Image(image, mask))
+        workspace = cpw.Workspace(
+            pipeline,
+            module,
+            image_set,
+            object_set,
+            cpmeas.Measurements(),
+            image_set_list,
+        )
+        image_set.add(
+            INPUT_IMAGE_NAME,
+            cpi.Image(image) if mask is None else cpi.Image(image, mask),
+        )
         return workspace, module
 
     def test_02_01_sobel_horizontal(self):
@@ -131,10 +134,9 @@ class TestEnhanceEdges(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         sigma = 2.0
-        expected = FIL.laplacian_of_gaussian(image,
-                                             np.ones(image.shape, bool),
-                                             int(sigma * 4) + 1,
-                                             sigma).astype(np.float32)
+        expected = FIL.laplacian_of_gaussian(
+            image, np.ones(image.shape, bool), int(sigma * 4) + 1, sigma
+        ).astype(np.float32)
 
         self.assertTrue(np.all(output.pixel_data == expected))
 
@@ -149,10 +151,9 @@ class TestEnhanceEdges(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         sigma = 4.0
-        expected = FIL.laplacian_of_gaussian(image,
-                                             np.ones(image.shape, bool),
-                                             int(sigma * 4) + 1,
-                                             sigma).astype(np.float32)
+        expected = FIL.laplacian_of_gaussian(
+            image, np.ones(image.shape, bool), int(sigma * 4) + 1, sigma
+        ).astype(np.float32)
 
         self.assertTrue(np.all(output.pixel_data == expected))
 
@@ -161,7 +162,7 @@ class TestEnhanceEdges(unittest.TestCase):
         i, j = np.mgrid[-20:20, -20:20]
         image = np.logical_and(i > j, i ** 2 + j ** 2 < 300).astype(np.float32)
         np.random.seed(0)
-        image = image * .5 + np.random.uniform(size=image.shape) * .3
+        image = image * 0.5 + np.random.uniform(size=image.shape) * 0.3
         image = np.ascontiguousarray(image, np.float32)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_CANNY
@@ -177,8 +178,8 @@ class TestEnhanceEdges(unittest.TestCase):
     def test_07_01_kirsch(self):
         r = np.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])
         i, j = np.mgrid[-20:20, -20:20]
-        image = (np.sqrt(i * i + j * j) <= 10).astype(float) * .5
-        image = image + r.uniform(size=image.shape) * .1
+        image = (np.sqrt(i * i + j * j) <= 10).astype(float) * 0.5
+        image = image + r.uniform(size=image.shape) * 0.1
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_KIRSCH
         module.run(workspace)

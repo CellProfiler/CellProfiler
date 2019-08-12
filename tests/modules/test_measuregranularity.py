@@ -21,8 +21,8 @@ import sys
 
 print(sys.path)
 
-IMAGE_NAME = 'myimage'
-OBJECTS_NAME = 'myobjects'
+IMAGE_NAME = "myimage"
+OBJECTS_NAME = "myobjects"
 
 
 class TestMeasureGranularity(unittest.TestCase):
@@ -62,9 +62,18 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         self.assertEqual(len(module.images), 2)
-        for image_setting, image_name, subsample_size, bsize, elsize, glen, objs, in \
-                ((module.images[0], 'DNA', .25, .25, 10, 16, ("Nuclei", "Cells")),
-                 (module.images[1], 'Actin', .33, .50, 12, 20, ("Nuclei", "Cells", "Cytoplasm"))):
+        for image_setting, image_name, subsample_size, bsize, elsize, glen, objs in (
+            (module.images[0], "DNA", 0.25, 0.25, 10, 16, ("Nuclei", "Cells")),
+            (
+                module.images[1],
+                "Actin",
+                0.33,
+                0.50,
+                12,
+                20,
+                ("Nuclei", "Cells", "Cytoplasm"),
+            ),
+        ):
             # self.assertTrue(isinstance(image_setting, M.MeasureGranularity))
             self.assertEqual(image_setting.image_name, image_name)
             self.assertAlmostEqual(image_setting.subsample_size.value, subsample_size)
@@ -73,12 +82,20 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertEqual(image_setting.granular_spectrum_length.value, glen)
             self.assertEqual(len(image_setting.objects), len(objs))
             self.assertEqual(image_setting.object_count.value, len(objs))
-            self.assertTrue(all([ob.objects_name.value in objs
-                                 for ob in image_setting.objects]))
+            self.assertTrue(
+                all([ob.objects_name.value in objs for ob in image_setting.objects])
+            )
 
-    def make_pipeline(self, image, mask, subsample_size, image_sample_size,
-                      element_size, granular_spectrum_length,
-                      labels=None):
+    def make_pipeline(
+        self,
+        image,
+        mask,
+        subsample_size,
+        image_sample_size,
+        element_size,
+        granular_spectrum_length,
+        labels=None,
+    ):
         """Make a pipeline with a MeasureGranularity module
 
         image - measure granularity on this image
@@ -113,16 +130,21 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             object_set.add_objects(objects, OBJECTS_NAME)
             image_setting.add_objects()
             image_setting.objects[0].objects_name.value = OBJECTS_NAME
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline,
+            module,
+            image_set,
+            object_set,
+            cpmeas.Measurements(),
+            image_set_list,
+        )
         return module, workspace
 
     def test_02_00_all_masked(self):
         """Run on a totally masked image"""
-        module, workspace = self.make_pipeline(np.zeros((40, 40)),
-                                               np.zeros((40, 40), bool),
-                                               .25, .25, 10, 16)
+        module, workspace = self.make_pipeline(
+            np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16
+        )
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -135,8 +157,9 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
 
     def test_02_01_zeros(self):
         """Run on an image of all zeros"""
-        module, workspace = self.make_pipeline(np.zeros((40, 40)), None,
-                                               .25, .25, 10, 16)
+        module, workspace = self.make_pipeline(
+            np.zeros((40, 40)), None, 0.25, 0.25, 10, 16
+        )
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -155,8 +178,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         i, j = np.mgrid[0:10, 0:10]
         image = (i % 2 == j % 2).astype(float)
         expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        module, workspace = self.make_pipeline(image, None,
-                                               1, 1, 10, 16)
+        module, workspace = self.make_pipeline(image, None, 1, 1, 10, 16)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -179,8 +201,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         # need an additional two erosions before disappearing
         #
         expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        module, workspace = self.make_pipeline(image, None,
-                                               .5, 1, 10, 16)
+        module, workspace = self.make_pipeline(image, None, 0.5, 1, 10, 16)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -201,14 +222,13 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         #
         # Add in a background offset
         #
-        image = image * .5 + .5
+        image = image * 0.5 + 0.5
         #
         # The 4x4 blocks need two erosions before disappearing. The corners
         # need an additional two erosions before disappearing
         #
         expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        module, workspace = self.make_pipeline(image, None,
-                                               1, .5, 10, 16)
+        module, workspace = self.make_pipeline(image, None, 1, 0.5, 10, 16)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -234,26 +254,25 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         # Scale the pixels down so we have some dynamic range and offset
         # so the background is .2
         #
-        image = image * .5 + .2
+        image = image * 0.5 + 0.2
         #
         # Paint all background pixels on the edge and 1 in to be 0
         #
-        image[:, :2][image[:, :2] < .5] = 0
+        image[:, :2][image[:, :2] < 0.5] = 0
         #
         # Paint all of the foreground pixels on the edge to be .5
         #
-        image[:, 0][image[:, 0] > .5] = .5
+        image[:, 0][image[:, 0] > 0.5] = 0.5
         #
         # The pixel at 0,0 doesn't get a background of zero
         #
-        image[0, 0] = .7
+        image[0, 0] = 0.7
         #
         # The 4x4 blocks need two erosions before disappearing. The corners
         # need an additional two erosions before disappearing
         #
         expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        module, workspace = self.make_pipeline(image, None,
-                                               1, 1, 5, 16)
+        module, workspace = self.make_pipeline(image, None, 1, 1, 5, 16)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -268,10 +287,9 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         """Run on objects and a totally masked image"""
         labels = np.ones((40, 40), int)
         labels[20:, :] = 2
-        module, workspace = self.make_pipeline(np.zeros((40, 40)),
-                                               np.zeros((40, 40), bool),
-                                               .25, .25, 10, 16,
-                                               labels)
+        module, workspace = self.make_pipeline(
+            np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16, labels
+        )
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -281,17 +299,15 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertTrue(np.isnan(value))
-            values = m.get_current_measurement(OBJECTS_NAME,
-                                               feature)
+            values = m.get_current_measurement(OBJECTS_NAME, feature)
             self.assertEqual(len(values), 2)
             self.assertTrue(np.all(np.isnan(values)) or np.all(values == 0))
 
     def test_05_02_no_objects(self):
         """Run on a labels matrix with no objects"""
-        module, workspace = self.make_pipeline(np.zeros((40, 40)),
-                                               None,
-                                               .25, .25, 10, 16,
-                                               np.zeros((40, 40), int))
+        module, workspace = self.make_pipeline(
+            np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, np.zeros((40, 40), int)
+        )
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -301,16 +317,16 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, 0)
-            values = m.get_current_measurement(OBJECTS_NAME,
-                                               feature)
+            values = m.get_current_measurement(OBJECTS_NAME, feature)
             self.assertEqual(len(values), 0)
 
     def test_05_03_zeros(self):
         """Run on an image of all zeros"""
         labels = np.ones((40, 40), int)
         labels[20:, :] = 2
-        module, workspace = self.make_pipeline(np.zeros((40, 40)), None,
-                                               .25, .25, 10, 16, labels)
+        module, workspace = self.make_pipeline(
+            np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, labels
+        )
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -334,8 +350,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         labels = np.ones((40, 30), int)
         labels[20:, :] = 2
-        module, workspace = self.make_pipeline(image, None,
-                                               1, 1, 10, 16, labels)
+        module, workspace = self.make_pipeline(image, None, 1, 1, 10, 16, labels)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
@@ -363,8 +378,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         labels = np.ones((80, 80), int)
         labels[40:, :] = 2
-        module, workspace = self.make_pipeline(image, None,
-                                               .5, 1, 10, 16, labels)
+        module, workspace = self.make_pipeline(image, None, 0.5, 1, 10, 16, labels)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements

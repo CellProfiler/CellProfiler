@@ -246,8 +246,12 @@ class TestDirectoryPath(unittest.TestCase):
                     os.mkdir(os.path.join(directory, str(i), str(j)))
                     for k in range(3):
                         os.mkdir(os.path.join(directory, str(i), str(j), str(k)))
-        cellprofiler.preferences.set_default_image_directory(os.path.join(self.directories[0], "1"))
-        cellprofiler.preferences.set_default_output_directory(os.path.join(self.directories[1], "1"))
+        cellprofiler.preferences.set_default_image_directory(
+            os.path.join(self.directories[0], "1")
+        )
+        cellprofiler.preferences.set_default_output_directory(
+            os.path.join(self.directories[1], "1")
+        )
         self.root_directory = os.path.join(self.directories[2], "1")
 
     def tearDown(self):
@@ -262,15 +266,23 @@ class TestDirectoryPath(unittest.TestCase):
 
     def test_01_01_static_split_and_join(self):
         gibberish = "aqwura[oijs|fd"
-        for dir_choice in cellprofiler.setting.DirectoryPath.DIR_ALL + [cellprofiler.setting.NO_FOLDER_NAME]:
-            value = cellprofiler.setting.DirectoryPath.static_join_string(dir_choice, gibberish)
-            out_dir_choice, custom_path = cellprofiler.setting.DirectoryPath.split_string(value)
+        for dir_choice in cellprofiler.setting.DirectoryPath.DIR_ALL + [
+            cellprofiler.setting.NO_FOLDER_NAME
+        ]:
+            value = cellprofiler.setting.DirectoryPath.static_join_string(
+                dir_choice, gibberish
+            )
+            out_dir_choice, custom_path = cellprofiler.setting.DirectoryPath.split_string(
+                value
+            )
             self.assertEqual(dir_choice, out_dir_choice)
             self.assertEqual(custom_path, gibberish)
 
     def test_01_02_split_and_join(self):
         gibberish = "aqwura[oijs|fd"
-        for dir_choice in cellprofiler.setting.DirectoryPath.DIR_ALL + [cellprofiler.setting.NO_FOLDER_NAME]:
+        for dir_choice in cellprofiler.setting.DirectoryPath.DIR_ALL + [
+            cellprofiler.setting.NO_FOLDER_NAME
+        ]:
             s = cellprofiler.setting.DirectoryPath("whatever")
             value = s.join_parts(dir_choice, gibberish)
             out_dir_choice = s.dir_choice
@@ -280,12 +292,13 @@ class TestDirectoryPath(unittest.TestCase):
 
     def test_01_03_is_custom_choice(self):
         for dir_choice, expected in (
-                (cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME, False),
-                (cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME, True),
-                (cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, False),
-                (cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME, True),
-                (cellprofiler.setting.ABSOLUTE_FOLDER_NAME, True),
-                (cellprofiler.setting.URL_FOLDER_NAME, True)):
+            (cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME, False),
+            (cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME, True),
+            (cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, False),
+            (cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME, True),
+            (cellprofiler.setting.ABSOLUTE_FOLDER_NAME, True),
+            (cellprofiler.setting.URL_FOLDER_NAME, True),
+        ):
             s = cellprofiler.setting.DirectoryPath("whatever")
             s.dir_choice = dir_choice
             self.assertEqual(s.is_custom_choice, expected)
@@ -293,25 +306,30 @@ class TestDirectoryPath(unittest.TestCase):
     def test_01_04_get_parts_from_image_folder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         dir_choice, custom_path = s.get_parts_from_path(
-                cellprofiler.preferences.get_default_image_directory())
+            cellprofiler.preferences.get_default_image_directory()
+        )
         self.assertEqual(dir_choice, cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME)
 
     def test_01_05_get_parts_from_output_folder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
-        dir_choice, custom_path = s.get_parts_from_path(cellprofiler.preferences.get_default_output_directory())
+        dir_choice, custom_path = s.get_parts_from_path(
+            cellprofiler.preferences.get_default_output_directory()
+        )
         self.assertEqual(dir_choice, cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME)
 
     def test_01_06_get_parts_from_image_subfolder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         dir_choice, custom_path = s.get_parts_from_path(
-                os.path.join(cellprofiler.preferences.get_default_image_directory(), "1"))
+            os.path.join(cellprofiler.preferences.get_default_image_directory(), "1")
+        )
         self.assertEqual(dir_choice, cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME)
         self.assertEqual(custom_path, "1")
 
     def test_01_07_get_parts_from_output_subfolder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         dir_choice, custom_path = s.get_parts_from_path(
-                os.path.join(cellprofiler.preferences.get_default_output_directory(), "2"))
+            os.path.join(cellprofiler.preferences.get_default_output_directory(), "2")
+        )
         self.assertEqual(dir_choice, cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(custom_path, "2")
 
@@ -324,65 +342,90 @@ class TestDirectoryPath(unittest.TestCase):
     def test_02_01_get_default_input_folder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
-        self.assertEqual(s.get_absolute_path(), cellprofiler.preferences.get_default_image_directory())
+        self.assertEqual(
+            s.get_absolute_path(),
+            cellprofiler.preferences.get_default_image_directory(),
+        )
 
     def test_02_02_get_default_output_folder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
-        self.assertEqual(s.get_absolute_path(), cellprofiler.preferences.get_default_output_directory())
+        self.assertEqual(
+            s.get_absolute_path(),
+            cellprofiler.preferences.get_default_output_directory(),
+        )
 
     def test_02_03_get_input_subfolder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
         s.custom_path = "2"
-        self.assertEqual(s.get_absolute_path(),
-                         os.path.join(cellprofiler.preferences.get_default_image_directory(), "2"))
+        self.assertEqual(
+            s.get_absolute_path(),
+            os.path.join(cellprofiler.preferences.get_default_image_directory(), "2"),
+        )
 
     def test_02_04_get_output_subfolder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
         s.custom_path = "0"
-        self.assertEqual(s.get_absolute_path(),
-                         os.path.join(cellprofiler.preferences.get_default_output_directory(), "0"))
+        self.assertEqual(
+            s.get_absolute_path(),
+            os.path.join(cellprofiler.preferences.get_default_output_directory(), "0"),
+        )
 
     def test_02_05_get_absolute_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         s.custom_path = os.path.join(self.root_directory, "..", "1", "2")
-        self.assertEqual(s.get_absolute_path(),
-                         os.path.join(self.root_directory, "2"))
+        self.assertEqual(s.get_absolute_path(), os.path.join(self.root_directory, "2"))
 
     def test_02_06_get_url(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.URL_FOLDER_NAME
         s.custom_path = "http://www.cellprofiler.org"
-        self.assertEqual(s.get_absolute_path(),
-                         "http://www.cellprofiler.org")
+        self.assertEqual(s.get_absolute_path(), "http://www.cellprofiler.org")
 
     def test_02_07_no_folder(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.NO_FOLDER_NAME
         s.custom_path = "gibberish"
-        self.assertEqual(s.get_absolute_path(), '')
+        self.assertEqual(s.get_absolute_path(), "")
 
     def test_03_07_metadata(self):
         m = cellprofiler.measurement.Measurements()
         m.add_image_measurement("Metadata_Path", "2")
         s = cellprofiler.setting.DirectoryPath("whatever", allow_metadata=True)
         for dir_choice, expected in (
-                (cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
-                 os.path.join(cellprofiler.preferences.get_default_image_directory(), "0", "2")),
-                (cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                 os.path.join(cellprofiler.preferences.get_default_output_directory(), "0", "2")),
-                (cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
-                 os.path.join(self.root_directory, "2")),
-                (cellprofiler.setting.URL_FOLDER_NAME, "http://www.cellprofiler.org/2")):
+            (
+                cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+                os.path.join(
+                    cellprofiler.preferences.get_default_image_directory(), "0", "2"
+                ),
+            ),
+            (
+                cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                os.path.join(
+                    cellprofiler.preferences.get_default_output_directory(), "0", "2"
+                ),
+            ),
+            (
+                cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
+                os.path.join(self.root_directory, "2"),
+            ),
+            (cellprofiler.setting.URL_FOLDER_NAME, "http://www.cellprofiler.org/2"),
+        ):
             s.dir_choice = dir_choice
-            if dir_choice in (cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
-                              cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME):
-                s.custom_path = "0" + os.path.sep.replace('\\', '\\\\') + "\\g<Path>"
+            if dir_choice in (
+                cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            ):
+                s.custom_path = "0" + os.path.sep.replace("\\", "\\\\") + "\\g<Path>"
             elif dir_choice == cellprofiler.setting.ABSOLUTE_FOLDER_NAME:
-                s.custom_path = self.root_directory + os.path.sep.replace('\\', '\\\\') + "\\g<Path>"
+                s.custom_path = (
+                    self.root_directory
+                    + os.path.sep.replace("\\", "\\\\")
+                    + "\\g<Path>"
+                )
             else:
                 s.custom_path = "http://www.cellprofiler.org/\\g<Path>"
             self.assertEqual(s.get_absolute_path(m), expected)
@@ -397,16 +440,18 @@ class TestDirectoryPath(unittest.TestCase):
         s.dir_choice = cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
         s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
         self.assertEqual(
-                s.get_absolute_path(),
-                cellprofiler.preferences.get_default_image_directory())
+            s.get_absolute_path(),
+            cellprofiler.preferences.get_default_image_directory(),
+        )
 
     def test_04_02_alter_output_folder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
         s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
         self.assertEqual(
-                s.get_absolute_path(),
-                cellprofiler.preferences.get_default_output_directory())
+            s.get_absolute_path(),
+            cellprofiler.preferences.get_default_output_directory(),
+        )
 
     def test_04_03_alter_input_subfolder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
@@ -419,8 +464,9 @@ class TestDirectoryPath(unittest.TestCase):
 
         s.alter_for_create_batch_files(fn_alter_path)
         self.assertEqual(
-                s.get_absolute_path(),
-                os.path.join(cellprofiler.preferences.get_default_image_directory(), "3"))
+            s.get_absolute_path(),
+            os.path.join(cellprofiler.preferences.get_default_image_directory(), "3"),
+        )
 
     def test_04_04_alter_output_subfolder_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
@@ -433,27 +479,28 @@ class TestDirectoryPath(unittest.TestCase):
 
         s.alter_for_create_batch_files(fn_alter_path)
         self.assertEqual(
-                s.get_absolute_path(),
-                os.path.join(cellprofiler.preferences.get_default_output_directory(), "5"))
+            s.get_absolute_path(),
+            os.path.join(cellprofiler.preferences.get_default_output_directory(), "5"),
+        )
 
     def test_04_05_alter_absolute_path(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         s.custom_path = os.path.join(self.root_directory, "..", "1", "2")
         s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
-        self.assertEqual(s.get_absolute_path(),
-                         os.path.join(self.root_directory, "2altered"))
+        self.assertEqual(
+            s.get_absolute_path(), os.path.join(self.root_directory, "2altered")
+        )
 
     def test_04_06_alter_url(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.URL_FOLDER_NAME
         s.custom_path = "http://www.cellprofiler.org"
         s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
-        self.assertEqual(s.get_absolute_path(),
-                         "http://www.cellprofiler.org")
+        self.assertEqual(s.get_absolute_path(), "http://www.cellprofiler.org")
 
     def test_04_07_no_folder(self):
         s = cellprofiler.setting.DirectoryPath("whatever")
         s.dir_choice = cellprofiler.setting.NO_FOLDER_NAME
         s.custom_path = "gibberish"
-        self.assertEqual(s.get_absolute_path(), '')
+        self.assertEqual(s.get_absolute_path(), "")

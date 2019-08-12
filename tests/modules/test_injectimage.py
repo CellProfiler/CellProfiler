@@ -26,14 +26,21 @@ class testInjectImage(unittest.TestCase):
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
         measurements = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, ii, measurements, None,
-                                  measurements,
-                                  cellprofiler.image.ImageSetList())
+        workspace = cpw.Workspace(
+            pipeline,
+            ii,
+            measurements,
+            None,
+            measurements,
+            cellprofiler.image.ImageSetList(),
+        )
         ii.prepare_run(workspace)
         ii.prepare_group(workspace, {}, [1])
         ii.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(image_set, "No image set returned from ImageSetList.GetImageSet")
+        self.assertTrue(
+            image_set, "No image set returned from ImageSetList.GetImageSet"
+        )
         my_image = image_set.get_image("my_image")
         self.assertTrue(my_image, "No image returned from ImageSet.GetImage")
         self.assertEqual(my_image.image.shape[0], 10, "Wrong image shape")

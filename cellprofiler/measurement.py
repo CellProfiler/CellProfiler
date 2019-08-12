@@ -1016,6 +1016,7 @@ class Measurements(object):
         # type(v) == numpy.object_, but v.__class__==str. Additionally,
         # builtin type like number has a __class__ attribute but that can't be
         # referenced with the dot syntax.
+        # More Info: http://docs.h5py.org/en/stable/strings.html#how-to-store-text-strings
         #
         if getattr(v, "__class__") == str:
             return v

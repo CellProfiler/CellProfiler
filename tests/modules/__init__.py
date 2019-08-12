@@ -48,7 +48,7 @@ def example_images_directory():
             return path
     if __temp_example_images_folder is None:
         __temp_example_images_folder = tempfile.mkdtemp(prefix="cp_exampleimages")
-        logger.warn(
+        logger.warning(
             "Creating temporary folder %s for example images"
             % __temp_example_images_folder
         )
@@ -86,7 +86,7 @@ def testimages_directory():
         return path
     if __temp_test_images_folder is None:
         __temp_test_images_folder = tempfile.mkdtemp(prefix="cp_testimages")
-        logger.warn(
+        logger.warning(
             "Creating temporary folder %s for test images" % __temp_test_images_folder
         )
     return __temp_test_images_folder

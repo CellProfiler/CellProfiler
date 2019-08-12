@@ -1,11 +1,11 @@
-'''test_maskobjects.py - test the MaskObjects module
-'''
+"""test_maskobjects.py - test the MaskObjects module
+"""
 
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from six.moves import StringIO
 
 import PIL.Image as PILImage
 import cellprofiler.measurement
@@ -25,11 +25,11 @@ import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.maskobjects as M
 
-INPUT_OBJECTS = 'inputobjects'
-OUTPUT_OBJECTS = 'outputobjects'
-MASKING_OBJECTS = 'maskingobjects'
-MASKING_IMAGE = 'maskingobjects'
-OUTPUT_OUTLINES = 'outputoutlines'
+INPUT_OBJECTS = "inputobjects"
+OUTPUT_OBJECTS = "outputobjects"
+MASKING_OBJECTS = "maskingobjects"
+MASKING_IMAGE = "maskingobjects"
+OUTPUT_OUTLINES = "outputoutlines"
 
 
 class TestMaskObjects(unittest.TestCase):
@@ -133,7 +133,7 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         self.assertEqual(module.remaining_objects.value, "MaskedSpeckles")
         self.assertEqual(module.retain_or_renumber.value, M.R_RENUMBER)
         self.assertEqual(module.overlap_choice.value, M.P_REMOVE_PERCENTAGE)
-        self.assertAlmostEqual(module.overlap_fraction.value, .3)
+        self.assertAlmostEqual(module.overlap_fraction.value, 0.3)
         self.assertFalse(module.wants_inverted_mask)
 
     def test_01_03_load_v2(self):
@@ -211,18 +211,24 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         assert module.retain_or_renumber.value == "Renumber"
         assert not module.wants_inverted_mask.value
 
-    def make_workspace(self, labels, overlap_choice, masking_objects=None,
-                       masking_image=None, renumber=True):
+    def make_workspace(
+        self,
+        labels,
+        overlap_choice,
+        masking_objects=None,
+        masking_image=None,
+        renumber=True,
+    ):
         module = M.MaskObjects()
         module.module_num = 1
         module.object_name.value = INPUT_OBJECTS
         module.remaining_objects.value = OUTPUT_OBJECTS
-        module.mask_choice.value = (M.MC_OBJECTS if masking_objects is not None
-                                    else M.MC_IMAGE)
+        module.mask_choice.value = (
+            M.MC_OBJECTS if masking_objects is not None else M.MC_IMAGE
+        )
         module.masking_image.value = MASKING_IMAGE
         module.masking_objects.value = MASKING_OBJECTS
-        module.retain_or_renumber.value = (M.R_RENUMBER if renumber
-                                           else M.R_RETAIN)
+        module.retain_or_renumber.value = M.R_RENUMBER if renumber else M.R_RETAIN
         module.overlap_choice.value = overlap_choice
 
         pipeline = cpp.Pipeline()
@@ -249,31 +255,68 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             mi = cpi.Image(masking_image)
             image_set.add(MASKING_IMAGE, mi)
 
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cpw.Workspace(
+            pipeline,
+            module,
+            image_set,
+            object_set,
+            cpmeas.Measurements(),
+            image_set_list,
+        )
         return workspace, module
 
     def test_02_01_measurement_columns(self):
-        '''Test get_measurement_columns'''
-        workspace, module = self.make_workspace(np.zeros((20, 10), int),
-                                                M.P_MASK,
-                                                np.zeros((20, 10), int))
+        """Test get_measurement_columns"""
+        workspace, module = self.make_workspace(
+            np.zeros((20, 10), int), M.P_MASK, np.zeros((20, 10), int)
+        )
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for expected in (
-                (cpmeas.IMAGE, cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS, cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cpmeas.COLTYPE_INTEGER)):
-            self.assertTrue(any([all([c in e for c, e in zip(column, expected)])
-                                 for column in columns]))
+            (
+                cpmeas.IMAGE,
+                cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cpmeas.COLTYPE_FLOAT,
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cpmeas.COLTYPE_FLOAT,
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+            (
+                INPUT_OBJECTS,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+                cpmeas.COLTYPE_INTEGER,
+            ),
+        ):
+            self.assertTrue(
+                any(
+                    [
+                        all([c in e for c, e in zip(column, expected)])
+                        for column in columns
+                    ]
+                )
+            )
 
     def test_02_02_measurement_categories(self):
-        workspace, module = self.make_workspace(np.zeros((20, 10), int),
-                                                M.MC_OBJECTS,
-                                                np.zeros((20, 10), int))
+        workspace, module = self.make_workspace(
+            np.zeros((20, 10), int), M.MC_OBJECTS, np.zeros((20, 10), int)
+        )
         categories = module.get_categories(workspace.pipeline, "Foo")
         self.assertEqual(len(categories), 0)
 
@@ -283,9 +326,14 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
 
         categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS)
         self.assertEqual(len(categories), 3)
-        for category, expected in zip(sorted(categories),
-                                      (cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER,
-                                       cellprofiler.measurement.C_PARENT)):
+        for category, expected in zip(
+            sorted(categories),
+            (
+                cellprofiler.measurement.C_LOCATION,
+                cellprofiler.measurement.C_NUMBER,
+                cellprofiler.measurement.C_PARENT,
+            ),
+        ):
             self.assertEqual(category, expected)
 
         categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS)
@@ -293,46 +341,66 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         self.assertEqual(categories[0], cellprofiler.measurement.C_CHILDREN)
 
     def test_02_03_measurements(self):
-        workspace, module = self.make_workspace(np.zeros((20, 10), int),
-                                                M.P_MASK,
-                                                np.zeros((20, 10), int))
-        ftr_count = (cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split('_', 1)[1]
-        d = {"Foo": {},
-             cpmeas.IMAGE: {"Foo": [], cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS]},
-             OUTPUT_OBJECTS: {"Foo": [],
-                              cellprofiler.measurement.C_LOCATION: [cellprofiler.measurement.FTR_CENTER_X,
-                                                                    cellprofiler.measurement.FTR_CENTER_Y],
-                              cellprofiler.measurement.C_PARENT: [INPUT_OBJECTS],
-                              cellprofiler.measurement.C_NUMBER: [cellprofiler.measurement.FTR_OBJECT_NUMBER]},
-             INPUT_OBJECTS: {"Foo": [],
-                             cellprofiler.measurement.C_CHILDREN: [ftr_count]}
-             }
-        for object_name in d.keys():
+        workspace, module = self.make_workspace(
+            np.zeros((20, 10), int), M.P_MASK, np.zeros((20, 10), int)
+        )
+        ftr_count = (cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split(
+            "_", 1
+        )[1]
+        d = {
+            "Foo": {},
+            cpmeas.IMAGE: {
+                "Foo": [],
+                cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS],
+            },
+            OUTPUT_OBJECTS: {
+                "Foo": [],
+                cellprofiler.measurement.C_LOCATION: [
+                    cellprofiler.measurement.FTR_CENTER_X,
+                    cellprofiler.measurement.FTR_CENTER_Y,
+                ],
+                cellprofiler.measurement.C_PARENT: [INPUT_OBJECTS],
+                cellprofiler.measurement.C_NUMBER: [
+                    cellprofiler.measurement.FTR_OBJECT_NUMBER
+                ],
+            },
+            INPUT_OBJECTS: {
+                "Foo": [],
+                cellprofiler.measurement.C_CHILDREN: [ftr_count],
+            },
+        }
+        for object_name in list(d.keys()):
             od = d[object_name]
-            for category in od.keys():
-                features = module.get_measurements(workspace.pipeline,
-                                                   object_name,
-                                                   category)
+            for category in list(od.keys()):
+                features = module.get_measurements(
+                    workspace.pipeline, object_name, category
+                )
                 expected = od[category]
                 self.assertEqual(len(features), len(expected))
                 for feature, e in zip(sorted(features), sorted(expected)):
                     self.assertEqual(feature, e)
 
     def test_03_01_mask_nothing(self):
-        workspace, module = self.make_workspace(np.zeros((20, 10), int),
-                                                M.MC_OBJECTS,
-                                                np.zeros((20, 10), int))
+        workspace, module = self.make_workspace(
+            np.zeros((20, 10), int), M.MC_OBJECTS, np.zeros((20, 10), int)
+        )
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(
+            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+        )
         self.assertEqual(value, 0)
         for object_name, feature in (
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS),
-                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS)):
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS),
+            (
+                INPUT_OBJECTS,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            ),
+        ):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), 0)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -355,15 +423,30 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         expected_y = np.array([5, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(
+            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+        )
         self.assertEqual(value, 2)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 2])),
-                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 1]))):
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                np.array([1, 2]),
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
+                np.array([1, 2]),
+            ),
+            (
+                INPUT_OBJECTS,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+                np.array([1, 1]),
+            ),
+        ):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -376,9 +459,8 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         mask = np.zeros((20, 10), bool)
         mask[3:17, 2:6] = True
         expected = labels.copy()
-        expected[~ mask] = 0
-        workspace, module = self.make_workspace(labels, M.P_MASK,
-                                                masking_image=mask)
+        expected[~mask] = 0
+        workspace, module = self.make_workspace(labels, M.P_MASK, masking_image=mask)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
@@ -387,15 +469,30 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         expected_y = np.array([5, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(
+            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+        )
         self.assertEqual(value, 2)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 2])),
-                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 1]))):
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                np.array([1, 2]),
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
+                np.array([1, 2]),
+            ),
+            (
+                INPUT_OBJECTS,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+                np.array([1, 1]),
+            ),
+        ):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -409,10 +506,9 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         mask = np.zeros((30, 10), bool)
         mask[3:17, 2:6] = True
         expected = labels.copy()
-        expected[~ mask] = 0
+        expected[~mask] = 0
         expected[expected == 3] = 2
-        workspace, module = self.make_workspace(labels, M.P_MASK,
-                                                masking_image=mask)
+        workspace, module = self.make_workspace(labels, M.P_MASK, masking_image=mask)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
@@ -421,15 +517,30 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         expected_y = np.array([5, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(
+            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+        )
         self.assertEqual(value, 2)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2])),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 3])),
-                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 0, 1]))):
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                np.array([1, 2]),
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
+                np.array([1, 3]),
+            ),
+            (
+                INPUT_OBJECTS,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+                np.array([1, 0, 1]),
+            ),
+        ):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -443,10 +554,10 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         mask = np.zeros((30, 10), bool)
         mask[3:17, 2:6] = True
         expected = labels.copy()
-        expected[~ mask] = 0
-        workspace, module = self.make_workspace(labels, M.P_MASK,
-                                                masking_image=mask,
-                                                renumber=False)
+        expected[~mask] = 0
+        workspace, module = self.make_workspace(
+            labels, M.P_MASK, masking_image=mask, renumber=False
+        )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
@@ -455,15 +566,30 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         expected_y = np.array([5, None, 14])
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        value = m.get_current_image_measurement(cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS)
+        value = m.get_current_image_measurement(
+            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+        )
         self.assertEqual(value, 3)
 
         for object_name, feature, expected in (
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, np.array([1, 2, 3])),
-                (OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS, np.array([1, 2, 3])),
-                (INPUT_OBJECTS, cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, np.array([1, 0, 1]))):
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, expected_x),
+            (OUTPUT_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, expected_y),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                np.array([1, 2, 3]),
+            ),
+            (
+                OUTPUT_OBJECTS,
+                cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
+                np.array([1, 2, 3]),
+            ),
+            (
+                INPUT_OBJECTS,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+                np.array([1, 0, 1]),
+            ),
+        ):
             data = m.get_current_measurement(object_name, feature)
             self.assertEqual(len(data), len(expected))
             for value, e in zip(data, expected):
@@ -482,12 +608,11 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         #
         mask = labels == 1
         mask[2, 3] = False
-        mask = ~ mask
+        mask = ~mask
         expected = labels
         expected[labels != 1] = 0
         expected[2, 3] = 0
-        workspace, module = self.make_workspace(labels, M.P_MASK,
-                                                masking_image=mask)
+        workspace, module = self.make_workspace(labels, M.P_MASK, masking_image=mask)
         self.assertTrue(isinstance(module, M.MaskObjects))
         module.wants_inverted_mask.value = True
         module.run(workspace)
@@ -504,8 +629,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         expected = labels.copy()
         expected[expected == 2] = 0
         expected[expected == 3] = 2
-        workspace, module = self.make_workspace(labels, M.P_KEEP,
-                                                masking_image=mask)
+        workspace, module = self.make_workspace(labels, M.P_KEEP, masking_image=mask)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
@@ -518,8 +642,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         mask[2:17, 2:7] = True
         expected = labels.copy()
         expected[labels == 2] = 0
-        workspace, module = self.make_workspace(labels, M.P_REMOVE,
-                                                masking_image=mask)
+        workspace, module = self.make_workspace(labels, M.P_REMOVE, masking_image=mask)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
@@ -534,9 +657,10 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         # loses 9 of 24 from object 2 = .375
         expected = labels.copy()
         expected[labels == 2] = 0
-        workspace, module = self.make_workspace(labels, M.P_REMOVE_PERCENTAGE,
-                                                masking_image=mask)
-        module.overlap_fraction.value = .75
+        workspace, module = self.make_workspace(
+            labels, M.P_REMOVE_PERCENTAGE, masking_image=mask
+        )
+        module.overlap_fraction.value = 0.75
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))
@@ -562,8 +686,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         mask[3:17, 2:6] = 1
         expected = labels.copy()
         expected[:20, :][mask[:, :10] == 0] = 0
-        workspace, module = self.make_workspace(labels, M.P_MASK,
-                                                masking_image=mask)
+        workspace, module = self.make_workspace(labels, M.P_MASK, masking_image=mask)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))

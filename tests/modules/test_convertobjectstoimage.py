@@ -1,4 +1,4 @@
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -58,19 +58,13 @@ def volume_segmentation():
 
 @pytest.fixture(
     scope="module",
-    params=[
-        image_segmentation(),
-        volume_segmentation()
-    ],
-    ids=[
-        "image_segmentation",
-        "volume_segmentation"
-    ]
+    params=["image_segmentation", "volume_segmentation"],
+    ids=["image_segmentation", "volume_segmentation"],
 )
 def objects(request):
     objects = cellprofiler.object.Objects()
 
-    objects.segmented = request.param
+    objects.segmented = request.getfixturevalue(request.param)
 
     return objects
 
@@ -156,7 +150,7 @@ def test_run_color(workspace, module):
         "spring",
         "summer",
         "white",
-        "winter"
+        "winter",
     ]:
         module.object_name.value = "inputobjects"
 
@@ -222,18 +216,20 @@ class TestConvertObjectsToImage(unittest.TestCase):
         ijv = ijv[order, :]
         same = numpy.all(ijv[:-1, :] == ijv[1:, :], 1)
 
-        ijv = ijv[:numpy.prod(shape) - 1][~same, :]
+        ijv = ijv[: numpy.prod(shape) - 1][~same, :]
 
         pipeline = cellprofiler.pipeline.Pipeline()
         object_set = cellprofiler.object.ObjectSet()
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cellprofiler.workspace.Workspace(pipeline,
-                                                     module,
-                                                     image_set,
-                                                     object_set,
-                                                     cellprofiler.measurement.Measurements(),
-                                                     image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline,
+            module,
+            image_set,
+            object_set,
+            cellprofiler.measurement.Measurements(),
+            image_set_list,
+        )
         objects = cellprofiler.object.Objects()
         objects.set_ijv(ijv, shape)
         object_set.add_objects(objects, OBJECTS_NAME)
@@ -244,22 +240,34 @@ class TestConvertObjectsToImage(unittest.TestCase):
 
     def test_03_01_binary_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage))
+        self.assertTrue(
+            isinstance(
+                module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
+            )
+        )
         module.image_mode.value = "Binary (black & white)"
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        self.assertEqual(len(numpy.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
-                         numpy.sum(pixel_data))
+        self.assertEqual(
+            len(numpy.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
+            numpy.sum(pixel_data),
+        )
         self.assertTrue(numpy.all(pixel_data[ijv[:, 0], ijv[:, 1]]))
 
     def test_03_02_gray_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage))
+        self.assertTrue(
+            isinstance(
+                module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
+            )
+        )
         module.image_mode.value = "Grayscale"
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
 
-        counts = scipy.sparse.coo.coo_matrix((numpy.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))).toarray()
+        counts = scipy.sparse.coo.coo_matrix(
+            (numpy.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))
+        ).toarray()
         self.assertTrue(numpy.all(pixel_data[counts == 0] == 0))
         pd_values = numpy.unique(pixel_data)
         pd_labels = numpy.zeros(pixel_data.shape, int)
@@ -275,7 +283,11 @@ class TestConvertObjectsToImage(unittest.TestCase):
 
     def test_03_03_color_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage))
+        self.assertTrue(
+            isinstance(
+                module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
+            )
+        )
         module.image_mode.value = "Color"
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data

@@ -39,7 +39,7 @@ def test_run(object_with_data, module, object_set_with_data, workspace_with_data
         desired = numpy.zeros_like(object_with_data.segmented)
 
         for index, plane in enumerate(object_with_data.segmented):
-            
+
             desired[index] = skimage.morphology.dilation(plane, selem)
 
         numpy.testing.assert_array_equal(actual.segmented, desired)

@@ -1,7 +1,7 @@
-'''test_morph - test the morphology module
-'''
+"""test_morph - test the morphology module
+"""
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -110,15 +110,26 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        ops = [morph.F_BRANCHPOINTS, morph.F_BRIDGE,
-               morph.F_CLEAN, morph.F_CONVEX_HULL,
-               morph.F_DIAG, morph.F_DISTANCE,
-               morph.F_ENDPOINTS, morph.F_FILL,
-               morph.F_HBREAK,
-               morph.F_MAJORITY, morph.F_REMOVE,
-               morph.F_SHRINK, morph.F_SKELPE, morph.F_SPUR,
-               morph.F_THICKEN, morph.F_THIN, morph.F_VBREAK]
+        pipeline.load(io.StringIO(data))
+        ops = [
+            morph.F_BRANCHPOINTS,
+            morph.F_BRIDGE,
+            morph.F_CLEAN,
+            morph.F_CONVEX_HULL,
+            morph.F_DIAG,
+            morph.F_DISTANCE,
+            morph.F_ENDPOINTS,
+            morph.F_FILL,
+            morph.F_HBREAK,
+            morph.F_MAJORITY,
+            morph.F_REMOVE,
+            morph.F_SHRINK,
+            morph.F_SKELPE,
+            morph.F_SPUR,
+            morph.F_THICKEN,
+            morph.F_THIN,
+            morph.F_VBREAK,
+        ]
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, morph.Morph))
@@ -291,21 +302,24 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
     Custom:5,5,1111111111111111111111111
     Rescale values from 0 to 1?:Yes
 """
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
 
         module = pipeline.modules()[-1]
         with pytest.raises(cps.ValidationError):
             module.test_valid(pipeline)
 
-    def execute(self, image, function, mask=None, custom_repeats=None, scale=None, module=None):
-        '''Run the morph module on an input and return the resulting image'''
-        INPUT_IMAGE_NAME = 'input'
-        OUTPUT_IMAGE_NAME = 'output'
+    def execute(
+        self, image, function, mask=None, custom_repeats=None, scale=None, module=None
+    ):
+        """Run the morph module on an input and return the resulting image"""
+        INPUT_IMAGE_NAME = "input"
+        OUTPUT_IMAGE_NAME = "output"
         if module is None:
             module = morph.Morph()
         module.functions[0].function.value = function
@@ -324,21 +338,27 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline,
+            module,
+            image_set,
+            object_set,
+            cpmeas.Measurements(),
+            image_set_list,
+        )
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, mask=mask))
         module.run(workspace)
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
 
-    def binary_tteesstt(self, function_name, function, gray_out=False, scale=None, custom_repeats=None):
-        np.random.seed(map(ord, function_name))
-        input = np.random.uniform(size=(20, 20)) > .7
-        output = self.execute(input, function_name, scale=scale, custom_repeats=custom_repeats)
+    def binary_tteesstt(
+        self, function_name, function, gray_out=False, scale=None, custom_repeats=None
+    ):
+        np.random.seed(list(map(ord, function_name)))
+        input = np.random.uniform(size=(20, 20)) > 0.7
+        output = self.execute(
+            input, function_name, scale=scale, custom_repeats=custom_repeats
+        )
         if scale is None:
             expected = function(input)
         else:
@@ -348,49 +368,51 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
             expected = expected > 0
             self.assertTrue(np.all(output == expected))
         else:
-            self.assertTrue(np.all(np.abs(output - expected) < np.finfo(np.float32).eps))
+            self.assertTrue(
+                np.all(np.abs(output - expected) < np.finfo(np.float32).eps)
+            )
 
     def test_02_015_binary_branchpoints(self):
-        self.binary_tteesstt('branchpoints', cpmorph.branchpoints)
+        self.binary_tteesstt("branchpoints", cpmorph.branchpoints)
 
     def test_02_02_binary_bridge(self):
-        self.binary_tteesstt('bridge', cpmorph.bridge)
+        self.binary_tteesstt("bridge", cpmorph.bridge)
 
     def test_02_03_binary_clean(self):
-        self.binary_tteesstt('clean', cpmorph.clean)
+        self.binary_tteesstt("clean", cpmorph.clean)
 
     def test_02_05_binary_diag(self):
-        self.binary_tteesstt('diag', cpmorph.diag)
+        self.binary_tteesstt("diag", cpmorph.diag)
 
     def test_02_065_binary_endpoints(self):
-        self.binary_tteesstt('endpoints', cpmorph.endpoints)
+        self.binary_tteesstt("endpoints", cpmorph.endpoints)
 
     def test_02_08_binary_fill(self):
-        self.binary_tteesstt('fill', cpmorph.fill)
+        self.binary_tteesstt("fill", cpmorph.fill)
 
     def test_02_09_binary_hbreak(self):
-        self.binary_tteesstt('hbreak', cpmorph.hbreak)
+        self.binary_tteesstt("hbreak", cpmorph.hbreak)
 
     def test_02_10_binary_majority(self):
-        self.binary_tteesstt('majority', cpmorph.majority)
+        self.binary_tteesstt("majority", cpmorph.majority)
 
     def test_02_12_binary_remove(self):
-        self.binary_tteesstt('remove', cpmorph.remove)
+        self.binary_tteesstt("remove", cpmorph.remove)
 
     def test_02_13_binary_shrink(self):
-        self.binary_tteesstt('shrink', lambda x: cpmorph.binary_shrink(x, 1))
+        self.binary_tteesstt("shrink", lambda x: cpmorph.binary_shrink(x, 1))
 
     def test_02_15_binary_spur(self):
-        self.binary_tteesstt('spur', cpmorph.spur)
+        self.binary_tteesstt("spur", cpmorph.spur)
 
     def test_02_16_binary_thicken(self):
-        self.binary_tteesstt('thicken', cpmorph.thicken)
+        self.binary_tteesstt("thicken", cpmorph.thicken)
 
     def test_02_17_binary_thin(self):
-        self.binary_tteesstt('thin', cpmorph.thin)
+        self.binary_tteesstt("thin", cpmorph.thin)
 
     def test_02_19_binary_vbreak(self):
-        self.binary_tteesstt('vbreak', cpmorph.vbreak)
+        self.binary_tteesstt("vbreak", cpmorph.vbreak)
 
     def test_02_20_binary_distance(self):
         def distance(x):
@@ -400,7 +422,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
             else:
                 return y / np.max(y)
 
-        self.binary_tteesstt('distance', distance, True)
+        self.binary_tteesstt("distance", distance, True)
 
     def test_02_21_binary_convex_hull(self):
         #
@@ -413,7 +435,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
         image[17, 12] = True
         expected = np.zeros((20, 15), bool)
         expected[2:18, 3:13] = True
-        result = self.execute(image, 'convex hull')
+        result = self.execute(image, "convex hull")
         self.assertTrue(np.all(result == expected))
 
     def test_02_26_binary_skelpe(self):
@@ -422,4 +444,4 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
             pe = cpfilter.poisson_equation(x)
             return cpmorph.skeletonize(x, ordering=pe * d)
 
-        self.binary_tteesstt('skelpe', fn)
+        self.binary_tteesstt("skelpe", fn)

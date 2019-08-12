@@ -13,12 +13,9 @@ instance = cellprofiler.modules.morphologicalskeleton.MorphologicalSkeleton()
     scope="module",
     params=[
         (skimage.data.camera()[0:128, 0:128], 2),
-        (numpy.tile(skimage.data.camera()[0:32, 0:32], (2, 1)).reshape(2, 32, 32), 3)
+        (numpy.tile(skimage.data.camera()[0:32, 0:32], (2, 1)).reshape(2, 32, 32), 3),
     ],
-    ids=[
-        "grayscale_image",
-        "grayscale_volume"
-    ]
+    ids=["grayscale_image", "grayscale_volume"],
 )
 def image(request):
     data, dimensions = request.param

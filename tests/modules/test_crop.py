@@ -1,7 +1,7 @@
 """test_crop.py - test the Crop module
 """
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -28,11 +28,9 @@ OUTPUT_IMAGE = "output_image"
 
 
 class TestCrop(unittest.TestCase):
-    def make_workspace(self,
-                       input_pixels,
-                       crop_image=None,
-                       cropping=None,
-                       crop_objects=None):
+    def make_workspace(
+        self, input_pixels, crop_image=None, cropping=None, crop_objects=None
+    ):
         """Return a workspace with the given images installed and the crop module"""
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -45,8 +43,9 @@ class TestCrop(unittest.TestCase):
             image_set.add(CROP_IMAGE, cpi.Image(crop_image))
             module.image_mask_source.value = CROP_IMAGE
         if cropping is not None:
-            image_set.add(CROPPING, cpi.Image(np.zeros(cropping.shape),
-                                              crop_mask=cropping))
+            image_set.add(
+                CROPPING, cpi.Image(np.zeros(cropping.shape), crop_mask=cropping)
+            )
             module.cropping_mask_source.value = CROPPING
         object_set = cpo.ObjectSet()
         if crop_objects is not None:
@@ -62,20 +61,18 @@ class TestCrop(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         m = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline, module, image_set, object_set, m, image_set_list
+        )
         m.add_measurement(cpm.IMAGE, cpm.GROUP_INDEX, 0, image_set_number=1)
         m.add_measurement(cpm.IMAGE, cpm.GROUP_NUMBER, 1, image_set_number=1)
         return workspace, module
 
     def test_00_00_zeros(self):
         """Test cropping an image with a mask of all zeros"""
-        workspace, module = self.make_workspace(np.zeros((10, 10)),
-                                                crop_image=np.zeros((10, 10), bool))
+        workspace, module = self.make_workspace(
+            np.zeros((10, 10)), crop_image=np.zeros((10, 10), bool)
+        )
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_NO
         module.run(workspace)
@@ -84,26 +81,27 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(np.all(output_image.mask == output_image.pixel_data))
         self.assertTrue(np.all(output_image.crop_mask == output_image.pixel_data))
         m = workspace.measurements
-        self.assertTrue('Image' in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 2)
         self.assertTrue(all([x[0] == cpm.IMAGE for x in columns]))
         self.assertTrue(all([x[2] == cpm.COLTYPE_INTEGER for x in columns]))
-        feature = 'Crop_OriginalImageArea_%s' % OUTPUT_IMAGE
+        feature = "Crop_OriginalImageArea_%s" % OUTPUT_IMAGE
         self.assertTrue(feature in [x[1] for x in columns])
-        self.assertTrue(feature in m.get_feature_names('Image'))
-        values = m.get_current_measurement('Image', feature)
+        self.assertTrue(feature in m.get_feature_names("Image"))
+        values = m.get_current_measurement("Image", feature)
         self.assertAlmostEqual(values, 10 * 10)
-        feature = 'Crop_AreaRetainedAfterCropping_%s' % OUTPUT_IMAGE
+        feature = "Crop_AreaRetainedAfterCropping_%s" % OUTPUT_IMAGE
         self.assertTrue(feature in [x[1] for x in columns])
-        self.assertTrue(feature in m.get_feature_names('Image'))
-        values = m.get_current_measurement('Image', feature)
+        self.assertTrue(feature in m.get_feature_names("Image"))
+        values = m.get_current_measurement("Image", feature)
         self.assertEqual(values, 0)
 
     def test_00_01_zeros_and_remove_all(self):
         """Test cropping and removing rows and columns on a blank image"""
-        workspace, module = self.make_workspace(np.zeros((10, 10)),
-                                                crop_image=np.zeros((10, 10), bool))
+        workspace, module = self.make_workspace(
+            np.zeros((10, 10)), crop_image=np.zeros((10, 10), bool)
+        )
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_ALL
         module.run(workspace)
@@ -120,8 +118,7 @@ class TestCrop(unittest.TestCase):
         expected_image = np.zeros((6, 3), np.float32)
         expected_image[0, 0] = input_image[2, 3]
         expected_image[5, 2] = input_image[7, 5]
-        workspace, module = self.make_workspace(input_image,
-                                                crop_image=crop_image)
+        workspace, module = self.make_workspace(input_image, crop_image=crop_image)
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
@@ -138,8 +135,7 @@ class TestCrop(unittest.TestCase):
         expected_image = input_image[(2, 7), :][:, (3, 5)]
         expected_image[1, 0] = 0
         expected_image[0, 1] = 0
-        workspace, module = self.make_workspace(input_image,
-                                                crop_image=crop_image)
+        workspace, module = self.make_workspace(input_image, crop_image=crop_image)
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_ALL
         module.run(workspace)
@@ -156,8 +152,7 @@ class TestCrop(unittest.TestCase):
         expected_image = np.zeros((6, 3))
         expected_image[0, 0] = input_image[2, 3]
         expected_image[5, 2] = input_image[7, 5]
-        workspace, module = self.make_workspace(input_image,
-                                                cropping=crop_image)
+        workspace, module = self.make_workspace(input_image, cropping=crop_image)
         module.shape.value = cpmc.SH_CROPPING
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
@@ -269,7 +264,7 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
 
     def test_04_06_crop_color_with_rectangle(self):
-        '''Regression test: make sure cropping works with a color image'''
+        """Regression test: make sure cropping works with a color image"""
         i, j, k = np.mgrid[0:10, 0:10, 0:3]
         input_image = (i / 1000.0 + j / 100.0 + k).astype(np.float32)
         expected_image = input_image[2:8, 1:9, :]
@@ -301,8 +296,7 @@ class TestCrop(unittest.TestCase):
         input_objects = np.zeros((20, 10), dtype=int)
         input_objects[2:7, 3:8] = 1
         input_objects[12:17, 3:8] = 2
-        workspace, module = self.make_workspace(input_image,
-                                                crop_objects=input_objects)
+        workspace, module = self.make_workspace(input_image, crop_objects=input_objects)
         module.shape.value = cpmc.SH_OBJECTS
         module.objects_source.value = CROP_OBJECTS
         module.remove_rows_and_columns.value = cpmc.RM_NO
@@ -318,8 +312,7 @@ class TestCrop(unittest.TestCase):
         input_objects = np.zeros((20, 10), dtype=int)
         input_objects[2:7, 3:8] = 1
         input_objects[12:17, 3:8] = 2
-        workspace, module = self.make_workspace(input_image,
-                                                crop_objects=input_objects)
+        workspace, module = self.make_workspace(input_image, crop_objects=input_objects)
         module.shape.value = cpmc.SH_OBJECTS
         module.objects_source.value = CROP_OBJECTS
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
@@ -331,37 +324,40 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(np.all(output_image.crop_mask == (input_objects > 0)))
 
     def test_07_02_load_v2(self):
-        data = ('eJztm9Fu2jAUQB2armWV1k7aw7SplR+niaJAy9axh9GWsiGVFhXU56XEUE8h'
-                'Rknoun3JPmGfsc/ZYz9hdpuQxGIEArRJcSQrXMfnXt/ra2NIUttvHu8fwEJW'
-                'gbX95nYb6wjWddVuE7NbhIadgYcmUm2kQWIUYY0YsIxaML8Hc7vFXK6Y24N5'
-                'RfkAoh1StfaMnv58BOAJPa/SknIuLTuy5CtMbiDbxkbHWgYyeOnU39ByrppY'
-                'vdDRuar3keWZcOurRps0f/QGl2pE6+voRO36G9PjpN+9QKZ12nZB53IdXyO9'
-                'gX8izgW32Rm6whYmhsM7+vnagV1ic3Ybl+R7xaTd4fQfqHbrsmHTEQjWs7jt'
-                'vfbiJnFxk2nZ9NWz9l+A114eEufnvvYbjowNDV9hra/qEHfVzqDXt/ZD9K1y'
-                '+ph8auLOAR0ixpdC+DTHpx3+s4mQMUE/Vjg9K46eM6SBcfqxwfGsNNG1vX10'
-                'rbZs2GVDFDUehybpTRMPxs8iHkyPGw8lhJcCvAR2prB7pOu4Z6HI+Vk36RQj'
-                'fQu2qAM9ujL44jBrfaUQfU85fUwuE2gQG/YtNL6eNU4Pkw8JMTVsqO66EUc9'
-                'YXmTCuhJgRMyXt4sc/aZXMGmZYN48GF59oLjmVxGbbWv27DKFlVYIbqGTDeO'
-                'UeZRQcll3itKZH5HUTLvZsRPun5kp/A7X8hldgvJ8Dtq/g/1m9otTNHvwgz5'
-                'qH6HcUsBbgnsjmnvvrlZ+ZeP2M9Zck84zj1cLu2c5xmXWXNR1vdytlmtgOj8'
-                'kXa3V04CH7ZPD4u7HOBlGnfjQbhpx3ledsP2/dPySRmfh+Sirmv3zS2if/z3'
-                'UiXbfPB+TsKVQvwb93+MpPj72Mdz0eej8C/Z/vHz7yxh82/a/3OT4udjH8dF'
-                'n4fCv3j79/uVx0kcN+z+2bz2h8PuG9zebOuYpN+Lr555xWPY/TbPPsSGhnpx'
-                '1JOUvBec4AQnOMEJTnCCc7mSj5vnfkrsd0U8Rtkf9rwRufiGWrbXgTjqSco8'
-                'F9xiciUwOs/F71zBCU5wghPrqeAEJ7h4cb8kj5M4jsn++3Gs/VefnWHr01sQ'
-                'XJ+Y3EK63jMJew/QzHZvX1azsjpRtbu3v7LH9GPV9yIYs1MPsbPF2dn6nx32'
-                'zk2WPdmYTL3+cU0P0esfnxSVNtfX10flAwDBPPDy4+ZTFHtyKpVinP/5irUQ'
-                'TgbBvGT8XzBZHr4Z0d71Mc7tJ42zRI9p4+TZkQd9utMfz/b/AK5Y7+U=')
+        data = (
+            "eJztm9Fu2jAUQB2armWV1k7aw7SplR+niaJAy9axh9GWsiGVFhXU56XEUE8h"
+            "Rknoun3JPmGfsc/ZYz9hdpuQxGIEArRJcSQrXMfnXt/ra2NIUttvHu8fwEJW"
+            "gbX95nYb6wjWddVuE7NbhIadgYcmUm2kQWIUYY0YsIxaML8Hc7vFXK6Y24N5"
+            "RfkAoh1StfaMnv58BOAJPa/SknIuLTuy5CtMbiDbxkbHWgYyeOnU39ByrppY"
+            "vdDRuar3keWZcOurRps0f/QGl2pE6+voRO36G9PjpN+9QKZ12nZB53IdXyO9"
+            "gX8izgW32Rm6whYmhsM7+vnagV1ic3Ybl+R7xaTd4fQfqHbrsmHTEQjWs7jt"
+            "vfbiJnFxk2nZ9NWz9l+A114eEufnvvYbjowNDV9hra/qEHfVzqDXt/ZD9K1y"
+            "+ph8auLOAR0ixpdC+DTHpx3+s4mQMUE/Vjg9K46eM6SBcfqxwfGsNNG1vX10"
+            "rbZs2GVDFDUehybpTRMPxs8iHkyPGw8lhJcCvAR2prB7pOu4Z6HI+Vk36RQj"
+            "fQu2qAM9ujL44jBrfaUQfU85fUwuE2gQG/YtNL6eNU4Pkw8JMTVsqO66EUc9"
+            "YXmTCuhJgRMyXt4sc/aZXMGmZYN48GF59oLjmVxGbbWv27DKFlVYIbqGTDeO"
+            "UeZRQcll3itKZH5HUTLvZsRPun5kp/A7X8hldgvJ8Dtq/g/1m9otTNHvwgz5"
+            "qH6HcUsBbgnsjmnvvrlZ+ZeP2M9Zck84zj1cLu2c5xmXWXNR1vdytlmtgOj8"
+            "kXa3V04CH7ZPD4u7HOBlGnfjQbhpx3ledsP2/dPySRmfh+Sirmv3zS2if/z3"
+            "UiXbfPB+TsKVQvwb93+MpPj72Mdz0eej8C/Z/vHz7yxh82/a/3OT4udjH8dF"
+            "n4fCv3j79/uVx0kcN+z+2bz2h8PuG9zebOuYpN+Lr555xWPY/TbPPsSGhnpx"
+            "1JOUvBec4AQnOMEJTnCCc7mSj5vnfkrsd0U8Rtkf9rwRufiGWrbXgTjqSco8"
+            "F9xiciUwOs/F71zBCU5wghPrqeAEJ7h4cb8kj5M4jsn++3Gs/VefnWHr01sQ"
+            "XJ+Y3EK63jMJew/QzHZvX1azsjpRtbu3v7LH9GPV9yIYs1MPsbPF2dn6nx32"
+            "zk2WPdmYTL3+cU0P0esfnxSVNtfX10flAwDBPPDy4+ZTFHtyKpVinP/5irUQ"
+            "TgbBvGT8XzBZHr4Z0d71Mc7tJ42zRI9p4+TZkQd9utMfz/b/AK5Y7+U="
+        )
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
-        self.assertTrue(all([isinstance(module, cpmc.Crop)
-                             for module in pipeline.modules()[1:]]))
+        self.assertTrue(
+            all([isinstance(module, cpmc.Crop) for module in pipeline.modules()[1:]])
+        )
         module = pipeline.modules()[1]
         self.assertEqual(module.image_name.value, "OrigBlue")
         self.assertEqual(module.cropped_image_name.value, "CropBlue")

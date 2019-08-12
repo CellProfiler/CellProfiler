@@ -1,17 +1,16 @@
 # coding=utf-8
-import cellprofiler.gui.help.content
-import cellprofiler.icons
-
+import centrosome.cpmorphology
+import centrosome.zernike
 import numpy
 import scipy.ndimage
+import skimage.measure
 
+import cellprofiler.gui.help.content
+import cellprofiler.icons
+import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import cellprofiler.measurement
-import centrosome.zernike
-import centrosome.cpmorphology
-import skimage.measure
 
 __doc__ = """\
 MeasureObjectSizeShape
@@ -156,52 +155,70 @@ References
 .. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
 .. |MOSS_image0| image:: {ECCENTRICITY_ICON}
-""".format(**{
-                "ECCENTRICITY_ICON": cellprofiler.gui.help.content.image_resource("MeasureObjectSizeShape_Eccentricity.png")
-            })
+""".format(
+    **{
+        "ECCENTRICITY_ICON": cellprofiler.gui.help.content.image_resource(
+            "MeasureObjectSizeShape_Eccentricity.png"
+        )
+    }
+)
 
 """The category of the per-object measurements made by this module"""
-AREA_SHAPE = 'AreaShape'
+AREA_SHAPE = "AreaShape"
 
 """Calculate Zernike features for N,M where N=0 through ZERNIKE_N"""
 ZERNIKE_N = 9
 
-F_AREA = 'Area'
-F_PERIMETER = 'Perimeter'
-F_VOLUME = 'Volume'
-F_SURFACE_AREA = 'SurfaceArea'
-F_ECCENTRICITY = 'Eccentricity'
-F_SOLIDITY = 'Solidity'
-F_EXTENT = 'Extent'
-F_CENTER_X = 'Center_X'
-F_CENTER_Y = 'Center_Y'
-F_CENTER_Z = 'Center_Z'
-F_EULER_NUMBER = 'EulerNumber'
-F_FORM_FACTOR = 'FormFactor'
-F_MAJOR_AXIS_LENGTH = 'MajorAxisLength'
-F_MINOR_AXIS_LENGTH = 'MinorAxisLength'
-F_ORIENTATION = 'Orientation'
-F_COMPACTNESS = 'Compactness'
-F_MAXIMUM_RADIUS = 'MaximumRadius'
-F_MEDIAN_RADIUS = 'MedianRadius'
-F_MEAN_RADIUS = 'MeanRadius'
-F_MIN_FERET_DIAMETER = 'MinFeretDiameter'
-F_MAX_FERET_DIAMETER = 'MaxFeretDiameter'
+F_AREA = "Area"
+F_PERIMETER = "Perimeter"
+F_VOLUME = "Volume"
+F_SURFACE_AREA = "SurfaceArea"
+F_ECCENTRICITY = "Eccentricity"
+F_SOLIDITY = "Solidity"
+F_EXTENT = "Extent"
+F_CENTER_X = "Center_X"
+F_CENTER_Y = "Center_Y"
+F_CENTER_Z = "Center_Z"
+F_EULER_NUMBER = "EulerNumber"
+F_FORM_FACTOR = "FormFactor"
+F_MAJOR_AXIS_LENGTH = "MajorAxisLength"
+F_MINOR_AXIS_LENGTH = "MinorAxisLength"
+F_ORIENTATION = "Orientation"
+F_COMPACTNESS = "Compactness"
+F_MAXIMUM_RADIUS = "MaximumRadius"
+F_MEDIAN_RADIUS = "MedianRadius"
+F_MEAN_RADIUS = "MeanRadius"
+F_MIN_FERET_DIAMETER = "MinFeretDiameter"
+F_MAX_FERET_DIAMETER = "MaxFeretDiameter"
 
 """The non-Zernike features"""
 F_STD_2D = [F_AREA, F_PERIMETER]
 F_STD_3D = [F_VOLUME, F_SURFACE_AREA]
-F_STANDARD = [F_ECCENTRICITY, F_SOLIDITY, F_EXTENT, F_EULER_NUMBER,
-              F_FORM_FACTOR, F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
-              F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y, F_CENTER_Z,
-              F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS,
-              F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
+F_STANDARD = [
+    F_ECCENTRICITY,
+    F_SOLIDITY,
+    F_EXTENT,
+    F_EULER_NUMBER,
+    F_FORM_FACTOR,
+    F_MAJOR_AXIS_LENGTH,
+    F_MINOR_AXIS_LENGTH,
+    F_ORIENTATION,
+    F_COMPACTNESS,
+    F_CENTER_X,
+    F_CENTER_Y,
+    F_CENTER_Z,
+    F_MAXIMUM_RADIUS,
+    F_MEAN_RADIUS,
+    F_MEDIAN_RADIUS,
+    F_MIN_FERET_DIAMETER,
+    F_MAX_FERET_DIAMETER,
+]
 
 
 class MeasureObjectSizeShape(cellprofiler.module.Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
-    category = 'Measurement'
+    category = "Measurement"
 
     def create_settings(self):
         """Create the settings for the module at startup and set the module name
@@ -212,20 +229,21 @@ class MeasureObjectSizeShape(cellprofiler.module.Module):
         self.object_groups = []
         self.add_object(can_remove=False)
         self.spacer = cellprofiler.setting.Divider(line=True)
-        self.add_objects = cellprofiler.setting.DoSomething("", "Add another object", self.add_object)
+        self.add_objects = cellprofiler.setting.DoSomething(
+            "", "Add another object", self.add_object
+        )
 
         self.calculate_zernikes = cellprofiler.setting.Binary(
-            text='Calculate the Zernike features?',
+            text="Calculate the Zernike features?",
             value=True,
             doc="""\
 Select *{YES}* to calculate the Zernike shape features. Because the
 first 10 Zernike polynomials (from order 0 to order 9) are calculated,
 this operation can be time consuming if the image contains a lot of
 objects. Select *{NO}* if you are measuring 3D objects with this
-module.""".format(**{
-                "YES": cellprofiler.setting.YES,
-                "NO": cellprofiler.setting.NO
-            })
+module.""".format(
+                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+            ),
         )
 
     def add_object(self, can_remove=True):
@@ -234,11 +252,22 @@ module.""".format(**{
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
 
-        group.append("name", cellprofiler.setting.ObjectNameSubscriber(
-                "Select objects to measure", cellprofiler.setting.NONE, doc="""Select the objects that you want to measure."""))
+        group.append(
+            "name",
+            cellprofiler.setting.ObjectNameSubscriber(
+                "Select objects to measure",
+                cellprofiler.setting.NONE,
+                doc="""Select the objects that you want to measure.""",
+            ),
+        )
 
         if can_remove:
-            group.append("remove", cellprofiler.setting.RemoveSettingButton("", "Remove this object", self.object_groups, group))
+            group.append(
+                "remove",
+                cellprofiler.setting.RemoveSettingButton(
+                    "", "Remove this object", self.object_groups, group
+                ),
+            )
 
         self.object_groups.append(group)
 
@@ -271,8 +300,8 @@ module.""".format(**{
         for group in self.object_groups:
             if group.name.value in objects:
                 raise cellprofiler.setting.ValidationError(
-                        "%s has already been selected" % group.name.value,
-                        group.name)
+                    "%s has already been selected" % group.name.value, group.name
+                )
             objects.add(group.name.value)
 
     def get_categories(self, pipeline, object_name):
@@ -310,7 +339,9 @@ module.""".format(**{
         else:
             feature_names += list(F_STD_2D)
 
-        feature_names += [self.get_zernike_name(index) for index in self.get_zernike_numbers()]
+        feature_names += [
+            self.get_zernike_name(index) for index in self.get_zernike_numbers()
+        ]
 
         return feature_names
 
@@ -321,8 +352,7 @@ module.""".format(**{
                       (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if (category == AREA_SHAPE and
-                self.get_categories(pipeline, object_name)):
+        if category == AREA_SHAPE and self.get_categories(pipeline, object_name):
             return self.get_feature_names(pipeline)
         return []
 
@@ -330,7 +360,13 @@ module.""".format(**{
         """Run, computing the area measurements for the objects"""
 
         if self.show_window:
-            workspace.display_data.col_labels = ("Object", "Feature", "Mean", "Median", "STD")
+            workspace.display_data.col_labels = (
+                "Object",
+                "Feature",
+                "Mean",
+                "Median",
+                "STD",
+            )
 
             workspace.display_data.statistics = []
 
@@ -346,22 +382,25 @@ module.""".format(**{
             # Do the ellipse-related measurements
             #
             i, j, l = objects.ijv.transpose()
-            centers, eccentricity, major_axis_length, minor_axis_length, \
-            theta, compactness = \
-                centrosome.cpmorphology.ellipse_from_second_moments_ijv(i, j, 1, l, objects.indices, True)
+            centers, eccentricity, major_axis_length, minor_axis_length, theta, compactness = centrosome.cpmorphology.ellipse_from_second_moments_ijv(
+                i, j, 1, l, objects.indices, True
+            )
             del i
             del j
             del l
-            self.record_measurement(workspace, object_name,
-                                    F_ECCENTRICITY, eccentricity)
-            self.record_measurement(workspace, object_name,
-                                    F_MAJOR_AXIS_LENGTH, major_axis_length)
-            self.record_measurement(workspace, object_name,
-                                    F_MINOR_AXIS_LENGTH, minor_axis_length)
-            self.record_measurement(workspace, object_name, F_ORIENTATION,
-                                    theta * 180 / numpy.pi)
-            self.record_measurement(workspace, object_name, F_COMPACTNESS,
-                                    compactness)
+            self.record_measurement(
+                workspace, object_name, F_ECCENTRICITY, eccentricity
+            )
+            self.record_measurement(
+                workspace, object_name, F_MAJOR_AXIS_LENGTH, major_axis_length
+            )
+            self.record_measurement(
+                workspace, object_name, F_MINOR_AXIS_LENGTH, minor_axis_length
+            )
+            self.record_measurement(
+                workspace, object_name, F_ORIENTATION, theta * 180 / numpy.pi
+            )
+            self.record_measurement(workspace, object_name, F_COMPACTNESS, compactness)
             is_first = False
             if len(objects.indices) == 0:
                 nobjects = 0
@@ -383,39 +422,63 @@ module.""".format(**{
             for n, m in zernike_numbers:
                 zf[(n, m)] = numpy.zeros(nobjects)
             if nobjects > 0:
-                chulls, chull_counts = centrosome.cpmorphology.convex_hull_ijv(objects.ijv, objects.indices)
+                chulls, chull_counts = centrosome.cpmorphology.convex_hull_ijv(
+                    objects.ijv, objects.indices
+                )
                 for labels, indices in objects.get_labels():
                     to_indices = indices - 1
                     distances = centrosome.cpmorphology.distance_to_edge(labels)
-                    mcenter_y[to_indices], mcenter_x[to_indices] = \
-                        centrosome.cpmorphology.maximum_position_of_labels(distances, labels, indices)
-                    max_radius[to_indices] = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.maximum(
-                            distances, labels, indices))
-                    mean_radius[to_indices] = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(
-                            distances, labels, indices))
-                    median_radius[to_indices] = centrosome.cpmorphology.median_of_labels(
-                            distances, labels, indices)
+                    mcenter_y[to_indices], mcenter_x[
+                        to_indices
+                    ] = centrosome.cpmorphology.maximum_position_of_labels(
+                        distances, labels, indices
+                    )
+                    max_radius[
+                        to_indices
+                    ] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                        scipy.ndimage.maximum(distances, labels, indices)
+                    )
+                    mean_radius[
+                        to_indices
+                    ] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                        scipy.ndimage.mean(distances, labels, indices)
+                    )
+                    median_radius[
+                        to_indices
+                    ] = centrosome.cpmorphology.median_of_labels(
+                        distances, labels, indices
+                    )
                     #
                     # The extent (area / bounding box area)
                     #
-                    mextent[to_indices] = centrosome.cpmorphology.calculate_extents(labels, indices)
+                    mextent[to_indices] = centrosome.cpmorphology.calculate_extents(
+                        labels, indices
+                    )
                     #
                     # The perimeter distance
                     #
-                    mperimeters[to_indices] = centrosome.cpmorphology.calculate_perimeters(labels, indices)
+                    mperimeters[
+                        to_indices
+                    ] = centrosome.cpmorphology.calculate_perimeters(labels, indices)
                     #
                     # Solidity
                     #
-                    msolidity[to_indices] = centrosome.cpmorphology.calculate_solidity(labels, indices)
+                    msolidity[to_indices] = centrosome.cpmorphology.calculate_solidity(
+                        labels, indices
+                    )
                     #
                     # Euler number
                     #
-                    euler[to_indices] = centrosome.cpmorphology.euler_number(labels, indices)
+                    euler[to_indices] = centrosome.cpmorphology.euler_number(
+                        labels, indices
+                    )
                     #
                     # Zernike features
                     #
                     if self.calculate_zernikes.value:
-                        zf_l = centrosome.zernike.zernike(zernike_numbers, labels, indices)
+                        zf_l = centrosome.zernike.zernike(
+                            zernike_numbers, labels, indices
+                        )
                         for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
                             zf[(n, m)][to_indices] = z
                 #
@@ -425,28 +488,31 @@ module.""".format(**{
                 #
                 # Feret diameter
                 #
-                min_feret_diameter, max_feret_diameter = \
-                    centrosome.cpmorphology.feret_diameter(chulls, chull_counts, objects.indices)
+                min_feret_diameter, max_feret_diameter = centrosome.cpmorphology.feret_diameter(
+                    chulls, chull_counts, objects.indices
+                )
 
             else:
                 ff = numpy.zeros(0)
 
-            for f, m in ([(F_AREA, objects.areas),
-                          (F_CENTER_X, mcenter_x),
-                          (F_CENTER_Y, mcenter_y),
-                          (F_CENTER_Z, numpy.ones_like(mcenter_x)),
-                          (F_EXTENT, mextent),
-                          (F_PERIMETER, mperimeters),
-                          (F_SOLIDITY, msolidity),
-                          (F_FORM_FACTOR, ff),
-                          (F_EULER_NUMBER, euler),
-                          (F_MAXIMUM_RADIUS, max_radius),
-                          (F_MEAN_RADIUS, mean_radius),
-                          (F_MEDIAN_RADIUS, median_radius),
-                          (F_MIN_FERET_DIAMETER, min_feret_diameter),
-                          (F_MAX_FERET_DIAMETER, max_feret_diameter)] +
-                             [(self.get_zernike_name((n, m)), zf[(n, m)])
-                              for n, m in zernike_numbers]):
+            for f, m in [
+                (F_AREA, objects.areas),
+                (F_CENTER_X, mcenter_x),
+                (F_CENTER_Y, mcenter_y),
+                (F_CENTER_Z, numpy.ones_like(mcenter_x)),
+                (F_EXTENT, mextent),
+                (F_PERIMETER, mperimeters),
+                (F_SOLIDITY, msolidity),
+                (F_FORM_FACTOR, ff),
+                (F_EULER_NUMBER, euler),
+                (F_MAXIMUM_RADIUS, max_radius),
+                (F_MEAN_RADIUS, mean_radius),
+                (F_MEDIAN_RADIUS, median_radius),
+                (F_MIN_FERET_DIAMETER, min_feret_diameter),
+                (F_MAX_FERET_DIAMETER, max_feret_diameter),
+            ] + [
+                (self.get_zernike_name((n, m)), zf[(n, m)]) for n, m in zernike_numbers
+            ]:
                 self.record_measurement(workspace, object_name, f, m)
         else:
             labels = objects.segmented
@@ -481,14 +547,16 @@ module.""".format(**{
                 if label == 0:
                     continue
 
-                volume = numpy.zeros_like(labels, dtype='bool')
+                volume = numpy.zeros_like(labels, dtype="bool")
 
                 volume[labels == label] = True
 
                 verts, faces = skimage.measure.marching_cubes_classic(
                     volume,
-                    spacing=objects.parent_image.spacing if objects.has_parent_image else (1.0,) * labels.ndim,
-                    level=0
+                    spacing=objects.parent_image.spacing
+                    if objects.has_parent_image
+                    else (1.0,) * labels.ndim,
+                    level=0,
                 )
 
                 surface_areas += [skimage.measure.mesh_surface_area(verts, faces)]
@@ -496,22 +564,33 @@ module.""".format(**{
             if len(surface_areas) == 0:
                 self.record_measurement(workspace, object_name, F_SURFACE_AREA, [0])
             else:
-                self.record_measurement(workspace, object_name, F_SURFACE_AREA, surface_areas)
+                self.record_measurement(
+                    workspace, object_name, F_SURFACE_AREA, surface_areas
+                )
 
             for feature in self.get_feature_names(workspace.pipeline):
-                if feature in [F_VOLUME, F_EXTENT, F_CENTER_X, F_CENTER_Y, F_CENTER_Z, F_SURFACE_AREA]:
+                if feature in [
+                    F_VOLUME,
+                    F_EXTENT,
+                    F_CENTER_X,
+                    F_CENTER_Y,
+                    F_CENTER_Z,
+                    F_SURFACE_AREA,
+                ]:
                     continue
 
                 self.record_measurement(workspace, object_name, feature, [numpy.nan])
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0,
-                             workspace.display_data.statistics,
-                             col_labels=workspace.display_data.col_labels)
+        figure.subplot_table(
+            0,
+            0,
+            workspace.display_data.statistics,
+            col_labels=workspace.display_data.col_labels,
+        )
 
-    def perform_measurement(self, workspace, function,
-                            object_name, feature_name):
+    def perform_measurement(self, workspace, function, object_name, feature_name):
         """Perform a measurement on a label matrix
 
         workspace   - the workspace for the run
@@ -531,8 +610,7 @@ module.""".format(**{
             data = numpy.zeros((0,))
         self.record_measurement(workspace, object_name, feature_name, data)
 
-    def perform_ndmeasurement(self, workspace, function,
-                              object_name, feature_name):
+    def perform_ndmeasurement(self, workspace, function, object_name, feature_name):
         """Perform a scipy.ndimage-style measurement on a label matrix
 
         workspace   - the workspace for the run
@@ -552,34 +630,44 @@ module.""".format(**{
             data = numpy.zeros((0,))
         self.record_measurement(workspace, object_name, feature_name, data)
 
-    def record_measurement(self, workspace,
-                           object_name, feature_name, result):
+    def record_measurement(self, workspace, object_name, feature_name, result):
         """Record the result of a measurement in the workspace's measurements"""
         data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
-        workspace.add_measurement(object_name,
-                                  "%s_%s" % (AREA_SHAPE, feature_name),
-                                  data)
+        workspace.add_measurement(
+            object_name, "%s_%s" % (AREA_SHAPE, feature_name), data
+        )
         if self.show_window and numpy.any(numpy.isfinite(data)) > 0:
             data = data[numpy.isfinite(data)]
             workspace.display_data.statistics.append(
-                    (object_name, feature_name,
-                     "%.2f" % numpy.mean(data),
-                     "%.2f" % numpy.median(data),
-                     "%.2f" % numpy.std(data)))
+                (
+                    object_name,
+                    feature_name,
+                    "%.2f" % numpy.mean(data),
+                    "%.2f" % numpy.median(data),
+                    "%.2f" % numpy.std(data),
+                )
+            )
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column definitions.
-        All cols returned as float even though "Area" will only ever be int'''
+        """Return measurement column definitions.
+        All cols returned as float even though "Area" will only ever be int"""
         object_names = [s.value for s in self.settings()][:-1]
         measurement_names = self.get_feature_names(pipeline)
         cols = []
         for oname in object_names:
             for mname in measurement_names:
-                cols += [(oname, AREA_SHAPE + '_' + mname, cellprofiler.measurement.COLTYPE_FLOAT)]
+                cols += [
+                    (
+                        oname,
+                        AREA_SHAPE + "_" + mname,
+                        cellprofiler.measurement.COLTYPE_FLOAT,
+                    )
+                ]
         return cols
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         """Adjust the setting_values for older save file versions
 
         setting_values - a list of strings representing the settings for
@@ -600,8 +688,9 @@ module.""".format(**{
         if from_matlab and variable_revision_number == 3:
             # Remove the "Do not use" objects from the list
             setting_values = numpy.array(setting_values)
-            setting_values = list(setting_values[setting_values !=
-                                                 cellprofiler.setting.DO_NOT_USE])
+            setting_values = list(
+                setting_values[setting_values != cellprofiler.setting.DO_NOT_USE]
+            )
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
@@ -613,7 +702,9 @@ module.""".format(**{
 def form_factor(objects):
     """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
     if len(objects.indices) > 0:
-        perimeter = objects.fn_of_label_and_index(centrosome.cpmorphology.calculate_perimeters)
+        perimeter = objects.fn_of_label_and_index(
+            centrosome.cpmorphology.calculate_perimeters
+        )
         return 4.0 * numpy.pi * objects.areas / perimeter ** 2
     else:
         return numpy.zeros((0,))

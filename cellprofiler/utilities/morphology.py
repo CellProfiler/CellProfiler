@@ -21,7 +21,9 @@ def dilation(x_data, structuring_element):
         return y_data
 
     if not is_strel_2d and is_img_2d:
-        raise NotImplementedError("A 3D structuring element cannot be applied to a 2D image.")
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
 
     y_data = skimage.morphology.dilation(x_data, structuring_element)
 

@@ -1312,7 +1312,9 @@ class EditObjectsDialog(wx.Dialog):
         self.panel.Refresh()
 
     def join_objects(self, event):
-        all_labels = numpy.unique([v[self.K_LABEL] for v in list(self.artists.values())])
+        all_labels = numpy.unique(
+            [v[self.K_LABEL] for v in list(self.artists.values())]
+        )
         if len(all_labels) < 2:
             return
         assert all_labels[0] == numpy.min(all_labels)
@@ -1342,7 +1344,9 @@ class EditObjectsDialog(wx.Dialog):
         if len(self.artists) == 0:
             return
 
-        all_labels = numpy.unique([v[self.K_LABEL] for v in list(self.artists.values())])
+        all_labels = numpy.unique(
+            [v[self.K_LABEL] for v in list(self.artists.values())]
+        )
         for label in all_labels:
             self.close_label(label, display=False)
         object_number = all_labels[0]
@@ -1431,7 +1435,9 @@ class EditObjectsDialog(wx.Dialog):
         object_number = self.artists[artist][self.K_LABEL]
         artist.remove()
         del self.artists[artist]
-        if not any([d[self.K_LABEL] == object_number for d in list(self.artists.values())]):
+        if not any(
+            [d[self.K_LABEL] == object_number for d in list(self.artists.values())]
+        ):
             self.remove_label(object_number)
             self.init_labels()
             self.display()

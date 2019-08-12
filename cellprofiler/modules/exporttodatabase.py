@@ -2216,9 +2216,11 @@ available:
             if self.objects_choice == O_SELECT:
                 selected_objs = self.objects_list.value.rsplit(",")
             elif self.objects_choice == O_ALL:
-                selected_objs = list(pipeline.get_provider_dictionary(
-                    cellprofiler.setting.OBJECT_GROUP
-                ).keys())
+                selected_objs = list(
+                    pipeline.get_provider_dictionary(
+                        cellprofiler.setting.OBJECT_GROUP
+                    ).keys()
+                )
 
             if len(selected_objs) > 1:
                 # Check whether each selected object comes from an Identify module. If it does, look for its parent.
@@ -2233,10 +2235,15 @@ available:
                                 d[obj] = parent[0]
                 # For objects with no parents (primary), use the object itself
                 d = dict(
-                    list(zip(
-                        list(d.keys()),
-                        [key if value is None else value for (key, value) in list(d.items())],
-                    ))
+                    list(
+                        zip(
+                            list(d.keys()),
+                            [
+                                key if value is None else value
+                                for (key, value) in list(d.items())
+                            ],
+                        )
+                    )
                 )
 
                 # Only those objects which have parents in common should be written together
@@ -2250,7 +2257,9 @@ available:
                     )[0][1]
                     # Find the objects that this parent goes with
                     mismatched_objs = [
-                        key for (key, value) in list(d.items()) if value == mismatched_parent
+                        key
+                        for (key, value) in list(d.items())
+                        if value == mismatched_parent
                     ]
                     msg = (
                         "%s is not in a 1:1 relationship with the other objects, which may cause downstream problems.\n "
@@ -3189,10 +3198,12 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                 )
                 statements.append(statement)
 
-        experiment_columns = list(filter(
-            lambda x: x[0] == cellprofiler.measurement.EXPERIMENT,
-            workspace.pipeline.get_measurement_columns(),
-        ))
+        experiment_columns = list(
+            filter(
+                lambda x: x[0] == cellprofiler.measurement.EXPERIMENT,
+                workspace.pipeline.get_measurement_columns(),
+            )
+        )
         experiment_coldefs = [
             "%s %s"
             % (
@@ -3319,10 +3330,12 @@ CREATE TABLE %s (
         # Produce a list of columns from each of the separate tables
         list_of_columns = []
         all_objects = dict(
-            list(zip(
-                object_names,
-                [self.get_table_name(object_name) for object_name in object_names],
-            ))
+            list(
+                zip(
+                    object_names,
+                    [self.get_table_name(object_name) for object_name in object_names],
+                )
+            )
         )
 
         column_defs = self.get_pipeline_measurement_columns(pipeline, image_set_list)
@@ -4432,14 +4445,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     def write_post_run_measurements(self, workspace):
         """Write any experiment measurements marked as post-run"""
         columns = workspace.pipeline.get_measurement_columns()
-        columns = list(filter(
-            (
-                lambda c: c[0] == cellprofiler.measurement.EXPERIMENT
-                and len(c) > 3
-                and c[3].get(cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False)
-            ),
-            columns,
-        ))
+        columns = list(
+            filter(
+                (
+                    lambda c: c[0] == cellprofiler.measurement.EXPERIMENT
+                    and len(c) > 3
+                    and c[3].get(cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False)
+                ),
+                columns,
+            )
+        )
         if len(columns) > 0:
             statement = "UPDATE %s SET " % self.get_table_name(
                 cellprofiler.measurement.EXPERIMENT

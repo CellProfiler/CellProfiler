@@ -1501,11 +1501,7 @@ class PipelineController(object):
                 cellprofiler.measurement.IMAGE, url_feature, image_numbers
             )
             data.add_files(
-                [url for url in urls],
-                plate,
-                well,
-                site,
-                channel_names=channel,
+                [url for url in urls], plate, well, site, channel_names=channel
             )
         if self.__plate_viewer is not None:
             self.__pv_frame.Destroy()
@@ -2124,7 +2120,9 @@ class PipelineController(object):
             interrupt = [False]
             message = ["Initializing"]
 
-            def fn(filenames=filenames, interrupt=[True], message=["Default"], queue=queue):
+            def fn(
+                filenames=filenames, interrupt=[True], message=["Default"], queue=queue
+            ):
                 urls = []
                 for pathname in filenames:
                     if not interrupt or interrupt[0]:
@@ -2132,8 +2130,12 @@ class PipelineController(object):
 
                     # Hack - convert drive names to lower case in
                     #        Windows to normalize them.
-                    isWindows = sys.platform == "win32" and pathname[0].isalpha() and pathname[1] == ":"
-                    if (isWindows):
+                    isWindows = (
+                        sys.platform == "win32"
+                        and pathname[0].isalpha()
+                        and pathname[1] == ":"
+                    )
+                    if isWindows:
                         pathname = os.path.normpath(pathname[:2]) + pathname[2:]
 
                     message[0] = "Processing " + pathname
@@ -2162,7 +2164,9 @@ class PipelineController(object):
                             break
                 queue.put(urls)
 
-            thread = threading.Thread(target=fn, args=(filenames, interrupt, message, queue))
+            thread = threading.Thread(
+                target=fn, args=(filenames, interrupt, message, queue)
+            )
             thread.setDaemon(True)
             thread.start()
 
@@ -2440,10 +2444,12 @@ class PipelineController(object):
 
     def __get_selected_modules(self):
         """Get the modules selected in the GUI, but not input modules"""
-        return list(filter(
-            lambda x: not x.is_input_module(),
-            self.__pipeline_list_view.get_selected_modules(),
-        ))
+        return list(
+            filter(
+                lambda x: not x.is_input_module(),
+                self.__pipeline_list_view.get_selected_modules(),
+            )
+        )
 
     def ok_to_edit_pipeline(self):
         """Return True if ok to edit pipeline
@@ -3812,7 +3818,9 @@ class PipelineController(object):
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in list(choices.values()):
-                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(six.text_type(row[i]))
+                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(
+                            six.text_type(row[i])
+                        )
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
@@ -3865,7 +3873,9 @@ class PipelineController(object):
 
                 assert isinstance(event, wx.SizeEvent)
 
-                cellprofiler.preferences.set_choose_image_set_frame_size(size.width, size.height)
+                cellprofiler.preferences.set_choose_image_set_frame_size(
+                    size.width, size.height
+                )
 
                 event.Skip(True)
 
@@ -3900,7 +3910,9 @@ class PipelineController(object):
             if module.is_input_module():
                 if not self.do_step(module, False):
                     return False
-        modules = list(filter((lambda m: not m.is_input_module()), self.__pipeline.modules()))
+        modules = list(
+            filter((lambda m: not m.is_input_module()), self.__pipeline.modules())
+        )
         #
         # Select the first executable module
         #

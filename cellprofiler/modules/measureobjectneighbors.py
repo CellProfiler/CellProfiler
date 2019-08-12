@@ -873,10 +873,14 @@ available colormaps can be seen `here`_.
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name and category == C_NEIGHBORS:
-            return list(filter(
-                lambda x: (x is not M_PERCENT_TOUCHING or self.neighbors_are_objects),
-                M_ALL,
-            ))
+            return list(
+                filter(
+                    lambda x: (
+                        x is not M_PERCENT_TOUCHING or self.neighbors_are_objects
+                    ),
+                    M_ALL,
+                )
+            )
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):

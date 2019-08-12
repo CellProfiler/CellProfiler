@@ -2594,7 +2594,10 @@ to store the image.
                             image_numbers = [image_set_count + 1]
                             if match_metadata:
                                 key = dict(
-                                    [(k, str(v)) for k, v in list(frame_metadata.items())]
+                                    [
+                                        (k, str(v))
+                                        for k, v in list(frame_metadata.items())
+                                    ]
                                 )
                                 if key not in md_dict:
                                     message = (
@@ -2698,7 +2701,10 @@ to store the image.
                                 image_numbers = [image_set_count + 1]
                                 if match_metadata:
                                     key = dict(
-                                        [(k, str(v)) for k, v in list(frame_metadata.items())]
+                                        [
+                                            (k, str(v))
+                                            for k, v in list(frame_metadata.items())
+                                        ]
                                     )
                                     if key not in md_dict:
                                         message = (
@@ -2706,7 +2712,9 @@ to store the image.
                                             % ", ".join(
                                                 [
                                                     "%s=%s%" % kv
-                                                    for kv in list(frame_metadata.items())
+                                                    for kv in list(
+                                                        frame_metadata.items()
+                                                    )
                                                 ]
                                             )
                                         )
@@ -3147,7 +3155,9 @@ to store the image.
                 cellprofiler.measurement.extract_metadata(fd.path_metadata.value, path)
             )
         if needs_well_metadata(list(metadata.keys())):
-            well_row_token, well_column_token = well_metadata_tokens(list(metadata.keys()))
+            well_row_token, well_column_token = well_metadata_tokens(
+                list(metadata.keys())
+            )
             metadata[cellprofiler.measurement.FTR_WELL] = (
                 metadata[well_row_token] + metadata[well_column_token]
             )

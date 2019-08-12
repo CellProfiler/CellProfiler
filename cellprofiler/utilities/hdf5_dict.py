@@ -1025,7 +1025,9 @@ class HDF5FileList(object):
         if filelist_name in g:
             g = g[filelist_name]
             # When loading CP 3.1.8 cpprojs, A_CLASS val is in bytes, thus the legacy.equals()
-            assert cellprofiler.utilities.legacy.equals(g.attrs.get(A_CLASS, None), CLASS_FILELIST_GROUP)
+            assert cellprofiler.utilities.legacy.equals(
+                g.attrs.get(A_CLASS, None), CLASS_FILELIST_GROUP
+            )
         else:
             g = g.require_group(filelist_name)
             g.attrs[A_CLASS] = CLASS_FILELIST_GROUP
@@ -1198,7 +1200,11 @@ class HDF5FileList(object):
                         dest.extend(to_add)
                         sort_order = sorted(
                             list(range(len(leaves))),
-                            key=functools.cmp_to_key(lambda x, y: cellprofiler.utilities.legacy.cmp(leaves[x], leaves[y])),
+                            key=functools.cmp_to_key(
+                                lambda x, y: cellprofiler.utilities.legacy.cmp(
+                                    leaves[x], leaves[y]
+                                )
+                            ),
                         )
                         dest.reorder(sort_order)
                         metadata.extend([None] * len(to_add))
@@ -1225,7 +1231,9 @@ class HDF5FileList(object):
         group = self.get_filelist_group()
         with self.lock:
             schemas = [
-                k for k in list(group.keys()) if group[k].attrs[A_CLASS] == CLASS_DIRECTORY
+                k
+                for k in list(group.keys())
+                if group[k].attrs[A_CLASS] == CLASS_DIRECTORY
             ]
             for key in schemas:
                 del group[key]
@@ -1334,7 +1342,9 @@ class HDF5FileList(object):
         group = self.get_filelist_group()
         with self.lock:
             if root_url is None:
-                schemas = [k for k in list(group.keys()) if HDF5FileList.is_dir(group[k])]
+                schemas = [
+                    k for k in list(group.keys()) if HDF5FileList.is_dir(group[k])
+                ]
                 roots = [(s + ":", group[s], [s]) for s in schemas]
             else:
                 schema, path = self.split_url(root_url, is_directory=True)
@@ -1349,10 +1359,14 @@ class HDF5FileList(object):
                 urls = []
                 path_tuple = tuple(path)
                 if path_tuple in self.__cache:
-                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(self.__cache[path_tuple].urls)
+                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(
+                        self.__cache[path_tuple].urls
+                    )
                     urls += [root + x for x in a]
                 elif VStringArray.has_vstring_array(g):
-                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(self.cache_urls(g, path_tuple))
+                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(
+                        self.cache_urls(g, path_tuple)
+                    )
                     urls += [root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
@@ -2057,9 +2071,13 @@ class VStringArray(object):
     def has_vstring_array(group):
         return (
             ("index" in group)
-            and cellprofiler.utilities.legacy.equals(group["index"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX)
+            and cellprofiler.utilities.legacy.equals(
+                group["index"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX
+            )
             and ("data" in group)
-            and cellprofiler.utilities.legacy.equals(group["data"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA)
+            and cellprofiler.utilities.legacy.equals(
+                group["data"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA
+            )
         )
 
     def __init__(self, group, lock=None):
@@ -2074,7 +2092,9 @@ class VStringArray(object):
         if "index" in group:
             self.index = group["index"]
             # assert self.index.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX
-            assert cellprofiler.utilities.legacy.equals(self.index.attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX)
+            assert cellprofiler.utilities.legacy.equals(
+                self.index.attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX
+            )
         else:
             self.index = group.create_dataset(
                 "index",
@@ -2088,7 +2108,9 @@ class VStringArray(object):
         if "data" in group:
             self.data = group["data"]
             # assert self.data.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA
-            assert cellprofiler.utilities.legacy.equals(self.data.attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA)
+            assert cellprofiler.utilities.legacy.equals(
+                self.data.attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA
+            )
         else:
             self.data = group.create_dataset(
                 "data",
@@ -2199,11 +2221,7 @@ class VStringArray(object):
         """Store the strings passed, overwriting any previously stored data"""
         nulls = numpy.array([s is None for s in strings])
         strings = [
-            ""
-            if s is None
-            else s
-            if isinstance(s, six.text_type)
-            else str(s)
+            "" if s is None else s if isinstance(s, six.text_type) else str(s)
             for s in strings
         ]
         with self.lock:
@@ -2309,11 +2327,7 @@ class VStringArray(object):
             return
         nulls = numpy.array([s is None for s in strings])
         strings = [
-            ""
-            if s is None
-            else s
-            if isinstance(s, six.text_type)
-            else str(s)
+            "" if s is None else s if isinstance(s, six.text_type) else str(s)
             for s in strings
         ]
         with self.lock:

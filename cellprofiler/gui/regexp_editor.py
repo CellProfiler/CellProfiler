@@ -88,9 +88,7 @@ class RegexpDialog(wx.Dialog):
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
         self.regexp_display.SetBufferedDraw(True)
         o = self.regexp_display.GetFullTextExtent("".join(["M"] * 50))
-        w, h = self.regexp_display.ClientToWindowSize(
-            wx.Size(o[1], o[2])
-        )
+        w, h = self.regexp_display.ClientToWindowSize(wx.Size(o[1], o[2]))
         self.regexp_display.SetMinSize(wx.Size(w, h))
         self.regexp_display.Text = self.value
         self.regexp_display.SetLexer(wx.stc.STC_LEX_CONTAINER)

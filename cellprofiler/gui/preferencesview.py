@@ -599,7 +599,9 @@ class PreferencesView(object):
                 abspath = os.path.abspath(path)
 
                 # Remove items that are simply the abspath
-                filtered_items = list(filter(lambda item: os.path.abspath(item)!=abspath, items))
+                filtered_items = list(
+                    filter(lambda item: os.path.abspath(item) != abspath, items)
+                )
 
                 # Clear the edit_box items and re-add the filtered items
                 edit_box.Clear()

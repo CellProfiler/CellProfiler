@@ -31,8 +31,7 @@ def test_run(image, module, image_set, workspace):
         expected_data = skimage.morphology.medial_axis(data)
 
     expected = cellprofiler.image.Image(
-        image=expected_data,
-        dimensions=image.dimensions
+        image=expected_data, dimensions=image.dimensions
     )
 
     numpy.testing.assert_array_equal(actual.pixel_data, expected.pixel_data)

@@ -14,7 +14,7 @@ def read_content(filename):
         "cellprofiler", os.path.join("data", "help", filename)
     )
 
-    with open(resource_filename, "r", encoding='utf-8') as f:
+    with open(resource_filename, "r", encoding="utf-8") as f:
         content = f.read()
 
     return re.sub(

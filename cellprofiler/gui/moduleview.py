@@ -443,7 +443,9 @@ class ModuleView(object):
             #
             #################################
             if self.notes_panel is not None:
-                self.module_notes_control.SetValue("\n".join([six.text_type(note) for note in self.__module.notes]))
+                self.module_notes_control.SetValue(
+                    "\n".join([six.text_type(note) for note in self.__module.notes])
+                )
 
             #################################
             #
@@ -4017,13 +4019,17 @@ class BinaryMatrixController(object):
                 wx.SYS_SMALLICON_Y,
             )
         ]
-        paint_dc.SetBackground(wx.Brush(cellprofiler.preferences.get_background_color()))
+        paint_dc.SetBackground(
+            wx.Brush(cellprofiler.preferences.get_background_color())
+        )
         paint_dc.Clear()
         pShadow = wx.Pen(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.PENSTYLE_SOLID
         )
         pHighlight = wx.Pen(
-            wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, wx.PENSTYLE_SOLID
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT),
+            1,
+            wx.PENSTYLE_SOLID,
         )
         bBackground, bForeground = [
             wx.Brush(color) for color in (wx.Colour(80, 80, 80, 255), wx.WHITE)

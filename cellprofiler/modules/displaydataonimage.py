@@ -521,7 +521,11 @@ color map.
             object_name, category, feature_nbr, image_name, size_scale, display_image, data_image, dpi_to_save, saved_image_contents = (
                 setting_values
             )
-            objects_or_image = OI_IMAGE if object_name == cellprofiler.measurement.IMAGE else OI_OBJECTS
+            objects_or_image = (
+                OI_IMAGE
+                if object_name == cellprofiler.measurement.IMAGE
+                else OI_OBJECTS
+            )
             measurement = "_".join((category, feature_nbr, image_name, size_scale))
             setting_values = [
                 objects_or_image,
@@ -559,7 +563,10 @@ color map.
 
         if variable_revision_number == 3:
             # Added color map mode
-            setting_values = setting_values + [CT_TEXT, cellprofiler.preferences.get_default_colormap()]
+            setting_values = setting_values + [
+                CT_TEXT,
+                cellprofiler.preferences.get_default_colormap(),
+            ]
             variable_revision_number = 4
 
         if variable_revision_number == 4:

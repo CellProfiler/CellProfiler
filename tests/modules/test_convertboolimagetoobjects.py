@@ -45,6 +45,7 @@ def binary_image_to_grayscale(binary_image):
 
     return data
 
+
 @pytest.fixture
 def binary_volume_to_grayscale(binary_volume):
     data = numpy.random.randint(0, 128, binary_volume.shape).astype(numpy.uint8)
@@ -55,12 +56,13 @@ def binary_volume_to_grayscale(binary_volume):
 
     return data
 
+
 @pytest.fixture(
     params=[
         "binary_image",
         "binary_image_to_grayscale",
         "binary_volume",
-        "binary_volume_to_grayscale"
+        "binary_volume_to_grayscale",
     ]
 )
 def image(request):
@@ -86,11 +88,18 @@ def test_run_boolean(image, module, workspace):
 
     measurements = workspace.measurements
 
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_LOCATION_CENTER_X)
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_LOCATION_CENTER_Y)
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_LOCATION_CENTER_Z)
-    assert measurements.has_current_measurements("labeled", cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
     assert measurements.has_current_measurements(
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.FF_COUNT % "labeled"
+        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_X
+    )
+    assert measurements.has_current_measurements(
+        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_Y
+    )
+    assert measurements.has_current_measurements(
+        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_Z
+    )
+    assert measurements.has_current_measurements(
+        "labeled", cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+    )
+    assert measurements.has_current_measurements(
+        cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_COUNT % "labeled"
     )

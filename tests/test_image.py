@@ -17,8 +17,9 @@ class TestImage(unittest.TestCase):
         x = cellprofiler.image.Image(numpy.zeros((10, 10)))
 
     def test_01_02_init_image_mask(self):
-        x = cellprofiler.image.Image(image=numpy.zeros((10, 10)),
-                                     mask=numpy.ones((10, 10), dtype=numpy.bool))
+        x = cellprofiler.image.Image(
+            image=numpy.zeros((10, 10)), mask=numpy.ones((10, 10), dtype=numpy.bool)
+        )
 
     def test_02_01_set_image(self):
         x = cellprofiler.image.Image()
@@ -31,21 +32,29 @@ class TestImage(unittest.TestCase):
     def test_03_01_image_casts(self):
         one_target = numpy.ones((10, 10), dtype=numpy.float64)
         zero_target = numpy.zeros((10, 10), dtype=numpy.float64)
-        tests = [(numpy.float64, 0, 1.0),
-                 (numpy.float32, 0, 1.0),
-                 (numpy.uint32, 0, math.pow(2.0, 32.0) - 1),
-                 (numpy.uint16, 0, math.pow(2.0, 16.0) - 1),
-                 (numpy.uint8, 0, math.pow(2.0, 8.0) - 1),
-                 (numpy.int32, -math.pow(2.0, 31.0), math.pow(2.0, 31.0) - 1),
-                 (numpy.int16, -math.pow(2.0, 15.0), math.pow(2.0, 15.0) - 1),
-                 (numpy.int8, -math.pow(2.0, 7.0), math.pow(2.0, 7.0) - 1)]
+        tests = [
+            (numpy.float64, 0, 1.0),
+            (numpy.float32, 0, 1.0),
+            (numpy.uint32, 0, math.pow(2.0, 32.0) - 1),
+            (numpy.uint16, 0, math.pow(2.0, 16.0) - 1),
+            (numpy.uint8, 0, math.pow(2.0, 8.0) - 1),
+            (numpy.int32, -math.pow(2.0, 31.0), math.pow(2.0, 31.0) - 1),
+            (numpy.int16, -math.pow(2.0, 15.0), math.pow(2.0, 15.0) - 1),
+            (numpy.int8, -math.pow(2.0, 7.0), math.pow(2.0, 7.0) - 1),
+        ]
         for dtype, zval, oval in tests:
             x = cellprofiler.image.Image()
             x.set_image((one_target * zval).astype(dtype))
-            self.assertTrue((x.image == zero_target).all(), msg="Failed setting %s to min" % (repr(dtype)))
+            self.assertTrue(
+                (x.image == zero_target).all(),
+                msg="Failed setting %s to min" % (repr(dtype)),
+            )
             x.set_image((one_target * oval).astype(dtype))
-            y = (x.image == one_target)
-            self.assertTrue((x.image == one_target).all(), msg="Failed setting %s to max" % (repr(dtype)))
+            y = x.image == one_target
+            self.assertTrue(
+                (x.image == one_target).all(),
+                msg="Failed setting %s to max" % (repr(dtype)),
+            )
 
     def test_05_01_mask_of3D(self):
         """The mask of a 3-d image should be 2-d"""
@@ -127,16 +136,22 @@ class TestImage(unittest.TestCase):
     def test_spacing_volume(self):
         data = numpy.ones((5, 10, 10))
 
-        x = cellprofiler.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+        x = cellprofiler.image.Image(
+            image=data, dimensions=3, spacing=(0.77, 0.33, 0.33)
+        )
 
         self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
     def test_spacing_volume_parent_image(self):
         data = numpy.ones((5, 10, 10))
 
-        px = cellprofiler.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+        px = cellprofiler.image.Image(
+            image=data, dimensions=3, spacing=(0.77, 0.33, 0.33)
+        )
 
-        x = cellprofiler.image.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
+        x = cellprofiler.image.Image(
+            image=data, parent_image=px, spacing=(0.77, 0.33, 0.33)
+        )
 
         self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
@@ -166,8 +181,7 @@ class TestImageSet(unittest.TestCase):
     def test_02_02_must_be_binary_throws(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
         x.add(IMAGE_NAME, cellprofiler.image.Image(numpy.zeros((10, 20), float)))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
-                          must_be_binary=True)
+        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_binary=True)
 
     def test_03_01_must_be_gray(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
@@ -178,9 +192,10 @@ class TestImageSet(unittest.TestCase):
     def test_03_02_must_be_gray_throws(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add(IMAGE_NAME, cellprofiler.image.Image(numpy.random.uniform(size=(10, 20, 3))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
-                          must_be_grayscale=True)
+        x.add(
+            IMAGE_NAME, cellprofiler.image.Image(numpy.random.uniform(size=(10, 20, 3)))
+        )
+        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_grayscale=True)
 
     def test_03_03_must_be_gray_color(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
@@ -198,8 +213,7 @@ class TestImageSet(unittest.TestCase):
         x = cellprofiler.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
         x.add(IMAGE_NAME, cellprofiler.image.Image(numpy.random.uniform(size=(10, 20))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
-                          must_be_color=True)
+        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_color=True)
 
     def test_05_01_must_be_rgb(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
@@ -211,15 +225,15 @@ class TestImageSet(unittest.TestCase):
         x = cellprofiler.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
         x.add(IMAGE_NAME, cellprofiler.image.Image(numpy.random.uniform(size=(10, 20))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
-                          must_be_rgb=True)
+        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_rgb=True)
 
     def test_05_03_must_be_rgb_throws_5_channel(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add(IMAGE_NAME, cellprofiler.image.Image(numpy.random.uniform(size=(10, 20, 5))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
-                          must_be_rgb=True)
+        x.add(
+            IMAGE_NAME, cellprofiler.image.Image(numpy.random.uniform(size=(10, 20, 5)))
+        )
+        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_rgb=True)
 
     def test_05_04_must_be_rgb_alpha(self):
         x = cellprofiler.image.ImageSet(0, {}, {})
@@ -231,36 +245,57 @@ class TestImageSet(unittest.TestCase):
 class TestImageSetList(unittest.TestCase):
     def test_00_00_init(self):
         x = cellprofiler.image.ImageSetList()
-        self.assertEqual(x.count(), 0, "# of elements of an empty image set list is %d, not zero" % (x.count()))
+        self.assertEqual(
+            x.count(),
+            0,
+            "# of elements of an empty image set list is %d, not zero" % (x.count()),
+        )
 
     def test_01_01_add_image_set_by_number(self):
         x = cellprofiler.image.ImageSetList()
         y = x.get_image_set(0)
-        self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
+        self.assertEqual(
+            x.count(), 1, "# of elements was %d, should be 1" % (x.count())
+        )
         self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
         self.assertTrue("number" in y.keys, "The image set was missing a number key")
-        self.assertEqual(y.keys["number"], 0,
-                         "The number key should be zero, was %s" % (repr(y.keys["number"])))
+        self.assertEqual(
+            y.keys["number"],
+            0,
+            "The number key should be zero, was %s" % (repr(y.keys["number"])),
+        )
 
     def test_01_02_add_image_set_by_key(self):
         x = cellprofiler.image.ImageSetList()
         key = {"key": "value"}
         y = x.get_image_set(key)
-        self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
+        self.assertEqual(
+            x.count(), 1, "# of elements was %d, should be 1" % (x.count())
+        )
         self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
-        self.assertEqual(y, x.get_image_set(0), "The image set should be retrievable by index")
-        self.assertEqual(y, x.get_image_set(key), "The image set should be retrievable by key")
+        self.assertEqual(
+            y, x.get_image_set(0), "The image set should be retrievable by index"
+        )
+        self.assertEqual(
+            y, x.get_image_set(key), "The image set should be retrievable by key"
+        )
         self.assertEqual(repr(key), repr(y.keys))
 
     def test_01_03_add_two_image_sets(self):
         x = cellprofiler.image.ImageSetList()
         y = x.get_image_set(0)
         z = x.get_image_set(1)
-        self.assertEqual(x.count(), 2, "# of elements was %d, should be 2" % (x.count()))
+        self.assertEqual(
+            x.count(), 2, "# of elements was %d, should be 2" % (x.count())
+        )
         self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
         self.assertEqual(z.number, 1, "The image set should be #1, was %d" % y.number)
-        self.assertEqual(y, x.get_image_set(0), "The first image set was not retrieved by index")
-        self.assertEqual(z, x.get_image_set(1), "The second image set was not retrieved by index")
+        self.assertEqual(
+            y, x.get_image_set(0), "The first image set was not retrieved by index"
+        )
+        self.assertEqual(
+            z, x.get_image_set(1), "The second image set was not retrieved by index"
+        )
 
     def test_02_01_add_image_provider(self):
         x = cellprofiler.image.ImageSetList()
@@ -268,7 +303,9 @@ class TestImageSetList(unittest.TestCase):
         img = cellprofiler.image.Image(numpy.ones((10, 10)))
 
         def fn(image_set, image_provider):
-            self.assertEqual(y, image_set, "Callback was not called with the correct image provider")
+            self.assertEqual(
+                y, image_set, "Callback was not called with the correct image provider"
+            )
             return img
 
         z = cellprofiler.image.CallbackImageProvider("TestImageProvider", fn)
@@ -281,13 +318,17 @@ class TestImageSetList(unittest.TestCase):
         img1 = cellprofiler.image.Image(numpy.ones((10, 10)))
 
         def fn1(image_set, image_provider):
-            self.assertEqual(y, image_set, "Callback was not called with the correct image set")
+            self.assertEqual(
+                y, image_set, "Callback was not called with the correct image set"
+            )
             return img1
 
         img2 = cellprofiler.image.Image(numpy.ones((5, 5)))
 
         def fn2(image_set, image_provider):
-            self.assertEqual(y, image_set, "Callback was not called with the correct image set")
+            self.assertEqual(
+                y, image_set, "Callback was not called with the correct image set"
+            )
             return img2
 
         y.providers.append(cellprofiler.image.CallbackImageProvider("IP1", fn1))
@@ -296,7 +337,7 @@ class TestImageSetList(unittest.TestCase):
         self.assertEqual(img2, y.get_image("IP2"), "Failed to get correct second image")
 
     def test_03_01_serialize_no_key(self):
-        '''Serialize an image list with no keys in the image sets'''
+        """Serialize an image list with no keys in the image sets"""
         x = cellprofiler.image.ImageSetList()
         for i in range(5):
             x.get_image_set(i)
@@ -308,9 +349,9 @@ class TestImageSetList(unittest.TestCase):
 
     def test_03_02_serialize_key(self):
         x = cellprofiler.image.ImageSetList()
-        values = (('A', 'B'), ('C', 'D'), ('E', 'F'))
+        values = (("A", "B"), ("C", "D"), ("E", "F"))
         for value1, value2 in values:
-            d = {'K1': value1, 'K2': value2}
+            d = {"K1": value1, "K2": value2}
             x.get_image_set(d)
         s = x.save_state()
 
@@ -321,21 +362,21 @@ class TestImageSetList(unittest.TestCase):
             image_set = y.get_image_set(i)
             self.assertTrue(isinstance(image_set, cellprofiler.image.ImageSet))
             value1, value2 = values[i]
-            for key, value in (('K1', value1), ('K2', value2)):
+            for key, value in (("K1", value1), ("K2", value2)):
                 self.assertEqual(image_set.keys[key], value)
 
     def test_03_03_serialize_legacy_fields(self):
         x = cellprofiler.image.ImageSetList()
         for i in range(5):
             x.get_image_set(i)
-        d = {'foo': 'bar', 'test': 'suite'}
-        x.legacy_fields['dictionary'] = d
+        d = {"foo": "bar", "test": "suite"}
+        x.legacy_fields["dictionary"] = d
         s = x.save_state()
 
         y = cellprofiler.image.ImageSetList()
         y.load_state(s)
         self.assertEqual(y.count(), 5)
-        self.assertTrue('dictionary' in y.legacy_fields)
+        self.assertTrue("dictionary" in y.legacy_fields)
         for key in list(d.keys()):
-            self.assertTrue(key in y.legacy_fields['dictionary'])
-            self.assertEqual(y.legacy_fields['dictionary'][key], d[key])
+            self.assertTrue(key in y.legacy_fields["dictionary"])
+            self.assertEqual(y.legacy_fields["dictionary"][key], d[key])

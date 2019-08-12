@@ -1085,7 +1085,9 @@ If "*{NO}*" is selected, the following settings are used:
                     numpy.arange(1, object_count + 1),
                 )
                 areas.sort()
-                low_diameter = math.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
+                low_diameter = (
+                    math.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
+                )
                 median_diameter = (
                     math.sqrt(float(areas[object_count // 2]) / numpy.pi) * 2
                 )

@@ -1,5 +1,3 @@
-
-
 import errno
 import json
 import logging

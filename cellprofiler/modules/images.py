@@ -451,7 +451,7 @@ class DirectoryPredicate(cellprofiler.setting.Filter.FilterPredicate):
                 ["/imaging", "image.tif"],
                 None,
             ),
-            *args
+            *args,
         )
 
 
@@ -504,7 +504,7 @@ class FilePredicate(cellprofiler.setting.Filter.FilterPredicate):
                 ["/imaging", "test.tif"],
                 None,
             ),
-            *args
+            *args,
         )
 
 
@@ -618,7 +618,7 @@ class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
                 ["/imaging", "test.tif"],
                 None,
             ),
-            *args
+            *args,
         )
 
 
@@ -725,5 +725,5 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
                 ["/imaging", "test.tif"],
                 self.FakeModule(),
             ),
-            *args
+            *args,
         )

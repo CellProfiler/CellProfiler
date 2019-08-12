@@ -1884,10 +1884,12 @@ to the foreground pixels or the background pixels.
         if (not from_matlab) and variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
             thresh_dict = dict(
-                list(zip(
-                    centrosome.threshold.TM_GLOBAL_METHODS,
-                    centrosome.threshold.TM_METHODS,
-                ))
+                list(
+                    zip(
+                        centrosome.threshold.TM_GLOBAL_METHODS,
+                        centrosome.threshold.TM_METHODS,
+                    )
+                )
             )
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [

@@ -1,7 +1,6 @@
 # coding=utf-8
 
 
-
 import csv
 import logging
 import os
@@ -827,10 +826,7 @@ safe to press it.""",
             list_ctl.InsertColumn(i, field)
         for line in reader:
             list_ctl.Append(
-                [
-                    s if isinstance(s, str) else s
-                    for s in line[: len(header)]
-                ]
+                [s if isinstance(s, str) else s for s in line[: len(header)]]
             )
         frame.SetMinSize((640, 480))
         frame.SetIcon(get_cp_icon())
@@ -1129,7 +1125,8 @@ safe to press it.""",
             #  loadimages)
             #
             image_numbers = m.match_metadata(
-                list(metadata_columns.keys()), [columns[k] for k in list(metadata_columns.keys())]
+                list(metadata_columns.keys()),
+                [columns[k] for k in list(metadata_columns.keys())],
             )
             image_numbers = numpy.array(image_numbers, int).flatten()
             max_image_number = numpy.max(image_numbers)

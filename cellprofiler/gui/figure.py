@@ -1762,7 +1762,7 @@ class Figure(wx.Frame):
                 title,
                 normalize=normalize,
                 rgb_mask=rgb_mask,
-                **kwargs
+                **kwargs,
             )
 
         return self.subplot_imshow(
@@ -2090,7 +2090,7 @@ class Figure(wx.Frame):
         row_labels=None,
         n_cols=1,
         n_rows=1,
-        **kwargs
+        **kwargs,
     ):
         """Put a table into a subplot
 

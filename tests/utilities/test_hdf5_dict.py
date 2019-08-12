@@ -1,5 +1,5 @@
-'''test_hdf5_dict - test the hdf5_dict module
-'''
+"""test_hdf5_dict - test the hdf5_dict module
+"""
 
 import os
 import sys
@@ -21,13 +21,13 @@ ALT_FEATURE_NAME = "featurename2"
 
 
 class HDF5DictTessstBase(unittest.TestCase):
-    '''Base class for HDF5Dict test cases
+    """Base class for HDF5Dict test cases
 
     This class creates a .h5 file per test case during setUp and
     deletes it during tearDown.
 
     Note: misspelling of Tessst is intentional.
-    '''
+    """
 
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
@@ -37,9 +37,11 @@ class HDF5DictTessstBase(unittest.TestCase):
         self.hdf_file.close()
         os.close(self.temp_fd)
         os.remove(self.temp_filename)
-        self.assertFalse(os.path.exists(self.temp_filename),
-                         "If the file can't be removed, it's a bug. "
-                         "Clean up your trash: %s" % self.temp_filename)
+        self.assertFalse(
+            os.path.exists(self.temp_filename),
+            "If the file can't be removed, it's a bug. "
+            "Clean up your trash: %s" % self.temp_filename,
+        )
 
 
 class TestHDF5Dict(unittest.TestCase):
@@ -51,9 +53,11 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict.close()
         os.close(self.temp_fd)
         os.remove(self.temp_filename)
-        self.assertFalse(os.path.exists(self.temp_filename),
-                         "If the file can't be removed, it's a bug. "
-                         "Clean up your trash: %s" % self.temp_filename)
+        self.assertFalse(
+            os.path.exists(self.temp_filename),
+            "If the file can't be removed, it's a bug. "
+            "Clean up your trash: %s" % self.temp_filename,
+        )
 
     def test_00_00_init(self):
         # Test setup and teardown - create HDF5 file / close
@@ -95,13 +99,16 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
 
     def test_02_03_write_numeric_imagesets(self):
-        for dtype, code, ftr in ((int, 'i', FEATURE_NAME),
-                                 (float, 'f', ALT_FEATURE_NAME)):
+        for dtype, code, ftr in (
+            (int, "i", FEATURE_NAME),
+            (float, "f", ALT_FEATURE_NAME),
+        ):
             data = [
                 np.zeros(0, dtype),
                 np.array([1, 10, 100], dtype),
                 np.array([2, 20], dtype),
-                np.array([3, 30, 300, 3000], dtype)]
+                np.array([3, 30, 300, 3000], dtype),
+            ]
             self.hdf5_dict[OBJECT_NAME, ftr, [1, 3]] = data[::2]
             self.hdf5_dict[OBJECT_NAME, ftr, [2, 4]] = data[1::2]
             d2 = self.hdf5_dict[OBJECT_NAME, ftr, [1, 2, 3, 4]]
@@ -124,13 +131,16 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5)
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), list(range(5)))
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), list(range(5))
+        )
 
     def test_02_05_01_upgrade_none_multiple(self):
         # Regression test of issue #1011
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, np.arange(2, 4)] = [
-            np.zeros(1), np.zeros(0)]
+            np.zeros(1),
+            np.zeros(0),
+        ]
 
     def test_02_06_upgrade_int_to_float(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.arange(5)
@@ -139,10 +149,12 @@ class TestHDF5Dict(unittest.TestCase):
 
         self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].dtype.kind, "f")
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), list(range(5)))
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), list(range(5))
+        )
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(),
-                [float(x) / 2 for x in range(5)])
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(),
+            [float(x) / 2 for x in range(5)],
+        )
 
     def test_02_07_upgrade_float_to_string(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = [2.5]
@@ -160,15 +172,16 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(index.shape[0], 3)
 
     def test_02_09_write_with_dtype(self):
-        self.hdf5_dict[
-            OBJECT_NAME, FEATURE_NAME, 1, np.uint8] = np.zeros(5, np.uint16)
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1, np.uint8] = np.zeros(5, np.uint16)
         result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
         self.assertEqual(len(result), 5)
         self.assertEqual(result.dtype, np.uint8)
 
     def test_02_10_write_with_dtype_and_nulls(self):
-        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2), np.uint8] = \
-            [None, np.zeros(5, np.uint8)]
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2), np.uint8] = [
+            None,
+            np.zeros(5, np.uint8),
+        ]
         self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
         result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2]
         self.assertEqual(len(result), 5)
@@ -177,8 +190,8 @@ class TestHDF5Dict(unittest.TestCase):
     def test_02_11_write_empty_dtype(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1, np.uint8] = None
         self.assertEqual(
-                self.hdf5_dict.get_feature_dtype(OBJECT_NAME, FEATURE_NAME),
-                np.uint8)
+            self.hdf5_dict.get_feature_dtype(OBJECT_NAME, FEATURE_NAME), np.uint8
+        )
 
     def test_03_01_add_all(self):
         r = np.random.RandomState()
@@ -213,9 +226,13 @@ class TestHDF5Dict(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(303)
         data = [[], r.randint(0, 255, 10).astype(np.uint8)]
-        self.hdf5_dict.add_all(OBJECT_NAME, FEATURE_NAME, data,
-                               idxs=np.arange(1, len(data) + 1),
-                               data_type=np.uint8)
+        self.hdf5_dict.add_all(
+            OBJECT_NAME,
+            FEATURE_NAME,
+            data,
+            idxs=np.arange(1, len(data) + 1),
+            data_type=np.uint8,
+        )
         self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
         m2 = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2]
         self.assertEqual(m2.dtype, np.uint8)
@@ -265,8 +282,8 @@ class TestHDF5Dict(unittest.TestCase):
                 self.hdf5_dict = H5DICT.HDF5Dict(self.temp_filename, mode="r")
             for idx, image_number in enumerate(new_image_numbers[1:]):
                 self.assertEqual(
-                        values[idx],
-                        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, image_number])
+                    values[idx], self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, image_number]
+                )
 
     def test_07_01_file_contents(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
@@ -274,6 +291,7 @@ class TestHDF5Dict(unittest.TestCase):
         fd, filename = tempfile.mkstemp(".h5")
         if sys.platform.startswith("win"):
             import msvcrt
+
             msvcrt.setmode(fd, os.O_BINARY)
         os.write(fd, contents)
         os.close(fd)
@@ -291,8 +309,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
         temp_fd, temp_filename = tempfile.mkstemp(".h5")
         try:
-            h5copy = H5DICT.HDF5Dict(temp_filename,
-                                     copy=self.hdf5_dict.top_group)
+            h5copy = H5DICT.HDF5Dict(temp_filename, copy=self.hdf5_dict.top_group)
 
             self.assertTrue(h5copy.has_object(OBJECT_NAME))
             self.assertTrue(h5copy.has_feature(OBJECT_NAME, FEATURE_NAME))
@@ -301,9 +318,11 @@ class TestHDF5Dict(unittest.TestCase):
             h5copy.close()
             os.close(temp_fd)
             os.remove(temp_filename)
-            self.assertFalse(os.path.exists(temp_filename),
-                             "If the file can't be removed, it's a bug. "
-                             "Clean up your trash: %s" % temp_filename)
+            self.assertFalse(
+                os.path.exists(temp_filename),
+                "If the file can't be removed, it's a bug. "
+                "Clean up your trash: %s" % temp_filename,
+            )
 
     def test_09_01_delete_imageset(self):
         # Delete an image set's measurements from one image set
@@ -350,13 +369,21 @@ class TestHDF5FileList(unittest.TestCase):
     def test_01_01_encode_alphanumeric(self):
         r = np.random.RandomState()
         r.seed(101)
-        s = r.permutation(np.frombuffer("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1")).tostring()
+        s = r.permutation(
+            np.frombuffer(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1"
+            )
+        ).tostring()
         self.assertEqual(s, E(s))
 
     def test_01_02_decode_alphanumeric(self):
         r = np.random.RandomState()
         r.seed(102)
-        s = r.permutation(np.frombuffer("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1")).tostring()
+        s = r.permutation(
+            np.frombuffer(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1"
+            )
+        ).tostring()
         self.assertEqual(s, D(s))
 
     def test_01_03_decode_of_encode_is_same(self):
@@ -368,8 +395,7 @@ class TestHDF5FileList(unittest.TestCase):
     def test_02_01_get_new_filelist_group(self):
         g = self.filelist.get_filelist_group()
         self.assertIn(H5DICT.FILE_LIST_GROUP, self.hdf_file)
-        self.assertIn(H5DICT.DEFAULT_GROUP,
-                      self.hdf_file[H5DICT.FILE_LIST_GROUP])
+        self.assertIn(H5DICT.DEFAULT_GROUP, self.hdf_file[H5DICT.FILE_LIST_GROUP])
 
     def test_02_02_get_existing_filelist_group(self):
         g1 = self.filelist.get_filelist_group()
@@ -397,8 +423,7 @@ class TestHDF5FileList(unittest.TestCase):
         self.filelist.add_files_to_filelist([])
 
     def test_03_01_add_file(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
             filelist.add_files_to_filelist(["file://foo/bar.jpg"])
             if not cache:
@@ -410,13 +435,11 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertIn("bar.jpg", filenames)
 
     def test_03_02_add_two_files(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
             if not cache:
                 filelist.clear_cache()
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+            filelist.add_files_to_filelist(["file://foo/bar.jpg", "file://foo/baz.jpg"])
             self.assertIn(E("file"), g)
             self.assertIn(E("//foo"), g[E("file")])
             filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
@@ -426,14 +449,11 @@ class TestHDF5FileList(unittest.TestCase):
 
     def test_03_03_add_two_directories(self):
         g = self.filelist.get_filelist_group()
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://bar/baz.jpg"])
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(["file://foo/bar.jpg", "file://bar/baz.jpg"])
             if not cache:
                 filelist.clear_cache()
-            for subdir, filename in (("//foo", "bar.jpg"),
-                                     ("//bar", "baz.jpg")):
+            for subdir, filename in (("//foo", "bar.jpg"), ("//bar", "baz.jpg")):
                 self.assertIn(E("file"), g)
                 self.assertIn(E(subdir), g[E("file")])
                 filenames = list(H5DICT.VStringArray(g[E("file")][E(subdir)]))
@@ -441,15 +461,12 @@ class TestHDF5FileList(unittest.TestCase):
                 self.assertEqual(filenames[0], filename)
 
     def test_03_04_add_a_file_and_a_file(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg"])
+            filelist.add_files_to_filelist(["file://foo/bar.jpg"])
             if not cache:
                 filelist.clear_cache()
-            filelist.add_files_to_filelist(
-                    ["file://foo/baz.jpg"])
+            filelist.add_files_to_filelist(["file://foo/baz.jpg"])
             if not cache:
                 filelist.clear_cache()
             self.assertIn(E("file"), g)
@@ -460,11 +477,9 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(filenames[1], "baz.jpg")
 
     def test_03_05_add_a_file_with_a_stupid_DOS_name(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
-            filelist.add_files_to_filelist(
-                    ["file:///C:/foo/bar.jpg"])
+            filelist.add_files_to_filelist(["file:///C:/foo/bar.jpg"])
             if not cache:
                 filelist.clear_cache()
             self.assertIn(E("file"), g)
@@ -475,8 +490,7 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(filenames[0], "bar.jpg")
 
     def test_03_06_add_a_file_to_the_base(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
             filelist.add_files_to_filelist(["file://foo.jpg"])
             if not cache:
@@ -488,8 +502,7 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(filenames[0], "foo.jpg")
 
     def test_03_07_add_a_file_to_the_schema(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
             filelist.add_files_to_filelist(["file:foo.jpg"])
             if not cache:
@@ -500,8 +513,7 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(filenames[0], "foo.jpg")
 
     def test_03_08_what_if_the_user_has_a_directory_named_index(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             #
             # Another in the endless progression of disgusting corner cases
             #
@@ -509,8 +521,8 @@ class TestHDF5FileList(unittest.TestCase):
             if not cache:
                 filelist.clear_cache()
             filelist.add_files_to_filelist(
-                    ["file://foo/index/baz.jpg",
-                     "file://foo/data/xyz.jpg"])
+                ["file://foo/index/baz.jpg", "file://foo/data/xyz.jpg"]
+            )
             if not cache:
                 filelist.clear_cache()
             result = filelist.get_filelist()
@@ -520,8 +532,8 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(result[2], "file://foo/index/baz.jpg")
 
             filelist.add_files_to_filelist(
-                    ["file://bar/index/baz.jpg",
-                     "file://bar/data/baz.jpg"])
+                ["file://bar/index/baz.jpg", "file://bar/data/baz.jpg"]
+            )
             if not cache:
                 filelist.clear_cache()
             filelist.add_files_to_filelist(["file://bar/baz.jpg"])
@@ -529,11 +541,9 @@ class TestHDF5FileList(unittest.TestCase):
                 filelist.clear_cache()
 
     def test_04_00_remove_none(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+            filelist.add_files_to_filelist(["file://foo/bar.jpg", "file://foo/baz.jpg"])
             if not cache:
                 filelist.clear_cache()
             self.filelist.remove_files_from_filelist([])
@@ -545,15 +555,14 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(filenames[1], "baz.jpg")
 
     def test_04_01_remove_file(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
             filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://foo/baz.jpg", "file://foo/a.jpg"])
+                ["file://foo/bar.jpg", "file://foo/baz.jpg", "file://foo/a.jpg"]
+            )
             if not cache:
                 filelist.clear_cache()
-            filelist.remove_files_from_filelist(
-                    ["file://foo/bar.jpg"])
+            filelist.remove_files_from_filelist(["file://foo/bar.jpg"])
             if not cache:
                 filelist.clear_cache()
 
@@ -565,15 +574,12 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(filenames[1], "baz.jpg")
 
     def test_04_02_remove_all_files_in_dir(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://bar/baz.jpg"])
+            filelist.add_files_to_filelist(["file://foo/bar.jpg", "file://bar/baz.jpg"])
             if not cache:
                 filelist.clear_cache()
-            filelist.remove_files_from_filelist(
-                    ["file://foo/bar.jpg"])
+            filelist.remove_files_from_filelist(["file://foo/bar.jpg"])
             if not cache:
                 filelist.clear_cache()
             self.assertIn(E("file"), g)
@@ -581,16 +587,13 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertNotIn(E("//foo"), g[E("file")])
 
     def test_04_03_remove_all_files_in_parent(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             g = filelist.get_filelist_group()
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file:baz.jpg"])
+            filelist.add_files_to_filelist(["file://foo/bar.jpg", "file:baz.jpg"])
             if not cache:
                 filelist.clear_cache()
             self.assertTrue(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
-            filelist.remove_files_from_filelist(
-                    ["file:baz.jpg"])
+            filelist.remove_files_from_filelist(["file:baz.jpg"])
             if not cache:
                 filelist.clear_cache()
             self.assertIn(E("file"), g)
@@ -601,10 +604,10 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertFalse(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
 
     def test_05_01_get_filelist(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             self.filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+                ["file://foo/bar.jpg", "file://foo/baz.jpg"]
+            )
             if not cache:
                 filelist.clear_cache()
             urls = self.filelist.get_filelist()
@@ -613,10 +616,10 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(urls[1], "file://foo/baz.jpg")
 
     def test_05_02_get_multidir_filelist(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo.jpg"])
+                ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo.jpg"]
+            )
             if not cache:
                 filelist.clear_cache()
             urls = filelist.get_filelist()
@@ -626,10 +629,10 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(urls[0], "file://foo.jpg")
 
     def test_05_03_get_sub_filelist(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo/baz.jpg"])
+                ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo/baz.jpg"]
+            )
             if not cache:
                 filelist.clear_cache()
             urls = filelist.get_filelist("file://foo")
@@ -644,10 +647,8 @@ class TestHDF5FileList(unittest.TestCase):
         self.filelist.walk(fn)
 
     def test_06_01_walk_one(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
-            filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(["file://foo/bar.jpg", "file://foo/baz.jpg"])
             if not cache:
                 filelist.clear_cache()
             roots = []
@@ -672,12 +673,16 @@ class TestHDF5FileList(unittest.TestCase):
             self.assertEqual(urls[1][1], "baz.jpg")
 
     def test_06_02_walk_many(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(
-                    ["file://foo/bar.jpg", "file://foo/baz.jpg",
-                     "file://foo/bar/baz.jpg", "file://bar/foo.jpg",
-                     "file://foo/baz/bar.jpg"])
+                [
+                    "file://foo/bar.jpg",
+                    "file://foo/baz.jpg",
+                    "file://foo/bar/baz.jpg",
+                    "file://bar/foo.jpg",
+                    "file://foo/baz/bar.jpg",
+                ]
+            )
             if not cache:
                 filelist.clear_cache()
             roots = []
@@ -728,8 +733,7 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(len(self.filelist.list_files("file://foo/baz")), 0)
 
     def test_07_01_list_files(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
             if not cache:
                 filelist.clear_cache()
@@ -750,44 +754,35 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(result[0], "bar")
 
     def test_09_00_get_type_none(self):
-        self.assertEqual(self.filelist.get_type("file://foo/bar.jpg"),
-                         self.filelist.TYPE_NONE)
+        self.assertEqual(
+            self.filelist.get_type("file://foo/bar.jpg"), self.filelist.TYPE_NONE
+        )
 
     def test_09_01_get_type_file(self):
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             urls = [
                 "file://foo/bar/baz.jpg",
                 "file://foo/bar/foo.jpg",
-                "file://foo/bar/abc.jpg"]
+                "file://foo/bar/abc.jpg",
+            ]
             filelist.add_files_to_filelist(urls)
             if not cache:
                 filelist.clear_cache()
             for url in urls:
-                self.assertEqual(filelist.get_type(url),
-                                 filelist.TYPE_FILE)
+                self.assertEqual(filelist.get_type(url), filelist.TYPE_FILE)
 
     def test_09_02_get_type_dir(self):
-        urls = [
-            "file://foo.jpg",
-            "file://foo/bar.jpg",
-            "file://foo/bar/baz.jpg"]
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        urls = ["file://foo.jpg", "file://foo/bar.jpg", "file://foo/bar/baz.jpg"]
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
             if not cache:
                 filelist.clear_cache()
             for url in ["file://", "file://foo", "file://foo/bar"]:
-                self.assertEqual(filelist.get_type(url),
-                                 filelist.TYPE_DIRECTORY)
+                self.assertEqual(filelist.get_type(url), filelist.TYPE_DIRECTORY)
 
     def test_10_01_get_no_metadata(self):
-        urls = [
-            "file://foo.jpg",
-            "file://foo/bar.jpg",
-            "file://foo/bar/baz.jpg"]
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        urls = ["file://foo.jpg", "file://foo/bar.jpg", "file://foo/bar/baz.jpg"]
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
             if not cache:
                 filelist.clear_cache()
@@ -795,18 +790,14 @@ class TestHDF5FileList(unittest.TestCase):
                 self.assertIsNone(filelist.get_metadata(url))
 
     def test_10_02_get_metadata(self):
-        urls = [
-            "file://foo.jpg",
-            "file://foo/bar.jpg",
-            "file://foo/bar/baz.jpg"]
+        urls = ["file://foo.jpg", "file://foo/bar.jpg", "file://foo/bar/baz.jpg"]
 
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
             return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
 
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
             for url in urls:
                 filelist.add_metadata(url, fn_metadata(url))
@@ -817,20 +808,15 @@ class TestHDF5FileList(unittest.TestCase):
                 self.assertEqual(expected, filelist.get_metadata(url))
 
     def test_10_03_get_metadata_after_insert(self):
-        urls = [
-            "file://foo/foo.jpg",
-            "file://foo/bar.jpg",
-            "file://foo/baz.jpg"]
-        extend = ["file://foo/pleasework.jpg",
-                  "file://foo/beesaregreat.jpg"]
+        urls = ["file://foo/foo.jpg", "file://foo/bar.jpg", "file://foo/baz.jpg"]
+        extend = ["file://foo/pleasework.jpg", "file://foo/beesaregreat.jpg"]
 
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
             return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
 
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
             for url in urls:
                 filelist.add_metadata(url, fn_metadata(url))
@@ -845,18 +831,14 @@ class TestHDF5FileList(unittest.TestCase):
 
     def test_10_04_get_metadata_after_remove(self):
         to_remove = "file://foo/bar.jpg"
-        urls = [
-            "file://foo/foo.jpg",
-            to_remove,
-            "file://foo/baz.jpg"]
+        urls = ["file://foo/foo.jpg", to_remove, "file://foo/baz.jpg"]
 
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
             return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
 
-        for filelist, cache in ((self.filelist, True),
-                                (self.filelist_nocache, False)):
+        for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
             for url in urls:
                 filelist.add_metadata(url, fn_metadata(url))
@@ -921,8 +903,7 @@ class TestHDF5ImageSet(HDF5DictTessstBase):
         data = r.uniform(size=(2, 3, 4, 5, 6))
         image_set = H5DICT.HDF5ImageSet(self.hdf_file)
         image_set.set_image(self.CHANNEL_NAME, data)
-        np.testing.assert_array_equal(
-                data, image_set.get_image(self.CHANNEL_NAME))
+        np.testing.assert_array_equal(data, image_set.get_image(self.CHANNEL_NAME))
 
     def test_02_02_set_reattach_and_get(self):
         r = np.random.RandomState()
@@ -931,8 +912,7 @@ class TestHDF5ImageSet(HDF5DictTessstBase):
         image_set = H5DICT.HDF5ImageSet(self.hdf_file)
         image_set.set_image(self.CHANNEL_NAME, data)
         image_set = H5DICT.HDF5ImageSet(self.hdf_file)
-        np.testing.assert_array_equal(
-                data, image_set.get_image(self.CHANNEL_NAME))
+        np.testing.assert_array_equal(data, image_set.get_image(self.CHANNEL_NAME))
 
     def test_02_03_ensure_no_overwrite(self):
         r = np.random.RandomState()
@@ -942,8 +922,7 @@ class TestHDF5ImageSet(HDF5DictTessstBase):
         image_set.set_image(self.CHANNEL_NAME, data)
         copy = image_set.get_image(self.CHANNEL_NAME)
         copy[:] = 0
-        np.testing.assert_array_equal(
-                data, image_set.get_image(self.CHANNEL_NAME))
+        np.testing.assert_array_equal(data, image_set.get_image(self.CHANNEL_NAME))
 
     def test_02_04_set_and_get_two(self):
         r = np.random.RandomState()
@@ -953,10 +932,8 @@ class TestHDF5ImageSet(HDF5DictTessstBase):
         image_set = H5DICT.HDF5ImageSet(self.hdf_file)
         image_set.set_image(self.CHANNEL_NAME, data1)
         image_set.set_image(self.ALT_CHANNEL_NAME, data2)
-        np.testing.assert_array_equal(
-                data1, image_set.get_image(self.CHANNEL_NAME))
-        np.testing.assert_array_equal(
-                data2, image_set.get_image(self.ALT_CHANNEL_NAME))
+        np.testing.assert_array_equal(data1, image_set.get_image(self.CHANNEL_NAME))
+        np.testing.assert_array_equal(data2, image_set.get_image(self.ALT_CHANNEL_NAME))
 
 
 class TestHDF5ObjectSet(HDF5DictTessstBase):
@@ -973,132 +950,141 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         r = np.random.RandomState()
         r.seed(12)
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
-        self.assertFalse(object_set.has_dense(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(
+            object_set.has_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         expected = r.randint(0, 10, size=(11, 13))
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
-        self.assertTrue(object_set.has_dense(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
-        self.assertFalse(object_set.has_sparse(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
+        self.assertTrue(object_set.has_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(
+            object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         np.testing.assert_array_equal(
-                expected,
-                object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            expected, object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
 
     def test_01_03_set_has_get_sparse(self):
         # test set_sparse, has_sparse, get_sparse
         r = np.random.RandomState()
         r.seed(13)
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
-        self.assertFalse(object_set.has_sparse(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(
+            object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         expected = np.core.records.fromarrays(
-                r.randint(0, 10, (3, 9)),
-                [(object_set.AXIS_Y, np.uint32, 1),
-                 (object_set.AXIS_X, np.uint32, 1),
-                 (object_set.AXIS_LABELS, np.uint32, 1)])
-        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                              expected)
-        self.assertTrue(object_set.has_sparse(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
-        self.assertFalse(object_set.has_dense(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            r.randint(0, 10, (3, 9)),
+            [
+                (object_set.AXIS_Y, np.uint32, 1),
+                (object_set.AXIS_X, np.uint32, 1),
+                (object_set.AXIS_LABELS, np.uint32, 1),
+            ],
+        )
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
+        self.assertTrue(
+            object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
+        self.assertFalse(
+            object_set.has_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         np.testing.assert_array_equal(
-                expected,
-                object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            expected, object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
 
     def test_01_04_clear(self):
         r = np.random.RandomState()
         r.seed(14)
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
         expected = r.randint(0, 10, size=(11, 13))
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         expected = np.core.records.fromarrays(
-                r.randint(0, 10, (3, 9)),
-                [(object_set.AXIS_Y, np.uint32, 1),
-                 (object_set.AXIS_X, np.uint32, 1),
-                 (object_set.AXIS_LABELS, np.uint32, 1)])
-        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                              expected)
+            r.randint(0, 10, (3, 9)),
+            [
+                (object_set.AXIS_Y, np.uint32, 1),
+                (object_set.AXIS_X, np.uint32, 1),
+                (object_set.AXIS_LABELS, np.uint32, 1),
+            ],
+        )
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         object_set.clear(self.OBJECTS_NAME, self.ALT_SEGMENTATION_NAME)
-        self.assertTrue(object_set.has_dense(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertTrue(object_set.has_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
         object_set.clear(self.OBJECTS_NAME)
-        self.assertFalse(object_set.has_dense(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
-        self.assertFalse(object_set.has_sparse(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(
+            object_set.has_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
+        self.assertFalse(
+            object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         expected = r.randint(0, 10, size=(11, 13))
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
-        self.assertTrue(object_set.has_dense(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
-        self.assertFalse(object_set.has_sparse(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
+        self.assertTrue(object_set.has_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(
+            object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
 
     def test_01_05_set_dense_twice_same_size(self):
         r = np.random.RandomState()
         r.seed(15)
         expected = r.randint(0, 10, size=(11, 13))
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         expected = r.randint(0, 10, size=(11, 13))
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         np.testing.assert_array_equal(
-                expected,
-                object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            expected, object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
 
     def test_01_06_set_dense_different_size(self):
         r = np.random.RandomState()
         r.seed(16)
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
         expected = r.randint(0, 10, size=(11, 13))
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         expected = r.randint(0, 10, size=(13, 11))
-        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                             expected)
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         np.testing.assert_array_equal(
-                expected,
-                object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            expected, object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
 
     def test_01_07_set_sparse_many(self):
         r = np.random.RandomState()
         r.seed(13)
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
-        self.assertFalse(object_set.has_sparse(
-                self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(
+            object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         expected = np.core.records.fromarrays(
-                r.randint(0, 10, (3, 9)),
-                [(object_set.AXIS_Y, np.uint32, 1),
-                 (object_set.AXIS_X, np.uint32, 1),
-                 (object_set.AXIS_LABELS, np.uint32, 1)])
-        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                              expected)
+            r.randint(0, 10, (3, 9)),
+            [
+                (object_set.AXIS_Y, np.uint32, 1),
+                (object_set.AXIS_X, np.uint32, 1),
+                (object_set.AXIS_LABELS, np.uint32, 1),
+            ],
+        )
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         expected = np.core.records.fromarrays(
-                r.randint(0, 10, (3, 20)),
-                [(object_set.AXIS_Y, np.uint32, 1),
-                 (object_set.AXIS_X, np.uint32, 1),
-                 (object_set.AXIS_LABELS, np.uint32, 1)])
-        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                              expected)
+            r.randint(0, 10, (3, 20)),
+            [
+                (object_set.AXIS_Y, np.uint32, 1),
+                (object_set.AXIS_X, np.uint32, 1),
+                (object_set.AXIS_LABELS, np.uint32, 1),
+            ],
+        )
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         np.testing.assert_array_equal(
-                expected,
-                object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            expected, object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
         expected = np.core.records.fromarrays(
-                r.randint(0, 10, (3, 6)),
-                [(object_set.AXIS_Y, np.uint32, 1),
-                 (object_set.AXIS_X, np.uint32, 1),
-                 (object_set.AXIS_LABELS, np.uint32, 1)])
-        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
-                              expected)
+            r.randint(0, 10, (3, 6)),
+            [
+                (object_set.AXIS_Y, np.uint32, 1),
+                (object_set.AXIS_X, np.uint32, 1),
+                (object_set.AXIS_LABELS, np.uint32, 1),
+            ],
+        )
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         np.testing.assert_array_equal(
-                expected,
-                object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+            expected, object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
+        )
 
 
 class TestHDFCSV(HDF5DictTessstBase):
@@ -1134,9 +1120,11 @@ class TestHDFCSV(HDF5DictTessstBase):
             self.assertEqual(s0, s1)
 
     def test_04_01_set_all(self):
-        d = {"random": ["foo", "bar", "baz"],
-             "fruits": ["lemon", "cherry", "orange", "apple"],
-             "rocks": ["granite", "basalt", "limestone"]}
+        d = {
+            "random": ["foo", "bar", "baz"],
+            "fruits": ["lemon", "cherry", "orange", "apple"],
+            "rocks": ["granite", "basalt", "limestone"],
+        }
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
         csv.set_all(d)
         for key, strings in d.items():
@@ -1146,9 +1134,11 @@ class TestHDFCSV(HDF5DictTessstBase):
                 self.assertEqual(s0, s1)
 
     def test_05_01_get_column_names_etc(self):
-        d = {"random": ["foo", "bar", "baz"],
-             "fruits": ["lemon", "cherry", "orange", "apple"],
-             "rocks": ["granite", "basalt", "limestone"]}
+        d = {
+            "random": ["foo", "bar", "baz"],
+            "fruits": ["lemon", "cherry", "orange", "apple"],
+            "rocks": ["granite", "basalt", "limestone"],
+        }
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
         csv.set_all(d)
         for key in d:
@@ -1192,22 +1182,26 @@ class TestVStringArray(HDF5DictTessstBase):
         a[0] = "foo"
         a[0] = "hu"
         self.assertEqual(self.hdf_file["index"].shape[0], 1)
-        self.assertEqual(self.hdf_file["index"][0, 1] -
-                         self.hdf_file["index"][0, 0], 2)
-        self.assertEqual(self.hdf_file["data"][
-                         self.hdf_file["index"][0, 0]:
-                         self.hdf_file["index"][0, 1]].tostring(), "hu")
+        self.assertEqual(self.hdf_file["index"][0, 1] - self.hdf_file["index"][0, 0], 2)
+        self.assertEqual(
+            self.hdf_file["data"][
+                self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
+            ].tostring(),
+            "hu",
+        )
 
     def test_02_04_set_and_set_longer(self):
         a = H5DICT.VStringArray(self.hdf_file)
         a[0] = "foo"
         a[0] = "whoops"
         self.assertEqual(self.hdf_file["index"].shape[0], 1)
-        self.assertEqual(self.hdf_file["index"][0, 1] -
-                         self.hdf_file["index"][0, 0], 6)
-        self.assertEqual(self.hdf_file["data"][
-                         self.hdf_file["index"][0, 0]:
-                         self.hdf_file["index"][0, 1]].tostring(), "whoops")
+        self.assertEqual(self.hdf_file["index"][0, 1] - self.hdf_file["index"][0, 0], 6)
+        self.assertEqual(
+            self.hdf_file["data"][
+                self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
+            ].tostring(),
+            "whoops",
+        )
 
     def test_02_05_set_empty(self):
         a = H5DICT.VStringArray(self.hdf_file)
@@ -1342,7 +1336,7 @@ class TestVStringArray(HDF5DictTessstBase):
         r.seed(92)
         lengths = r.randint(3, 10, 100)
         idx = np.hstack([[0], np.cumsum(lengths)])
-        chars = r.randint(ord('A'), ord('F') + 1, idx[-1]).astype(np.uint8)
+        chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
         strings = [chars[i:j].tostring() for i, j in zip(idx[:-1], idx[1:])]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings)
@@ -1380,7 +1374,7 @@ class TestVStringArray(HDF5DictTessstBase):
         r.seed(1100)
         lengths = r.randint(3, 10, 100)
         idx = np.hstack([[0], np.cumsum(lengths)])
-        chars = r.randint(ord('A'), ord('F') + 1, idx[-1]).astype(np.uint8)
+        chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
         strings = [chars[i:j].tostring() for i, j in zip(idx[:-1], idx[1:])]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings[:50])
@@ -1467,13 +1461,11 @@ class TestStringReference(HDF5DictTessstBase):
         self.assertEqual(s, rstrings[0])
 
     def test_01_03_insert_two(self):
-        for s1, s2 in (("foo", "bar"),
-                       ("bar", "foo"),
-                       ("foo", "fooo"),
-                       ("fo", "foo")):
+        for s1, s2 in (("foo", "bar"), ("bar", "foo"), ("foo", "fooo"), ("fo", "foo")):
             for how in ("together", "separate"):
-                sr = H5DICT.StringReferencer(self.hdf_file.create_group(
-                        "test" + s1 + s2 + how))
+                sr = H5DICT.StringReferencer(
+                    self.hdf_file.create_group("test" + s1 + s2 + how)
+                )
                 if how == "together":
                     result = sr.get_string_refs([s1, s2])
                 else:
@@ -1495,7 +1487,7 @@ class TestStringReference(HDF5DictTessstBase):
 
     def test_01_05_unicode(self):
         sr = H5DICT.StringReferencer(self.hdf_file.create_group("test"))
-        s = '\u03c0r\u00b2'
+        s = "\u03c0r\u00b2"
         result = sr.get_string_refs([s])
         self.assertEqual(len(result), 1)
         rstrings = sr.get_strings(result)
@@ -1506,8 +1498,7 @@ class TestStringReference(HDF5DictTessstBase):
         r = np.random.RandomState()
         r.seed(16)
         for i in range(100):
-            sr = H5DICT.StringReferencer(
-                    self.hdf_file.create_group("test%d" % i), 4)
+            sr = H5DICT.StringReferencer(self.hdf_file.create_group("test%d" % i), 4)
             strings = [chr(65 + r.randint(0, 26)) for j in range(10)]
             result = sr.get_string_refs([strings])
             self.assertEqual(len(result), 10)
@@ -1518,10 +1509,11 @@ class TestStringReference(HDF5DictTessstBase):
         r = np.random.RandomState()
         r.seed(16)
         for i in range(100):
-            sr = H5DICT.StringReferencer(
-                    self.hdf_file.create_group("test%d" % i), 4)
-            strings = [chr(65 + r.randint(0, 26)) + chr(65 + r.randint(0, 26))
-                       for j in range(50)]
+            sr = H5DICT.StringReferencer(self.hdf_file.create_group("test%d" % i), 4)
+            strings = [
+                chr(65 + r.randint(0, 26)) + chr(65 + r.randint(0, 26))
+                for j in range(50)
+            ]
             result = sr.get_string_refs([strings])
             self.assertEqual(len(result), 50)
             rstrings = sr.get_strings(result)

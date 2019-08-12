@@ -8,7 +8,7 @@ import cellprofiler.__main__
 
 @pytest.fixture(scope="module")
 def resources():
-        return os.path.join(os.path.dirname(__file__), "resources", "test_main")
+    return os.path.join(os.path.dirname(__file__), "resources", "test_main")
 
 
 def test_get_batch_commands_grouped_batch_data(resources, capsys):
@@ -22,7 +22,10 @@ def test_get_batch_commands_grouped_batch_data(resources, capsys):
 
     expected_groups = [("1", "3"), ("4", "6"), ("7", "9")]
 
-    groups = [re.match(".* -f ([0-9]) -l ([0-9])", batch_command).groups() for batch_command in batch_commands]
+    groups = [
+        re.match(".* -f ([0-9]) -l ([0-9])", batch_command).groups()
+        for batch_command in batch_commands
+    ]
 
     assert groups == expected_groups
 
@@ -55,6 +58,9 @@ def test_get_batch_commands_grouped_by_metadata_batch_data(resources, capsys):
 
     expected_groups = ["g01", "g02", "g03"]
 
-    groups = [re.match(".* -g Metadata_Plate=(g0[0-9])", batch_command).groups()[0] for batch_command in batch_commands]
+    groups = [
+        re.match(".* -g Metadata_Plate=(g0[0-9])", batch_command).groups()[0]
+        for batch_command in batch_commands
+    ]
 
     assert groups == expected_groups

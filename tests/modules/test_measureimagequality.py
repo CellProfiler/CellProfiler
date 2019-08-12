@@ -3,11 +3,9 @@
 
 
 import io
-import base64
 import unittest
 
 import numpy as np
-from scipy.io.matlab import savemat
 
 from cellprofiler.preferences import set_headless
 

@@ -4,19 +4,15 @@
 import base64
 import unittest
 import zlib
+
+import numpy as np
 from six.moves import StringIO
 
-import numpy as np
-import numpy as np
-
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.graytocolor as G
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 OUTPUT_IMAGE_NAME = 'outputimage'

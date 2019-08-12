@@ -1,8 +1,8 @@
 
-import io
 import base64
 import glob
 import hashlib
+import io
 import os
 import re
 import sys
@@ -10,8 +10,16 @@ import tempfile
 import time
 import traceback
 import unittest
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 import zlib
+
+import bioformats.formatreader
+import bioformats.formatwriter
+import bioformats.omexml
+import numpy
+import skimage.io
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -22,13 +30,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
-import numpy
-import skimage.io
 import tests.modules
-
-import bioformats.formatreader
-import bioformats.formatwriter
-import bioformats.omexml
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"

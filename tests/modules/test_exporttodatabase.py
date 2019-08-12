@@ -1,28 +1,25 @@
 '''test_exporttodatabase.py - test the ExportToDatabase module
 '''
 
-
-import base64
-
-import cellprofiler.measurement
-import numpy as np
 import os
-import PIL.Image as PILImage
-import scipy.ndimage
-from six.moves import StringIO
+import socket
 import tempfile
 import traceback
 import unittest
 import uuid
-import zlib
-import socket
+
+import PIL.Image as PILImage
+import numpy as np
+from six.moves import StringIO
+
+import cellprofiler.measurement
 
 if hasattr(unittest, "SkipTest"):
     SkipTestException = unittest.SkipTest
 else:
     SkipTestException = None
 
-from cellprofiler.preferences import set_headless, DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+from cellprofiler.preferences import set_headless, ABSOLUTE_FOLDER_NAME, \
     DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler.measurement import C_FILE_NAME, C_PATH_NAME
 
@@ -37,8 +34,6 @@ import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
-import cellprofiler.modules.identify as I
-import cellprofiler.modules.loadimages as LI
 
 np.random.seed(9804)
 

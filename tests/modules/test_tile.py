@@ -1,12 +1,10 @@
 '''test_tile.py - Test the tile module
 '''
 
-import base64
 import unittest
-import zlib
-from six.moves import StringIO
 
 import numpy as np
+from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 
@@ -14,7 +12,6 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.modules.tile as T
 import cellprofiler.pipeline as cpp

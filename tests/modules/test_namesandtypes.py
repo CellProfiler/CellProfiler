@@ -1,10 +1,14 @@
-import io
 import hashlib
+import io
 import os
 import tempfile
 import unittest
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.request
 
+import bioformats
+import javabridge
+import numpy
 import six
 
 import cellprofiler.measurement
@@ -13,11 +17,7 @@ import cellprofiler.modules.namesandtypes
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.workspace
-import javabridge
-import numpy
 import tests.modules
-
-import bioformats
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]

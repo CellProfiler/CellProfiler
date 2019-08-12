@@ -1,5 +1,10 @@
-import io
 import base64
+import io
+
+import numpy
+import numpy.testing
+import pytest
+import skimage.morphology
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -9,10 +14,6 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import numpy
-import numpy.testing
-import pytest
-import skimage.morphology
 
 cellprofiler.preferences.set_headless()
 

@@ -1,19 +1,16 @@
 '''test_measureobjectneighbors.py Test the MeasureObjectNeighbors module
 '''
 
-import base64
 import unittest
-import zlib
-from six.moves import StringIO
 
 import numpy as np
+from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

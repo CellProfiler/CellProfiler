@@ -1,7 +1,7 @@
 import numpy
 import pytest
-import skimage.data
 import skimage.color
+import skimage.data
 import skimage.filters
 import skimage.measure
 

@@ -1,15 +1,17 @@
+import os
+
+import pytest
+import skimage
+import skimage.data
+import skimage.feature
+import skimage.io
+
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.matchtemplate
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.workspace
-import os
-import pytest
-import skimage
-import skimage.data
-import skimage.feature
-import skimage.io
 
 
 class TestMatchTemplate:

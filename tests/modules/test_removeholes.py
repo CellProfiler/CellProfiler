@@ -1,11 +1,9 @@
 import numpy
-import pytest
 import skimage.morphology
 
 import cellprofiler.image
 import cellprofiler.modules.removeholes
 import cellprofiler.workspace
-
 
 instance = cellprofiler.modules.removeholes.RemoveHoles()
 

@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 import zlib
+
 from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless

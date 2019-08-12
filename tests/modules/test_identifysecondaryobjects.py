@@ -1,16 +1,14 @@
 import io
-import base64
 import unittest
-import zlib
 
 import centrosome.threshold
 import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.modules.threshold
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
+import cellprofiler.modules.threshold
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences

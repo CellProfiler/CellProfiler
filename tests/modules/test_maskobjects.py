@@ -1,24 +1,17 @@
 '''test_maskobjects.py - test the MaskObjects module
 '''
 
-import base64
-import os
 import unittest
-import zlib
+
+import numpy as np
 from six.moves import StringIO
 
-import PIL.Image as PILImage
 import cellprofiler.measurement
-import numpy as np
-import scipy.ndimage
-from matplotlib.image import pil_to_array
-
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

@@ -1,6 +1,7 @@
-import cellprofiler.modules.gaussianfilter
 import numpy.testing
 import skimage.filters
+
+import cellprofiler.modules.gaussianfilter
 
 instance = cellprofiler.modules.gaussianfilter.GaussianFilter()
 

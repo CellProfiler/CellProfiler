@@ -4,11 +4,11 @@ import base64
 import bz2
 import unittest
 
+import centrosome.outline
 import numpy
 import numpy.testing
 import scipy.ndimage
 import six.moves
-import centrosome.outline
 
 import cellprofiler.image
 import cellprofiler.object

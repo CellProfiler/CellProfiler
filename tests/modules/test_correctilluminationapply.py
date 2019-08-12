@@ -1,13 +1,7 @@
 """test_correctilluminationapply.py
 """
 
-import base64
-import os
-import sys
-import tempfile
 import unittest
-import zlib
-from six.moves import StringIO
 
 import numpy as np
 

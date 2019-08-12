@@ -1,7 +1,5 @@
 import io
-import base64
 import unittest
-import zlib
 
 import centrosome.filter
 import centrosome.otsu

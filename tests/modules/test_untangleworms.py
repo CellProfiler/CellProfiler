@@ -1,17 +1,17 @@
 '''test_untangleworms.py - test the UntangleWorms module'''
 
-import io
 import base64
-import bioformats
+import io
 import os
 import tempfile
 import unittest
 import zlib
-import PIL.Image
+
+import bioformats
 import numpy as np
 from centrosome.outline import outline
-from matplotlib.image import pil_to_array
 from scipy.ndimage import binary_dilation
+
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.untangleworms as U

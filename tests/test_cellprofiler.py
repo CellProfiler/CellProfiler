@@ -1,17 +1,17 @@
 '''test_cellprofiler - test the CellProfiler command-line interface
 '''
 
-import datetime
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
-import urllib.request, urllib.parse, urllib.error
-import six.moves
+import urllib.error
+import urllib.parse
+import urllib.request
 
-import dateutil.parser
+import six.moves
 
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]

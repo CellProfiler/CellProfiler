@@ -4,17 +4,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 import base64
-from bioformats.formatwriter import write_image, convert_pixels_to_buffer
+from bioformats.formatwriter import write_image
 from bioformats import PT_UINT8, PT_UINT16
-from bioformats import OMEXML
-from bioformats.omexml import DO_XYCZT, OM_SAMPLES_PER_PIXEL, OM_BITS_PER_SAMPLE
 import hashlib
-import javabridge
 import numpy as np
 import os
 import unittest
-from urllib.request import urlretrieve, URLopener
-from urllib.error import HTTPError
+from urllib.request import URLopener
 import tempfile
 
 import scipy.io.matlab.mio
@@ -22,7 +18,6 @@ from cellprofiler.preferences import set_headless
 import cellprofiler.utilities.legacy
 
 set_headless()
-from cellprofiler.modules import builtin_modules, all_modules
 
 __temp_example_images_folder = None
 
@@ -49,7 +44,7 @@ def example_images_directory():
     if __temp_example_images_folder is None:
         __temp_example_images_folder = tempfile.mkdtemp(
                 prefix="cp_exampleimages")
-        logger.warn("Creating temporary folder %s for example images" %
+        logger.warning("Creating temporary folder %s for example images" %
                     __temp_example_images_folder)
     return __temp_example_images_folder
 
@@ -87,7 +82,7 @@ def testimages_directory():
     if __temp_test_images_folder is None:
         __temp_test_images_folder = tempfile.mkdtemp(
                 prefix="cp_testimages")
-        logger.warn("Creating temporary folder %s for test images" %
+        logger.warning("Creating temporary folder %s for test images" %
                     __temp_test_images_folder)
     return __temp_test_images_folder
 

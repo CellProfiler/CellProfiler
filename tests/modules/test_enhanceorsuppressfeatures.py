@@ -1,7 +1,5 @@
 import io
-import base64
 import os.path
-import zlib
 
 import centrosome.filter
 import numpy

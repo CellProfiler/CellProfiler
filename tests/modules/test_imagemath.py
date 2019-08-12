@@ -1,13 +1,11 @@
-import io
-import base64
 import unittest
-import zlib
+from functools import reduce
 
 import numpy
 import numpy.testing
 import pytest
-import skimage.util
 import six.moves
+import skimage.util
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -17,7 +15,6 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-from functools import reduce
 
 cellprofiler.preferences.set_headless()
 

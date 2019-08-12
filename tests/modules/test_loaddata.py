@@ -1,18 +1,16 @@
 
-import io
-import base64
 import hashlib
+import io
 import os
 import re
 import tempfile
 import unittest
-import zlib
-
-import numpy
-import six
 
 import bioformats
 import bioformats.formatreader
+import numpy
+import six
+
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module

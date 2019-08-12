@@ -2,12 +2,11 @@
 '''
 
 import unittest
-from six.moves import StringIO
 
 import numpy as np
+from six.moves import StringIO
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.unmixcolors as U
 import cellprofiler.object as cpo

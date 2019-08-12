@@ -1,7 +1,4 @@
-import io
-import base64
 import math
-import zlib
 
 import centrosome.outline
 import numpy

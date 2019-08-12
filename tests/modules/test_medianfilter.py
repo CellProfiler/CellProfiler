@@ -1,6 +1,7 @@
-import cellprofiler.modules.medianfilter
 import numpy.testing
 import scipy.signal
+
+import cellprofiler.modules.medianfilter
 
 instance = cellprofiler.modules.medianfilter.MedianFilter()
 

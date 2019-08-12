@@ -6,7 +6,6 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.convertimagetoobjects
 
-
 instance = cellprofiler.modules.convertimagetoobjects.ConvertImageToObjects()
 
 

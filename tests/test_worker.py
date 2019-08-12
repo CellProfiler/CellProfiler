@@ -1,13 +1,17 @@
 """test_worker.py - test the analysis client framework"""
 
-import six.moves.queue
-import six.moves
 import os
 import tempfile
 import threading
 import traceback
 import unittest
 import uuid
+
+import javabridge
+import numpy
+import six.moves
+import six.moves.queue
+import zmq
 
 import cellprofiler.analysis
 import cellprofiler.measurement
@@ -18,10 +22,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
-import javabridge
-import numpy
 import tests.modules
-import zmq
 
 
 class TestAnalysisWorker(unittest.TestCase):

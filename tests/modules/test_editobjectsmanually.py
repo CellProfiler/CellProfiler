@@ -1,22 +1,16 @@
 '''test_editobjectsmanually - test the EditObjectsManually module
 '''
 
-import base64
 import unittest
-import zlib
+
 from six.moves import StringIO
 
 import cellprofiler.measurement
-import numpy as np
-
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
-import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.editobjectsmanually as E
 

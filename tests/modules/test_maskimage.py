@@ -1,10 +1,7 @@
 '''test_maskimage - Test the MaskImage module
 '''
 
-import base64
 import unittest
-import zlib
-from six.moves import StringIO
 
 import numpy as np
 

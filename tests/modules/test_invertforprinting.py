@@ -4,9 +4,9 @@
 import base64
 import unittest
 import zlib
-from six.moves import StringIO
 
 import numpy as np
+from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 

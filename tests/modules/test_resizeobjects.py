@@ -7,7 +7,6 @@ import cellprofiler.measurement
 import cellprofiler.modules.resizeobjects
 import cellprofiler.object
 
-
 instance = cellprofiler.modules.resizeobjects.ResizeObjects()
 
 

@@ -1,11 +1,10 @@
 import numpy
 import numpy.testing
-import skimage.morphology
 import pytest
+import skimage.morphology
 
 import cellprofiler.modules.fillobjects
 import cellprofiler.object
-
 
 instance = cellprofiler.modules.fillobjects.FillObjects()
 

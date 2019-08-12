@@ -1,7 +1,12 @@
-import io
 import base64
+import io
 import unittest
 import zlib
+
+import numpy
+import numpy.testing
+import skimage.exposure
+import skimage.transform
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -10,10 +15,6 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import numpy
-import numpy.testing
-import skimage.exposure
-import skimage.transform
 
 cellprofiler.preferences.set_headless()
 

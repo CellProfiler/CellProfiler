@@ -1,5 +1,5 @@
-import io
 import base64
+import io
 import unittest
 import zlib
 

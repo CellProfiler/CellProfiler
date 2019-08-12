@@ -973,7 +973,18 @@ parents or children of the parent object.""",
         if variable_revision_number == 2:
             setting_values = [setting_values[1], setting_values[0]] + setting_values[2:]
 
-            variable_revision_number = 3
+            variable_revision_number = 3    
+        
+        if variable_revision_number == 3:
+            setting_values = setting_values[:5] + [cellprofiler.setting.NO] + setting_values[5:]
+
+            variable_revision_number = 5
+
+        if variable_revision_number == 4:
+            setting_values = setting_values[0:2] + setting_values[3:6] + \
+                             [cellprofiler.setting.YES] + [setting_values[2]] + setting_values[6:]
+
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
 

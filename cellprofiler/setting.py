@@ -317,7 +317,7 @@ class DirectoryPath(Text):
         allow_metadata=True,
         support_urls=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if dir_choices is None:
             dir_choices = DirectoryPath.DIR_ALL
@@ -1442,7 +1442,7 @@ class NameSubscriber(Setting):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if value is None:
             value = (can_be_blank and blank_text) or "None"
@@ -1583,7 +1583,7 @@ class ImageNameSubscriber(NameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super(ImageNameSubscriber, self).__init__(
             text, IMAGE_GROUP, value, can_be_blank, blank_text, *args, **kwargs
@@ -1600,7 +1600,7 @@ class FileImageNameSubscriber(ImageNameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         kwargs = kwargs.copy()
         if REQUIRED_ATTRIBUTES not in kwargs:
@@ -1621,7 +1621,7 @@ class CroppingNameSubscriber(ImageNameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         kwargs = kwargs.copy()
         if REQUIRED_ATTRIBUTES not in kwargs:
@@ -1642,7 +1642,7 @@ class ExternalImageNameSubscriber(ImageNameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super(ExternalImageNameSubscriber, self).__init__(
             text, value, can_be_blank, blank_text, *args, **kwargs
@@ -1660,7 +1660,7 @@ class ObjectNameSubscriber(NameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super(ObjectNameSubscriber, self).__init__(
             text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs
@@ -1678,7 +1678,7 @@ class OutlineNameSubscriber(ImageNameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super(OutlineNameSubscriber, self).__init__(
             text, value, can_be_blank, blank_text, *args, **kwargs
@@ -1717,7 +1717,7 @@ class GridNameSubscriber(NameSubscriber):
         can_be_blank=False,
         blank_text=LEAVE_BLANK,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super(GridNameSubscriber, self).__init__(
             text, GRID_GROUP, value, can_be_blank, blank_text, *args, **kwargs
@@ -1826,7 +1826,7 @@ class StructuringElement(Setting):
         value="Disk,1",
         allow_planewise=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.__allow_planewise = allow_planewise
 
@@ -3416,7 +3416,7 @@ class FileCollectionDisplay(Setting):
         fn_on_menu_command,
         fn_on_bkgnd_control,
         hide_text="Hide filtered files",
-        **kwargs
+        **kwargs,
     ):
         """Constructor
 
@@ -3736,7 +3736,7 @@ class Table(Setting):
         max_field_size=30,
         use_sash=False,
         corner_button=None,
-        **kwargs
+        **kwargs,
     ):
         """Constructor
 

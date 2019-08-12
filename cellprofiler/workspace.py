@@ -417,8 +417,13 @@ class Workspace(object):
                 )
                 # CP 3.1.8 cpproj (and possibly before) saved info in bytes; converting to python 3 string
                 if type(pipeline_txt) == bytes:
-                    pipeline_txt = pipeline_txt.decode('unicode_escape').encode('utf-8').replace(b'\\x00', b'').decode(
-                        'unicode_escape').replace('ÿþ', '')
+                    pipeline_txt = (
+                        pipeline_txt.decode("unicode_escape")
+                        .encode("utf-8")
+                        .replace(b"\\x00", b"")
+                        .decode("unicode_escape")
+                        .replace("ÿþ", "")
+                    )
                 self.pipeline.load(six.moves.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()

@@ -245,10 +245,12 @@ executed.
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates
-            plates = list(map(
-                six.text_type,
-                m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value),
-            ))
+            plates = list(
+                map(
+                    six.text_type,
+                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value),
+                )
+            )
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)

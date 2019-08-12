@@ -2615,7 +2615,7 @@ class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
             display_name,
             MetadataPredicate.do_filter,
             subpredicates,
-            **kwargs
+            **kwargs,
         )
         self.display_fmt = display_fmt
 
@@ -2663,7 +2663,7 @@ class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
                 modpath,
                 NamesAndTypes.FakeModpathResolver(modpath, ipd),
             ),
-            *args
+            *args,
         )
 
 

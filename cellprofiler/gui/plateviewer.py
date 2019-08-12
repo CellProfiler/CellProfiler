@@ -125,7 +125,9 @@ class PlateData(object):
         self.on_update()
 
     def get_plate_names(self):
-        return list(filter((lambda x: x is not None), list(self.plate_well_site.keys())))
+        return list(
+            filter((lambda x: x is not None), list(self.plate_well_site.keys()))
+        )
 
     def get_plate(self, name):
         pd = self.plate_well_site[name]

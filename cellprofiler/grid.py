@@ -21,7 +21,9 @@ class Grid:
         self.image_height = None
 
     def serialize(self):
-        return dict((k, v) for k, v in list(self.__dict__.items()) if not k.startswith("_"))
+        return dict(
+            (k, v) for k, v in list(self.__dict__.items()) if not k.startswith("_")
+        )
 
     def deserialize(self, serialized_info):
         self.__dict__.update(serialized_info)

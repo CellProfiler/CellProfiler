@@ -1265,7 +1265,9 @@ desired.
             object_names[0], workspace, image_set_numbers[0], settings_group
         )
         features = [(IMAGE, IMAGE_NUMBER), (object_names[0], OBJECT_NUMBER)]
-        columns = list(map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns()))
+        columns = list(
+            map((lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
+        )
         if self.add_metadata.value:
             mdfeatures = [
                 (IMAGE, name)

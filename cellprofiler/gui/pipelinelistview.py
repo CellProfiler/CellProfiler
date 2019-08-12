@@ -330,9 +330,9 @@ class PipelineListView(object):
 
     def set_debug_mode(self, mode):
         if (mode is True) and (self.__pipeline is not None):
-            modules = list(filter(
-                (lambda m: not m.is_input_module()), self.__pipeline.modules()
-            ))
+            modules = list(
+                filter((lambda m: not m.is_input_module()), self.__pipeline.modules())
+            )
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)
@@ -1164,7 +1164,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
         # Gap before and after text
         self.text_gap = 3
         # The height of one row in the display
-        self.line_height = max(16 + self.border + self.gap, self.GetFullTextExtent("M")[1])
+        self.line_height = max(
+            16 + self.border + self.gap, self.GetFullTextExtent("M")[1]
+        )
         # The width of a icon column
         self.column_width = self.line_height
         # The row # of the currently pressed icon button

@@ -1,4 +1,3 @@
-
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 
@@ -624,7 +623,9 @@ class PathListCtrl(wx.ScrolledWindow):
             y = self.GetScrollPos(wx.SB_VERTICAL)
             line_height = self.line_height + self.leading
             yline = min(y, len(self))
-            yline_max = min(yline + (height + line_height - 1) // line_height, len(self))
+            yline_max = min(
+                yline + (height + line_height - 1) // line_height, len(self)
+            )
             sel_width = 0
             #
             # Precompute the width of the selection rectangle

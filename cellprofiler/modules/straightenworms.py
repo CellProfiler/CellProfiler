@@ -1262,7 +1262,9 @@ of the straightened worms.""",
             if nstripes > 1 and nsegments > 1:
                 result += [
                     self.get_scale_name(h, v)
-                    for h, v in itertools.product(list(range(nstripes)), list(range(nsegments)))
+                    for h, v in itertools.product(
+                        list(range(nstripes)), list(range(nsegments))
+                    )
                 ]
         return result
 

@@ -1140,14 +1140,16 @@ class Pipeline(object):
 
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
                     # En/decode needed to read example cppipe format
-                    setting = setting.encode().decode('unicode_escape')
+                    setting = setting.encode().decode("unicode_escape")
 
                     if do_deprecated_utf16_decode:
                         # decoding with 'unicode_escape' appears to be sufficient
                         pass
                     elif do_utf16_decode:
                         # Real hack-y way to do utf-16 decoding; was read as str so can't .decode('utf-16')
-                        setting = ''.join(filter(lambda x: x in string.printable, setting))
+                        setting = "".join(
+                            filter(lambda x: x in string.printable, setting)
+                        )
 
                     settings.append(setting)
                 #
@@ -1182,7 +1184,7 @@ class Pipeline(object):
                         continue
                     # En/decode needed to read example cppipe format
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
-                    value = eval(value.encode().decode('unicode_escape'))
+                    value = eval(value.encode().decode("unicode_escape"))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
                     else:
@@ -1332,10 +1334,7 @@ class Pipeline(object):
             ]
             attribute_string = "[%s]" % ("|".join(attribute_strings))
 
-            fd.write(
-                "%s:%s\n"
-                % (module.module_name, six.text_type(attribute_string))
-            )
+            fd.write("%s:%s\n" % (module.module_name, six.text_type(attribute_string)))
 
             for setting in module.settings():
                 setting_text = setting.text
@@ -1395,7 +1394,9 @@ class Pipeline(object):
         # a single field named "handles"
         #
         root = {
-            "handles": np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(handles.keys())))
+            "handles": np.ndarray(
+                (1, 1), dtype=make_cell_struct_dtype(list(handles.keys()))
+            )
         }
         for key, value in list(handles.items()):
             root["handles"][key][0, 0] = value
@@ -2689,20 +2690,22 @@ class Pipeline(object):
         if not m:
             m = re.findall("\\\\g[<](.+?)[>]", pattern)
         if m:
-            m = list(filter(
-                (
-                    lambda x: not any(
-                        [
-                            x.startswith(y)
-                            for y in (
-                                cellprofiler.measurement.C_SERIES,
-                                cellprofiler.measurement.C_FRAME,
-                            )
-                        ]
-                    )
-                ),
-                m,
-            ))
+            m = list(
+                filter(
+                    (
+                        lambda x: not any(
+                            [
+                                x.startswith(y)
+                                for y in (
+                                    cellprofiler.measurement.C_SERIES,
+                                    cellprofiler.measurement.C_FRAME,
+                                )
+                            ]
+                        )
+                    ),
+                    m,
+                )
+            )
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -3060,7 +3063,12 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
-            list(map((lambda x: x.strip()), list(filter((lambda x: len(x) > 0), path_or_fd)))),
+            list(
+                map(
+                    (lambda x: x.strip()),
+                    list(filter((lambda x: len(x) > 0), path_or_fd)),
+                )
+            ),
             add_undo=add_undo,
         )
 
@@ -3444,7 +3452,8 @@ class Pipeline(object):
         idx = module_num - 1
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
         for module, mn in zip(
-            self.__modules[idx + 1 :], list(range(module_num + 1, len(self.__modules) + 1))
+            self.__modules[idx + 1 :],
+            list(range(module_num + 1, len(self.__modules) + 1)),
         ):
             module.module_num = mn
         self.notify_listeners(

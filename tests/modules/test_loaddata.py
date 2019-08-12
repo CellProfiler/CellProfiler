@@ -1,4 +1,3 @@
-
 import io
 import base64
 import hashlib
@@ -36,19 +35,20 @@ class TestLoadData(unittest.TestCase):
         tests.modules.maybe_download_sbs()
         cls.test_folder = "loaddata"
         cls.test_path = os.path.join(
-                tests.modules.example_images_directory(), cls.test_folder)
+            tests.modules.example_images_directory(), cls.test_folder
+        )
         cls.test_filename = "image.tif"
         cls.test_shape = (13, 15)
-        path = tests.modules.maybe_download_example_image([cls.test_folder],
-                                                          cls.test_filename,
-                                                          shape=cls.test_shape)
+        path = tests.modules.maybe_download_example_image(
+            [cls.test_folder], cls.test_filename, shape=cls.test_shape
+        )
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
     def make_pipeline(self, csv_text, name=None):
         if name is None:
             handle, name = tempfile.mkstemp(".csv")
-            fd = os.fdopen(handle, 'w')
+            fd = os.fdopen(handle, "w")
         else:
             fd = open(name, "w")
         fd.write(csv_text)
@@ -69,8 +69,10 @@ class TestLoadData(unittest.TestCase):
         return pipeline, module, name
 
     def test_01_00_revision(self):
-        '''Remember to update this and write another test on new revision'''
-        self.assertEqual(cellprofiler.modules.loaddata.LoadData().variable_revision_number, 6)
+        """Remember to update this and write another test on new revision"""
+        self.assertEqual(
+            cellprofiler.modules.loaddata.LoadData().variable_revision_number, 6
+        )
 
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -90,7 +92,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
@@ -98,8 +102,10 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.loaddata.LoadData))
         self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
-        self.assertEqual(module.csv_directory.dir_choice,
-                         cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.csv_directory.dir_choice,
+            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertTrue(module.wants_images)
         self.assertTrue(module.rescale)
         self.assertFalse(module.wants_image_groupings)
@@ -127,7 +133,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
@@ -135,13 +143,18 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_w
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.loaddata.LoadData))
         self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
-        self.assertEqual(module.csv_directory.dir_choice,
-                         cellprofiler.setting.ABSOLUTE_FOLDER_NAME)
-        self.assertEqual(module.csv_directory.custom_path,
-                         r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages")
+        self.assertEqual(
+            module.csv_directory.dir_choice, cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        )
+        self.assertEqual(
+            module.csv_directory.custom_path,
+            r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages",
+        )
         self.assertTrue(module.wants_images)
-        self.assertEqual(module.image_directory.dir_choice,
-                         cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.image_directory.dir_choice,
+            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertTrue(module.rescale)
         self.assertTrue(module.wants_image_groupings)
         self.assertFalse(module.wants_rows)
@@ -170,7 +183,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
@@ -178,13 +193,18 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.loaddata.LoadData))
         self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
-        self.assertEqual(module.csv_directory.dir_choice,
-                         cellprofiler.setting.ABSOLUTE_FOLDER_NAME)
-        self.assertEqual(module.csv_directory.custom_path,
-                         r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages")
+        self.assertEqual(
+            module.csv_directory.dir_choice, cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        )
+        self.assertEqual(
+            module.csv_directory.custom_path,
+            r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages",
+        )
         self.assertTrue(module.wants_images)
-        self.assertEqual(module.image_directory.dir_choice,
-                         cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertEqual(
+            module.image_directory.dir_choice,
+            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+        )
         self.assertTrue(module.rescale)
         self.assertTrue(module.wants_image_groupings)
         self.assertFalse(module.wants_rows)
@@ -195,9 +215,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         self.assertEqual(module.metadata_fields.selections[1], "Row")
 
     def test_02_01_string_image_measurement(self):
-        csv_text = '''"Test_Measurement"
+        csv_text = """"Test_Measurement"
 "Hello, world"
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
@@ -206,9 +226,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         os.remove(filename)
 
     def test_02_02_float_image_measurement(self):
-        csv_text = '''"Test_Measurement"
+        csv_text = """"Test_Measurement"
 1.5
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
@@ -217,31 +237,36 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         os.remove(filename)
 
     def test_02_03_int_image_measurement(self):
-        csv_text = '''"Test_Measurement"
+        csv_text = """"Test_Measurement"
 1
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, numpy.int), "data is type %s, not np.int" % (type(data)))
+        self.assertTrue(
+            isinstance(data, numpy.int), "data is type %s, not np.int" % (type(data))
+        )
         self.assertEqual(data, 1)
         os.remove(filename)
 
     def test_02_04_long_int_image_measurement(self):
-        csv_text = '''"Test_Measurement"
+        csv_text = """"Test_Measurement"
 1234567890123
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, six.text_type), "Expected <type 'six.text_type'> got %s" % type(data))
+        self.assertTrue(
+            isinstance(data, six.text_type),
+            "Expected <type 'six.text_type'> got %s" % type(data),
+        )
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
 
     def test_03_01_metadata(self):
-        csv_text = '''"Metadata_Plate"
+        csv_text = """"Metadata_Plate"
 "P-12345"
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Metadata_Plate")
@@ -249,59 +274,110 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         os.remove(filename)
 
     def test_03_02_metadata_row_and_column(self):
-        csv_text = '''"Metadata_Row","Metadata_Column"
+        csv_text = """"Metadata_Row","Metadata_Column"
 "C","03"
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
-        self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and
-                             c[1] == "Metadata_Row" and
-                             c[2] == "varchar(1)" for c in columns]))
-        self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and
-                             c[1] == "Metadata_Column" and
-                             c[2] == "varchar(2)" for c in columns]))
-        self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and
-                             c[1] == "Metadata_Well" and
-                             c[2] == "varchar(3)" for c in columns]))
+        self.assertTrue(
+            any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE
+                    and c[1] == "Metadata_Row"
+                    and c[2] == "varchar(1)"
+                    for c in columns
+                ]
+            )
+        )
+        self.assertTrue(
+            any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE
+                    and c[1] == "Metadata_Column"
+                    and c[2] == "varchar(2)"
+                    for c in columns
+                ]
+            )
+        )
+        self.assertTrue(
+            any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE
+                    and c[1] == "Metadata_Well"
+                    and c[2] == "varchar(3)"
+                    for c in columns
+                ]
+            )
+        )
         m = pipeline.run()
-        features = module.get_measurements(pipeline, cellprofiler.measurement.IMAGE,
-                                           cellprofiler.measurement.C_METADATA)
-        for feature, expected in (("Row", "C"),
-                                  ("Column", "03"),
-                                  ("Well", "C03")):
+        features = module.get_measurements(
+            pipeline,
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.C_METADATA,
+        )
+        for feature, expected in (("Row", "C"), ("Column", "03"), ("Well", "C03")):
             self.assertTrue(feature in features)
-            value = m.get_current_image_measurement('_'.join((cellprofiler.measurement.C_METADATA, feature)))
+            value = m.get_current_image_measurement(
+                "_".join((cellprofiler.measurement.C_METADATA, feature))
+            )
             self.assertEqual(value, expected)
 
     def test_03_03_metadata_row_and_column_and_well(self):
-        csv_text = '''"Metadata_Row","Metadata_Column","Metadata_Well"
+        csv_text = """"Metadata_Row","Metadata_Column","Metadata_Well"
 "C","03","B14"
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
-        self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and
-                             c[1] == "Metadata_Row" and
-                             c[2] == "varchar(1)" for c in columns]))
-        self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and
-                             c[1] == "Metadata_Column" and
-                             c[2] == "varchar(2)" for c in columns]))
-        self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and
-                             c[1] == "Metadata_Well" and
-                             c[2] == "varchar(3)" for c in columns]))
+        self.assertTrue(
+            any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE
+                    and c[1] == "Metadata_Row"
+                    and c[2] == "varchar(1)"
+                    for c in columns
+                ]
+            )
+        )
+        self.assertTrue(
+            any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE
+                    and c[1] == "Metadata_Column"
+                    and c[2] == "varchar(2)"
+                    for c in columns
+                ]
+            )
+        )
+        self.assertTrue(
+            any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE
+                    and c[1] == "Metadata_Well"
+                    and c[2] == "varchar(3)"
+                    for c in columns
+                ]
+            )
+        )
         m = pipeline.run()
-        features = module.get_measurements(pipeline, cellprofiler.measurement.IMAGE,
-                                           cellprofiler.measurement.C_METADATA)
-        for feature, expected in (("Row", "C"),
-                                  ("Column", "03"),
-                                  ("Well", "B14")):
+        features = module.get_measurements(
+            pipeline,
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.C_METADATA,
+        )
+        for feature, expected in (("Row", "C"), ("Column", "03"), ("Well", "B14")):
             self.assertTrue(feature in features)
-            value = m.get_current_image_measurement('_'.join((cellprofiler.measurement.C_METADATA, feature)))
+            value = m.get_current_image_measurement(
+                "_".join((cellprofiler.measurement.C_METADATA, feature))
+            )
             self.assertEqual(value, expected)
 
     def test_04_01_load_file(self):
-        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
+        csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
-''' % (self.test_filename, self.test_path)
+""" % (
+            self.test_filename,
+            self.test_path,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
 
@@ -321,21 +397,30 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             m = pipeline.run()
             self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             self.assertTrue(c0_ran[0])
-            hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
+            hexdigest = m.get_current_image_measurement("MD5Digest_DNA")
             self.assertEqual(hexdigest, self.test_md5)
-            self.assertTrue('PathName_DNA' in m.get_feature_names(cellprofiler.measurement.IMAGE))
-            self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
-                             self.test_path)
-            self.assertTrue('FileName_DNA' in m.get_feature_names(cellprofiler.measurement.IMAGE))
-            self.assertEqual(m.get_current_image_measurement('FileName_DNA'),
-                             self.test_filename)
+            self.assertTrue(
+                "PathName_DNA" in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            )
+            self.assertEqual(
+                m.get_current_image_measurement("PathName_DNA"), self.test_path
+            )
+            self.assertTrue(
+                "FileName_DNA" in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            )
+            self.assertEqual(
+                m.get_current_image_measurement("FileName_DNA"), self.test_filename
+            )
         finally:
             os.remove(filename)
 
     def test_04_02_dont_load_file(self):
-        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
+        csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
-''' % (self.test_filename, self.test_path)
+""" % (
+            self.test_filename,
+            self.test_path,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
 
@@ -361,23 +446,35 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         path = tests.modules.testimages_directory()
         pathname = os.path.join(path, file_name)
         url = cellprofiler.modules.loadimages.pathname2url(pathname)
-        ftrs = (cellprofiler.measurement.C_URL, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)
+        ftrs = (
+            cellprofiler.measurement.C_URL,
+            cellprofiler.measurement.C_SERIES,
+            cellprofiler.measurement.C_FRAME,
+        )
         channels = ("Channel1", "Channel2")
-        header = ",".join([",".join(["_".join((ftr, channel)) for ftr in ftrs])
-                           for channel in channels])
+        header = ",".join(
+            [
+                ",".join(["_".join((ftr, channel)) for ftr in ftrs])
+                for channel in channels
+            ]
+        )
 
         csv_lines = [header]
         for series in range(4):
-            csv_lines.append(",".join(['"%s","%d","%d"' % (url, series, frame)
-                                       for frame in range(2)]))
+            csv_lines.append(
+                ",".join(
+                    ['"%s","%d","%d"' % (url, series, frame) for frame in range(2)]
+                )
+            )
         csv_text = "\n".join(csv_lines)
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler.measurement.Measurements()
         image_set_list = cellprofiler.image.ImageSetList()
         try:
-            workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m,
-                                                         image_set_list)
+            workspace = cellprofiler.workspace.Workspace(
+                pipeline, module, m, None, m, image_set_list
+            )
             self.assertTrue(module.prepare_run(workspace))
             pixel_hashes = []
             for i in range(4):
@@ -399,7 +496,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             os.remove(filename)
 
     def test_05_01_some_rows(self):
-        csv_text = '''"Test_Measurement"
+        csv_text = """"Test_Measurement"
 1
 2
 3
@@ -410,20 +507,22 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 8
 9
 10
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         module.wants_rows.value = True
         module.row_range.min = 4
         module.row_range.max = 6
         m = pipeline.run()
         self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
-        data = m.get_all_measurements(cellprofiler.measurement.IMAGE, "Test_Measurement")
+        data = m.get_all_measurements(
+            cellprofiler.measurement.IMAGE, "Test_Measurement"
+        )
         self.assertTrue(numpy.all(data == numpy.arange(4, 7)))
         os.remove(filename)
 
     def test_05_02_img_717(self):
-        '''Regression test of img-717, column without underbar'''
-        csv_text = '''"Image","Test_Measurement"
+        """Regression test of img-717, column without underbar"""
+        csv_text = """"Image","Test_Measurement"
 "foo",1
 "foo",2
 "foo",3
@@ -434,19 +533,21 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 "foo",8
 "foo",9
 "foo",10
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         module.wants_rows.value = True
         module.row_range.min = 4
         module.row_range.max = 6
         m = pipeline.run()
         self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
-        data = m.get_all_measurements(cellprofiler.measurement.IMAGE, "Test_Measurement")
+        data = m.get_all_measurements(
+            cellprofiler.measurement.IMAGE, "Test_Measurement"
+        )
         self.assertTrue(numpy.all(data == numpy.arange(4, 7)))
         os.remove(filename)
 
     def test_06_01_alternate_image_start(self):
-        csv_text = '''"Metadata_Measurement"
+        csv_text = """"Metadata_Measurement"
 1
 2
 3
@@ -457,19 +558,25 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 8
 9
 10
-'''
+"""
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run(image_set_start=2)
-        data = m.get_all_measurements(cellprofiler.measurement.IMAGE, "Metadata_Measurement")
+        data = m.get_all_measurements(
+            cellprofiler.measurement.IMAGE, "Metadata_Measurement"
+        )
         self.assertTrue(all([data[i - 2] == i for i in range(2, 11)]))
         os.remove(filename)
 
     def test_07_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns method'''
-        colnames = ('Integer_Measurement', 'Float_Measurement', 'String_Measurement')
-        coltypes = [cellprofiler.measurement.COLTYPE_INTEGER, cellprofiler.measurement.COLTYPE_FLOAT,
-                    cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 9]
-        csv_text = '''"%s","%s","%s"
+        """Test the get_measurement_columns method"""
+        colnames = ("Integer_Measurement", "Float_Measurement", "String_Measurement")
+        coltypes = [
+            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 9,
+        ]
+        csv_text = (
+            """"%s","%s","%s"
 1,1,1
 2,1.5,"Hi"
 3,1,"Hello"
@@ -478,41 +585,63 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 6,1.5,"Gutentag"
 7,1.1,"Hej"
 8,2.3,"Bevakasha"
-''' % colnames
+"""
+            % colnames
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         for colname, coltype in zip(colnames, coltypes):
-            self.assertTrue(any([(column[0] == cellprofiler.measurement.IMAGE and
-                                  column[1] == colname and
-                                  column[2] == coltype) for column in columns]),
-                            'Failed to find %s' % colname)
+            self.assertTrue(
+                any(
+                    [
+                        (
+                            column[0] == cellprofiler.measurement.IMAGE
+                            and column[1] == colname
+                            and column[2] == coltype
+                        )
+                        for column in columns
+                    ]
+                ),
+                "Failed to find %s" % colname,
+            )
         os.remove(filename)
 
     def test_07_02_file_name_measurement_columns(self):
-        '''Regression test bug IMG-315
+        """Regression test bug IMG-315
 
         A csv header of Image_FileName_Foo or Image_PathName_Foo should
         yield column names of FileName_Foo and PathName_Foo
-        '''
-        colnames = ('Image_FileName_Foo', 'Image_PathName_Foo')
-        csv_text = '''"%s","%s"
+        """
+        colnames = ("Image_FileName_Foo", "Image_PathName_Foo")
+        csv_text = (
+            """"%s","%s"
 "Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
 "Channel1-02.tif","/imaging/analysis/2500_01_01_Jones"
-''' % colnames
+"""
+            % colnames
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             columns = module.get_measurement_columns(pipeline)
-            self.assertTrue('FileName_Foo' in [c[1] for c in columns])
-            self.assertTrue('PathName_Foo' in [c[1] for c in columns])
+            self.assertTrue("FileName_Foo" in [c[1] for c in columns])
+            self.assertTrue("PathName_Foo" in [c[1] for c in columns])
         finally:
             os.remove(filename)
 
     def test_07_03_long_integer_column(self):
-        '''This is a regression test of IMG-644 where a 13-digit number got turned into an int'''
-        colnames = ('Long_Integer_Measurement', 'Float_Measurement', 'String_Measurement')
-        coltypes = [cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 13, cellprofiler.measurement.COLTYPE_FLOAT,
-                    cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 9]
-        csv_text = '''"%s","%s","%s"
+        """This is a regression test of IMG-644 where a 13-digit number got turned into an int"""
+        colnames = (
+            "Long_Integer_Measurement",
+            "Float_Measurement",
+            "String_Measurement",
+        )
+        coltypes = [
+            cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 13,
+            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 9,
+        ]
+        csv_text = (
+            """"%s","%s","%s"
 1,1,1
 2,1.5,"Hi"
 3,1,"Hello"
@@ -521,7 +650,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 6,1.5,"Gutentag"
 7,1.1,"Hej"
 1234567890123,2.3,"Bevakasha"
-''' % colnames
+"""
+            % colnames
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         fmt = "%15s %30s %20s"
@@ -529,47 +660,88 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         for object_name, feature, coltype in columns:
             print(fmt % (object_name, feature, coltype))
         for colname, coltype in zip(colnames, coltypes):
-            self.assertTrue(any([(column[0] == cellprofiler.measurement.IMAGE and
-                                  column[1] == colname and
-                                  column[2] == coltype) for column in columns]),
-                            'Failed to find %s' % colname)
+            self.assertTrue(
+                any(
+                    [
+                        (
+                            column[0] == cellprofiler.measurement.IMAGE
+                            and column[1] == colname
+                            and column[2] == coltype
+                        )
+                        for column in columns
+                    ]
+                ),
+                "Failed to find %s" % colname,
+            )
         os.remove(filename)
 
     def test_07_04_objects_measurement_columns(self):
         csv_text = """%s_%s,%s_%s
 Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
-""" % (cellprofiler.measurement.C_OBJECTS_FILE_NAME, OBJECTS_NAME,
-       cellprofiler.measurement.C_OBJECTS_PATH_NAME, OBJECTS_NAME)
+""" % (
+            cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+            OBJECTS_NAME,
+            cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+            OBJECTS_NAME,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         expected_columns = (
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_OBJECTS_URL + "_" + OBJECTS_NAME),
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.C_OBJECTS_URL + "_" + OBJECTS_NAME,
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME,
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME,
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME,
+            ),
             (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
             (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
-            (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER))
+            (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER),
+        )
         for column in columns:
-            self.assertTrue(any([
-                                    True for object_name, feature in expected_columns
-                                    if object_name == column[0] and feature == column[1]]))
+            self.assertTrue(
+                any(
+                    [
+                        True
+                        for object_name, feature in expected_columns
+                        if object_name == column[0] and feature == column[1]
+                    ]
+                )
+            )
         for object_name, feature in expected_columns:
-            self.assertTrue(any([
-                                    True for column in columns
-                                    if object_name == column[0] and feature == column[1]]))
+            self.assertTrue(
+                any(
+                    [
+                        True
+                        for column in columns
+                        if object_name == column[0] and feature == column[1]
+                    ]
+                )
+            )
 
     def test_08_01_get_groupings(self):
-        '''Test the get_groupings method'''
+        """Test the get_groupings method"""
         dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
-        pattern = 'Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif'
+        pattern = "Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif"
         csv_text = '"Image_FileName_Cytoplasm","Image_PathName_Cytoplasm","Metadata_ROW","Metadata_COL"\n'
         for filename in os.listdir(dir):
             match = re.match(pattern, filename)
             if match:
-                csv_text += ('"%s","%s","%s","%s"\n' %
-                             (filename, dir, match.group("ROW"),
-                              match.group("COL")))
+                csv_text += '"%s","%s","%s","%s"\n' % (
+                    filename,
+                    dir,
+                    match.group("ROW"),
+                    match.group("COL"),
+                )
         pipeline, module, filename = self.make_pipeline(csv_text)
         self.assertTrue(isinstance(module, cellprofiler.modules.loaddata.LoadText))
         module.wants_images.value = True
@@ -577,8 +749,9 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         module.metadata_fields.value = "ROW"
         image_set_list = cellprofiler.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, module, None,
-                                                     None, measurements, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, module, None, None, measurements, image_set_list
+        )
         module.prepare_run(workspace)
         keys, groupings = module.get_groupings(workspace)
         self.assertEqual(len(keys), 1)
@@ -586,18 +759,27 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         self.assertEqual(len(groupings), 8)
         my_rows = [g[0]["Metadata_ROW"] for g in groupings]
         my_rows.sort()
-        self.assertEqual(''.join(my_rows), 'ABCDEFGH')
+        self.assertEqual("".join(my_rows), "ABCDEFGH")
         for grouping in groupings:
             row = grouping[0]["Metadata_ROW"]
-            module.prepare_group(cellprofiler.workspace.Workspace(
-                    pipeline, module, None, None, measurements, image_set_list),
-                    grouping[0], grouping[1])
+            module.prepare_group(
+                cellprofiler.workspace.Workspace(
+                    pipeline, module, None, None, measurements, image_set_list
+                ),
+                grouping[0],
+                grouping[1],
+            )
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number - 1)
                 measurements.next_image_set(image_number)
-                workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
-                                                             cellprofiler.object.ObjectSet(), measurements,
-                                                             image_set_list)
+                workspace = cellprofiler.workspace.Workspace(
+                    pipeline,
+                    module,
+                    image_set,
+                    cellprofiler.object.ObjectSet(),
+                    measurements,
+                    image_set_list,
+                )
                 module.run(workspace)
                 provider = image_set.get_image_provider("Cytoplasm")
                 match = re.search(pattern, provider.get_filename())
@@ -606,7 +788,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
 
     def test_09_01_load_bcb_file(self):
 
-        csv_text = '''ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
+        csv_text = """ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
 MX_PLATE_ID,ASSAY_WELL_POSITION,ASSAY_WELL_ROLE,SITE_X,SITE_Y,\
 MICROSCOPE,SOURCE_DESCRIPTION,DATE_CREATED,FILE_PATH,FILE_NAME,\
 CPD_PLATE_MAP_NAME,CPD_WELL_POSITION,BROAD_ID,\
@@ -616,7 +798,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 "%s","C-4012-00-D80-001_Rev3","N01",\
 "BRD-K71194192-001-01-6","2.132352941","ChemBridge","",\
 "Oc1ccnc(SCC(=O)Nc2ccc(Oc3ccccc3)cc2)n1"
-''' % (self.test_path, self.test_filename)
+""" % (
+            self.test_path,
+            self.test_filename,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
 
@@ -636,24 +821,32 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             m = pipeline.run()
             self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             self.assertTrue(c0_ran[0])
-            hexdigest = m.get_current_image_measurement('MD5Digest_DAPI')
+            hexdigest = m.get_current_image_measurement("MD5Digest_DAPI")
             self.assertEqual(hexdigest, self.test_md5)
-            self.assertTrue('PathName_DAPI' in m.get_feature_names(cellprofiler.measurement.IMAGE))
-            self.assertEqual(m.get_current_image_measurement('PathName_DAPI'),
-                             self.test_path)
-            self.assertTrue('FileName_DAPI' in m.get_feature_names(cellprofiler.measurement.IMAGE))
-            self.assertEqual(m.get_current_image_measurement('FileName_DAPI'),
-                             self.test_filename)
+            self.assertTrue(
+                "PathName_DAPI" in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            )
+            self.assertEqual(
+                m.get_current_image_measurement("PathName_DAPI"), self.test_path
+            )
+            self.assertTrue(
+                "FileName_DAPI" in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            )
+            self.assertEqual(
+                m.get_current_image_measurement("FileName_DAPI"), self.test_filename
+            )
         finally:
             os.remove(filename)
 
     def test_10_01_scaling(self):
-        '''Test loading an image scaled and unscaled'''
+        """Test loading an image scaled and unscaled"""
         folder = "loaddata"
         file_name = "1-162hrh2ax2.tif"
         path = tests.modules.make_12_bit_image(folder, file_name, (22, 18))
-        csv_text = ("Image_PathName_MyFile,Image_FileName_MyFile\n"
-                    "%s,%s\n" % os.path.split(path))
+        csv_text = (
+            "Image_PathName_MyFile,Image_FileName_MyFile\n"
+            "%s,%s\n" % os.path.split(path)
+        )
         c0_image = []
         for rescale in (False, True):
             pipeline, module, filename = self.make_pipeline(csv_text)
@@ -674,7 +867,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             finally:
                 os.remove(filename)
         unscaled, scaled = c0_image
-        numpy.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
+        numpy.testing.assert_almost_equal(unscaled * 65535.0 / 4095.0, scaled)
 
     def test_11_01_load_objects(self):
         r = numpy.random.RandomState()
@@ -684,13 +877,22 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         bioformats.write_image(name, labels, bioformats.PT_UINT8)
         os.close(handle)
         png_path, png_file = os.path.split(name)
-        sbs_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+        sbs_dir = os.path.join(
+            tests.modules.example_images_directory(), "ExampleSBSImages"
+        )
         csv_text = """%s_%s,%s_%s,%s_DNA,%s_DNA
 %s,%s,Channel2-01-A-01.tif,%s
-""" % (cellprofiler.measurement.C_OBJECTS_FILE_NAME, OBJECTS_NAME,
-       cellprofiler.measurement.C_OBJECTS_PATH_NAME, OBJECTS_NAME,
-       cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME,
-       png_file, png_path, sbs_dir)
+""" % (
+            cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+            OBJECTS_NAME,
+            cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+            OBJECTS_NAME,
+            cellprofiler.measurement.C_FILE_NAME,
+            cellprofiler.measurement.C_PATH_NAME,
+            png_file,
+            png_path,
+            sbs_dir,
+        )
         pipeline, module, csv_name = self.make_pipeline(csv_text)
         assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
@@ -699,25 +901,32 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             image_set_list = cellprofiler.image.ImageSetList()
             measurements = cellprofiler.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(
-                    pipeline, module, None, None, measurements, image_set_list)
+                pipeline, module, None, None, measurements, image_set_list
+            )
             pipeline.prepare_run(workspace)
             key_names, g = pipeline.get_groupings(workspace)
             self.assertEqual(len(g), 1)
             module.prepare_group(workspace, g[0][0], g[0][1])
             image_set = image_set_list.get_image_set(g[0][1][0] - 1)
             object_set = cellprofiler.object.ObjectSet()
-            workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
-                                                         object_set, measurements, image_set_list)
+            workspace = cellprofiler.workspace.Workspace(
+                pipeline, module, image_set, object_set, measurements, image_set_list
+            )
             module.run(workspace)
             objects = object_set.get_objects(OBJECTS_NAME)
             self.assertTrue(numpy.all(objects.segmented == labels))
-            self.assertEqual(measurements.get_current_image_measurement(
-                cellprofiler.measurement.FF_COUNT % OBJECTS_NAME), 9)
-            for feature in (cellprofiler.measurement.M_LOCATION_CENTER_X,
-                            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-                            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER):
-                value = measurements.get_current_measurement(
-                        OBJECTS_NAME, feature)
+            self.assertEqual(
+                measurements.get_current_image_measurement(
+                    cellprofiler.measurement.FF_COUNT % OBJECTS_NAME
+                ),
+                9,
+            )
+            for feature in (
+                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            ):
+                value = measurements.get_current_measurement(OBJECTS_NAME, feature)
                 self.assertEqual(len(value), 9)
         finally:
             bioformats.formatreader.clear_image_reader_cache()
@@ -791,24 +1000,38 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         #
         # Load a file, only specifying the FileName in the CSV
         #
-        csv_text = '''"Image_FileName_DNA"
+        csv_text = (
+            """"Image_FileName_DNA"
 "%s"
-''' % self.test_filename
+"""
+            % self.test_filename
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         module.image_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.image_directory.custom_path = self.test_path
         m = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
-                                                     m, cellprofiler.image.ImageSetList())
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline,
+            module,
+            m,
+            cellprofiler.object.ObjectSet(),
+            m,
+            cellprofiler.image.ImageSetList(),
+        )
         self.assertTrue(module.prepare_run(workspace))
-        self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
-                         self.test_filename)
+        self.assertEqual(
+            m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
+            self.test_filename,
+        )
         path = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
         self.assertEqual(path, self.test_path)
         self.assertEqual(
-                m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
-                cellprofiler.modules.loadimages.pathname2url(os.path.join(self.test_path, self.test_filename)))
+            m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
+            cellprofiler.modules.loadimages.pathname2url(
+                os.path.join(self.test_path, self.test_filename)
+            ),
+        )
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
@@ -818,28 +1041,45 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         #
         # Load, only specifying URL
         #
-        csv_text = '''"Image_URL_DNA"
+        csv_text = """"Image_URL_DNA"
 "{cp_logo_url}"
 "http:{cp_logo_url_filename}"
 "bogusurl.png"
-'''.format(**{
-            "cp_logo_url": tests.modules.cp_logo_url,
-            "cp_logo_url_filename": tests.modules.cp_logo_url_filename
-        })
+""".format(
+            **{
+                "cp_logo_url": tests.modules.cp_logo_url,
+                "cp_logo_url_filename": tests.modules.cp_logo_url_filename,
+            }
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
-                                                     m, cellprofiler.image.ImageSetList())
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline,
+            module,
+            m,
+            cellprofiler.object.ObjectSet(),
+            m,
+            cellprofiler.image.ImageSetList(),
+        )
         self.assertTrue(module.prepare_run(workspace))
-        self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
-                         tests.modules.cp_logo_url_filename)
+        self.assertEqual(
+            m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
+            tests.modules.cp_logo_url_filename,
+        )
         path = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
         self.assertEqual(path, tests.modules.cp_logo_url_folder)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "URL_DNA", 1], tests.modules.cp_logo_url)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2], tests.modules.cp_logo_url_filename)
+        self.assertEqual(
+            m[cellprofiler.measurement.IMAGE, "URL_DNA", 1], tests.modules.cp_logo_url
+        )
+        self.assertEqual(
+            m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2],
+            tests.modules.cp_logo_url_filename,
+        )
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 2], "http:")
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 3], "bogusurl.png")
+        self.assertEqual(
+            m[cellprofiler.measurement.IMAGE, "FileName_DNA", 3], "bogusurl.png"
+        )
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
@@ -850,29 +1090,46 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         #
         # Regression test of issue #853, extra fields
         #
-        csv_text = '''"Image_URL_DNA"
+        csv_text = """"Image_URL_DNA"
 "{cp_logo_url}", "foo"
 "http:{cp_logo_url_filename}"
 "bogusurl.png"
-'''.format(**{
-            "cp_logo_url": tests.modules.cp_logo_url,
-            "cp_logo_url_filename": tests.modules.cp_logo_url_filename
-        })
+""".format(
+            **{
+                "cp_logo_url": tests.modules.cp_logo_url,
+                "cp_logo_url_filename": tests.modules.cp_logo_url_filename,
+            }
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
-                                                     m, cellprofiler.image.ImageSetList())
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline,
+            module,
+            m,
+            cellprofiler.object.ObjectSet(),
+            m,
+            cellprofiler.image.ImageSetList(),
+        )
         self.assertTrue(module.prepare_run(workspace))
-        self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
-                         tests.modules.cp_logo_url_filename)
+        self.assertEqual(
+            m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
+            tests.modules.cp_logo_url_filename,
+        )
         path = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
         self.assertEqual(path, tests.modules.cp_logo_url_folder)
-        self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
-                         tests.modules.cp_logo_url)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2], tests.modules.cp_logo_url_filename)
+        self.assertEqual(
+            m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
+            tests.modules.cp_logo_url,
+        )
+        self.assertEqual(
+            m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2],
+            tests.modules.cp_logo_url_filename,
+        )
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 2], "http:")
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 3], "bogusurl.png")
+        self.assertEqual(
+            m[cellprofiler.measurement.IMAGE, "FileName_DNA", 3], "bogusurl.png"
+        )
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
@@ -884,23 +1141,36 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         # Regression test of issue #1211 - extra line at end / blank lines
         #
         dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
-        file_name = 'Channel2-01-A-01.tif'
+        file_name = "Channel2-01-A-01.tif"
 
-        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
+        csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 
-''' % (file_name, dir)
+""" % (
+            file_name,
+            dir,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
             m = cellprofiler.measurement.Measurements()
-            workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
-                                                         m, cellprofiler.image.ImageSetList())
+            workspace = cellprofiler.workspace.Workspace(
+                pipeline,
+                module,
+                m,
+                cellprofiler.object.ObjectSet(),
+                m,
+                cellprofiler.image.ImageSetList(),
+            )
             self.assertTrue(module.prepare_run(workspace))
             self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             self.assertEqual(m.image_set_count, 1)
-            self.assertTrue('FileName_DNA' in m.get_feature_names(cellprofiler.measurement.IMAGE))
-            self.assertEqual(m[cellprofiler.measurement.IMAGE, 'FileName_DNA', 1], file_name)
+            self.assertTrue(
+                "FileName_DNA" in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            )
+            self.assertEqual(
+                m[cellprofiler.measurement.IMAGE, "FileName_DNA", 1], file_name
+            )
         finally:
             os.remove(filename)
 
@@ -909,55 +1179,88 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         # Regression test of issue #1211 - extra line at end / blank lines
         # Different code path from 13_04
         #
-        path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
-        file_names = ['Channel2-01-A-01.tif',
-                      'Channel2-02-A-02.tif']
+        path = os.path.join(
+            tests.modules.example_images_directory(), "ExampleSBSImages"
+        )
+        file_names = ["Channel2-01-A-01.tif", "Channel2-02-A-02.tif"]
 
-        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
+        csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 
 "%s","%s"
 
 "%s","%s"
 
-''' % (file_names[0], path, file_names[1], path)
+""" % (
+            file_names[0],
+            path,
+            file_names[1],
+            path,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
             m = cellprofiler.measurement.Measurements()
-            workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
-                                                         m, cellprofiler.image.ImageSetList())
+            workspace = cellprofiler.workspace.Workspace(
+                pipeline,
+                module,
+                m,
+                cellprofiler.object.ObjectSet(),
+                m,
+                cellprofiler.image.ImageSetList(),
+            )
             module.wants_rows.value = True
             module.row_range.min = 2
             module.row_range.max = 3
             self.assertTrue(module.prepare_run(workspace))
             self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             self.assertEqual(m.image_set_count, 1)
-            self.assertTrue('FileName_DNA' in m.get_feature_names(cellprofiler.measurement.IMAGE))
-            self.assertEqual(m[cellprofiler.measurement.IMAGE, 'FileName_DNA', 1], file_names[0])
+            self.assertTrue(
+                "FileName_DNA" in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            )
+            self.assertEqual(
+                m[cellprofiler.measurement.IMAGE, "FileName_DNA", 1], file_names[0]
+            )
         finally:
             os.remove(filename)
 
     def test_13_06_load_default_input_folder(self):
         # Regression test of issue #1365 - load a file from the default
         # input folder and check that PathName_xxx is absolute
-        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"\n"%s","%s"''' \
-                   % (self.test_filename, self.test_path)
+        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"\n"%s","%s"''' % (
+            self.test_filename,
+            self.test_path,
+        )
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
-            module.image_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            module.image_directory.dir_choice = (
+                cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            )
             module.image_directory.custom_path = self.test_path
             m = cellprofiler.measurement.Measurements()
-            workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
-                                                         m, cellprofiler.image.ImageSetList())
+            workspace = cellprofiler.workspace.Workspace(
+                pipeline,
+                module,
+                m,
+                cellprofiler.object.ObjectSet(),
+                m,
+                cellprofiler.image.ImageSetList(),
+            )
             self.assertTrue(module.prepare_run(workspace))
-            self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
-                             self.test_filename)
-            path_out = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
+            self.assertEqual(
+                m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
+                self.test_filename,
+            )
+            path_out = m.get_measurement(
+                cellprofiler.measurement.IMAGE, "PathName_DNA", 1
+            )
             self.assertEqual(self.test_path, path_out)
             self.assertEqual(
-                    m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
-                    cellprofiler.modules.loadimages.pathname2url(os.path.join(self.test_path, self.test_filename)))
+                m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
+                cellprofiler.modules.loadimages.pathname2url(
+                    os.path.join(self.test_path, self.test_filename)
+                ),
+            )
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
@@ -967,7 +1270,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
 
 class C0(cellprofiler.module.Module):
-    module_name = 'C0'
+    module_name = "C0"
     variable_revision_number = 1
 
     def create_settings(self):

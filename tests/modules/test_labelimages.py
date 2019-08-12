@@ -1,5 +1,5 @@
-'''test_labelimages.py - test the labelimages module
-'''
+"""test_labelimages.py - test the labelimages module
+"""
 
 import base64
 import os
@@ -78,14 +78,18 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         module.module_num = 1
         pipeline.add_module(module)
 
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cpw.Workspace(
+            pipeline,
+            module,
+            image_set_list.get_image_set(0),
+            cpo.ObjectSet(),
+            cpmeas.Measurements(),
+            image_set_list,
+        )
         return workspace, module
 
     def test_02_01_label_plate_by_row(self):
-        '''Label one complete plate'''
+        """Label one complete plate"""
         nsites = 6
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
@@ -107,15 +111,15 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], (i % 6) + 1)
-            this_row = 'ABCDEFGH'[int(i / 6 / 12)]
+            this_row = "ABCDEFGH"[int(i / 6 / 12)]
             this_column = (int(i / 6) % 12) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
-            self.assertEqual(wells[i], '%s%02d' % (this_row, this_column))
+            self.assertEqual(wells[i], "%s%02d" % (this_row, this_column))
             self.assertEqual(plates[i], 1)
 
     def test_02_02_label_plate_by_column(self):
-        '''Label one complete plate'''
+        """Label one complete plate"""
         nsites = 6
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
@@ -137,11 +141,11 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], (i % 6) + 1)
-            this_row = 'ABCDEFGH'[int(i / 6) % 8]
+            this_row = "ABCDEFGH"[int(i / 6) % 8]
             this_column = int(i / 6 / 8) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
-            self.assertEqual(wells[i], '%s%02d' % (this_row, this_column))
+            self.assertEqual(wells[i], "%s%02d" % (this_row, this_column))
             self.assertEqual(plates[i], 1)
 
     def test_02_03_label_many_plates(self):
@@ -167,11 +171,11 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], 1)
-            this_row = 'ABCDEFGH'[int(i / 12) % 8]
+            this_row = "ABCDEFGH"[int(i / 12) % 8]
             this_column = (i % 12) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
-            self.assertEqual(wells[i], '%s%02d' % (this_row, this_column))
+            self.assertEqual(wells[i], "%s%02d" % (this_row, this_column))
             self.assertEqual(plates[i], int(i / 8 / 12) + 1)
 
     def test_02_04_multichar_row_names(self):
@@ -193,10 +197,8 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         columns = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_COLUMN)
         plates = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_PLATE)
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
-        abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         for i in range(nimagesets):
             self.assertEqual(sites[i], 1)
-            this_row = (abc[int(i / 26 / 26)] +
-                        abc[int(i / 26) % 26] +
-                        abc[i % 26])
+            this_row = abc[int(i / 26 / 26)] + abc[int(i / 26) % 26] + abc[i % 26]
             self.assertEqual(rows[i], this_row)

@@ -470,7 +470,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertEqual(module.images[1].factor, 1.5)
 
     def run_imagemath(self, images, modify_module_fn=None, measurement=None):
-        '''Run the ImageMath module, returning the image created
+        """Run the ImageMath module, returning the image created
 
         images - a list of dictionaries. The dictionary has keys:
                  pixel_data - image pixel data
@@ -479,7 +479,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         modify_module_fn - a function of the signature, fn(module)
                  that allows the test to modify the module.
         measurement - an image measurement value
-        '''
+        """
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = cellprofiler.modules.imagemath.ImageMath()
@@ -525,7 +525,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             numpy.testing.assert_array_almost_equal(image.pixel_data[image.mask], expected[image.mask])
 
     def test_02_01_exponent(self):
-        '''Test exponentiation of an image'''
+        """Test exponentiation of an image"""
 
         def fn(module):
             module.exponent.value = 2
@@ -538,7 +538,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, expected)
 
     def test_02_02_factor(self):
-        '''Test multiplicative factor'''
+        """Test multiplicative factor"""
 
         def fn(module):
             module.after_factor.value = .5
@@ -551,7 +551,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, expected)
 
     def test_02_03_addend(self):
-        '''Test adding a value to image'''
+        """Test adding a value to image"""
 
         def fn(module):
             module.addend.value = .5
@@ -565,7 +565,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, expected)
 
     def test_02_04_mask(self):
-        '''Test a mask in the first image'''
+        """Test a mask in the first image"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_NONE
@@ -579,7 +579,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, image, mask)
 
     def test_03_01_add(self):
-        '''Test adding'''
+        """Test adding"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_ADD
@@ -594,7 +594,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected)
 
     def test_03_02_add_mask(self):
-        '''Test adding masked images'''
+        """Test adding masked images"""
         '''Test adding'''
 
         def fn(module):
@@ -628,7 +628,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected, mask)
 
     def test_03_04_add_crop(self):
-        '''Add images, cropping to border'''
+        """Add images, cropping to border"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_ADD
@@ -651,7 +651,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 self.check_expected(output, expected)
 
     def test_03_05_add_factors(self):
-        '''Test adding with factors'''
+        """Test adding with factors"""
         numpy.random.seed(0)
         for n in range(2, 5):
             images = [{'pixel_data': numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
@@ -670,7 +670,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected)
 
     def test_03_06_ignore_mask(self):
-        '''Test adding images with masks, but ignoring the masks'''
+        """Test adding images with masks, but ignoring the masks"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_ADD
@@ -688,7 +688,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected, mask, True)
 
     def test_04_01_subtract(self):
-        '''Test subtracting'''
+        """Test subtracting"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_SUBTRACT
@@ -703,7 +703,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected)
 
     def test_04_02_subtract_truncate(self):
-        '''Test subtracting with truncation'''
+        """Test subtracting with truncation"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_SUBTRACT
@@ -777,7 +777,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected)
 
     def test_07_02_average_factors(self):
-        '''Test averaging with factors'''
+        """Test averaging with factors"""
         numpy.random.seed(0)
         for n in range(2, 5):
             images = [{'pixel_data': numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
@@ -797,7 +797,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.check_expected(output, expected)
 
     def test_08_01_invert(self):
-        '''Test invert of an image'''
+        """Test invert of an image"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_INVERT
@@ -809,7 +809,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, expected)
 
     def test_09_01_log_transform(self):
-        '''Test log transform of an image'''
+        """Test log transform of an image"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_LOG_TRANSFORM
@@ -833,7 +833,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, expected)
 
     def test_10_01_with_measurement(self):
-        '''Test multiplying an image by a measurement'''
+        """Test multiplying an image by a measurement"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY
@@ -850,7 +850,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.check_expected(output, expected)
 
     def test_10_02_with_measurement_and_mask(self):
-        '''Test a measurement operation on a masked image'''
+        """Test a measurement operation on a masked image"""
 
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY

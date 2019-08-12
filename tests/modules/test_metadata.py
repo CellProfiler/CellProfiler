@@ -312,7 +312,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         self.assertEqual(em1.csv_filename.value, "metadata.csv")
 
     def check(self, module, url, dd, keys=None, xml=None):
-        '''Check that running the metadata module on a url generates the expected dictionary'''
+        """Check that running the metadata module on a url generates the expected dictionary"""
         pipeline = cellprofiler.pipeline.Pipeline()
         imgs = cellprofiler.modules.images.Images()
         imgs.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_NONE

@@ -1,5 +1,5 @@
-'''test_loadsingleimage - Test the LoadSingleImage module
-'''
+"""test_loadsingleimage - Test the LoadSingleImage module
+"""
 
 import hashlib
 import os
@@ -334,7 +334,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertEqual(self.test_md5, md[0])
 
     def test_02_02_scale(self):
-        '''Load an image twice, as scaled and unscaled'''
+        """Load an image twice, as scaled and unscaled"""
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         path = self.test_path
         cellprofiler.preferences.set_default_image_directory(path)

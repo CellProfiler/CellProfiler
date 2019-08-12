@@ -241,7 +241,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
 
 
 def test_00_00_zeros(image, measurements, module, workspace):
-    '''Test operation on a completely-masked image'''
+    """Test operation on a completely-masked image"""
     image.pixel_data = numpy.zeros((10, 10))
 
     image.mask = numpy.zeros((10, 10), bool)
@@ -265,7 +265,7 @@ def test_00_00_zeros(image, measurements, module, workspace):
 
 
 def test_01_01_image(image, measurements, module, workspace):
-    '''Test operation on a single unmasked image'''
+    """Test operation on a single unmasked image"""
     numpy.random.seed(0)
 
     pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .99
@@ -290,7 +290,7 @@ def test_01_01_image(image, measurements, module, workspace):
 
 
 def test_01_02_image_and_mask(image, measurements, module, workspace):
-    '''Test operation on a masked image'''
+    """Test operation on a masked image"""
     numpy.random.seed(0)
 
     pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .99
@@ -317,7 +317,7 @@ def test_01_02_image_and_mask(image, measurements, module, workspace):
 
 
 def test_01_03_image_and_objects(image, measurements, module, objects, workspace):
-    '''Test operation on an image masked by objects'''
+    """Test operation on an image masked by objects"""
     numpy.random.seed(0)
 
     pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .99
@@ -361,7 +361,7 @@ def test_01_03_image_and_objects(image, measurements, module, objects, workspace
 
 
 def test_01_04_image_and_objects_and_mask(image, measurements, module, objects, workspace):
-    '''Test operation on an image masked by objects and a mask'''
+    """Test operation on an image masked by objects and a mask"""
     numpy.random.seed(0)
 
     pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
@@ -394,7 +394,7 @@ def test_01_04_image_and_objects_and_mask(image, measurements, module, objects, 
 
 
 def test_02_01_load_v1():
-    '''Test loading an measure image intensity module saved in V1'''
+    """Test loading an measure image intensity module saved in V1"""
     data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSBQbGF0Zm9ybTogbnQsIENyZWF0ZWQg'
             'b246IEZyaSBBcHIgMjQgMTY6MTM6MjQgMjAwOQAAAAAAAAAAAAAAAAAA'
             'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB'

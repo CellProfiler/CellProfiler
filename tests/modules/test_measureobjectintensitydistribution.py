@@ -572,14 +572,14 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                    wants_workspace=False,
                    wants_zernikes=cellprofiler.modules.measureobjectintensitydistribution.Z_NONE,
                    zernike_degree=2):
-        '''Run the module, returning the measurements
+        """Run the module, returning the measurements
 
         image - matrix representing the image to be analyzed
         labels - labels matrix of objects to be analyzed
         center_labels - labels matrix of alternate centers or None for self
                         centers
         bin_count - # of radial bins
-        '''
+        """
         module = cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution()
         module.wants_zernikes.value = wants_zernikes
         module.zernike_degree.value = zernike_degree
@@ -629,7 +629,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         return measurements
 
     def test_03_01_zeros_self(self):
-        '''Test the module on an empty labels matrix, self-labeled'''
+        """Test the module on an empty labels matrix, self-labeled"""
         m = self.run_module(numpy.zeros((10, 10)), numpy.zeros((10, 10), int),
                             wants_zernikes=cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
                             zernike_degree=2)
@@ -648,7 +648,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 self.assertEqual(len(m[OBJECT_NAME, feature]), 0)
 
     def test_03_02_circle(self):
-        '''Test the module on a uniform circle'''
+        """Test the module on a uniform circle"""
         i, j = numpy.mgrid[-50:51, -50:51]
         labels = (numpy.sqrt(i * i + j * j) <= 40).astype(int)
         m, workspace = self.run_module(
@@ -695,12 +695,12 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertAlmostEqual(data[0], 0, delta=.001)
 
     def test_03_03_01_half_circle(self):
-        '''Test the module on a circle and an image that's 1/2 zeros
+        """Test the module on a circle and an image that's 1/2 zeros
 
         The measurements here are somewhat considerably off because
         the propagate function uses a Manhattan distance with jaywalking
         allowed instead of the Euclidean distance.
-        '''
+        """
         i, j = numpy.mgrid[-50:51, -50:51]
         labels = (numpy.sqrt(i * i + j * j) <= 40).astype(int)
         image = numpy.zeros(labels.shape)
@@ -765,7 +765,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         self.assertAlmostEqual(abs(phase_i_1_1 - phase_j_1_1), numpy.pi / 2, .1)
 
     def test_03_04_line(self):
-        '''Test the alternate centers with a line'''
+        """Test the alternate centers with a line"""
         labels = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
                               [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -921,11 +921,11 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 self.assertEqual(scipy.stats.mode(heatmap[mask])[0][0], data[label - 1])
 
     def test_04_01_img_607(self):
-        '''Regression test of bug IMG-607
+        """Regression test of bug IMG-607
 
         MeasureObjectIntensityDistribution fails if there are no pixels for
         some of the objects.
-        '''
+        """
         numpy.random.seed(41)
         labels = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 1, 1, 1, 0, 0, 3, 3, 3, 0],
@@ -945,7 +945,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 self.assertTrue(numpy.isnan(data[1]))
 
     def test_04_02_center_outside_of_object(self):
-        '''Make sure MeasureObjectIntensityDistribution can handle oddly shaped objects'''
+        """Make sure MeasureObjectIntensityDistribution can handle oddly shaped objects"""
         numpy.random.seed(42)
         labels = numpy.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -978,11 +978,11 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 1)
 
     def test_04_03_wrong_size(self):
-        '''Regression test for IMG-961: objects & image of different sizes
+        """Regression test for IMG-961: objects & image of different sizes
 
         Make sure that the module executes without exception with and
         without centers and with similarly and differently shaped centers
-        '''
+        """
         numpy.random.seed(43)
         labels = numpy.ones((30, 40), int)
         image = numpy.random.uniform(size=(20, 50))
@@ -995,7 +995,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         m = self.run_module(image, labels, centers)
 
     def test_05_01_more_labels_than_centers(self):
-        '''Regression test of img-1463'''
+        """Regression test of img-1463"""
         numpy.random.seed(51)
         i, j = numpy.mgrid[0:100, 0:100]
         ir = (i % 10) - 5
@@ -1024,7 +1024,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         m = self.run_module(image, labels, center_labels)
 
     def test_05_02_more_centers_than_labels(self):
-        '''Regression test of img-1463'''
+        """Regression test of img-1463"""
         numpy.random.seed(51)
         i, j = numpy.mgrid[0:100, 0:100]
         ir = (i % 10) - 5

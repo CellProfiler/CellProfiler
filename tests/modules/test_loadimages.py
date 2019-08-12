@@ -39,12 +39,12 @@ OUTLINES_NAME = "outlines"
 
 
 class ConvtesterMixin:
-    '''Mixin class that supplies a generic legacy conversion tester method
+    """Mixin class that supplies a generic legacy conversion tester method
 
-    '''
+    """
 
     def convtester(self, pipeline_text, directory, fn_filter=(lambda x: True)):
-        '''Test whether a converted pipeline yields the same output
+        """Test whether a converted pipeline yields the same output
 
         pipeline_text - the pipeline as a text file
 
@@ -52,7 +52,7 @@ class ConvtesterMixin:
 
         fn_filter - a function that returns True if a file should be included
                     in the workspace file list.
-        '''
+        """
         cellprofiler.preferences.set_default_image_directory(directory)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(io.StringIO(pipeline_text))
@@ -170,7 +170,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         lip.release_memory()
 
     def test_05_06_load_Nikon_tif(self):
-        '''This is the Nikon format TIF file from IMG-838'''
+        """This is the Nikon format TIF file from IMG-838"""
         tests.modules.maybe_download_tesst_image("NikonTIF.tif")
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
@@ -182,10 +182,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertAlmostEqual(numpy.sum(image.astype(numpy.float64)), 560730.83, 0)
 
     def test_05_07_load_Metamorph_tif(self):
-        '''Regression test of IMG-883
+        """Regression test of IMG-883
 
         This file generated a null-pointer exception in the MetamorphReader
-        '''
+        """
         tests.modules.maybe_download_tesst_image(
                 "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
@@ -201,7 +201,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     # planes.
     @unittest.skip
     def test_05_08_load_5channel_tif(self):
-        '''Load a 5-channel image'''
+        """Load a 5-channel image"""
         tests.modules.maybe_download_tesst_image("5channel.tif")
         path = tests.modules.testimages_directory()
         file_name = "5channel.tif"
@@ -615,7 +615,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     print("Failed to remove " + directory)
 
     def test_06_07_subfolders(self):
-        '''Test recursion down the list of subfolders'''
+        """Test recursion down the list of subfolders"""
         directory = tempfile.mkdtemp()
         filenames = [("d1", "bar.tif"),
                      ("d1", "foo.tif"),
@@ -687,7 +687,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     traceback.print_exc()
 
     def test_06_08_some_subfolders(self):
-        '''Test recursion down the list of subfolders, some folders filtered'''
+        """Test recursion down the list of subfolders, some folders filtered"""
         directory = tempfile.mkdtemp()
         filenames = [("d1", "bar.tif"),
                      ("d1", "foo.tif"),
@@ -1034,7 +1034,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     self.assertTrue(expected_feature in features)
 
     def test_08_01_get_groupings(self):
-        '''Get groupings for the SBS image set'''
+        """Get groupings for the SBS image set"""
         sbs_path = os.path.join(tests.modules.example_images_directory(), 'ExampleSBSImages')
         module = cellprofiler.modules.loadimages.LoadImages()
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
@@ -1928,12 +1928,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #                      os.path.split(path_measurement)[1])
 
     def make_prepare_run_workspace(self, file_names):
-        '''Make a workspace and image files for prepare_run
+        """Make a workspace and image files for prepare_run
 
         file_names - a list of file names of files to create in self.directory
 
         returns tuple of workspace and module
-        '''
+        """
         self.directory = tempfile.mkdtemp()
         data = base64.b64decode(tests.modules.png_8_1)
         for file_name in file_names:

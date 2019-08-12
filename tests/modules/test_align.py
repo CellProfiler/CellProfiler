@@ -1,5 +1,5 @@
-'''test_align.py - test the Align module
-'''
+"""test_align.py - test the Align module
+"""
 
 import base64
 import unittest
@@ -57,7 +57,7 @@ class TestAlign(unittest.TestCase):
         return workspace, module
 
     def test_01_02_load_v1(self):
-        '''Load a version 1 pipeline'''
+        """Load a version 1 pipeline"""
         data = ('eJztWl9P2lAUvyAuui2b7mV7vCZ7kE0IFJYoWRQmS8YmjgjRGeO2K1zgJre'
                 '9pLQqW0z2uI+xj7KPs8d9hN2LrS3XaoGKxtmSpj2n53fPOb+ec/uHlgu1jc'
                 'Ib+CqZguVCLdEkFMMKRUaT6WoOasYSXNcxMnADMi0Hd/j2valBJQvT2Vw6l'
@@ -186,7 +186,7 @@ Name the second output image:AlignedImage2
             self.assertTrue(module.second_output_image, "AlignedImage2")
 
     def test_02_01_crop(self):
-        '''Align two images and crop the result'''
+        """Align two images and crop the result"""
         np.random.seed(0)
         shape = (50, 45)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
@@ -274,26 +274,26 @@ Name the second output image:AlignedImage2
                             self.assertTrue(np.all(~ temp))
 
     def single_slice_helper(self, offset, size):
-        '''Return a single slice starting at the offset (or zero)'''
+        """Return a single slice starting at the offset (or zero)"""
         if offset < 0:
             offset = 0
         return slice(offset, offset + size)
 
     def slice_helper(self, offset, size):
-        '''Return slices for the first and second images for copying
+        """Return slices for the first and second images for copying
 
         offset - amount to offset the second image relative to the first
 
         returns two slices, the first to apply to the first image, second
         to apply to the second image.
-        '''
+        """
         if offset < 0:
             return slice(-offset, size), slice(0, size + offset)
         else:
             return slice(0, size - offset), slice(offset, size)
 
     def test_02_02_pad(self):
-        '''Align two images with padded output'''
+        """Align two images with padded output"""
         np.random.seed(0)
         shape = (50, 45)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
@@ -361,7 +361,7 @@ Name the second output image:AlignedImage2
                         self.assertTrue(np.all(~ temp))
 
     def test_02_03_same_size(self):
-        '''Align two images keeping sizes the same'''
+        """Align two images keeping sizes the same"""
         np.random.seed(0)
         shape = (50, 45)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
@@ -435,7 +435,7 @@ Name the second output image:AlignedImage2
             return slice(0, orig_size - offset), slice(offset, orig_size)
 
     def test_03_01_align_similarly(self):
-        '''Align a third image similarly to the other two'''
+        """Align a third image similarly to the other two"""
         np.random.seed(0)
         shape = (53, 62)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
@@ -481,7 +481,7 @@ Name the second output image:AlignedImage2
                                            image3)
 
     def test_03_02_align_separately(self):
-        '''Align a third image to the first image'''
+        """Align a third image to the first image"""
         np.random.seed(0)
         shape = (47, 53)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]
@@ -707,10 +707,10 @@ Name the second output image:AlignedImage2
                 self.assertTrue("Aligned%d" % i in image_names)
 
     def test_05_01_align_self(self):
-        '''Align an image from the fly screen against itself.
+        """Align an image from the fly screen against itself.
 
         This is a regression test for the bug, IMG-284
-        '''
+        """
         image = tests.modules.read_example_image("ExampleFlyImages", '01_POS002_D.TIF')
         image = image[0:300, 0:300]  # make smaller so as to be faster
         workspace, module = self.make_workspace((image, image), (None, None))
@@ -722,10 +722,10 @@ Name the second output image:AlignedImage2
         self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned1'), 0)
 
     def test_06_01_different_sizes_crop(self):
-        '''Test align with images of different sizes
+        """Test align with images of different sizes
 
         regression test of img-1300
-        '''
+        """
         np.random.seed(61)
         shape = (61, 43)
         for method in (A.M_CROSS_CORRELATION, A.M_MUTUAL_INFORMATION):
@@ -755,10 +755,10 @@ Name the second output image:AlignedImage2
                 self.assertFalse(i2.has_crop_mask)
 
     def test_06_02_different_sizes_pad(self):
-        '''Test align with images of different sizes
+        """Test align with images of different sizes
 
         regression test of img-1300
-        '''
+        """
         np.random.seed(612)
         shape = (61, 43)
         i, j = np.mgrid[0:shape[0], 0:shape[1]]

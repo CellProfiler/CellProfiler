@@ -67,7 +67,7 @@ class TestLoadData(unittest.TestCase):
         return pipeline, module, name
 
     def test_01_00_revision(self):
-        '''Remember to update this and write another test on new revision'''
+        """Remember to update this and write another test on new revision"""
         self.assertEqual(cellprofiler.modules.loaddata.LoadData().variable_revision_number, 6)
 
     def test_01_04_load_v4(self):
@@ -420,7 +420,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         os.remove(filename)
 
     def test_05_02_img_717(self):
-        '''Regression test of img-717, column without underbar'''
+        """Regression test of img-717, column without underbar"""
         csv_text = '''"Image","Test_Measurement"
 "foo",1
 "foo",2
@@ -463,7 +463,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         os.remove(filename)
 
     def test_07_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns method'''
+        """Test the get_measurement_columns method"""
         colnames = ('Integer_Measurement', 'Float_Measurement', 'String_Measurement')
         coltypes = [cellprofiler.measurement.COLTYPE_INTEGER, cellprofiler.measurement.COLTYPE_FLOAT,
                     cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 9]
@@ -487,11 +487,11 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         os.remove(filename)
 
     def test_07_02_file_name_measurement_columns(self):
-        '''Regression test bug IMG-315
+        """Regression test bug IMG-315
 
         A csv header of Image_FileName_Foo or Image_PathName_Foo should
         yield column names of FileName_Foo and PathName_Foo
-        '''
+        """
         colnames = ('Image_FileName_Foo', 'Image_PathName_Foo')
         csv_text = '''"%s","%s"
 "Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
@@ -506,7 +506,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             os.remove(filename)
 
     def test_07_03_long_integer_column(self):
-        '''This is a regression test of IMG-644 where a 13-digit number got turned into an int'''
+        """This is a regression test of IMG-644 where a 13-digit number got turned into an int"""
         colnames = ('Long_Integer_Measurement', 'Float_Measurement', 'String_Measurement')
         coltypes = [cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 13, cellprofiler.measurement.COLTYPE_FLOAT,
                     cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 9]
@@ -558,7 +558,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                                     if object_name == column[0] and feature == column[1]]))
 
     def test_08_01_get_groupings(self):
-        '''Test the get_groupings method'''
+        """Test the get_groupings method"""
         dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         pattern = 'Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif'
         csv_text = '"Image_FileName_Cytoplasm","Image_PathName_Cytoplasm","Metadata_ROW","Metadata_COL"\n'
@@ -646,7 +646,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             os.remove(filename)
 
     def test_10_01_scaling(self):
-        '''Test loading an image scaled and unscaled'''
+        """Test loading an image scaled and unscaled"""
         folder = "loaddata"
         file_name = "1-162hrh2ax2.tif"
         path = tests.modules.make_12_bit_image(folder, file_name, (22, 18))

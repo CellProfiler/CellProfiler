@@ -1,5 +1,5 @@
-'''test_labelimages.py - test the labelimages module
-'''
+"""test_labelimages.py - test the labelimages module
+"""
 
 import unittest
 
@@ -79,7 +79,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         return workspace, module
 
     def test_02_01_label_plate_by_row(self):
-        '''Label one complete plate'''
+        """Label one complete plate"""
         nsites = 6
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
@@ -109,7 +109,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             self.assertEqual(plates[i], 1)
 
     def test_02_02_label_plate_by_column(self):
-        '''Label one complete plate'''
+        """Label one complete plate"""
         nsites = 6
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)

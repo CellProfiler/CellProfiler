@@ -344,7 +344,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(numpy.all(objects_out.segmented[mask] == expected[mask]))
 
     def test_02_05_propagation_wrong_size(self):
-        '''Regression test of img-961: different image / object sizes'''
+        """Regression test of img-961: different image / object sizes"""
         img = numpy.zeros((10, 20))
         img[2:7, 2:7] = .5
         labels = numpy.zeros((20, 10), int)
@@ -1075,11 +1075,11 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(numpy.all(object_out.unedited_segmented == labels_unedited))
 
     def test_08_03_small(self):
-        '''Regression test of IMG-791
+        """Regression test of IMG-791
 
         A small object in the seed mask should not attract any of the
         secondary object.
-        '''
+        """
         labels = numpy.array([[0, 0, 0, 0, 0, 0],
                               [0, 0, 1, 0, 0, 0],
                               [0, 0, 0, 0, 0, 0],
@@ -1131,11 +1131,11 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(numpy.all(object_out.segmented == expected))
 
     def test_08_04_small_touching(self):
-        '''Test of logic added for IMG-791
+        """Test of logic added for IMG-791
 
         A small object in the seed mask touching the edge should attract
         some of the secondary object
-        '''
+        """
         labels = numpy.array([[0, 0, 0, 0, 0, 0],
                               [0, 0, 1, 0, 0, 0],
                               [0, 0, 0, 0, 0, 0],

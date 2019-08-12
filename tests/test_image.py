@@ -296,7 +296,7 @@ class TestImageSetList(unittest.TestCase):
         self.assertEqual(img2, y.get_image("IP2"), "Failed to get correct second image")
 
     def test_03_01_serialize_no_key(self):
-        '''Serialize an image list with no keys in the image sets'''
+        """Serialize an image list with no keys in the image sets"""
         x = cellprofiler.image.ImageSetList()
         for i in range(5):
             x.get_image_set(i)

@@ -1,5 +1,5 @@
-'''test_flagimages.py - Test the FlagImages module
-'''
+"""test_flagimages.py - Test the FlagImages module
+"""
 
 import base64
 import contextlib
@@ -404,7 +404,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 self.assertEqual(measurement.rules_class, rules_class)
 
     def make_workspace(self, image_measurements, object_measurements):
-        '''Make a workspace with a FlagImage module and the given measurements
+        """Make a workspace with a FlagImage module and the given measurements
 
         image_measurements - a sequence of single image measurements. Use
                              image_measurement_name(i) to get the name of
@@ -415,7 +415,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                               the i th measurement.
 
         returns module, workspace
-        '''
+        """
         module = F.FlagImage()
         measurements = cpmeas.Measurements()
         for i in range(len(image_measurements)):

@@ -26,7 +26,7 @@ TEST_FTR = "my_measurement"
 
 class TestFilterObjects(unittest.TestCase):
     def make_workspace(self, object_dict={}, image_dict={}):
-        '''Make a workspace for testing FilterByObjectMeasurement'''
+        """Make a workspace for testing FilterByObjectMeasurement"""
         module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         object_set = cellprofiler.object.ObjectSet()
@@ -54,7 +54,7 @@ class TestFilterObjects(unittest.TestCase):
                         rules_class = None,
                         name = "Classifier",
                         feature_names = ["Foo_"+TEST_FTR]):
-        '''Returns the filename of the classifier pickle'''
+        """Returns the filename of the classifier pickle"""
         assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
         if classes is None:
             classes = numpy.arange(1, numpy.max(answers) + 1)
@@ -79,7 +79,7 @@ class TestFilterObjects(unittest.TestCase):
             pass
 
     def test_00_01_zeros_single(self):
-        '''Test keep single object on an empty labels matrix'''
+        """Test keep single object on an empty labels matrix"""
         workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
@@ -92,7 +92,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == 0))
 
     def test_00_02_zeros_per_object(self):
-        '''Test keep per object filtering on an empty labels matrix'''
+        """Test keep per object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace(
                 {INPUT_OBJECTS: numpy.zeros((10, 10), int),
                  ENCLOSING_OBJECTS: numpy.zeros((10, 10), int)})
@@ -108,7 +108,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == 0))
 
     def test_00_03_zeros_filter(self):
-        '''Test object filtering on an empty labels matrix'''
+        """Test object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace({INPUT_OBJECTS: numpy.zeros((10, 10), int)})
         module.x_name.value = INPUT_OBJECTS
         module.y_name.value = OUTPUT_OBJECTS
@@ -123,7 +123,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == 0))
 
     def test_01_01_keep_single_min(self):
-        '''Keep a single object (min) from among two'''
+        """Keep a single object (min) from among two"""
         labels = numpy.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
         labels[6:9, 5:8] = 2
@@ -153,7 +153,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertEqual(child_count[1], 1)
 
     def test_01_02_keep_single_max(self):
-        '''Keep a single object (max) from among two'''
+        """Keep a single object (max) from among two"""
         labels = numpy.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
         labels[6:9, 5:8] = 2
@@ -172,7 +172,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_02_01_keep_one_min(self):
-        '''Keep two sub-objects (min) from among four enclosed by two'''
+        """Keep two sub-objects (min) from among four enclosed by two"""
         sub_labels = numpy.zeros((20, 20), int)
         expected = numpy.zeros((20, 20), int)
         for i, j, k, e in ((0, 0, 1, 0), (10, 0, 2, 1), (0, 10, 3, 2), (10, 10, 4, 0)):
@@ -195,7 +195,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_02_02_keep_one_max(self):
-        '''Keep two sub-objects (max) from among four enclosed by two'''
+        """Keep two sub-objects (max) from among four enclosed by two"""
         sub_labels = numpy.zeros((20, 20), int)
         expected = numpy.zeros((20, 20), int)
         for i, j, k, e in ((0, 0, 1, 0), (10, 0, 2, 1), (0, 10, 3, 2), (10, 10, 4, 0)):
@@ -264,7 +264,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_01_filter(self):
-        '''Filter objects by limits'''
+        """Filter objects by limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
@@ -295,7 +295,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_02_filter(self):
-        '''Filter objects by min limits'''
+        """Filter objects by min limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
@@ -324,7 +324,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_03_filter(self):
-        '''Filter objects by maximum limits'''
+        """Filter objects by maximum limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
@@ -353,7 +353,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_03_04_filter_two(self):
-        '''Filter objects by two measurements'''
+        """Filter objects by two measurements"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         for i in range(40):
@@ -386,7 +386,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(numpy.all(labels.segmented == expected))
 
     def test_04_01_renumber_other(self):
-        '''Renumber an associated object'''
+        """Renumber an associated object"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
         alternates = numpy.zeros((10, n * 10), int)
@@ -827,7 +827,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             os.remove(rules_path)
 
     def test_09_01_discard_border_objects(self):
-        '''Test the mode to discard border objects'''
+        """Test the mode to discard border objects"""
         labels = numpy.zeros((10, 10), int)
         labels[1:4, 0:3] = 1
         labels[4:8, 1:5] = 2
@@ -845,7 +845,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertTrue(numpy.all(expected == output_objects.segmented))
 
     def test_09_02_discard_mask_objects(self):
-        '''Test discarding objects that touch the mask of objects parent img'''
+        """Test discarding objects that touch the mask of objects parent img"""
         mask = numpy.ones((10, 10), bool)
         mask[5, 5] = False
         labels = numpy.zeros((10, 10), int)
@@ -1188,12 +1188,12 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
 
 class FakeClassifier(object):
     def __init__(self, answers, classes):
-        '''initializer
+        """initializer
 
         answers - a vector of answers to be returned by "predict"
 
         classes - a vector of class numbers to be used to populate self.classes_
-        '''
+        """
         self.answers_ = answers
         self.classes_ = classes
 
@@ -1201,13 +1201,13 @@ class FakeClassifier(object):
         return self.answers_
 
 def make_classifier_pickle(answers, classes, class_names, name, feature_names):
-    '''Make a pickle of a fake classifier
+    """Make a pickle of a fake classifier
 
     answers - the answers you want to get back after calling classifier.predict
     classes - the class #s for the answers.
     class_names - one name per class in the order they appear in classes
     name - the name of the classifier
     feature_names - the names of the features fed into the classifier
-    '''
+    """
     classifier = FakeClassifier(answers, classes)
     return pickle.dumps([classifier, class_names, name, feature_names])

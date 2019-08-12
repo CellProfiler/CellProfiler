@@ -1,5 +1,5 @@
-'''test_rules - test the CPA rules parser
-'''
+"""test_rules - test the CPA rules parser
+"""
 
 import unittest
 from io import StringIO

@@ -28,7 +28,7 @@ OUTPUT_IMAGE_NAME = 'outputimage'
 
 class TestThreshold(unittest.TestCase):
     def make_workspace(self, image, mask=None, dimensions=2):
-        '''Make a workspace for testing Threshold'''
+        """Make a workspace for testing Threshold"""
         module = cellprofiler.modules.threshold.Threshold()
         module.x_name.value = INPUT_IMAGE_NAME
         module.y_name.value = OUTPUT_IMAGE_NAME
@@ -499,7 +499,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertEqual(module.local_operation.value, centrosome.threshold.TM_OTSU)
 
     def test_04_01_binary_manual(self):
-        '''Test a binary threshold with manual threshold value'''
+        """Test a binary threshold with manual threshold value"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         expected = image > .5
@@ -512,7 +512,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_02_binary_global(self):
-        '''Test a binary threshold with Otsu global method'''
+        """Test a binary threshold with Otsu global method"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         threshold = skimage.filters.threshold_otsu(image)
@@ -525,7 +525,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_03_binary_correction(self):
-        '''Test a binary threshold with a correction factor'''
+        """Test a binary threshold with a correction factor"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         threshold = skimage.filters.threshold_otsu(image) * .5
@@ -539,7 +539,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_04_low_bounds(self):
-        '''Test a binary threshold with a low bound'''
+        """Test a binary threshold with a low bound"""
 
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
@@ -554,7 +554,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_05_high_bounds(self):
-        '''Test a binary threshold with a high bound'''
+        """Test a binary threshold with a high bound"""
 
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(40, 40))
@@ -568,7 +568,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_07_threshold_from_measurement(self):
-        '''Test a binary threshold from previous measurements'''
+        """Test a binary threshold from previous measurements"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         workspace, module = self.make_workspace(image)
@@ -586,7 +586,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         module2.run(workspace)
 
     def test_05_03_otsu3_low(self):
-        '''Test the three-class otsu, weighted variance middle = background'''
+        """Test the three-class otsu, weighted variance middle = background"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=300),
                               numpy.random.poisson(15, size=300),
@@ -607,7 +607,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         self.assertAlmostEqual(m_threshold, threshold)
 
     def test_05_04_otsu3_high(self):
-        '''Test the three-class otsu, weighted variance middle = foreground'''
+        """Test the three-class otsu, weighted variance middle = foreground"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=300),
                               numpy.random.poisson(15, size=300),

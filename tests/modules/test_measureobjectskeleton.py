@@ -1,5 +1,5 @@
-'''test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
-'''
+"""test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
+"""
 
 import os
 import tempfile
@@ -162,7 +162,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             self.assertEqual(len(data), 0)
 
     def test_02_02_trunk(self):
-        '''Create an image with one soma with one neurite'''
+        """Create an image with one soma with one neurite"""
         image = np.zeros((20, 15), bool)
         image[9, 5:] = True
         labels = np.zeros((20, 15), int)
@@ -179,7 +179,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             self.assertEqual(data[0], expected)
 
     def test_02_03_trunks(self):
-        '''Create an image with two soma and a neurite that goes through both'''
+        """Create an image with two soma and a neurite that goes through both"""
         image = np.zeros((30, 15), bool)
         image[1:25, 7] = True
         labels = np.zeros((30, 15), int)
@@ -198,7 +198,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
                 self.assertEqual(data[i], expected[i])
 
     def test_02_04_branch(self):
-        '''Create an image with one soma and a neurite with a branch'''
+        """Create an image with one soma and a neurite with a branch"""
         image = np.zeros((30, 15), bool)
         image[6:15, 7] = True
         image[15 + np.arange(3), 7 + np.arange(3)] = True
@@ -217,10 +217,10 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             self.assertEqual(data[0], expected)
 
     def test_02_05_img_667(self):
-        '''Create an image with a one-pixel soma and a neurite with a branch
+        """Create an image with a one-pixel soma and a neurite with a branch
 
         Regression test of IMG-667
-        '''
+        """
         image = np.zeros((30, 15), bool)
         image[6:15, 7] = True
         image[15 + np.arange(3), 7 + np.arange(3)] = True
@@ -240,7 +240,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
                              "%s: expected %d, got %d" % (feature, expected, data[0]))
 
     def test_02_06_quadrabranch(self):
-        '''An odd example that I noticed and thought was worthy of a test
+        """An odd example that I noticed and thought was worthy of a test
 
         You get this pattern:
               x
@@ -252,7 +252,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             x   x
 
             And there should be 3 trunks (or possibly two trunks and a branch)
-        '''
+        """
         image = np.zeros((30, 15), bool)
         image[6:15, 7] = True
         image[15 + np.arange(3), 7 + np.arange(3)] = True
@@ -272,11 +272,11 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
                              "%s: expected %d, got %d" % (feature, expected, data[0]))
 
     def test_02_07_wrong_size(self):
-        '''Regression of img-961, image and labels size differ
+        """Regression of img-961, image and labels size differ
 
         Assume that image is primary, labels outside of image are ignored
         and image outside of labels is unlabeled.
-        '''
+        """
         image = np.zeros((40, 15), bool)
         image[1:25, 7] = True
         labels = np.zeros((30, 20), int)
@@ -328,7 +328,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         return np.loadtxt(fd, dt, delimiter=",")
 
     def test_03_00_graph(self):
-        '''Does graph neurons work on an empty image?'''
+        """Does graph neurons work on an empty image?"""
         workspace, module = self.make_workspace(
                 np.zeros((20, 10), int),
                 np.zeros((20, 10), bool),
@@ -341,7 +341,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         self.assertEqual(len(vertex_graph), 0)
 
     def test_03_01_graph(self):
-        '''Make a simple graph'''
+        """Make a simple graph"""
         #
         # The skeleton looks something like this:
         #
@@ -403,12 +403,12 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             self.assertAlmostEqual(total_intensity, ee["total_intensity"], 4)
 
     def test_03_02_four_branches(self):
-        '''Test four branchpoints touching the same edge
+        """Test four branchpoints touching the same edge
 
         This exercises quite a bit of corner-case code. The permutation
         code kicks in when more than one branchpoint touches an edge's end.
         The "best edge wins" code kicks in when a branch touches another branch.
-        '''
+        """
         skel = np.array(
                 ((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                  (0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0),

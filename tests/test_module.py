@@ -7,7 +7,7 @@ import cellprofiler.object
 import cellprofiler.workspace
 
 
-class TestObjectProcessing():
+class TestObjectProcessing:
     def test_get_categories_image(self):
         module = cellprofiler.module.ObjectProcessing()
 
@@ -472,7 +472,7 @@ class TestObjectProcessing():
         )
 
 
-class TestImageSegmentation():
+class TestImageSegmentation:
     def test_get_categories_image(self):
         module = cellprofiler.module.ImageSegmentation()
 

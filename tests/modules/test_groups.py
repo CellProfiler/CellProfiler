@@ -1,5 +1,5 @@
-'''test_groups.py - test the Groups module
-'''
+"""test_groups.py - test the Groups module
+"""
 
 import os
 import unittest
@@ -72,7 +72,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertEqual(g0.metadata_choice, "Plate")
 
     def make_image_sets(self, key_metadata, channel_metadata):
-        '''Make image sets by permuting key and channel metadata
+        """Make image sets by permuting key and channel metadata
 
         key_metadata: collection of 2 tuples. 2 tuple is key + collection of
                       values, for instance, [("Well", ("A01", "A02", "A03")),
@@ -82,7 +82,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                           channel metadata value and image type
 
         returns a Groups module and a workspace with the image sets in its measurements
-        '''
+        """
         iscds = [cpp.Pipeline.ImageSetChannelDescriptor(channel_name,
                                                         image_type)
                  for channel_name, metadata_key, metadata_value, image_type

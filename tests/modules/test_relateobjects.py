@@ -22,7 +22,7 @@ IGNORED_MEASUREMENT = '%s_Foo' % cellprofiler.measurement.C_PARENT
 
 class TestRelateObjects(unittest.TestCase):
     def make_workspace(self, parents, children, fake_measurement=False):
-        '''Make a workspace for testing Relate'''
+        """Make a workspace for testing Relate"""
         pipeline = cellprofiler.pipeline.Pipeline()
         if fake_measurement:
             class FakeModule(cellprofiler.module.Module):
@@ -83,7 +83,7 @@ class TestRelateObjects(unittest.TestCase):
             self.assertTrue(column[1] in features[index])
 
     def test_02_01_relate_zeros(self):
-        '''Relate a field of empty parents to empty children'''
+        """Relate a field of empty parents to empty children"""
         labels = numpy.zeros((10, 10), int)
         workspace, module = self.make_workspace(labels, labels)
         module.wants_per_parent_means.value = False
@@ -99,7 +99,7 @@ class TestRelateObjects(unittest.TestCase):
         self.features_and_columns_match(workspace)
 
     def test_02_01_relate_one(self):
-        '''Relate one parent to one child'''
+        """Relate one parent to one child"""
         parent_labels = numpy.ones((10, 10), int)
         child_labels = numpy.zeros((10, 10), int)
         child_labels[3:5, 4:7] = 1
@@ -119,11 +119,11 @@ class TestRelateObjects(unittest.TestCase):
         self.features_and_columns_match(workspace)
 
     def test_02_02_relate_wrong_size(self):
-        '''Regression test of IMG-961
+        """Regression test of IMG-961
 
         Perhaps someone is trying to relate cells to wells and the grid
         doesn't completely cover the labels matrix.
-        '''
+        """
         parent_labels = numpy.ones((20, 10), int)
         parent_labels[10:, :] = 0
         child_labels = numpy.zeros((10, 20), int)
@@ -144,7 +144,7 @@ class TestRelateObjects(unittest.TestCase):
         self.features_and_columns_match(workspace)
 
     def test_02_03_relate_ijv(self):
-        '''Regression test of IMG-1317: relating objects in ijv form'''
+        """Regression test of IMG-1317: relating objects in ijv form"""
 
         child_ijv = numpy.array([[5, 5, 1], [5, 6, 2], [20, 15, 3]])
         parent_ijv = numpy.array([[5, 5, 1], [5, 6, 1], [20, 15, 2]])
@@ -166,7 +166,7 @@ class TestRelateObjects(unittest.TestCase):
         self.assertEqual(child_count[1], 1)
 
     def test_03_01_mean(self):
-        '''Compute the mean for two parents and four children'''
+        """Compute the mean for two parents and four children"""
         i, j = numpy.mgrid[0:20, 0:20]
         parent_labels = (i / 10 + 1).astype(int)
         child_labels = (i / 10).astype(int) + (j / 10).astype(int) * 2 + 1
@@ -212,7 +212,7 @@ class TestRelateObjects(unittest.TestCase):
         self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
 
     def test_04_00_distance_empty(self):
-        '''Make sure we can handle labels matrices that are all zero'''
+        """Make sure we can handle labels matrices that are all zero"""
         empty_labels = numpy.zeros((10, 20), int)
         some_labels = numpy.zeros((10, 20), int)
         some_labels[2:7, 3:8] = 1
@@ -234,7 +234,7 @@ class TestRelateObjects(unittest.TestCase):
                     self.assertTrue(numpy.all(numpy.isnan(v)))
 
     def test_04_01_distance_centroids(self):
-        '''Check centroid-centroid distance calculation'''
+        """Check centroid-centroid distance calculation"""
         i, j = numpy.mgrid[0:14, 0:30]
         parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
         # Centers should be at i=3 and j=7

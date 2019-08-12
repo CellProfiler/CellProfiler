@@ -1,5 +1,5 @@
-'''test_definegrid - test the DefineGrid module
-'''
+"""test_definegrid - test the DefineGrid module
+"""
 
 import base64
 import unittest

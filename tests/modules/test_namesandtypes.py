@@ -29,13 +29,13 @@ ALT_OBJECTS_NAME = "altobjectsname"
 OUTLINES_NAME = "outlines"
 
 def md(keys_and_counts):
-    '''Generate metadata dictionaries for the given metadata shape
+    """Generate metadata dictionaries for the given metadata shape
 
     keys_and_counts - a collection of metadata keys and the dimension of
                       their extent. For instance [(M0, 2), (M1, 3)] generates
                       six dictionaries with two unique values of M0 and
                       three for M1
-    '''
+    """
     keys = [k for k, c in keys_and_counts]
     counts = numpy.array([c for k, c in keys_and_counts])
     divisors = numpy.hstack([[1], numpy.cumprod(counts[:-1])])
@@ -667,7 +667,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
     url_root = "file:" + urllib.request.pathname2url(os.path.abspath(os.path.curdir))
 
     def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
-        '''Ensure that NamesAndTypes recreates the column layout when run
+        """Ensure that NamesAndTypes recreates the column layout when run
 
         module - instance of NamesAndTypes, set up for the test
 
@@ -681,7 +681,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         additional - if present, these are added as ImagePlaneDetails in order
                      to create errors. Format is same as a single channel of
                      channels.
-        '''
+        """
         ipds = []
         urls = set()
         channels = dict(channels)
@@ -1246,7 +1246,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
     def run_workspace(self, path, load_as_type, series=None, index=None, channel=None, single=False,
                       rescaled=cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, lsi=[], volume=False, spacing=None):
-        '''Run a workspace to load a file
+        """Run a workspace to load a file
 
         path - path to the file
         load_as_type - one of the LOAD_AS... constants
@@ -1261,7 +1261,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
               "rescaled": True or False (defaults to True)
 
         returns the workspace after running
-        '''
+        """
         if isinstance(rescaled, float):
             manual_rescale = rescaled
             rescaled = cellprofiler.modules.namesandtypes.INTENSITY_MANUAL

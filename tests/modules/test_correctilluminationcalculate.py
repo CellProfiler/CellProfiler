@@ -28,7 +28,7 @@ DILATED_IMAGE_NAME = "Dilate"
 class TestCorrectImage_Calculate(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        '''Backwards compatibility for Python 2.6 unittest'''
+        """Backwards compatibility for Python 2.6 unittest"""
         if not hasattr(cls, "assertIn"):
             cls.assertIn = lambda self, x, y: self.assertTrue(x in y)
         if not hasattr(cls, "assertNotIn"):
@@ -39,12 +39,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             self.fail(event.error.message)
 
     def make_workspaces(self, images_and_masks):
-        '''Make a workspace for each image set provided
+        """Make a workspace for each image set provided
 
         images_and_masks - a collection of two-tuples: image+mask
 
         returns a list of workspaces + the module
-        '''
+        """
         image_set_list = cpi.ImageSetList()
         workspaces = []
         module = calc.CorrectIlluminationCalculate()
@@ -252,12 +252,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             automatic_object_width = %(ow)s""" % locals())
 
     def test_01_03_filtered(self):
-        '''Regression test of issue #310
+        """Regression test of issue #310
 
         post_group should add the composite image to the image set
         if CorrectIllumination_Calculate didn't run because the image
         set was filtered.
-        '''
+        """
         r = np.random.RandomState()
         r.seed(13)
         i0 = r.uniform(size=(11, 13))
@@ -287,11 +287,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         self.assertIn(AVERAGE_IMAGE_NAME, image_set.names)
 
     def test_01_04_not_filtered(self):
-        '''Regression test of issue #310, negative case
+        """Regression test of issue #310, negative case
 
         post_group should not add the composite image to the image set
         if CorrectIllumination_Calculate did run.
-        '''
+        """
         r = np.random.RandomState()
         r.seed(13)
         i0 = r.uniform(size=(11, 13))

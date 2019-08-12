@@ -1,5 +1,5 @@
-'''test_maskobjects.py - test the MaskObjects module
-'''
+"""test_maskobjects.py - test the MaskObjects module
+"""
 
 import unittest
 
@@ -247,7 +247,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         return workspace, module
 
     def test_02_01_measurement_columns(self):
-        '''Test get_measurement_columns'''
+        """Test get_measurement_columns"""
         workspace, module = self.make_workspace(np.zeros((20, 10), int),
                                                 M.P_MASK,
                                                 np.zeros((20, 10), int))

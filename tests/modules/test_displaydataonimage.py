@@ -1,5 +1,5 @@
-''' test_displaydataonimage - test the DisplayDataOnImage module
-'''
+""" test_displaydataonimage - test the DisplayDataOnImage module
+"""
 
 import unittest
 

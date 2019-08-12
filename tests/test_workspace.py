@@ -28,7 +28,7 @@ class TestWorkspace(unittest.TestCase):
                             exc_info=1)
 
     def make_workspace_file(self):
-        '''Make a very basic workspace file'''
+        """Make a very basic workspace file"""
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.init_modules()
         m = cellprofiler.measurement.Measurements()

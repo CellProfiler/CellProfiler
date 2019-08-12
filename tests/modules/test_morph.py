@@ -1,5 +1,5 @@
-'''test_morph - test the morphology module
-'''
+"""test_morph - test the morphology module
+"""
 
 import io
 import unittest
@@ -300,7 +300,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
             module.test_valid(pipeline)
 
     def execute(self, image, function, mask=None, custom_repeats=None, scale=None, module=None):
-        '''Run the morph module on an input and return the resulting image'''
+        """Run the morph module on an input and return the resulting image"""
         INPUT_IMAGE_NAME = 'input'
         OUTPUT_IMAGE_NAME = 'output'
         if module is None:

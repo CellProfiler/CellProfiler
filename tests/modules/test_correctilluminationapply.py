@@ -117,7 +117,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         self.assertTrue(np.all(output_image.pixel_data == expected))
 
     def test_02_01_color_by_bw(self):
-        '''Correct a color image with a black & white illumination fn'''
+        """Correct a color image with a black & white illumination fn"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         illum = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -164,7 +164,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         self.assertTrue(np.all(output_image.pixel_data == expected))
 
     def test_02_02_color_by_color(self):
-        '''Correct a color image with a black & white illumination fn'''
+        """Correct a color image with a black & white illumination fn"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         illum = np.random.uniform(size=(10, 10, 3)).astype(np.float32)

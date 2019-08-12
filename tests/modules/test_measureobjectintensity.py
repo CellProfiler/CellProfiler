@@ -148,7 +148,7 @@ def test_supplied_measurements(module):
 
 
 def test_get_measurement_columns(module):
-    '''test the get_measurement_columns method'''
+    """test the get_measurement_columns method"""
     module.images[0].name.value = 'MyImage'
 
     module.add_object()
@@ -739,7 +739,7 @@ def test_ijv(image, module, objects, workspace):
 
 
 def test_wrong_image_size(image, measurements, module, objects, workspace):
-    '''Regression test of IMG-961 - object and image size differ'''
+    """Regression test of IMG-961 - object and image size differ"""
     numpy.random.seed(41)
 
     labels = numpy.ones((20, 50), int)

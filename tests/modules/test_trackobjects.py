@@ -1,5 +1,5 @@
-'''test_trackobjects.py - testing of the TrackObjects module
-'''
+"""test_trackobjects.py - testing of the TrackObjects module
+"""
 
 import unittest
 
@@ -306,7 +306,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m.mitosis_max_distance, 41)
 
     def runTrackObjects(self, labels_list, fn=None, measurement=None):
-        '''Run two cycles of TrackObjects
+        """Run two cycles of TrackObjects
 
         labels1 - the labels matrix for the first cycle
         labels2 - the labels matrix for the second cycle
@@ -316,7 +316,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
              and 2 prior to second iteration.
 
         returns the measurements
-        '''
+        """
         module = T.TrackObjects()
         module.module_num = 1
         module.object_name.value = OBJECT_NAME
@@ -359,7 +359,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         return measurements
 
     def test_02_01_track_nothing(self):
-        '''Run TrackObjects on an empty labels matrix'''
+        """Run TrackObjects on an empty labels matrix"""
         columns = []
 
         def fn(module, workspace, index, columns=columns):
@@ -393,10 +393,10 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             self.assertEqual(value, 0)
 
     def test_02_01_00_track_one_then_nothing(self):
-        '''Run track objects on an object that disappears
+        """Run track objects on an object that disappears
 
         Regression test of IMG-1090
-        '''
+        """
         labels = np.zeros((10, 10), int)
         labels[3:6, 2:7] = 1
         measurements = self.runTrackObjects((labels,
@@ -407,7 +407,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(value, 1)
 
     def test_02_02_track_one_distance(self):
-        '''Track an object that doesn't move using distance'''
+        """Track an object that doesn't move using distance"""
         labels = np.zeros((10, 10), int)
         labels[3:6, 2:7] = 1
 
@@ -444,7 +444,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.check_relationships(measurements, [1], [1], [2], [1])
 
     def test_02_03_track_one_moving(self):
-        '''Track an object that moves'''
+        """Track an object that moves"""
 
         labels_list = []
         distance = 0
@@ -494,7 +494,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                  image_numbers[1:], object_numbers[1:])
 
     def test_02_04_track_split(self):
-        '''Track an object that splits'''
+        """Track an object that splits"""
         labels1 = np.zeros((11, 9), int)
         labels1[1:10, 1:8] = 1
         labels2 = np.zeros((10, 10), int)
@@ -537,7 +537,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                  [2, 2, 3, 3], [1, 2, 1, 2])
 
     def test_02_05_track_negative(self):
-        '''Track unrelated objects'''
+        """Track unrelated objects"""
         labels1 = np.zeros((10, 10), int)
         labels1[1:5, 1:5] = 1
         labels2 = np.zeros((10, 10), int)
@@ -569,7 +569,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_MERGE_COUNT), 0)
 
     def test_02_06_track_ambiguous(self):
-        '''Track disambiguation from among two possible parents'''
+        """Track disambiguation from among two possible parents"""
         labels1 = np.zeros((20, 20), int)
         labels1[1:4, 1:4] = 1
         labels1[16:19, 16:19] = 2
@@ -593,7 +593,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
     def test_03_01_overlap_positive(self):
-        '''Track overlapping objects'''
+        """Track overlapping objects"""
         labels1 = np.zeros((10, 10), int)
         labels1[3:6, 4:7] = 1
         labels2 = np.zeros((10, 10), int)
@@ -616,7 +616,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
 
     def test_03_02_overlap_negative(self):
-        '''Track objects that don't overlap'''
+        """Track objects that don't overlap"""
         labels1 = np.zeros((20, 20), int)
         labels1[3:6, 4:7] = 1
         labels2 = np.zeros((20, 20), int)
@@ -639,7 +639,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 0)
 
     def test_03_03_overlap_ambiguous(self):
-        '''Track an object that overlaps two parents'''
+        """Track an object that overlaps two parents"""
         labels1 = np.zeros((20, 20), int)
         labels1[1:5, 1:5] = 1
         labels1[15:19, 15:19] = 2
@@ -663,7 +663,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
     def test_04_01_measurement_positive(self):
-        '''Test tracking an object by measurement'''
+        """Test tracking an object by measurement"""
         labels1 = np.zeros((10, 10), int)
         labels1[3:6, 4:7] = 1
         labels2 = np.zeros((10, 10), int)
@@ -686,7 +686,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
 
     def test_04_02_measurement_negative(self):
-        '''Test tracking with too great a jump between successive images'''
+        """Test tracking with too great a jump between successive images"""
         labels1 = np.zeros((20, 20), int)
         labels1[3:6, 4:7] = 1
         labels2 = np.zeros((20, 20), int)
@@ -709,7 +709,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 0)
 
     def test_04_03_ambiguous(self):
-        '''Test measurement with ambiguous parent choice'''
+        """Test measurement with ambiguous parent choice"""
         labels1 = np.zeros((20, 20), int)
         labels1[1:5, 1:5] = 1
         labels1[15:19, 15:19] = 2
@@ -733,7 +733,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
     def test_04_04_cross_numbered_objects(self):
-        '''Test labeling when object 1 in one image becomes object 2 in next'''
+        """Test labeling when object 1 in one image becomes object 2 in next"""
 
         i, j = np.mgrid[0:10, 0:20]
         labels = (i > 5) + (j > 10) * 2
@@ -769,7 +769,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             image_numbers[1:, :].flatten(), pp[1:, :].flatten())
 
     def test_05_01_measurement_columns(self):
-        '''Test get_measurement_columns function'''
+        """Test get_measurement_columns function"""
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
         module.tracking_method.value = "Distance"
@@ -790,7 +790,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                 self.assertEqual(column[0], object_name)
 
     def test_05_02_measurement_columns_lap(self):
-        '''Test get_measurement_columns function for LAP'''
+        """Test get_measurement_columns function for LAP"""
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
         module.tracking_method.value = "LAP"
@@ -866,7 +866,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                             (not column[3][cpmeas.MCA_AVAILABLE_POST_GROUP]))
 
     def test_06_01_measurements(self):
-        '''Test the different measurement pieces'''
+        """Test the different measurement pieces"""
         module = T.TrackObjects()
         module.object_name.value = OBJECT_NAME
         module.image_name.value = "image"
@@ -891,7 +891,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             self.assertEqual(int(scales[0]), 10)
 
     def make_lap2_workspace(self, objs, nimages, group_numbers=None, group_indexes=None):
-        '''Make a workspace to test the second half of LAP
+        """Make a workspace to test the second half of LAP
 
         objs - a N x 5 array of "objects" composed of the
                following pieces per object
@@ -905,7 +905,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         nimages - # of image sets
         group_numbers - group numbers for each image set, defaults to all 1
         group_indexes - group indexes for each image set, defaults to range
-        '''
+        """
         module = T.TrackObjects()
         module.module_num = 1
         module.object_name.value = OBJECT_NAME
@@ -1012,11 +1012,11 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         return workspace, module
 
     def check_measurements(self, workspace, d):
-        '''Check measurements against expected values
+        """Check measurements against expected values
 
         workspace - workspace that was run
         d - dictionary of feature name and list of expected measurement values
-        '''
+        """
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         module = workspace.module
@@ -1047,7 +1047,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                             expected_parent_object_numbers,
                             expected_child_image_numbers,
                             expected_child_object_numbers):
-        '''Check the relationship measurements against expected'''
+        """Check the relationship measurements against expected"""
         expected_parent_image_numbers = np.atleast_1d(expected_parent_image_numbers)
         expected_child_image_numbers = np.atleast_1d(expected_child_image_numbers)
         expected_parent_object_numbers = np.atleast_1d(expected_parent_object_numbers)
@@ -1080,7 +1080,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             np.testing.assert_array_equal(expected, actual)
 
     def test_07_01_lap_none(self):
-        '''Run the second part of LAP on one image of nothing'''
+        """Run the second part of LAP on one image of nothing"""
         with self.MonkeyPatchedDelete(self):
             workspace, module = self.make_lap2_workspace(np.zeros((0, 7)), 1)
             self.assertTrue(isinstance(module, T.TrackObjects))
@@ -1099,7 +1099,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             })
 
     def test_07_02_lap_one(self):
-        '''Run the second part of LAP on one image of one object'''
+        """Run the second part of LAP on one image of one object"""
         with self.MonkeyPatchedDelete(self):
             workspace, module = self.make_lap2_workspace(
                 np.array([[0, 1, 0, 0, 100, 100, 25]]), 1)
@@ -1120,7 +1120,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             })
 
     def test_07_03_bridge_gap(self):
-        '''Bridge a gap of zero frames between two objects'''
+        """Bridge a gap of zero frames between two objects"""
         with self.MonkeyPatchedDelete(self):
             workspace, module = self.make_lap2_workspace(
                 np.array([[0, 1, 0, 0, 1, 2, 25],
@@ -1154,7 +1154,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                      [1], [1], [3], [1])
 
     def test_07_04_maintain_gap(self):
-        '''Maintain object identity across a large gap'''
+        """Maintain object identity across a large gap"""
         with self.MonkeyPatchedDelete(self):
             workspace, module = self.make_lap2_workspace(
                 np.array([[0, 1, 0, 0, 1, 2, 25],
@@ -1178,7 +1178,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             })
 
     def test_07_05_filter_gap(self):
-        '''Filter a gap due to an unreasonable score'''
+        """Filter a gap due to an unreasonable score"""
         with self.MonkeyPatchedDelete(self):
             workspace, module = self.make_lap2_workspace(
                 np.array([[0, 1, 0, 0, 1, 2, 25],
@@ -1199,7 +1199,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             })
 
     def test_07_06_split(self):
-        '''Track an object splitting'''
+        """Track an object splitting"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 100, 100, 50],
                       [1, 1, 1, 1, 110, 110, 25],
@@ -1237,7 +1237,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_07_dont_split(self):
-        '''Track an object splitting'''
+        """Track an object splitting"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 100, 100, 50],
                       [1, 1, 1, 1, 110, 110, 25],
@@ -1261,7 +1261,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_08_split_filter(self):
-        '''Prevent a split by setting the filter too low'''
+        """Prevent a split by setting the filter too low"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 100, 100, 50],
                       [1, 1, 1, 1, 110, 110, 25],
@@ -1285,7 +1285,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_09_merge(self):
-        '''Merge two objects into one'''
+        """Merge two objects into one"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 110, 110, 25],
                       [0, 2, 0, 0, 90, 90, 25],
@@ -1309,7 +1309,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_10_dont_merge(self):
-        '''Don't merge because of low alternative merge cost'''
+        """Don't merge because of low alternative merge cost"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 110, 110, 25],
                       [0, 2, 0, 0, 90, 90, 25],
@@ -1336,7 +1336,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(labels[2][0], 1)
 
     def test_07_11_filter_merge(self):
-        '''Don't merge because of low alternative merge cost'''
+        """Don't merge because of low alternative merge cost"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 110, 110, 25],
                       [0, 2, 0, 0, 90, 90, 25],
@@ -1363,7 +1363,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(labels[2][0], 1)
 
     def test_07_12_img_1111(self):
-        '''Regression test of img-1111'''
+        """Regression test of img-1111"""
         data = np.array([[9, 1, 0, 0, 225, 20, 50],
                          [9, 2, 0, 0, 116, 223, 31],
                          [25, 3, 0, 0, 43, 291, 26],
@@ -1417,7 +1417,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module.run_as_data_tool(workspace)
 
     def test_07_12_multi_group(self):
-        '''Run several tests in different groups'''
+        """Run several tests in different groups"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 1, 2, 25],
                       [2, 2, 0, 0, 101, 102, 25],
@@ -1500,7 +1500,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_13_filter_by_final_age(self):
-        '''Filter an object by the final age'''
+        """Filter an object by the final age"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 100, 100, 50],
                       [1, 1, 1, 1, 110, 110, 50],
@@ -1537,7 +1537,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_14_mitosis(self):
-        '''Track a mitosis'''
+        """Track a mitosis"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 103, 104, 50],
                       [1, 2, 0, 0, 110, 110, 25],
@@ -1573,7 +1573,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_14_no_mitosis(self):
-        '''Don't track a mitosis'''
+        """Don't track a mitosis"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 103, 104, 50],
                       [1, 2, 0, 0, 110, 110, 25],
@@ -1603,7 +1603,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     def test_07_15_mitosis_distance_filter(self):
-        '''Don't track a mitosis'''
+        """Don't track a mitosis"""
         workspace, module = self.make_lap2_workspace(
             np.array([[0, 1, 0, 0, 103, 104, 50],
                       [1, 2, 0, 0, 110, 110, 25],
@@ -1675,7 +1675,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         })
 
     class MonkeyPatchedDelete(object):
-        '''Monkey patch np.delete inside of a scope
+        """Monkey patch np.delete inside of a scope
 
         For regression test of issue #1571 - negative
         indices in calls to numpy.delete
@@ -1683,7 +1683,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         Usage:
             with MonkeyPatchedDelete(self):
                 ... do test ...
-        '''
+        """
 
         def __init__(self, test):
             self.__test = test
@@ -1770,7 +1770,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         np.testing.assert_array_almost_equal(d, expected_d * expected_rho)
 
     def test_10_01_neighbour_track_nothing(self):
-        '''Run TrackObjects on an empty labels matrix'''
+        """Run TrackObjects on an empty labels matrix"""
         columns = []
 
         def fn(module, workspace, index, columns=columns):
@@ -1805,10 +1805,10 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             self.assertEqual(value, 0)
 
     def test_10_01_00_neighbour_track_one_then_nothing(self):
-        '''Run track objects on an object that disappears
+        """Run track objects on an object that disappears
 
         Regression test of IMG-1090
-        '''
+        """
         labels = np.zeros((10, 10), int)
         labels[3:6, 2:7] = 1
 
@@ -1824,7 +1824,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(value, 1)
 
     def test_10_02_neighbour_track_one_by_distance(self):
-        '''Track an object that doesn't move.'''
+        """Track an object that doesn't move."""
         labels = np.zeros((10, 10), int)
         labels[3:6, 2:7] = 1
 
@@ -1861,7 +1861,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.check_relationships(measurements, [1], [1], [2], [1])
 
     def test_10_03_neighbour_track_one_moving(self):
-        '''Track an object that moves'''
+        """Track an object that moves"""
 
         labels_list = []
         distance = 0
@@ -1911,7 +1911,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                  image_numbers[1:], object_numbers[1:])
 
     def test_10_04_neighbour_track_negative(self):
-        '''Track unrelated objects'''
+        """Track unrelated objects"""
         labels1 = np.zeros((10, 10), int)
         labels1[1:5, 1:5] = 1
         labels2 = np.zeros((10, 10), int)
@@ -1943,7 +1943,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_MERGE_COUNT), 0)
 
     def test_10_05_neighbour_track_ambiguous(self):
-        '''Track disambiguation from among two possible parents'''
+        """Track disambiguation from among two possible parents"""
         labels1 = np.zeros((20, 20), int)
         labels1[1:4, 1:4] = 1
         labels1[16:19, 16:19] = 2
@@ -1967,7 +1967,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
     def test_10_06_neighbour_track_group_with_drop(self):
-        '''Track groups with one lost'''
+        """Track groups with one lost"""
         labels1 = np.zeros((20, 20), int)
         labels1[2, 2] = 1
         labels1[4, 2] = 2

@@ -30,14 +30,14 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
     def make_workspace(self, image,
                        mask=None,
                        labels=None):
-        '''Make a workspace and IdentifyPrimaryObjects module
+        """Make a workspace and IdentifyPrimaryObjects module
 
         image - the intensity image for thresholding
 
         mask - if present, the "don't analyze" mask of the intensity image
 
         labels - if thresholding per-object, the labels matrix needed
-        '''
+        """
         module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         module.module_num = 1
         module.x_name.value = IMAGE_NAME
@@ -391,7 +391,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(objects.segmented[30, 30] == 0)
 
     def test_02_05_01_fill_holes_within_holes(self):
-        'Regression test of img-1431'
+        """Regression test of img-1431"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -812,7 +812,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         self.assertEqual(objects.segmented[14, 9], objects.segmented[9, 9])
 
     def test_02_12_fly(self):
-        '''Run identify on the fly image'''
+        """Run identify on the fly image"""
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -1804,7 +1804,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     #     self.assertTrue(threshold < 0.095)
 
     def test_16_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns method'''
+        """Test the get_measurement_columns method"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         oname = "my_object"
         x.y_name.value = oname
@@ -1832,12 +1832,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                                 for expected in expected_columns))
 
     def test_17_01_regression_holes(self):
-        '''Regression test - fill holes caused by filtered object
+        """Regression test - fill holes caused by filtered object
 
         This was created as a regression test for the bug, IMG-191, but
         didn't exercise the bug. It's a good test of watershed and filling
         labeled holes in an odd case, so I'm leaving it in.
-        '''
+        """
         #
         # This array has two intensity peaks separated by a border.
         # You should get two objects, one within the other.
@@ -1923,12 +1923,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(numpy.all(unedited_segmented[mask] == expected[mask]))
 
     def test_17_02_regression_holes(self):
-        '''Regression test - fill holes caused by filtered object
+        """Regression test - fill holes caused by filtered object
 
         This is the real regression test for IMG-191. The smaller object
         is surrounded by pixels below threshold. This prevents filling in
         the unedited case.
-        '''
+        """
         # An update to fill_labeled_holes will remove both the filtered object
         # and the hole
         #
@@ -2016,7 +2016,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(numpy.all(my_objects.segmented[mask] == expected[mask]))
 
     def test_18_02_erase_objects(self):
-        '''Set up a limit on the # of objects and exceed it - erasing objects'''
+        """Set up a limit on the # of objects and exceed it - erasing objects"""
         maximum_object_count = 3
         pixels = numpy.zeros((20, 21))
         pixels[2:8, 2:8] = .5
@@ -2056,7 +2056,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         self.assertEqual(numpy.max(my_objects.unedited_segmented), 4)
 
     def test_18_03_dont_erase_objects(self):
-        '''Ask to erase objects, but don't'''
+        """Ask to erase objects, but don't"""
         maximum_object_count = 5
         pixels = numpy.zeros((20, 21))
         pixels[2:8, 2:8] = .5
@@ -2095,7 +2095,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         self.assertEqual(numpy.max(my_objects.segmented), 4)
 
     def test_19_01_threshold_by_measurement(self):
-        '''Set threshold based on mean image intensity'''
+        """Set threshold based on mean image intensity"""
         pixels = numpy.zeros((10, 10))
         pixels[2:6, 2:6] = .5
 
@@ -2224,7 +2224,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
 
 def add_noise(img, fraction):
-    '''Add a fractional amount of noise to an image to make it look real'''
+    """Add a fractional amount of noise to an image to make it look real"""
     numpy.random.seed(0)
     noise = numpy.random.uniform(low=1 - fraction / 2, high=1 + fraction / 2,
                                  size=img.shape)

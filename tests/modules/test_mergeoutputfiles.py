@@ -1,4 +1,4 @@
-'''test_mergeoutputfiles.py - test the MergeOutputFiles module'''
+"""test_mergeoutputfiles.py - test the MergeOutputFiles module"""
 
 import os
 import tempfile
@@ -54,11 +54,11 @@ class TestMergeOutputFiles(unittest.TestCase):
         m.add_experiment_measurement(feature, np.random.uniform())
 
     def test_00_00_nothing(self):
-        '''Make sure merge_files doesn't crash if no inputs'''
+        """Make sure merge_files doesn't crash if no inputs"""
         M.MergeOutputFiles.merge_files("nope", [])
 
     def test_01_01_one(self):
-        '''Test "merging" one file'''
+        """Test "merging" one file"""
         np.random.seed(11)
         m = cpmeas.Measurements()
         self.write_image_measurements(m, "foo", 5)

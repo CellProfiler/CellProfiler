@@ -140,10 +140,10 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
                image=None,
                parent_object="Parent_object",
                parents_of=None):
-        '''Run the SplitOrMergeObjects module
+        """Run the SplitOrMergeObjects module
 
         returns the labels matrix and the workspace.
-        '''
+        """
         module = cellprofiler.modules.splitormergeobjects.SplitOrMergeObjects()
         module.module_num = 1
         module.objects_name.value = INPUT_OBJECTS_NAME

@@ -1,5 +1,5 @@
-'''test_exporttodatabase.py - test the ExportToDatabase module
-'''
+"""test_exporttodatabase.py - test the ExportToDatabase module
+"""
 
 import os
 import socket
@@ -148,7 +148,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     @property
     def mysql_has_median(self):
-        '''True if MySQL database has a median function'''
+        """True if MySQL database has a median function"""
         if self.__has_median is None:
             try:
                 cursor = self.connection.cursor()
@@ -1243,7 +1243,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                        relationship_type=None,
                        relationship_test_type=None,
                        post_run_test=False):
-        '''Make a measurements structure with image and object measurements'''
+        """Make a measurements structure with image and object measurements"""
 
         class TestModule(cpm.Module):
             module_name = "TestModule"
@@ -1262,7 +1262,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
             @staticmethod
             def in_module(flag):
-                '''Return True to add the measurement to module's get_measurement_columns'''
+                """Return True to add the measurement to module's get_measurement_columns"""
                 return flag and flag != MISSING_FROM_MODULE
 
             @staticmethod
@@ -1439,7 +1439,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             return workspace, module
 
     def load_database(self, output_dir, module, image_set_count=1):
-        '''Load a database written by DB_MYSQL_CSV'''
+        """Load a database written by DB_MYSQL_CSV"""
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         curdir = os.path.abspath(os.curdir)
         os.chdir(output_dir)
@@ -1493,7 +1493,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertEqual(cursor.fetchall()[0][0], 1)
 
     def drop_tables(self, module, table_suffixes=None):
-        '''Drop all tables and views  that match the prefix'''
+        """Drop all tables and views  that match the prefix"""
         cursor = self.connection.cursor()
         try:
             for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
@@ -1729,7 +1729,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_02_mysql_direct(self):
-        '''Write directly to the mysql DB, not to a file'''
+        """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -1779,7 +1779,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_03_00_write_direct_long_colname(self):
-        '''Write to MySQL, ensuring some columns have long names'''
+        """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -1838,10 +1838,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_03_01_write_csv_long_colname(self):
-        '''Write to MySQL, ensuring some columns have long names
+        """Write to MySQL, ensuring some columns have long names
 
         This is a regression test of IMG-786
-        '''
+        """
         workspace, module, output_dir, finally_fn = \
             self.make_workspace(True, long_measurement=True)
         try:
@@ -1983,7 +1983,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_04_02_write_inf(self):
-        '''regression test of img-1149'''
+        """regression test of img-1149"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
         # Insert inf into the float image measurement and one of the
@@ -2062,7 +2062,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_05_mysql_direct_null(self):
-        '''Write directly to the mysql DB, not to a file and write nulls'''
+        """Write directly to the mysql DB, not to a file and write nulls"""
         workspace, module = self.make_workspace(False)
         #
         # Insert a NaN into the float image measurement and one of the
@@ -2120,7 +2120,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_06_write_direct_wierd_colname(self):
-        '''Write to MySQL, even if illegal characters are in the column name'''
+        """Write to MySQL, even if illegal characters are in the column name"""
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2175,7 +2175,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_06_write_direct_50_char_colname(self):
-        '''Write to MySQL, ensuring some columns have long names'''
+        """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2232,11 +2232,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_07_write_direct_backslash(self):
-        '''Regression test for IMG-898
+        """Regression test for IMG-898
 
         Make sure CP can write string data containing a backslash character
         to the database in direct-mode.
-        '''
+        """
         backslash_string = "\\Why worry?"
         workspace, module = self.make_workspace(False)
         self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2259,7 +2259,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Experiment"))
 
     def test_02_08_mysql_as_data_tool(self):
-        '''Write directly to the mysql DB, not to a file'''
+        """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False, image_set_count=2)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2310,11 +2310,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
     def get_interaction_handler(self, ran_interaction_handler):
-        '''Return an interaction handler for testing
+        """Return an interaction handler for testing
 
         return an interaction handler function that sets
         ran_interaction_handler[0] to True when run.
-        '''
+        """
 
         def interaction_handler(*args, **vargs):
             self.assertTrue(len(args) > 0)
@@ -2325,7 +2325,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         return interaction_handler
 
     def test_03_01_write_sqlite_direct(self):
-        '''Write directly to a SQLite database'''
+        """Write directly to a SQLite database"""
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(True)
             ran_interaction_handler = [False]
@@ -2391,7 +2391,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 finally_fn()
 
     def test_03_02_write_sqlite_backslash(self):
-        '''Regression test of IMG-898 sqlite with backslash in string'''
+        """Regression test of IMG-898 sqlite with backslash in string"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         backslash_string = "\\Why doesn't he worry?"
         m = workspace.measurements
@@ -2434,11 +2434,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
 
     def test_03_03_numpy_float32(self):
-        '''Regression test of img-915
+        """Regression test of img-915
 
         This error occurred when the sqlite3 driver was unable to convert
         a numpy.float32 to a float.
-        '''
+        """
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         fim = workspace.measurements.get_all_measurements(
                 cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT)
@@ -2565,7 +2565,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
 
     def test_04_01_stable_column_mapper(self):
-        '''Make sure the column mapper always yields the same output'''
+        """Make sure the column mapper always yields the same output"""
         mapping = E.ColumnNameMapping()
         k1 = 'abcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC'
         k2 = 'ebcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC'
@@ -2576,7 +2576,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertEqual(mapping[k2], 'ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC')
 
     def test_04_02_leave_start_intact(self):
-        '''The column mapper should leave stuff before the first _ alone'''
+        """The column mapper should leave stuff before the first _ alone"""
         mapping = E.ColumnNameMapping(25)
         k1 = 'leaveme_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS'
         k2 = 'keepmee_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS'
@@ -2587,7 +2587,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(mapping[k2].startswith('keepmee_'))
 
     def per_object_statement(self, module, object_name, fields):
-        '''Return a statement that will select the given fields from the table'''
+        """Return a statement that will select the given fields from the table"""
         field_string = ", ".join([field if field.startswith(object_name)
                                   else "%s_%s" % (object_name, field)
                                   for field in fields])
@@ -2599,7 +2599,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         return statement
 
     def check_experiment_table(self, cursor, module, m):
-        '''Check the per_experiment table values against measurements'''
+        """Check the per_experiment table values against measurements"""
         statement = "select %s, %s, %s from %s" % (
             cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP,
             module.get_table_name(cpmeas.EXPERIMENT))
@@ -2614,7 +2614,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     m.get_experiment_measurement(feature))
 
     def test_05_01_write_mysql_db(self):
-        '''Multiple objects / write - per-object tables'''
+        """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2723,7 +2723,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_03_mysql_direct(self):
-        '''Write directly to the mysql DB, not to a file'''
+        """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2768,7 +2768,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_04_write_direct_long_colname(self):
-        '''Write to MySQL, ensuring some columns have long names'''
+        """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -2897,7 +2897,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_06_01_mysql_direct_null(self):
-        '''Write directly to the mysql DB, not to a file and write nulls'''
+        """Write directly to the mysql DB, not to a file and write nulls"""
         workspace, module = self.make_workspace(False)
         #
         # Insert a NaN into the float image measurement and one of the
@@ -2954,7 +2954,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_06_02_mysql_direct_inf(self):
-        '''regression test of img-1149: infinite values'''
+        """regression test of img-1149: infinite values"""
         workspace, module = self.make_workspace(False)
         #
         # Insert a NaN into the float image measurement and one of the
@@ -3011,7 +3011,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_07_write_direct_wierd_colname(self):
-        '''Write to MySQL, even if illegal characters are in the column name'''
+        """Write to MySQL, even if illegal characters are in the column name"""
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -3064,7 +3064,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_07_write_direct_50_char_colname(self):
-        '''Write to MySQL, ensuring some columns have long names'''
+        """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
@@ -3119,7 +3119,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_05_08_01_write_two_object_tables_direct(self):
-        '''Write two object tables using OT_PER_OBJECT'''
+        """Write two object tables using OT_PER_OBJECT"""
         workspace, module = self.make_workspace(
                 False, alt_object=True)
         try:
@@ -3164,7 +3164,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                                       "Per_%s" % ALTOBJECT_NAME))
 
     def test_05_08_02_write_two_object_tables_csv(self):
-        '''Write two object tables using OT_PER_OBJECT'''
+        """Write two object tables using OT_PER_OBJECT"""
         workspace, module, output_dir, finally_fn = self.make_workspace(
                 True, alt_object=True)
         try:
@@ -3216,7 +3216,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                                       "Per_%s" % ALTOBJECT_NAME))
 
     def test_05_09_write_mysql_db_as_data_tool(self):
-        '''Multiple objects / write - per-object tables'''
+        """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(
                 True, image_set_count=2)
         try:
@@ -3385,7 +3385,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
     def test_06_01_write_sqlite_direct(self):
-        '''Write directly to a SQLite database'''
+        """Write directly to a SQLite database"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         cursor = None
         connection = None
@@ -3648,7 +3648,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
 
     def test_09_01_post_group_single_object_table(self):
-        '''Write out measurements that are only available post-group'''
+        """Write out measurements that are only available post-group"""
         count = 5
         workspace, module = self.make_workspace(False, image_set_count=count,
                                                 group_measurement=True)
@@ -3734,7 +3734,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
     def test_09_02_post_group_single_object_table_agg(self):
-        '''Test single object table, post_group aggregation'''
+        """Test single object table, post_group aggregation"""
         count = 5
         workspace, module = self.make_workspace(False, image_set_count=count,
                                                 group_measurement=True)
@@ -3828,7 +3828,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
     def test_09_03_post_group_separate_object_tables(self):
-        '''Write out measurements post_group to separate object tables'''
+        """Write out measurements post_group to separate object tables"""
         count = 5
         workspace, module = self.make_workspace(False, image_set_count=count,
                                                 group_measurement=True)
@@ -3908,7 +3908,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
     def test_09_04_post_group_separate_table_agg(self):
-        '''Test single object table, post_group aggregation'''
+        """Test single object table, post_group aggregation"""
         count = 5
         workspace, module = self.make_workspace(False, image_set_count=count,
                                                 group_measurement=True)
@@ -4096,7 +4096,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 finally_fn()
 
     def test_09_05_post_group_object_view(self):
-        '''Write out measurements post_group to single object view'''
+        """Write out measurements post_group to single object view"""
         count = 5
         workspace, module = self.make_workspace(False, image_set_count=count,
                                                 group_measurement=True)

@@ -50,7 +50,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         return workspace, module
 
     def test_02_01_expand(self):
-        '''Expand an object once'''
+        """Expand an object once"""
         labels = numpy.zeros((10, 10), int)
         labels[4, 4] = 1
         expected = numpy.zeros((10, 10), int)
@@ -74,7 +74,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertEqual(location_y[0], 4)
 
     def test_02_02_expand_twice(self):
-        '''Expand an object "twice"'''
+        """Expand an object "twice\""""
         labels = numpy.zeros((10, 10), int)
         labels[4, 4] = 1
         i, j = numpy.mgrid[0:10, 0:10] - 4
@@ -85,7 +85,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented == expected))
 
     def test_02_03_expand_two(self):
-        '''Expand two objects once'''
+        """Expand two objects once"""
         labels = numpy.zeros((10, 10), int)
         labels[2, 3] = 1
         labels[6, 5] = 2
@@ -98,7 +98,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented == expected))
 
     def test_03_01_expand_inf(self):
-        '''Expand two objects infinitely'''
+        """Expand two objects infinitely"""
         labels = numpy.zeros((10, 10), int)
         labels[2, 3] = 1
         labels[6, 5] = 2
@@ -112,7 +112,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented[distance > 0] == 2))
 
     def test_04_01_divide(self):
-        '''Divide two touching objects'''
+        """Divide two touching objects"""
         labels = numpy.ones((10, 10), int)
         labels[5:, :] = 2
         expected = labels.copy()
@@ -123,7 +123,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented == expected))
 
     def test_04_02_dont_divide(self):
-        '''Don't divide an object that would disappear'''
+        """Don't divide an object that would disappear"""
         labels = numpy.ones((10, 10), int)
         labels[9, 9] = 2
         expected = labels.copy()
@@ -136,7 +136,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented == expected))
 
     def test_05_01_shrink(self):
-        '''Shrink once'''
+        """Shrink once"""
         labels = numpy.zeros((10, 10), int)
         labels[1:9, 1:9] = 1
         expected = centrosome.cpmorphology.thin(labels, iterations=1)
@@ -146,7 +146,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented == expected))
 
     def test_06_01_shrink_inf(self):
-        '''Shrink infinitely'''
+        """Shrink infinitely"""
         labels = numpy.zeros((10, 10), int)
         labels[1:8, 1:8] = 1
         expected = numpy.zeros((10, 10), int)
@@ -157,7 +157,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(numpy.all(objects.segmented == expected))
 
     def test_06_02_shrink_inf_fill_holes(self):
-        '''Shrink infinitely after filling a hole'''
+        """Shrink infinitely after filling a hole"""
         labels = numpy.zeros((10, 10), int)
         labels[1:8, 1:8] = 1
         labels[4, 4] = 0

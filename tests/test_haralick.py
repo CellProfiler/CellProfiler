@@ -97,13 +97,13 @@ class TestHaralick(unittest.TestCase):
         self.assertTrue((np.array(list(map(len, fv))) == 1).all())
 
     def test_01_01_regression_edge(self):
-        '''Test coocurrence with an object smaller than the scal near the edge.
+        """Test coocurrence with an object smaller than the scal near the edge.
 
         There's a corner case here where the co-occurrence is being done
         on pixels "scale" to the right of objects and all objects are
         within "scale" of the right edge. That means that all objects get
         compared to nothing and the histogram code blows up.
-        '''
+        """
         labels = np.zeros((100, 100), int)
         labels[90:99, 90:99] = 1
         np.random.seed(0)
@@ -112,7 +112,7 @@ class TestHaralick(unittest.TestCase):
         self.assertTrue(np.all(c == 0))
 
     def test_01_02_mask(self):
-        '''Test with a masked image'''
+        """Test with a masked image"""
         labels = np.ones((10, 20), int)
         np.random.seed(12)
         image = np.random.uniform(size=(10, 20)).astype(np.float32)
@@ -127,7 +127,7 @@ class TestHaralick(unittest.TestCase):
             self.assertEqual(measured, expected)
 
     def test_02_01_angles(self):
-        '''Test that measurements are stable on i,j swap'''
+        """Test that measurements are stable on i,j swap"""
 
         labels = np.ones((10, 20), int)
         np.random.seed(12)

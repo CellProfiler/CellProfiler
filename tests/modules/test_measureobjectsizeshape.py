@@ -202,7 +202,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertFalse('Zernike_3_1' in measurements)
 
     def test_03_01_non_contiguous(self):
-        '''make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects'''
+        """make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects"""
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
@@ -233,7 +233,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertEqual(values[0], 54)
 
     def test_03_02_zernikes_are_different(self):
-        '''Regression test of IMG-773'''
+        """Regression test of IMG-773"""
 
         numpy.random.seed(32)
         labels = numpy.zeros((40, 20), int)
@@ -304,7 +304,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertAlmostEqual(values[0], .75)
 
     def test_05_01_overlapping(self):
-        '''Test object measurement with two overlapping objects in ijv format'''
+        """Test object measurement with two overlapping objects in ijv format"""
 
         i, j = numpy.mgrid[0:10, 0:20]
         m = (i > 1) & (i < 9) & (j > 1) & (j < 19)

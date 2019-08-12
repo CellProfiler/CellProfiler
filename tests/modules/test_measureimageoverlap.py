@@ -122,7 +122,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # self.assertTrue(module.penalize_missing)
 
     def make_workspace(self, ground_truth, test, dimensions=2):
-        '''Make a workspace with a ground-truth image and a test image
+        """Make a workspace with a ground-truth image and a test image
 
         ground_truth and test are dictionaries with the following keys:
         image     - the pixel data
@@ -130,7 +130,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         crop_mask - (optional) a cropping mask
 
         returns a workspace and module
-        '''
+        """
         module = cellprofiler.modules.measureimageoverlap.MeasureImageOverlap()
         module.module_num = 1
         module.ground_truth.value = GROUND_TRUTH_IMAGE_NAME
@@ -164,7 +164,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         return workspace, module
 
     def test_03_01_zeros(self):
-        '''Test ground-truth of zeros and image of zeros'''
+        """Test ground-truth of zeros and image of zeros"""
 
         workspace, module = self.make_workspace(
                 dict(image=numpy.ones((20, 10), bool)),
@@ -186,7 +186,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(measurements[cellprofiler.measurement.IMAGE, ftr_emd], 0)
 
     def test_03_02_ones(self):
-        '''Test ground-truth of ones and image of ones'''
+        """Test ground-truth of ones and image of ones"""
 
         workspace, module = self.make_workspace(
                 dict(image=numpy.zeros((20, 10), bool)),
@@ -214,7 +214,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 mname)))
 
     def test_03_03_masked(self):
-        '''Test ground-truth of a masked image'''
+        """Test ground-truth of a masked image"""
 
         workspace, module = self.make_workspace(
                 dict(image=numpy.zeros((20, 10), bool)),

@@ -389,7 +389,7 @@ class TestDirectoryPath(unittest.TestCase):
 
     @staticmethod
     def fn_alter_path(path, **kwargs):
-        '''Add "altered" to the path'''
+        """Add "altered" to the path"""
         return path + "altered"
 
     def test_04_01_alter_input_folder_path(self):

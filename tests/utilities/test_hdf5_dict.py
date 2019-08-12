@@ -1,5 +1,5 @@
-'''test_hdf5_dict - test the hdf5_dict module
-'''
+"""test_hdf5_dict - test the hdf5_dict module
+"""
 
 import os
 import sys
@@ -21,13 +21,13 @@ ALT_FEATURE_NAME = "featurename2"
 
 
 class HDF5DictTessstBase(unittest.TestCase):
-    '''Base class for HDF5Dict test cases
+    """Base class for HDF5Dict test cases
 
     This class creates a .h5 file per test case during setUp and
     deletes it during tearDown.
 
     Note: misspelling of Tessst is intentional.
-    '''
+    """
 
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")

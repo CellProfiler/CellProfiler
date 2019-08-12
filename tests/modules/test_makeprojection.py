@@ -1,5 +1,5 @@
-'''test_makeprojection - Test the MakeProjection module
-'''
+"""test_makeprojection - Test the MakeProjection module
+"""
 
 import base64
 import unittest
@@ -382,12 +382,12 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertTrue(np.all(image.pixel_data == expected))
 
     def test_09_02_filtered(self):
-        '''Make sure the image shows up in the image set even if filtered
+        """Make sure the image shows up in the image set even if filtered
 
         This is similar to issue # 310 - the last image may be filtered before
         the projection is done and the aggregate image is then missing
         from the image set.
-        '''
+        """
         np.random.seed(81)
         images_and_masks = [(np.random.uniform(size=(10, 10)), None)
                             for i in range(3)]

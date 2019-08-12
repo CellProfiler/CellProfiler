@@ -46,7 +46,7 @@ class TestNoWX(unittest.TestCase):
     #     self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
-        '''Import cellprofiler.modules and make sure it doesn't import wx'''
+        """Import cellprofiler.modules and make sure it doesn't import wx"""
 
     # def test_01_04_instantiate_all(self):
     #     '''Instantiate each module and make sure none import wx'''

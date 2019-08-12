@@ -16,7 +16,7 @@ INPUT_OBJECTS_NAME = 'inputobjects'
 
 class TestMeasureTexture(unittest.TestCase):
     def make_workspace(self, image, labels, convert=True, mask=None):
-        '''Make a workspace for testing MeasureTexture'''
+        """Make a workspace for testing MeasureTexture"""
         module = cellprofiler.modules.measuretexture.MeasureTexture()
         module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
         module.object_groups[0].object_name.value = INPUT_OBJECTS_NAME
@@ -231,7 +231,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertEqual(module.scale_groups[1].scale, 5)
 
     def test_many_objects(self):
-        '''Regression test for IMG-775'''
+        """Regression test for IMG-775"""
         numpy.random.seed(22)
         image = numpy.random.uniform(size=(100, 100))
         i, j = numpy.mgrid[0:100, 0:100]
@@ -330,7 +330,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertTrue(all([f in features for f in cellprofiler.modules.measuretexture.F_HARALICK]))
 
     def test_zeros(self):
-        '''Make sure the module can run on an empty labels matrix'''
+        """Make sure the module can run on an empty labels matrix"""
         workspace, module = self.make_workspace(numpy.zeros((10, 10)),
                                                 numpy.zeros((10, 10), int))
         module.run(workspace)
@@ -342,7 +342,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 self.assertEqual(len(values), 0)
 
     def test_wrong_size(self):
-        '''Regression test for IMG-961: objects & image different size'''
+        """Regression test for IMG-961: objects & image different size"""
         numpy.random.seed(42)
         image = numpy.random.uniform(size=(10, 30))
         labels = numpy.ones((20, 20), int)

@@ -1,5 +1,5 @@
-'''test_invertforprinting - Test the InvertForPrinting module
-'''
+"""test_invertforprinting - Test the InvertForPrinting module
+"""
 
 import base64
 import unittest
@@ -67,14 +67,14 @@ class TestInvertForPrinting(unittest.TestCase):
     def run_module(self, color_image=None,
                    red_image=None, green_image=None, blue_image=None,
                    fn=None):
-        '''Run the InvertForPrinting module
+        """Run the InvertForPrinting module
 
         Call this with Numpy arrays for the images and optionally
         specify a function (fn) whose argument is an InvertForPrinting module.
         You can specialize the module inside this function.
 
         Returns a dictionary of the pixel data of the images in the image set
-        '''
+        """
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = I.InvertForPrinting()

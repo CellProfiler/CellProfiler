@@ -1,4 +1,4 @@
-'''test_calculatemath.py - Test the CalculateMath module'''
+"""test_calculatemath.py - Test the CalculateMath module"""
 
 import unittest
 
@@ -26,13 +26,13 @@ class TestCalculateMath(unittest.TestCase):
     def run_workspace(self, operation, m1_is_image_measurement, m1_data,
                       m2_is_image_measurement, m2_data,
                       setup_fn=None):
-        '''Create and run a workspace, returning the measurements
+        """Create and run a workspace, returning the measurements
 
         m<n>_is_image_measurement - true for an image measurement, false
                                     for object
         m<n>_data - either a single value or an array
         setup_fn - this gets called with the module before running
-        '''
+        """
         module = C.CalculateMath()
         module.operation.value = operation
         measurements = cpmeas.Measurements()
@@ -71,7 +71,7 @@ class TestCalculateMath(unittest.TestCase):
         self.assertAlmostEqual(data, 4)
 
     def test_02_02_add_image_object(self):
-        '''Add an image measurement to each of several object measurements'''
+        """Add an image measurement to each of several object measurements"""
         measurements = self.run_workspace(C.O_ADD, True, 2, False, np.array([1, 4, 9]))
         self.assertFalse(measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS))
         self.assertTrue(measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS))
@@ -79,7 +79,7 @@ class TestCalculateMath(unittest.TestCase):
         self.assertTrue(np.all(data == np.array([3, 6, 11])))
 
     def test_02_03_add_object_image(self):
-        '''Add an image measurement to each of several object measurements (reverse)'''
+        """Add an image measurement to each of several object measurements (reverse)"""
         measurements = self.run_workspace(C.O_ADD, False, np.array([1, 4, 9]), True, 2)
         self.assertFalse(measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS))
         self.assertTrue(measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS))
@@ -224,10 +224,10 @@ class TestCalculateMath(unittest.TestCase):
         self.assertEqual(len(module.get_categories(None, cpmeas.IMAGE)), 0)
 
     def test_06_01_add_object_object_same(self):
-        '''Regression test: add two measurements from the same object
+        """Regression test: add two measurements from the same object
 
         The bug was that the measurement gets added twice
-        '''
+        """
 
         def fn(module, workspace):
             module.operands[1].operand_objects.value = OBJECT[0]
@@ -242,7 +242,7 @@ class TestCalculateMath(unittest.TestCase):
         self.assertAlmostEqual(data[1], 12)
 
     def test_07_01_img_379(self):
-        '''Regression test for IMG-379, divide by zero'''
+        """Regression test for IMG-379, divide by zero"""
 
         measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 0)
         data = measurements.get_current_measurement(cpmeas.IMAGE,
@@ -275,11 +275,11 @@ class TestCalculateMath(unittest.TestCase):
         self.assertAlmostEqual(data[2], 6)
 
     def test_09_01_img_919(self):
-        '''Regression test: one measurement, but both operands are from same object
+        """Regression test: one measurement, but both operands are from same object
 
         The bug was that the measurement gets added twice. It was fixed in run
         but not in get_measurement_columns
-        '''
+        """
 
         def fn(module):
             module.operands[1].operand_objects.value = OBJECT[0]
@@ -296,7 +296,7 @@ class TestCalculateMath(unittest.TestCase):
         self.assertEqual(len(columns), 1)
 
     def test_10_1_img_1566(self):
-        '''Regression test: different numbers of objects'''
+        """Regression test: different numbers of objects"""
         r = np.random.RandomState(1566)
         o0 = [np.array([1, 2, 3, 4, 5]), np.array([1, 1, 2, 2, 3]),
               np.array([1, 2, 4, 5]), np.array([1, 1, 1, 1])]
@@ -415,7 +415,7 @@ class TestCalculateMath(unittest.TestCase):
                 len(module.get_measurements(None, OBJECT[1], C.C_MATH)), 0)
 
     def test_11_01_postadd(self):
-        '''Test whether the addend is added to the result'''
+        """Test whether the addend is added to the result"""
 
         def fn(module, workspace):
             module.final_addend.value = 1.5
@@ -426,7 +426,7 @@ class TestCalculateMath(unittest.TestCase):
         self.assertAlmostEqual(data, expected)
 
     def test_11_02_constrain_lower(self):
-        '''Test whether the lower bound option works'''
+        """Test whether the lower bound option works"""
 
         def fn(module, workspace):
             module.constrain_lower_bound.value = True
@@ -438,7 +438,7 @@ class TestCalculateMath(unittest.TestCase):
         self.assertAlmostEqual(data, expected)
 
     def test_11_03_constrain_upper(self):
-        '''Test whether the upper bound option works'''
+        """Test whether the upper bound option works"""
 
         def fn(module, workspace):
             module.constrain_upper_bound.value = True

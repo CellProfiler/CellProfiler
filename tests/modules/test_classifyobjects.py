@@ -1,5 +1,5 @@
-'''test_classifyobjects - test the ClassifyObjects module
-'''
+"""test_classifyobjects - test the ClassifyObjects module
+"""
 
 import unittest
 
@@ -71,7 +71,7 @@ class TestClassifyObjects(unittest.TestCase):
         return workspace, module
 
     def test_02_01_classify_single_none(self):
-        '''Make sure the single measurement mode can handle no objects'''
+        """Make sure the single measurement mode can handle no objects"""
         workspace, module = self.make_workspace(
                 np.zeros((10, 10), int),
                 C.BY_SINGLE_MEASUREMENT,

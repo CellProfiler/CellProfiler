@@ -1,5 +1,5 @@
-'''test_calculatestatistics.py - test the CalculateStatistics module
-'''
+"""test_calculatestatistics.py - test the CalculateStatistics module
+"""
 
 import os
 import tempfile
@@ -392,14 +392,14 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
     #         os.rmdir(temp_dir)
 
     def make_workspace(self, mdict, controls_measurement, dose_measurements=[]):
-        '''Make a workspace and module for running CalculateStatistics
+        """Make a workspace and module for running CalculateStatistics
 
         mdict - a two-level dictionary that mimics the measurements structure
                 for instance:
                 mdict = { cpmeas.Image: { "M1": [ 1,2,3] }}
                 for the measurement M1 with values for 3 image sets
         controls_measurement - the name of the controls measurement
-        '''
+        """
         module = C.CalculateStatistics()
         module.module_num = 1
         module.grouping_values.value = controls_measurement
@@ -431,11 +431,11 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         return workspace, module
 
     def test_02_02_NAN(self):
-        '''Regression test of IMG-762
+        """Regression test of IMG-762
 
         If objects have NAN values, the means are NAN and the
         z-factors are NAN too.
-        '''
+        """
         mdict = {
             cpmeas.IMAGE: {
                 "Metadata_Controls": [1, 0, -1],

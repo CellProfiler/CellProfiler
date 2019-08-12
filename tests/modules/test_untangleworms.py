@@ -1,4 +1,4 @@
-'''test_untangleworms.py - test the UntangleWorms module'''
+"""test_untangleworms.py - test the UntangleWorms module"""
 
 import base64
 import io
@@ -590,11 +590,11 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertEqual(module.complexity, complexity)
 
     def make_workspace(self, image, data=None, write_mode="wb"):
-        '''Make a workspace to run the given image and params file
+        """Make a workspace to run the given image and params file
 
         image - a binary image
         data - the binary of the params file to run
-        '''
+        """
         if data is not None:
             with open(self.filename, "wb") as fd:
                 fd.write(data)
@@ -625,10 +625,10 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         return workspace, module
 
     def make_params(self, d):
-        '''Make a fake params structure from a dictionary
+        """Make a fake params structure from a dictionary
 
         e.g., x = dict(foo=dict(bar=5)) -> x.foo.bar = 5
-        '''
+        """
 
         class X(object):
             def __init__(self, d):
@@ -2285,7 +2285,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
 
     def test_03_00_trace_segments_none(self):
-        '''Test the trace_segments function on a blank image'''
+        """Test the trace_segments function on a blank image"""
         image = np.zeros((10, 20), bool)
         module = U.UntangleWorms()
         i, j, label, order, distance, count = module.trace_segments(image)
@@ -2294,7 +2294,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertEqual(len(x), 0)
 
     def test_03_01_trace_one_segment(self):
-        '''Trace a single segment'''
+        """Trace a single segment"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
         image[5, 1:18] = True
@@ -2312,7 +2312,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(expected_order == result_order))
 
     def test_03_02_trace_short_segment(self):
-        '''Trace a segment of a single point'''
+        """Trace a segment of a single point"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
         for i in range(1, 3):
@@ -2331,7 +2331,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertTrue(np.all(expected_order == result_order))
 
     def test_03_03_trace_loop(self):
-        '''Trace an object that loops on itself'''
+        """Trace an object that loops on itself"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
         image[1:-1, 1:-1] = True
@@ -2357,7 +2357,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(expected_order == result_order))
 
     def test_03_04_trace_two(self):
-        '''Trace two objects'''
+        """Trace two objects"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
         image[1:-1, 5] = True
@@ -2370,7 +2370,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertTrue(np.all(result_order[1:-1, j] == np.arange(image.shape[0] - 2)))
 
     def test_04_00_make_incidence_matrix_of_nothing(self):
-        '''Make incidence matrix with two empty labels matrices'''
+        """Make incidence matrix with two empty labels matrices"""
 
         module = U.UntangleWorms()
         result = module.make_incidence_matrix(np.zeros((10, 20), int), 0,
@@ -2659,7 +2659,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
 
     def test_08_02_worm_descriptor_building_oob(self):
-        '''Test performance if part of the worm is out of bounds'''
+        """Test performance if part of the worm is out of bounds"""
         module = U.UntangleWorms()
         params = self.make_params(
                 dict(radii_from_training=np.array([5, 5, 5]),
@@ -2678,7 +2678,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
 
     def test_08_03_worm_descriptor_building_two(self):
-        '''Test rebuilding two worms'''
+        """Test rebuilding two worms"""
 
         module = U.UntangleWorms()
         params = self.make_params(

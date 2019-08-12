@@ -268,7 +268,7 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
 
     def test_04_06_crop_color_with_rectangle(self):
-        '''Regression test: make sure cropping works with a color image'''
+        """Regression test: make sure cropping works with a color image"""
         i, j, k = np.mgrid[0:10, 0:10, 0:3]
         input_image = (i / 1000.0 + j / 100.0 + k).astype(np.float32)
         expected_image = input_image[2:8, 1:9, :]

@@ -1,5 +1,5 @@
-'''test_measureimagequality.py - test the MeasureImageQuality module
-'''
+"""test_measureimagequality.py - test the MeasureImageQuality module
+"""
 
 
 import io
@@ -129,7 +129,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                              "Measured value, %f, for feature %s was not %f" % (m_value, feature_name, value))
 
     def test_01_01_image_blur(self):
-        '''Test the focus scores of a random image
+        """Test the focus scores of a random image
 
         The expected variance of a uniform distribution is 1/12 of the
         difference of the extents (=(0,1)). We divide this by the mean
@@ -137,7 +137,7 @@ class TestMeasureImageQuality(unittest.TestCase):
 
         The local focus score is the variance among the 25 focus scores
         divided by the median focus score. This should be low.
-        '''
+        """
         np.random.seed(0)
         workspace = self.make_workspace(np.random.uniform(size=(100, 100)))
         q = workspace.module
@@ -165,13 +165,13 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.features_and_columns_match(m, q)
 
     def test_01_02_local_focus_score(self):
-        '''Test the local focus score by creating one deviant grid block
+        """Test the local focus score by creating one deviant grid block
 
         Create one grid block out of four that has a uniform value. That one
         should have a focus score of zero. The others have a focus score of
         1/6, so the local focus score should be the variance of (1/6,1/6,1/6,0)
         divided by the median local norm variance (=1/6)
-        '''
+        """
         expected_value = np.var([1.0 / 6.0] * 3 + [0]) * 6.0
         np.random.seed(0)
         image = np.random.uniform(size=(1000, 1000))
@@ -189,7 +189,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.assertAlmostEqual(value, expected_value, 3)
 
     def test_01_03_focus_score_with_mask(self):
-        '''Test focus score with a mask to block out an aberrant part of the image'''
+        """Test focus score with a mask to block out an aberrant part of the image"""
         np.random.seed(0)
         expected_value = 1.0 / 6.0
         image = np.random.uniform(size=(1000, 1000))
@@ -209,7 +209,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.assertAlmostEqual(value, expected_value, 3)
 
     def test_01_04_local_focus_score_with_mask(self):
-        '''Test local focus score and mask'''
+        """Test local focus score and mask"""
         np.random.seed(0)
         expected_value = np.var([1.0 / 6.0] * 3 + [0]) * 6.0
         image = np.random.uniform(size=(1000, 1000))
@@ -230,7 +230,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.assertAlmostEqual(value, expected_value, 3)
 
     def test_02_01_saturation(self):
-        '''Test percent saturation'''
+        """Test percent saturation"""
         image = np.zeros((10, 10))
         image[:5, :5] = 1
         workspace = self.make_workspace(image)
@@ -257,7 +257,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.features_and_columns_match(m, q)
 
     def test_02_02_maximal(self):
-        '''Test percent maximal'''
+        """Test percent maximal"""
         image = np.zeros((10, 10))
         image[:5, :5] = .5
         expected_value = 100.0 / 4.0
@@ -273,7 +273,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                                m.get_current_measurement(cellprofiler.measurement.IMAGE, "ImageQuality_PercentMaximal_my_image"))
 
     def test_02_03_saturation_mask(self):
-        '''Test percent saturation with mask'''
+        """Test percent saturation with mask"""
         image = np.zeros((10, 10))
         # 1/2 of image is saturated
         # 1/4 of image is saturated but masked
@@ -306,7 +306,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                                    expected_value)
 
     def test_02_04_maximal_mask(self):
-        '''Test percent maximal with mask'''
+        """Test percent maximal with mask"""
         image = np.zeros((10, 10))
         image[:5, :5] = .5
         mask = np.ones((10, 10), bool)
@@ -324,11 +324,11 @@ class TestMeasureImageQuality(unittest.TestCase):
                                m.get_current_measurement(cellprofiler.measurement.IMAGE, "ImageQuality_PercentMaximal_my_image"))
 
     def test_03_01_threshold(self):
-        '''Test all thresholding methods
+        """Test all thresholding methods
 
         Use an image that has 1/5 of "foreground" pixels to make MOG
         happy and set the object fraction to 1/5 to test this.
-        '''
+        """
         np.random.seed(0)
         image = np.random.beta(2, 5, size=(100, 100))
         object_fraction = .2
@@ -381,7 +381,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.features_and_columns_match(m, q)
 
     def test_03_02_experiment_threshold(self):
-        '''Test experiment-wide thresholds'''
+        """Test experiment-wide thresholds"""
         np.random.seed(32)
         workspace = self.make_workspace(np.zeros((10, 10)))
         self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
@@ -731,7 +731,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertEqual(thr.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
 
     def test_05_01_intensity_image(self):
-        '''Test operation on a single unmasked image'''
+        """Test operation on a single unmasked image"""
         np.random.seed(0)
         pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * .99
         pixels[0:2, 0:2] = 1

@@ -1,5 +1,5 @@
-'''test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
-'''
+"""test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
+"""
 
 
 import base64
@@ -678,7 +678,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertFalse(module.wants_overwrite_without_warning)
 
     def test_00_00_no_measurements(self):
-        '''Test an image set with objects but no measurements'''
+        """Test an image set with objects but no measurements"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -713,7 +713,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             del m
 
     def test_01_01_experiment_measurement(self):
-        '''Test writing one experiment measurement'''
+        """Test writing one experiment measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -751,7 +751,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_01_02_two_experiment_measurements(self):
-        '''Test writing two experiment measurements'''
+        """Test writing two experiment measurements"""
         path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -792,11 +792,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_01_04_img_887_no_experiment_file(self):
-        '''Regression test of IMG-887: spirious experiment file
+        """Regression test of IMG-887: spirious experiment file
 
         ExportToSpreadsheet shouldn't generate an experiment file if
         the only measurements are Exit_Status or Complete.
-        '''
+        """
         np.random.seed(14887)
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -853,7 +853,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(os.path.exists(path))
 
     def test_02_01_image_measurement(self):
-        '''Test writing an image measurement'''
+        """Test writing an image measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -889,7 +889,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_02_02_three_by_two_image_measurements(self):
-        '''Test writing three image measurements over two image sets'''
+        """Test writing three image measurements over two image sets"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -933,7 +933,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_01_object_measurement(self):
-        '''Test getting a single object measurement'''
+        """Test getting a single object measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -974,7 +974,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_02_three_by_two_object_measurements(self):
-        '''Test getting three measurements from two objects'''
+        """Test getting three measurements from two objects"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1021,7 +1021,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_03_get_measurements_from_two_objects(self):
-        '''Get three measurements from four cells and two objects'''
+        """Get three measurements from four cells and two objects"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1369,7 +1369,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.fail("Could not find %s in experiment CSV" % IMG_MEAS)
 
     def test_04_01_01_object_with_metadata(self):
-        '''Test writing objects with 2 pairs of 2 image sets w same metadata'''
+        """Test writing objects with 2 pairs of 2 image sets w same metadata"""
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
@@ -1483,7 +1483,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 fd.close()
 
     def test_04_02_image_with_metadata(self):
-        '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
+        """Test writing image data with 2 pairs of 2 image sets w same metadata"""
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
@@ -1538,7 +1538,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 fd.close()
 
     def test_04_03_image_with_path_metadata(self):
-        '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
+        """Test writing image data with 2 pairs of 2 image sets w same metadata"""
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
@@ -1596,7 +1596,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 fd.close()
 
     def test_04_04_image_measurement_custom_directory(self):
-        '''Test writing an image measurement'''
+        """Test writing an image measurement"""
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
         cpprefs.set_headless()
         cpprefs.set_default_output_directory(self.output_dir)
@@ -1636,7 +1636,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_04_05_unicode_image_metadata(self):
-        '''Write image measurements containing unicode characters'''
+        """Write image measurements containing unicode characters"""
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
         cpprefs.set_headless()
         cpprefs.set_default_output_directory(self.output_dir)
@@ -1838,12 +1838,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_05_03_aggregate_and_filtered(self):
-        '''Regression test of IMG-987
+        """Regression test of IMG-987
 
         A bug in ExportToSpreadsheet caused it to fail to write any
         aggregate object measurements if measurements were filtered by
         pick_columns.
-        '''
+        """
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         object_path = os.path.join(self.output_dir, "my_object_file.csv")
         module = E.ExportToSpreadsheet()
@@ -1987,7 +1987,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_06_01_image_index_columns(self):
-        '''Test presence of index column'''
+        """Test presence of index column"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2031,7 +2031,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_06_02_object_index_columns(self):
-        '''Test presence of image and object index columns'''
+        """Test presence of image and object index columns"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2081,7 +2081,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_06_03_object_metadata_columns(self):
-        '''Test addition of image metadata columns to an object metadata file'''
+        """Test addition of image metadata columns to an object metadata file"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2137,12 +2137,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_07_01_missing_measurements(self):
-        '''Make sure ExportToSpreadsheet can continue when measurements are missing
+        """Make sure ExportToSpreadsheet can continue when measurements are missing
 
         Regression test of IMG-361
         Take measurements for 3 image sets, some measurements missing
         from the middle one.
-        '''
+        """
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2278,7 +2278,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         return pipeline, module, name
 
     def make_measurements_pipeline(self, m):
-        '''Pipeline reports measurements via get_measurement_columns'''
+        """Pipeline reports measurements via get_measurement_columns"""
         assert isinstance(m, cpmeas.Measurements)
         columns = []
         if len(m.get_image_numbers()) > 0:
@@ -2306,11 +2306,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         return MPipeline()
 
     def make_measurements(self, d=None):
-        '''Make a measurements object
+        """Make a measurements object
 
         d - a dictionary whose keywords are the measurement names and whose
             values are sequences of measurement values per image set
-        '''
+        """
         if d is None:
             d = {cpmeas.GROUP_NUMBER: [0],
                  cpmeas.GROUP_INDEX: [0]}

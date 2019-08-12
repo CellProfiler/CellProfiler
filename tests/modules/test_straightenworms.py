@@ -1,4 +1,4 @@
-'''test_straightenworms - test the StraightenWorms module'''
+"""test_straightenworms - test the StraightenWorms module"""
 
 import unittest
 
@@ -139,7 +139,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
 
     def make_workspace(self, control_points, lengths, radii, image,
                        mask=None, auximage=None):
-        '''Create a workspace containing the control point measurements
+        """Create a workspace containing the control point measurements
 
         control_points - an n x 2 x m array where n is the # of control points,
                          and m is the number of objects.
@@ -148,7 +148,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         image - the image to be straightened
         mask - the mask associated with the image (default = no mask)
         auximage - a second image to be straightnened (default = no second image)
-        '''
+        """
         module = S.StraightenWorms()
         module.objects_name.value = OBJECTS_NAME
         module.straightened_objects_name.value = STRAIGHTENED_OBJECTS_NAME
@@ -213,7 +213,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
 
     def rebuild_worm_from_control_points_approx(self, control_coords,
                                                 worm_radii, labels, idx):
-        '''Rebuild a worm from its control coordinates
+        """Rebuild a worm from its control coordinates
 
         Given a worm specified by some control points along its spline,
         reconstructs an approximate binary image representing the worm.
@@ -232,7 +232,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         final worm.
 
         Outputs:
-        The coordinates of all pixels in the worm in an N x 2 array'''
+        The coordinates of all pixels in the worm in an N x 2 array"""
         index, count, i, j = morph.get_line_pts(control_coords[:-1, 0],
                                                 control_coords[:-1, 1],
                                                 control_coords[1:, 0],
@@ -318,7 +318,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y)), 0)
 
     def test_02_02_straighten_straight_worm(self):
-        '''Do a "straightening" that is a 1-1 mapping'''
+        """Do a "straightening" that is a 1-1 mapping"""
         r = np.random.RandomState()
         r.seed(0)
         image = r.uniform(size=(60, 30))
@@ -361,7 +361,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                                orig_objects.segmented[16:35, 10:21]))
 
     def test_02_03_straighten_diagonal_worm(self):
-        '''Do a straightening on a worm on the 3x4x5 diagonal'''
+        """Do a straightening on a worm on the 3x4x5 diagonal"""
         r = np.random.RandomState()
         r.seed(23)
         image = r.uniform(size=(60, 30))
@@ -387,7 +387,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         np.testing.assert_almost_equal(expected, samples)
 
     def test_02_04_straighten_two_worms(self):
-        '''Straighten the worms from tests 02_02 and 02_03 together'''
+        """Straighten the worms from tests 02_02 and 02_03 together"""
         r = np.random.RandomState()
         r.seed(0)
         image = r.uniform(size=(60, 30))

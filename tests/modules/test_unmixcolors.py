@@ -1,5 +1,5 @@
-'''test_unmixcolors - test the unmixcolors module
-'''
+"""test_unmixcolors - test the unmixcolors module
+"""
 
 import unittest
 
@@ -120,11 +120,11 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         self.assertAlmostEqual(module.outputs[-1].blue_absorbance.value, .3)
 
     def make_workspace(self, pixels, choices):
-        '''Make a workspace for running UnmixColors
+        """Make a workspace for running UnmixColors
 
         pixels - input image
         choices - a list of choice strings for the images desired
-        '''
+        """
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
@@ -165,7 +165,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         return image
 
     def test_02_01_zeros(self):
-        '''Test on an image of all zeros'''
+        """Test on an image of all zeros"""
         workspace, module = self.make_workspace(np.zeros((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
@@ -176,7 +176,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(image.pixel_data, 1, 2)
 
     def test_02_02_ones(self):
-        '''Test on an image of all ones'''
+        """Test on an image of all ones"""
         workspace, module = self.make_workspace(np.ones((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
@@ -187,7 +187,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(image.pixel_data, 0, 2)
 
     def test_02_03_one_stain(self):
-        '''Test on a single stain'''
+        """Test on a single stain"""
 
         np.random.seed(23)
         expected = np.random.uniform(size=(10, 20))
@@ -198,7 +198,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(image.pixel_data, expected, 2)
 
     def test_02_04_two_stains(self):
-        '''Test on two stains mixed together'''
+        """Test on two stains mixed together"""
         np.random.seed(24)
         expected_1 = np.random.uniform(size=(10, 20)) * .5
         expected_2 = np.random.uniform(size=(10, 20)) * .5
@@ -217,7 +217,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(image_2.pixel_data, expected_2, 2)
 
     def test_02_05_custom_stain(self):
-        '''Test on a custom value for the stains'''
+        """Test on a custom value for the stains"""
         np.random.seed(25)
         absorbance = np.random.uniform(size=3)
         expected = np.random.uniform(size=(10, 20))

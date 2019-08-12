@@ -227,7 +227,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_01_reshape_double(self):
-        '''Make an image twice as large by changing the shape'''
+        """Make an image twice as large by changing the shape"""
         i, j = numpy.mgrid[0:10, 0:10].astype(float)
         image = skimage.exposure.rescale_intensity(i + j * 10.0)
         expected = skimage.transform.resize(
@@ -248,7 +248,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_02_reshape_half(self):
-        '''Make an image half as large by changing the shape'''
+        """Make an image half as large by changing the shape"""
         i, j = numpy.mgrid[0:19, 0:19].astype(float) / 2.0
         image = skimage.exposure.rescale_intensity(i + j * 10)
         expected = skimage.transform.resize(
@@ -269,7 +269,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_03_reshape_half_and_double(self):
-        '''Make an image twice as large in one dimension and half in other'''
+        """Make an image twice as large in one dimension and half in other"""
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
         image = skimage.exposure.rescale_intensity(i + j * 5.0)
         expected = skimage.transform.resize(
@@ -290,7 +290,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         numpy.testing.assert_array_almost_equal(result, expected)
 
     def test_04_04_reshape_using_another_images_dimensions(self):
-        ''''Resize to another image's dimensions'''
+        """'Resize to another image's dimensions"""
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
         image = skimage.exposure.rescale_intensity(1.0 * i + j)
         expected = skimage.transform.resize(

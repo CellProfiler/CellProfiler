@@ -1,5 +1,5 @@
-'''test_maskimage - Test the MaskImage module
-'''
+"""test_maskimage - Test the MaskImage module
+"""
 
 import unittest
 

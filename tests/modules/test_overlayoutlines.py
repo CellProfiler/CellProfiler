@@ -26,7 +26,7 @@ OBJECTS_NAME = 'objectsname'
 
 class TestOverlayOutlines(unittest.TestCase):
     def make_workspace(self, image, labels=None, dimensions=2):
-        '''Make a workspace for testing Threshold'''
+        """Make a workspace for testing Threshold"""
         m = cellprofiler.measurement.Measurements()
         object_set = cellprofiler.object.ObjectSet()
         module = cellprofiler.modules.overlayoutlines.OverlayOutlines()
@@ -187,7 +187,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
     def test_02_04_wrong_size_gray_to_color(self):
-        '''Regression test of img-961'''
+        """Regression test of img-961"""
         numpy.random.seed(24)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32)
         image[0, 0] = 1
@@ -278,7 +278,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
     def test_03_03_wrong_size_gray(self):
-        '''Regression test of IMG-961 - image and outline size differ'''
+        """Regression test of IMG-961 - image and outline size differ"""
         numpy.random.seed(41)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * .5
         outline = numpy.zeros((60, 40), bool)

@@ -1,4 +1,4 @@
-'''test_measurecorrelation - test the MeasureCorrelation module'''
+"""test_measurecorrelation - test the MeasureCorrelation module"""
 
 import unittest
 
@@ -23,7 +23,7 @@ OBJECTS_NAME = 'objects'
 
 class TestMeasureCorrelation(unittest.TestCase):
     def make_workspace(self, image1, image2, objects=None):
-        '''Make a workspace for testing Threshold'''
+        """Make a workspace for testing Threshold"""
         module = M.MeasureColocalization()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -129,7 +129,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         M.F_COSTES_FORMAT, M.F_K_FORMAT, M.F_MANDERS_FORMAT, M.F_RWC_FORMAT]
 
     def test_02_01_get_categories(self):
-        '''Test the get_categories function for some different cases'''
+        """Test the get_categories function for some different cases"""
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -149,7 +149,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(cat(OBJECTS_NAME))
 
     def test_02_02_get_measurements(self):
-        '''Test the get_measurements function for some different cases'''
+        """Test the get_measurements function for some different cases"""
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -176,7 +176,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(meas(OBJECTS_NAME))
 
     def test_02_03_get_measurement_images(self):
-        '''Test the get_measurment_images function for some different cases'''
+        """Test the get_measurment_images function for some different cases"""
         for iocase, names in (
                 (M.M_IMAGES, [cpmeas.IMAGE]),
                 (M.M_OBJECTS, [OBJECTS_NAME]),
@@ -295,7 +295,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             self.assertTrue(column[1] in features)
 
     def test_03_02_anticorrelated(self):
-        '''Test two anticorrelated images'''
+        """Test two anticorrelated images"""
         #
         # Make a checkerboard pattern and reverse it for one image
         #
@@ -312,7 +312,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         self.assertAlmostEqual(corr, -1)
 
     def test_04_01_slope(self):
-        '''Test the slope measurement'''
+        """Test the slope measurement"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(10, 10)).astype(np.float32)
         image2 = image1 * .5
@@ -329,7 +329,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             self.assertAlmostEqual(slope, 2)
 
     def test_05_01_crop(self):
-        '''Test similarly cropping one image to another'''
+        """Test similarly cropping one image to another"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         i1 = cpi.Image(image1)
@@ -344,7 +344,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         self.assertAlmostEqual(corr, 1)
 
     def test_05_02_mask(self):
-        '''Test images with two different masks'''
+        """Test images with two different masks"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         mask1 = np.ones((20, 20), bool)
@@ -367,7 +367,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         self.assertAlmostEqual(corr, 1)
 
     def test_06_01_objects(self):
-        '''Test images with two objects'''
+        """Test images with two objects"""
         labels = np.zeros((10, 10), int)
         labels[:4, :4] = 1
         labels[6:, 6:] = 2
@@ -406,7 +406,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 self.assertTrue(column[1] in object_features)
 
     def test_06_02_cropped_objects(self):
-        '''Test images and objects with a cropping mask'''
+        """Test images and objects with a cropping mask"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         i1 = cpi.Image(image1)
@@ -431,7 +431,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         self.assertAlmostEqual(corr[1], 1)
 
     def test_06_03_no_objects(self):
-        '''Test images with no objects'''
+        """Test images with no objects"""
         labels = np.zeros((10, 10), int)
         i, j = np.mgrid[0:10, 0:10]
         image1 = ((i + j) % 2).astype(float)
@@ -461,7 +461,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 self.assertTrue(column[1] in object_features)
 
     def test_06_04_wrong_size(self):
-        '''Regression test of IMG-961 - objects and images of different sizes'''
+        """Regression test of IMG-961 - objects and images of different sizes"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         i1 = cpi.Image(image1)

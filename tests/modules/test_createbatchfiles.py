@@ -1,5 +1,5 @@
-'''test_createbatchfiles - test the CreateBatchFiles module
-'''
+"""test_createbatchfiles - test the CreateBatchFiles module
+"""
 
 import base64
 import os
@@ -99,7 +99,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         assert module.mappings[0].remote_directory.value == "/Remote/cellprofiler/Pictures"
 
     def test_02_01_module_must_be_last(self):
-        '''Make sure that the pipeline is invalid if CreateBatchFiles is not last'''
+        """Make sure that the pipeline is invalid if CreateBatchFiles is not last"""
         #
         # First, make sure that a naked CPModule tests valid
         #
@@ -123,7 +123,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertRaises(cps.ValidationError, pipeline.test_valid)
 
     def test_03_01_save_and_load(self):
-        '''Save a pipeline to batch data, open it to check and load it'''
+        """Save a pipeline to batch data, open it to check and load it"""
         data = ('eJztWW1PGkEQXhC1WtPYTzb9tB+llROoGiWNgi9NSYUSIbZGbbvCApvu7ZJ7'
                 'UWlj0o/9Wf1J/QndxTs4tsoBRS3JHbkcMzfPPDOzs8uxl8uU9jPbcFWLw1ym'
                 'FKsSimGBIqvKDT0FmbUEdwyMLFyBnKVgycYwY9dgIgET8dTqRmolCZPx+AYY'

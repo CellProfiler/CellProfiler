@@ -6,6 +6,7 @@ import numpy.random
 import numpy.testing
 import pytest
 import skimage.data
+import skimage.io
 import skimage.util
 
 import cellprofiler.image

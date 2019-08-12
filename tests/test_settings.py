@@ -1,4 +1,4 @@
-'''test_settings.py - test the settings classes'''
+"""test_settings.py - test the settings classes"""
 
 import unittest
 

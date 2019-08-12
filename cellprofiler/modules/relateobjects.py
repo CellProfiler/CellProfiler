@@ -4,10 +4,9 @@ import re
 import numpy
 import scipy.ndimage
 import skimage.segmentation
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules.identify
 import cellprofiler.setting
 import cellprofiler.object
 from cellprofiler.modules import _help
@@ -189,7 +188,7 @@ of the children objects.""".format(**{
         )
 
         self.wants_child_objects_saved = cellprofiler.setting.Binary(
-            "Do you want to save the children wih parents as a new object set?",
+            "Do you want to save the children with parents as a new object set?",
             False,
             doc="""\
 Select "*{YES}*" to save the children objects that do have parents as new
@@ -429,7 +428,7 @@ parents or children of the parent object."""
             #
             target_objects = cellprofiler.object.Objects()
             target_objects.segmented = target_labels
-            target_objects.unedited_segmented = children.unedited_segmented
+            #target_objects.unedited_segmented = children.unedited_segmented
             #
             # Remove the filtered objects from the small_removed_segmented
             # if present. "small_removed_segmented" should really be
@@ -438,13 +437,14 @@ parents or children of the parent object."""
             '''small_removed = children.small_removed_segmented.copy()
             #small_removed[(target_labels == 0) &
                           (children.segmented != 0)] = 0
-            target_objects.small_removed_segmented = small_removed
+            target_objects.small_removed_segmented = small_removed'''
             if children.has_parent_image:
-                target_objects.parent_image = children.parent_image'''
+                target_objects.parent_image = children.parent_image
             workspace.object_set.add_objects(target_objects, self.output_child_objects_name.value)
-            add_object_count_measurements(workspace.measurements,self.output_child_objects_name.value, new_object_count)
-            add_object_location_measurements(workspace.measurements,self.output_child_objects_name.value, target_objects.segmented)
+            cellprofiler.modules.identify.add_object_count_measurements(m,self.output_child_objects_name.value, new_object_count)
+            #cellprofiler.modules.identify.add_object_location_measurements(m,self.output_child_objects_name.value, target_objects.segmented)
             #self.add_measurements(workspace, self.y_name.value, self.output_child_objects_name.value)
+
 
 
         if self.show_window:

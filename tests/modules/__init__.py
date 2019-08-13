@@ -166,14 +166,10 @@ def maybe_download_example_image(folders, file_name, shape=None):
         directory = os.path.join(*tuple([example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        r = np.random.RandomState()
-        r.seed(
-            np.frombuffer(
-                hashlib.sha1("/".join(folders) + file_name).digest(), np.uint8
-            )
-        )
-        img = (r.uniform(size=shape) * 255).astype(np.uint8)
-        write_image(local_path, img, PT_UINT8)
+        random_state = np.random.RandomState()
+        random_state.seed()
+        image = (random_state.uniform(size=shape) * 255).astype(np.uint8)
+        write_image(local_path, image, PT_UINT8)
     return local_path
 
 

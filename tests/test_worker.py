@@ -89,7 +89,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.up_queue_recv_socket = cellprofiler.worker.the_zmq_context.socket(
                 zmq.SUB
             )
-            self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, "")
+            self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, b"")
             self.up_queue_recv_socket.bind(self.notify_addr)
             self.down_queue = six.moves.queue.Queue()
             threading.Thread.start(self)

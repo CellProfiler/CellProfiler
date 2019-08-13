@@ -1477,6 +1477,8 @@ class Figure(wx.Frame):
 
                 if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
                     normalize = False
+                elif normalize == False:
+                    normalize = False
                 elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
                     normalize = "log"
                     normalize_args["gain"] = float(
@@ -1780,10 +1782,10 @@ class Figure(wx.Frame):
         sharex=None,
         sharey=None,
         use_imshow=False,
-        dimensions=2,
         background_image=None,
         max_label=None,
         seed=None,
+        colormap=None,
     ):
         """
         Show a labels matrix using a custom colormap which better showcases the individual label values
@@ -1802,6 +1804,7 @@ class Figure(wx.Frame):
                           (useful for generating consistent label colors in displays with varying # of objects)
         :param seed: shuffle label colors with this seed, or None for completely random (useful for generating
                      consistent label colors in multiple displays)
+        :param colormap: load a shared cmap if provided
         :return:
         """
         if background_image is not None:
@@ -1817,24 +1820,10 @@ class Figure(wx.Frame):
         else:
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-            # Get the colormap from the user preferences
-            colormap = matplotlib.cm.get_cmap(
-                cellprofiler.preferences.get_default_colormap()
-            )
-            # Initialize the colormap so we have access to the LUT
-            colormap._init()
-            # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
-            # I think because there are "under" and "over" values. Regardless, we only one this
-            # part of the LUT
-            n = colormap.N
-            # Get the LUT (only the part we care about)
-            lut = colormap._lut[:n].copy()
-            # Shuffle the colors so adjacently labeled objects are different colors
-            numpy.random.shuffle(lut)
-            # Set the LUT
-            colormap._lut[:n] = lut
-            # Make sure the background is black
-            colormap.set_bad(color="black")
+            if colormap == None:
+                colormap = self.return_cmap()
+            else:
+                colormap = colormap
 
         return self.subplot_imshow(
             x,
@@ -1850,6 +1839,27 @@ class Figure(wx.Frame):
             use_imshow=use_imshow,
             colormap=colormap,
         )
+
+    def return_cmap(self):
+        # Get the colormap from the user preferences
+        colormap = matplotlib.cm.get_cmap(
+            cellprofiler.preferences.get_default_colormap()
+        )
+        # Initialize the colormap so we have access to the LUT
+        colormap._init()
+        # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
+        # I think because there are "under" and "over" values. Regardless, we only one this
+        # part of the LUT
+        n = colormap.N
+        # Get the LUT (only the part we care about)
+        lut = colormap._lut[:n].copy()
+        # Shuffle the colors so adjacently labeled objects are different colors
+        numpy.random.shuffle(lut)
+        # Set the LUT
+        colormap._lut[:n] = lut
+        # Make sure the background is black
+        colormap.set_bad(color="black")
+        return colormap
 
     @allow_sharexy
     def subplot_imshow_ijv(
@@ -2033,7 +2043,11 @@ class Figure(wx.Frame):
                     ]
                 )
         if not is_color_image(image):
-            mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
+            if not normalize:
+                norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
+            else:
+                norm = None
+            mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)
             mappable.set_clim(vmin, vmax)
             image = mappable.to_rgba(image)[:, :, :3]
         #

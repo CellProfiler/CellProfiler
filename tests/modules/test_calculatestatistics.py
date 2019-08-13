@@ -402,7 +402,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         controls_measurement - the name of the controls measurement
         """
         module = C.CalculateStatistics()
-        module.module_num = 1
+        module.set_module_num(1)
         module.grouping_values.value = controls_measurement
 
         pipeline = cpp.Pipeline()

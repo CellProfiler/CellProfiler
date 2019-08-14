@@ -39,6 +39,7 @@ import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
+import cellprofiler.utilities.legacy
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
@@ -3094,7 +3095,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         for feature, value in zip(
             (cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP), row
         ):
-            self.assertEqual(value, m.get_experiment_measurement(feature))
+            self.assertTrue(cellprofiler.utilities.legacy.equals(value, m.get_experiment_measurement(feature)))
 
     def test_05_01_write_mysql_db(self):
         """Multiple objects / write - per-object tables"""

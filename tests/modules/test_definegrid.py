@@ -29,52 +29,52 @@ OBJECTS_NAME = "objects"
 
 
 class TestDefineGrid(unittest.TestCase):
-    def test_01_02_load_v1(self):
-        data = (
-            "eJztWN1P2lAUvyi6ocumi4l7vA97UCOMj+mALAoOnSTCiBC3RZ2r9AJ3Kb2k"
-            "vfVjy9735/q4x/VAS8tdY6FoposlTTm353d/5/zuR09bytf28lt4LRbHpXwt"
-            "2qAKwRVF4g2mtbNY5av4nUYkTmTM1CyutQxcZmc4kcGJVDaVyr5ew8l4PIOC"
-            "HaFi6al5uVpEaNq8PjbPCevWlGWHXCfYVcI5VZv6FAqjF1b7lXkeSBqVThVy"
-            "ICkG0R0Ku72oNljtstO/VWKyoZCy1HY7m0fZaJ8STf/QsIHW7Qq9IEqVfidC"
-            "CrbbPjmjOmWqhbf6F1v7vIwLvNUWO9/RzHCE/rckXm9VuTkCg+2gW3zG0S0k"
-            "6AY6LrjawX8XOf5hD53nXf5zlk1VmZ5R2ZAUTNtSsx91l9+nv/BAf2H0XqMy"
-            "4HI+uDkhDjhr5IJHty+kOsdtkGQY/tBAPyGUHjJuEZcaEjcxgJtAiWQP55fv"
-            "jJAv2AWGVcaxoRNHb79+ngj9gL3FOGdtrNFmi9v9jJpHmQUb7312rg8z7xaF"
-            "uMEukIZkKBwXYdLhAtVInTPtMrCe21K9heuXdcWlpzufaaEf+7D7iSAHl/bh"
-            "nxb4wS5JqrmGhtNxcgA/iT6bq24YHZ8LvGDvUIUTjchVplD5I1EU3Tv/UeaB"
-            "X/5TQhxgl1hvKo/Dm/PBRQResGHP6c4h5J33TY67V96p5Oq6vX/4xT8r4MHO"
-            "rJ+bg9ZR7AdAkP0rMSR/EP1G4Q+K89P9kRA32Mnk2moinQ60b5WZSsZ5vrR8"
-            "cG+EeMH+srRZeQuFF9mIrSyfgAWrdeMwH60cH8ajmeMfyZ/LJzrcqFLTq9u2"
-            "PNZz6ZMP7qUQJ9ixlcOjo1fHEEbBCrbfsG+oYIPbWPtc0PUZtB4Jypfz4bvt"
-            "/SjoProbGa1uvC19ngn6gN009WlqzOhgs/IknRvT5wH3gLtruBy6fn141QPs"
-            "9JtZCXdXyH+Xr1fd3n3pdNK9V/nelk5e78eOTr2N8z7l+4C7G7gc+rfzzo//"
-            "ru4Pv104sZ4S6zDw/+qT54qQJ9h1eAvUGHyf1WLt7kdEPaYwSe59lYvtmX+L"
-            "rg90N8ojkwZVCZRmsUL3L1Sx3rpFPHjc+U+Yv/mF6/UWdXb0v9oMwhcO/c03"
-            "64MLW4oB7hcabXyXrvG3cxvHf9T8Q6Hx83B4wv2YEHK+14/q/wcChSof"
-        )
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertEqual(module.grid_image, "Grid")
-        self.assertEqual(module.grid_rows, 8)
-        self.assertEqual(module.grid_columns, 12)
-        self.assertEqual(module.origin, D.NUM_BOTTOM_RIGHT)
-        self.assertEqual(module.ordering, D.NUM_BY_ROWS)
-        self.assertEqual(module.each_or_once, D.EO_EACH)
-        self.assertEqual(module.auto_or_manual, D.AM_MANUAL)
-        self.assertEqual(module.object_name, "FilteredSolidWells")
-        self.assertEqual(module.failed_grid_choice, D.FAIL_NO)
-        self.assertEqual(module.manual_choice, D.MAN_MOUSE)
-        self.assertEqual(module.display_image_name, "GridImage")
-        self.assertEqual(module.manual_image, "GridImage")
-        self.assertEqual(module.save_image_name, "Grid")
+    # def test_01_02_load_v1(self):
+    #     data = (
+    #         "eJztWN1P2lAUvyi6ocumi4l7vA97UCOMj+mALAoOnSTCiBC3RZ2r9AJ3Kb2k"
+    #         "vfVjy9735/q4x/VAS8tdY6FoposlTTm353d/5/zuR09bytf28lt4LRbHpXwt"
+    #         "2qAKwRVF4g2mtbNY5av4nUYkTmTM1CyutQxcZmc4kcGJVDaVyr5ew8l4PIOC"
+    #         "HaFi6al5uVpEaNq8PjbPCevWlGWHXCfYVcI5VZv6FAqjF1b7lXkeSBqVThVy"
+    #         "ICkG0R0Ku72oNljtstO/VWKyoZCy1HY7m0fZaJ8STf/QsIHW7Qq9IEqVfidC"
+    #         "CrbbPjmjOmWqhbf6F1v7vIwLvNUWO9/RzHCE/rckXm9VuTkCg+2gW3zG0S0k"
+    #         "6AY6LrjawX8XOf5hD53nXf5zlk1VmZ5R2ZAUTNtSsx91l9+nv/BAf2H0XqMy"
+    #         "4HI+uDkhDjhr5IJHty+kOsdtkGQY/tBAPyGUHjJuEZcaEjcxgJtAiWQP55fv"
+    #         "jJAv2AWGVcaxoRNHb79+ngj9gL3FOGdtrNFmi9v9jJpHmQUb7312rg8z7xaF"
+    #         "uMEukIZkKBwXYdLhAtVInTPtMrCe21K9heuXdcWlpzufaaEf+7D7iSAHl/bh"
+    #         "nxb4wS5JqrmGhtNxcgA/iT6bq24YHZ8LvGDvUIUTjchVplD5I1EU3Tv/UeaB"
+    #         "X/5TQhxgl1hvKo/Dm/PBRQResGHP6c4h5J33TY67V96p5Oq6vX/4xT8r4MHO"
+    #         "rJ+bg9ZR7AdAkP0rMSR/EP1G4Q+K89P9kRA32Mnk2moinQ60b5WZSsZ5vrR8"
+    #         "cG+EeMH+srRZeQuFF9mIrSyfgAWrdeMwH60cH8ajmeMfyZ/LJzrcqFLTq9u2"
+    #         "PNZz6ZMP7qUQJ9ixlcOjo1fHEEbBCrbfsG+oYIPbWPtc0PUZtB4Jypfz4bvt"
+    #         "/SjoProbGa1uvC19ngn6gN009WlqzOhgs/IknRvT5wH3gLtruBy6fn141QPs"
+    #         "9JtZCXdXyH+Xr1fd3n3pdNK9V/nelk5e78eOTr2N8z7l+4C7G7gc+rfzzo//"
+    #         "ru4Pv104sZ4S6zDw/+qT54qQJ9h1eAvUGHyf1WLt7kdEPaYwSe59lYvtmX+L"
+    #         "rg90N8ojkwZVCZRmsUL3L1Sx3rpFPHjc+U+Yv/mF6/UWdXb0v9oMwhcO/c03"
+    #         "64MLW4oB7hcabXyXrvG3cxvHf9T8Q6Hx83B4wv2YEHK+14/q/wcChSof"
+    #     )
+    #     pipeline = cpp.Pipeline()
+    #
+    #     def callback(caller, event):
+    #         self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+    #
+    #     pipeline.add_listener(callback)
+    #     pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+    #     self.assertEqual(len(pipeline.modules()), 2)
+    #     module = pipeline.modules()[-1]
+    #     self.assertTrue(isinstance(module, D.DefineGrid))
+    #     self.assertEqual(module.grid_image, "Grid")
+    #     self.assertEqual(module.grid_rows, 8)
+    #     self.assertEqual(module.grid_columns, 12)
+    #     self.assertEqual(module.origin, D.NUM_BOTTOM_RIGHT)
+    #     self.assertEqual(module.ordering, D.NUM_BY_ROWS)
+    #     self.assertEqual(module.each_or_once, D.EO_EACH)
+    #     self.assertEqual(module.auto_or_manual, D.AM_MANUAL)
+    #     self.assertEqual(module.object_name, "FilteredSolidWells")
+    #     self.assertEqual(module.failed_grid_choice, D.FAIL_NO)
+    #     self.assertEqual(module.manual_choice, D.MAN_MOUSE)
+    #     self.assertEqual(module.display_image_name, "GridImage")
+    #     self.assertEqual(module.manual_image, "GridImage")
+    #     self.assertEqual(module.save_image_name, "Grid")
 
     def make_workspace(self, image, labels):
         module = D.DefineGrid()

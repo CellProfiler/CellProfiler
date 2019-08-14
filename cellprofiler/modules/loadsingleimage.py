@@ -376,7 +376,7 @@ pipeline.
 
     def prepare_settings(self, setting_values):
         """Adjust the file_settings depending on how many files there are"""
-        count = (len(setting_values) - S_FIXED_SETTINGS_COUNT) / S_FILE_SETTINGS_COUNT
+        count = (len(setting_values) - S_FIXED_SETTINGS_COUNT) // S_FILE_SETTINGS_COUNT
         del self.file_settings[count:]
         while len(self.file_settings) < count:
             self.add_file()

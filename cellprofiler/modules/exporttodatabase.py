@@ -3193,8 +3193,8 @@ INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     T_EXPERIMENT_PROPERTIES,
                     p.object_name,
-                    MySQLdb.escape_string(k),
-                    MySQLdb.escape_string(v),
+                    MySQLdb.escape_string(k).decode(),
+                    MySQLdb.escape_string(v).decode(),
                     T_EXPERIMENT,
                 )
                 statements.append(statement)

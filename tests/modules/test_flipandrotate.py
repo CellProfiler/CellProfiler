@@ -133,7 +133,7 @@ class TestFlipAndRotate(unittest.TestCase):
         module = F.FlipAndRotate()
         module.image_name.value = IMAGE_NAME
         module.output_name.value = OUTPUT_IMAGE
-        module.module_num = 1
+        module.set_module_num(1)
         if fn is not None:
             fn(module)
         pipeline = cpp.Pipeline()

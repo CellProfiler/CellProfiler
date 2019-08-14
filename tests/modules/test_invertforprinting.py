@@ -49,7 +49,7 @@ class TestInvertForPrinting(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = I.InvertForPrinting()
-        module.module_num = 1
+        module.set_module_num(1)
         for image, name, setting, check in (
             (color_image, I_COLOR_IN, module.color_input_image, None),
             (red_image, I_RED_IN, module.red_input_image, module.wants_red_input),

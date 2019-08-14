@@ -30,7 +30,7 @@ GUIDING_OBJECTS_NAME = "inputobjects"
 class TestIdentifyObjectsInGrid(unittest.TestCase):
     def make_workspace(self, gridding, labels=None):
         module = I.IdentifyObjectsInGrid()
-        module.module_num = 1
+        module.set_module_num(1)
         module.grid_name.value = GRID_NAME
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.guiding_object_name.value = GUIDING_OBJECTS_NAME

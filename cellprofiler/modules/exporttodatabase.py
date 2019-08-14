@@ -90,6 +90,7 @@ import hashlib
 import logging
 import os
 import re
+import functools
 
 import numpy
 import six
@@ -2451,7 +2452,7 @@ available:
                 self.create_database_tables(self.cursor, workspace)
             return True
         except sqlite3.OperationalError as err:
-            if err.message.startswith("too many columns"):
+            if str(err).startswith("too many columns"):
                 # Maximum columns reached
                 # https://github.com/CellProfiler/CellProfiler/issues/3373
                 message = (
@@ -2463,7 +2464,7 @@ available:
                 )
             else:
                 # A different MySQL error has occurred, let the user know
-                message = "MySQL Error: {}".format(err.message)
+                message = "MySQL Error: {}".format(str(err))
             raise RuntimeError(message)
         finally:
             if needs_close:
@@ -3178,7 +3179,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % (
             T_EXPERIMENT,
-            MySQLdb.escape_string(self.experiment_name.value),
+            MySQLdb.escape_string(self.experiment_name.value).decode(),
         )
         statements.append(insert_into_experiment_statement)
 
@@ -3243,7 +3244,7 @@ CREATE TABLE %s (
                 if isinstance(value, six.text_type):
                     value = value
                 if self.db_type != DB_SQLITE:
-                    value = MySQLdb.escape_string(value)
+                    value = MySQLdb.escape_string(value).decode()
                 else:
                     value = value.replace("'", "''")
                 value = "'" + value + "'"
@@ -3873,7 +3874,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             "%s_%s.CSV" % (self.base_name(workspace), cellprofiler.measurement.IMAGE),
             workspace,
         )
-        fid_per_image = open(image_filename, "wb")
+        fid_per_image = open(image_filename, "w")
         columns = self.get_pipeline_measurement_columns(
             pipeline, image_set_list, remove_postgroup_key=True
         )
@@ -3898,11 +3899,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     value = value[0]
                 if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
                     if isinstance(value, six.string_types):
-                        value = '"' + MySQLdb.escape_string(value) + '"'
+                        value = '"' + MySQLdb.escape_string(value).decode() + '"'
                     elif value is None:
                         value = "NULL"
                     else:
-                        value = '"' + MySQLdb.escape_string(value) + '"'
+                        value = '"' + MySQLdb.escape_string(value).decode() + '"'
                 elif numpy.isnan(value) or numpy.isinf(value):
                     value = "NULL"
 
@@ -3930,7 +3931,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         for file_object_name, object_list in data:
             file_name = "%s_%s.CSV" % (self.base_name(workspace), file_object_name)
             file_name = self.make_full_filename(file_name)
-            fid = open(file_name, "wb")
+            fid = open(file_name, "w")
             csv_writer = csv.writer(fid, lineterminator="\n")
             for image_number in measurements.get_image_numbers():
                 max_count = 0
@@ -3987,7 +3988,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if self.wants_relationship_table:
             file_name = "%s_%s.CSV" % (self.base_name(workspace), T_RELATIONSHIPS)
             file_name = self.make_full_filename(file_name)
-            with open(file_name, "wb") as fid:
+            with open(file_name, "w") as fid:
                 csv_writer = csv.writer(fid, lineterminator="\n")
                 for (
                     i,
@@ -5076,7 +5077,7 @@ check_tables = yes
         filename = "%s.workspace" % name
         file_name = self.make_full_filename(filename, workspace)
 
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w")
         header_text = """CellProfiler Analyst workflow
 version: 1
 CP version : %d\n""" % int(
@@ -5269,7 +5270,8 @@ CP version : %d\n""" % int(
                 return 1
             return cellprofiler.utilities.legacy.cmp(x[1], y[1])
 
-        columns.sort(cmp=cmpfn)
+        # columns.sort(cmp=cmpfn)
+        sorted(columns, key=functools.cmp_to_key(cmpfn))
         #
         # Remove all but the last duplicate
         #

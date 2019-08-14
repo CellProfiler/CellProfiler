@@ -1666,7 +1666,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         pipeline.add_listener(callback_handler)
         pipeline.add_module(test_module)
         module = E.ExportToDatabase()
-        module.module_num = 2
+        module.set_module_num(2)
         table_prefix = "T_%s" % str(uuid.uuid4()).replace("-", "")
         module.table_prefix.value = table_prefix
         module.want_table_prefix.value = True

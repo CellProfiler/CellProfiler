@@ -2459,7 +2459,7 @@ available:
                     "MySQL Error: maximum columns reached. \n"
                     "Try exporting a single object per table. \n\n"
                     "Problematic table: {}".format(
-                        err.message.replace("too many columns on ", "")
+                        str(err).replace("too many columns on ", "")
                     )
                 )
             else:
@@ -5834,7 +5834,7 @@ def random_number_generator(seed):
     yields integers in the range 0-65535 on iteration
     """
     m = hashlib.md5()
-    m.update(seed)
+    m.update(seed.encode())
     while True:
         digest = m.digest()
         m.update(digest)

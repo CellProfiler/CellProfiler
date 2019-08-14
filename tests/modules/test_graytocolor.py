@@ -76,7 +76,7 @@ class TestGrayToColor(unittest.TestCase):
                 module.stack_channels[i].weight.value = weight
 
         module.rgb_image_name.value = OUTPUT_IMAGE_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):

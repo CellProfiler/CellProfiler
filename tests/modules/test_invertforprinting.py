@@ -30,42 +30,6 @@ I_COLOR_OUT = "ColorOutput"
 
 
 class TestInvertForPrinting(unittest.TestCase):
-    def test_01_02_load_v1(self):
-        data = (
-            "eJztWF1PGkEUHRCNVm00adI+zqO0QhBto6RBUPpBKpQI0Rij7QiDTLI7Q4Zd"
-            "i21M+tif1cf+nP6EzsAsu0yRhUXTalyzWe/de+6dc2ZnuTuFbGUvuwNfxhOw"
-            "kK3E6sTAsGQgq864mYLUWoW7HCML1yCjKXgormXchMl1mNhMbWylNl7BZCKx"
-            "BYIdoXzhsbi0nwAwI66z4gyrW9PKDnlOaZexZRF63poGEfBM+X+K8wBxgs4M"
-            "fIAMG7fcEo4/T+usctns3Sqwmm3gIjK9weIo2uYZ5q2PdQeobpdIGxtl8hVr"
-            "FJywfXxBWoRRhVf5dW+vLrO0ulKHX7OuDiFNB6nLsscv498DNz4yQDdv/JKy"
-            "Ca2RC1KzkQGJic57o5D5Nn3yTWv5pL3LDMYVPuODX9Lw8qzgthV700ZVC5rI"
-            "qjZknoRPnnBfnjAosm59P1yoDxcC62A0XKQPFxH1KB6F7yONr7RzDFJmQbuF"
-            "Xd1vi29Q3HV8/Z63pxpfaedwHdmGBfPyYYM5wnHVYvzyxsY/o+Gcw8HNgdF1"
-            "vo63H26qDzcFjsSqCoLLFbMT6TLp+r2t52kUfcaZx4xPvXmNp7Tz9AJz8TO2"
-            "j2u9PEH0qo6h100/F368F7XxLnp4v+MY0xHHrb8n126Zb9D364LGd8HDd0e0"
-            "AUCN+7tPng9aHmmfrmyXXstGCKfjL6KfpHWIDWOffUkfZ2Olk6jjEQvINmn6"
-            "OBHbOvm2tpq86gaXiUB2nFHgjGOS+fOu04ZPnk0tj7TlmI4w4mqgG1fRmHQV"
-            "GLUaypdUvhy6dD2TrNOVMfuZm3iv30dcBgyf70F9Rqe5O+fMbj7wfeD7f9e/"
-            "77gMGK7voO8iV18oPtlw8y6P+67y/9e63dX6QXHSeV2/oH9/yPjPPjyfazyl"
-            "XRUtW5Mzuc/F42ZnM6YVNxiqdXdD4nvi37xnYyRovzWwDuk0c3XGm5xQuY0V"
-            "77Z3bxkvKY+u39yAel4dwuJveWm47rre7jz83g5SLxL6u968Dy6ilJO4H2C8"
-            "eV4ZEu9wCxr/B5P4OHs="
-        )
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, I.InvertForPrinting))
-        self.assertEqual(module.input_color_choice.value, I.CC_COLOR)
-        self.assertEqual(module.color_input_image.value, "DNA")
-        self.assertEqual(module.output_color_choice.value, I.CC_COLOR)
-        self.assertEqual(module.color_output_image.value, "InvertedColor")
-
     def run_module(
         self,
         color_image=None,

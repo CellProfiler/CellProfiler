@@ -322,7 +322,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
     def make_workspace(self, file_names):
         module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
-        module.module_num = 1
+        module.set_module_num(1)
         module.directory.set_dir_choice(
             cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
         )
@@ -433,14 +433,14 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         filename = "Channel1-01-A-01.tif"
         pipeline = cellprofiler.pipeline.Pipeline()
         lsi = cellprofiler.modules.loadsingleimage.LoadSingleImage()
-        lsi.module_num = 1
+        lsi.set_module_num(1)
         lsi.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         lsi.directory.custom_path = path
         lsi.file_settings[0].image_name.value = self.get_image_name(0)
         lsi.file_settings[0].file_name.value = filename
         pipeline.add_module(lsi)
         li = cellprofiler.modules.loadimages.LoadImages()
-        li.module_num = 2
+        li.set_module_num(2)
         pipeline.add_module(li)
         li.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         li.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
@@ -706,7 +706,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         del pilimage
         try:
             module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
-            module.module_num = 1
+            module.set_module_num(1)
             module.directory.set_dir_choice(
                 cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
             )
@@ -792,7 +792,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         del pilimage
         try:
             module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
-            module.module_num = 1
+            module.set_module_num(1)
             module.directory.set_dir_choice(
                 cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
             )

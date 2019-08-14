@@ -1140,7 +1140,7 @@ class Pipeline(object):
 
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
                     # En/decode needed to read example cppipe format
-                    setting = setting.encode().decode("unicode_escape")
+                    setting = setting.encode().decode("unicode_escape").replace("\\\\", "\\")
 
                     if do_deprecated_utf16_decode:
                         # decoding with 'unicode_escape' appears to be sufficient

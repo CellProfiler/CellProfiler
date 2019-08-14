@@ -16,6 +16,7 @@ import unittest
 from urllib.request import urlretrieve, URLopener
 from urllib.error import HTTPError
 import tempfile
+import functools
 
 import scipy.io.matlab.mio
 from cellprofiler.preferences import set_headless
@@ -182,7 +183,7 @@ def make_12_bit_image(folder, filename, shape):
             is i, j, c or y, x, c
     """
     r = np.random.RandomState()
-    r.seed(np.frombuffer(hashlib.sha1("/".join([folder, filename])).digest(), np.uint8))
+    r.seed(np.frombuffer(hashlib.sha1("/".join([folder, filename]).encode()).digest(), np.uint8))
     img = (r.uniform(size=shape) * 4095).astype(np.uint16)
     path = os.path.join(example_images_directory(), folder, filename)
     if not os.path.isdir(os.path.dirname(path)):
@@ -212,7 +213,7 @@ def make_12_bit_image(folder, filename, shape):
     ]
     ifds = sorted(
         ifds,
-        cmp=(lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())),
+        key=functools.cmp_to_key(lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())),
     )
     old_end = offset + 2 + nentries * 12
     new_end = offset + 2 + len(ifds) * 12

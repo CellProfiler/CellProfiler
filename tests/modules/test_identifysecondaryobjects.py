@@ -239,7 +239,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.x_name.value = INPUT_OBJECTS_NAME
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         return workspace, module
@@ -389,7 +389,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             cellprofiler.modules.threshold.TM_MANUAL
         )
         module.threshold.manual_threshold.value = 0.2
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -468,7 +468,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.method.value = (
             cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
         )
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -509,7 +509,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         )
         module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -571,7 +571,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             cellprofiler.modules.threshold.TM_MANUAL
         )
         module.threshold.manual_threshold.value = 0.2
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -647,7 +647,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.method.value = (
             cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
         )
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -689,7 +689,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -743,7 +743,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             cellprofiler.modules.threshold.TM_MANUAL
         )
         module.threshold.manual_threshold.value = 0.01
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -809,7 +809,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -846,7 +846,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
         module.distance_to_dilate.value = 1
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -891,7 +891,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
         module.distance_to_dilate.value = 100
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -1285,7 +1285,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
@@ -1373,7 +1373,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
         module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -1455,7 +1455,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             cellprofiler.modules.threshold.TM_MANUAL
         )
         module.threshold.manual_threshold.value = 0.5
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)
@@ -1531,7 +1531,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             cellprofiler.modules.threshold.TM_MANUAL
         )
         module.threshold.manual_threshold.value = 0.5
-        module.module_num = 1
+        module.set_module_num(1)
         p.add_module(module)
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         module.run(workspace)

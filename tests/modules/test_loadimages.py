@@ -106,7 +106,7 @@ class ConvtesterMixin:
                 ]
             )
         ]
-        self.assertItemsEqual(ffexpected, ff2)
+        self.assertCountEqual(ffexpected, ff2)
         for feature in ff1:
             if feature.startswith(cellprofiler.measurement.C_METADATA):
                 self.assertTrue(m2.has_feature(cellprofiler.measurement.IMAGE, feature))
@@ -158,12 +158,12 @@ class ConvtesterMixin:
                     self.assertEqual(
                         os.path.normcase(
                             cellprofiler.modules.loadimages.url2pathname(
-                                p1.encode("utf-8")
+                                p1
                             )
                         ),
                         os.path.normcase(
                             cellprofiler.modules.loadimages.url2pathname(
-                                p2.encode("utf-8")
+                                p2
                             )
                         ),
                     )

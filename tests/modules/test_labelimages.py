@@ -75,7 +75,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
 
         workspace = cpw.Workspace(

@@ -5082,6 +5082,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
+        cursor = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_SQLITE

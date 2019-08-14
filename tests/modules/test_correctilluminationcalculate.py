@@ -51,7 +51,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         workspaces = []
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 1
+        module.set_module_num(1)
         module.image_name.value = INPUT_IMAGE_NAME
         module.illumination_image_name.value = OUTPUT_IMAGE_NAME
         module.average_image_name.value = AVERAGE_IMAGE_NAME
@@ -84,10 +84,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             pipeline = cpp.Pipeline()
             pipeline.add_listener(self.error_callback)
             inj_module = inj.InjectImage("MyImage", image)
-            inj_module.module_num = 1
+            inj_module.set_module_num(1)
             pipeline.add_module(inj_module)
             module = calc.CorrectIlluminationCalculate()
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             module.image_name.value = "MyImage"
             module.illumination_image_name.value = "OutputImage"
@@ -164,10 +164,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline.add_listener(self.error_callback)
         for image in (np.ones((10, 10)), np.ones((10, 10, 3))):
             inj_module = inj.InjectImage("MyImage", image)
-            inj_module.module_num = 1
+            inj_module.set_module_num(1)
             pipeline.add_module(inj_module)
             module = calc.CorrectIlluminationCalculate()
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             module.image_name.value = "MyImage"
             module.illumination_image_name.value = "OutputImage"
@@ -246,10 +246,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             mask[2:7, 3:8] = True
             image[mask] = 1
             inj_module = inj.InjectImage("MyImage", image, mask)
-            inj_module.module_num = 1
+            inj_module.set_module_num(1)
             pipeline.add_module(inj_module)
             module = calc.CorrectIlluminationCalculate()
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             module.image_name.value = "MyImage"
             module.illumination_image_name.value = "OutputImage"
@@ -383,10 +383,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         image[30, 10] = 0.75
         image[30, 30] = 0.9
         inj_module = inj.InjectImage("MyImage", image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
         module.illumination_image_name.value = "OutputImage"
@@ -424,10 +424,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
@@ -476,10 +476,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             pipeline = cpp.Pipeline()
             pipeline.add_listener(self.error_callback)
             inj_module = inj.InjectImage(image_name, input_image)
-            inj_module.module_num = 1
+            inj_module.set_module_num(1)
             pipeline.add_module(inj_module)
             module = calc.CorrectIlluminationCalculate()
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             module.image_name.value = image_name
             module.illumination_image_name.value = "OutputImage"
@@ -524,10 +524,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
@@ -577,10 +577,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
@@ -618,10 +618,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
@@ -875,10 +875,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             pipeline = cpp.Pipeline()
             pipeline.add_listener(self.error_callback)
             inj_module = inj.InjectImage("InputImage", np.zeros((10, 10)))
-            inj_module.module_num = 1
+            inj_module.set_module_num(1)
             pipeline.add_module(inj_module)
             module = calc.CorrectIlluminationCalculate()
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             module.image_name.value = "InputImage"
             module.illumination_image_name.value = "OutputImage"
@@ -924,10 +924,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
@@ -967,10 +967,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
-        inj_module.module_num = 1
+        inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"

@@ -39,13 +39,13 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         input_module = inj.InjectImage("InputImage", image)
-        input_module.module_num = 1
+        input_module.set_module_num(1)
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
-        illum_module.module_num = 2
+        illum_module.set_module_num(2)
         pipeline.add_module(illum_module)
         module = cpmcia.CorrectIlluminationApply()
-        module.module_num = 3
+        module.set_module_num(3)
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
@@ -83,13 +83,13 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         input_module = inj.InjectImage("InputImage", image)
-        input_module.module_num = 1
+        input_module.set_module_num(1)
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
-        illum_module.module_num = 2
+        illum_module.set_module_num(2)
         pipeline.add_module(illum_module)
         module = cpmcia.CorrectIlluminationApply()
-        module.module_num = 3
+        module.set_module_num(3)
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
@@ -128,13 +128,13 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         input_module = inj.InjectImage("InputImage", image)
-        input_module.module_num = 1
+        input_module.set_module_num(1)
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
-        illum_module.module_num = 2
+        illum_module.set_module_num(2)
         pipeline.add_module(illum_module)
         module = cpmcia.CorrectIlluminationApply()
-        module.module_num = 3
+        module.set_module_num(3)
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
@@ -173,13 +173,13 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         input_module = inj.InjectImage("InputImage", image)
-        input_module.module_num = 1
+        input_module.set_module_num(1)
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
-        illum_module.module_num = 2
+        illum_module.set_module_num(2)
         pipeline.add_module(illum_module)
         module = cpmcia.CorrectIlluminationApply()
-        module.module_num = 3
+        module.set_module_num(3)
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"

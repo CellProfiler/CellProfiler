@@ -979,7 +979,7 @@ class Pipeline(object):
                 line = next(fd)
                 if line is None:
                     return None
-                line = line.strip("\r\n")
+                line = line.strip()
                 return line
             except StopIteration:
                 return None

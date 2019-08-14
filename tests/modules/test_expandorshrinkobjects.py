@@ -39,7 +39,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.operation.value = operation
         module.iterations.value = iterations
         module.wants_fill_holes.value = wants_fill_holes
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         image_set_list = cellprofiler.image.ImageSetList()

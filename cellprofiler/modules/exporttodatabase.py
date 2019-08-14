@@ -5838,7 +5838,7 @@ def random_number_generator(seed):
     while True:
         digest = m.digest()
         m.update(digest)
-        yield ord(digest[0]) + 256 * ord(digest[1])
+        yield digest[0] + 256 * digest[1]
 
 
 class SQLiteCommands(object):

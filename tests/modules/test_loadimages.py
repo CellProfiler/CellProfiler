@@ -690,9 +690,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 #
                 # Also happens on at least one Centos build.
                 #
-                if os.stat_float_times() and not any(
+                if hasattr(os, 'stat_float_times') and not any(
                     [sys.platform.startswith(x) for x in ("darwin", "linux")]
                 ):
+                    os.stat_float_times()
                     time.sleep(0.1)
                 else:
                     time.sleep(1)

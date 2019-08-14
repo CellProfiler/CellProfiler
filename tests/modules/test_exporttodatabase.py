@@ -16,6 +16,7 @@ import unittest
 import uuid
 import zlib
 import socket
+import io
 
 if hasattr(unittest, "SkipTest"):
     SkipTestException = unittest.SkipTest
@@ -4247,7 +4248,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor, connection = self.get_sqlite_cursor(module)
             cursor.execute(stmt)
             result = cursor.fetchall()
-            im = PILImage.open(StringIO(str(result[0][0]).decode("base64")))
+            im = PILImage.open(io.BytesIO(base64.b64decode(result[0][0])))
             self.assertEqual(tuple(im.size), (200, 200))
         finally:
             if cursor is not None:

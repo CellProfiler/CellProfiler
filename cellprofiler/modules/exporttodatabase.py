@@ -91,6 +91,8 @@ import logging
 import os
 import re
 import functools
+import io
+import base64
 
 import numpy
 import six
@@ -2574,17 +2576,17 @@ available:
 
                 # resize the image so the major axis is 200px long
                 if im.size[0] == max(im.size):
-                    w, h = (200, 200 * min(im.size) / max(im.size))
+                    w, h = (200, 200 * min(im.size) // max(im.size))
                 else:
-                    h, w = (200, 200 * min(im.size) / max(im.size))
+                    h, w = (200, 200 * min(im.size) // max(im.size))
                 im = im.resize((w, h))
 
-                fd = six.moves.StringIO()
+                fd = io.BytesIO()
                 im.save(fd, "PNG")
                 blob = fd.getvalue()
                 fd.close()
                 measurements.add_image_measurement(
-                    C_THUMBNAIL + "_" + name, blob.encode("base64")
+                    C_THUMBNAIL + "_" + name, base64.b64encode(blob).decode()
                 )
         if workspace.pipeline.test_mode:
             return
@@ -4277,7 +4279,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if (field[1] == cellprofiler.measurement.COLTYPE_FLOAT)
                 else int(field[0])
                 if (field[1] == cellprofiler.measurement.COLTYPE_INTEGER)
-                else buffer(field[0])
+                else buffer(field[0].encode())
                 if field[1]
                 in (
                     cellprofiler.measurement.COLTYPE_BLOB,

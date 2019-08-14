@@ -120,7 +120,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
         pipeline = cpp.Pipeline()
         module = M.MakeProjection()
-        module.module_num = 1
+        module.set_module_num(1)
         module.image_name.value = IMAGE_NAME
         module.projection_image_name.value = PROJECTED_IMAGE_NAME
         module.projection_type.value = projection_type

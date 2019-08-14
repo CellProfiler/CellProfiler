@@ -196,7 +196,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
     def make_workspace(self, measurement, labels=None, image=None):
         object_set = cpo.ObjectSet()
         module = D.DisplayDataOnImage()
-        module.module_num = 1
+        module.set_module_num(1)
         module.image_name.value = INPUT_IMAGE_NAME
         module.display_image.value = OUTPUT_IMAGE_NAME
         module.objects_name.value = OBJECTS_NAME

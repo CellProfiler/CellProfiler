@@ -481,7 +481,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(isinstance(flag, cps.SettingsGroup))
         flag.category.value = MEASUREMENT_CATEGORY
         flag.feature_name.value = MEASUREMENT_FEATURE
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):

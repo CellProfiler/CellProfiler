@@ -16,6 +16,7 @@ import unittest
 import uuid
 import zlib
 import socket
+import io
 
 if hasattr(unittest, "SkipTest"):
     SkipTestException = unittest.SkipTest
@@ -39,6 +40,7 @@ import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
+import cellprofiler.utilities.legacy
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
@@ -1666,7 +1668,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         pipeline.add_listener(callback_handler)
         pipeline.add_module(test_module)
         module = E.ExportToDatabase()
-        module.module_num = 2
+        module.set_module_num(2)
         table_prefix = "T_%s" % str(uuid.uuid4()).replace("-", "")
         module.table_prefix.value = table_prefix
         module.want_table_prefix.value = True
@@ -3094,7 +3096,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         for feature, value in zip(
             (cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP), row
         ):
-            self.assertEqual(value, m.get_experiment_measurement(feature))
+            self.assertTrue(cellprofiler.utilities.legacy.equals(value, m.get_experiment_measurement(feature)))
 
     def test_05_01_write_mysql_db(self):
         """Multiple objects / write - per-object tables"""
@@ -4246,7 +4248,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor, connection = self.get_sqlite_cursor(module)
             cursor.execute(stmt)
             result = cursor.fetchall()
-            im = PILImage.open(StringIO(str(result[0][0]).decode("base64")))
+            im = PILImage.open(io.BytesIO(base64.b64decode(result[0][0])))
             self.assertEqual(tuple(im.size), (200, 200))
         finally:
             if cursor is not None:
@@ -5082,6 +5084,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
+        cursor = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_SQLITE

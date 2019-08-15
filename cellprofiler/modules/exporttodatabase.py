@@ -90,6 +90,9 @@ import hashlib
 import logging
 import os
 import re
+import functools
+import io
+import base64
 
 import numpy
 import six
@@ -2451,19 +2454,19 @@ available:
                 self.create_database_tables(self.cursor, workspace)
             return True
         except sqlite3.OperationalError as err:
-            if err.message.startswith("too many columns"):
+            if str(err).startswith("too many columns"):
                 # Maximum columns reached
                 # https://github.com/CellProfiler/CellProfiler/issues/3373
                 message = (
                     "MySQL Error: maximum columns reached. \n"
                     "Try exporting a single object per table. \n\n"
                     "Problematic table: {}".format(
-                        err.message.replace("too many columns on ", "")
+                        str(err).replace("too many columns on ", "")
                     )
                 )
             else:
                 # A different MySQL error has occurred, let the user know
-                message = "MySQL Error: {}".format(err.message)
+                message = "MySQL Error: {}".format(str(err))
             raise RuntimeError(message)
         finally:
             if needs_close:
@@ -2573,17 +2576,17 @@ available:
 
                 # resize the image so the major axis is 200px long
                 if im.size[0] == max(im.size):
-                    w, h = (200, 200 * min(im.size) / max(im.size))
+                    w, h = (200, 200 * min(im.size) // max(im.size))
                 else:
-                    h, w = (200, 200 * min(im.size) / max(im.size))
+                    h, w = (200, 200 * min(im.size) // max(im.size))
                 im = im.resize((w, h))
 
-                fd = six.moves.StringIO()
+                fd = io.BytesIO()
                 im.save(fd, "PNG")
                 blob = fd.getvalue()
                 fd.close()
                 measurements.add_image_measurement(
-                    C_THUMBNAIL + "_" + name, blob.encode("base64")
+                    C_THUMBNAIL + "_" + name, base64.b64encode(blob).decode()
                 )
         if workspace.pipeline.test_mode:
             return
@@ -3178,7 +3181,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % (
             T_EXPERIMENT,
-            MySQLdb.escape_string(self.experiment_name.value),
+            MySQLdb.escape_string(self.experiment_name.value).decode(),
         )
         statements.append(insert_into_experiment_statement)
 
@@ -3192,8 +3195,8 @@ INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     T_EXPERIMENT_PROPERTIES,
                     p.object_name,
-                    MySQLdb.escape_string(k),
-                    MySQLdb.escape_string(v),
+                    MySQLdb.escape_string(k).decode(),
+                    MySQLdb.escape_string(v).decode(),
                     T_EXPERIMENT,
                 )
                 statements.append(statement)
@@ -3243,7 +3246,7 @@ CREATE TABLE %s (
                 if isinstance(value, six.text_type):
                     value = value
                 if self.db_type != DB_SQLITE:
-                    value = MySQLdb.escape_string(value)
+                    value = MySQLdb.escape_string(value).decode()
                 else:
                     value = value.replace("'", "''")
                 value = "'" + value + "'"
@@ -3873,7 +3876,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             "%s_%s.CSV" % (self.base_name(workspace), cellprofiler.measurement.IMAGE),
             workspace,
         )
-        fid_per_image = open(image_filename, "wb")
+        fid_per_image = open(image_filename, "w")
         columns = self.get_pipeline_measurement_columns(
             pipeline, image_set_list, remove_postgroup_key=True
         )
@@ -3898,11 +3901,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     value = value[0]
                 if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
                     if isinstance(value, six.string_types):
-                        value = '"' + MySQLdb.escape_string(value) + '"'
+                        value = '"' + MySQLdb.escape_string(value).decode() + '"'
                     elif value is None:
                         value = "NULL"
                     else:
-                        value = '"' + MySQLdb.escape_string(value) + '"'
+                        value = '"' + MySQLdb.escape_string(value).decode() + '"'
                 elif numpy.isnan(value) or numpy.isinf(value):
                     value = "NULL"
 
@@ -3930,7 +3933,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         for file_object_name, object_list in data:
             file_name = "%s_%s.CSV" % (self.base_name(workspace), file_object_name)
             file_name = self.make_full_filename(file_name)
-            fid = open(file_name, "wb")
+            fid = open(file_name, "w")
             csv_writer = csv.writer(fid, lineterminator="\n")
             for image_number in measurements.get_image_numbers():
                 max_count = 0
@@ -3987,7 +3990,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if self.wants_relationship_table:
             file_name = "%s_%s.CSV" % (self.base_name(workspace), T_RELATIONSHIPS)
             file_name = self.make_full_filename(file_name)
-            with open(file_name, "wb") as fid:
+            with open(file_name, "w") as fid:
                 csv_writer = csv.writer(fid, lineterminator="\n")
                 for (
                     i,
@@ -4276,7 +4279,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if (field[1] == cellprofiler.measurement.COLTYPE_FLOAT)
                 else int(field[0])
                 if (field[1] == cellprofiler.measurement.COLTYPE_INTEGER)
-                else buffer(field[0])
+                else buffer(field[0].encode())
                 if field[1]
                 in (
                     cellprofiler.measurement.COLTYPE_BLOB,
@@ -5076,7 +5079,7 @@ check_tables = yes
         filename = "%s.workspace" % name
         file_name = self.make_full_filename(filename, workspace)
 
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w")
         header_text = """CellProfiler Analyst workflow
 version: 1
 CP version : %d\n""" % int(
@@ -5269,7 +5272,8 @@ CP version : %d\n""" % int(
                 return 1
             return cellprofiler.utilities.legacy.cmp(x[1], y[1])
 
-        columns.sort(cmp=cmpfn)
+        # columns.sort(cmp=cmpfn)
+        sorted(columns, key=functools.cmp_to_key(cmpfn))
         #
         # Remove all but the last duplicate
         #
@@ -5832,11 +5836,11 @@ def random_number_generator(seed):
     yields integers in the range 0-65535 on iteration
     """
     m = hashlib.md5()
-    m.update(seed)
+    m.update(seed.encode())
     while True:
         digest = m.digest()
         m.update(digest)
-        yield ord(digest[0]) + 256 * ord(digest[1])
+        yield digest[0] + 256 * digest[1]
 
 
 class SQLiteCommands(object):

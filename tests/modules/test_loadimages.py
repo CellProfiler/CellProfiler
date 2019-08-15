@@ -251,7 +251,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         file_name = "5channel.tif"
         tests.modules.maybe_download_tesst_image(file_name)
         module = cellprofiler.modules.loadimages.LoadImages()
-        module.module_num = 1
+        module.set_module_num(1)
         module.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
         module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
@@ -355,7 +355,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         load_images.images[
             1
         ].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
-        load_images.module_num = 1
+        load_images.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
@@ -484,7 +484,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         load_images.images[
             1
         ].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
-        load_images.module_num = 1
+        load_images.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
@@ -547,7 +547,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.images[
                 1
             ].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
-            load_images.module_num = 1
+            load_images.set_module_num(1)
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
@@ -628,7 +628,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.images[
                 1
             ].file_metadata.value = "^illum_run(?P<Run>[0-9])-(?P<plate>.*?)\\."
-            load_images.module_num = 1
+            load_images.set_module_num(1)
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
@@ -690,9 +690,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 #
                 # Also happens on at least one Centos build.
                 #
-                if os.stat_float_times() and not any(
+                if hasattr(os, 'stat_float_times') and not any(
                     [sys.platform.startswith(x) for x in ("darwin", "linux")]
                 ):
+                    os.stat_float_times()
                     time.sleep(0.1)
                 else:
                     time.sleep(1)
@@ -737,7 +738,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 load_images.images[
                     1
                 ].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
-                load_images.module_num = 1
+                load_images.set_module_num(1)
                 pipeline = cellprofiler.pipeline.Pipeline()
                 pipeline.add_module(load_images)
                 pipeline.add_listener(self.error_callback)
@@ -816,7 +817,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             except Exception as e:
                 print(("ignoring symlink exception:", e))
             load_images = cellprofiler.modules.loadimages.LoadImages()
-            load_images.module_num = 1
+            load_images.set_module_num(1)
             load_images.file_types.value = (
                 cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
             )
@@ -901,7 +902,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 fd.write(data)
                 fd.close()
             load_images = cellprofiler.modules.loadimages.LoadImages()
-            load_images.module_num = 1
+            load_images.set_module_num(1)
             load_images.file_types.value = (
                 cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
             )
@@ -1366,7 +1367,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             0
         ].file_metadata.value = "^Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})"
         module.metadata_fields.value = "ROW"
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1428,7 +1429,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[0].image_name.value = "MyImage"
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1507,7 +1508,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[0].image_name.value = "MyImage"
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1571,7 +1572,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1594,7 +1595,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[0].image_name.value = "MyImage"
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1626,7 +1627,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[1].channel_number.value = "1"
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = flex_path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1700,7 +1701,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         channel.image_name.value = "Channel03"
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1798,7 +1799,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         channel.image_name.value = "Channel03"
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1887,7 +1888,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[
             0
         ].interleaving.value = cellprofiler.modules.loadimages.I_INTERLEAVED
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -1963,7 +1964,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         ].interleaving.value = cellprofiler.modules.loadimages.I_SEPARATED
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = flex_path
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -2092,7 +2093,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.images[0].channels[0].outlines_name.value = OUTLINES_NAME
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = directory
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
@@ -2264,7 +2265,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
         module.images[0].common_text.value = file_regexp
         module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -2338,7 +2339,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         )
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -2411,7 +2412,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         )
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -2530,7 +2531,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             fd.close()
 
         module = cellprofiler.modules.loadimages.LoadImages()
-        module.module_num = 1
+        module.set_module_num(1)
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = self.directory
 
@@ -2599,7 +2600,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         from bioformats.formatreader import release_image_reader
 
         module = cellprofiler.modules.loadimages.LoadImages()
-        module.module_num = 1
+        module.set_module_num(1)
         module.location.dir_choice = cellprofiler.modules.loadimages.URL_FOLDER_NAME
         url_base = "http://www.cellprofiler.org/ExampleFlyImages"
         module.location.custom_path = url_base

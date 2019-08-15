@@ -615,10 +615,6 @@ desired behavior.
             return False
         key_list, groupings = result
         #
-        # Sort the groupings by key
-        #
-        groupings = sorted(groupings)
-        #
         # Create arrays of group number, group_index and image_number
         #
         group_numbers = np.hstack(

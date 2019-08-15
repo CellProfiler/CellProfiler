@@ -42,7 +42,7 @@ class TestRelateObjects(unittest.TestCase):
                     ]
 
             module = FakeModule()
-            module.module_num = 1
+            module.set_module_num(1)
             pipeline.add_module(module)
         module = cellprofiler.modules.relateobjects.Relate()
         module.x_name.value = PARENT_OBJECTS
@@ -50,7 +50,7 @@ class TestRelateObjects(unittest.TestCase):
         module.find_parent_child_distances.value = (
             cellprofiler.modules.relateobjects.D_NONE
         )
-        module.module_num = 2 if fake_measurement else 1
+        module.set_module_num(2) if fake_measurement else 1
         pipeline.add_module(module)
         object_set = cellprofiler.object.ObjectSet()
         image_set_list = cellprofiler.image.ImageSetList()

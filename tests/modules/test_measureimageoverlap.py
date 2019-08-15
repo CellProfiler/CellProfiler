@@ -150,7 +150,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         returns a workspace and module
         """
         module = cellprofiler.modules.measureimageoverlap.MeasureImageOverlap()
-        module.module_num = 1
+        module.set_module_num(1)
         module.ground_truth.value = GROUND_TRUTH_IMAGE_NAME
         module.test_img.value = TEST_IMAGE_NAME
         module.wants_emd.value = True

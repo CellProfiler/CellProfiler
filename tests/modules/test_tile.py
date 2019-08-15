@@ -77,7 +77,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
 
     def make_tile_workspace(self, images):
         module = T.Tile()
-        module.module_num = 1
+        module.set_module_num(1)
         module.tile_method.value = T.T_ACROSS_CYCLES
         module.input_image.value = INPUT_IMAGE_NAME
         module.output_image.value = OUTPUT_IMAGE_NAME
@@ -469,7 +469,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = T.Tile()
-        module.module_num = 1
+        module.set_module_num(1)
         module.tile_method.value = T.T_WITHIN_CYCLES
         module.output_image.value = OUTPUT_IMAGE_NAME
         module.wants_automatic_rows.value = False

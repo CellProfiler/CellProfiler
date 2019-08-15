@@ -152,7 +152,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
             module.outputs[i + 1].image_name.value = output_image_name(i + 1)
             module.outputs[i + 1].stain_choice.value = choice
 
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
 
         image_set_list = cpi.ImageSetList()

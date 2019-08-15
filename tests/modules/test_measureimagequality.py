@@ -47,7 +47,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         module.image_groups[0].include_image_scalings.value = False
         module.image_groups[0].image_names.value = IMAGES_NAME
         module.image_groups[0].use_all_threshold_methods.value = False
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         workspace = cellprofiler.workspace.Workspace(
@@ -1039,7 +1039,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         pipeline.add_module(module2)
 
         miq_module = M.MeasureImageQuality()
-        miq_module.module_num = 3
+        miq_module.set_module_num(3)
         miq_module.images_choice.value = M.O_ALL_LOADED
         image_names = miq_module.images_to_process(
             miq_module.image_groups[0], None, pipeline

@@ -61,7 +61,7 @@ class TestClassifyObjects(unittest.TestCase):
             module.image_name.value = IMAGE_NAME
             module.first_measurement.value = MEASUREMENT_NAME_1
             module.second_measurement.value = MEASUREMENT_NAME_2
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):

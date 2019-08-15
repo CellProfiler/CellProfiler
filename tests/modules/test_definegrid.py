@@ -78,7 +78,7 @@ class TestDefineGrid(unittest.TestCase):
 
     def make_workspace(self, image, labels):
         module = D.DefineGrid()
-        module.module_num = 1
+        module.set_module_num(1)
         module.grid_image.value = GRID_NAME
         module.manual_image.value = INPUT_IMAGE_NAME
         module.display_image_name.value = INPUT_IMAGE_NAME

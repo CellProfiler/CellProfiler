@@ -179,7 +179,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         returns the labels matrix and the workspace.
         """
         module = cellprofiler.modules.splitormergeobjects.SplitOrMergeObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         module.objects_name.value = INPUT_OBJECTS_NAME
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.relabel_option.value = relabel_option

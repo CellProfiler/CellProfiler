@@ -406,7 +406,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         imgs.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_NONE
         imgs.module_num = 1
         pipeline.add_module(imgs)
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         pipeline.add_urls([url])
         m = cellprofiler.measurement.Measurements()
@@ -579,7 +579,7 @@ C10,BRD041618,1.5,2
             imgs.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_NONE
             imgs.module_num = 1
             pipeline.add_module(imgs)
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             columns = module.get_measurement_columns(pipeline)
             self.assertFalse(any([c[1] == "Counter" for c in columns]))
@@ -956,7 +956,7 @@ C10,BRD041618,bar
             imgs.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_NONE
             imgs.module_num = 1
             pipeline.add_module(imgs)
-            module.module_num = 2
+            module.set_module_num(2)
             pipeline.add_module(module)
             self.assertIn(
                 cellprofiler.measurement.M_WELL,

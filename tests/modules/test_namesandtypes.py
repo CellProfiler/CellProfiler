@@ -905,7 +905,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.set_filtered_file_list(urls, module)
         pipeline.set_image_plane_details(ipds, list(metadata.keys()), module)
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)

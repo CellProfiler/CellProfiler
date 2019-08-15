@@ -164,7 +164,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.images[0].image_name.value = IMAGE_NAME
         module.images[0].straightened_image_name.value = STRAIGHTENED_IMAGE_NAME
         module.flip_image.value = IMAGE_NAME
-        module.module_num = 1
+        module.set_module_num(1)
 
         # Trick the module into thinking it's read the data file
 

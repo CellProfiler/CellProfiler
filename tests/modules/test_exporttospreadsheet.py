@@ -717,7 +717,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test an image set with objects but no measurements"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
@@ -754,7 +754,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test writing one experiment measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
@@ -794,7 +794,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test writing two experiment measurements"""
         path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = False
@@ -841,7 +841,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """
         np.random.seed(14887)
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
@@ -873,7 +873,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         prefix = "Foo_"
         np.random.seed(14887)
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = True
         module.prefix.value = prefix
@@ -902,7 +902,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test writing an image measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -940,7 +940,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test writing three image measurements over two image sets"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -985,7 +985,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test getting a single object measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
@@ -1028,7 +1028,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test getting three measurements from two objects"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
@@ -1077,7 +1077,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Get three measurements from four cells and two objects"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.add_object_group()
@@ -1145,7 +1145,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_03_04_nan_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
@@ -1192,7 +1192,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_03_05_null_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
@@ -1239,7 +1239,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_03_06_nan_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1309,7 +1309,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_03_07_null_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1379,7 +1379,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_03_08_blob_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1418,7 +1418,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_03_09_blob_experiment_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
@@ -1464,7 +1464,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
@@ -1525,7 +1525,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = True
         module.wants_prefix.value = False
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
@@ -1580,7 +1580,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1639,7 +1639,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
@@ -1698,7 +1698,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         cpprefs.set_headless()
         cpprefs.set_default_output_directory(self.output_dir)
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -1740,7 +1740,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         cpprefs.set_headless()
         cpprefs.set_default_output_directory(self.output_dir)
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -1792,7 +1792,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = True
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
 
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
@@ -1826,7 +1826,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         g.name.value = OBJECTS_NAME
         g.wants_automatic_file_name.value = False
         g.file_name.value = "\\g<tag>.csv"
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
 
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
@@ -1848,7 +1848,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1907,7 +1907,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1959,7 +1959,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         object_path = os.path.join(self.output_dir, "my_object_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -2065,7 +2065,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -2114,7 +2114,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test presence of index column"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -2161,7 +2161,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test presence of image and object index columns"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
@@ -2214,7 +2214,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test addition of image metadata columns to an object metadata file"""
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
@@ -2280,7 +2280,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
@@ -2346,12 +2346,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = os.path.join(self.output_dir, "my_file.csv")
         pipeline = cpp.Pipeline()
         module = identifyprimaryobjects.IdentifyPrimaryObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         module.x_name.value = "my_image"
         module.y_name.value = OBJECTS_NAME
         module = E.ExportToSpreadsheet()
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline.add_module(module)
         module.wants_everything.value = False
         module.wants_prefix.value = False
@@ -2404,7 +2404,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.csv_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.csv_directory.custom_path = csv_path
         module.csv_file_name.value = csv_file
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -2463,7 +2463,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def add_gct_settings(self, output_csv_filename):
         module = E.ExportToSpreadsheet()
-        module.module_num = 2
+        module.set_module_num(2)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -2638,7 +2638,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_prefix.value = False
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         self.assertEqual(output_csv_filename, module.make_gct_file_name(workspace, 1))
@@ -2654,7 +2654,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         r.seed(91)
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
-        module.module_num = 1
+        module.set_module_num(1)
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = E.OBJECT_RELATIONSHIPS
@@ -2754,7 +2754,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         g.name.value = E.OBJECT_RELATIONSHIPS
         g.wants_automatic_file_name.value = False
         g.file_name.value = "my_file.csv"
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
 
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)

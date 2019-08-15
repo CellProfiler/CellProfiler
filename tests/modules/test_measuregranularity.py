@@ -109,7 +109,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         returns tuple of module & workspace
         """
         module = M.MeasureGranularity()
-        module.module_num = 1
+        module.set_module_num(1)
         image_setting = module.images[0]
         # assert isinstance(image_setting, M.MeasureGranularity)
         image_setting.image_name.value = IMAGE_NAME

@@ -358,7 +358,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
     #         module.dose_values[0].measurement.value = "Dose"
     #         module.dose_values[0].wants_save_figure.value = True
     #         module.dose_values[0].figure_name.value = "EC49_"
-    #         module.module_num = 1
+    #         module.set_module_num(1)
     #         pipeline.add_module(module)
     #         def callback(caller, event):
     #             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))

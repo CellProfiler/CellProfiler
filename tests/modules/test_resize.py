@@ -126,7 +126,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.y_name.value = OUTPUT_IMAGE_NAME
         module.size_method.value = size_method
         module.interpolation.value = interpolation
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         image_set_list = cellprofiler.image.ImageSetList()

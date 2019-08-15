@@ -320,7 +320,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         returns the measurements
         """
         module = T.TrackObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         module.object_name.value = OBJECT_NAME
         module.pixel_radius.value = 50
         module.measurement.value = "measurement"
@@ -963,7 +963,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         group_indexes - group indexes for each image set, defaults to range
         """
         module = T.TrackObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         module.object_name.value = OBJECT_NAME
         module.tracking_method.value = "LAP"
         module.wants_second_phase.value = True
@@ -2193,7 +2193,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
 
     def test_08_01_save_image(self):
         module = T.TrackObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         module.object_name.value = OBJECT_NAME
         module.pixel_radius.value = 50
         module.wants_image.value = True

@@ -157,14 +157,10 @@ class ConvtesterMixin:
                 for p1, p2 in zip(v1, v2):
                     self.assertEqual(
                         os.path.normcase(
-                            cellprofiler.modules.loadimages.url2pathname(
-                                p1
-                            )
+                            cellprofiler.modules.loadimages.url2pathname(p1)
                         ),
                         os.path.normcase(
-                            cellprofiler.modules.loadimages.url2pathname(
-                                p2
-                            )
+                            cellprofiler.modules.loadimages.url2pathname(p2)
                         ),
                     )
             else:
@@ -690,7 +686,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 #
                 # Also happens on at least one Centos build.
                 #
-                if hasattr(os, 'stat_float_times') and not any(
+                if hasattr(os, "stat_float_times") and not any(
                     [sys.platform.startswith(x) for x in ("darwin", "linux")]
                 ):
                     os.stat_float_times()
@@ -2033,7 +2029,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     module.images[0].channels[0].rescale.value = False
     #     module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
     #     module.location.custom_path = path
-    #     module.module_num = 1
+    #     module.set_module_num(1)
     #     pipeline = P.Pipeline()
     #     pipeline.add_module(module)
     #     pipeline.add_listener(self.error_callback)
@@ -2476,7 +2472,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     fd.write(data)
     #     fd.close()
     #     module = LI.LoadImages()
-    #     module.module_num = 1
+    #     module.set_module_num(1)
     #     module.match_method.value = LI.MS_EXACT_MATCH
     #     module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
     #     module.location.custom_path = directory
@@ -2697,7 +2693,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
         # def test_16_02_load_url_with_groups(self):
         #     module = LI.LoadImages()
-        #     module.module_num = 1
+        #     module.set_module_num(1)
         #     module.location.dir_choice = LI.URL_FOLDER_NAME
         #     url_base = "http://www.cellprofiler.org/ExampleFlyImages"
         #     module.location.custom_path = url_base

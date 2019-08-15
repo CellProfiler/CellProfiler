@@ -616,7 +616,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.image_name.value = IMAGE_NAME
         module.nonoverlapping_objects.value = NON_OVERLAPPING_OBJECTS_NAME
         module.overlap_objects.value = OVERLAP_OBJECTS_NAME
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         img = cpi.Image(image)
         image_set_list = cpi.ImageSetList()

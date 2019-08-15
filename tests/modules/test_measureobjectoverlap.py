@@ -33,7 +33,7 @@ class TestMeasureObjectOverlap(unittest.TestCase):
         l - label """
 
         module = cellprofiler.modules.measureobjectoverlap.MeasureObjectOverlap()
-        module.module_num = 1
+        module.set_module_num(1)
         module.object_name_GT.value = GROUND_TRUTH_OBJ
         module.object_name_ID.value = ID_OBJ
         module.wants_emd.value = True

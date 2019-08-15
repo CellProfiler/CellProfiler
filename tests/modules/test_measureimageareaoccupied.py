@@ -29,7 +29,7 @@ class TestMeasureImageArea(unittest.TestCase):
         module = (
             cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
         )
-        module.module_num = 1
+        module.set_module_num(1)
         module.operands[0].operand_objects.value = OBJECTS_NAME
         pipeline.add_module(module)
         image_set_list = cellprofiler.image.ImageSetList()

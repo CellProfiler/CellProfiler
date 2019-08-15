@@ -104,7 +104,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             module.directory.custom_path = self.temp_dir
             module.edge_file_name.value = EDGE_FILE
             module.vertex_file_name.value = VERTEX_FILE
-        module.module_num = 1
+        module.set_module_num(1)
 
         pipeline = cpp.Pipeline()
 

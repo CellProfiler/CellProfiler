@@ -30,7 +30,7 @@ class TestMeasureObjectSizeShape(unittest.TestCase):
         object_set.add_objects(objects, OBJECTS_NAME)
         m = cellprofiler.measurement.Measurements()
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
-        module.module_num = 1
+        module.set_module_num(1)
         module.object_groups[0].name.value = OBJECTS_NAME
         pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -86,7 +86,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -144,7 +144,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -246,7 +246,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -290,7 +290,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -331,7 +331,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
-        module.module_num = 1
+        module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -393,7 +393,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             module.calculate_zernikes.value = True
             object_set = cellprofiler.object.ObjectSet()
             object_set.add_objects(objects, "SomeObjects")
-            module.module_num = 1
+            module.set_module_num(1)
             image_set_list = cellprofiler.image.ImageSetList()
             measurements = cellprofiler.measurement.Measurements()
             mlist.append(measurements)

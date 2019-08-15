@@ -506,7 +506,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = cellprofiler.modules.imagemath.ImageMath()
-        module.module_num = 1
+        module.set_module_num(1)
         for i, image in enumerate(images):
             pixel_data = image["pixel_data"]
             mask = image.get("mask", None)
@@ -996,7 +996,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         module.output_image_name.value = "outputimage"
         module.operation.value = cellprofiler.modules.imagemath.O_NONE
         module.addend.value = 0.5
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
@@ -1018,14 +1018,14 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         module.images[0].image_name.value = "inputimage"
         module.output_image_name.value = "intermediateimage"
         module.operation.value = cellprofiler.modules.imagemath.O_INVERT
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         module = cellprofiler.modules.imagemath.ImageMath()
         module.images[0].image_name.value = "intermediateimage"
         module.output_image_name.value = "outputimage"
         module.operation.value = cellprofiler.modules.imagemath.O_INVERT
-        module.module_num = 2
+        module.set_module_num(2)
         pipeline = cellprofiler.pipeline.Pipeline()
         workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
         for module in pipeline.modules():

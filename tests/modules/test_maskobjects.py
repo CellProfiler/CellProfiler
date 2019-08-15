@@ -220,7 +220,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         renumber=True,
     ):
         module = M.MaskObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         module.object_name.value = INPUT_OBJECTS
         module.remaining_objects.value = OUTPUT_OBJECTS
         module.mask_choice.value = (

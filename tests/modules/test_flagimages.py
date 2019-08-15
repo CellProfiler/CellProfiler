@@ -46,92 +46,6 @@ MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
 class TestFlagImages(unittest.TestCase):
-    def test_01_02_load_v1(self):
-        data = (
-            "eJztW0Fv2zYUphInaFZgyC5r1124Q4FkqwXJXVAnGFJ59ooYqzOvCboVRdcx"
-            "Nm1zoCRDorp4Q4H+rB33k3bccaIiWxIrW7IrK3YmAYT9KH7vfXx8fKREqFU7"
-            "f1r7Fh7ICmzVzss9QjFsU8R6pqUfQYM9gHULI4a70DSO4BOLwJrThxUVquqR"
-            "Wj16+AhWFOUQLHZJzdbH7o9SBWDb/b3llg3/1pYvS6HC5TPMGDH69hYogbt+"
-            "/d9ueY4sgi4ofo6og+3AxLi+afTM89Fwcqtldh2KT5Eebuxep45+gS37h94Y"
-            "6N9uk0tMz8gfWOjCuNkz/IbYxDR8vK9frJ3YNZlgl/vh33uBHyTBD5tuuR+q"
-            "5+1PQNC+FOO3T0Ltd32ZGF3yhnQdRCHRUX/CwhuHBH2bEX2boHFaS4WTIjgJ"
-            "VHx7WgJuV+DPyzm+ZOXvLlGHQR2xziCN/Y2Ing1waqbrr8j7YUo/LYorRXAl"
-            "l6eBOa6agLsFon7icgsz1EUMpfHzRwKeyw0TGiaDju0HfBo9O4IeLtdHzBxS"
-            "ZOsg0JPUn21BD5d/rD+hqJ/Oj4uO9zRcUr/j4pSzhaQHkTGCPURomvl6R9DD"
-            "5QbuIYcy2OSTFTaIhTvMtEZLjactgQeXPfvgfT9uC/jxNcbv+L9Z4ebp57z5"
-            "7IWbDT+EZzvB3j0Q9SuXmwbDhk3Y6HULXQYCT62p+58m3rP0d9bza1k8xfFV"
-            "ZGUl43daHC6S9+sDZBiYVvKcb4p8eJDV/mEenlnmsTTruBqDW4U8lgaXZR6D"
-            "IOpXLofyGDECYbL8c73vEvR+L+jl8i97j9vf8AcSfCx/tf+aSz9hSp+Zvx+/"
-            "rJXbr/bHNXWTOrpx/FIpH776U31QeXvV+Iy4SK9yP3Yc8pjHgwRcVeg3lzn3"
-            "FxhZfoe+frtf5lUt02ADv67i1zXQKKjJd94rBx+Yp9TrWKe0BFzafWxecaTG"
-            "rFvzPGetan7NOm8tau9dAm7V81JSvv5c4M/lUL7GyHh/43mT8lbW+/z89qvq"
-            "WvBcH38eriTPZe4zs8z3cet4+D1T3nxPEvh+KvDl8gnpDyZr+STtXY+/tQT+"
-            "ad8rrVqc3MT3R3nw/DmB5xcg6lcuT1vHl7Vfzfs90irwXPf3SKvGUxx3uXqF"
-            "2/0swEkCLu78a1l5N+48xDss61umM8zWPzcRp4HZ/r0Nov7lsnnxG+6wwMGr"
-            "yLuIi/9nXBT9LXAFbv1xGpg9H+Oet4L8DonRxcN16m+RtwpcgZuO08DsOC/y"
-            "wXrhNDB7PIu8VeAKXIErcAWuwE3HaSFcsY4WuAJ3vbiBFODEcxEuh899ePtf"
-            "wez5+yWIzl8udzClQ8vk339Zsu59pGTL1ETdq6+E5Kfu32bogyFuZ5hgRxPs"
-            "aNPs6BjZjoU9U2R8hCm3rmo9q5ODzTTnpHuC3b1pdnsU9T2jMj9W9wyJ47QT"
-            "oz/s7w1XurN9f+b4iuMajPc/jxexV5Ikz174HP52Aq4U4sQvjv8LzBdXezPa"
-            "j/uYV/v/ACB4EDk="
-        )
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, F.FlagImage))
-        #
-        # The module defines two flags:
-        #
-        # Metadata_QCFlag: flag if any fail
-        #     Intensity_MaxIntensity_DNA: max = .95
-        #     Intensity_MinIntensity_Cytoplasm: min = .05
-        #     Intensity_MeanIntensity_DNA: min=.1, max=.9
-        # Metadata_HighCytoplasmIntensity
-        #     Intensity_MeanIntensity_Cytoplasm: max = .8
-        #
-        expected = (
-            (
-                "QCFlag",
-                F.C_ANY,
-                (
-                    ("Intensity_MaxIntensity_DNA", None, 0.95),
-                    ("Intensity_MinIntensity_Cytoplasm", 0.05, None),
-                    ("Intensity_MeanIntensity_DNA", 0.1, 0.9),
-                ),
-            ),
-            (
-                "HighCytoplasmIntensity",
-                None,
-                (("Intensity_MeanIntensity_Cytoplasm", None, 0.8),),
-            ),
-        )
-        self.assertEqual(len(expected), module.flag_count.value)
-        for flag, (feature_name, combine, measurements) in zip(module.flags, expected):
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
-            self.assertEqual(flag.category, "Metadata")
-            self.assertEqual(flag.feature_name, feature_name)
-            if combine is not None:
-                self.assertEqual(flag.combination_choice, combine)
-            self.assertEqual(len(measurements), flag.measurement_count.value)
-            for measurement, (measurement_name, min_value, max_value) in zip(
-                flag.measurement_settings, measurements
-            ):
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
-                self.assertEqual(measurement.source_choice, F.S_IMAGE)
-                self.assertEqual(measurement.measurement, measurement_name)
-                self.assertEqual(measurement.wants_minimum.value, min_value is not None)
-                if measurement.wants_minimum.value:
-                    self.assertAlmostEqual(measurement.minimum_value.value, min_value)
-                self.assertEqual(measurement.wants_maximum.value, max_value is not None)
-                if measurement.wants_maximum.value:
-                    self.assertAlmostEqual(measurement.maximum_value.value, max_value)
-
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -481,7 +395,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(isinstance(flag, cps.SettingsGroup))
         flag.category.value = MEASUREMENT_CATEGORY
         flag.feature_name.value = MEASUREMENT_FEATURE
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):

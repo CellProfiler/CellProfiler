@@ -96,7 +96,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         image_set.add(IMAGE_NAME, image)
 
         module = ID.IdentifyDeadWorms()
-        module.module_num = 1
+        module.set_module_num(1)
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
 

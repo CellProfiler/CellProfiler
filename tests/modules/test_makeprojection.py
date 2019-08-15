@@ -30,42 +30,6 @@ PROJECTED_IMAGE_NAME = "projectedimage"
 
 
 class TestMakeProjection(unittest.TestCase):
-    def test_01_02_load_v1(self):
-        data = (
-            "eJztWd1OGkEUHn60WtuGXrVJb+ZSWtgsaBskjYLStLSiRImNMbYdYYBpd3fI"
-            "MGuljUkfq5d9lD5CH6EzuAvsCiwgupqwyQTP2fPNN+c7O7szYyFb2s5uwpeK"
-            "CgvZUrxKNAyLGuJVyvQ0NHgMbjGMOK5AaqRhqW7C96YGE6+gmkqvpNKrKkyq"
-            "6hqY7ArkC4/Ej/oMgHnxuyBa0Lo1Z9mBnibtfcw5MWrNORAGTy3/H9EOECPo"
-            "RMMHSDNxs0th+/NGlZZajc6tAq2YGt5Bem+wuHZM/QSz5m7VBlq3i+QMa/vk"
-            "B3alYIft4VPSJNSw8Fb/bm+Hl3IXr9Th71JXh4BLh5BokR6/jH8HuvHhPro9"
-            "7omPWDYxKuSUVEykQaKjWmcUsr+UR39zrv6kvUU1ykbE33Phpb3LSG0PV9r4"
-            "jAc+4sLLVsJnPP7mDJU51BEv1yfNY7+hEX6FPLKnmAk523jVAx9w4ANgZUTe"
-            "BeDkXbD0e8tQaxT9Hrrw0i4y+hWXuXhGZRXASHW47+pH2jkKDcqh2bQmyCg6"
-            "hBz9hEBCUS/h5l04+7Jxi2B0vqCDLwh2qD/j9Jq3T4BTX2nncBWZGod5OWlh"
-            "jjBRNMpavus8zfq4x3ko3k5+8F31PeanPpM+9zcxzzIeuEXg1FXaF+83jI0B"
-            "/NepLydVX/S97u/woO/Iplg6Xae+7u9eog/uNryHwo5xhkU9janpMg7ul8c4"
-            "PwBnHaX9aXmj+Fou4PG68iL6WVofsabt0e/rR9l48Thqe8QDY+rG+pEaXzv+"
-            "mYglzy+C94lAtp3RK49/UlzdI++UK29py7EfYsSshFbPo3HpKlCD1y1f0vLl"
-            "UKvr8SO/5THX+ZPyZDx07LeOa28Kaoyajen34+c8vwlcBgzXqd/+pasTFFsz"
-            "3JhmP3dFtxluhvNjnt2VfGf63k5cBkxHp2n1c1d0m+FmuLH2A4HB62X3vl3G"
-            "fwHD59Nz4JxP0i6LLVGDUfn/D6bo7UP6pqJRVLk4JVe2xZ/5ngPzUXhiLp7Y"
-            "IJ6y3LxzWmOopbQ38iUqz3Q7+XvwJF08yUE8OvqGG50DX6UgzO75b/86Lfbh"
-            "69U7KKzIg9DQ+gLgrGu33v82JuELBQKXzjmWPHDhnjHZef4G4z1Xy0Pi7Rxv"
-            "Kv4/DzlPxw=="
-        )
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, M.MakeProjection))
-        self.assertEqual(module.image_name.value, "OrigRed")
-        self.assertEqual(module.projection_image_name.value, "ProjectionRed")
-        self.assertEqual(module.projection_type, M.P_AVERAGE)
-
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -156,7 +120,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
         pipeline = cpp.Pipeline()
         module = M.MakeProjection()
-        module.module_num = 1
+        module.set_module_num(1)
         module.image_name.value = IMAGE_NAME
         module.projection_image_name.value = PROJECTED_IMAGE_NAME
         module.projection_type.value = projection_type

@@ -40,7 +40,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
         labels - if thresholding per-object, the labels matrix needed
         """
         module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-        module.module_num = 1
+        module.set_module_num(1)
         module.x_name.value = IMAGE_NAME
         module.y_name.value = OBJECTS_NAME
 
@@ -2094,7 +2094,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             )
             x.threshold.threshold_smoothing_scale.value = 0
             pipeline = cellprofiler.pipeline.Pipeline()
-            x.module_num = 1
+            x.set_module_num(1)
             pipeline.add_module(x)
             object_set = cellprofiler.object.ObjectSet()
             measurements = cellprofiler.measurement.Measurements()
@@ -3448,7 +3448,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold.local_operation.value = centrosome.threshold.TM_MANUAL
         x.threshold.manual_threshold.value = 0.1
         x.threshold.threshold_correction_factor.value = 1
-        x.module_num = 1
+        x.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
         measurements = cellprofiler.measurement.Measurements()
@@ -3487,7 +3487,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold.threshold_correction_factor.value = 1
         x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
         x.maximum_object_count.value = maximum_object_count
-        x.module_num = 1
+        x.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
         measurements = cellprofiler.measurement.Measurements()
@@ -3529,7 +3529,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold.threshold_correction_factor.value = 1
         x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
         x.maximum_object_count.value = maximum_object_count
-        x.module_num = 1
+        x.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
         measurements = cellprofiler.measurement.Measurements()
@@ -3572,7 +3572,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold.threshold_smoothing_scale.value = 0
         x.threshold.thresholding_measurement.value = "MeanIntensity_MyImage"
         x.threshold.threshold_correction_factor.value = 1
-        x.module_num = 1
+        x.set_module_num(1)
         pipeline.add_module(x)
 
         workspace = cellprofiler.workspace.Workspace(

@@ -35,7 +35,7 @@ class TestCrop(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = cpmc.Crop()
-        module.module_num = 1
+        module.set_module_num(1)
         image_set.add(INPUT_IMAGE, cpi.Image(input_pixels))
         module.image_name.value = INPUT_IMAGE
         module.cropped_image_name.value = OUTPUT_IMAGE
@@ -322,61 +322,3 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(np.all(input_objects[2:17, 3:8] == output_image.labels))
         self.assertTrue(np.all(output_image.mask == (input_objects[2:17, 3:8] > 0)))
         self.assertTrue(np.all(output_image.crop_mask == (input_objects > 0)))
-
-    def test_07_02_load_v2(self):
-        data = (
-            "eJztm9Fu2jAUQB2armWV1k7aw7SplR+niaJAy9axh9GWsiGVFhXU56XEUE8h"
-            "Rknoun3JPmGfsc/ZYz9hdpuQxGIEArRJcSQrXMfnXt/ra2NIUttvHu8fwEJW"
-            "gbX95nYb6wjWddVuE7NbhIadgYcmUm2kQWIUYY0YsIxaML8Hc7vFXK6Y24N5"
-            "RfkAoh1StfaMnv58BOAJPa/SknIuLTuy5CtMbiDbxkbHWgYyeOnU39ByrppY"
-            "vdDRuar3keWZcOurRps0f/QGl2pE6+voRO36G9PjpN+9QKZ12nZB53IdXyO9"
-            "gX8izgW32Rm6whYmhsM7+vnagV1ic3Ybl+R7xaTd4fQfqHbrsmHTEQjWs7jt"
-            "vfbiJnFxk2nZ9NWz9l+A114eEufnvvYbjowNDV9hra/qEHfVzqDXt/ZD9K1y"
-            "+ph8auLOAR0ixpdC+DTHpx3+s4mQMUE/Vjg9K46eM6SBcfqxwfGsNNG1vX10"
-            "rbZs2GVDFDUehybpTRMPxs8iHkyPGw8lhJcCvAR2prB7pOu4Z6HI+Vk36RQj"
-            "fQu2qAM9ujL44jBrfaUQfU85fUwuE2gQG/YtNL6eNU4Pkw8JMTVsqO66EUc9"
-            "YXmTCuhJgRMyXt4sc/aZXMGmZYN48GF59oLjmVxGbbWv27DKFlVYIbqGTDeO"
-            "UeZRQcll3itKZH5HUTLvZsRPun5kp/A7X8hldgvJ8Dtq/g/1m9otTNHvwgz5"
-            "qH6HcUsBbgnsjmnvvrlZ+ZeP2M9Zck84zj1cLu2c5xmXWXNR1vdytlmtgOj8"
-            "kXa3V04CH7ZPD4u7HOBlGnfjQbhpx3ledsP2/dPySRmfh+Sirmv3zS2if/z3"
-            "UiXbfPB+TsKVQvwb93+MpPj72Mdz0eej8C/Z/vHz7yxh82/a/3OT4udjH8dF"
-            "n4fCv3j79/uVx0kcN+z+2bz2h8PuG9zebOuYpN+Lr555xWPY/TbPPsSGhnpx"
-            "1JOUvBec4AQnOMEJTnCCc7mSj5vnfkrsd0U8Rtkf9rwRufiGWrbXgTjqSco8"
-            "F9xiciUwOs/F71zBCU5wghPrqeAEJ7h4cb8kj5M4jsn++3Gs/VefnWHr01sQ"
-            "XJ+Y3EK63jMJew/QzHZvX1azsjpRtbu3v7LH9GPV9yIYs1MPsbPF2dn6nx32"
-            "zk2WPdmYTL3+cU0P0esfnxSVNtfX10flAwDBPPDy4+ZTFHtyKpVinP/5irUQ"
-            "TgbBvGT8XzBZHr4Z0d71Mc7tJ42zRI9p4+TZkQd9utMfz/b/AK5Y7+U="
-        )
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        self.assertTrue(
-            all([isinstance(module, cpmc.Crop) for module in pipeline.modules()[1:]])
-        )
-        module = pipeline.modules()[1]
-        self.assertEqual(module.image_name.value, "OrigBlue")
-        self.assertEqual(module.cropped_image_name.value, "CropBlue")
-        self.assertEqual(module.shape.value, cpmc.SH_ELLIPSE)
-        self.assertEqual(module.individual_or_once, cpmc.IO_FIRST)
-        self.assertEqual(module.ellipse_center.x, 200)
-        self.assertEqual(module.ellipse_center.y, 500)
-        self.assertEqual(module.ellipse_x_radius.value, 400)
-        self.assertEqual(module.ellipse_y_radius.value, 200)
-        self.assertTrue(module.remove_rows_and_columns)
-
-        module = pipeline.modules()[2]
-        self.assertEqual(module.image_name.value, "OrigGreen")
-        self.assertEqual(module.cropped_image_name.value, "CropGreen")
-        self.assertEqual(module.shape.value, cpmc.SH_CROPPING)
-        self.assertTrue(module.remove_rows_and_columns.value)
-
-        module = pipeline.modules()[3]
-        self.assertEqual(module.image_name.value, "OrigRed")
-        self.assertEqual(module.cropped_image_name.value, "CropRed")
-        self.assertEqual(module.shape.value, cpmc.SH_CROPPING)
-        self.assertTrue(module.remove_rows_and_columns.value)

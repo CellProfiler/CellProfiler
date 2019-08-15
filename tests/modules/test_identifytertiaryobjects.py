@@ -42,7 +42,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         """
         isl = cpi.ImageSetList()
         module = cpmit.IdentifyTertiarySubregion()
-        module.module_num = 1
+        module.set_module_num(1)
         module.primary_objects_name.value = PRIMARY
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY

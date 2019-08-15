@@ -25,51 +25,6 @@ OUTPUT_IMAGE = "my_output_image"
 
 
 class TestFlipAndRotate(unittest.TestCase):
-    def test_01_02_load_v1(self):
-        """Load a variable_revision_number = 1 module"""
-        data = (
-            "eJztWM9PGkEUXhCtP5pWkyb1OEdpgSyojZJGRakpqSARYmOMbUd2gElmZ8iw"
-            "a8XGpMf+WT322D+lxx47g7vsMkUXVkkPZclkeW/f974338wswxRz1YPcLlhP"
-            "6aCYqybrmCBQJtCqM25mAbUSYI8jaCEDMJoF+xyDCmqBzDpIp7Orm9m1VyCj"
-            "65tauCtSKD4Rt+VnmjYj7rOiRZ1H044d8TVpV5BlYdpoT2sxbdnxfxftGHIM"
-            "zwk6hsRGbY/C9RdonVU7rd6jIjNsgkrQ9AeLq2Sb54i3D+su0HlcxpeIVPAV"
-            "Urrghh2hC9zGjDp4J7/q7fEyS+GVOvyc9XSIKDpIXZZ8fhn/VvPiYwN088cv"
-            "OjamBr7Ahg0JwCZs9KqQ+fSAfFN9+aa0fCnXxe0E4BaVOmSroksr+eYS1ixg"
-            "QqvWHCbPUyWPtPcJbrWQcchxY1eM/FD9iPTliWirTv+D+BcUfmnnGaDMAnVR"
-            "Rk/HoDzzSp55L4/dRt54bATkmVbySLvIblIMo0O0Dx/VSux+uKD5+FypV9p5"
-            "VIc2sUBBTkaQxxzVLMY7Q+n4WMkn7UJvfpOOq6O/PzNKHvdy88w59zDrQU/o"
-            "oXAnYhWGHW89kdb1Ieu9bdzC6NxkHF8xat2m80PON3W9Dupv2HEdBRek05yi"
-            "k7T3mpBSRNLJB+AP+34eF586Lukx9y/WxxcT84ei+/B9DeB7p/WPp7Q/rGyX"
-            "X8sNEtpKvYx/lNZ7RMgR+7x1mkuWz+KuZ48R26Rbp3py8+xLOpG5vgmuYIHs"
-            "OuMD+z1K/c2A+jeU+qUtazhBkDuFrV3Hk9JVFEu56fgyji8PO57nPnX+eDTa"
-            "vmZc63PQ7253E9TgzG6Nn3/QPsjjB2Jrhlr/4r02wU1wE9z/g9vx4SbvqQlu"
-            "VNxvH079PVf3+TL+k3b3fHuh9c83adfEFqrFmTyP4imze2jSThEGjZtTi9SB"
-            "+FrwHWAMw6MrPPptPPLfPKQGZ5bY56XkEUOOGkddS9VtbgCPv/9R8Vmav1tv"
-            "VWdP/1/bYfhikb/5FgJwMUcxifumjTa+K3fEu30LG/8HWH8MEg=="
-        )
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, F.FlipAndRotate))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.output_name, "FlippedOrigBlue")
-        self.assertEqual(module.flip_choice, F.FLIP_NONE)
-        self.assertEqual(module.rotate_choice, F.ROTATE_MOUSE)
-        self.assertFalse(module.wants_crop.value)
-        self.assertEqual(module.how_often, F.IO_INDIVIDUALLY)
-        self.assertEqual(module.angle, 0)
-        self.assertEqual(module.first_pixel.x, 0)
-        self.assertEqual(module.first_pixel.y, 0)
-        self.assertEqual(module.second_pixel.x, 0)
-        self.assertEqual(module.second_pixel.y, 100)
-        self.assertEqual(module.horiz_or_vert, F.C_HORIZONTALLY)
-
     def test_01_03_load_v2(self):
         """Load a v2 pipeline"""
         data = (
@@ -133,7 +88,7 @@ class TestFlipAndRotate(unittest.TestCase):
         module = F.FlipAndRotate()
         module.image_name.value = IMAGE_NAME
         module.output_name.value = OUTPUT_IMAGE
-        module.module_num = 1
+        module.set_module_num(1)
         if fn is not None:
             fn(module)
         pipeline = cpp.Pipeline()

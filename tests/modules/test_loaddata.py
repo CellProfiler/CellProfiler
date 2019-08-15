@@ -58,7 +58,7 @@ class TestLoadData(unittest.TestCase):
         module.csv_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.csv_directory.custom_path = csv_path
         module.csv_file_name.value = csv_file
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
 
@@ -390,7 +390,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         c0 = C0()
         c0.callback = callback
-        c0.module_num = 2
+        c0.set_module_num(2)
         pipeline.add_module(c0)
 
         try:
@@ -431,7 +431,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         c0 = C0()
         c0.callback = callback
-        c0.module_num = 1
+        c0.set_module_num(1)
         pipeline.add_module(c0)
         try:
             module.wants_images.value = False
@@ -814,7 +814,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
         c0 = C0()
         c0.callback = callback
-        c0.module_num = 2
+        c0.set_module_num(2)
         pipeline.add_module(c0)
 
         try:
@@ -861,7 +861,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
                 c0 = C0()
                 c0.callback = callback
-                c0.module_num = 2
+                c0.set_module_num(2)
                 pipeline.add_module(c0)
                 pipeline.run()
             finally:

@@ -124,7 +124,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         """Check filtering of one URL using the module as configured"""
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_urls([url])
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(

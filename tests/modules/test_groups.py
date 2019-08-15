@@ -126,7 +126,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         # Scramble the image sets
         #
         r = np.random.RandomState()
-        r.seed(np.frombuffer("".join(["%s=%s" % kv for kv in key_metadata]), np.uint8))
+        r.seed(np.frombuffer("".join(["%s=%s" % kv for kv in key_metadata]).encode(), np.uint8))
         image_sets = [image_sets[i] for i in r.permutation(len(image_sets))]
 
         m = cpmeas.Measurements()
@@ -149,7 +149,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
         pipeline = cpp.Pipeline()
         module = G.Groups()
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         return module, workspace

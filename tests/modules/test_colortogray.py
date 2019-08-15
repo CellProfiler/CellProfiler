@@ -39,9 +39,9 @@ def test_00_00_init():
 def test_01_01_combine():
     img = get_my_image()
     inj = cellprofiler.modules.injectimage.InjectImage("my_image", img)
-    inj.module_num = 1
+    inj.set_module_num(1)
     ctg = cellprofiler.modules.colortogray.ColorToGray()
-    ctg.module_num = 2
+    ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
     ctg.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
     ctg.red_contribution.value = 1
@@ -74,9 +74,9 @@ def test_01_01_combine():
 def test_01_02_split_all():
     img = get_my_image()
     inj = cellprofiler.modules.injectimage.InjectImage("my_image", img)
-    inj.module_num = 1
+    inj.set_module_num(1)
     ctg = cellprofiler.modules.colortogray.ColorToGray()
-    ctg.module_num = 2
+    ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
     ctg.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
     ctg.use_red.value = True
@@ -130,7 +130,7 @@ def test_01_03_combine_channels():
     image_set.add(IMAGE_NAME, cellprofiler.image.Image(image))
 
     module = cellprofiler.modules.colortogray.ColorToGray()
-    module.module_num = 1
+    module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
     module.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
     module.grayscale_name.value = OUTPUT_IMAGE_F % 1
@@ -177,7 +177,7 @@ def test_01_04_split_channels():
     image_set.add(IMAGE_NAME, cellprofiler.image.Image(image))
 
     module = cellprofiler.modules.colortogray.ColorToGray()
-    module.module_num = 1
+    module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
     module.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
     module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS

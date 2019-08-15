@@ -48,7 +48,7 @@ class TestMaskImage(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
-        module.module_num = 1
+        module.set_module_num(1)
 
         workspace = cpw.Workspace(
             pipeline,
@@ -90,7 +90,7 @@ class TestMaskImage(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = True
-        module.module_num = 1
+        module.set_module_num(1)
 
         workspace = cpw.Workspace(
             pipeline,
@@ -135,7 +135,7 @@ class TestMaskImage(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
-        module.module_num = 1
+        module.set_module_num(1)
 
         workspace = cpw.Workspace(
             pipeline,
@@ -173,7 +173,7 @@ class TestMaskImage(unittest.TestCase):
         module.masking_image_name.value = MASKING_IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
-        module.module_num = 1
+        module.set_module_num(1)
 
         workspace = cpw.Workspace(
             pipeline,
@@ -212,7 +212,7 @@ class TestMaskImage(unittest.TestCase):
         module.masking_image_name.value = MASKING_IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
-        module.module_num = 1
+        module.set_module_num(1)
 
         workspace = cpw.Workspace(
             pipeline,
@@ -252,7 +252,7 @@ class TestMaskImage(unittest.TestCase):
         module.masking_image_name.value = MASKING_IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
-        module.module_num = 1
+        module.set_module_num(1)
 
         workspace = cpw.Workspace(
             pipeline,

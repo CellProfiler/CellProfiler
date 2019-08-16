@@ -5272,8 +5272,7 @@ CP version : %d\n""" % int(
                 return 1
             return cellprofiler.utilities.legacy.cmp(x[1], y[1])
 
-        # columns.sort(cmp=cmpfn)
-        sorted(columns, key=functools.cmp_to_key(cmpfn))
+        columns = sorted(columns, key=functools.cmp_to_key(cmpfn))
         #
         # Remove all but the last duplicate
         #

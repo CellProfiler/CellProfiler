@@ -1004,7 +1004,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         expected_names = ["foo", "bar"]
         pipeline = cellprofiler.pipeline.Pipeline()
         module1 = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        module1.module_num = 1
+        module1.set_module_num(1)
         module1.assignment_method.value = (
             cellprofiler.modules.namesandtypes.ASSIGN_RULES
         )
@@ -1033,7 +1033,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         pipeline.add_module(module1)
 
         module2 = cellprofiler.modules.smooth.Smooth()
-        module2.module_num = 2
+        module2.set_module_num(2)
         module2.image_name.value = expected_names[0]
         module2.filtered_image_name.value = "henry"
         pipeline.add_module(module2)

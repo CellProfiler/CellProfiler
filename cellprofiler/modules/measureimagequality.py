@@ -1150,7 +1150,7 @@ to the foreground pixels or the background pixels.
                 #
                 if image.dimensions is 2:
                     i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float)
-                    m, n = (numpy.array(shape) + scale - 1) / scale
+                    m, n = (numpy.array(shape) + scale - 1) // scale
                     i = (i * float(m) / float(shape[0])).astype(int)
                     j = (j * float(n) / float(shape[1])).astype(int)
                     grid = i * n + j + 1
@@ -1158,7 +1158,7 @@ to the foreground pixels or the background pixels.
                     k, i, j = numpy.mgrid[
                         0 : shape[0], 0 : shape[1], 0 : shape[2]
                     ].astype(float)
-                    o, m, n = (numpy.array(shape) + scale - 1) / scale
+                    o, m, n = (numpy.array(shape) + scale - 1) // scale
                     k = (k * float(o) / float(shape[0])).astype(int)
                     i = (i * float(m) / float(shape[1])).astype(int)
                     j = (j * float(n) / float(shape[2])).astype(int)
@@ -1769,7 +1769,7 @@ to the foreground pixels or the background pixels.
         if (not from_matlab) and variable_revision_number == 3:
             # Rearrangement/consolidation of settings
             assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
-            num_images = len(setting_values) / SETTINGS_PER_GROUP_V3
+            num_images = len(setting_values) // SETTINGS_PER_GROUP_V3
 
             """Since some settings are new/consolidated and can be repeated, handle
             the old settings by using a dict"""

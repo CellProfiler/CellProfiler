@@ -98,7 +98,6 @@ def workspace(image, measurements, module, objects):
     )
 
 
-@pytest.fixture()
 def assert_features_and_columns_match(measurements, module):
     object_names = [
         x
@@ -810,7 +809,7 @@ def test_median_intensity_masked(image, measurements, module, objects, workspace
 
     objects.segmented = labels
 
-    expected = numpy.sort(pixel_data[mask])[numpy.sum(mask) / 2]
+    expected = numpy.sort(pixel_data[mask])[numpy.sum(mask) // 2]
 
     assert not expected == numpy.median(pixel_data)
 

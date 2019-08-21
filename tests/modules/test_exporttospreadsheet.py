@@ -1,7 +1,6 @@
 """test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
 """
 
-
 import base64
 import csv
 import os
@@ -2533,9 +2532,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         csv_text = (
             """"%s","%s","%s"
-"Channel1-01-A-01.tif","%s","Hi"
-"Channel1-02-A-02.tif","%s","Hello"
-"""
+    "Channel1-01-A-01.tif","%s","Hi"
+    "Channel1-02-A-02.tif","%s","Hello"
+    """
             % info
         )
         pipeline, module, input_filename = self.make_pipeline(csv_text)
@@ -2590,9 +2589,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         csv_text = (
             """"%s","%s","%s"
-"Channel1-01-A-01.tif","%s","Hi"
-"Channel1-02-A-02.tif","%s","Hello"
-"""
+    "Channel1-01-A-01.tif","%s","Hi"
+    "Channel1-02-A-02.tif","%s","Hello"
+    """
             % info
         )
         pipeline, module, input_filename = self.make_pipeline(csv_text)
@@ -2639,9 +2638,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         csv_text = (
             """"%s","%s","%s"
-"Channel1-01-A-01.tif","%s","Hi"
-"Channel1-02-A-02.tif","%s","Hello"
-"""
+    "Channel1-01-A-01.tif","%s","Hi"
+    "Channel1-02-A-02.tif","%s","Hello"
+    """
             % info
         )
         pipeline, module, input_filename = self.make_pipeline(csv_text)

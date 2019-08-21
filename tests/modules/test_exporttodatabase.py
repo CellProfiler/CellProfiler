@@ -1,7 +1,6 @@
 """test_exporttodatabase.py - test the ExportToDatabase module
 """
 
-
 import base64
 import io
 import os
@@ -5030,8 +5029,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
                 """
-            select max(experiment_id) from Experiment_Properties
-            where field = 'image_table' and value = '%s'"""
+                select max(experiment_id) from Experiment_Properties
+                where field = 'image_table' and value = '%s'"""
                 % image_table
             )
             self.cursor.execute(statement)
@@ -5079,8 +5078,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
                 """
-            select max(experiment_id) from Experiment_Properties
-            where field = 'image_table' and value = '%s'"""
+                select max(experiment_id) from Experiment_Properties
+                where field = 'image_table' and value = '%s'"""
                 % image_table
             )
             self.cursor.execute(statement)

@@ -38,7 +38,6 @@ def test_run(image, module, image_set, workspace):
         desired = numpy.zeros_like(image.pixel_data)
 
         for index, plane in enumerate(image.pixel_data):
-
             desired[index] = skimage.morphology.dilation(plane, selem)
 
         numpy.testing.assert_array_equal(actual.pixel_data, desired)

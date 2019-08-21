@@ -1,28 +1,19 @@
 """test_createbatchfiles - test the CreateBatchFiles module
 """
 
-import base64
-import os
 import sys
-import tempfile
-import unittest
-import zlib
+
 from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 
-import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C
-import tests.modules as T
 import pytest
 
 

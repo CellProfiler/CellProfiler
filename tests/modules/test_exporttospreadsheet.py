@@ -6,12 +6,11 @@ import base64
 import csv
 import os
 import tempfile
-import unittest
-import zlib
-from six.moves import StringIO
 
 import numpy as np
 import six
+from six.moves import StringIO
+
 from cellprofiler.preferences import set_headless
 
 set_headless()

@@ -1,6 +1,5 @@
-import io
 import base64
-import unittest
+import io
 import zlib
 
 import numpy

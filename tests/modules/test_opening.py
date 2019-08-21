@@ -1,7 +1,8 @@
-import cellprofiler.modules.opening
 import numpy
 import numpy.testing
 import skimage.morphology
+
+import cellprofiler.modules.opening
 
 instance = cellprofiler.modules.opening.Opening()
 

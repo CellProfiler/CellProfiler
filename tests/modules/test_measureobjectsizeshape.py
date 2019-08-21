@@ -1,6 +1,5 @@
 import io
 import os
-import unittest
 
 import numpy
 import skimage.io

@@ -1,26 +1,19 @@
 """test_measuregranularity - Test the MeasureGranularity module
 """
 
-
-import base64
-import unittest
-import zlib
-from six.moves import StringIO
-
 import numpy as np
+from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuregranularity as M
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import sys
 

@@ -1,17 +1,12 @@
 """test_flagimages.py - Test the FlagImages module
 """
 
-import base64
 import contextlib
 import os
 import tempfile
-import unittest
-import zlib
-from six.moves import StringIO
 
-import PIL.Image as PILImage
 import numpy as np
-import scipy.ndimage
+from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 from .test_filterobjects import make_classifier_pickle

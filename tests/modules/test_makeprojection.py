@@ -1,23 +1,14 @@
 """test_makeprojection - Test the MakeProjection module
 """
 
-import base64
-import os
-import unittest
-import zlib
-from six.moves import StringIO
-
-import PIL.Image as PILImage
 import numpy as np
-import scipy.ndimage
-from matplotlib.image import pil_to_array
+from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

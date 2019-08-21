@@ -1,18 +1,12 @@
 """test_enhanceedges - test the EnhanceEdges module
 """
 
-import unittest
-from six.moves import StringIO
-from base64 import b64decode
-from zlib import decompress
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

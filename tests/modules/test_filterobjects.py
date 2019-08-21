@@ -1,9 +1,8 @@
-import io
-import pickle
 import contextlib
+import io
 import os
+import pickle
 import tempfile
-import unittest
 
 import numpy
 

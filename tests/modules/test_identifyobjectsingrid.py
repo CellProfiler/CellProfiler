@@ -1,11 +1,6 @@
 """test_identifyobjectsingrid.py - test the IdentifyObjectsInGrid module
 """
 
-import base64
-import unittest
-import zlib
-from six.moves import StringIO
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless
@@ -15,7 +10,6 @@ set_headless()
 import cellprofiler.workspace as cpw
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp

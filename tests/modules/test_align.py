@@ -1,7 +1,3 @@
-import base64
-import unittest
-import zlib
-
 import numpy
 import six.moves
 

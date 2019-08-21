@@ -1,5 +1,4 @@
 import io
-import unittest
 
 import numpy
 import numpy.random

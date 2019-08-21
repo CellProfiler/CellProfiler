@@ -1,5 +1,4 @@
 import io
-import unittest
 
 import centrosome.propagate
 import numpy

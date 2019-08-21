@@ -1,18 +1,18 @@
 """test_loadsingleimage - Test the LoadSingleImage module
 """
 
-
-import base64
 import hashlib
 import os
 import tempfile
 import unittest
-import zlib
-from six.moves import StringIO
 
 import PIL.Image
+import numpy
+from six.moves import StringIO
+
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadsingleimage
 import cellprofiler.object
@@ -20,8 +20,6 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
-import numpy
-import cellprofiler.modules.identify
 import tests.modules
 import tests.modules.test_loadimages
 

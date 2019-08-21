@@ -1,10 +1,8 @@
 """test_trackobjects.py - testing of the TrackObjects module
 """
 
-import unittest
-from six.moves import StringIO
-
 import numpy as np
+from six.moves import StringIO
 
 import cellprofiler.measurement
 from cellprofiler.preferences import set_headless

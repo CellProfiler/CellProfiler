@@ -1,7 +1,6 @@
 import io
 import os
 import tempfile
-import unittest
 
 import cellprofiler.measurement
 import cellprofiler.modules.images

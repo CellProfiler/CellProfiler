@@ -1,19 +1,14 @@
 """test_identifytertiaryobjects.py - test the IdentifyTertiaryObjects module
 """
 
-import base64
-import unittest
-import zlib
+import numpy as np
 from six.moves import StringIO
 
 import cellprofiler.measurement
-import numpy as np
-
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.modules.identify as cpmi
 import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp

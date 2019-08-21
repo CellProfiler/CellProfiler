@@ -1,8 +1,5 @@
 import io
-import base64
 import os
-import unittest
-import zlib
 
 import centrosome.threshold
 import numpy
@@ -10,14 +7,13 @@ import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.modules.threshold
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
+import cellprofiler.modules.threshold
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.workspace
-import tests.modules
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"

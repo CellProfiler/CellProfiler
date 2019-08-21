@@ -1,8 +1,3 @@
-import io
-import base64
-import unittest
-import zlib
-
 import numpy
 import pytest
 import scipy.sparse.coo

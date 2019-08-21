@@ -1,7 +1,8 @@
-import cellprofiler.modules.dilateimage
 import numpy
 import numpy.testing
 import skimage.morphology
+
+import cellprofiler.modules.dilateimage
 
 instance = cellprofiler.modules.dilateimage.DilateImage()
 

@@ -1,7 +1,8 @@
-import cellprofiler.modules.erosion
 import numpy
 import numpy.testing
 import skimage.morphology
+
+import cellprofiler.modules.erosion
 
 instance = cellprofiler.modules.erosion.Erosion()
 

@@ -1,11 +1,6 @@
 """test_definegrid - test the DefineGrid module
 """
 
-import base64
-import unittest
-import zlib
-from six.moves import StringIO
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless
@@ -15,12 +10,10 @@ set_headless()
 import cellprofiler.workspace as cpw
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.definegrid as D
-from centrosome.filter import enhance_dark_holes
 import pytest
 
 GRID_NAME = "grid"

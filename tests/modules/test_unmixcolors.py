@@ -1,13 +1,10 @@
 """test_unmixcolors - test the unmixcolors module
 """
 
-import unittest
+import numpy as np
 from six.moves import StringIO
 
-import numpy as np
-
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.unmixcolors as U
 import cellprofiler.object as cpo

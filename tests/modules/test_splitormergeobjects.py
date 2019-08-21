@@ -1,25 +1,17 @@
-import base64
-import os
-import unittest
-import zlib
+import numpy as np
 from six.moves import StringIO
 
 import cellprofiler.measurement
-import numpy as np
-import scipy.ndimage
-
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.splitormergeobjects
-import cellprofiler.modules.identify as I
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"

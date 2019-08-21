@@ -1,5 +1,3 @@
-import unittest
-
 import centrosome.cpmorphology
 import centrosome.outline
 import numpy

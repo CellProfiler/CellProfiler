@@ -7,7 +7,6 @@ import cellprofiler.measurement
 import cellprofiler.modules.shrinktoobjectcenters
 import cellprofiler.object
 
-
 instance = cellprofiler.modules.shrinktoobjectcenters.ShrinkToObjectCenters()
 
 

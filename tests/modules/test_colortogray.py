@@ -1,9 +1,9 @@
 """test_colortogray.py - test the ColorToGray module
 """
 
+import numpy
 from six.moves import StringIO
 
-import numpy
 from cellprofiler.preferences import set_headless
 
 set_headless()

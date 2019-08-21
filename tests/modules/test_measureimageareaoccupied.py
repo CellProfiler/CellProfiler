@@ -1,5 +1,3 @@
-import unittest
-
 import numpy
 import six
 

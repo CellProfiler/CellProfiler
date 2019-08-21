@@ -1,19 +1,16 @@
 """test_identifydeadworms.py - test the IdentifyDeadWorms module
 """
 
-import unittest
+import numpy as np
+from scipy.ndimage import binary_fill_holes
 from six.moves import StringIO
 
 import cellprofiler.measurement
-import numpy as np
-from scipy.ndimage import binary_fill_holes
-
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

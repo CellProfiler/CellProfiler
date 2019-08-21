@@ -1,7 +1,8 @@
-import cellprofiler.modules.closing
 import numpy
 import numpy.testing
 import skimage.morphology
+
+import cellprofiler.modules.closing
 
 instance = cellprofiler.modules.closing.Closing()
 

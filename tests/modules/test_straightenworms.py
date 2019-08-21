@@ -156,7 +156,7 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
     # Trick the module into thinking it's read the data file
 
     class P:
-        def __init__():
+        def __init__(self):
             radii_from_training = radii
 
     module.training_set_directory.dir_choice = cps.URL_FOLDER_NAME

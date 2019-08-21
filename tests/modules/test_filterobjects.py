@@ -1283,7 +1283,7 @@ def test_keep_maximal_volume():
 
 
 class FakeClassifier(object):
-    def __init__(answers, classes):
+    def __init__(self, answers, classes):
         """initializer
 
         answers - a vector of answers to be returned by "predict"
@@ -1294,7 +1294,7 @@ class FakeClassifier(object):
         classes_ = classes
 
     def predict(*args, **kwargs):
-        return answers_
+        return self.answers_
 
 
 def make_classifier_pickle(answers, classes, class_names, name, feature_names):

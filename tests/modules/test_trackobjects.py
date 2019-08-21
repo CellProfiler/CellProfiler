@@ -2146,17 +2146,17 @@ class MonkeyPatchedDelete(object):
             ... do test ...
     """
 
-    def __init__(test):
+    def __init__(self, test):
         __test = test
 
-    def __enter__():
+    def __enter__(self):
         old_delete = np.delete
         np.delete = monkey_patched_delete
 
-    def __exit__(type, value, traceback):
+    def __exit__(self, type, value, traceback):
         np.delete = old_delete
 
-    def monkey_patched_delete(array, indices, axis):
+    def monkey_patched_delete(self, array, indices, axis):
         __test.assertTrue(np.all(indices >= 0))
         return old_delete(array, indices, axis)
 

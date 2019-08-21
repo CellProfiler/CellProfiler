@@ -2709,111 +2709,116 @@ def draw_circle(img, center, radius, value):
     img[distance <= radius] = value
 
 
-class TestWeightedVariance:
-    def test_01_masked_wv():
-        output = centrosome.threshold.weighted_variance(
-            numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
-        )
-        assert output == 0
-
-    def test_02_zero_wv():
-        output = centrosome.threshold.weighted_variance(
-            numpy.zeros((3, 3)), numpy.ones((3, 3), bool), numpy.ones((3, 3), bool)
-        )
-        assert output == 0
-
-    def test_03_fg_0_bg_0():
-        """Test all foreground pixels same, all background same, wv = 0"""
-        img = numpy.zeros((4, 4))
-        img[:, 2:4] = 1
-        binary_image = img > 0.5
-        output = centrosome.threshold.weighted_variance(
-            img, numpy.ones(img.shape, bool), binary_image
-        )
-        assert output == 0
-
-    def test_04_values():
-        """Test with two foreground and two background values"""
-        #
-        # The log of this array is [-4,-3],[-2,-1] and
-        # the variance should be (.25 *2 + .25 *2)/4 = .25
-        img = numpy.array([[1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 2.0]])
-        binary_image = numpy.array([[False, False], [True, True]])
-        output = centrosome.threshold.weighted_variance(
-            img, numpy.ones((2, 2), bool), binary_image
-        )
-        assert round(abs(output - 0.25), 7) == 0
-
-    def test_05_mask():
-        """Test, masking out one of the background values"""
-        #
-        # The log of this array is [-4,-3],[-2,-1] and
-        # the variance should be (.25*2 + .25 *2)/4 = .25
-        img = numpy.array(
-            [[1.0 / 16.0, 1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 4.0, 1.0 / 2.0]]
-        )
-        mask = numpy.array([[False, True, True], [False, True, True]])
-        binary_image = numpy.array([[False, False, False], [True, True, True]])
-        output = centrosome.threshold.weighted_variance(img, mask, binary_image)
-        assert round(abs(output - 0.25), 7) == 0
+def test_01_masked_wv():
+    output = centrosome.threshold.weighted_variance(
+        numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
+    )
+    assert output == 0
 
 
-class TestSumOfEntropies:
-    def test_01_all_masked():
-        output = centrosome.threshold.sum_of_entropies(
-            numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
-        )
-        assert output == 0
+def test_02_zero_wv():
+    output = centrosome.threshold.weighted_variance(
+        numpy.zeros((3, 3)), numpy.ones((3, 3), bool), numpy.ones((3, 3), bool)
+    )
+    assert output == 0
 
-    def test_020_all_zero():
-        """Can't take the log of zero, so all zero matrix = 0"""
-        output = centrosome.threshold.sum_of_entropies(
-            numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
-        )
-        assert round(abs(output - 0), 7) == 0
 
-    def test_03_fg_bg_equal():
-        img = numpy.ones((128, 128))
-        img[0:64, :] *= 0.15
-        img[64:128, :] *= 0.85
-        img[0, 0] = img[-1, 0] = 0
-        img[0, -1] = img[-1, -1] = 1
-        binary_mask = numpy.zeros(img.shape, bool)
-        binary_mask[64:, :] = True
-        #
-        # You need one foreground and one background pixel to defeat a
-        # divide-by-zero (that's appropriately handled)
-        #
-        one_of_each = numpy.zeros(img.shape, bool)
-        one_of_each[0, 0] = one_of_each[-1, -1] = True
-        output = centrosome.threshold.sum_of_entropies(
-            img, numpy.ones((128, 128), bool), binary_mask
-        )
-        ob = centrosome.threshold.sum_of_entropies(
-            img, one_of_each | ~binary_mask, binary_mask
-        )
-        of = centrosome.threshold.sum_of_entropies(
-            img, one_of_each | binary_mask, binary_mask
-        )
-        assert round(abs(output - ob + of), 7) == 0
+def test_03_fg_0_bg_0():
+    """Test all foreground pixels same, all background same, wv = 0"""
+    img = numpy.zeros((4, 4))
+    img[:, 2:4] = 1
+    binary_image = img > 0.5
+    output = centrosome.threshold.weighted_variance(
+        img, numpy.ones(img.shape, bool), binary_image
+    )
+    assert output == 0
 
-    def test_04_fg_bg_different():
-        img = numpy.ones((128, 128))
-        img[0:64, 0:64] *= 0.15
-        img[0:64, 64:128] *= 0.3
-        img[64:128, 0:64] *= 0.7
-        img[64:128, 64:128] *= 0.85
-        binary_mask = numpy.zeros(img.shape, bool)
-        binary_mask[64:, :] = True
-        one_of_each = numpy.zeros(img.shape, bool)
-        one_of_each[0, 0] = one_of_each[-1, -1] = True
-        output = centrosome.threshold.sum_of_entropies(
-            img, numpy.ones((128, 128), bool), binary_mask
-        )
-        ob = centrosome.threshold.sum_of_entropies(
-            img, one_of_each | ~binary_mask, binary_mask
-        )
-        of = centrosome.threshold.sum_of_entropies(
-            img, one_of_each | binary_mask, binary_mask
-        )
-        assert round(abs(output - ob + of), 7) == 0
+
+def test_04_values():
+    """Test with two foreground and two background values"""
+    #
+    # The log of this array is [-4,-3],[-2,-1] and
+    # the variance should be (.25 *2 + .25 *2)/4 = .25
+    img = numpy.array([[1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 2.0]])
+    binary_image = numpy.array([[False, False], [True, True]])
+    output = centrosome.threshold.weighted_variance(
+        img, numpy.ones((2, 2), bool), binary_image
+    )
+    assert round(abs(output - 0.25), 7) == 0
+
+
+def test_05_mask():
+    """Test, masking out one of the background values"""
+    #
+    # The log of this array is [-4,-3],[-2,-1] and
+    # the variance should be (.25*2 + .25 *2)/4 = .25
+    img = numpy.array(
+        [[1.0 / 16.0, 1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 4.0, 1.0 / 2.0]]
+    )
+    mask = numpy.array([[False, True, True], [False, True, True]])
+    binary_image = numpy.array([[False, False, False], [True, True, True]])
+    output = centrosome.threshold.weighted_variance(img, mask, binary_image)
+    assert round(abs(output - 0.25), 7) == 0
+
+
+def test_01_all_masked():
+    output = centrosome.threshold.sum_of_entropies(
+        numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
+    )
+    assert output == 0
+
+
+def test_020_all_zero():
+    """Can't take the log of zero, so all zero matrix = 0"""
+    output = centrosome.threshold.sum_of_entropies(
+        numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
+    )
+    assert round(abs(output - 0), 7) == 0
+
+
+def test_03_fg_bg_equal():
+    img = numpy.ones((128, 128))
+    img[0:64, :] *= 0.15
+    img[64:128, :] *= 0.85
+    img[0, 0] = img[-1, 0] = 0
+    img[0, -1] = img[-1, -1] = 1
+    binary_mask = numpy.zeros(img.shape, bool)
+    binary_mask[64:, :] = True
+    #
+    # You need one foreground and one background pixel to defeat a
+    # divide-by-zero (that's appropriately handled)
+    #
+    one_of_each = numpy.zeros(img.shape, bool)
+    one_of_each[0, 0] = one_of_each[-1, -1] = True
+    output = centrosome.threshold.sum_of_entropies(
+        img, numpy.ones((128, 128), bool), binary_mask
+    )
+    ob = centrosome.threshold.sum_of_entropies(
+        img, one_of_each | ~binary_mask, binary_mask
+    )
+    of = centrosome.threshold.sum_of_entropies(
+        img, one_of_each | binary_mask, binary_mask
+    )
+    assert round(abs(output - ob + of), 7) == 0
+
+
+def test_04_fg_bg_different():
+    img = numpy.ones((128, 128))
+    img[0:64, 0:64] *= 0.15
+    img[0:64, 64:128] *= 0.3
+    img[64:128, 0:64] *= 0.7
+    img[64:128, 64:128] *= 0.85
+    binary_mask = numpy.zeros(img.shape, bool)
+    binary_mask[64:, :] = True
+    one_of_each = numpy.zeros(img.shape, bool)
+    one_of_each[0, 0] = one_of_each[-1, -1] = True
+    output = centrosome.threshold.sum_of_entropies(
+        img, numpy.ones((128, 128), bool), binary_mask
+    )
+    ob = centrosome.threshold.sum_of_entropies(
+        img, one_of_each | ~binary_mask, binary_mask
+    )
+    of = centrosome.threshold.sum_of_entropies(
+        img, one_of_each | binary_mask, binary_mask
+    )
+    assert round(abs(output - ob + of), 7) == 0

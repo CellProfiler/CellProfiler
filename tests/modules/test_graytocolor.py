@@ -99,7 +99,7 @@ class TestGrayToColor:
         )
         return workspace, module
 
-    def test_01_02_load_v2(self):
+    def test_load_v2(self):
         data = (
             "eJztWUFv2jAUdmiK1k2b2Gm7VPNxmtoooZrUcRlQtg6p0KqgnucSQy2FGBmn"
             "a/cL9hP2M3vccXGWkOABAVPaghJkJc953/v8nr8EjBuV9kmlCj8aJmxU2vtd"
@@ -141,7 +141,7 @@ class TestGrayToColor:
         ):
             assert adjustment_factor.value == 1
 
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20151029194828
@@ -206,7 +206,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         assert module.stack_channels[0].color.to_rgb() == (127, 0, 255)
         assert module.stack_channels[1].color.to_rgb() == (127, 255, 0)
 
-    def test_02_01_rgb(self):
+    def test_rgb(self):
         np.random.seed(0)
         for combination in (
             (True, True, True),
@@ -238,7 +238,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                 expected[:, :, i] *= adjustments[i]
             assert np.all(np.abs(expected - pixel_data) <= 0.00001)
 
-    def test_03_01_cmyk(self):
+    def test_cmyk(self):
         np.random.seed(0)
         for combination in [[(i & 2 ^ j) != 0 for j in range(4)] for i in range(1, 16)]:
             adjustments = np.random.uniform(size=7)
@@ -275,7 +275,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             expected = np.sum(expected, 0)
             assert np.all(np.abs(expected - pixel_data) <= 0.00001)
 
-    def test_04_01_stack(self):
+    def test_stack(self):
         r = np.random.RandomState()
         r.seed(41)
         images = [r.uniform(size=(11, 13)) for _ in range(5)]
@@ -287,7 +287,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         for i, image in enumerate(images):
             np.testing.assert_array_almost_equal(output[:, :, i], image)
 
-    def test_05_01_composite(self):
+    def test_composite(self):
         r = np.random.RandomState()
         r.seed(41)
         images = [r.uniform(size=(11, 13)) for _ in range(5)]

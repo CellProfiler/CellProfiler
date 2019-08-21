@@ -44,7 +44,7 @@ class TestMeasureObjectSizeShape:
         )
         return workspace, module
 
-    def test_01_01_01_load_v1(self):
+    def test_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8957
@@ -71,7 +71,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             assert og.name == expected
         assert module.calculate_zernikes
 
-    def test_01_00_zeros(self):
+    def test_zeros(self):
         """Run on an empty labels matrix"""
         object_set = cellprofiler.object.ObjectSet()
         labels = numpy.zeros((10, 20), int)
@@ -120,7 +120,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             a = measurements.get_current_measurement("SomeObjects", m)
             assert len(a) == 0
 
-    def test_01_02_run(self):
+    def test_run(self):
         """Run with a rectangle, cross and circle"""
         object_set = cellprofiler.object.ObjectSet()
         labels = numpy.zeros((10, 20), int)
@@ -191,7 +191,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 m = measurements.get_current_measurement(object_name, feature_name)
                 assert len(m) == object_count
 
-    def test_02_01_categories(self):
+    def test_categories(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
@@ -201,7 +201,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             assert categories[0] == "AreaShape"
         assert len(module.get_categories(None, "Bogus")) == 0
 
-    def test_02_02_measurements_zernike(self):
+    def test_measurements_zernike(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
@@ -215,7 +215,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 assert measurement in measurements
             assert "Zernike_3_1" in measurements
 
-    def test_02_03_measurements_no_zernike(self):
+    def test_measurements_no_zernike(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "No"]
         module.set_settings_from_values(settings, 1, module.module_class())
@@ -229,7 +229,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 assert measurement in measurements
             assert not ("Zernike_3_1" in measurements)
 
-    def test_03_01_non_contiguous(self):
+    def test_non_contiguous(self):
         """make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects"""
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
@@ -266,7 +266,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         assert len(values) == 1
         assert values[0] == 54
 
-    def test_03_02_zernikes_are_different(self):
+    def test_zernikes_are_different(self):
         """Regression test of IMG-773"""
 
         numpy.random.seed(32)
@@ -314,7 +314,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             assert len(values) == 2
             assert values[0] != values[1]
 
-    def test_04_01_extent(self):
+    def test_extent(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
@@ -357,7 +357,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         assert len(values) == 1
         assert round(abs(values[0] - 0.75), 7) == 0
 
-    def test_05_01_overlapping(self):
+    def test_overlapping(self):
         """Test object measurement with two overlapping objects in ijv format"""
 
         i, j = numpy.mgrid[0:10, 0:20]
@@ -427,7 +427,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             v = mlist[2].get_current_measurement(oname, feature)
             assert tuple(v) == expected
 
-    def test_06_01_max_radius(self):
+    def test_max_radius(self):
         labels = numpy.zeros((20, 10), int)
         labels[3:8, 3:6] = 1
         labels[11:19, 2:7] = 2

@@ -53,7 +53,7 @@ class TestAlign:
                 ai.output_image_name.value = output_name
         return workspace, module
 
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8945
@@ -85,7 +85,7 @@ Name the second output image:AlignedImage2
         assert module.first_output_image, "AlignedImage1"
         assert module.second_output_image, "AlignedImage2"
 
-    def test_01_04_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8945
@@ -141,7 +141,7 @@ Name the second output image:AlignedImage2
             assert module.first_output_image, "AlignedImage1"
             assert module.second_output_image, "AlignedImage2"
 
-    def test_02_01_crop(self):
+    def test_crop(self):
         """Align two images and crop the result"""
         numpy.random.seed(0)
         shape = (50, 45)
@@ -277,7 +277,7 @@ Name the second output image:AlignedImage2
         else:
             return slice(0, size - offset), slice(offset, size)
 
-    def test_02_02_pad(self):
+    def test_pad(self):
         """Align two images with padded output"""
         numpy.random.seed(0)
         shape = (50, 45)
@@ -387,7 +387,7 @@ Name the second output image:AlignedImage2
                         temp[i_slice, j_slice] = False
                         assert numpy.all(~temp)
 
-    def test_02_03_same_size(self):
+    def test_same_size(self):
         """Align two images keeping sizes the same"""
         numpy.random.seed(0)
         shape = (50, 45)
@@ -507,7 +507,7 @@ Name the second output image:AlignedImage2
         else:
             return slice(0, orig_size - offset), slice(offset, orig_size)
 
-    def test_03_01_align_similarly(self):
+    def test_align_similarly(self):
         """Align a third image similarly to the other two"""
         numpy.random.seed(0)
         shape = (53, 62)
@@ -566,7 +566,7 @@ Name the second output image:AlignedImage2
                 output.pixel_data[i_slice, j_slice], image3
             )
 
-    def test_03_02_align_separately(self):
+    def test_align_separately(self):
         """Align a third image to the first image"""
         numpy.random.seed(0)
         shape = (47, 53)
@@ -612,7 +612,7 @@ Name the second output image:AlignedImage2
                 output.pixel_data[i_slice, j_slice], image3
             )
 
-    def test_03_03_align_color(self):
+    def test_align_color(self):
         numpy.random.seed(0)
         shape = (50, 45, 3)
         i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]]
@@ -735,7 +735,7 @@ Name the second output image:AlignedImage2
                         temp[si_out, sj_out] = False
                         assert numpy.all(~temp)
 
-    def test_03_04_align_binary(self):
+    def test_align_binary(self):
         numpy.random.seed(0)
         shape = (50, 45)
         i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]]
@@ -842,7 +842,7 @@ Name the second output image:AlignedImage2
                         temp[si_out, sj_out] = False
                         assert numpy.all(~temp)
 
-    def test_04_01_measurement_columns(self):
+    def test_measurement_columns(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
@@ -860,7 +860,7 @@ Name the second output image:AlignedImage2
         assert all([c[0] == cellprofiler.measurement.IMAGE for c in columns])
         assert all([c[2] == cellprofiler.measurement.COLTYPE_INTEGER for c in columns])
 
-    def test_04_02_categories(self):
+    def test_categories(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
@@ -873,7 +873,7 @@ Name the second output image:AlignedImage2
         c = module.get_categories(workspace.pipeline, "Aligned0")
         assert len(c) == 0
 
-    def test_04_03_measurements(self):
+    def test_measurements(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
@@ -888,7 +888,7 @@ Name the second output image:AlignedImage2
         assert "Xshift" in m
         assert "Yshift" in m
 
-    def test_04_04_measurement_images(self):
+    def test_measurement_images(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
@@ -905,7 +905,7 @@ Name the second output image:AlignedImage2
             for i in range(3):
                 assert "Aligned%d" % i in image_names
 
-    def test_05_01_align_self(self):
+    def test_align_self(self):
         """Align an image from the fly screen against itself.
 
         This is a regression test for the bug, IMG-284
@@ -920,7 +920,7 @@ Name the second output image:AlignedImage2
         assert m.get_current_image_measurement("Align_Xshift_Aligned1") == 0
         assert m.get_current_image_measurement("Align_Yshift_Aligned1") == 0
 
-    def test_06_01_different_sizes_crop(self):
+    def test_different_sizes_crop(self):
         """Test align with images of different sizes
 
         regression test of img-1300
@@ -959,7 +959,7 @@ Name the second output image:AlignedImage2
                 assert numpy.all(i1.crop_mask == crop_mask)
                 assert not i2.has_crop_mask
 
-    def test_06_02_different_sizes_pad(self):
+    def test_different_sizes_pad(self):
         """Test align with images of different sizes
 
         regression test of img-1300

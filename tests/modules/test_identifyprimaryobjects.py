@@ -59,10 +59,10 @@ class TestIdentifyPrimaryObjects:
         )
         return workspace, module
 
-    def test_00_00_init(self):
+    def test_init(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
 
-    def test_02_000_test_zero_objects(self):
+    def test_test_zero_objects(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
@@ -110,7 +110,7 @@ class TestIdentifyPrimaryObjects:
         assert isinstance(location_center_y, numpy.ndarray)
         assert numpy.product(location_center_y.shape) == 0
 
-    def test_02_001_test_zero_objects_wa_in_lo_in(self):
+    def test_test_zero_objects_wa_in_lo_in(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
@@ -143,7 +143,7 @@ class TestIdentifyPrimaryObjects:
         segmented = objects.segmented
         assert numpy.all(segmented == 0)
 
-    def test_02_002_test_zero_objects_wa_di_lo_in(self):
+    def test_test_zero_objects_wa_di_lo_in(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
@@ -174,7 +174,7 @@ class TestIdentifyPrimaryObjects:
         segmented = objects.segmented
         assert numpy.all(segmented == 0)
 
-    def test_02_003_test_zero_objects_wa_in_lo_sh(self):
+    def test_test_zero_objects_wa_in_lo_sh(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
@@ -205,7 +205,7 @@ class TestIdentifyPrimaryObjects:
         segmented = objects.segmented
         assert numpy.all(segmented == 0)
 
-    def test_02_004_test_zero_objects_wa_di_lo_sh(self):
+    def test_test_zero_objects_wa_di_lo_sh(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
@@ -234,7 +234,7 @@ class TestIdentifyPrimaryObjects:
         segmented = objects.segmented
         assert numpy.all(segmented == 0)
 
-    def test_02_01_test_one_object(self):
+    def test_test_one_object(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -300,7 +300,7 @@ class TestIdentifyPrimaryObjects:
             assert len(ocolumns) == len(features)
             assert all([column[1] in features for column in ocolumns])
 
-    def test_02_02_test_two_objects(self):
+    def test_test_two_objects(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -361,7 +361,7 @@ class TestIdentifyPrimaryObjects:
         assert location_center_x[1] > 13
         assert location_center_x[1] < 16
 
-    def test_02_03_test_threshold_range(self):
+    def test_test_threshold_range(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -421,7 +421,7 @@ class TestIdentifyPrimaryObjects:
         assert location_center_x[0] > 33
         assert location_center_x[0] < 36
 
-    def test_02_04_fill_holes(self):
+    def test_fill_holes(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -455,7 +455,7 @@ class TestIdentifyPrimaryObjects:
         assert objects.segmented[10, 10] > 0
         assert objects.segmented[30, 30] > 0
 
-    def test_02_05_dont_fill_holes(self):
+    def test_dont_fill_holes(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -490,7 +490,7 @@ class TestIdentifyPrimaryObjects:
         assert objects.segmented[10, 10] == 0
         assert objects.segmented[30, 30] == 0
 
-    def test_02_05_01_fill_holes_within_holes(self):
+    def test_01_fill_holes_within_holes(self):
         "Regression test of img-1431"
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
@@ -527,7 +527,7 @@ class TestIdentifyPrimaryObjects:
         assert objects.segmented[22, 20] == 1
         assert objects.segmented[26, 20] == 1
 
-    def test_02_06_test_watershed_shape_shape(self):
+    def test_test_watershed_shape_shape(self):
         """Identify by local_maxima:shape & intensity:shape
 
         Create an object whose intensity is high near the middle
@@ -725,7 +725,7 @@ class TestIdentifyPrimaryObjects:
         objects = object_set.get_objects("my_object")
         assert numpy.max(objects.segmented) == 2
 
-    def test_02_07_test_watershed_shape_intensity(self):
+    def test_test_watershed_shape_intensity(self):
         """Identify by local_maxima:shape & watershed:intensity
 
         Create an object with an hourglass shape to get two maxima, but
@@ -926,7 +926,7 @@ class TestIdentifyPrimaryObjects:
         assert numpy.max(objects.segmented) == 2
         assert objects.segmented[7, 11] == objects.segmented[7, 4]
 
-    def test_02_08_test_watershed_intensity_distance_single(self):
+    def test_test_watershed_intensity_distance_single(self):
         """Identify by local_maxima:intensity & watershed:shape - one object
 
         Create an object with an hourglass shape and a peak in the middle.
@@ -1129,7 +1129,7 @@ class TestIdentifyPrimaryObjects:
         objects = object_set.get_objects("my_object")
         assert numpy.max(objects.segmented) == 1
 
-    def test_02_08_test_watershed_intensity_distance_triple(self):
+    def test_test_watershed_intensity_distance_triple(self):
         """Identify by local_maxima:intensity & watershed:shape - 3 objects w/o filter
 
         Create an object with an hourglass shape and a peak in the middle.
@@ -1331,7 +1331,7 @@ class TestIdentifyPrimaryObjects:
         objects = object_set.get_objects("my_object")
         assert numpy.max(objects.segmented) == 3
 
-    def test_02_09_test_watershed_intensity_distance_filter(self):
+    def test_test_watershed_intensity_distance_filter(self):
         """Identify by local_maxima:intensity & watershed:shape - filtered
 
         Create an object with an hourglass shape and a peak in the middle.
@@ -1533,7 +1533,7 @@ class TestIdentifyPrimaryObjects:
         objects = object_set.get_objects("my_object")
         assert numpy.max(objects.segmented) == 1
 
-    def test_02_10_test_watershed_intensity_distance_double(self):
+    def test_test_watershed_intensity_distance_double(self):
         """Identify by local_maxima:intensity & watershed:shape - two objects
 
         Create an object with an hourglass shape and peaks in the top and
@@ -1739,7 +1739,7 @@ class TestIdentifyPrimaryObjects:
         assert numpy.max(objects.segmented) == 2
         assert objects.segmented[12, 7] != objects.segmented[4, 7]
 
-    def test_02_11_propagate(self):
+    def test_propagate(self):
         """Test the propagate unclump method"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
@@ -1929,7 +1929,7 @@ class TestIdentifyPrimaryObjects:
         # but should be in the lower one because of the serpentine path
         assert objects.segmented[14, 9] == objects.segmented[9, 9]
 
-    def test_02_12_fly(self):
+    def test_fly(self):
         """Run identify on the fly image"""
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -2022,7 +2022,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                         )
                     )
 
-    def test_02_13_maxima_suppression_zero(self):
+    def test_maxima_suppression_zero(self):
         # Regression test for issue #877
         # if maxima_suppression_size = 1 or 0, use a 4-connected structuring
         # element.
@@ -2085,7 +2085,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             assert numpy.all(output.segmented[expected == 0] == 0)
             assert len(numpy.unique(output.segmented[expected == 1])) == 1
 
-    def test_04_10_load_v10(self):
+    def test_load_v10(self):
         # Sorry about this overly-long pipeline, it seemed like we need to
         # revisit many of the choices.
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -2619,7 +2619,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         assert module.threshold.number_of_deviations == 2
         assert module.use_advanced.value
 
-    def test_04_10_01_load_new_robust_background(self):
+    def test_01_load_new_robust_background(self):
         #
         # Test custom robust background parameters.
         #
@@ -2802,7 +2802,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             assert module.threshold.variance_method == variance_method
             assert module.use_advanced.value
 
-    def test_05_01_discard_large(self):
+    def test_discard_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -2852,7 +2852,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert isinstance(location_center_x, numpy.ndarray)
         assert numpy.product(location_center_x.shape) == 1
 
-    def test_05_02_keep_large(self):
+    def test_keep_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -2896,7 +2896,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert isinstance(location_center_x, numpy.ndarray)
         assert numpy.product(location_center_x.shape) == 2
 
-    def test_05_03_discard_small(self):
+    def test_discard_small(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.y_name.value = "my_object"
@@ -2946,7 +2946,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert isinstance(location_center_x, numpy.ndarray)
         assert numpy.product(location_center_x.shape) == 1
 
-    def test_05_02_discard_edge(self):
+    def test_discard_edge(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
         x.x_name.value = "my_image"
@@ -2985,7 +2985,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 assert objects.small_removed_segmented[center[0], center[1]] == 0
             assert objects.unedited_segmented[center[0], center[1]] > 0
 
-    def test_05_03_discard_with_mask(self):
+    def test_discard_with_mask(self):
         """Check discard of objects that are on the border of a mask"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
@@ -3027,7 +3027,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 assert objects.small_removed_segmented[center[0], center[1]] == 0
             assert objects.unedited_segmented[center[0], center[1]] > 0
 
-    def test_06_01_regression_diagonal(self):
+    def test_regression_diagonal(self):
         """Regression test - was using one-connected instead of 3-connected structuring element"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
@@ -3065,7 +3065,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert numpy.all(segmented[img > 0] == 1)
         assert numpy.all(img[segmented == 1] > 0)
 
-    def test_06_02_regression_adaptive_mask(self):
+    def test_regression_adaptive_mask(self):
         """Regression test - mask all but one pixel / adaptive"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.y_name.value = "my_object"
@@ -3097,7 +3097,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         segmented = objects.segmented
         assert numpy.all(segmented == 0)
 
-    # def test_11_01_test_robust_background_fly(self):
+    # def test_test_robust_background_fly(self):
     #     image = fly_image()
     #     workspace, x = self.make_workspace(image)
     #     x.threshold.threshold_scope.value = I.TS_GLOBAL
@@ -3107,7 +3107,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     #     self.assertTrue(threshold > 0.09)
     #     self.assertTrue(threshold < 0.095)
 
-    def test_16_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         """Test the get_measurement_columns method"""
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         oname = "my_object"
@@ -3161,7 +3161,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 for expected in expected_columns
             )
 
-    def test_17_01_regression_holes(self):
+    def test_regression_holes(self):
         """Regression test - fill holes caused by filtered object
 
         This was created as a regression test for the bug, IMG-191, but
@@ -3271,7 +3271,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             unedited_segmented = numpy.array([0, 2, 1])[my_objects.unedited_segmented]
         assert numpy.all(unedited_segmented[mask] == expected[mask])
 
-    def test_17_02_regression_holes(self):
+    def test_regression_holes(self):
         """Regression test - fill holes caused by filtered object
 
         This is the real regression test for IMG-191. The smaller object
@@ -3382,7 +3382,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert my_objects.segmented[3, 3] != 0
         assert numpy.all(my_objects.segmented[mask] == expected[mask])
 
-    def test_18_02_erase_objects(self):
+    def test_erase_objects(self):
         """Set up a limit on the # of objects and exceed it - erasing objects"""
         maximum_object_count = 3
         pixels = numpy.zeros((20, 21))
@@ -3422,7 +3422,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert numpy.all(my_objects.segmented == 0)
         assert numpy.max(my_objects.unedited_segmented) == 4
 
-    def test_18_03_dont_erase_objects(self):
+    def test_dont_erase_objects(self):
         """Ask to erase objects, but don't"""
         maximum_object_count = 5
         pixels = numpy.zeros((20, 21))
@@ -3461,7 +3461,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         my_objects = object_set.get_objects("my_object")
         assert numpy.max(my_objects.segmented) == 4
 
-    def test_19_01_threshold_by_measurement(self):
+    def test_threshold_by_measurement(self):
         """Set threshold based on mean image intensity"""
         pixels = numpy.zeros((10, 10))
         pixels[2:6, 2:6] = 0.5
@@ -3502,7 +3502,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             "Threshold_FinalThreshold_MyObject"
         ) == numpy.mean(pixels)
 
-    def test_20_01_threshold_smoothing_automatic(self):
+    def test_threshold_smoothing_automatic(self):
         image = numpy.array(
             [
                 [0, 0, 0, 0, 0, 0, 0],
@@ -3546,7 +3546,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         numpy.testing.assert_array_equal(expected, labels)
 
-    def test_20_02_threshold_smoothing_manual(self):
+    def test_threshold_smoothing_manual(self):
         image = numpy.array(
             [
                 [0, 0, 0, 0, 0, 0, 0],
@@ -3589,7 +3589,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         numpy.testing.assert_array_equal(expected, labels)
 
-    def test_20_03_threshold_no_smoothing(self):
+    def test_threshold_no_smoothing(self):
         image = numpy.array(
             [
                 [0, 0, 0, 0, 0, 0, 0],

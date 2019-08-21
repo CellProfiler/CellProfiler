@@ -33,7 +33,7 @@ OUTPUT_OUTLINES = "outputoutlines"
 
 
 class TestMaskObjects:
-    def test_01_02_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9193
@@ -136,7 +136,7 @@ MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|sho
         assert round(abs(module.overlap_fraction.value - 0.3), 7) == 0
         assert not module.wants_inverted_mask
 
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9193
@@ -173,7 +173,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         assert module.overlap_choice.value == M.P_MASK
         assert module.wants_inverted_mask
 
-    def test_01_04_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827
@@ -265,7 +265,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         )
         return workspace, module
 
-    def test_02_01_measurement_columns(self):
+    def test_measurement_columns(self):
         """Test get_measurement_columns"""
         workspace, module = self.make_workspace(
             np.zeros((20, 10), int), M.P_MASK, np.zeros((20, 10), int)
@@ -308,7 +308,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                 [all([c in e for c, e in zip(column, expected)]) for column in columns]
             )
 
-    def test_02_02_measurement_categories(self):
+    def test_measurement_categories(self):
         workspace, module = self.make_workspace(
             np.zeros((20, 10), int), M.MC_OBJECTS, np.zeros((20, 10), int)
         )
@@ -335,7 +335,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         assert len(categories) == 1
         assert categories[0] == cellprofiler.measurement.C_CHILDREN
 
-    def test_02_03_measurements(self):
+    def test_measurements(self):
         workspace, module = self.make_workspace(
             np.zeros((20, 10), int), M.P_MASK, np.zeros((20, 10), int)
         )
@@ -375,7 +375,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                 for feature, e in zip(sorted(features), sorted(expected)):
                     assert feature == e
 
-    def test_03_01_mask_nothing(self):
+    def test_mask_nothing(self):
         workspace, module = self.make_workspace(
             np.zeros((20, 10), int), M.MC_OBJECTS, np.zeros((20, 10), int)
         )
@@ -401,7 +401,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert np.all(objects.segmented == 0)
 
-    def test_03_02_mask_with_objects(self):
+    def test_mask_with_objects(self):
         labels = np.zeros((20, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 2
@@ -447,7 +447,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             for value, e in zip(data, expected):
                 assert value == e
 
-    def test_03_03_mask_with_image(self):
+    def test_mask_with_image(self):
         labels = np.zeros((20, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 2
@@ -493,7 +493,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             for value, e in zip(data, expected):
                 assert value == e
 
-    def test_03_04_mask_renumber(self):
+    def test_mask_renumber(self):
         labels = np.zeros((30, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 3
@@ -541,7 +541,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             for value, e in zip(data, expected):
                 assert value == e
 
-    def test_03_05_mask_retain(self):
+    def test_mask_retain(self):
         labels = np.zeros((30, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 3
@@ -593,7 +593,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                 else:
                     assert value == e
 
-    def test_03_07_mask_invert(self):
+    def test_mask_invert(self):
         labels = np.zeros((20, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 2
@@ -614,7 +614,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert np.all(objects.segmented == expected)
 
-    def test_04_01_keep(self):
+    def test_keep(self):
         labels = np.zeros((30, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 3
@@ -629,7 +629,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert np.all(objects.segmented == expected)
 
-    def test_04_02_remove(self):
+    def test_remove(self):
         labels = np.zeros((20, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 2
@@ -642,7 +642,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert np.all(objects.segmented == expected)
 
-    def test_04_03_remove_percent(self):
+    def test_remove_percent(self):
         labels = np.zeros((20, 10), int)
         labels[2:8, 3:6] = 1
         labels[12:18, 3:7] = 2
@@ -660,7 +660,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert np.all(objects.segmented == expected)
 
-    def test_05_01_different_object_sizes(self):
+    def test_different_object_sizes(self):
         labels = np.zeros((30, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 2
@@ -673,7 +673,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert np.all(objects.segmented == expected)
 
-    def test_05_02_different_image_sizes(self):
+    def test_different_image_sizes(self):
         labels = np.zeros((30, 10), int)
         labels[2:8, 3:7] = 1
         labels[12:18, 3:7] = 2

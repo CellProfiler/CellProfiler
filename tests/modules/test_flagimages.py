@@ -46,7 +46,7 @@ MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
 class TestFlagImages:
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9889
@@ -148,7 +148,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
                         round(abs(measurement.maximum_value.value - max_value), 7) == 0
                     )
 
-    def test_01_04_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120306205005
@@ -261,7 +261,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_
                 assert measurement.rules_file_name == rules_file
                 assert measurement.rules_class == "1"
 
-    def test_01_05_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120306205005
@@ -458,7 +458,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         except:
             pass
 
-    def test_02_01_positive_image_measurement(self):
+    def test_positive_image_measurement(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
@@ -475,7 +475,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
         assert workspace.disposition == cpw.DISPOSITION_CONTINUE
 
-    def test_02_02_negative_image_measurement(self):
+    def test_negative_image_measurement(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
@@ -491,7 +491,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
-    def test_03_00_no_ave_object_measurement(self):
+    def test_no_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[]])
             flag = module.flags[0]
@@ -515,7 +515,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
-    def test_03_01_positive_ave_object_measurement(self):
+    def test_positive_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
@@ -539,7 +539,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
-    def test_03_02_negative_ave_object_measurement(self):
+    def test_negative_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
@@ -563,7 +563,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
-    def test_04_00_no_object_measurements(self):
+    def test_no_object_measurements(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[]])
             flag = module.flags[0]
@@ -587,7 +587,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
-    def test_04_01_positive_object_measurement(self):
+    def test_positive_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
@@ -611,7 +611,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
-    def test_04_02_negative_object_measurement(self):
+    def test_negative_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
@@ -635,7 +635,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
-    def test_05_01_two_measurements_any(self):
+    def test_two_measurements_any(self):
         for measurements, expected in (
             ((0, 0), 0),
             ((0, 1), 1),
@@ -660,7 +660,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
-    def test_05_02_two_measurements_all(self):
+    def test_two_measurements_all(self):
         for measurements, expected in (
             ((0, 0), 0),
             ((0, 1), 0),
@@ -685,7 +685,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
-    def test_06_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         module = F.FlagImage()
         module.add_flag()
         module.flags[0].category.value = "Foo"
@@ -715,7 +715,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             assert len(features) == 1
             assert features[0] == feature
 
-    def test_07_01_skip(self):
+    def test_skip(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
@@ -733,7 +733,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
         assert workspace.disposition == cpw.DISPOSITION_SKIP
 
-    def test_07_02_dont_skip(self):
+    def test_dont_skip(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
@@ -751,7 +751,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
         assert workspace.disposition == cpw.DISPOSITION_CONTINUE
 
-    def test_08_01_filter_by_rule(self):
+    def test_filter_by_rule(self):
         rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n" % (
             "_".join((cpmeas.IMAGE, image_measurement_name(0)))
         )
@@ -786,7 +786,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         finally:
             os.remove(rules_path)
 
-    def test_08_02_filter_by_3class_rule(self):
+    def test_filter_by_3class_rule(self):
         f = "_".join((cpmeas.IMAGE, image_measurement_name(0)))
         rules_file_contents = (
             "IF (%(f)s > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
@@ -835,21 +835,21 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         finally:
             os.remove(rules_path)
 
-    def test_09_01_classify_true(self):
+    def test_classify_true(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 1):
             module.run(workspace)
             m = workspace.measurements
             assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
 
-    def test_09_02_classify_false(self):
+    def test_classify_false(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 2):
             module.run(workspace)
             m = workspace.measurements
             assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
 
-    def test_09_03_classify_multiple_select_true(self):
+    def test_classify_multiple_select_true(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(
             module,
@@ -862,7 +862,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             m = workspace.measurements
             assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
 
-    def test_09_04_classify_multiple_select_false(self):
+    def test_classify_multiple_select_false(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(
             module,
@@ -875,7 +875,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             m = workspace.measurements
             assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
 
-    def test_09_01_batch(self):
+    def test_batch(self):
         orig_path = "/foo/bar"
 
         def fn_alter_path(path, **varargs):

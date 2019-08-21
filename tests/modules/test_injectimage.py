@@ -17,11 +17,11 @@ import cellprofiler.workspace as cpw
 
 
 class testInjectImage:
-    def test_00_00_init(self):
+    def test_init(self):
         image = numpy.zeros((10, 10), dtype=float)
         x = InjectImage("my_image", image)
 
-    def test_01_01_get_from_image_set(self):
+    def test_get_from_image_set(self):
         image = numpy.zeros((10, 10), dtype=float)
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()

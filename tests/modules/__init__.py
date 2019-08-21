@@ -98,7 +98,7 @@ def testimages_url():
 
 
 class testExampleImagesDirectory:
-    def test_00_00_got_something(self):
+    def test_got_something(self):
         assert (
             example_images_directory()
         ), "You need to have the example images checked out to run these tests"

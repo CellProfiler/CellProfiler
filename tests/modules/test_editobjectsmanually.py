@@ -25,7 +25,7 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 class TestEditObjectsManually:
-    def test_01_02_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9120
@@ -52,7 +52,7 @@ EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|s
         assert module.renumber_choice == E.R_RENUMBER
         assert not module.wants_image_display
 
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9120
@@ -83,7 +83,7 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         assert module.image_name == "DNA"
         assert not module.allow_overlap
 
-    def test_01_04_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9120
@@ -115,7 +115,7 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         assert module.image_name == "DNA"
         assert module.allow_overlap
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827
@@ -147,7 +147,7 @@ EditObjectsManually:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert module.image_name.value == "DNA"
         assert not module.allow_overlap.value
 
-    def test_02_02_measurements(self):
+    def test_measurements(self):
         module = E.EditObjectsManually()
         module.object_name.value = INPUT_OBJECTS_NAME
         module.filtered_objects.value = OUTPUT_OBJECTS_NAME

@@ -75,7 +75,7 @@ class TestIdentifyObjectsInGrid:
         g[mask[: g.shape[0], : g.shape[1]]] = gridding.spot_table[i[mask], j[mask]]
         return grid
 
-    def test_02_01_forced_location(self):
+    def test_forced_location(self):
         d = D.DefineGrid()
         d.ordering.value = D.NUM_BY_COLUMNS
         #
@@ -162,7 +162,7 @@ class TestIdentifyObjectsInGrid:
         assert len(measurements) == 1
         assert measurements[0] == "Object_Number"
 
-    def test_02_02_forced_location_auto(self):
+    def test_forced_location_auto(self):
         #
         # Automatic diameter
         #
@@ -211,7 +211,7 @@ class TestIdentifyObjectsInGrid:
             labels[mask] == expected[0 : labels.shape[0], 0 : labels.shape[1]][mask]
         )
 
-    def test_03_01_natural_circle(self):
+    def test_natural_circle(self):
         d = D.DefineGrid()
         d.ordering.value = D.NUM_BY_COLUMNS
         #
@@ -265,7 +265,7 @@ class TestIdentifyObjectsInGrid:
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
         assert count == gridding.rows * gridding.columns
 
-    def test_03_02_natural_circle_edges(self):
+    def test_natural_circle_edges(self):
         #
         # Put objects near the edges of the circle and make sure
         # they are filtered out
@@ -341,7 +341,7 @@ class TestIdentifyObjectsInGrid:
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
         assert count == gridding.rows * gridding.columns
 
-    def test_03_03_img_891(self):
+    def test_img_891(self):
         """Regression test of img-891, last spot filtered out"""
         d = D.DefineGrid()
         d.ordering.value = D.NUM_BY_COLUMNS
@@ -403,7 +403,7 @@ class TestIdentifyObjectsInGrid:
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
         assert count == gridding.rows * gridding.columns
 
-    def test_04_01_natural(self):
+    def test_natural(self):
         # Use natural objects.
         #
         # Put objects near the edges of the circle and make sure

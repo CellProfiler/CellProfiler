@@ -74,7 +74,7 @@ class TestClassifyObjects:
         )
         return workspace, module
 
-    def test_02_01_classify_single_none(self):
+    def test_classify_single_none(self):
         """Make sure the single measurement mode can handle no objects"""
         workspace, module = self.make_workspace(
             np.zeros((10, 10), int), C.BY_SINGLE_MEASUREMENT, np.zeros((0,), float)
@@ -88,7 +88,7 @@ class TestClassifyObjects:
             m = workspace.measurements.get_current_measurement(OBJECTS_NAME, m_name)
             assert len(m) == 0
 
-    def test_02_02_classify_single_even(self):
+    def test_classify_single_even(self):
         m = np.array((0.5, 0, 1, 0.1))
         labels = np.zeros((20, 10), int)
         labels[2:5, 3:7] = 1
@@ -185,7 +185,7 @@ class TestClassifyObjects:
             ]
         )
 
-    def test_02_03_classify_single_custom(self):
+    def test_classify_single_custom(self):
         m = np.array((0.5, 0, 1, 0.1))
         labels = np.zeros((20, 10), int)
         labels[2:5, 3:7] = 1
@@ -279,7 +279,7 @@ class TestClassifyObjects:
             ]
         )
 
-    def test_02_04_last_is_nan(self):
+    def test_last_is_nan(self):
         # regression test for issue #1553
         #
         # Test that classify objects classifies an object whose measurement
@@ -339,7 +339,7 @@ class TestClassifyObjects:
             for i, color in enumerate(colors + [colors[1]]):
                 assert np.all(pixel_data[labels == i + 1, :] == color)
 
-    def test_03_01_two_none(self):
+    def test_two_none(self):
         workspace, module = self.make_workspace(
             np.zeros((10, 10), int),
             C.BY_TWO_MEASUREMENTS,
@@ -353,7 +353,7 @@ class TestClassifyObjects:
                 m = workspace.measurements.get_current_measurement(OBJECTS_NAME, m_name)
                 assert len(m) == 0
 
-    def test_03_02_two(self):
+    def test_two(self):
         np.random.seed(0)
         labels = np.zeros((10, 20), int)
         index = 1
@@ -472,7 +472,7 @@ class TestClassifyObjects:
                             [np.all(colors[:, i] == colors[0, i]) for i in range(3)]
                         )
 
-    def test_03_04_nans(self):
+    def test_nans(self):
         # Test for NaN values in two measurements.
         #
         labels = np.zeros((10, 15), int)
@@ -517,7 +517,7 @@ class TestClassifyObjects:
                 values = m[OBJECTS_NAME, m_name]
                 np.testing.assert_array_equal(values, expected)
 
-    def test_03_05_nan_offset_by_1(self):
+    def test_nan_offset_by_1(self):
         # Regression test of 1636
         labels = np.zeros((10, 15), int)
         labels[3:5, 3:5] = 1

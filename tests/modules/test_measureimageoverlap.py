@@ -28,7 +28,7 @@ ID_OBJ = "Protein"
 
 
 class TestMeasureImageOverlap:
-    def test_01_02_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9169
@@ -52,7 +52,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_number:
         assert module.ground_truth == "GroundTruth"
         assert module.test_img == "Segmentation"
 
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20131210175632
@@ -85,7 +85,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # self.assertEqual(module.object_name_ID, "Cell2_1")
         assert not module.wants_emd
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20141015195823
@@ -176,7 +176,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         return workspace, module
 
-    def test_03_01_zeros(self):
+    def test_zeros(self):
         """Test ground-truth of zeros and image of zeros"""
 
         workspace, module = self.make_workspace(
@@ -210,7 +210,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert measurements[cellprofiler.measurement.IMAGE, ftr_emd] == 0
 
-    def test_03_02_ones(self):
+    def test_ones(self):
         """Test ground-truth of ones and image of ones"""
 
         workspace, module = self.make_workspace(
@@ -253,7 +253,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert numpy.isnan(measurements.get_current_image_measurement(mname))
 
-    def test_03_03_masked(self):
+    def test_masked(self):
         """Test ground-truth of a masked image"""
 
         workspace, module = self.make_workspace(
@@ -300,7 +300,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert numpy.isnan(value)
 
-    def test_03_04_all_right(self):
+    def test_all_right(self):
         numpy.random.seed(34)
         image = numpy.random.uniform(size=(10, 20)) > 0.5
         workspace, module = self.make_workspace(dict(image=image), dict(image=image))
@@ -329,7 +329,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert expected == value
 
-    def test_03_05_one_false_positive(self):
+    def test_one_false_positive(self):
         i, j = numpy.mgrid[0:10, 0:20]
         ground_truth = ((i + j) % 2) == 0
         test = ground_truth.copy()
@@ -361,7 +361,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
-    def test_03_05_one_false_negative(self):
+    def test_one_false_negative(self):
         i, j = numpy.mgrid[0:10, 0:20]
         ground_truth = ((i + j) % 2) == 0
         test = ground_truth.copy()
@@ -393,7 +393,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
-    def test_03_06_one_false_positive_and_mask(self):
+    def test_one_false_positive_and_mask(self):
         i, j = numpy.mgrid[0:10, 0:20]
         ground_truth = ((i + j) % 2) == 0
         test = ground_truth.copy()
@@ -425,7 +425,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
-    def test_03_07_one_false_negative_and_mask(self):
+    def test_one_false_negative_and_mask(self):
         i, j = numpy.mgrid[0:10, 0:20]
         ground_truth = ((i + j) % 2) == 0
         test = ground_truth.copy()
@@ -457,7 +457,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
-    def test_03_08_masked_errors(self):
+    def test_masked_errors(self):
         numpy.random.seed(38)
         ground_truth = numpy.random.uniform(size=(20, 10)) > 0.5
         test = ground_truth.copy()
@@ -487,7 +487,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = measurements.get_current_image_measurement(mname)
             assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
-    def test_03_09_cropped(self):
+    def test_cropped(self):
         numpy.random.seed(39)
         i, j = numpy.mgrid[0:10, 0:20]
         ground_truth = ((i + j) % 2) == 0
@@ -525,7 +525,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 round(abs(expected - value), 7) == 0
             ), "%s is wrong. Expected %f, got %f" % (feature, expected, value)
 
-    def test_03_10_rand_index(self):
+    def test_rand_index(self):
         numpy.random.seed(310)
         i, j = numpy.mgrid[0:10, 0:20]
         #
@@ -590,7 +590,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             == 0
         )
 
-    def test_03_11_masked_rand_index(self):
+    def test_masked_rand_index(self):
         numpy.random.seed(310)
         i, j = numpy.mgrid[0:10, 0:20]
         #
@@ -655,7 +655,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             == 0
         )
 
-    def test_04_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         workspace, module = self.make_workspace(
             dict(image=numpy.zeros((20, 10), bool)),
             dict(image=numpy.zeros((20, 10), bool)),
@@ -683,7 +683,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             )
             assert field in [x[1] for x in columns]
 
-    def test_04_02_get_categories(self):
+    def test_get_categories(self):
         workspace, module = self.make_workspace(
             dict(image=numpy.zeros((20, 10), bool)),
             dict(image=numpy.zeros((20, 10), bool)),
@@ -696,7 +696,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert len(categories) == 1
         assert categories[0] == cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP
 
-    def test_04_03_get_measurements(self):
+    def test_get_measurements(self):
         workspace, module = self.make_workspace(
             dict(image=numpy.zeros((20, 10), bool)),
             dict(image=numpy.zeros((20, 10), bool)),
@@ -729,7 +729,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             )
             assert len(mnames) == 0
 
-    def test_04_04_get_measurement_images(self):
+    def test_get_measurement_images(self):
         workspace, module = self.make_workspace(
             dict(image=numpy.zeros((20, 10), bool)),
             dict(image=numpy.zeros((20, 10), bool)),
@@ -766,7 +766,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert len(imnames) == 0
 
-    def test_04_05_get_measurement_scales(self):
+    def test_get_measurement_scales(self):
         workspace, module = self.make_workspace(
             dict(image=numpy.zeros((20, 10), bool)),
             dict(image=numpy.zeros((20, 10), bool)),
@@ -780,7 +780,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert len(scales) == 0
 
-    def test_05_02_test_objects_rand_index(self):
+    def test_test_objects_rand_index(self):
         r = numpy.random.RandomState()
         r.seed(52)
         base = numpy.zeros((100, 100), bool)
@@ -813,7 +813,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         expected_adjusted_rand_index = measurements.get_current_image_measurement(mname)
 
-    def test_06_00_no_emd(self):
+    def test_no_emd(self):
         workspace, module = self.make_workspace(
             dict(image=numpy.ones((20, 10), bool)),
             dict(image=numpy.ones((20, 10), bool)),
@@ -827,7 +827,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             ),
         )
 
-    def test_06_01_one_pixel(self):
+    def test_one_pixel(self):
         #
         # The earth movers distance should be sqrt((8-5)**2 + (7 - 3) ** 2) = 5
         #
@@ -847,7 +847,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             == 5
         )
 
-    def test_06_02_missing_penalty(self):
+    def test_missing_penalty(self):
         #
         # Test that the missing penalty works
         #
@@ -871,7 +871,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             == 16
         )
 
-    def test_06_03_max_distance(self):
+    def test_max_distance(self):
         src = numpy.zeros((20, 10), bool)
         dest = numpy.zeros((20, 10), bool)
         src[5, 3] = True
@@ -891,7 +891,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             == 11
         )
 
-    def test_06_04_decimate_k_means(self):
+    def test_decimate_k_means(self):
         r = numpy.random.RandomState()
         r.seed(64)
         img = r.uniform(size=(10, 10)) > 0.5
@@ -947,7 +947,7 @@ MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert decimated_emd < emd * 2
         assert decimated_emd > emd / 2
 
-    def test_06_05_decimate_skel(self):
+    def test_decimate_skel(self):
         #
         # Mostly, this is to check that the skeleton method doesn't crash
         #

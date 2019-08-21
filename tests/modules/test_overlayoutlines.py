@@ -57,7 +57,7 @@ class TestOverlayOutlines:
         m.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, dimensions=dimensions))
         return workspace, module
 
-    def test_01_02_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9063
@@ -92,7 +92,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
             assert outline.objects_name.value == cellprofiler.setting.NONE
             assert outline.color == color
 
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140505183007
@@ -148,7 +148,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             assert outline.color == color
             assert outline.objects_name == objects_name
 
-    def test_02_01_gray_to_color_outlines(self):
+    def test_gray_to_color_outlines(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32)
         image[0, 0] = 1
@@ -167,7 +167,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
-    def test_02_02_color_to_color_outlines(self):
+    def test_color_to_color_outlines(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50, 3)).astype(numpy.float32)
         image[0, 0] = 1
@@ -186,7 +186,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
-    def test_02_03_blank_to_color_outlines(self):
+    def test_blank_to_color_outlines(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50, 3))
         image[0, 0] = 1
@@ -206,7 +206,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
-    def test_02_04_wrong_size_gray_to_color(self):
+    def test_wrong_size_gray_to_color(self):
         """Regression test of img-961"""
         numpy.random.seed(24)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32)
@@ -227,7 +227,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
-    def test_02_05_wrong_size_color_to_color(self):
+    def test_wrong_size_color_to_color(self):
         numpy.random.seed(25)
         image = numpy.random.uniform(size=(50, 50, 3)).astype(numpy.float32)
         image[0, 0] = 1
@@ -247,7 +247,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert numpy.all(output_image.pixel_data == expected)
 
-    def test_03_01_blank_to_gray(self):
+    def test_blank_to_gray(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50))
         outline = numpy.zeros((50, 50), bool)
@@ -263,7 +263,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
-    def test_03_02_gray_max_image(self):
+    def test_gray_max_image(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
         outline = numpy.zeros((50, 50), bool)
@@ -280,7 +280,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
-    def test_03_02_gray_max_possible(self):
+    def test_gray_max_possible(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
         outline = numpy.zeros((50, 50), bool)
@@ -297,7 +297,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
-    def test_03_03_wrong_size_gray(self):
+    def test_wrong_size_gray(self):
         """Regression test of IMG-961 - image and outline size differ"""
         numpy.random.seed(41)
         image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
@@ -315,7 +315,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
-    def test_04_01_ijv(self):
+    def test_ijv(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(50, 50, 3)).astype(numpy.float32)
         image[0, 0] = 1

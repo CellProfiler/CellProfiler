@@ -28,7 +28,7 @@ OUTLINE_NAME = "outlines"
 
 
 class TestSplitOrMergeObjects:
-    def test_01_05_load_v5(self):
+    def test_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827
@@ -70,7 +70,7 @@ SplitOrMergeObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert module.parent_object.value == "None"
         assert module.merging_method.value == "Disconnected"
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827
@@ -228,7 +228,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         return output_objects.segmented, workspace
 
-    def test_02_01_split_zero(self):
+    def test_split_zero(self):
         labels, workspace = self.rruunn(
             np.zeros((10, 20), int),
             cellprofiler.modules.splitormergeobjects.OPTION_SPLIT,
@@ -324,7 +324,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert len(f) == 1
         assert f[0] == "%s_Count" % OUTPUT_OBJECTS_NAME
 
-    def test_02_02_split_one(self):
+    def test_split_one(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels_out, workspace = self.rruunn(
@@ -355,7 +355,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert len(values) == 1
         assert values[0] == 1
 
-    def test_02_03_split_one_into_two(self):
+    def test_split_one_into_two(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 1
@@ -382,7 +382,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert len(values) == 1
         assert values[0] == 2
 
-    def test_03_01_unify_zero(self):
+    def test_unify_zero(self):
         labels, workspace = self.rruunn(
             np.zeros((10, 20), int),
             cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
@@ -391,7 +391,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert labels.shape[0] == 10
         assert labels.shape[1] == 20
 
-    def test_03_02_unify_one(self):
+    def test_unify_one(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels_out, workspace = self.rruunn(
@@ -399,7 +399,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert np.all(labels == labels_out)
 
-    def test_03_03_unify_two_to_one(self):
+    def test_unify_two_to_one(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -411,7 +411,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert np.all(labels_out[labels != 0] == 1)
         assert np.all(labels_out[labels == 0] == 0)
 
-    def test_03_04_unify_two_stays_two(self):
+    def test_unify_two_stays_two(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -422,7 +422,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert np.all(labels_out == labels)
 
-    def test_03_05_unify_image_centroids(self):
+    def test_unify_image_centroids(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -440,7 +440,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert np.all(labels_out[labels != 0] == 1)
         assert np.all(labels_out[labels == 0] == 0)
 
-    def test_03_06_dont_unify_image_centroids(self):
+    def test_dont_unify_image_centroids(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -458,7 +458,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert np.all(labels_out == labels)
 
-    def test_03_07_unify_image_closest_point(self):
+    def test_unify_image_closest_point(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -477,7 +477,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         assert np.all(labels_out[labels != 0] == 1)
         assert np.all(labels_out[labels == 0] == 0)
 
-    def test_03_08_dont_unify_image_closest_point(self):
+    def test_dont_unify_image_closest_point(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -494,7 +494,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert np.all(labels_out == labels)
 
-    def test_05_00_unify_per_parent(self):
+    def test_unify_per_parent(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -508,7 +508,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert np.all(labels_out[labels != 0] == 1)
 
-    def test_05_01_unify_convex_hull(self):
+    def test_unify_convex_hull(self):
         labels = np.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
@@ -525,7 +525,7 @@ SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_numb
         )
         assert np.all(labels_out == expected)
 
-    def test_05_02_unify_nothing(self):
+    def test_unify_nothing(self):
         labels = np.zeros((10, 20), int)
         for um in (
             cellprofiler.modules.splitormergeobjects.UM_DISCONNECTED,

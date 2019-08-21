@@ -1131,7 +1131,7 @@ Decay:0.99
     assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_DIC
 
 
-def test_01_05_load_v4():
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120516145742

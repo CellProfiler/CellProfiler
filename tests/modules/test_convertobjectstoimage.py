@@ -238,7 +238,7 @@ class TestConvertObjectsToImage:
         module.object_name.value = OBJECTS_NAME
         return workspace, module, ijv
 
-    def test_03_01_binary_ijv(self):
+    def test_binary_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
         assert isinstance(
             module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
@@ -251,7 +251,7 @@ class TestConvertObjectsToImage:
         ) == numpy.sum(pixel_data)
         assert numpy.all(pixel_data[ijv[:, 0], ijv[:, 1]])
 
-    def test_03_02_gray_ijv(self):
+    def test_gray_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
         assert isinstance(
             module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
@@ -276,7 +276,7 @@ class TestConvertObjectsToImage:
         pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
         assert numpy.all(pd_ok[counts > 0])
 
-    def test_03_03_color_ijv(self):
+    def test_color_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
         assert isinstance(
             module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage

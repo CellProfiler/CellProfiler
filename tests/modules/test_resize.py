@@ -23,7 +23,7 @@ OUTPUT_IMAGE_NAME = "output"
 
 
 class TestResize:
-    def test_01_02_load_v1(self):
+    def test_load_v1(self):
         data = (
             "eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS"
             "EleJM1bQJB75WHykfQTsLmkSE5a03RBITRWld7nf/e7OzsVOrdzcL7+CG4oK"
@@ -59,7 +59,7 @@ class TestResize:
         assert round(abs(module.resizing_factor.value - 0.25), 7) == 0
         assert module.interpolation == cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
 
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10104
@@ -137,7 +137,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         )
         return workspace, module
 
-    def test_02_01_rescale_triple_color(self):
+    def test_rescale_triple_color(self):
         i, j = numpy.mgrid[0:10, 0:10]
         image = numpy.zeros((10, 10, 3))
         image[:, :, 0] = i
@@ -162,7 +162,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
             INPUT_IMAGE_NAME
         )
 
-    def test_02_02_rescale_triple_bw(self):
+    def test_rescale_triple_bw(self):
         i, j = numpy.mgrid[0:10, 0:10].astype(float)
         image = skimage.exposure.rescale_intensity(1.0 * i)
         i, j = (numpy.mgrid[0:30, 0:30].astype(float) * 1.0 / 3.0).astype(int)
@@ -177,7 +177,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_02_03_third(self):
+    def test_third(self):
         i, j = numpy.mgrid[0:30, 0:30]
         image = skimage.exposure.rescale_intensity(1.0 * i)
         expected = skimage.transform.resize(image, (10, 10), order=0, mode="symmetric")
@@ -191,7 +191,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_03_01_bilinear(self):
+    def test_bilinear(self):
         i, j = numpy.mgrid[0:10, 0:10]
         image = skimage.exposure.rescale_intensity(1.0 * i)
         expected = skimage.transform.resize(image, (30, 30), order=1, mode="symmetric")
@@ -205,7 +205,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_03_02_bicubic(self):
+    def test_bicubic(self):
         i, j = numpy.mgrid[0:10, 0:10]
         image = skimage.exposure.rescale_intensity(1.0 * i)
         expected = skimage.transform.resize(image, (30, 30), order=3, mode="symmetric")
@@ -219,7 +219,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_04_01_reshape_double(self):
+    def test_reshape_double(self):
         """Make an image twice as large by changing the shape"""
         i, j = numpy.mgrid[0:10, 0:10].astype(float)
         image = skimage.exposure.rescale_intensity(i + j * 10.0)
@@ -235,7 +235,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_04_02_reshape_half(self):
+    def test_reshape_half(self):
         """Make an image half as large by changing the shape"""
         i, j = numpy.mgrid[0:19, 0:19].astype(float) / 2.0
         image = skimage.exposure.rescale_intensity(i + j * 10)
@@ -251,7 +251,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_04_03_reshape_half_and_double(self):
+    def test_reshape_half_and_double(self):
         """Make an image twice as large in one dimension and half in other"""
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
         image = skimage.exposure.rescale_intensity(i + j * 5.0)
@@ -267,7 +267,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         numpy.testing.assert_array_almost_equal(result, expected)
 
-    def test_04_04_reshape_using_another_images_dimensions(self):
+    def test_reshape_using_another_images_dimensions(self):
         """'Resize to another image's dimensions"""
         i, j = numpy.mgrid[0:10, 0:19].astype(float)
         image = skimage.exposure.rescale_intensity(1.0 * i + j)
@@ -286,7 +286,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         assert expected.shape == result.shape
 
-    def test_05_01_resize_with_cropping(self):
+    def test_resize_with_cropping(self):
         # This is a regression test for issue # 967
         r = numpy.random.RandomState()
         r.seed(501)
@@ -311,7 +311,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         x = result.crop_image_similarly(numpy.zeros(result.crop_mask.shape))
         assert tuple(x.shape) == (5, 10)
 
-    def test_05_02_resize_with_cropping_bigger(self):
+    def test_resize_with_cropping_bigger(self):
         # This is a regression test for issue # 967
         r = numpy.random.RandomState()
         r.seed(501)
@@ -336,7 +336,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         x = result.crop_image_similarly(numpy.zeros(result.crop_mask.shape))
         assert tuple(x.shape) == (20, 40)
 
-    def test_05_03_resize_color(self):
+    def test_resize_color(self):
         # Regression test of issue #1416
         image = numpy.zeros((20, 22, 3))
         workspace, module = self.make_workspace(
@@ -349,7 +349,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert tuple(result.pixel_data.shape) == (10, 11, 3)
 
-    def test_05_04_resize_color_bw(self):
+    def test_resize_color_bw(self):
         # Regression test of issue #1416
         image = numpy.zeros((20, 22, 3))
         tgt_image = numpy.zeros((5, 11))
@@ -367,7 +367,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert tuple(result.pixel_data.shape) == (5, 11, 3)
 
-    def test_05_05_resize_color_color(self):
+    def test_resize_color_color(self):
         # Regression test of issue #1416
         image = numpy.zeros((20, 22, 3))
         tgt_image = numpy.zeros((10, 11, 3))
@@ -385,7 +385,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert tuple(result.pixel_data.shape) == (10, 11, 3)
 
-    def test_06_01_resize_volume_factor_grayscale(self):
+    def test_resize_volume_factor_grayscale(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -431,7 +431,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_02_resize_volume_factor_color(self):
+    def test_resize_volume_factor_color(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10, 3)
@@ -480,7 +480,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_03_resize_volume_manual_grayscale(self):
+    def test_resize_volume_manual_grayscale(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -530,7 +530,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_04_resize_volume_manual_color(self):
+    def test_resize_volume_manual_color(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10, 3)
@@ -583,7 +583,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_05_resize_volume_grayscale_other_volume_grayscale(self):
+    def test_resize_volume_grayscale_other_volume_grayscale(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -640,7 +640,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_06_resize_volume_grayscale_other_volume_color(self):
+    def test_resize_volume_grayscale_other_volume_color(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -697,7 +697,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_07_resize_volume_color_other_volume_grayscale(self):
+    def test_resize_volume_color_other_volume_grayscale(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10, 3)
@@ -757,7 +757,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
         numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
-    def test_06_08_resize_volume_color_other_volume_color(self):
+    def test_resize_volume_color_other_volume_color(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10, 3)

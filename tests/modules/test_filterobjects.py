@@ -82,7 +82,7 @@ class TestFilterObjects:
         except:
             pass
 
-    def test_00_01_zeros_single(self):
+    def test_zeros_single(self):
         """Test keep single object on an empty labels matrix"""
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: numpy.zeros((10, 10), int)}
@@ -97,7 +97,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == 0)
 
-    def test_00_02_zeros_per_object(self):
+    def test_zeros_per_object(self):
         """Test keep per object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace(
             {
@@ -118,7 +118,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == 0)
 
-    def test_00_03_zeros_filter(self):
+    def test_zeros_filter(self):
         """Test object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: numpy.zeros((10, 10), int)}
@@ -135,7 +135,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == 0)
 
-    def test_01_01_keep_single_min(self):
+    def test_keep_single_min(self):
         """Keep a single object (min) from among two"""
         labels = numpy.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
@@ -170,7 +170,7 @@ class TestFilterObjects:
         assert child_count[0] == 0
         assert child_count[1] == 1
 
-    def test_01_02_keep_single_max(self):
+    def test_keep_single_max(self):
         """Keep a single object (max) from among two"""
         labels = numpy.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
@@ -189,7 +189,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_02_01_keep_one_min(self):
+    def test_keep_one_min(self):
         """Keep two sub-objects (min) from among four enclosed by two"""
         sub_labels = numpy.zeros((20, 20), int)
         expected = numpy.zeros((20, 20), int)
@@ -215,7 +215,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_02_02_keep_one_max(self):
+    def test_keep_one_max(self):
         """Keep two sub-objects (max) from among four enclosed by two"""
         sub_labels = numpy.zeros((20, 20), int)
         expected = numpy.zeros((20, 20), int)
@@ -241,7 +241,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_02_03_keep_maximal_most_overlap(self):
+    def test_keep_maximal_most_overlap(self):
         labels = numpy.zeros((10, 20), int)
         labels[:, :10] = 1
         labels[:, 10:] = 2
@@ -269,7 +269,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_02_04_keep_minimal_most_overlap(self):
+    def test_keep_minimal_most_overlap(self):
         labels = numpy.zeros((10, 20), int)
         labels[:, :10] = 1
         labels[:, 10:] = 2
@@ -297,7 +297,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_03_01_filter(self):
+    def test_filter(self):
         """Filter objects by limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
@@ -328,7 +328,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_03_02_filter(self):
+    def test_filter(self):
         """Filter objects by min limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
@@ -357,7 +357,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_03_03_filter(self):
+    def test_filter(self):
         """Filter objects by maximum limits"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
@@ -386,7 +386,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_03_04_filter_two(self):
+    def test_filter_two(self):
         """Filter objects by two measurements"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
@@ -419,7 +419,7 @@ class TestFilterObjects:
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(labels.segmented == expected)
 
-    def test_04_01_renumber_other(self):
+    def test_renumber_other(self):
         """Renumber an associated object"""
         n = 40
         labels = numpy.zeros((10, n * 10), int)
@@ -459,7 +459,7 @@ class TestFilterObjects:
         assert numpy.all(labels.segmented == expected)
         assert numpy.all(alternates.segmented == expected_alternates)
 
-    def test_05_05_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8973
@@ -502,7 +502,7 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         assert module.measurements[0].measurement == "Intensity_MeanIntensity_DNA"
         assert module.filter_choice == cellprofiler.modules.filterobjects.FI_MINIMAL
 
-    def test_05_06_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9025
@@ -579,7 +579,7 @@ FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:4|show
             assert group.object_name == name
             assert group.target_name == "Filtered%s" % name
 
-    def test_05_07_load_v5(self):
+    def test_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9025
@@ -656,7 +656,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             assert group.object_name == name
             assert group.target_name == "Filtered%s" % name
 
-    def test_05_08_load_v6(self):
+    def test_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     Version:1
     SVNRevision:9025
@@ -737,7 +737,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             assert group.object_name == name
             assert group.target_name == "Filtered%s" % name
 
-    def test_05_09_load_v7(self):
+    def test_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     Version:1
     SVNRevision:9025
@@ -820,7 +820,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             assert group.object_name == name
             assert group.target_name == "Filtered%s" % name
 
-    def test_08_01_filter_by_rule(self):
+    def test_filter_by_rule(self):
         labels = numpy.zeros((10, 20), int)
         labels[3:5, 4:9] = 1
         labels[7:9, 6:12] = 2
@@ -856,7 +856,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         finally:
             os.remove(rules_path)
 
-    def test_08_02_filter_by_3_class_rule(self):
+    def test_filter_by_3_class_rule(self):
         rules_file_contents = (
             "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
             "IF (MyObjects_MyMeasurement > 1.6, [0.5,0.5,-0.5], [-1.0,-1.0,1.0])\n"
@@ -899,7 +899,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         finally:
             os.remove(rules_path)
 
-    def test_09_01_discard_border_objects(self):
+    def test_discard_border_objects(self):
         """Test the mode to discard border objects"""
         labels = numpy.zeros((10, 10), int)
         labels[1:4, 0:3] = 1
@@ -917,7 +917,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(expected == output_objects.segmented)
 
-    def test_09_02_discard_mask_objects(self):
+    def test_discard_mask_objects(self):
         """Test discarding objects that touch the mask of objects parent img"""
         mask = numpy.ones((10, 10), bool)
         mask[5, 5] = False
@@ -944,7 +944,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         assert numpy.all(expected == output_objects.segmented)
 
-    def test_10_01_unedited_segmented(self):
+    def test_unedited_segmented(self):
         # Test transferral of unedited segmented segmentation
         # from source to target
 
@@ -972,7 +972,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         numpy.testing.assert_equal(output_objects.unedited_segmented, unedited)
 
-    def test_10_02_small_removed_segmented(self):
+    def test_small_removed_segmented(self):
         # Test output objects' small_removed_segmented
         #
         # It should be the small_removed_segmented of the
@@ -1005,7 +1005,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         assert numpy.all(small_removed[mask] != 0)
         assert numpy.all(small_removed[~mask] == 0)
 
-    def test_11_00_classify_none(self):
+    def test_classify_none(self):
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: numpy.zeros((10, 10), int)}
         )
@@ -1017,7 +1017,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             assert output_objects.count == 0
 
-    def test_11_01_classify_true(self):
+    def test_classify_true(self):
         labels = numpy.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
@@ -1029,7 +1029,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             assert output_objects.count == 1
 
-    def test_11_02_classify_false(self):
+    def test_classify_false(self):
         labels = numpy.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
@@ -1041,7 +1041,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             assert output_objects.count == 0
 
-    def test_11_03_classify_many(self):
+    def test_classify_many(self):
         labels = numpy.zeros((10, 10), int)
         labels[1:4, 1:4] = 1
         labels[5:7, 5:7] = 2

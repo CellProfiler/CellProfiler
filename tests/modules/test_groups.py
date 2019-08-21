@@ -14,7 +14,7 @@ import cellprofiler.workspace as cpw
 
 
 class TestGroups:
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120213205828
@@ -43,7 +43,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
         g0 = module.grouping_metadata[0]
         assert g0.metadata_choice == "Plate"
 
-    def test_01_02_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120213205828
@@ -158,7 +158,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         return module, workspace
 
-    def test_02_00_compute_no_groups(self):
+    def test_compute_no_groups(self):
         groups, workspace = self.make_image_sets(
             (
                 ("Plate", ("P-12345", "P-23456")),
@@ -195,7 +195,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         ]
         assert list(expected_file_names) == list(output_file_names)
 
-    def test_02_01_group_on_one(self):
+    def test_group_on_one(self):
         groups = G.Groups()
         groups, workspace = self.make_image_sets(
             (
@@ -256,7 +256,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                     ftr = "_".join((cpmeas.C_FILE_NAME, image_name))
                     assert m[cpmeas.IMAGE, ftr, image_number].startswith(plate)
 
-    def test_02_01_group_on_two(self):
+    def test_group_on_two(self):
         groups, workspace = self.make_image_sets(
             (
                 ("Plate", ("P-12345", "P-23456")),
@@ -310,7 +310,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                     assert p == plate
                     assert s == site
 
-    def test_03_01_get_measurement_columns_nogroups(self):
+    def test_get_measurement_columns_nogroups(self):
         #
         # Don't return the metadata grouping tags measurement if no groups
         #
@@ -319,7 +319,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         columns = groups.get_measurement_columns(None)
         assert len(columns) == 0
 
-    def test_03_02_get_measurement_columns_groups(self):
+    def test_get_measurement_columns_groups(self):
         #
         # Return the metadata grouping tags measurement if groups
         #

@@ -26,7 +26,7 @@ AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
 class TestStraightenWorms:
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10732
@@ -68,7 +68,7 @@ StraightenWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1
             assert group.image_name == input_name
             assert group.straightened_image_name == output_name
 
-    def test_01_02_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10891
@@ -302,7 +302,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         mask = (i >= 0) & (j >= 0) & (i < labels.shape[0]) & (j < labels.shape[1])
         labels[i[mask], j[mask]] = idx
 
-    def test_02_01_straighten_nothing(self):
+    def test_straighten_nothing(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
         )
@@ -346,7 +346,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             == 0
         )
 
-    def test_02_02_straighten_straight_worm(self):
+    def test_straighten_straight_worm(self):
         """Do a "straightening" that is a 1-1 mapping"""
         r = np.random.RandomState()
         r.seed(0)
@@ -391,7 +391,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         orig_objects = object_set.get_objects(OBJECTS_NAME)
         assert np.all(objects.segmented == orig_objects.segmented[16:35, 10:21])
 
-    def test_02_03_straighten_diagonal_worm(self):
+    def test_straighten_diagonal_worm(self):
         """Do a straightening on a worm on the 3x4x5 diagonal"""
         r = np.random.RandomState()
         r.seed(23)
@@ -414,7 +414,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         samples = pixels[5:26:5, 5]
         np.testing.assert_almost_equal(expected, samples)
 
-    def test_02_04_straighten_two_worms(self):
+    def test_straighten_two_worms(self):
         """Straighten the worms from tests 02_02 and 02_03 together"""
         r = np.random.RandomState()
         r.seed(0)
@@ -444,7 +444,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         samples = pixels[5:26:5, 16]
         np.testing.assert_almost_equal(expected, samples)
 
-    def test_02_05_straighten_missing_worm(self):
+    def test_straighten_missing_worm(self):
         r = np.random.RandomState()
         r.seed(0)
         image = r.uniform(size=(60, 30))
@@ -475,7 +475,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         samples = pixels[5:26:5, 27]
         np.testing.assert_almost_equal(expected, samples)
 
-    def test_03_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
         )
@@ -532,7 +532,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         assert cellprofiler.measurement.FTR_CENTER_X in f
         assert cellprofiler.measurement.FTR_CENTER_Y in f
 
-    def test_03_02_get_measurement_columns_wants_images_vertical(self):
+    def test_get_measurement_columns_wants_images_vertical(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)),
             np.zeros(0),
@@ -602,7 +602,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             for expected_scale in range(5):
                 assert module.get_scale_name(None, expected_scale) in scales
 
-    def test_03_03_get_measurement_columns_horizontal(self):
+    def test_get_measurement_columns_horizontal(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)),
             np.zeros(0),
@@ -671,7 +671,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             for expected_scale in range(5):
                 assert module.get_scale_name(expected_scale, None) in scales
 
-    def test_03_04_get_measurement_columns_both(self):
+    def test_get_measurement_columns_both(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)),
             np.zeros(0),
@@ -731,7 +731,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                             continue
                         assert module.get_scale_name(hscale, vscale) in scales
 
-    def test_04_00_measure_no_worms(self):
+    def test_measure_no_worms(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
         )
@@ -756,7 +756,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 v = m.get_current_measurement(OBJECTS_NAME, mname)
                 assert len(v) == 0
 
-    def test_04_01_measure_one_worm(self):
+    def test_measure_one_worm(self):
         r = np.random.RandomState()
         r.seed(0)
         image = r.uniform(size=(60, 30))
@@ -831,7 +831,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 assert len(v) == 1
                 assert round(abs(v[0] - expected), 7) == 0
 
-    def test_04_02_measure_checkerboarded_worm(self):
+    def test_measure_checkerboarded_worm(self):
         r = np.random.RandomState()
         r.seed(42)
         image = r.uniform(size=(60, 30))
@@ -1077,7 +1077,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                     assert len(value) == 1
                     assert round(abs(value[0] - expected[segment, stripe]), 7) == 0
 
-    def test_05_01_flip_no_worms(self):
+    def test_flip_no_worms(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
         )
@@ -1087,7 +1087,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.flip_worms.value = S.FLIP_TOP
         module.run(workspace)
 
-    def test_05_02_flip_dont_flip_top(self):
+    def test_flip_dont_flip_top(self):
         r = np.random.RandomState()
         r.seed(0)
         image = r.uniform(size=(60, 30))
@@ -1111,7 +1111,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         assert pixels.shape[0] == 19
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
-    def test_05_03_flip_top(self):
+    def test_flip_top(self):
         r = np.random.RandomState()
         r.seed(0)
         image = r.uniform(size=(60, 30))
@@ -1136,7 +1136,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         i, j = np.mgrid[34:15:-1, 20:9:-1]
         np.testing.assert_almost_equal(pixels, image[i, j])
 
-    def test_05_04_flip_dont_flip_bottom(self):
+    def test_flip_dont_flip_bottom(self):
         r = np.random.RandomState()
         r.seed(53)
         image = r.uniform(size=(60, 30))
@@ -1160,7 +1160,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         assert pixels.shape[0] == 19
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
-    def test_05_05_flip_bottom(self):
+    def test_flip_bottom(self):
         r = np.random.RandomState()
         r.seed(54)
         image = r.uniform(size=(60, 30))

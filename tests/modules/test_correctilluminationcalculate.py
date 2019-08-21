@@ -71,7 +71,7 @@ class TestCorrectImage_Calculate:
             workspaces.append(workspace)
         return workspaces, module
 
-    def test_00_00_zeros(self):
+    def test_zeros(self):
         """Test all combinations of options with an image of all zeros"""
         for image in (np.zeros((10, 10)), np.zeros((10, 10, 3))):
             pipeline = cpp.Pipeline()
@@ -148,7 +148,7 @@ class TestCorrectImage_Calculate:
                                         % locals()
                                     )
 
-    def test_01_01_ones_image(self):
+    def test_ones_image(self):
         """The illumination correction of an image of all ones should be uniform
 
         """
@@ -224,7 +224,7 @@ class TestCorrectImage_Calculate:
                                     % locals()
                                 )
 
-    def test_01_02_masked_image(self):
+    def test_masked_image(self):
         """A masked image should be insensitive to points outside the mask"""
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -297,7 +297,7 @@ class TestCorrectImage_Calculate:
                                 % locals()
                             )
 
-    def test_01_03_filtered(self):
+    def test_filtered(self):
         """Regression test of issue #310
 
         post_group should add the composite image to the image set
@@ -329,7 +329,7 @@ class TestCorrectImage_Calculate:
         assert DILATED_IMAGE_NAME in image_set.names
         assert AVERAGE_IMAGE_NAME in image_set.names
 
-    def test_01_04_not_filtered(self):
+    def test_not_filtered(self):
         """Regression test of issue #310, negative case
 
         post_group should not add the composite image to the image set
@@ -362,7 +362,7 @@ class TestCorrectImage_Calculate:
         for image_name in (OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
             assert len([x for x in image_set.names if x == image_name]) == 1
 
-    def test_02_02_Background(self):
+    def test_Background(self):
         """Test an image with four distinct backgrounds"""
 
         pipeline = cpp.Pipeline()
@@ -407,7 +407,7 @@ class TestCorrectImage_Calculate:
         assert np.all(image.pixel_data[20:, :20] == 0.75)
         assert np.all(image.pixel_data[20:, 20:] == 0.9)
 
-    def test_03_00_no_smoothing(self):
+    def test_no_smoothing(self):
         """Make sure that no smoothing takes place if smoothing is turned off"""
         input_image = np.random.uniform(size=(10, 10))
         image_name = "InputImage"
@@ -446,7 +446,7 @@ class TestCorrectImage_Calculate:
             "Failed to fit polynomial to %s" % image_name
         )
 
-    def test_03_01_FitPolynomial(self):
+    def test_FitPolynomial(self):
         """Test fitting a polynomial to different gradients"""
 
         y, x = (np.mgrid[0:20, 0:20]).astype(float) / 20.0
@@ -502,7 +502,7 @@ class TestCorrectImage_Calculate:
                 "Failed to fit polynomial to %s" % image_name
             )
 
-    def test_03_02_gaussian_filter(self):
+    def test_gaussian_filter(self):
         """Test gaussian filtering a gaussian of a point"""
         input_image = np.zeros((101, 101))
         input_image[50, 50] = 1
@@ -548,7 +548,7 @@ class TestCorrectImage_Calculate:
             np.abs(ipd / ipd.mean() - expected_image / expected_image.mean()) < 0.001
         )
 
-    def test_03_03_median_filter(self):
+    def test_median_filter(self):
         """Test median filtering of a point"""
         input_image = np.zeros((101, 101))
         input_image[50, 50] = 1
@@ -594,7 +594,7 @@ class TestCorrectImage_Calculate:
         image = image_set.get_image("OutputImage")
         assert np.all(image.pixel_data == expected_image)
 
-    def test_03_04_smooth_to_average(self):
+    def test_smooth_to_average(self):
         """Test smoothing to an average value"""
         np.random.seed(0)
         input_image = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -635,7 +635,7 @@ class TestCorrectImage_Calculate:
         image = image_set.get_image("OutputImage")
         np.testing.assert_almost_equal(image.pixel_data, expected_image)
 
-    def test_03_05_splines(self):
+    def test_splines(self):
         for (
             automatic,
             bg_mode,
@@ -710,7 +710,7 @@ class TestCorrectImage_Calculate:
             else:
                 assert not np.all(diff < 0.05)
 
-    def test_03_06_splines_scaled(self):
+    def test_splines_scaled(self):
         #
         # Make an image with a random background
         #
@@ -744,7 +744,7 @@ class TestCorrectImage_Calculate:
         diff = pixel_data - np.min(pixel_data) - bg
         np.all(diff < 0.05)
 
-    def test_03_07_splines_masked(self):
+    def test_splines_masked(self):
         #
         # Make an image with a random background
         #
@@ -796,7 +796,7 @@ class TestCorrectImage_Calculate:
         diff = pixel_data - np.min(pixel_data) - bg
         assert not np.all(diff < 0.05)
 
-    def test_03_07_splines_cropped(self):
+    def test_splines_cropped(self):
         #
         # Make an image with a random background
         #
@@ -849,7 +849,7 @@ class TestCorrectImage_Calculate:
         diff = pixel_data - np.min(pixel_data) - bg
         assert not np.all(diff < 0.05)
 
-    def test_04_01_intermediate_images(self):
+    def test_intermediate_images(self):
         """Make sure the average and dilated image flags work"""
         for average_flag, dilated_flag in (
             (False, False),
@@ -902,7 +902,7 @@ class TestCorrectImage_Calculate:
                 with pytest.raises(AssertionError):
                     image_set.get_image("DilatedImage")
 
-    def test_05_01_rescale(self):
+    def test_rescale(self):
         """Test basic rescaling of an image with two values"""
         input_image = np.ones((10, 10))
         input_image[0:5, :] *= 0.5
@@ -943,7 +943,7 @@ class TestCorrectImage_Calculate:
         image = image_set.get_image("OutputImage")
         assert np.all(image.pixel_data == expected_image)
 
-    def test_05_02_rescale_outlier(self):
+    def test_rescale_outlier(self):
         """Test rescaling with one low outlier"""
         input_image = np.ones((10, 10))
         input_image[0:5, :] *= 0.5
@@ -986,7 +986,7 @@ class TestCorrectImage_Calculate:
         image = image_set.get_image("OutputImage")
         assert np.all(image.pixel_data == expected_image)
 
-    def test_06_02_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9411
@@ -1241,7 +1241,7 @@ CorrectIlluminationCalculate:[module_num:6|svn_version:\'9401\'|variable_revisio
             assert module.save_dilated_image == save_dilated_image
             assert module.dilated_image_name == dilated_image_name
 
-    def test_06_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10125

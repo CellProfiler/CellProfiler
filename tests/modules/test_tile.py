@@ -29,7 +29,7 @@ def input_image_name(index):
 
 
 class TestTile:
-    def test_01_03_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9098
@@ -104,7 +104,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         )
         return workspace, module
 
-    def test_02_01_manual_rows_and_columns(self):
+    def test_manual_rows_and_columns(self):
         np.random.seed(0)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -134,7 +134,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_02_automatic_rows(self):
+    def test_automatic_rows(self):
         np.random.seed(1)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -164,7 +164,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_03_automatic_columns(self):
+    def test_automatic_columns(self):
         np.random.seed(2)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -194,7 +194,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_04_automatic_rows_and_columns(self):
+    def test_automatic_rows_and_columns(self):
         np.random.seed(3)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -223,7 +223,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_05_color(self):
+    def test_color(self):
         np.random.seed(4)
         images = [
             np.random.uniform(size=(20, 10, 3)).astype(np.float32) for i in range(96)
@@ -253,7 +253,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10), :] == image)
 
-    def test_02_06_columns_first(self):
+    def test_columns_first(self):
         np.random.seed(5)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -284,7 +284,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_07_top_right(self):
+    def test_top_right(self):
         np.random.seed(0)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -316,7 +316,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_08_bottom_left(self):
+    def test_bottom_left(self):
         np.random.seed(8)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -348,7 +348,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_09_bottom_right(self):
+    def test_bottom_right(self):
         np.random.seed(9)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -380,7 +380,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             assert np.all(pixel_data[iii : (iii + 20), jjj : (jjj + 10)] == image)
 
-    def test_02_10_different_sizes(self):
+    def test_different_sizes(self):
         np.random.seed(10)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32),
@@ -412,7 +412,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         assert np.all(pixel_data[:, 25:30] == 0)
         assert np.all(pixel_data[:, 30:] == images[3][:20, :10])
 
-    def test_02_11_filtered(self):
+    def test_filtered(self):
         np.random.seed(9)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)
@@ -483,7 +483,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         )
         return workspace, module
 
-    def test_03_01_some_images(self):
+    def test_some_images(self):
         np.random.seed(31)
         for i in range(1, 5):
             images = [
@@ -500,7 +500,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                 jj = 10 * j
                 assert np.all(pixel_data[:, jj : (jj + 10)] == p)
 
-    def test_03_02_mix_color_bw(self):
+    def test_mix_color_bw(self):
         np.random.seed(32)
         for color in range(3):
             images = [
@@ -522,7 +522,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                     for k in range(3):
                         assert np.all(pixel_data[:, jj : (jj + 10), k] == p)
 
-    def test_03_03_different_sizes(self):
+    def test_different_sizes(self):
         np.random.seed(33)
         images = [
             np.random.uniform(size=(20, 10)).astype(np.float32),

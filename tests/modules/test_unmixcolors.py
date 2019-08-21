@@ -22,7 +22,7 @@ def output_image_name(idx):
 
 
 class TestUnmixColors:
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10268
@@ -183,7 +183,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image = np.exp(log_absorbance) - eps
         return image
 
-    def test_02_01_zeros(self):
+    def test_zeros(self):
         """Test on an image of all zeros"""
         workspace, module = self.make_workspace(
             np.zeros((10, 20, 3)), [U.CHOICE_HEMATOXYLIN]
@@ -195,7 +195,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         #
         np.testing.assert_almost_equal(image.pixel_data, 1, 2)
 
-    def test_02_02_ones(self):
+    def test_ones(self):
         """Test on an image of all ones"""
         workspace, module = self.make_workspace(
             np.ones((10, 20, 3)), [U.CHOICE_HEMATOXYLIN]
@@ -207,7 +207,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         #
         np.testing.assert_almost_equal(image.pixel_data, 0, 2)
 
-    def test_02_03_one_stain(self):
+    def test_one_stain(self):
         """Test on a single stain"""
 
         np.random.seed(23)
@@ -218,7 +218,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image = workspace.image_set.get_image(output_image_name(0))
         np.testing.assert_almost_equal(image.pixel_data, expected, 2)
 
-    def test_02_04_two_stains(self):
+    def test_two_stains(self):
         """Test on two stains mixed together"""
         np.random.seed(24)
         expected_1 = np.random.uniform(size=(10, 20)) * 0.5
@@ -238,7 +238,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image_2 = workspace.image_set.get_image(output_image_name(1))
         np.testing.assert_almost_equal(image_2.pixel_data, expected_2, 2)
 
-    def test_02_05_custom_stain(self):
+    def test_custom_stain(self):
         """Test on a custom value for the stains"""
         np.random.seed(25)
         absorbance = np.random.uniform(size=3)

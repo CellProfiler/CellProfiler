@@ -27,7 +27,7 @@ OBJECTS_NAME = "myobjects"
 
 
 class TestIdentifyDeadWorms:
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10479
@@ -55,7 +55,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         assert module.angle_count == 180
         assert module.wants_automatic_distance
 
-    def test_01_01_load_v2(self):
+    def test_load_v2(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10479
@@ -119,7 +119,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         )
         return workspace, module
 
-    def test_02_01_zeros(self):
+    def test_zeros(self):
         """Run the module with an image of all zeros"""
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         module.run(workspace)
@@ -128,7 +128,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         )
         assert count == 0
 
-    def test_02_02_one_worm(self):
+    def test_one_worm(self):
         """Find a single worm"""
         image = np.zeros((20, 20), bool)
         index, count, i, j = get_line_pts(
@@ -164,7 +164,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         assert len(a) == 1
         assert round(abs(a[0] - 135), 0) == 0
 
-    def test_02_03_crossing_worms(self):
+    def test_crossing_worms(self):
         """Find two worms that cross"""
         image = np.zeros((20, 20), bool)
         index, count, i, j = get_line_pts(
@@ -214,7 +214,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         assert round(abs(y[order[0]] - 10.0), 0) == 0
         assert round(abs(y[order[1]] - 9.0), 0) == 0
 
-    def test_03_01_measurement_columns(self):
+    def test_measurement_columns(self):
         """Test get_measurement_columns"""
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         assert isinstance(module, ID.IdentifyDeadWorms)
@@ -248,7 +248,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
                 all([x == y for x, y in zip(c, e)]) for c in columns
             ), "could not find " + repr(e)
 
-    def test_04_01_find_adjacent_by_distance_empty(self):
+    def test_find_adjacent_by_distance_empty(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         assert isinstance(module, ID.IdentifyDeadWorms)
 
@@ -258,7 +258,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         assert len(first) == 0
         assert len(second) == 0
 
-    def test_04_02_find_adjacent_by_distance_one(self):
+    def test_find_adjacent_by_distance_one(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         assert isinstance(module, ID.IdentifyDeadWorms)
 
@@ -270,7 +270,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         assert len(second) == 1
         assert second[0] == 0
 
-    def test_04_03_find_adjacent_by_distance_easy(self):
+    def test_find_adjacent_by_distance_easy(self):
         #
         # Feed "find_adjacent_by_distance" points whose "i" are all
         # within the space_distance
@@ -298,7 +298,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
             assert second[i] == i % 5
             assert second[i + 25] == (i % 5) + 5
 
-    def test_04_04_find_adjacent_by_distance_hard(self):
+    def test_find_adjacent_by_distance_hard(self):
         #
         # Feed "find_adjacent_by_distance" points whose "i" are not all
         # within the space_distance

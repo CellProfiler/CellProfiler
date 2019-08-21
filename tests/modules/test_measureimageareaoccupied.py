@@ -43,7 +43,7 @@ class TestMeasureImageArea:
         )
         return workspace
 
-    def test_00_00_zeros(self):
+    def test_zeros(self):
         workspace = self.make_workspace(numpy.zeros((10, 10), int))
         module = workspace.module
         module.operands[0].operand_choice.value = "Objects"
@@ -62,7 +62,7 @@ class TestMeasureImageArea:
         for column in columns:
             assert column[1] in features
 
-    def test_01_01_one_object(self):
+    def test_one_object(self):
         labels = numpy.zeros((10, 10), int)
         labels[2:7, 3:8] = 1
         area_occupied = numpy.sum(labels)
@@ -78,7 +78,7 @@ class TestMeasureImageArea:
         assert m.get_current_measurement("Image", mn("AreaOccupied")) == area_occupied
         assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
-    def test_01_02_object_with_cropping(self):
+    def test_object_with_cropping(self):
         labels = numpy.zeros((10, 10), int)
         labels[0:7, 3:8] = 1
         mask = numpy.zeros((10, 10), bool)
@@ -100,7 +100,7 @@ class TestMeasureImageArea:
         assert m.get_current_measurement("Image", mn("Perimeter")) == perimeter
         assert m.get_current_measurement("Image", mn("TotalArea")) == total_area
 
-    def test_02_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         module = (
             cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
         )

@@ -49,7 +49,7 @@ class TestMeasureObjectSkeleton:
                     traceback.print_exc()
             os.rmdir(self.temp_dir)
 
-    def test_01_02_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8977
@@ -119,7 +119,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         )
         return workspace, module
 
-    def test_02_01_empty(self):
+    def test_empty(self):
         workspace, module = self.make_workspace(
             np.zeros((20, 10), int), np.zeros((20, 10), bool)
         )
@@ -171,7 +171,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             data = m.get_current_measurement(OBJECT_NAME, mname)
             assert len(data) == 0
 
-    def test_02_02_trunk(self):
+    def test_trunk(self):
         """Create an image with one soma with one neurite"""
         image = np.zeros((20, 15), bool)
         image[9, 5:] = True
@@ -190,7 +190,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             assert len(data) == 1
             assert data[0] == expected
 
-    def test_02_03_trunks(self):
+    def test_trunks(self):
         """Create an image with two soma and a neurite that goes through both"""
         image = np.zeros((30, 15), bool)
         image[1:25, 7] = True
@@ -211,7 +211,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             for i in range(2):
                 assert data[i] == expected[i]
 
-    def test_02_04_branch(self):
+    def test_branch(self):
         """Create an image with one soma and a neurite with a branch"""
         image = np.zeros((30, 15), bool)
         image[6:15, 7] = True
@@ -232,7 +232,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             assert len(data) == 1
             assert data[0] == expected
 
-    def test_02_05_img_667(self):
+    def test_img_667(self):
         """Create an image with a one-pixel soma and a neurite with a branch
 
         Regression test of IMG-667
@@ -260,7 +260,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
                 data[0],
             )
 
-    def test_02_06_quadrabranch(self):
+    def test_quadrabranch(self):
         """An odd example that I noticed and thought was worthy of a test
 
         You get this pattern:
@@ -297,7 +297,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
                 data[0],
             )
 
-    def test_02_07_wrong_size(self):
+    def test_wrong_size(self):
         """Regression of img-961, image and labels size differ
 
         Assume that image is primary, labels outside of image are ignored
@@ -322,7 +322,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             for i in range(2):
                 assert data[i] == expected[i]
 
-    def test_02_08_skeleton_length(self):
+    def test_skeleton_length(self):
         #
         # Soma ends at x=8, neurite ends at x=15. Length should be 7
         #
@@ -362,7 +362,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         fd.seek(pos)
         return np.loadtxt(fd, dt, delimiter=",")
 
-    def test_03_00_graph(self):
+    def test_graph(self):
         """Does graph neurons work on an empty image?"""
         workspace, module = self.make_workspace(
             np.zeros((20, 10), int),
@@ -377,7 +377,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         assert len(edge_graph) == 0
         assert len(vertex_graph) == 0
 
-    def test_03_01_graph(self):
+    def test_graph(self):
         """Make a simple graph"""
         #
         # The skeleton looks something like this:
@@ -446,7 +446,7 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
             assert length == ee["length"]
             assert round(abs(total_intensity - ee["total_intensity"]), 4) == 0
 
-    def test_03_02_four_branches(self):
+    def test_four_branches(self):
         """Test four branchpoints touching the same edge
 
         This exercises quite a bit of corner-case code. The permutation

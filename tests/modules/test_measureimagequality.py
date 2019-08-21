@@ -60,7 +60,7 @@ class TestMeasureImageQuality:
         )
         return workspace
 
-    def test_00_00_zeros(self):
+    def test_zeros(self):
         workspace = self.make_workspace(np.zeros((100, 100)))
         q = workspace.module
         q.image_groups[0].check_blur.value = True
@@ -124,7 +124,7 @@ class TestMeasureImageQuality:
                 % (column[2], cellprofiler.measurement.COLTYPE_FLOAT)
             )
 
-    def test_00_01_zeros_and_mask(self):
+    def test_zeros_and_mask(self):
         workspace = self.make_workspace(
             np.zeros((100, 100)), np.zeros((100, 100), bool)
         )
@@ -163,7 +163,7 @@ class TestMeasureImageQuality:
                 value,
             )
 
-    def test_01_01_image_blur(self):
+    def test_image_blur(self):
         """Test the focus scores of a random image
 
         The expected variance of a uniform distribution is 1/12 of the
@@ -207,7 +207,7 @@ class TestMeasureImageQuality:
                 )
         self.features_and_columns_match(m, q)
 
-    def test_01_02_local_focus_score(self):
+    def test_local_focus_score(self):
         """Test the local focus score by creating one deviant grid block
 
         Create one grid block out of four that has a uniform value. That one
@@ -233,7 +233,7 @@ class TestMeasureImageQuality:
         )
         assert round(abs(value - expected_value), 3) == 0
 
-    def test_01_03_focus_score_with_mask(self):
+    def test_focus_score_with_mask(self):
         """Test focus score with a mask to block out an aberrant part of the image"""
         np.random.seed(0)
         expected_value = 1.0 / 6.0
@@ -255,7 +255,7 @@ class TestMeasureImageQuality:
         )
         assert round(abs(value - expected_value), 3) == 0
 
-    def test_01_04_local_focus_score_with_mask(self):
+    def test_local_focus_score_with_mask(self):
         """Test local focus score and mask"""
         np.random.seed(0)
         expected_value = np.var([1.0 / 6.0] * 3 + [0]) * 6.0
@@ -278,7 +278,7 @@ class TestMeasureImageQuality:
         )
         assert round(abs(value - expected_value), 3) == 0
 
-    def test_02_01_saturation(self):
+    def test_saturation(self):
         """Test percent saturation"""
         image = np.zeros((10, 10))
         image[:5, :5] = 1
@@ -319,7 +319,7 @@ class TestMeasureImageQuality:
             )
         self.features_and_columns_match(m, q)
 
-    def test_02_02_maximal(self):
+    def test_maximal(self):
         """Test percent maximal"""
         image = np.zeros((10, 10))
         image[:5, :5] = 0.5
@@ -346,7 +346,7 @@ class TestMeasureImageQuality:
             == 0
         )
 
-    def test_02_03_saturation_mask(self):
+    def test_saturation_mask(self):
         """Test percent saturation with mask"""
         image = np.zeros((10, 10))
         # 1/2 of image is saturated
@@ -400,7 +400,7 @@ class TestMeasureImageQuality:
                 == 0
             )
 
-    def test_02_04_maximal_mask(self):
+    def test_maximal_mask(self):
         """Test percent maximal with mask"""
         image = np.zeros((10, 10))
         image[:5, :5] = 0.5
@@ -429,7 +429,7 @@ class TestMeasureImageQuality:
             == 0
         )
 
-    def test_03_01_threshold(self):
+    def test_threshold(self):
         """Test all thresholding methods
 
         Use an image that has 1/5 of "foreground" pixels to make MOG
@@ -498,7 +498,7 @@ class TestMeasureImageQuality:
             )
         self.features_and_columns_match(m, q)
 
-    def test_03_02_experiment_threshold(self):
+    def test_experiment_threshold(self):
         """Test experiment-wide thresholds"""
         np.random.seed(32)
         workspace = self.make_workspace(np.zeros((10, 10)))
@@ -534,7 +534,7 @@ class TestMeasureImageQuality:
             value = m.get_experiment_measurement(feature)
             assert round(abs(value - expected_value), 7) == 0
 
-    def test_03_03_experiment_threshold_cycle_skipping(self):
+    def test_experiment_threshold_cycle_skipping(self):
         """Regression test of IMG-970: can you handle nulls in measurements?"""
 
         np.random.seed(33)
@@ -585,7 +585,7 @@ class TestMeasureImageQuality:
             value = m.get_experiment_measurement(feature)
             assert round(abs(value - expected_value), 7) == 0
 
-    def test_03_04_use_all_thresholding_methods(self):
+    def test_use_all_thresholding_methods(self):
         workspace = self.make_workspace(np.zeros((100, 100)))
         q = workspace.module
         q.image_groups[0].check_blur.value = False
@@ -619,7 +619,7 @@ class TestMeasureImageQuality:
     def check_error(self, caller, event):
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
-    def test_04_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9207
@@ -695,7 +695,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
             == cellprofiler.modules.identify.O_BACKGROUND
         )
 
-    def test_04_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10908
@@ -888,7 +888,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
             == cellprofiler.modules.identify.O_FOREGROUND
         )
 
-    def test_05_01_intensity_image(self):
+    def test_intensity_image(self):
         """Test operation on a single unmasked image"""
         np.random.seed(0)
         pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * 0.99
@@ -917,7 +917,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
             "ImageQuality_MaxIntensity_my_image"
         ) == np.max(pixels)
 
-    def test_06_01_check_image_groups(self):
+    def test_check_image_groups(self):
         workspace = self.make_workspace(np.zeros((100, 100)))
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
@@ -981,7 +981,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
                     cellprofiler.measurement.IMAGE, feature_name
                 ), ("Erroneously present feature %s" % feature_name)
 
-    def test_06_01_images_to_process(self):
+    def test_images_to_process(self):
         #
         # Test MeasureImageQuality.images_to_process on a pipeline with a
         # variety of image providers.
@@ -1033,7 +1033,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         for image_name in image_names:
             assert image_name in expected_names
 
-    def test_07_01_volumetric_measurements(self):
+    def test_volumetric_measurements(self):
         # Test that a volumetric pipeline returns volumetric measurements
         labels = np.zeros((10, 20, 40), dtype=np.uint8)
         labels[:, 5:15, 25:35] = 1

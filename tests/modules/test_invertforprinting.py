@@ -99,7 +99,7 @@ class TestInvertForPrinting:
             result[provider.get_name()] = provider.provide_image(image_set).pixel_data
         return result
 
-    def test_02_01_color_to_color(self):
+    def test_color_to_color(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -118,7 +118,7 @@ class TestInvertForPrinting:
             )
             assert np.all(np.abs(diff) <= np.finfo(float).eps)
 
-    def test_02_02_color_to_bw(self):
+    def test_color_to_bw(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -139,7 +139,7 @@ class TestInvertForPrinting:
             )
             assert np.all(np.abs(diff) <= np.finfo(float).eps)
 
-    def test_02_03_bw_to_color(self):
+    def test_bw_to_color(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -163,7 +163,7 @@ class TestInvertForPrinting:
                 ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2])),
             )
 
-    def test_02_04_bw_to_bw(self):
+    def test_bw_to_bw(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -188,7 +188,7 @@ class TestInvertForPrinting:
                 result[o], ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2]))
             )
 
-    def test_03_01_missing_image(self):
+    def test_missing_image(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
         for present in (

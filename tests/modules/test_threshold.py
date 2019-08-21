@@ -54,10 +54,10 @@ class TestThreshold:
         )
         return workspace, module
 
-    def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
+    def test_write_a_test_for_the_new_variable_revision_please(self):
         assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 10
 
-    def test_01_07_load_v7(self):
+    def test_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
         Version:3
         DateRevision:20130226215424
@@ -150,7 +150,7 @@ class TestThreshold:
         )
         assert module.adaptive_window_size.value == 13
 
-    def test_01_08_load_v8(self):
+    def test_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -250,7 +250,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|show_
         )
         assert module.adaptive_window_size == 50
 
-    def test_01_09_load_v9(self):
+    def test_load_v9(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -419,7 +419,7 @@ Threshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_
         assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
         assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
 
-    def test_01_10_load_v10(self):
+    def test_load_v10(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -519,7 +519,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         assert module.adaptive_window_size == 50
         assert module.local_operation.value == centrosome.threshold.TM_OTSU
 
-    def test_04_01_binary_manual(self):
+    def test_binary_manual(self):
         """Test a binary threshold with manual threshold value"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
@@ -532,7 +532,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert numpy.all(output.pixel_data == expected)
 
-    def test_04_02_binary_global(self):
+    def test_binary_global(self):
         """Test a binary threshold with Otsu global method"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
@@ -545,7 +545,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert numpy.all(output.pixel_data == expected)
 
-    def test_04_03_binary_correction(self):
+    def test_binary_correction(self):
         """Test a binary threshold with a correction factor"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
@@ -559,7 +559,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert numpy.all(output.pixel_data == expected)
 
-    def test_04_04_low_bounds(self):
+    def test_low_bounds(self):
         """Test a binary threshold with a low bound"""
 
         numpy.random.seed(0)
@@ -574,7 +574,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert numpy.all(output.pixel_data == expected)
 
-    def test_04_05_high_bounds(self):
+    def test_high_bounds(self):
         """Test a binary threshold with a high bound"""
 
         numpy.random.seed(0)
@@ -588,7 +588,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert numpy.all(output.pixel_data == expected)
 
-    def test_04_07_threshold_from_measurement(self):
+    def test_threshold_from_measurement(self):
         """Test a binary threshold from previous measurements"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
@@ -608,7 +608,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         )
         module2.run(workspace)
 
-    def test_05_03_otsu3_low(self):
+    def test_otsu3_low(self):
         """Test the three-class otsu, weighted variance middle = background"""
         numpy.random.seed(0)
         image = numpy.hstack(
@@ -638,7 +638,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         ]
         assert round(abs(m_threshold - threshold), 7) == 0
 
-    def test_05_04_otsu3_high(self):
+    def test_otsu3_high(self):
         """Test the three-class otsu, weighted variance middle = foreground"""
         numpy.random.seed(0)
         image = numpy.hstack(
@@ -668,7 +668,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         ]
         assert round(abs(m_threshold - threshold), 7) == 0
 
-    def test_06_01_adaptive_otsu_small(self):
+    def test_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small
 
         Use a small image (125 x 125) to break the image into four
@@ -696,7 +696,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         assert threshold[0, 0] != threshold[119, 0]
         assert threshold[0, 0] != threshold[119, 109]
 
-    def test_06_01_adaptive_otsu_small(self):
+    def test_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small
 
         Use a small image (125 x 125) to break the image into four
@@ -724,7 +724,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         assert threshold[0, 0] != threshold[119, 0]
         assert threshold[0, 0] != threshold[119, 109]
 
-    def test_07_01_small_images(self):
+    def test_small_images(self):
         """Test mixture of gaussians thresholding with few pixels
 
         Run MOG to see if it blows up, given 0-10 pixels"""
@@ -758,7 +758,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
                 )
                 assert round(abs(l1 - l), 7) == 0
 
-    def test_08_01_test_manual_background(self):
+    def test_test_manual_background(self):
         """Test manual background"""
         workspace, x = self.make_workspace(numpy.zeros((10, 10)))
         x = cellprofiler.modules.threshold.Threshold()
@@ -774,7 +774,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         assert threshold == 0.5
         assert threshold == 0.5
 
-    def test_09_01_threshold_li_uniform_image(self):
+    def test_threshold_li_uniform_image(self):
         workspace, module = self.make_workspace(0.1 * numpy.ones((10, 10)))
 
         image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
@@ -789,7 +789,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, 0.1)
 
-    def test_09_02_threshold_li_uniform_partial_mask(self):
+    def test_threshold_li_uniform_partial_mask(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -814,7 +814,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, 0.0)
 
-    def test_09_03_threshold_li_full_mask(self):
+    def test_threshold_li_full_mask(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -835,7 +835,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, 0.0)
 
-    def test_09_04_threshold_li_image(self):
+    def test_threshold_li_image(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -856,7 +856,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, expected)
 
-    def test_09_05_threshold_li_image_automatic(self):
+    def test_threshold_li_image_automatic(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -883,7 +883,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, expected)
 
-    def test_09_06_threshold_li_volume(self):
+    def test_threshold_li_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -904,7 +904,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, expected)
 
-    def test_10_01_threshold_robust_background_mean_sd_volume(self):
+    def test_threshold_robust_background_mean_sd_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -941,7 +941,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
-    def test_10_02_threshold_robust_background_median_sd_volume(self):
+    def test_threshold_robust_background_median_sd_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -978,7 +978,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
-    def test_10_03_threshold_robust_background_mode_sd_volume(self):
+    def test_threshold_robust_background_mode_sd_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -1015,7 +1015,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
-    def test_10_04_threshold_robust_background_mean_mad_volume(self):
+    def test_threshold_robust_background_mean_mad_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -1052,7 +1052,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
-    def test_11_01_threshold_otsu_full_mask(self):
+    def test_threshold_otsu_full_mask(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -1081,7 +1081,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         assert t_global == t_global_expected
 
-    def test_11_02_threshold_otsu_partial_mask_uniform_data(self):
+    def test_threshold_otsu_partial_mask_uniform_data(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -1114,7 +1114,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
-    def test_11_03_threshold_otsu_uniform_data(self):
+    def test_threshold_otsu_uniform_data(self):
         data = numpy.ones((10, 10), dtype=numpy.float32)
 
         data *= 0.2
@@ -1141,7 +1141,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
-    def test_11_04_threshold_otsu_image(self):
+    def test_threshold_otsu_image(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -1184,7 +1184,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
-    def test_11_05_threshold_otsu_volume(self):
+    def test_threshold_otsu_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)
@@ -1232,7 +1232,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
-    def test_12_01_threshold_otsu3_full_mask(self):
+    def test_threshold_otsu3_full_mask(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -1274,7 +1274,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
-    def test_12_02_threshold_otsu3_image(self):
+    def test_threshold_otsu3_image(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10)
@@ -1318,7 +1318,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
 
         numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
-    def test_12_02_threshold_otsu3_volume(self):
+    def test_threshold_otsu3_volume(self):
         numpy.random.seed(73)
 
         data = numpy.random.rand(10, 10, 10)

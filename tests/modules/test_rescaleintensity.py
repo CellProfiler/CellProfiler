@@ -397,7 +397,7 @@ def test_scale_by_image_maximum_masked(image, mask, module, workspace):
 
 
 class TestRescaleIntensity:
-    def test_01_09_load_v1(self):
+    def test_load_v1(self):
         data = (
             "eJztWl9P2zAQd2lhMKSNaRKbtBc/7AE2GqXlj6CaoB3dtG6UVYA2IcSYaV3w"
             "5MRV4rB2ExIfa498pH2ExW3SpKYlbSm0aIlkNXfx737ns++SOM1n9rYyb+Gy"
@@ -536,7 +536,7 @@ class TestRescaleIntensity:
         )
         return workspace, module
 
-    def test_03_01_stretch(self):
+    def test_stretch(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
@@ -547,7 +547,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_03_02_stretch_mask(self):
+    def test_stretch_mask(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
@@ -561,7 +561,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
-    def test_04_01_manual_input_range(self):
+    def test_manual_input_range(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10))
         workspace, module = self.make_workspace(expected / 2 + 0.1)
@@ -580,7 +580,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_02_00_manual_input_range_auto_low(self):
+    def test_00_manual_input_range_auto_low(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 0
@@ -600,7 +600,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_02_01_manual_input_range_auto_low_all(self):
+    def test_01_manual_input_range_auto_low_all(self):
         numpy.random.seed(421)
         image1 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32) * 0.5 + 0.5
         image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
@@ -625,7 +625,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_03_00_manual_input_range_auto_high(self):
+    def test_00_manual_input_range_auto_high(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
@@ -645,7 +645,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_03_01_manual_input_range_auto_high_all(self):
+    def test_01_manual_input_range_auto_high_all(self):
         numpy.random.seed(421)
         image1 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32) * 0.5
         image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
@@ -672,7 +672,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_03_02_manual_input_range_auto_low_and_high(self):
+    def test_02_manual_input_range_auto_low_and_high(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected = expected - expected.min()
@@ -691,7 +691,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_04_04_manual_input_range_mask(self):
+    def test_manual_input_range_mask(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
@@ -713,7 +713,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
-    def test_04_05_manual_input_range_truncate(self):
+    def test_manual_input_range_truncate(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected_low_mask = numpy.zeros(expected.shape, bool)
@@ -744,7 +744,7 @@ class TestRescaleIntensity:
         high_value = 1
         numpy.testing.assert_almost_equal(pixels[expected_high_mask], high_value)
 
-    def test_05_01_manual_io_range(self):
+    def test_manual_io_range(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         workspace, module = self.make_workspace(expected / 2 + 0.1)
@@ -766,7 +766,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_06_01_divide_by_image_minimum(self):
+    def test_divide_by_image_minimum(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 0
@@ -780,7 +780,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_06_02_divide_by_image_minimum_masked(self):
+    def test_divide_by_image_minimum_masked(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10))
         image[0, 0] = 0
@@ -797,7 +797,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
-    def test_07_01_divide_by_image_maximum(self):
+    def test_divide_by_image_maximum(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + 0.1
@@ -811,7 +811,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_07_02_divide_by_image_minimum_masked(self):
+    def test_divide_by_image_minimum_masked(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + 0.1
@@ -828,7 +828,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
-    def test_08_01_divide_by_value(self):
+    def test_divide_by_value(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + 0.1
@@ -843,7 +843,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_09_01_divide_by_measurement(self):
+    def test_divide_by_measurement(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + 0.1
@@ -857,7 +857,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_10_01_scale_by_image_maximum(self):
+    def test_scale_by_image_maximum(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 1
@@ -873,7 +873,7 @@ class TestRescaleIntensity:
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
 
-    def test_10_02_scale_by_image_maximum_mask(self):
+    def test_scale_by_image_maximum_mask(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 1

@@ -27,7 +27,7 @@ import centrosome.filter as cpfilter
 
 
 class TestMorph:
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10016
@@ -370,49 +370,49 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
         else:
             assert np.all(np.abs(output - expected) < np.finfo(np.float32).eps)
 
-    def test_02_015_binary_branchpoints(self):
+    def test_binary_branchpoints(self):
         self.binary_tteesstt("branchpoints", cpmorph.branchpoints)
 
-    def test_02_02_binary_bridge(self):
+    def test_binary_bridge(self):
         self.binary_tteesstt("bridge", cpmorph.bridge)
 
-    def test_02_03_binary_clean(self):
+    def test_binary_clean(self):
         self.binary_tteesstt("clean", cpmorph.clean)
 
-    def test_02_05_binary_diag(self):
+    def test_binary_diag(self):
         self.binary_tteesstt("diag", cpmorph.diag)
 
-    def test_02_065_binary_endpoints(self):
+    def test_binary_endpoints(self):
         self.binary_tteesstt("endpoints", cpmorph.endpoints)
 
-    def test_02_08_binary_fill(self):
+    def test_binary_fill(self):
         self.binary_tteesstt("fill", cpmorph.fill)
 
-    def test_02_09_binary_hbreak(self):
+    def test_binary_hbreak(self):
         self.binary_tteesstt("hbreak", cpmorph.hbreak)
 
-    def test_02_10_binary_majority(self):
+    def test_binary_majority(self):
         self.binary_tteesstt("majority", cpmorph.majority)
 
-    def test_02_12_binary_remove(self):
+    def test_binary_remove(self):
         self.binary_tteesstt("remove", cpmorph.remove)
 
-    def test_02_13_binary_shrink(self):
+    def test_binary_shrink(self):
         self.binary_tteesstt("shrink", lambda x: cpmorph.binary_shrink(x, 1))
 
-    def test_02_15_binary_spur(self):
+    def test_binary_spur(self):
         self.binary_tteesstt("spur", cpmorph.spur)
 
-    def test_02_16_binary_thicken(self):
+    def test_binary_thicken(self):
         self.binary_tteesstt("thicken", cpmorph.thicken)
 
-    def test_02_17_binary_thin(self):
+    def test_binary_thin(self):
         self.binary_tteesstt("thin", cpmorph.thin)
 
-    def test_02_19_binary_vbreak(self):
+    def test_binary_vbreak(self):
         self.binary_tteesstt("vbreak", cpmorph.vbreak)
 
-    def test_02_20_binary_distance(self):
+    def test_binary_distance(self):
         def distance(x):
             y = scind.distance_transform_edt(x)
             if np.max(y) == 0:
@@ -422,7 +422,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
 
         self.binary_tteesstt("distance", distance, True)
 
-    def test_02_21_binary_convex_hull(self):
+    def test_binary_convex_hull(self):
         #
         # Set the four points of a square to True
         #
@@ -436,7 +436,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
         result = self.execute(image, "convex hull")
         assert np.all(result == expected)
 
-    def test_02_26_binary_skelpe(self):
+    def test_binary_skelpe(self):
         def fn(x):
             d = scind.distance_transform_edt(x)
             pe = cpfilter.poisson_equation(x)

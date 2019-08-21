@@ -99,7 +99,7 @@ class TestRelateObjects:
             index = object_names.index(column[0])
             assert column[1] in features[index]
 
-    def test_02_01_relate_zeros(self):
+    def test_relate_zeros(self):
         """Relate a field of empty parents to empty children"""
         labels = numpy.zeros((10, 10), int)
         workspace, module = self.make_workspace(labels, labels)
@@ -116,7 +116,7 @@ class TestRelateObjects:
         assert numpy.product(child_count.shape) == 0
         self.features_and_columns_match(workspace)
 
-    def test_02_01_relate_one(self):
+    def test_relate_one(self):
         """Relate one parent to one child"""
         parent_labels = numpy.ones((10, 10), int)
         child_labels = numpy.zeros((10, 10), int)
@@ -137,7 +137,7 @@ class TestRelateObjects:
         assert child_count[0] == 1
         self.features_and_columns_match(workspace)
 
-    def test_02_02_relate_wrong_size(self):
+    def test_relate_wrong_size(self):
         """Regression test of IMG-961
 
         Perhaps someone is trying to relate cells to wells and the grid
@@ -163,7 +163,7 @@ class TestRelateObjects:
         assert child_count[0] == 1
         self.features_and_columns_match(workspace)
 
-    def test_02_03_relate_ijv(self):
+    def test_relate_ijv(self):
         """Regression test of IMG-1317: relating objects in ijv form"""
 
         child_ijv = numpy.array([[5, 5, 1], [5, 6, 2], [20, 15, 3]])
@@ -186,7 +186,7 @@ class TestRelateObjects:
         assert child_count[0] == 2
         assert child_count[1] == 1
 
-    def test_03_01_mean(self):
+    def test_mean(self):
         """Compute the mean for two parents and four children"""
         i, j = numpy.mgrid[0:20, 0:20]
         parent_labels = (i / 10 + 1).astype(int)
@@ -209,7 +209,7 @@ class TestRelateObjects:
         name = "Mean_%s_%s" % (CHILD_OBJECTS, IGNORED_MEASUREMENT)
         assert not (name in m.get_feature_names(PARENT_OBJECTS))
 
-    def test_03_02_empty_mean(self):
+    def test_empty_mean(self):
         # Regression test - if there are no children, the per-parent means
         #                   should still be populated
         i, j = numpy.mgrid[0:20, 0:20]
@@ -232,7 +232,7 @@ class TestRelateObjects:
         name = "Mean_%s_%s" % (CHILD_OBJECTS, IGNORED_MEASUREMENT)
         assert not (name in m.get_feature_names(PARENT_OBJECTS))
 
-    def test_04_00_distance_empty(self):
+    def test_distance_empty(self):
         """Make sure we can handle labels matrices that are all zero"""
         empty_labels = numpy.zeros((10, 20), int)
         some_labels = numpy.zeros((10, 20), int)
@@ -261,7 +261,7 @@ class TestRelateObjects:
                 if n > 0:
                     assert numpy.all(numpy.isnan(v))
 
-    def test_04_01_distance_centroids(self):
+    def test_distance_centroids(self):
         """Check centroid-centroid distance calculation"""
         i, j = numpy.mgrid[0:14, 0:30]
         parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
@@ -297,7 +297,7 @@ class TestRelateObjects:
         assert v.shape[0] == 12
         assert numpy.all(numpy.abs(v - expected) < 0.0001)
 
-    def test_04_02_distance_minima(self):
+    def test_distance_minima(self):
         parents = numpy.zeros((11, 11), dtype=numpy.uint8)
 
         children = numpy.zeros_like(parents)
@@ -325,7 +325,7 @@ class TestRelateObjects:
 
         numpy.testing.assert_array_equal(actual, expected)
 
-    def test_04_03_means_of_distances(self):
+    def test_means_of_distances(self):
         #
         # Regression test of issue #1409
         #

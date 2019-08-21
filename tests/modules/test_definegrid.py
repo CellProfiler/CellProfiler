@@ -59,7 +59,7 @@ class TestDefineGrid:
         )
         return workspace, module
 
-    def test_02_01_grid_automatic(self):
+    def test_grid_automatic(self):
         image = np.zeros((50, 100))
         labels = np.zeros((50, 100), int)
         ii, jj = np.mgrid[0:50, 0:100]
@@ -119,7 +119,7 @@ class TestDefineGrid:
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert image is not None
 
-    def test_02_02_fail(self):
+    def test_fail(self):
         image = np.zeros((50, 100))
         labels = np.zeros((50, 100), int)
         labels[20:40, 51:62] = 1
@@ -132,7 +132,7 @@ class TestDefineGrid:
         with pytest.raises(RuntimeError):
             module.run(workspace)
 
-    def test_03_01_coordinates_plus_savedimagesize(self):
+    def test_coordinates_plus_savedimagesize(self):
         image = np.zeros((50, 100))
         labels = np.zeros((50, 100), int)
         first_x, first_y = (11, 10)

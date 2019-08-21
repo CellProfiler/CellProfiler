@@ -16,7 +16,7 @@ OME_XML = open(
 
 
 class TestMetadata:
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -86,7 +86,7 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_w
         )
         assert not em1.wants_case_insensitive
 
-    def test_01_02_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -158,7 +158,7 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_w
         )
         assert em1.wants_case_insensitive
 
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -231,7 +231,7 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_w
         )
         assert em1.wants_case_insensitive
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -317,7 +317,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         )
         assert em1.wants_case_insensitive
 
-    def test_01_05_load_v5(self):
+    def test_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -399,7 +399,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
             for key in keys:
                 assert key in all_keys
 
-    def test_02_01_get_metadata_from_filename(self):
+    def test_get_metadata_from_filename(self):
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value = True
         em = module.extraction_methods[0]
@@ -416,7 +416,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
             ("Plate", "Well", "Site", "Wavelength"),
         )
 
-    def test_02_02_get_metadata_from_path(self):
+    def test_get_metadata_from_path(self):
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value = True
         em = module.extraction_methods[0]
@@ -428,7 +428,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         url = "file:/imaging/analysis/P-12345/_B08_s5_w2.tif"
         self.check(module, url, [{"Plate": "P-12345"}], ("Plate",))
 
-    def test_02_03_filter_positive(self):
+    def test_filter_positive(self):
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value = True
         em = module.extraction_methods[0]
@@ -445,7 +445,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
             [{"Plate": "P-12345", "Well": "B08", "Site": "5", "Wavelength": "2"}],
         )
 
-    def test_02_04_filter_negative(self):
+    def test_filter_negative(self):
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value = True
         em = module.extraction_methods[0]
@@ -462,7 +462,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
             [{"Plate": "P-12345", "Well": "B08", "Site": "5", "Wavelength": "2"}],
         )
 
-    def test_02_05_imported_extraction(self):
+    def test_imported_extraction(self):
         metadata_csv = """WellName,Treatment,Dose,Counter
 B08,DMSO,0,1
 C10,BRD041618,1.5,2
@@ -577,7 +577,7 @@ C10,BRD041618,1.5,2
             except:
                 pass
 
-    def test_02_06_imported_extraction_case_insensitive(self):
+    def test_imported_extraction_case_insensitive(self):
         metadata_csv = """WellName,Treatment
 b08,DMSO
 C10,BRD041618
@@ -654,7 +654,7 @@ C10,BRD041618
             except:
                 pass
 
-    def test_02_07_imported_extraction_case_sensitive(self):
+    def test_imported_extraction_case_sensitive(self):
         metadata_csv = """WellName,Treatment
 b08,DMSO
 C10,BRD041618
@@ -723,7 +723,7 @@ C10,BRD041618
             except:
                 pass
 
-    def test_02_08_numeric_joining(self):
+    def test_numeric_joining(self):
         # Check that Metadata correctly joins metadata items
         # that are supposed to be extracted as numbers
         metadata_csv = """Site,Treatment
@@ -806,7 +806,7 @@ C10,BRD041618
             except:
                 pass
 
-    def test_02_09_too_many_columns(self):
+    def test_too_many_columns(self):
         # Regression test of issue #853
         # Allow .csv files which have rows with more fields than there
         # are header fields.
@@ -886,7 +886,7 @@ C10,BRD041618,bar
             except:
                 pass
 
-    def test_03_01_well_row_column(self):
+    def test_well_row_column(self):
         # Make sure that Metadata_Well is generated if we have
         # Metadata_Row and Metadata_Column
         #
@@ -933,7 +933,7 @@ C10,BRD041618,bar
                 c[1] for c in module.get_measurement_columns(pipeline)
             ]
 
-    def test_03_02_well_row_column_before_import(self):
+    def test_well_row_column_before_import(self):
         # Regression test for issue #1347
         # WellRow and WellColumn must be united asap so they can
         # be used downstream.
@@ -991,7 +991,7 @@ C05,DMSO
         except:
             os.remove(path)
 
-    def test_04_01_ome_metadata(self):
+    def test_ome_metadata(self):
         # Test loading one URL with the humongous stack XML
         # (pat self on back if passes)
         module = cellprofiler.modules.metadata.Metadata()

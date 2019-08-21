@@ -28,7 +28,7 @@ FIGURE_NAME = "figname"
 
 
 class TestCalculateStatistics:
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9525
@@ -61,7 +61,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         assert dv.pathname.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
         assert dv.pathname.custom_path == "Test"
 
-    # def test_02_01_compare_to_matlab(self):
+    # def test_compare_to_matlab(self):
     #     expected = {
     #         'EC50_DistCytoplasm_Correlation_Correlation_CorrGreenCorrBlue':3.982812,
     #         'EC50_DistCytoplasm_Intensity_LowerQuartileIntensity_CorrGreen':4.139827,
@@ -432,7 +432,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         )
         return workspace, module
 
-    def test_02_02_NAN(self):
+    def test_NAN(self):
         """Regression test of IMG-762
 
         If objects have NAN values, the means are NAN and the
@@ -462,7 +462,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             value = m.get_experiment_measurement(feature)
             assert not np.isnan(value)
 
-    def test_02_03_make_path(self):
+    def test_make_path(self):
         # regression test of issue #1478
         # If the figure directory doesn't exist, it should be created
         #

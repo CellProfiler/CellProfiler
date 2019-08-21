@@ -234,7 +234,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
 
 
-def test_00_00_zeros(image, measurements, module, workspace):
+def test_zeros(image, measurements, module, workspace):
     """Test operation on a completely-masked image"""
     image.pixel_data = numpy.zeros((10, 10))
 
@@ -263,7 +263,7 @@ def test_00_00_zeros(image, measurements, module, workspace):
         assert column[1] in features
 
 
-def test_01_01_image(image, measurements, module, workspace):
+def test_image(image, measurements, module, workspace):
     """Test operation on a single unmasked image"""
     numpy.random.seed(0)
 
@@ -307,7 +307,7 @@ def test_01_01_image(image, measurements, module, workspace):
     )
 
 
-def test_01_02_image_and_mask(image, measurements, module, workspace):
+def test_image_and_mask(image, measurements, module, workspace):
     """Test operation on a masked image"""
     numpy.random.seed(0)
 
@@ -351,7 +351,7 @@ def test_01_02_image_and_mask(image, measurements, module, workspace):
     )
 
 
-def test_01_03_image_and_objects(image, measurements, module, objects, workspace):
+def test_image_and_objects(image, measurements, module, objects, workspace):
     """Test operation on an image masked by objects"""
     numpy.random.seed(0)
 
@@ -412,9 +412,7 @@ def test_01_03_image_and_objects(image, measurements, module, objects, workspace
         assert column[1] in features
 
 
-def test_01_04_image_and_objects_and_mask(
-    image, measurements, module, objects, workspace
-):
+def test_image_and_objects_and_mask(image, measurements, module, objects, workspace):
     """Test operation on an image masked by objects and a mask"""
     numpy.random.seed(0)
 
@@ -459,7 +457,7 @@ def test_01_04_image_and_objects_and_mask(
     )
 
 
-def test_03_01_get_measurement_columns(module):
+def test_get_measurement_columns(module):
     image_names = ["image%d" % i for i in range(3)]
 
     object_names = ["object%d" % i for i in range(3)]

@@ -62,7 +62,7 @@ class TestIdentifyTertiaryObjects:
             workspace.object_set.add_objects(objects, name)
         return workspace
 
-    def test_00_00_zeros(self):
+    def test_zeros(self):
         """Test IdentifyTertiarySubregion on an empty image"""
         primary_labels = np.zeros((10, 10), int)
         secondary_labels = np.zeros((10, 10), int)
@@ -86,7 +86,7 @@ class TestIdentifyTertiaryObjects:
             assert len(ocolumns) == len(features)
             assert all([column[1] in features for column in ocolumns])
 
-    def test_01_01_one_object(self):
+    def test_one_object(self):
         """Test creation of a single tertiary object"""
         primary_labels = np.zeros((10, 10), int)
         secondary_labels = np.zeros((10, 10), int)
@@ -132,7 +132,7 @@ class TestIdentifyTertiaryObjects:
         output_objects = workspace.object_set.get_objects(TERTIARY)
         assert np.all(output_objects.segmented == expected_labels)
 
-    def test_01_02_two_objects(self):
+    def test_two_objects(self):
         """Test creation of two tertiary objects"""
         primary_labels = np.zeros((10, 20), int)
         secondary_labels = np.zeros((10, 20), int)
@@ -180,7 +180,7 @@ class TestIdentifyTertiaryObjects:
             expected_labels = label_map[parent_labels]
             assert np.all(expected_labels == output_labels)
 
-    def test_01_03_overlapping_secondary(self):
+    def test_overlapping_secondary(self):
         """Make sure that an overlapping tertiary is assigned to the larger parent"""
         expected_primary_parents = np.zeros((10, 20), int)
         expected_secondary_parents = np.zeros((10, 20), int)
@@ -211,7 +211,7 @@ class TestIdentifyTertiaryObjects:
             mapped_labels = label_map[output_labels]
             assert np.all(parent_labels == mapped_labels)
 
-    def test_01_04_wrong_size(self):
+    def test_wrong_size(self):
         """Regression test of img-961, what if objects have different sizes?
 
         Slightly bizarre use case: maybe if user wants to measure background
@@ -234,7 +234,7 @@ class TestIdentifyTertiaryObjects:
         assert isinstance(module, cpmit.IdentifyTertiarySubregion)
         module.run(workspace)
 
-    def test_03_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         """Test the get_measurement_columns method"""
         module = cpmit.IdentifyTertiarySubregion()
         module.primary_objects_name.value = PRIMARY
@@ -281,7 +281,7 @@ class TestIdentifyTertiaryObjects:
                 [all([cv == ev for cv, ev in zip(column, ec)]) for ec in expected]
             )
 
-    def test_04_01_do_not_shrink(self):
+    def test_do_not_shrink(self):
         """Test the option to not shrink the smaller objects"""
         primary_labels = np.zeros((10, 10), int)
         secondary_labels = np.zeros((10, 10), int)
@@ -300,7 +300,7 @@ class TestIdentifyTertiaryObjects:
         output_objects = workspace.object_set.get_objects(TERTIARY)
         assert np.all(output_objects.segmented == expected_labels)
 
-    def test_04_02_do_not_shrink_identical(self):
+    def test_do_not_shrink_identical(self):
         """Test a case where the primary and secondary objects are identical"""
         primary_labels = np.zeros((20, 20), int)
         secondary_labels = np.zeros((20, 20), int)
@@ -357,7 +357,7 @@ class TestIdentifyTertiaryObjects:
             values = measurements.get_current_measurement(TERTIARY, location_feature)
             assert np.all(np.isnan(values) == [False, True, False])
 
-    def test_04_03_do_not_shrink_missing(self):
+    def test_do_not_shrink_missing(self):
         # Regression test of 705
 
         for missing in range(1, 3):
@@ -414,7 +414,7 @@ class TestIdentifyTertiaryObjects:
                 assert len(children) == (3 if missing_primary else 2)
                 assert np.all(children == 1)
 
-    def test_05_00_no_relationships(self):
+    def test_no_relationships(self):
         workspace = self.make_workspace(
             np.zeros((10, 10), int), np.zeros((10, 10), int)
         )
@@ -429,7 +429,7 @@ class TestIdentifyTertiaryObjects:
             )
             assert len(result) == 0
 
-    def test_05_01_relationships(self):
+    def test_relationships(self):
         primary = np.zeros((10, 30), int)
         secondary = np.zeros((10, 30), int)
         for i in range(3):
@@ -453,7 +453,7 @@ class TestIdentifyTertiaryObjects:
                 assert result[cpm.R_FIRST_OBJECT_NUMBER][i] == i + 1
                 assert result[cpm.R_SECOND_OBJECT_NUMBER][i] == i + 1
 
-    def test_06_01_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827

@@ -25,7 +25,7 @@ import cellprofiler.modules.labelimages as L
 
 
 class TestLabelImages:
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9973
@@ -88,7 +88,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         )
         return workspace, module
 
-    def test_02_01_label_plate_by_row(self):
+    def test_label_plate_by_row(self):
         """Label one complete plate"""
         nsites = 6
         nimagesets = 96 * nsites
@@ -118,7 +118,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             assert wells[i] == "%s%02d" % (this_row, this_column)
             assert plates[i] == 1
 
-    def test_02_02_label_plate_by_column(self):
+    def test_label_plate_by_column(self):
         """Label one complete plate"""
         nsites = 6
         nimagesets = 96 * nsites
@@ -148,7 +148,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             assert wells[i] == "%s%02d" % (this_row, this_column)
             assert plates[i] == 1
 
-    def test_02_03_label_many_plates(self):
+    def test_label_many_plates(self):
         nsites = 1
         nplates = 6
         nimagesets = 96 * nsites * nplates
@@ -178,7 +178,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             assert wells[i] == "%s%02d" % (this_row, this_column)
             assert plates[i] == int(i / 8 / 12) + 1
 
-    def test_02_04_multichar_row_names(self):
+    def test_multichar_row_names(self):
         nimagesets = 1000
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements

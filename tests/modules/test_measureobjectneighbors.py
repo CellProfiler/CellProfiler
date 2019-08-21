@@ -55,7 +55,7 @@ class TestMeasureObjectNeighbors:
             object_set.add_objects(objects, NEIGHBORS_NAME)
         return workspace, module
 
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:11016
@@ -93,7 +93,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert module.touching_image_name == "touchingimage"
         assert module.touching_colormap == "purple"
 
-    def test_02_02_empty(self):
+    def test_empty(self):
         """Test a labels matrix with no objects"""
         workspace, module = self.make_workspace(np.zeros((10, 10), int), M.D_EXPAND, 5)
         module.run(workspace)
@@ -114,7 +114,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 else cpmeas.COLTYPE_FLOAT
             )
 
-    def test_02_03_one(self):
+    def test_one(self):
         """Test a labels matrix with a single object"""
         labels = np.zeros((10, 10), int)
         labels[3:5, 4:6] = 1
@@ -132,7 +132,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert len(pct) == 1
         assert pct[0] == 0
 
-    def test_02_04_two_expand(self):
+    def test_two_expand(self):
         """Test a labels matrix with two objects"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1
@@ -193,7 +193,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert round(abs(x[0] - np.sqrt(61)), 7) == 0
         assert round(abs(x[1] - np.sqrt(61)), 7) == 0
 
-    def test_02_04_two_not_adjacent(self):
+    def test_two_not_adjacent(self):
         """Test a labels matrix with two objects, not adjacent"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1
@@ -217,7 +217,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert len(pct) == 2
         assert np.all(pct == 0)
 
-    def test_02_05_adjacent(self):
+    def test_adjacent(self):
         """Test a labels matrix with two objects, adjacent"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1
@@ -242,7 +242,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert fo[0] == 2
         assert fo[1] == 1
 
-    def test_02_06_manual_not_touching(self):
+    def test_manual_not_touching(self):
         """Test a labels matrix with two objects not touching"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1  # Pythagoras triangle 3-4-5
@@ -264,7 +264,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert len(pct) == 2
         assert round(abs(pct[0] - 0), 7) == 0
 
-    def test_02_07_manual_touching(self):
+    def test_manual_touching(self):
         """Test a labels matrix with two objects touching"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1  # Pythagoras triangle 3-4-5
@@ -288,7 +288,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert fo[0] == 2
         assert fo[1] == 1
 
-    def test_02_08_three(self):
+    def test_three(self):
         """Test the angles between three objects"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1  # x=3,y=4,5 triangle
@@ -325,7 +325,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert round(abs(angle[1] - np.arccos(3.0 / 5.0) * 180.0 / np.pi), 7) == 0
         assert round(abs(angle[2] - np.arccos(4.0 / 5.0) * 180.0 / np.pi), 7) == 0
 
-    def test_02_09_touching_discarded(self):
+    def test_touching_discarded(self):
         """Make sure that we count edge-touching discarded objects
 
         Regression test of IMG-1012.
@@ -366,7 +366,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert len(angle) == 1
         assert not np.isnan(angle)[0]
 
-    def test_02_10_all_discarded(self):
+    def test_all_discarded(self):
         """Test the case where all objects touch the edge
 
         Regression test of a follow-on bug to IMG-1012
@@ -398,7 +398,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         )
         assert len(fo) == 0
 
-    def test_03_01_NeighborCountImage(self):
+    def test_NeighborCountImage(self):
         """Test production of a neighbor-count image"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1  # x=3,y=4,5 triangle
@@ -418,7 +418,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         # The pixel at the right angle should have a different color
         assert not np.all(image[2, 2, :] == image[2, 5, :])
 
-    def test_04_01_PercentTouchingImage(self):
+    def test_PercentTouchingImage(self):
         """Test production of a percent touching image"""
         labels = np.zeros((10, 10), int)
         labels[2, 2] = 1
@@ -439,7 +439,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         # 3 is at 50% and should have a different color
         assert not np.all(image[2, 2, :] == image[6, 2, :])
 
-    def test_05_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         """Test the get_measurement_columns method"""
         module = M.MeasureObjectNeighbors()
         module.object_name.value = OBJECTS_NAME
@@ -459,7 +459,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             for column in columns:
                 assert column[1] in features, "Unexpected column name: %s" % column[1]
 
-    def test_05_02_get_measurement_columns_neighbors(self):
+    def test_get_measurement_columns_neighbors(self):
         module = M.MeasureObjectNeighbors()
         module.object_name.value = OBJECTS_NAME
         module.neighbors_name.value = NEIGHBORS_NAME
@@ -480,7 +480,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             for column in columns:
                 assert column[1] in features, "Unexpected column name: %s" % column[1]
 
-    def test_06_01_neighbors_zeros(self):
+    def test_neighbors_zeros(self):
         blank_labels = np.zeros((20, 10), int)
         one_object = np.zeros((20, 10), int)
         one_object[2:-2, 2:-2] = 1
@@ -505,7 +505,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                     )
                     assert len(v) == ocount
 
-    def test_06_02_one_neighbor(self):
+    def test_one_neighbor(self):
         olabels = np.zeros((20, 10), int)
         olabels[2, 2] = 1
         nlabels = np.zeros((20, 10), int)
@@ -541,7 +541,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             assert len(v) == 1
             assert v[0] == (0 if mode == M.D_ADJACENT else 1)
 
-    def test_06_03_two_neighbors(self):
+    def test_two_neighbors(self):
         olabels = np.zeros((20, 10), int)
         olabels[2, 2] = 1
         nlabels = np.zeros((20, 10), int)
@@ -580,7 +580,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert len(v) == 1
         assert round(abs(v[0] - 90), 7) == 0
 
-    def test_07_01_relationships(self):
+    def test_relationships(self):
         labels = np.array(
             [
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -618,7 +618,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         np.testing.assert_array_equal(np.unique(ro1[ro2 == 3]), np.array([1, 2, 4, 5]))
         np.testing.assert_array_equal(np.unique(ro2[ro1 == 3]), np.array([1, 2, 4, 5]))
 
-    def test_07_02_neighbors(self):
+    def test_neighbors(self):
         labels = np.array(
             [
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -672,7 +672,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert np.all(ro2 == 1)
         np.testing.assert_array_equal(np.unique(ro1), np.array([1, 3, 4]))
 
-    def test_08_01_missing_object(self):
+    def test_missing_object(self):
         # Regression test of issue 434
         #
         # Catch case of no pixels for an object
@@ -696,7 +696,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         )
         np.testing.assert_array_equal(fo, [3, 0, 1])
 
-    def test_08_02_small_removed(self):
+    def test_small_removed(self):
         # Regression test of issue #1179
         #
         # neighbor_objects.small_removed_segmented + objects touching border
@@ -723,7 +723,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         assert len(v) == 1
         assert v[0] == 2
 
-    def test_08_03_object_is_missing(self):
+    def test_object_is_missing(self):
         # regression test of #1639
         #
         # Object # 2 should match neighbor # 1, but because of
@@ -745,7 +745,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         values = m[OBJECTS_NAME, ftr]
         assert values[1] == 1
 
-    def test_08_04_small_removed_same(self):
+    def test_small_removed_same(self):
         # Regression test of issue #1672
         #
         # Objects with small removed failed.

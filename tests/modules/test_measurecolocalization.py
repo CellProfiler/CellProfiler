@@ -53,7 +53,7 @@ class TestMeasureCorrelation:
         )
         return workspace, module
 
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8905
@@ -87,7 +87,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         for name in [x.object_name.value for x in module.object_groups]:
             assert name in ["Nuclei", "Cells"]
 
-    def test_01_04_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20160216135025
@@ -141,7 +141,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         M.F_RWC_FORMAT,
     ]
 
-    def test_02_01_get_categories(self):
+    def test_get_categories(self):
         """Test the get_categories function for some different cases"""
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
@@ -161,7 +161,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         assert cat("Image")
         assert cat(OBJECTS_NAME)
 
-    def test_02_02_get_measurements(self):
+    def test_get_measurements(self):
         """Test the get_measurements function for some different cases"""
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
@@ -188,7 +188,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         assert meas("Image")
         assert meas(OBJECTS_NAME)
 
-    def test_02_03_get_measurement_images(self):
+    def test_get_measurement_images(self):
         """Test the get_measurment_images function for some different cases"""
         for iocase, names in (
             (M.M_IMAGES, [cpmeas.IMAGE]),
@@ -221,7 +221,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                     else:
                         assert any([e in ans for e in expected])
 
-    def test_02_04_01_get_measurement_columns_images(self):
+    def test_01_get_measurement_columns_images(self):
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -241,7 +241,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
-    def test_02_04_02_get_measurement_columns_objects(self):
+    def test_02_get_measurement_columns_objects(self):
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -261,7 +261,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
-    def test_02_04_03_get_measurement_columns_both(self):
+    def test_03_get_measurement_columns_both(self):
         module = M.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -293,7 +293,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
-    def test_03_01_correlated(self):
+    def test_correlated(self):
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10))
         i1 = cpi.Image(image)
@@ -317,7 +317,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         for column in columns:
             assert column[1] in features
 
-    def test_03_02_anticorrelated(self):
+    def test_anticorrelated(self):
         """Test two anticorrelated images"""
         #
         # Make a checkerboard pattern and reverse it for one image
@@ -338,7 +338,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         )
         assert round(abs(corr - -1), 7) == 0
 
-    def test_04_01_slope(self):
+    def test_slope(self):
         """Test the slope measurement"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -355,7 +355,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         else:
             assert round(abs(slope - 2), 7) == 0
 
-    def test_05_01_crop(self):
+    def test_crop(self):
         """Test similarly cropping one image to another"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
@@ -374,7 +374,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         )
         assert round(abs(corr - 1), 7) == 0
 
-    def test_05_02_mask(self):
+    def test_mask(self):
         """Test images with two different masks"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
@@ -401,7 +401,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         )
         assert round(abs(corr - 1), 7) == 0
 
-    def test_06_01_objects(self):
+    def test_objects(self):
         """Test images with two objects"""
         labels = np.zeros((10, 10), int)
         labels[:4, :4] = 1
@@ -443,7 +443,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 assert column[0] == OBJECTS_NAME
                 assert column[1] in object_features
 
-    def test_06_02_cropped_objects(self):
+    def test_cropped_objects(self):
         """Test images and objects with a cropping mask"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
@@ -472,7 +472,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         assert round(abs(corr[0] - 1), 7) == 0
         assert round(abs(corr[1] - 1), 7) == 0
 
-    def test_06_03_no_objects(self):
+    def test_no_objects(self):
         """Test images with no objects"""
         labels = np.zeros((10, 10), int)
         i, j = np.mgrid[0:10, 0:10]
@@ -505,7 +505,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                 assert column[0] == OBJECTS_NAME
                 assert column[1] in object_features
 
-    def test_06_04_wrong_size(self):
+    def test_wrong_size(self):
         """Regression test of IMG-961 - objects and images of different sizes"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
@@ -527,7 +527,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         assert round(abs(corr[0] - 1), 7) == 0
         assert round(abs(corr[1] - 1), 7) == 0
 
-    def test_06_05_last_object_masked(self):
+    def test_last_object_masked(self):
         # Regression test of issue #1553
         # MeasureColocalization was truncating the measurements
         # if the last had no pixels or all pixels masked.

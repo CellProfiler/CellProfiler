@@ -80,7 +80,7 @@ class TestCalculateMath:
         module.run(workspace)
         return measurements
 
-    def test_02_01_add_image_image(self):
+    def test_add_image_image(self):
         measurements = self.run_workspace(C.O_ADD, True, 2, True, 2)
         assert measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         for i in range(2):
@@ -90,7 +90,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - 4), 7) == 0
 
-    def test_02_02_add_image_object(self):
+    def test_add_image_object(self):
         """Add an image measurement to each of several object measurements"""
         measurements = self.run_workspace(C.O_ADD, True, 2, False, np.array([1, 4, 9]))
         assert not measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
@@ -98,7 +98,7 @@ class TestCalculateMath:
         data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
         assert np.all(data == np.array([3, 6, 11]))
 
-    def test_02_03_add_object_image(self):
+    def test_add_object_image(self):
         """Add an image measurement to each of several object measurements (reverse)"""
         measurements = self.run_workspace(C.O_ADD, False, np.array([1, 4, 9]), True, 2)
         assert not measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
@@ -106,7 +106,7 @@ class TestCalculateMath:
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
         assert np.all(data == np.array([3, 6, 11]))
 
-    def test_02_04_add_premultiply(self):
+    def test_add_premultiply(self):
         def fn(module, workspace):
             module.operands[0].multiplicand.value = 2
             module.operands[1].multiplicand.value = 3
@@ -118,7 +118,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_02_05_add_pre_exponentiate(self):
+    def test_add_pre_exponentiate(self):
         def fn(module, workspace):
             module.operands[0].exponent.value = 2
             module.operands[1].exponent.value = 3
@@ -130,7 +130,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_02_06_add_postmultiply(self):
+    def test_add_postmultiply(self):
         def fn(module, workspace):
             module.final_multiplicand.value = 3
 
@@ -141,7 +141,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_02_07_add_postexponentiate(self):
+    def test_add_postexponentiate(self):
         def fn(module, workspace):
             module.final_exponent.value = 3
 
@@ -152,7 +152,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_02_08_add_log(self):
+    def test_add_log(self):
         def fn(module, workspace):
             module.wants_log.value = True
 
@@ -163,7 +163,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_02_09_add_object_object(self):
+    def test_add_object_object(self):
         measurements = self.run_workspace(
             C.O_ADD, False, np.array([1, 2, 3]), False, np.array([1, 4, 9])
         )
@@ -175,28 +175,28 @@ class TestCalculateMath:
             )
             assert np.all(data == np.array([2, 6, 12]))
 
-    def test_03_01_subtract(self):
+    def test_subtract(self):
         measurements = self.run_workspace(C.O_SUBTRACT, True, 7, True, 5)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
         assert round(abs(data - 2), 7) == 0
 
-    def test_04_01_multiply(self):
+    def test_multiply(self):
         measurements = self.run_workspace(C.O_MULTIPLY, True, 7, True, 5)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
         assert round(abs(data - 35), 7) == 0
 
-    def test_04_01_divide(self):
+    def test_divide(self):
         measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 5)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
         assert round(abs(data - 7), 7) == 0
 
-    def test_05_01_measurement_columns_image(self):
+    def test_measurement_columns_image(self):
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         for operand in module.operands:
@@ -212,7 +212,7 @@ class TestCalculateMath:
             == OUTPUT_MEASUREMENTS
         )
 
-    def test_05_02_measurement_columns_image_object(self):
+    def test_measurement_columns_image_object(self):
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         module.operands[0].operand_choice.value = C.MC_IMAGE
@@ -229,7 +229,7 @@ class TestCalculateMath:
         )
         assert len(module.get_categories(None, cpmeas.IMAGE)) == 0
 
-    def test_05_03_measurement_columns_object_image(self):
+    def test_measurement_columns_object_image(self):
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         module.operands[0].operand_choice.value = C.MC_OBJECT
@@ -246,7 +246,7 @@ class TestCalculateMath:
         )
         assert len(module.get_categories(None, cpmeas.IMAGE)) == 0
 
-    def test_05_04_measurement_columns_object_object(self):
+    def test_measurement_columns_object_object(self):
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         module.operands[0].operand_choice.value = C.MC_OBJECT
@@ -268,7 +268,7 @@ class TestCalculateMath:
             )
         assert len(module.get_categories(None, cpmeas.IMAGE)) == 0
 
-    def test_06_01_add_object_object_same(self):
+    def test_add_object_object_same(self):
         """Regression test: add two measurements from the same object
 
         The bug was that the measurement gets added twice
@@ -286,7 +286,7 @@ class TestCalculateMath:
         assert round(abs(data[0] - 10), 7) == 0
         assert round(abs(data[1] - 12), 7) == 0
 
-    def test_07_01_img_379(self):
+    def test_img_379(self):
         """Regression test for IMG-379, divide by zero"""
 
         measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 0)
@@ -302,7 +302,7 @@ class TestCalculateMath:
         assert len(data) == 1
         assert np.isnan(data[0])
 
-    def test_08_01_none_operation(self):
+    def test_none_operation(self):
         # In this case, just multiply the array by a constant
         def fn(module, workspace):
             module.operands[0].multiplicand.value = 2
@@ -320,7 +320,7 @@ class TestCalculateMath:
         assert round(abs(data[1] - 4), 7) == 0
         assert round(abs(data[2] - 6), 7) == 0
 
-    def test_09_01_img_919(self):
+    def test_img_919(self):
         """Regression test: one measurement, but both operands are from same object
 
         The bug was that the measurement gets added twice. It was fixed in run
@@ -341,7 +341,7 @@ class TestCalculateMath:
         assert columns[0][0] == OBJECT[0]
         assert len(columns) == 1
 
-    def test_10_1_img_1566(self):
+    def test_img_1566(self):
         """Regression test: different numbers of objects"""
         r = np.random.RandomState(1566)
         o0 = [
@@ -422,7 +422,7 @@ class TestCalculateMath:
                 )
                 np.testing.assert_almost_equal(e1, data)
 
-    def test_10_01_02_different_image_sets(self):
+    def test_02_different_image_sets(self):
         #
         # Relationship code was matching object numbers from any object
         # set to any other
@@ -502,7 +502,7 @@ class TestCalculateMath:
             )
             np.testing.assert_almost_equal(e1, data)
 
-    def test_10_01_issue_422(self):
+    def test_issue_422(self):
         # Regression test of issue # 422
         #
         # If no operation is chosen, get_measurement_columns and
@@ -528,7 +528,7 @@ class TestCalculateMath:
         assert len(module.get_measurements(None, OBJECT[0], C.C_MATH)) == 1
         assert len(module.get_measurements(None, OBJECT[1], C.C_MATH)) == 0
 
-    def test_11_01_postadd(self):
+    def test_postadd(self):
         """Test whether the addend is added to the result"""
 
         def fn(module, workspace):
@@ -541,7 +541,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_11_02_constrain_lower(self):
+    def test_constrain_lower(self):
         """Test whether the lower bound option works"""
 
         def fn(module, workspace):
@@ -555,7 +555,7 @@ class TestCalculateMath:
         )
         assert round(abs(data - expected), 7) == 0
 
-    def test_11_03_constrain_upper(self):
+    def test_constrain_upper(self):
         """Test whether the upper bound option works"""
 
         def fn(module, workspace):

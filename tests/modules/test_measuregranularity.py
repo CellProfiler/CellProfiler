@@ -31,7 +31,7 @@ OBJECTS_NAME = "myobjects"
 
 
 class TestMeasureGranularity:
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10252
@@ -145,7 +145,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         )
         return module, workspace
 
-    def test_02_00_all_masked(self):
+    def test_all_masked(self):
         """Run on a totally masked image"""
         module, workspace = self.make_pipeline(
             np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16
@@ -160,7 +160,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             value = m.get_current_image_measurement(feature)
             assert np.isnan(value)
 
-    def test_02_01_zeros(self):
+    def test_zeros(self):
         """Run on an image of all zeros"""
         module, workspace = self.make_pipeline(
             np.zeros((40, 40)), None, 0.25, 0.25, 10, 16
@@ -175,7 +175,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             value = m.get_current_image_measurement(feature)
             assert round(abs(value - 0), 7) == 0
 
-    def test_03_01_no_scaling(self):
+    def test_no_scaling(self):
         """Run on an image without subsampling or background scaling"""
         #
         # Make an image with granularity at scale 1
@@ -194,7 +194,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             value = m.get_current_image_measurement(feature)
             assert round(abs(value - expected[i - 1]), 7) == 0
 
-    def test_03_02_subsampling(self):
+    def test_subsampling(self):
         """Run on an image with subsampling"""
         #
         # Make an image with granularity at scale 2
@@ -217,7 +217,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             value = m.get_current_image_measurement(feature)
             assert round(abs(value - expected[i - 1]), 7) == 0
 
-    def test_03_03_background_sampling(self):
+    def test_background_sampling(self):
         """Run on an image with background subsampling"""
         #
         # Make an image with granularity at scale 2
@@ -244,7 +244,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             value = m.get_current_image_measurement(feature)
             assert round(abs(value - expected[i - 1]), 7) == 0
 
-    def test_04_01_filter_background(self):
+    def test_filter_background(self):
         """Run on an image, filtering out the background
 
         This test makes sure that the grey_closing happens correctly
@@ -288,7 +288,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             value = m.get_current_image_measurement(feature)
             assert round(abs(value - expected[i - 1]), 7) == 0
 
-    def test_05_01_all_masked(self):
+    def test_all_masked(self):
         """Run on objects and a totally masked image"""
         labels = np.ones((40, 40), int)
         labels[20:, :] = 2
@@ -308,7 +308,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             assert len(values) == 2
             assert np.all(np.isnan(values)) or np.all(values == 0)
 
-    def test_05_02_no_objects(self):
+    def test_no_objects(self):
         """Run on a labels matrix with no objects"""
         module, workspace = self.make_pipeline(
             np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, np.zeros((40, 40), int)
@@ -325,7 +325,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             values = m.get_current_measurement(OBJECTS_NAME, feature)
             assert len(values) == 0
 
-    def test_05_03_zeros(self):
+    def test_zeros(self):
         """Run on an image of all zeros"""
         labels = np.ones((40, 40), int)
         labels[20:, :] = 2
@@ -345,7 +345,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             assert len(values) == 2
             np.testing.assert_almost_equal(values, 0)
 
-    def test_06_01_no_scaling(self):
+    def test_no_scaling(self):
         """Run on an image without subsampling or background scaling"""
         #
         # Make an image with granularity at scale 1
@@ -369,7 +369,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             assert len(values) == 2
             np.testing.assert_almost_equal(values, expected[i - 1])
 
-    def test_06_02_subsampling(self):
+    def test_subsampling(self):
         """Run on an image with subsampling"""
         #
         # Make an image with granularity at scale 2

@@ -197,14 +197,14 @@ class TestExportToDatabase:
         cursor = connection.cursor()
         return cursor, connection
 
-    def test_01_00_00_write_load_test(self):
+    def test_00_write_load_test(self):
         #
         # If this fails, you need to write a test for your variable revision
         # number change.
         #
         assert E.ExportToDatabase.variable_revision_number == 27
 
-    def test_01_04_load_v11(self):
+    def test_load_v11(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8952
@@ -260,7 +260,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         assert module.sql_file_prefix == "SQL_"
         assert module.db_name == "DefaultDB"
 
-    def test_01_05_load_v12(self):
+    def test_load_v12(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8952
@@ -316,7 +316,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         assert module.db_name == "DefaultDB"
         assert module.max_column_size == 64
 
-    def test_01_06_load_v13(self):
+    def test_load_v13(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8952
@@ -373,7 +373,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:13|
         assert module.db_name == "DefaultDB"
         assert module.max_column_size == 61
 
-    def test_01_07_load_v15(self):
+    def test_load_v15(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9503
@@ -434,7 +434,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         assert module.separate_object_tables == E.OT_PER_OBJECT
         assert not module.wants_properties_image_url_prepend
 
-    def test_01_22_load_v22(self):
+    def test_load_v22(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -606,7 +606,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
 
-    def test_01_23_load_v23(self):
+    def test_load_v23(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -781,7 +781,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:23
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
 
-    def test_01_24_load_v24(self):
+    def test_load_v24(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -958,7 +958,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:24
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
         assert module.allow_overwrite == E.OVERWRITE_DATA
 
-    def test_01_25_load_v25(self):
+    def test_load_v25(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -1137,7 +1137,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
         assert module.allow_overwrite == E.OVERWRITE_NEVER
 
-    def test_01_26_load_v26(self):
+    def test_load_v26(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140130135727
@@ -1322,7 +1322,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
         assert module.allow_overwrite == E.OVERWRITE_NEVER
 
-    def test_01_27_load_v27(self):
+    def test_load_v27(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20160129211738
@@ -1795,7 +1795,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def drop_views(self, module, table_suffixes=None):
         self.drop_tables(module)
 
-    def test_02_01_write_mysql_db(self):
+    def test_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -1864,7 +1864,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_015_write_mysql_db_filter_objs(self):
+    def test_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -1947,7 +1947,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_016_write_mysql_db_dont_filter_objs(self):
+    def test_write_mysql_db_dont_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -2045,7 +2045,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_02_mysql_direct(self):
+    def test_mysql_direct(self):
         """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False)
         try:
@@ -2105,7 +2105,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_03_00_write_direct_long_colname(self):
+    def test_00_write_direct_long_colname(self):
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
@@ -2181,7 +2181,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_03_01_write_csv_long_colname(self):
+    def test_01_write_csv_long_colname(self):
         """Write to MySQL, ensuring some columns have long names
 
         This is a regression test of IMG-786
@@ -2267,7 +2267,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_04_01_write_nulls(self):
+    def test_01_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
         # Insert a NaN into the float image measurement and one of the
@@ -2357,7 +2357,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_04_02_write_inf(self):
+    def test_02_write_inf(self):
         """regression test of img-1149"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
@@ -2449,7 +2449,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_05_mysql_direct_null(self):
+    def test_mysql_direct_null(self):
         """Write directly to the mysql DB, not to a file and write nulls"""
         workspace, module = self.make_workspace(False)
         #
@@ -2518,7 +2518,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_06_write_direct_wierd_colname(self):
+    def test_write_direct_wierd_colname(self):
         """Write to MySQL, even if illegal characters are in the column name"""
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
@@ -2589,7 +2589,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_06_write_direct_50_char_colname(self):
+    def test_write_direct_50_char_colname(self):
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
@@ -2662,7 +2662,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_07_write_direct_backslash(self):
+    def test_write_direct_backslash(self):
         """Regression test for IMG-898
 
         Make sure CP can write string data containing a backslash character
@@ -2692,7 +2692,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Experiment"))
 
-    def test_02_08_mysql_as_data_tool(self):
+    def test_mysql_as_data_tool(self):
         """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False, image_set_count=2)
         try:
@@ -2768,7 +2768,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
         return interaction_handler
 
-    def test_03_01_write_sqlite_direct(self):
+    def test_write_sqlite_direct(self):
         """Write directly to a SQLite database"""
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -2845,7 +2845,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.connection.close()
                 finally_fn()
 
-    def test_03_02_write_sqlite_backslash(self):
+    def test_write_sqlite_backslash(self):
         """Regression test of IMG-898 sqlite with backslash in string"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         backslash_string = "\\Why doesn't he worry?"
@@ -2891,7 +2891,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_03_03_numpy_float32(self):
+    def test_numpy_float32(self):
         """Regression test of img-915
 
         This error occurred when the sqlite3 driver was unable to convert
@@ -2974,7 +2974,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_03_04_sqlite_data_tool(self):
+    def test_sqlite_data_tool(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, image_set_count=2
         )
@@ -3047,7 +3047,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_04_01_stable_column_mapper(self):
+    def test_stable_column_mapper(self):
         """Make sure the column mapper always yields the same output"""
         mapping = E.ColumnNameMapping()
         k1 = (
@@ -3068,7 +3068,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             == "ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC"
         )
 
-    def test_04_02_leave_start_intact(self):
+    def test_leave_start_intact(self):
         """The column mapper should leave stuff before the first _ alone"""
         mapping = E.ColumnNameMapping(25)
         k1 = "leaveme_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS"
@@ -3124,7 +3124,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 value, m.get_experiment_measurement(feature)
             )
 
-    def test_05_01_write_mysql_db(self):
+    def test_write_mysql_db(self):
         """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
@@ -3182,7 +3182,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_02_write_mysql_db_filter_objs(self):
+    def test_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -3257,7 +3257,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_03_mysql_direct(self):
+    def test_mysql_direct(self):
         """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False)
         try:
@@ -3312,7 +3312,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_04_write_direct_long_colname(self):
+    def test_write_direct_long_colname(self):
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
@@ -3376,7 +3376,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_05_write_nulls(self):
+    def test_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
         # Insert a NaN into the float image measurement and one of the
@@ -3465,7 +3465,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_06_01_mysql_direct_null(self):
+    def test_01_mysql_direct_null(self):
         """Write directly to the mysql DB, not to a file and write nulls"""
         workspace, module = self.make_workspace(False)
         #
@@ -3532,7 +3532,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_06_02_mysql_direct_inf(self):
+    def test_02_mysql_direct_inf(self):
         """regression test of img-1149: infinite values"""
         workspace, module = self.make_workspace(False)
         #
@@ -3599,7 +3599,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_07_write_direct_wierd_colname(self):
+    def test_write_direct_wierd_colname(self):
         """Write to MySQL, even if illegal characters are in the column name"""
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
@@ -3663,7 +3663,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_07_write_direct_50_char_colname(self):
+    def test_write_direct_50_char_colname(self):
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
@@ -3729,7 +3729,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_08_01_write_two_object_tables_direct(self):
+    def test_01_write_two_object_tables_direct(self):
         """Write two object tables using OT_PER_OBJECT"""
         workspace, module = self.make_workspace(False, alt_object=True)
         try:
@@ -3779,7 +3779,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
-    def test_05_08_02_write_two_object_tables_csv(self):
+    def test_02_write_two_object_tables_csv(self):
         """Write two object tables using OT_PER_OBJECT"""
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, alt_object=True
@@ -3838,7 +3838,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
-    def test_05_09_write_mysql_db_as_data_tool(self):
+    def test_write_mysql_db_as_data_tool(self):
         """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, image_set_count=2
@@ -3899,7 +3899,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_05_10_data_tool_and_get_measurement_columns(self):
+    def test_data_tool_and_get_measurement_columns(self):
         # Regression test of issue #444
         #
         # Old measurements might not conform to get_measurement_columns
@@ -3961,7 +3961,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_05_11_data_tool_and_get_measurement_columns(self):
+    def test_data_tool_and_get_measurement_columns(self):
         # Regression test of issue #444
         #
         # Old measurements might not conform to get_measurement_columns
@@ -4036,7 +4036,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_06_01_write_sqlite_direct(self):
+    def test_write_sqlite_direct(self):
         """Write directly to a SQLite database"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         cursor = None
@@ -4123,7 +4123,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         )
         return statement
 
-    def test_07_01_well_single_objtable(self):
+    def test_well_single_objtable(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
             False, well_metadata=True, image_set_count=3
         )
@@ -4180,7 +4180,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             finally_fn()
 
-    def test_07_02_well_two_objtables(self):
+    def test_well_two_objtables(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
             False, well_metadata=True, alt_object=True, image_set_count=3
         )
@@ -4239,7 +4239,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             finally_fn()
 
-    def test_08_01_image_thumbnails(self):
+    def test_image_thumbnails(self):
         workspace, module = self.make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -4274,7 +4274,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ["Per_Image"])
 
-    def test_08_02_image_thumbnails_sqlite(self):
+    def test_image_thumbnails_sqlite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         cursor = None
         connection = None
@@ -4317,7 +4317,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_09_01_post_group_single_object_table(self):
+    def test_post_group_single_object_table(self):
         """Write out measurements that are only available post-group"""
         count = 5
         workspace, module = self.make_workspace(
@@ -4414,7 +4414,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_09_02_post_group_single_object_table_agg(self):
+    def test_post_group_single_object_table_agg(self):
         """Test single object table, post_group aggregation"""
         count = 5
         workspace, module = self.make_workspace(
@@ -4513,7 +4513,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_09_03_post_group_separate_object_tables(self):
+    def test_post_group_separate_object_tables(self):
         """Write out measurements post_group to separate object tables"""
         count = 5
         workspace, module = self.make_workspace(
@@ -4604,7 +4604,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_09_04_post_group_separate_table_agg(self):
+    def test_post_group_separate_table_agg(self):
         """Test single object table, post_group aggregation"""
         count = 5
         workspace, module = self.make_workspace(
@@ -4697,7 +4697,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_09_05_post_group_sqlite(self):
+    def test_post_group_sqlite(self):
         for with_interaction_handler in (False, True):
             count = 5
             workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -4807,7 +4807,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 connection.close()
                 finally_fn()
 
-    def test_09_05_post_group_object_view(self):
+    def test_post_group_object_view(self):
         """Write out measurements post_group to single object view"""
         count = 5
         workspace, module = self.make_workspace(
@@ -4914,7 +4914,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ["Per_Image"])
             self.drop_views(module, ["Per_Object"])
 
-    def test_10_01_properties_file(self):
+    def test_properties_file(self):
         old_get_measurement_columns = E.ExportToDatabase.get_measurement_columns
 
         def get_measurement_columns(
@@ -5011,7 +5011,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 os.unlink(path)
             finally_fn()
 
-    def test_11_01_experiment_table_combine(self):
+    def test_experiment_table_combine(self):
         workspace, module = self.make_workspace(False, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5061,7 +5061,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_11_02_experiment_table_separate(self):
+    def test_experiment_table_separate(self):
         workspace, module = self.make_workspace(False, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5112,7 +5112,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
-    def test_12_01_write_no_mysql_relationships(self):
+    def test_write_no_mysql_relationships(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -5136,7 +5136,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             os.chdir(output_dir)
             finally_fn()
 
-    def test_12_02_write_no_mysql_direct_relationships(self):
+    def test_write_no_mysql_direct_relationships(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5159,7 +5159,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_12_03_write_sqlite_no_relationships(self):
+    def test_write_sqlite_no_relationships(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5193,7 +5193,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_12_04_write_mysql_relationships(self):
+    def test_write_mysql_relationships(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -5219,7 +5219,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             os.chdir(output_dir)
             finally_fn()
 
-    def test_12_05_write_mysql_direct_relationships(self):
+    def test_write_mysql_direct_relationships(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5243,7 +5243,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_12_06_write_sqlite_relationships(self):
+    def test_write_sqlite_relationships(self):
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(
                 True,
@@ -5281,7 +5281,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.connection.close()
                 finally_fn()
 
-    def test_12_07_write_sqlite_duplicates(self):
+    def test_write_sqlite_duplicates(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5316,7 +5316,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_12_08_add_relationship_id_mysql(self):
+    def test_add_relationship_id_mysql(self):
         #
         # Add a missing relationship ID
         #
@@ -5351,7 +5351,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_12_09_get_relationship_id_mysql(self):
+    def test_get_relationship_id_mysql(self):
         #
         # Get a missing relationship ID (e.g., worker # 2 gets worker # 1's row)
         #
@@ -5382,7 +5382,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_12_10_add_relationship_id_sqlite(self):
+    def test_add_relationship_id_sqlite(self):
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(
                 True,
@@ -5417,7 +5417,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally:
                 finally_fn()
 
-    def test_12_11_get_relationship_id_sqlite(self):
+    def test_get_relationship_id_sqlite(self):
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(
                 True,
@@ -5458,7 +5458,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.connection.close()
                 finally_fn()
 
-    def test_12_12_write_mysql_direct_relationships(self):
+    def test_write_mysql_direct_relationships(self):
         # Regression test of #1757
         #
         # No relationships in relationships table and ExportToDatabase
@@ -5486,7 +5486,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_13_01_mysql_no_overwrite(self):
+    def test_mysql_no_overwrite(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5505,7 +5505,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_13_02_mysql_keep_schema(self):
+    def test_mysql_keep_schema(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5543,7 +5543,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_13_03_mysql_drop_schema(self):
+    def test_mysql_drop_schema(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -5582,7 +5582,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_13_04_sqlite_no_overwrite(self):
+    def test_sqlite_no_overwrite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
@@ -5600,7 +5600,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             finally_fn()
 
-    def test_13_05_sqlite_keep_schema(self):
+    def test_sqlite_keep_schema(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
@@ -5639,7 +5639,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             connection.close()
             finally_fn()
 
-    def test_13_06_sqlite_drop_schema(self):
+    def test_sqlite_drop_schema(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
@@ -5676,7 +5676,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module)
 
-    def test_14_01_dbcontext_mysql(self):
+    def test_dbcontext_mysql(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         module = E.ExportToDatabase()
@@ -5691,7 +5691,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert len(result) == 1
             assert result[0][0] == 1
 
-    def test_14_01_dbcontext_sqlite(self):
+    def test_dbcontext_sqlite(self):
         output_dir = tempfile.mkdtemp()
         try:
             module = E.ExportToDatabase()
@@ -5711,7 +5711,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             except:
                 print(("Failed to remove %s" % output_dir))
 
-    def test_15_01_post_run_experiment_measurement_mysql(self):
+    def test_post_run_experiment_measurement_mysql(self):
         if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module = self.make_workspace(False, post_run_test=True)

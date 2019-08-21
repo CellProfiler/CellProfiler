@@ -26,7 +26,7 @@ OBJECTS_NAME = "objects"
 
 
 class TestMaskImage:
-    def test_02_01_mask_with_objects(self):
+    def test_mask_with_objects(self):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
@@ -66,7 +66,7 @@ class TestMaskImage:
         assert np.all(masked_image.mask == (labels > 0))
         assert np.all(masked_image.masking_objects.segmented == labels)
 
-    def test_02_02_mask_invert(self):
+    def test_mask_invert(self):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
@@ -106,7 +106,7 @@ class TestMaskImage:
         assert np.all(masked_image.mask == (labels == 0))
         assert np.all(masked_image.masking_objects.segmented == labels)
 
-    def test_02_03_double_mask(self):
+    def test_double_mask(self):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
@@ -151,7 +151,7 @@ class TestMaskImage:
         assert np.all(masked_image.mask == expected_mask)
         assert np.all(masked_image.masking_objects.segmented == labels)
 
-    def test_03_01_binary_mask(self):
+    def test_binary_mask(self):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
@@ -189,7 +189,7 @@ class TestMaskImage:
         assert np.all(masked_image.mask == masking_image)
         assert not masked_image.has_masking_objects
 
-    def test_03_02_gray_mask(self):
+    def test_gray_mask(self):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
@@ -228,7 +228,7 @@ class TestMaskImage:
         assert np.all(masked_image.mask == masking_image)
         assert not masked_image.has_masking_objects
 
-    def test_03_03_color_mask(self):
+    def test_color_mask(self):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)

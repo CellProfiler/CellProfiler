@@ -53,7 +53,7 @@ class TestExpandOrShrinkObjects:
         )
         return workspace, module
 
-    def test_02_01_expand(self):
+    def test_expand(self):
         """Expand an object once"""
         labels = numpy.zeros((10, 10), int)
         labels[4, 4] = 1
@@ -81,7 +81,7 @@ class TestExpandOrShrinkObjects:
         assert len(location_y) == 1
         assert location_y[0] == 4
 
-    def test_02_02_expand_twice(self):
+    def test_expand_twice(self):
         '''Expand an object "twice"'''
         labels = numpy.zeros((10, 10), int)
         labels[4, 4] = 1
@@ -94,7 +94,7 @@ class TestExpandOrShrinkObjects:
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         assert numpy.all(objects.segmented == expected)
 
-    def test_02_03_expand_two(self):
+    def test_expand_two(self):
         """Expand two objects once"""
         labels = numpy.zeros((10, 10), int)
         labels[2, 3] = 1
@@ -110,7 +110,7 @@ class TestExpandOrShrinkObjects:
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         assert numpy.all(objects.segmented == expected)
 
-    def test_03_01_expand_inf(self):
+    def test_expand_inf(self):
         """Expand two objects infinitely"""
         labels = numpy.zeros((10, 10), int)
         labels[2, 3] = 1
@@ -125,7 +125,7 @@ class TestExpandOrShrinkObjects:
         assert numpy.all(objects.segmented[distance < 0] == 1)
         assert numpy.all(objects.segmented[distance > 0] == 2)
 
-    def test_04_01_divide(self):
+    def test_divide(self):
         """Divide two touching objects"""
         labels = numpy.ones((10, 10), int)
         labels[5:, :] = 2
@@ -138,7 +138,7 @@ class TestExpandOrShrinkObjects:
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         assert numpy.all(objects.segmented == expected)
 
-    def test_04_02_dont_divide(self):
+    def test_dont_divide(self):
         """Don't divide an object that would disappear"""
         labels = numpy.ones((10, 10), int)
         labels[9, 9] = 2
@@ -153,7 +153,7 @@ class TestExpandOrShrinkObjects:
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         assert numpy.all(objects.segmented == expected)
 
-    def test_05_01_shrink(self):
+    def test_shrink(self):
         """Shrink once"""
         labels = numpy.zeros((10, 10), int)
         labels[1:9, 1:9] = 1
@@ -165,7 +165,7 @@ class TestExpandOrShrinkObjects:
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         assert numpy.all(objects.segmented == expected)
 
-    def test_06_01_shrink_inf(self):
+    def test_shrink_inf(self):
         """Shrink infinitely"""
         labels = numpy.zeros((10, 10), int)
         labels[1:8, 1:8] = 1
@@ -178,7 +178,7 @@ class TestExpandOrShrinkObjects:
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         assert numpy.all(objects.segmented == expected)
 
-    def test_06_02_shrink_inf_fill_holes(self):
+    def test_shrink_inf_fill_holes(self):
         """Shrink infinitely after filling a hole"""
         labels = numpy.zeros((10, 10), int)
         labels[1:8, 1:8] = 1

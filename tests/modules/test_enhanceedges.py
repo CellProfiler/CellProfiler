@@ -51,7 +51,7 @@ class TestEnhanceEdges:
         )
         return workspace, module
 
-    def test_02_01_sobel_horizontal(self):
+    def test_sobel_horizontal(self):
         """Test the Sobel horizontal transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -62,7 +62,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.hsobel(image))
 
-    def test_02_02_sobel_vertical(self):
+    def test_sobel_vertical(self):
         """Test the Sobel vertical transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -73,7 +73,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.vsobel(image))
 
-    def test_02_03_sobel_all(self):
+    def test_sobel_all(self):
         """Test the Sobel transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -84,7 +84,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.sobel(image))
 
-    def test_03_01_prewitt_horizontal(self):
+    def test_prewitt_horizontal(self):
         """Test the prewitt horizontal transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -95,7 +95,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.hprewitt(image))
 
-    def test_03_02_prewitt_vertical(self):
+    def test_prewitt_vertical(self):
         """Test the prewitt vertical transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -106,7 +106,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.vprewitt(image))
 
-    def test_03_03_prewitt_all(self):
+    def test_prewitt_all(self):
         """Test the prewitt transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -117,7 +117,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.prewitt(image))
 
-    def test_04_01_roberts(self):
+    def test_roberts(self):
         """Test the roberts transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -127,7 +127,7 @@ class TestEnhanceEdges:
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         assert np.all(output.pixel_data == FIL.roberts(image))
 
-    def test_05_01_log_automatic(self):
+    def test_log_automatic(self):
         """Test the laplacian of gaussian with automatic sigma"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -144,7 +144,7 @@ class TestEnhanceEdges:
 
         assert np.all(output.pixel_data == expected)
 
-    def test_05_02_log_manual(self):
+    def test_log_manual(self):
         """Test the laplacian of gaussian with manual sigma"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
@@ -161,7 +161,7 @@ class TestEnhanceEdges:
 
         assert np.all(output.pixel_data == expected)
 
-    def test_06_01_canny(self):
+    def test_canny(self):
         """Test the canny method"""
         i, j = np.mgrid[-20:20, -20:20]
         image = np.logical_and(i > j, i ** 2 + j ** 2 < 300).astype(np.float32)
@@ -179,7 +179,7 @@ class TestEnhanceEdges:
         result = FIL.canny(image, np.ones(image.shape, bool), 1.0, t1, t2)
         assert np.all(output.pixel_data == result)
 
-    def test_07_01_kirsch(self):
+    def test_kirsch(self):
         r = np.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])
         i, j = np.mgrid[-20:20, -20:20]
         image = (np.sqrt(i * i + j * j) <= 10).astype(float) * 0.5

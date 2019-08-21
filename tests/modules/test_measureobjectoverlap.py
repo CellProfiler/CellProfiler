@@ -73,7 +73,7 @@ class TestMeasureObjectOverlap:
         )
         return workspace, module
 
-    def test_04_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         workspace, module = self.make_obj_workspace(
             numpy.zeros((0, 3), int),
             numpy.zeros((0, 3), int),
@@ -99,7 +99,7 @@ class TestMeasureObjectOverlap:
             )
             assert field in [x[1] for x in columns]
 
-    def test_04_05_get_measurement_scales(self):
+    def test_get_measurement_scales(self):
         workspace, module = self.make_obj_workspace(
             numpy.zeros((0, 3), int),
             numpy.zeros((0, 3), int),
@@ -118,7 +118,7 @@ class TestMeasureObjectOverlap:
         assert len(scales) == 1
         assert scales[0] == "_".join((GROUND_TRUTH_OBJ, ID_OBJ))
 
-    def test_05_00_test_measure_overlap_no_objects(self):
+    def test_test_measure_overlap_no_objects(self):
         # Regression test of issue #934 - no objects
         workspace, module = self.make_obj_workspace(
             numpy.zeros((0, 3), int),
@@ -157,7 +157,7 @@ class TestMeasureObjectOverlap:
         )
         module.run(workspace)
 
-    def test_05_01_test_measure_overlap_objects(self):
+    def test_test_measure_overlap_objects(self):
         r = numpy.random.RandomState()
         r.seed(51)
 
@@ -176,7 +176,7 @@ class TestMeasureObjectOverlap:
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
-    def test_05_02_test_objects_rand_index(self):
+    def test_test_objects_rand_index(self):
         r = numpy.random.RandomState()
         r.seed(52)
         base = numpy.zeros((100, 100), bool)

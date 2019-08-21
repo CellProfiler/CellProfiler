@@ -27,7 +27,7 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 class TestIdentifySecondaryObjects:
-    def test_01_09_load_v9(self):
+    def test_load_v9(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130226215424
@@ -148,7 +148,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         )
         assert module.threshold.adaptive_window_size == 9
 
-    def test_01_10_load_v10(self):
+    def test_load_v10(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827
@@ -238,7 +238,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
         return workspace, module
 
-    def test_02_01_zeros_propagation(self):
+    def test_zeros_propagation(self):
         workspace, module = self.make_workspace(
             numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
         )
@@ -265,7 +265,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             assert all([column[1] in features for column in ocolumns])
         assert "my_outlines" not in workspace.get_outline_names()
 
-    def test_02_02_one_object_propagation(self):
+    def test_one_object_propagation(self):
         img = numpy.zeros((10, 10))
         img[2:7, 2:7] = 0.5
         labels = numpy.zeros((10, 10), int)
@@ -304,7 +304,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert len(parents) == 1
         assert parents[0] == 1
 
-    def test_02_03_two_objects_propagation_image(self):
+    def test_two_objects_propagation_image(self):
         img = numpy.zeros((10, 20))
         img[2:7, 2:7] = 0.3
         img[2:7, 7:17] = 0.5
@@ -339,7 +339,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         mask[:, 7:9] = False
         assert numpy.all(objects_out.segmented[:10, :10][mask] == expected[mask])
 
-    def test_02_04_two_objects_propagation_distance(self):
+    def test_two_objects_propagation_distance(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -393,7 +393,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         mask[:, 9:11] = False
         assert numpy.all(objects_out.segmented[mask] == expected[mask])
 
-    def test_02_05_propagation_wrong_size(self):
+    def test_propagation_wrong_size(self):
         """Regression test of img-961: different image / object sizes"""
         img = numpy.zeros((10, 20))
         img[2:7, 2:7] = 0.5
@@ -428,7 +428,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert len(parents) == 1
         assert parents[0] == 1
 
-    def test_03_01_zeros_watershed_gradient(self):
+    def test_zeros_watershed_gradient(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -461,7 +461,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.product(counts.shape) == 1
         assert counts == 0
 
-    def test_03_02_one_object_watershed_gradient(self):
+    def test_one_object_watershed_gradient(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -512,7 +512,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.product(values.shape) == 1
         assert values[0] == 4
 
-    def test_03_03_two_objects_watershed_gradient(self):
+    def test_two_objects_watershed_gradient(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -567,7 +567,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         mask[:, 7:9] = False
         assert numpy.all(objects_out.segmented[mask] == expected[mask])
 
-    def test_03_04_watershed_gradient_wrong_size(self):
+    def test_watershed_gradient_wrong_size(self):
         img = numpy.zeros((20, 10))
         img[2:7, 2:7] = 0.5
         labels = numpy.zeros((10, 20), int)
@@ -599,7 +599,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.product(values.shape) == 1
         assert values[0] == 4
 
-    def test_04_01_zeros_watershed_image(self):
+    def test_zeros_watershed_image(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -632,7 +632,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.product(counts.shape) == 1
         assert counts == 0
 
-    def test_04_02_one_object_watershed_image(self):
+    def test_one_object_watershed_image(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -675,7 +675,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         expected[2:7, 2:7] = 1
         assert numpy.all(objects_out.segmented == expected)
 
-    def test_04_03_two_objects_watershed_image(self):
+    def test_two_objects_watershed_image(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -731,7 +731,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         mask[:, 7] = False
         assert numpy.all(objects_out.segmented[mask] == expected[mask])
 
-    def test_04_04_watershed_image_wrong_size(self):
+    def test_watershed_image_wrong_size(self):
         img = numpy.zeros((20, 10))
         img[2:7, 2:7] = 0.5
         labels = numpy.zeros((10, 20), int)
@@ -755,7 +755,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         expected[2:7, 2:7] = 1
         assert numpy.all(objects_out.segmented == expected)
 
-    def test_05_01_zeros_distance_n(self):
+    def test_zeros_distance_n(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -786,7 +786,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.product(counts.shape) == 1
         assert counts == 0
 
-    def test_05_02_one_object_distance_n(self):
+    def test_one_object_distance_n(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -828,7 +828,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
                 expected[x, y] = 0
         assert numpy.all(objects_out.segmented == expected)
 
-    def test_05_03_two_objects_distance_n(self):
+    def test_two_objects_distance_n(self):
         p = cellprofiler.pipeline.Pipeline()
         o_s = cellprofiler.object.ObjectSet()
         i_l = cellprofiler.image.ImageSetList()
@@ -869,7 +869,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         expected[:, 10:] = 2
         assert numpy.all(objects_out.segmented == expected)
 
-    def test_05_04_distance_n_wrong_size(self):
+    def test_distance_n_wrong_size(self):
         img = numpy.zeros((20, 10))
         labels = numpy.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
@@ -892,7 +892,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
                 expected[x, y] = 0
         assert numpy.all(objects_out.segmented == expected)
 
-    def test_07_01_measurements_no_new_primary(self):
+    def test_measurements_no_new_primary(self):
         module = (
             cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
         )
@@ -1024,7 +1024,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
                     ]
                 )
 
-    def test_07_02_measurements_new_primary(self):
+    def test_measurements_new_primary(self):
         module = (
             cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
         )
@@ -1166,7 +1166,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
                 ]
             )
 
-    def test_08_01_filter_edge(self):
+    def test_filter_edge(self):
         labels = numpy.array(
             [
                 [0, 0, 0, 0, 0],
@@ -1233,7 +1233,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.all(object_out.segmented == 0)
         assert numpy.all(object_out.unedited_segmented == labels)
 
-    def test_08_02_filter_unedited(self):
+    def test_filter_unedited(self):
         labels = numpy.array(
             [
                 [0, 0, 0, 0, 0],
@@ -1319,7 +1319,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert numpy.all(object_out.segmented == labels)
         assert numpy.all(object_out.unedited_segmented == labels_unedited)
 
-    def test_08_03_small(self):
+    def test_small(self):
         """Regression test of IMG-791
 
         A small object in the seed mask should not attract any of the
@@ -1396,7 +1396,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         assert numpy.all(object_out.segmented == expected)
 
-    def test_08_04_small_touching(self):
+    def test_small_touching(self):
         """Test of logic added for IMG-791
 
         A small object in the seed mask touching the edge should attract
@@ -1478,7 +1478,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
             == 1
         )
 
-    def test_10_01_holes_no_holes(self):
+    def test_holes_no_holes(self):
         for wants_fill_holes in (True, False):
             for method in (
                 cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_B,
@@ -1526,7 +1526,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
                 indexes = numpy.hstack(([0], indexes))
                 assert numpy.all(indexes[labels_out] == expected)
 
-    def test_11_00_relationships_zero(self):
+    def test_relationships_zero(self):
         workspace, module = self.make_workspace(
             numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
         )
@@ -1545,7 +1545,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         )
         assert len(result) == 0
 
-    def test_11_01_relationships_one(self):
+    def test_relationships_one(self):
         img = numpy.zeros((10, 10))
         img[2:7, 2:7] = 0.5
         labels = numpy.zeros((10, 10), int)
@@ -1576,7 +1576,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision
         assert result[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER][0] == 1
         assert result[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER][0] == 1
 
-    def test_11_02_relationships_missing(self):
+    def test_relationships_missing(self):
         for missing in range(1, 4):
             img = numpy.zeros((10, 30))
             labels = numpy.zeros((10, 30), int)

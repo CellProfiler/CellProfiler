@@ -68,7 +68,7 @@ class TestCrop:
         m.add_measurement(cpm.IMAGE, cpm.GROUP_NUMBER, 1, image_set_number=1)
         return workspace, module
 
-    def test_00_00_zeros(self):
+    def test_zeros(self):
         """Test cropping an image with a mask of all zeros"""
         workspace, module = self.make_workspace(
             np.zeros((10, 10)), crop_image=np.zeros((10, 10), bool)
@@ -97,7 +97,7 @@ class TestCrop:
         values = m.get_current_measurement("Image", feature)
         assert values == 0
 
-    def test_00_01_zeros_and_remove_all(self):
+    def test_zeros_and_remove_all(self):
         """Test cropping and removing rows and columns on a blank image"""
         workspace, module = self.make_workspace(
             np.zeros((10, 10)), crop_image=np.zeros((10, 10), bool)
@@ -108,7 +108,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.product(output_image.pixel_data.shape) == 0
 
-    def test_01_01_crop_edges_with_image(self):
+    def test_crop_edges_with_image(self):
         """Test cropping and removing rows and columns with an image"""
         x, y = np.mgrid[0:10, 0:10]
         input_image = x / 100.0 + y / 10.0
@@ -125,7 +125,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_01_02_crop_all_with_image(self):
+    def test_crop_all_with_image(self):
         """Test cropping and removing rows and columns with an image"""
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
@@ -142,7 +142,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_02_01_crop_edges_with_cropping(self):
+    def test_crop_edges_with_cropping(self):
         """Test cropping and removing rows and columns with an image cropping"""
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
@@ -159,7 +159,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_03_01_crop_with_ellipse_x_major(self):
+    def test_crop_with_ellipse_x_major(self):
         """Crop with an ellipse that has its major axis in the X direction"""
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
@@ -179,7 +179,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_03_02_crop_with_ellipse_y_major(self):
+    def test_crop_with_ellipse_y_major(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         workspace, module = self.make_workspace(input_image)
@@ -198,7 +198,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_01_crop_with_rectangle(self):
+    def test_crop_with_rectangle(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         expected_image = input_image[2:8, 1:9]
@@ -211,7 +211,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_02_crop_with_rectangle_unbounded_xmin(self):
+    def test_crop_with_rectangle_unbounded_xmin(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         expected_image = input_image[2:8, :9]
@@ -224,7 +224,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_03_crop_with_rectangle_unbounded_xmax(self):
+    def test_crop_with_rectangle_unbounded_xmax(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         expected_image = input_image[2:8, 1:]
@@ -237,7 +237,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_04_crop_with_rectangle_unbounded_ymin(self):
+    def test_crop_with_rectangle_unbounded_ymin(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         expected_image = input_image[:8, 1:9]
@@ -250,7 +250,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_05_crop_with_rectangle_unbounded_ymax(self):
+    def test_crop_with_rectangle_unbounded_ymax(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         expected_image = input_image[2:, 1:9]
@@ -263,7 +263,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_06_crop_color_with_rectangle(self):
+    def test_crop_color_with_rectangle(self):
         """Regression test: make sure cropping works with a color image"""
         i, j, k = np.mgrid[0:10, 0:10, 0:3]
         input_image = (i / 1000.0 + j / 100.0 + k).astype(np.float32)
@@ -277,7 +277,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_04_07_crop_with_rectangle_float_bounds(self):
+    def test_crop_with_rectangle_float_bounds(self):
         x, y = np.mgrid[0:10, 0:10]
         input_image = (x / 100.0 + y / 10.0).astype(np.float32)
         expected_image = input_image[2:8, 1:9]
@@ -290,7 +290,7 @@ class TestCrop:
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         assert np.all(output_image.pixel_data == expected_image)
 
-    def test_06_01_mask_with_objects(self):
+    def test_mask_with_objects(self):
         np.random.seed()
         input_image = np.random.uniform(size=(20, 10))
         input_objects = np.zeros((20, 10), dtype=int)
@@ -306,7 +306,7 @@ class TestCrop:
         assert np.all(input_objects == output_image.labels)
         assert np.all(output_image.mask == (input_objects > 0))
 
-    def test_06_02_crop_with_objects(self):
+    def test_crop_with_objects(self):
         np.random.seed()
         input_image = np.random.uniform(size=(20, 10))
         input_objects = np.zeros((20, 10), dtype=int)

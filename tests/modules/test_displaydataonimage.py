@@ -29,7 +29,7 @@ MEASUREMENT_NAME = "measurement"
 
 
 class TestDisplayDataOnImage:
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130719180707
@@ -74,7 +74,7 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         assert module.colormap == "jet"
         assert module.wants_image
 
-    def test_01_04_load_v5(self):
+    def test_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130719180707
@@ -123,7 +123,7 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         assert module.color_map_scale.min == 0
         assert module.color_map_scale.max == 1
 
-    def test_01_06_load_v6(self):
+    def test_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20141125133416
@@ -236,14 +236,14 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         )
         return workspace, module
 
-    def test_02_01_display_image(self):
+    def test_display_image(self):
         for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
             workspace, module = self.make_workspace(0)
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_02_display_objects(self):
+    def test_display_objects(self):
         labels = np.zeros((50, 120), int)
         labels[10:20, 20:27] = 1
         labels[30:35, 35:50] = 2
@@ -254,12 +254,12 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_03_display_no_objects(self):
+    def test_display_no_objects(self):
         workspace, module = self.make_workspace([], np.zeros((50, 120)))
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_04_display_nan_objects(self):
+    def test_display_nan_objects(self):
         labels = np.zeros((50, 120), int)
         labels[10:20, 20:27] = 1
         labels[30:35, 35:50] = 2
@@ -269,7 +269,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_05_display_objects_wrong_size(self):
+    def test_display_objects_wrong_size(self):
         labels = np.zeros((50, 120), int)
         labels[10:20, 20:27] = 1
         labels[30:35, 35:50] = 2
@@ -281,7 +281,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_06_display_colors(self):
+    def test_display_colors(self):
         labels = np.zeros((50, 120), int)
         labels[10:20, 20:27] = 1
         labels[30:35, 35:50] = 2
@@ -292,7 +292,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_07_display_colors_missing_measurement(self):
+    def test_display_colors_missing_measurement(self):
         #
         # Regression test of issue 1084
         #
@@ -306,7 +306,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_08_display_colors_nan_measurement(self):
+    def test_display_colors_nan_measurement(self):
         #
         # Regression test of issue 1084
         #
@@ -320,7 +320,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
-    def test_02_09_display_colors_manual(self):
+    def test_display_colors_manual(self):
         #
         # Just run the code path for manual color map scale
         #

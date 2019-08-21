@@ -27,10 +27,10 @@ import pytest
 
 
 class TestCreateBatchFiles:
-    def test_01_00_test_load_version_9_please(self):
+    def test_test_load_version_9_please(self):
         assert C.CreateBatchFiles.variable_revision_number == 8
 
-    def test_01_07_load_v7(self):
+    def test_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150713184605
@@ -68,7 +68,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         assert mapping.local_directory == r"\\argon-cifs\imaging_docs"
         assert mapping.remote_directory == r"/imaging/docs"
 
-    def test_01_08_load_v8(self):
+    def test_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150713184605
@@ -102,7 +102,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.mappings[0].remote_directory.value == "/Remote/cellprofiler/Pictures"
         )
 
-    def test_02_01_module_must_be_last(self):
+    def test_module_must_be_last(self):
         """Make sure that the pipeline is invalid if CreateBatchFiles is not last"""
         #
         # First, make sure that a naked CPModule tests valid
@@ -127,7 +127,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         with pytest.raises(cps.ValidationError):
             pipeline.test_valid()
 
-    def test_04_01_alter_path(self):
+    def test_alter_path(self):
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
@@ -135,7 +135,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         assert module.alter_path("foo/bar") == "bar/bar"
         assert module.alter_path("baz/bar") == "baz/bar"
 
-    def test_04_02_alter_path_regexp(self):
+    def test_alter_path_regexp(self):
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
@@ -152,7 +152,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
     if sys.platform == "win32":
 
-        def test_04_03_alter_path_windows(self):
+        def test_alter_path_windows(self):
             module = C.CreateBatchFiles()
             module.mappings[0].local_directory.value = "\\foo"
             module.mappings[0].remote_directory.value = "\\bar"
@@ -161,7 +161,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert module.alter_path("\\FOO\\bar") == "/bar/bar"
             assert module.alter_path("\\baz\\bar") == "/baz/bar"
 
-        def test_04_04_alter_path_windows_regexp(self):
+        def test_alter_path_windows_regexp(self):
             module = C.CreateBatchFiles()
             module.mappings[0].local_directory.value = "foo"
             module.mappings[0].remote_directory.value = "bar"

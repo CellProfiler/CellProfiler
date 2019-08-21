@@ -25,7 +25,7 @@ class TestImages:
         os.unlink(self.temp_filename)
         assert not os.path.exists(self.temp_filename)
 
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120209212234
@@ -53,7 +53,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
             == 'or (directory does startwith "foo") (file does contain "bar")'
         )
 
-    def test_01_02_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120209212234
@@ -86,7 +86,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                 == 'or (directory does startwith "foo") (file does contain "bar")'
             )
 
-    def test_02_04_filter_url(self):
+    def test_filter_url(self):
         module = cellprofiler.modules.images.Images()
         module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
         for url, filter_value, expected in (
@@ -131,7 +131,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         else:
             assert len(file_list) == 0
 
-    def test_02_05_filter_standard(self):
+    def test_filter_standard(self):
         module = cellprofiler.modules.images.Images()
         module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_IMAGES
         for url, expected in (

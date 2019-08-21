@@ -25,7 +25,7 @@ OUTPUT_IMAGE = "my_output_image"
 
 
 class TestFlipAndRotate:
-    def test_01_03_load_v2(self):
+    def test_load_v2(self):
         """Load a v2 pipeline"""
         data = (
             "eJztWFtPGkEUXhCtl6bVpEn7OI/SAlmstkoaFaWmpIJEaBtjbDuyA0wyO0N2"
@@ -109,7 +109,7 @@ class TestFlipAndRotate:
         output_image = image_set.get_image(OUTPUT_IMAGE)
         return output_image, angle
 
-    def test_02_01_flip_left_to_right(self):
+    def test_flip_left_to_right(self):
         np.random.seed(0)
         image = np.random.uniform(size=(3, 3))
         mask = np.array([[True, True, True], [False, True, True], [True, False, True]])
@@ -132,7 +132,7 @@ class TestFlipAndRotate:
             np.abs(output_image.pixel_data - expected) <= np.finfo(np.float32).eps
         )
 
-    def test_02_02_flip_top_to_bottom(self):
+    def test_flip_top_to_bottom(self):
         np.random.seed(0)
         image = np.random.uniform(size=(3, 3)).astype(np.float32)
         mask = np.array([[True, True, True], [False, True, True], [True, False, True]])
@@ -153,7 +153,7 @@ class TestFlipAndRotate:
         assert np.all(output_image.mask == expected_mask)
         assert np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
 
-    def test_02_03_flip_both(self):
+    def test_flip_both(self):
         np.random.seed(0)
         image = np.random.uniform(size=(3, 3)).astype(np.float32)
         mask = np.array([[True, True, True], [False, True, True], [True, False, True]])
@@ -175,7 +175,7 @@ class TestFlipAndRotate:
         assert np.all(output_image.mask == expected_mask)
         assert np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
 
-    def test_03_01_rotate_angle(self):
+    def test_rotate_angle(self):
         """Rotate an image through an angle"""
         #
         # Draw a rectangle with intensity that varies monotonically according
@@ -255,7 +255,7 @@ class TestFlipAndRotate:
                 for ci, cj in ((0, 0), (-1, 0), (-1, -1), (0, -1)):
                     assert not output_image.mask[ci, cj]
 
-    def test_03_02_rotate_coordinates(self):
+    def test_rotate_coordinates(self):
         """Test rotating a line to the horizontal and vertical"""
 
         img = np.zeros((20, 20))
@@ -315,7 +315,7 @@ class TestFlipAndRotate:
                 assert np.all(pixels[line_i : line_i + 12, line_j] > 0.2)
                 assert np.all(pixels[:20, :20][np.abs(j - line_j) > 1] < 0.1)
 
-    def test_04_01_crop(self):
+    def test_crop(self):
         """Turn cropping on and check that the cropping mask covers the mask"""
         image = np.random.uniform(size=(19, 21))
         i, j = np.mgrid[0:19, 0:21].astype(float)
@@ -364,7 +364,7 @@ class TestFlipAndRotate:
             # self.assertTrue(np.all(recrop_image == crop_image))
             # self.assertTrue(np.all(crop_output_image.crop_image_similarly(mask)))
 
-    def test_05_01_get_measurements(self):
+    def test_get_measurements(self):
         """Test the get_measurements and allied methods"""
         module = F.FlipAndRotate()
         module.output_name.value = OUTPUT_IMAGE

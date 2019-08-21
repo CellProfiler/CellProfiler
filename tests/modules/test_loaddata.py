@@ -68,11 +68,11 @@ class TestLoadData:
         pipeline.add_listener(error_callback)
         return pipeline, module, name
 
-    def test_01_00_revision(self):
+    def test_revision(self):
         """Remember to update this and write another test on new revision"""
         assert cellprofiler.modules.loaddata.LoadData().variable_revision_number == 6
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9722
@@ -111,7 +111,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         assert len(module.metadata_fields.selections) == 1
         assert module.metadata_fields.selections[0] == "Well"
 
-    def test_01_05_load_v5(self):
+    def test_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10534
@@ -158,7 +158,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_w
         assert module.metadata_fields.selections[0] == "Column"
         assert module.metadata_fields.selections[1] == "Row"
 
-    def test_01_06_load_v6(self):
+    def test_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10536
@@ -206,7 +206,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert module.metadata_fields.selections[0] == "Column"
         assert module.metadata_fields.selections[1] == "Row"
 
-    def test_02_01_string_image_measurement(self):
+    def test_string_image_measurement(self):
         csv_text = """"Test_Measurement"
 "Hello, world"
 """
@@ -217,7 +217,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert data == "Hello, world"
         os.remove(filename)
 
-    def test_02_02_float_image_measurement(self):
+    def test_float_image_measurement(self):
         csv_text = """"Test_Measurement"
 1.5
 """
@@ -228,7 +228,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert round(abs(data - 1.5), 7) == 0
         os.remove(filename)
 
-    def test_02_03_int_image_measurement(self):
+    def test_int_image_measurement(self):
         csv_text = """"Test_Measurement"
 1
 """
@@ -239,7 +239,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert data == 1
         os.remove(filename)
 
-    def test_02_04_long_int_image_measurement(self):
+    def test_long_int_image_measurement(self):
         csv_text = """"Test_Measurement"
 1234567890123
 """
@@ -252,7 +252,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert data == "1234567890123"
         os.remove(filename)
 
-    def test_03_01_metadata(self):
+    def test_metadata(self):
         csv_text = """"Metadata_Plate"
 "P-12345"
 """
@@ -262,7 +262,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert data == "P-12345"
         os.remove(filename)
 
-    def test_03_02_metadata_row_and_column(self):
+    def test_metadata_row_and_column(self):
         csv_text = """"Metadata_Row","Metadata_Column"
 "C","03"
 """
@@ -305,7 +305,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             )
             assert value == expected
 
-    def test_03_03_metadata_row_and_column_and_well(self):
+    def test_metadata_row_and_column_and_well(self):
         csv_text = """"Metadata_Row","Metadata_Column","Metadata_Well"
 "C","03","B14"
 """
@@ -348,7 +348,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             )
             assert value == expected
 
-    def test_04_01_load_file(self):
+    def test_load_file(self):
         csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 """ % (
@@ -383,7 +383,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_04_02_dont_load_file(self):
+    def test_dont_load_file(self):
         csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 """ % (
@@ -409,7 +409,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_04_03_load_planes(self):
+    def test_load_planes(self):
         file_name = "RLM1 SSN3 300308 008015000.flex"
         tests.modules.maybe_download_tesst_image(file_name)
         path = tests.modules.testimages_directory()
@@ -464,7 +464,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_05_01_some_rows(self):
+    def test_some_rows(self):
         csv_text = """"Test_Measurement"
 1
 2
@@ -489,7 +489,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert numpy.all(data == numpy.arange(4, 7))
         os.remove(filename)
 
-    def test_05_02_img_717(self):
+    def test_img_717(self):
         """Regression test of img-717, column without underbar"""
         csv_text = """"Image","Test_Measurement"
 "foo",1
@@ -515,7 +515,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert numpy.all(data == numpy.arange(4, 7))
         os.remove(filename)
 
-    def test_06_01_alternate_image_start(self):
+    def test_alternate_image_start(self):
         csv_text = """"Metadata_Measurement"
 1
 2
@@ -536,7 +536,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert all([data[i - 2] == i for i in range(2, 11)])
         os.remove(filename)
 
-    def test_07_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         """Test the get_measurement_columns method"""
         colnames = ("Integer_Measurement", "Float_Measurement", "String_Measurement")
         coltypes = [
@@ -572,7 +572,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             ), ("Failed to find %s" % colname)
         os.remove(filename)
 
-    def test_07_02_file_name_measurement_columns(self):
+    def test_file_name_measurement_columns(self):
         """Regression test bug IMG-315
 
         A csv header of Image_FileName_Foo or Image_PathName_Foo should
@@ -594,7 +594,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_07_03_long_integer_column(self):
+    def test_long_integer_column(self):
         """This is a regression test of IMG-644 where a 13-digit number got turned into an int"""
         colnames = (
             "Long_Integer_Measurement",
@@ -638,7 +638,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             ), ("Failed to find %s" % colname)
         os.remove(filename)
 
-    def test_07_04_objects_measurement_columns(self):
+    def test_objects_measurement_columns(self):
         csv_text = """%s_%s,%s_%s
 Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
 """ % (
@@ -687,7 +687,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 ]
             )
 
-    def test_08_01_get_groupings(self):
+    def test_get_groupings(self):
         """Test the get_groupings method"""
         dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         pattern = "Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif"
@@ -745,7 +745,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 assert match
                 assert row == match.group("ROW")
 
-    def test_09_01_load_bcb_file(self):
+    def test_load_bcb_file(self):
 
         csv_text = """ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
 MX_PLATE_ID,ASSAY_WELL_POSITION,ASSAY_WELL_ROLE,SITE_X,SITE_Y,\
@@ -795,7 +795,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         finally:
             os.remove(filename)
 
-    def test_10_01_scaling(self):
+    def test_scaling(self):
         """Test loading an image scaled and unscaled"""
         folder = "loaddata"
         file_name = "1-162hrh2ax2.tif"
@@ -826,7 +826,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         unscaled, scaled = c0_image
         numpy.testing.assert_almost_equal(unscaled * 65535.0 / 4095.0, scaled)
 
-    def test_11_01_load_objects(self):
+    def test_load_objects(self):
         r = numpy.random.RandomState()
         r.seed(1101)
         labels = r.randint(0, 10, size=(30, 20)).astype(numpy.uint8)
@@ -890,7 +890,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             os.remove(name)
             os.remove(csv_name)
 
-    # def test_12_01_load_unicode(self):
+    # def test_load_unicode(self):
     #     base_directory = tempfile.mkdtemp()
     #     directory = u"\u2211\u03B1"
     #     filename = u"\u03B2.jpg"
@@ -953,7 +953,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
     #             except:
     #                 pass
 
-    def test_13_01_load_filename(self):
+    def test_load_filename(self):
         #
         # Load a file, only specifying the FileName in the CSV
         #
@@ -993,7 +993,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
         assert tuple(img.pixel_data.shape) == self.test_shape
 
-    def test_13_02_load_url(self):
+    def test_load_url(self):
         #
         # Load, only specifying URL
         #
@@ -1040,7 +1040,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         img = workspace.image_set.get_image("DNA", must_be_color=True)
         assert tuple(img.pixel_data.shape) == tests.modules.cp_logo_url_shape
 
-    def test_13_03_extra_fields(self):
+    def test_extra_fields(self):
         #
         # Regression test of issue #853, extra fields
         #
@@ -1088,7 +1088,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         img = workspace.image_set.get_image("DNA", must_be_color=True)
         assert tuple(img.pixel_data.shape) == tests.modules.cp_logo_url_shape
 
-    def test_13_04_extra_lines(self):
+    def test_extra_lines(self):
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         #
@@ -1122,7 +1122,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         finally:
             os.remove(filename)
 
-    def test_13_05_extra_lines_skip_rows(self):
+    def test_extra_lines_skip_rows(self):
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         # Different code path from 13_04
@@ -1167,7 +1167,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         finally:
             os.remove(filename)
 
-    def test_13_06_load_default_input_folder(self):
+    def test_load_default_input_folder(self):
         # Regression test of issue #1365 - load a file from the default
         # input folder and check that PathName_xxx is absolute
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"\n"%s","%s"''' % (

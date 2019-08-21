@@ -50,7 +50,7 @@ def md(keys_and_counts):
 
 
 class TestNamesAndTypes:
-    def test_00_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120213205828
@@ -175,7 +175,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
             assert assignment.object_name == objects_name
             assert assignment.load_as_choice == load_as
 
-    def test_00_02_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
@@ -300,7 +300,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|s
             assert assignment.object_name == objects_name
             assert assignment.load_as_choice == load_as
 
-    def test_00_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
@@ -432,7 +432,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
             assert assignment.object_name == objects_name
             assert assignment.load_as_choice == load_as
 
-    def test_00_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
@@ -580,7 +580,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             )
         assert len(module.single_images) == 0
 
-    #     def test_00_05_load_v5(self):
+    #     def test_load_v5(self):
     #             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     # Version:3
     # DateRevision:20130730112304
@@ -706,7 +706,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
     #                 self.assertEqual(assignment.save_outlines.value, outlines_name)
     #                 first = False
     #
-    #     def test_00_06_load_v6(self):
+    #     def test_load_v6(self):
     #         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     # Version:3
     # DateRevision:20141031194728
@@ -970,14 +970,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         return cellprofiler.pipeline.ImagePlaneDetails(jipd)
 
-    def test_01_00_01_all(self):
+    def test_01_all(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL
         n.single_image_provider.value = C0
         data = {C0: [("images/1.jpg", {M0: "1"})]}
         self.do_teest(n, data, [(cellprofiler.measurement.IMAGE_NUMBER,)], [(M0, C0)])
 
-    def test_01_01_one(self):
+    def test_one(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -994,7 +994,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         }
         self.do_teest(n, data, [(cellprofiler.measurement.IMAGE_NUMBER,)], [(M0, C0)])
 
-    def test_01_02_match_one_same_key(self):
+    def test_match_one_same_key(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1007,7 +1007,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         data = {C0: [("images/1.jpg", {M0: "k1"})], C1: [("images/2.jpg", {M0: "k1"})]}
         self.do_teest(n, data, [(M0,)], [(M0, C0)])
 
-    def test_01_03_match_one_different_key(self):
+    def test_match_one_different_key(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1020,7 +1020,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         data = {C0: [("images/1.jpg", {M0: "k1"})], C1: [("images/2.jpg", {M1: "k1"})]}
         self.do_teest(n, data, [(M0, M1)], [(M0, C0), (M1, C1)])
 
-    def test_01_04_match_two_one_key(self):
+    def test_match_two_one_key(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1036,7 +1036,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         }
         self.do_teest(n, data, [(M0, M1)], [(M0, C0), (M1, C1)])
 
-    def test_01_05_match_two_and_two(self):
+    def test_match_two_and_two(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1063,7 +1063,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             n, data, [(M0, M2), (M1, M3)], [(M0, C0), (M1, C0), (M2, C1), (M3, C1)]
         )
 
-    def test_01_06_01_two_with_same_metadata(self):
+    def test_01_two_with_same_metadata(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1103,7 +1103,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             additional,
         )
 
-    def test_01_06_02_missing(self):
+    def test_02_missing(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1139,7 +1139,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             additional,
         )
 
-    def test_01_07_one_against_all(self):
+    def test_one_against_all(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1155,7 +1155,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         }
         self.do_teest(n, data, [(M0,)], [(M0, C1)])
 
-    def test_01_08_some_against_all(self):
+    def test_some_against_all(self):
         #
         # Permute both the order of the columns and the order of joins
         #
@@ -1195,7 +1195,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                     n, data, expected_keys, [(C0, M0), (C0, M3), (C1, M1), (C1, M2)]
                 )
 
-    def test_01_10_by_order(self):
+    def test_by_order(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
@@ -1212,7 +1212,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             n, data, [(cellprofiler.measurement.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)]
         )
 
-    def test_01_11_by_order_bad(self):
+    def test_by_order_bad(self):
         # Regression test of issue #392: columns of different lengths
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
@@ -1241,7 +1241,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             n, data, [(cellprofiler.measurement.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)]
         )
 
-    def test_01_12_single_image_by_order(self):
+    def test_single_image_by_order(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
@@ -1280,7 +1280,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         ]
         assert all([url == si.image_plane.url for url in urls])
 
-    def test_01_13_single_image_by_metadata(self):
+    def test_single_image_by_metadata(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
@@ -1315,7 +1315,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             n, data, [(M0, M2), (M1, M3)], [(M0, C0), (M1, C0), (M2, C1), (M3, C1)]
         )
 
-    def test_02_01_prepare_to_create_batch_single(self):
+    def test_prepare_to_create_batch_single(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.module_num = 1
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL
@@ -1359,7 +1359,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             )
             assert expected == list(values)
 
-    def test_02_02_prepare_to_create_batch_multiple(self):
+    def test_prepare_to_create_batch_multiple(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.module_num = 1
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
@@ -1430,7 +1430,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             )
             assert list(expected) == list(values)
 
-    def test_02_03_prepare_to_create_batch_single_image(self):
+    def test_prepare_to_create_batch_single_image(self):
         si_names = ["si1", "si2"]
         pathnames = ["foo", "fuu"]
         expected_pathnames = ["bar", "fuu"]
@@ -1509,7 +1509,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             )
             assert list(expected) == list(values)
 
-    # def test_02_04_create_batch_files_imagesets(self):
+    # def test_create_batch_files_imagesets(self):
     #     # Regression test of issue 1129
     #     # Once imagesets are pickled in the M_IMAGE_SET measurement,
     #     # their path names are smoewhat inaccessible, yet need conversion.
@@ -1775,7 +1775,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         n.run(workspace)
         return workspace
 
-    def test_03_01_load_color(self):
+    def test_load_color(self):
         shape = (21, 31, 3)
         path = tests.modules.maybe_download_example_image(
             ["ExampleColorToGray"], "nt_03_01_color.tif", shape
@@ -1813,7 +1813,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             == 31
         )
 
-    def test_03_02_load_monochrome_as_color(self):
+    def test_load_monochrome_as_color(self):
         path = self.get_monochrome_image_path()
         target = bioformats.load_image(path)
         target_shape = (target.shape[0], target.shape[1], 3)
@@ -1828,7 +1828,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         numpy.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 1])
         numpy.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
 
-    def test_03_03_load_color_frame(self):
+    def test_load_color_frame(self):
         path = tests.modules.maybe_download_tesst_image(
             "DrosophilaEmbryo_GFPHistone.avi"
         )
@@ -1848,7 +1848,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         file_name = "AS_09125_050116030001_D03f00d0.tif"
         return tests.modules.maybe_download_example_image([folder], file_name)
 
-    def test_03_04_load_monochrome(self):
+    def test_load_monochrome(self):
         path = self.get_monochrome_image_path()
         target = bioformats.load_image(path)
         workspace = self.run_workspace(
@@ -1860,7 +1860,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         assert numpy.all(pixel_data >= 0)
         assert numpy.all(pixel_data <= 1)
 
-    def test_03_05_load_color_as_monochrome(self):
+    def test_load_color_as_monochrome(self):
         shape = (21, 31, 3)
         path = tests.modules.maybe_download_example_image(
             ["ExampleColorToGray"], "nt_03_05_color.tif", shape
@@ -1874,7 +1874,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         assert numpy.all(pixel_data >= 0)
         assert numpy.all(pixel_data <= 1)
 
-    def test_03_06_load_monochrome_plane(self):
+    def test_load_monochrome_plane(self):
         path = tests.modules.maybe_download_tesst_image("5channel.tif")
 
         for i in range(5):
@@ -1891,7 +1891,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             else:
                 assert numpy.any(pixel_data != plane_0)
 
-    def test_03_07_load_raw(self):
+    def test_load_raw(self):
         folder = "namesandtypes_03_07"
         file_name = "1-162hrh2ax2.tif"
         path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
@@ -1904,7 +1904,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         assert numpy.all(pixel_data >= 0)
         assert numpy.all(pixel_data <= 1.0 / 16.0)
 
-    def test_03_08_load_mask(self):
+    def test_load_mask(self):
         path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif"
         )
@@ -1917,7 +1917,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         assert pixel_data.shape == target.shape
         assert numpy.sum(~pixel_data) == numpy.sum(target == 0)
 
-    def test_03_09_load_objects(self):
+    def test_load_objects(self):
         path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif"
         )
@@ -1950,7 +1950,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             == target.shape[1]
         )
 
-    def test_03_10_load_overlapped_objects(self):
+    def test_load_overlapped_objects(self):
         from .test_loadimages import overlapped_objects_data
         from .test_loadimages import overlapped_objects_data_masks
 
@@ -1981,7 +1981,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             except:
                 pass
 
-    def test_03_11_load_rescaled(self):
+    def test_load_rescaled(self):
         # Test all color/monochrome rescaled paths
         folder = "namesandtypes_03_11"
         file_name = "1-162hrh2ax2.tif"
@@ -2016,7 +2016,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                     else:
                         assert numpy.all(pixel_data <= 1.0 / 32.0)
 
-    def test_03_12_load_single_image(self):
+    def test_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image
         path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif"
@@ -2040,7 +2040,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         pixel_data = image.pixel_data
         assert pixel_data.shape == target.shape
 
-    def test_03_13_load_single_object(self):
+    def test_load_single_object(self):
         path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif"
         )
@@ -2084,7 +2084,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             == target.shape[1]
         )
 
-    def test_04_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         p = cellprofiler.pipeline.Pipeline()
         p.clear()
         nts = [
@@ -2148,7 +2148,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         ):
             assert any([c[0] == OBJECTS_NAME and c[1] == mname for c in columns])
 
-    def test_04_02_get_categories(self):
+    def test_get_categories(self):
         p = cellprofiler.pipeline.Pipeline()
         p.clear()
         nts = [
@@ -2185,7 +2185,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         categories = m.get_categories(p, OBJECTS_NAME)
         assert cellprofiler.measurement.C_LOCATION in categories
 
-    def test_04_03_get_measurements(self):
+    def test_get_measurements(self):
         p = cellprofiler.pipeline.Pipeline()
         p.clear()
         nts = [
@@ -2246,7 +2246,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             ]
         )
 
-    def test_05_01_validate_single_channel(self):
+    def test_validate_single_channel(self):
         # regression test for issue #1429
         #
         # Single column doesn't use MATCH_BY_METADATA

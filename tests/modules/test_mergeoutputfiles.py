@@ -54,11 +54,11 @@ class TestMergeOutputFiles:
         assert isinstance(m, cpmeas.Measurements)
         m.add_experiment_measurement(feature, np.random.uniform())
 
-    def test_00_00_nothing(self):
+    def test_nothing(self):
         """Make sure merge_files doesn't crash if no inputs"""
         M.MergeOutputFiles.merge_files("nope", [])
 
-    def test_01_01_one(self):
+    def test_one(self):
         """Test "merging" one file"""
         np.random.seed(11)
         m = cpmeas.Measurements()
@@ -92,7 +92,7 @@ class TestMergeOutputFiles:
             assert len(ro[i]) == len(mo[i])
             np.testing.assert_almost_equal(ro[i], mo[i])
 
-    def test_01_02_two(self):
+    def test_two(self):
         np.random.seed(12)
         mm = []
         for i in range(2):
@@ -120,7 +120,7 @@ class TestMergeOutputFiles:
             assert len(ro[i + j * 5]) == len(moo[j][i])
             np.testing.assert_almost_equal(ro[i + j * 5], moo[j][i])
 
-    def test_01_03_different_measurements(self):
+    def test_different_measurements(self):
         np.random.seed(13)
         mm = []
         for i in range(2):
@@ -155,7 +155,7 @@ class TestMergeOutputFiles:
                 np.testing.assert_almost_equal(ro, mo)
                 assert len(result.get_measurement("myobjects", "bar0", imgnum)) == 0
 
-    def test_01_04_different_objects(self):
+    def test_different_objects(self):
         np.random.seed(13)
         mm = []
         for i in range(2):

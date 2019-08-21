@@ -30,7 +30,7 @@ class TestCorrectIlluminationApply:
         if isinstance(event, cpp.RunExceptionEvent):
             self.fail(event.error.message)
 
-    def test_01_01_divide(self):
+    def test_divide(self):
         """Test correction by division"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -73,7 +73,7 @@ class TestCorrectIlluminationApply:
         output_image = workspace.image_set.get_image("OutputImage")
         assert np.all(output_image.pixel_data == expected)
 
-    def test_01_02_subtract(self):
+    def test_subtract(self):
         """Test correction by subtraction"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -118,7 +118,7 @@ class TestCorrectIlluminationApply:
         output_image = workspace.image_set.get_image("OutputImage")
         assert np.all(output_image.pixel_data == expected)
 
-    def test_02_01_color_by_bw(self):
+    def test_color_by_bw(self):
         """Correct a color image with a black & white illumination fn"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
@@ -163,7 +163,7 @@ class TestCorrectIlluminationApply:
         output_image = workspace.image_set.get_image("OutputImage")
         assert np.all(output_image.pixel_data == expected)
 
-    def test_02_02_color_by_color(self):
+    def test_color_by_color(self):
         """Correct a color image with a black & white illumination fn"""
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)

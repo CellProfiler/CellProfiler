@@ -279,7 +279,7 @@ class TestUntangleWorms:
         if os.path.exists(self.filename):
             os.remove(self.filename)
 
-    def test_01_01_load_v1(self):
+    def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10652
@@ -404,7 +404,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         assert module.complexity == U.C_ALL
         assert module.custom_complexity == 400
 
-    def test_01_01_load_v2(self):
+    def test_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10652
@@ -654,7 +654,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
         return X(d)
 
-    def test_02_01_load_params(self):
+    def test_load_params(self):
         data = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(np.zeros((10, 10), bool), data)
         assert isinstance(module, U.UntangleWorms)
@@ -1175,7 +1175,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             ),
         )
 
-    def test_02_02_load_xml_params(self):
+    def test_load_xml_params(self):
         data = r"""<?xml version="1.0" ?>
 <training-data xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd">
   <version>
@@ -3103,7 +3103,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         )
         np.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
 
-    def test_03_00_trace_segments_none(self):
+    def test_trace_segments_none(self):
         """Test the trace_segments function on a blank image"""
         image = np.zeros((10, 20), bool)
         module = U.UntangleWorms()
@@ -3112,7 +3112,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         for x in (i, j, label, order, distance):
             assert len(x) == 0
 
-    def test_03_01_trace_one_segment(self):
+    def test_trace_one_segment(self):
         """Trace a single segment"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
@@ -3130,7 +3130,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert np.all(image[i, j])
         assert np.all(expected_order == result_order)
 
-    def test_03_02_trace_short_segment(self):
+    def test_trace_short_segment(self):
         """Trace a segment of a single point"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
@@ -3149,7 +3149,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             assert np.all(image[i, j])
             assert np.all(expected_order == result_order)
 
-    def test_03_03_trace_loop(self):
+    def test_trace_loop(self):
         """Trace an object that loops on itself"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
@@ -3177,7 +3177,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         result_order[i, j] = order
         assert np.all(expected_order == result_order)
 
-    def test_03_04_trace_two(self):
+    def test_trace_two(self):
         """Trace two objects"""
         module = U.UntangleWorms()
         image = np.zeros((10, 20), bool)
@@ -3190,7 +3190,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         for j in (5, 15):
             assert np.all(result_order[1:-1, j] == np.arange(image.shape[0] - 2))
 
-    def test_04_00_make_incidence_matrix_of_nothing(self):
+    def test_make_incidence_matrix_of_nothing(self):
         """Make incidence matrix with two empty labels matrices"""
 
         module = U.UntangleWorms()
@@ -3199,7 +3199,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         )
         assert tuple(result.shape) == (0, 0)
 
-    def test_04_01_make_incidence_matrix_of_things_that_do_not_touch(self):
+    def test_make_incidence_matrix_of_things_that_do_not_touch(self):
         module = U.UntangleWorms()
         L1 = np.zeros((10, 20), int)
         L2 = np.zeros((10, 20), int)
@@ -3209,7 +3209,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(result.shape) == (1, 1)
         assert np.all(~result)
 
-    def test_04_02_make_incidence_matrix_of_things_that_touch(self):
+    def test_make_incidence_matrix_of_things_that_touch(self):
         module = U.UntangleWorms()
         L1 = np.zeros((10, 20), int)
         L2 = np.zeros((10, 20), int)
@@ -3220,7 +3220,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             assert tuple(result.shape) == (1, 1)
             assert np.all(result)
 
-    def test_04_03_make_incidence_matrix_of_many_things(self):
+    def test_make_incidence_matrix_of_many_things(self):
         module = U.UntangleWorms()
         L1 = np.zeros((10, 20), int)
         L2 = np.zeros((10, 20), int)
@@ -3248,7 +3248,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         result = module.make_incidence_matrix(L1, 5, L2, 5)
         assert np.all(result == expected)
 
-    def test_05_00_get_all_paths_recur_none(self):
+    def test_get_all_paths_recur_none(self):
         module = U.UntangleWorms()
 
         class Result(object):
@@ -3261,7 +3261,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
         assert len(paths_list) == 0
 
-    def test_05_01_get_all_paths_recur_one(self):
+    def test_get_all_paths_recur_one(self):
         module = U.UntangleWorms()
 
         #
@@ -3282,7 +3282,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(path.segments) == (0, 1)
         assert tuple(path.branch_areas) == (0,)
 
-    def test_05_02_get_all_paths_recur_depth_two(self):
+    def test_get_all_paths_recur_depth_two(self):
         module = U.UntangleWorms()
 
         #
@@ -3312,7 +3312,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         )
         assert sorted_list == expected
 
-    def test_05_03_get_all_paths_recur_many(self):
+    def test_get_all_paths_recur_many(self):
         module = U.UntangleWorms()
 
         #
@@ -3409,7 +3409,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         expected = tuple(sorted(expected))
         assert sorted_list == expected
 
-    def test_06_00_get_all_paths_none(self):
+    def test_get_all_paths_none(self):
         module = U.UntangleWorms()
 
         class Result(object):
@@ -3421,7 +3421,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         path_list = list(module.get_all_paths(Result(), 0, 1000))
         assert len(path_list) == 0
 
-    def test_06_01_get_all_paths_one(self):
+    def test_get_all_paths_one(self):
         module = U.UntangleWorms()
 
         class Result(object):
@@ -3438,7 +3438,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(path.segments) == (0,)
         assert len(path.branch_areas) == 0
 
-    def test_06_02_get_all_paths_two_segments(self):
+    def test_get_all_paths_two_segments(self):
         module = U.UntangleWorms()
 
         class Result(object):
@@ -3458,7 +3458,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         expected = (((0,), ()), ((0, 1), (0,)), ((1,), ()))
         assert sorted_list == expected
 
-    def test_06_03_get_all_paths_many(self):
+    def test_get_all_paths_many(self):
         module = U.UntangleWorms()
         np.random.seed(63)
 
@@ -3483,7 +3483,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                     assert graph.incidence_matrix[branch_area, prev]
                     assert graph.incidence_matrix[branch_area, next]
 
-    def test_07_01_sample_control_points(self):
+    def test_sample_control_points(self):
         module = U.UntangleWorms()
         path_coords = np.random.randint(0, 20, size=(11, 2))
         distances = np.linspace(0.0, 10.0, 11)
@@ -3494,7 +3494,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         for i in range(1, 5):
             assert tuple(path_coords[i * 2]) == tuple(result[i])
 
-    def test_07_02_sample_non_linear_control_points(self):
+    def test_sample_non_linear_control_points(self):
         module = U.UntangleWorms()
         path_coords = np.array([np.arange(11)] * 2).transpose()
         distances = np.sqrt(np.arange(11))
@@ -3502,7 +3502,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert np.all(result[:, 0] >= np.linspace(0.0, 1.0, 6) ** 2 * 10)
         assert np.all(result[:, 0] < np.linspace(0.0, 1.0, 6) ** 2 * 10 + 0.5)
 
-    def test_07_03_only_two_sample_points(self):
+    def test_only_two_sample_points(self):
         module = U.UntangleWorms()
         path_coords = np.array([[0, 0], [1, 2]])
         distances = np.array([0, 5])
@@ -3510,13 +3510,13 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(result[:, 0], np.linspace(0, 1, 6))
         np.testing.assert_almost_equal(result[:, 1], np.linspace(0, 2, 6))
 
-    def test_08_00_worm_descriptor_building_none(self):
+    def test_worm_descriptor_building_none(self):
         module = U.UntangleWorms()
         params = self.make_params(dict(worm_radius=5, num_control_points=20))
         result, _, _, _, _ = module.worm_descriptor_building([], params, (0, 0))
         assert len(result) == 0
 
-    def test_08_01_worm_descriptor_building_one(self):
+    def test_worm_descriptor_building_one(self):
         module = U.UntangleWorms()
         params = self.make_params(
             dict(radii_from_training=np.array([5, 5, 5]), num_control_points=3)
@@ -3535,7 +3535,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert len(expected) == len(result)
         assert np.all(result[rorder, :2] == expected[eorder, :])
 
-    def test_08_02_worm_descriptor_building_oob(self):
+    def test_worm_descriptor_building_oob(self):
         """Test performance if part of the worm is out of bounds"""
         module = U.UntangleWorms()
         params = self.make_params(
@@ -3555,7 +3555,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert len(expected) == len(result)
         assert np.all(result[rorder, :2] == expected[eorder, :])
 
-    def test_08_03_worm_descriptor_building_two(self):
+    def test_worm_descriptor_building_two(self):
         """Test rebuilding two worms"""
 
         module = U.UntangleWorms()
@@ -3586,7 +3586,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert np.all(result[rorder, 2] == elabels[eorder])
         assert np.all(result[rorder, :2] == epoints[eorder])
 
-    def test_09_01_fast_selection_two(self):
+    def test_fast_selection_two(self):
         module = U.UntangleWorms()
         costs = np.array([1, 1])
         path_segment_matrix = np.array([[True, False], [False, True]])
@@ -3597,7 +3597,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(best_paths) == (0, 1)
         assert best_cost == 2
 
-    def test_09_02_fast_selection_overlap(self):
+    def test_fast_selection_overlap(self):
         module = U.UntangleWorms()
         costs = np.array([1, 1, 10])
         path_segment_matrix = np.array(
@@ -3610,7 +3610,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(best_paths) == (0, 1)
         assert best_cost == 2 + 3 * 2
 
-    def test_09_03_fast_selection_gap(self):
+    def test_fast_selection_gap(self):
         module = U.UntangleWorms()
         costs = np.array([1, 1, 10])
         path_segment_matrix = np.array(
@@ -3623,7 +3623,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(best_paths) == (0, 1)
         assert best_cost == 2 + 3 * 2
 
-    def test_09_04_fast_selection_no_overlap(self):
+    def test_fast_selection_no_overlap(self):
         module = U.UntangleWorms()
         costs = np.array([1, 1, 7])
         path_segment_matrix = np.array(
@@ -3636,7 +3636,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(best_paths) == (2,)
         assert best_cost == 7
 
-    def test_09_05_fast_selection_no_gap(self):
+    def test_fast_selection_no_gap(self):
         module = U.UntangleWorms()
         costs = np.array([1, 1, 7])
         path_segment_matrix = np.array(
@@ -3649,7 +3649,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert tuple(best_paths) == (2,)
         assert best_cost == 7
 
-    def test_10_01_A02(self):
+    def test_A02(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(self.A02_image, params)
         assert isinstance(module, U.UntangleWorms)
@@ -3677,7 +3677,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             oname, feature = column[:2]
             v = m.get_current_measurement(oname, feature)
 
-    def test_10_02_nonoverlapping_outlines(self):
+    def test_nonoverlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(self.A02_image, params)
         assert isinstance(module, U.UntangleWorms)
@@ -3697,7 +3697,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         expected = outline(worms) > 0
         assert np.all(outlines == expected)
 
-    def test_10_03_overlapping_outlines(self):
+    def test_overlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(self.A02_image, params)
         assert isinstance(module, U.UntangleWorms)
@@ -3719,7 +3719,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         # all outlines are in some object...
         assert np.all(expected[outlines])
 
-    def test_11_01_train_dot(self):
+    def test_train_dot(self):
         # Test training a single pixel
         # Regression test of bugs regarding this case
         #
@@ -3731,7 +3731,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.prepare_group(workspace, None, None)
         module.run(workspace)
 
-    def test_12_01_trace_segments(self):
+    def test_trace_segments(self):
         #
         # Regression test of img-1541, branch_areas_binary is not zero
         # but segments_binary is
@@ -3747,7 +3747,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert len(distances) == 0
         assert num_segments == 0
 
-    def test_12_02_get_graph_from_branching_areas_and_segments(self):
+    def test_get_graph_from_branching_areas_and_segments(self):
         #
         # Regression test of img-1541, branch_areas_binary is not zero
         # but segments_binary is
@@ -3764,7 +3764,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert len(result.segment_order) == 0
         assert len(result.segments) == 0
 
-    def test_13_01_recalculate_single_worm_control_points(self):
+    def test_recalculate_single_worm_control_points(self):
         i, j = np.mgrid[0:10, 0:10]
         l0 = ((i == 3) & (j >= 2) & (j <= 6)).astype(int)
         l0[(i == 7) & (j >= 3) & (j <= 7)] = 3
@@ -3792,7 +3792,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         assert np.all(lengths == 4)
         np.testing.assert_array_equal(expected, result)
 
-    def test_13_02_recalculate_single_worm_control_points_no_objects(self):
+    def test_recalculate_single_worm_control_points_no_objects(self):
         # regression test of issue #930
         result, lengths = U.recalculate_single_worm_control_points(
             [np.zeros((10, 15), int)], 3

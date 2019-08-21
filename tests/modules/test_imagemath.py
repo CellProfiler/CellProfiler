@@ -288,7 +288,7 @@ class TestBinaryImages(object):
 
 
 class TestImageMath:
-    def test_01_03_load_v3(self):
+    def test_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140124151645
@@ -386,7 +386,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_
         assert module.images[1].measurement == "Count_Nuclei"
         assert module.images[1].factor == 1.5
 
-    def test_01_04_load_v4(self):
+    def test_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140124151645
@@ -547,7 +547,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 image.pixel_data[image.mask], expected[image.mask]
             )
 
-    def test_02_01_exponent(self):
+    def test_exponent(self):
         """Test exponentiation of an image"""
 
         def fn(module):
@@ -560,7 +560,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image}], fn)
         self.check_expected(output, expected)
 
-    def test_02_02_factor(self):
+    def test_factor(self):
         """Test multiplicative factor"""
 
         def fn(module):
@@ -573,7 +573,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image}], fn)
         self.check_expected(output, expected)
 
-    def test_02_03_addend(self):
+    def test_addend(self):
         """Test adding a value to image"""
 
         def fn(module):
@@ -587,7 +587,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image}], fn)
         self.check_expected(output, expected)
 
-    def test_02_04_mask(self):
+    def test_mask(self):
         """Test a mask in the first image"""
 
         def fn(module):
@@ -599,7 +599,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image, "mask": mask}], fn)
         self.check_expected(output, image, mask)
 
-    def test_03_01_add(self):
+    def test_add(self):
         """Test adding"""
 
         def fn(module):
@@ -620,7 +620,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_03_02_add_mask(self):
+    def test_add_mask(self):
         """Test adding masked images"""
         """Test adding"""
 
@@ -644,7 +644,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected, mask)
 
-    def test_03_03_add_mask_truncate(self):
+    def test_add_mask_truncate(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_ADD
             module.truncate_high.value = True
@@ -666,7 +666,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected, mask)
 
-    def test_03_04_add_crop(self):
+    def test_add_crop(self):
         """Add images, cropping to border"""
 
         def fn(module):
@@ -695,7 +695,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 output = self.run_imagemath(images, fn)
                 self.check_expected(output, expected)
 
-    def test_03_05_add_factors(self):
+    def test_add_factors(self):
         """Test adding with factors"""
         numpy.random.seed(0)
         for n in range(2, 5):
@@ -722,7 +722,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_03_06_ignore_mask(self):
+    def test_ignore_mask(self):
         """Test adding images with masks, but ignoring the masks"""
 
         def fn(module):
@@ -746,7 +746,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected, mask, True)
 
-    def test_04_01_subtract(self):
+    def test_subtract(self):
         """Test subtracting"""
 
         def fn(module):
@@ -767,7 +767,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_04_02_subtract_truncate(self):
+    def test_subtract_truncate(self):
         """Test subtracting with truncation"""
 
         def fn(module):
@@ -789,7 +789,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_05_01_multiply(self):
+    def test_multiply(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY
             module.truncate_low.value = False
@@ -808,7 +808,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_05_02_multiply_binary(self):
+    def test_multiply_binary(self):
         # Regression test of issue # 42
         #
         # Multiplying two binary images should yield a binary image
@@ -825,7 +825,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath(images, fn)
         assert output.pixel_data.dtype == numpy.bool
 
-    def test_06_01_divide(self):
+    def test_divide(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_DIVIDE
             module.truncate_low.value = False
@@ -847,7 +847,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_07_01_average(self):
+    def test_average(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_AVERAGE
             module.truncate_low.value = False
@@ -866,7 +866,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_07_02_average_factors(self):
+    def test_average_factors(self):
         """Test averaging with factors"""
         numpy.random.seed(0)
         for n in range(2, 5):
@@ -894,7 +894,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_08_01_invert(self):
+    def test_invert(self):
         """Test invert of an image"""
 
         def fn(module):
@@ -906,7 +906,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image}], fn)
         self.check_expected(output, expected)
 
-    def test_09_01_log_transform(self):
+    def test_log_transform(self):
         """Test log transform of an image"""
 
         def fn(module):
@@ -919,7 +919,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image}], fn)
         self.check_expected(output, expected)
 
-    def test_09_02_log_transform_legacy(self):
+    def test_log_transform_legacy(self):
         def fn(module):
             module.operation.value = (
                 cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY
@@ -932,7 +932,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": image}], fn)
         self.check_expected(output, expected)
 
-    def test_10_01_with_measurement(self):
+    def test_with_measurement(self):
         """Test multiplying an image by a measurement"""
 
         def fn(module):
@@ -951,7 +951,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         )
         self.check_expected(output, expected)
 
-    def test_10_02_with_measurement_and_mask(self):
+    def test_with_measurement_and_mask(self):
         """Test a measurement operation on a masked image"""
 
         def fn(module):
@@ -973,7 +973,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         )
         self.check_expected(output, expected, mask)
 
-    def test_11_01_add_and_do_nothing(self):
+    def test_add_and_do_nothing(self):
         #
         # Regression for issue #1333 - add one, do nothing, input image
         # is changed
@@ -997,7 +997,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             pixel_data, m.get_image("inputimage").pixel_data
         )
 
-    def test_11_02_invert_binary_invert(self):
+    def test_invert_binary_invert(self):
         #
         # Regression for issue #1329
         #
@@ -1026,7 +1026,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             pixel_data, m.get_image("inputimage").pixel_data > 0.5
         )
 
-    def test_12_01_or_binary(self):
+    def test_or_binary(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_OR
 
@@ -1040,7 +1040,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_12_02_or_numeric(self):
+    def test_or_numeric(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_OR
 
@@ -1054,7 +1054,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath(images, fn)
         self.check_expected(output, expected)
 
-    def test_13_01_and_binary(self):
+    def test_and_binary(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_AND
 
@@ -1068,7 +1068,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_14_01_not(self):
+    def test_not(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_NOT
 
@@ -1078,7 +1078,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath([{"pixel_data": pixel_data}], fn)
         self.check_expected(output, expected)
 
-    def test_15_01_equals_binary(self):
+    def test_equals_binary(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_EQUALS
 
@@ -1095,7 +1095,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_15_02_equals_numeric(self):
+    def test_equals_numeric(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_EQUALS
 
@@ -1109,7 +1109,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         output = self.run_imagemath(images, fn)
         self.check_expected(output, expected)
 
-    def test_16_01_minimum(self):
+    def test_minimum(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_MINIMUM
 
@@ -1126,7 +1126,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
-    def test_17_01_maximum(self):
+    def test_maximum(self):
         def fn(module):
             module.operation.value = cellprofiler.modules.imagemath.O_MAXIMUM
 

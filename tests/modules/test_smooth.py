@@ -49,7 +49,7 @@ class TestSmooth:
         module.filtered_image_name.value = OUTPUT_IMAGE_NAME
         return workspace, module
 
-    def test_01_02_load_v01(self):
+    def test_load_v01(self):
         data = base64.b64decode(
             "eJztWN1u0zAUdrqsbCDt5wourV0hxKJ0iGr0hnUrE5GWrqLVBHd4rdtZcuLKcaaWJ"
             "+CSR+JxuNwjEJekSUxo0mxMqlRXlnvs853P57MT17WbvYvmKXxrmNBu9g6HhGLYoU"
@@ -77,7 +77,7 @@ class TestSmooth:
         assert smooth.wants_automatic_object_size
         assert smooth.clip
 
-    def test_01_03_load_v02(self):
+    def test_load_v02(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130522170932
@@ -106,7 +106,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         assert smooth.smoothing_method == S.MEDIAN_FILTER
         assert not smooth.clip
 
-    def test_02_01_fit_polynomial(self):
+    def test_fit_polynomial(self):
         """Test the smooth module with polynomial fitting"""
         np.random.seed(0)
         #
@@ -130,7 +130,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             assert not (result is None)
             np.testing.assert_almost_equal(result.pixel_data, expected)
 
-    def test_03_01_gaussian_auto_small(self):
+    def test_gaussian_auto_small(self):
         """Test the smooth module with Gaussian smoothing in automatic mode"""
         sigma = 100.0 / 40.0 / 2.35
         np.random.seed(0)
@@ -146,7 +146,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
-    def test_03_02_gaussian_auto_large(self):
+    def test_gaussian_auto_large(self):
         """Test the smooth module with Gaussian smoothing in large automatic mode"""
         sigma = 30.0 / 2.35
         image = np.random.uniform(size=(3200, 100)).astype(np.float32)
@@ -161,7 +161,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
-    def test_03_03_gaussian_manual(self):
+    def test_gaussian_manual(self):
         """Test the smooth module with Gaussian smoothing, manual sigma"""
         sigma = 15.0 / 2.35
         np.random.seed(0)
@@ -179,7 +179,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
-    def test_04_01_median(self):
+    def test_median(self):
         """test the smooth module with median filtering"""
         object_size = 100.0 / 40.0
         np.random.seed(0)
@@ -194,7 +194,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
-    def test_05_01_bilateral(self):
+    def test_bilateral(self):
         """test the smooth module with bilateral filtering"""
         sigma = 16.0
         sigma_range = 0.2

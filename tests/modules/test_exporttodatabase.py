@@ -18,14 +18,8 @@ if hasattr(unittest, "SkipTest"):
 else:
     SkipTestException = None
 
-from cellprofiler.preferences import (
-    set_headless,
-    ABSOLUTE_FOLDER_NAME,
-    DEFAULT_OUTPUT_SUBFOLDER_NAME,
-)
+from cellprofiler.preferences import ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler.measurement import C_FILE_NAME, C_PATH_NAME
-
-set_headless()
 
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
@@ -4998,8 +4992,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
                 """
-                    select max(experiment_id) from Experiment_Properties
-                    where field = 'image_table' and value = '%s'"""
+                        select max(experiment_id) from Experiment_Properties
+                        where field = 'image_table' and value = '%s'"""
                 % image_table
             )
             cursor.execute(statement)
@@ -5047,8 +5041,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
                 """
-                    select max(experiment_id) from Experiment_Properties
-                    where field = 'image_table' and value = '%s'"""
+                        select max(experiment_id) from Experiment_Properties
+                        where field = 'image_table' and value = '%s'"""
                 % image_table
             )
             cursor.execute(statement)

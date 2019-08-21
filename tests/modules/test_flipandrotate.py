@@ -2,19 +2,15 @@ import base64
 import zlib
 
 import numpy as np
+from centrosome.cpmorphology import draw_line
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.flipandrotate as F
-from centrosome.cpmorphology import draw_line
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"

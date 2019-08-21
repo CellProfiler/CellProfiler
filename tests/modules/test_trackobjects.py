@@ -1,19 +1,14 @@
 import numpy as np
+from centrosome.filter import permutations
 from six.moves import StringIO
 
-import cellprofiler.measurement
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
-from centrosome.filter import permutations
-
 import cellprofiler.modules.trackobjects as T
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 from cellprofiler.measurement import C_COUNT
 
 OBJECT_NAME = "objects"

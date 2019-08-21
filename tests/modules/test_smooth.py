@@ -3,21 +3,17 @@ import io
 import zlib
 
 import numpy as np
+import skimage.restoration
+from centrosome.filter import median_filter
+from centrosome.smooth import fit_polynomial, smooth_with_function_and_mask
 from scipy.ndimage import gaussian_filter
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
-import cellprofiler.modules.smooth as S
-import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
-from centrosome.smooth import fit_polynomial, smooth_with_function_and_mask
-from centrosome.filter import median_filter
-import skimage.restoration
+import cellprofiler.modules.smooth as S
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 INPUT_IMAGE_NAME = "myimage"
 OUTPUT_IMAGE_NAME = "myfilteredimage"

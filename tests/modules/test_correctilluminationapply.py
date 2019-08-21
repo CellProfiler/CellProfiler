@@ -1,17 +1,13 @@
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpm
+import cellprofiler.module as cpm
 import cellprofiler.modules.correctilluminationapply as cpmcia
 import cellprofiler.modules.injectimage as inj
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
-import cellprofiler.measurement as cpm
 
 
 def error_callback(calller, event):

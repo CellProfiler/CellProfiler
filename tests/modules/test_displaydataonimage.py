@@ -1,17 +1,13 @@
 import numpy as np
+from centrosome.cpmorphology import centers_of_labels
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
-from centrosome.cpmorphology import centers_of_labels
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

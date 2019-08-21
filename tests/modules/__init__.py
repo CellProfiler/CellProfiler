@@ -15,10 +15,7 @@ import tempfile
 import functools
 
 import scipy.io.matlab.mio
-from cellprofiler.preferences import set_headless
 import cellprofiler.utilities.legacy
-
-set_headless()
 
 __temp_example_images_folder = None
 

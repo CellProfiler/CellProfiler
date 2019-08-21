@@ -1,17 +1,12 @@
 import sys
 
+import pytest
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-
 import cellprofiler.modules.createbatchfiles as C
-import pytest
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
 
 
 def test_test_load_version_9_please():

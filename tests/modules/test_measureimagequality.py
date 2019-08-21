@@ -1,22 +1,18 @@
 import io
 
+import centrosome.threshold
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.modules.measureimagequality as M
-import cellprofiler.modules.namesandtypes
-import cellprofiler.modules.loadsingleimage
-import cellprofiler.modules.smooth
-import cellprofiler.pipeline
-import cellprofiler.workspace
 import cellprofiler.image
-import cellprofiler.object
 import cellprofiler.measurement
 import cellprofiler.modules.identify
-import centrosome.threshold
+import cellprofiler.modules.loadsingleimage
+import cellprofiler.modules.measureimagequality as M
+import cellprofiler.modules.namesandtypes
+import cellprofiler.modules.smooth
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"

@@ -1,16 +1,11 @@
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
-
 import cellprofiler.modules.labelimages as L
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 
 def test_load_v1():

@@ -1,17 +1,13 @@
 import numpy as np
 from six.moves import StringIO
 
-import cellprofiler.measurement
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.modules.identifytertiaryobjects as cpmit
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
+import cellprofiler.measurement
 import cellprofiler.measurement as cpm
+import cellprofiler.modules.identifytertiaryobjects as cpmit
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 PRIMARY = "primary"
 SECONDARY = "secondary"

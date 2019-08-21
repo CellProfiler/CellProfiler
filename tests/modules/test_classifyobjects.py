@@ -1,15 +1,11 @@
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
 import cellprofiler.modules.classifyobjects as C
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 OBJECTS_NAME = "myobjects"
 MEASUREMENT_NAME_1 = "Measurement1"

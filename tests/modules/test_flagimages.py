@@ -5,20 +5,15 @@ import tempfile
 import numpy as np
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-from .test_filterobjects import make_classifier_pickle
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
 import cellprofiler.image as cpi
-import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-
 import cellprofiler.modules.flagimage as F
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+import cellprofiler.workspace as cpw
+from .test_filterobjects import make_classifier_pickle
 
 
 def image_measurement_name(index):

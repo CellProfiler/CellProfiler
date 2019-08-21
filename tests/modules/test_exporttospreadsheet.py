@@ -4,25 +4,21 @@ import os
 import tempfile
 
 import numpy as np
+import pytest
 import six
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
+import cellprofiler.modules.exporttospreadsheet as E
 import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
 import cellprofiler.setting
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.exporttospreadsheet as E
-from cellprofiler.modules import identifyprimaryobjects
 from cellprofiler.measurement import C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler.modules import identifyprimaryobjects
 from tests.modules import example_images_directory, maybe_download_sbs
-import pytest
 
 OBJECTS_NAME = "MyObjects"
 IMG_MEAS = "my_image_measurement"
@@ -2529,9 +2525,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         csv_text = (
             """"%s","%s","%s"
-        "Channel1-01-A-01.tif","%s","Hi"
-        "Channel1-02-A-02.tif","%s","Hello"
-        """
+            "Channel1-01-A-01.tif","%s","Hi"
+            "Channel1-02-A-02.tif","%s","Hello"
+            """
             % info
         )
         pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2586,9 +2582,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         csv_text = (
             """"%s","%s","%s"
-        "Channel1-01-A-01.tif","%s","Hi"
-        "Channel1-02-A-02.tif","%s","Hello"
-        """
+            "Channel1-01-A-01.tif","%s","Hi"
+            "Channel1-02-A-02.tif","%s","Hello"
+            """
             % info
         )
         pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2635,9 +2631,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         csv_text = (
             """"%s","%s","%s"
-        "Channel1-01-A-01.tif","%s","Hi"
-        "Channel1-02-A-02.tif","%s","Hello"
-        """
+            "Channel1-01-A-01.tif","%s","Hi"
+            "Channel1-02-A-02.tif","%s","Hello"
+            """
             % info
         )
         pipeline, module, input_filename = make_pipeline(csv_text)

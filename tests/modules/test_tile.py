@@ -1,16 +1,12 @@
 import numpy as np
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
-import cellprofiler.modules.tile as T
-import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
+import cellprofiler.modules.tile as T
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

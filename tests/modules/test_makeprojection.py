@@ -1,17 +1,12 @@
 import numpy as np
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
-
 import cellprofiler.modules.makeprojection as M
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 IMAGE_NAME = "image"
 PROJECTED_IMAGE_NAME = "projectedimage"

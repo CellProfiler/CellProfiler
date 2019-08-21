@@ -1,15 +1,11 @@
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpm
 import cellprofiler.modules.invertforprinting as I
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 I_RED_IN = "RedInput"
 I_GREEN_IN = "GreenInput"

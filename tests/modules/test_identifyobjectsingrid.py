@@ -1,17 +1,13 @@
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.identifyobjectsingrid as I
 import cellprofiler.modules.definegrid as D
+import cellprofiler.modules.identifyobjectsingrid as I
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 OUTPUT_OBJECTS_NAME = "outputobjects"
 GRID_NAME = "mygrid"

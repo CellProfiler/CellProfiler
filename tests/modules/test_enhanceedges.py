@@ -1,18 +1,14 @@
+import centrosome.filter as FIL
 import numpy as np
-
-from cellprofiler.preferences import set_headless
-
-set_headless()
+from centrosome.kirsch import kirsch
+from centrosome.otsu import otsu3
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
+import cellprofiler.modules.enhanceedges as F
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.enhanceedges as F
-import centrosome.filter as FIL
-from centrosome.kirsch import kirsch
-from centrosome.otsu import otsu3
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

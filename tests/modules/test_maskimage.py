@@ -1,15 +1,11 @@
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.maskimage as M
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 MASKING_IMAGE_NAME = "maskingimage"
 MASKED_IMAGE_NAME = "maskedimage"

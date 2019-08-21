@@ -4,18 +4,13 @@ import tempfile
 import numpy as np
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.setting as cps
-import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
-import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
-
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.calculatestatistics as C
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.setting as cps
+import cellprofiler.workspace as cpw
 
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"

@@ -1,14 +1,10 @@
 import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.image
-import cellprofiler.pipeline
 import cellprofiler.measurement as cpmeas
+import cellprofiler.pipeline
 import cellprofiler.workspace as cpw
+from cellprofiler.modules.injectimage import InjectImage
 
 
 def test_init():

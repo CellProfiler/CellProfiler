@@ -1,15 +1,11 @@
 import numpy as np
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
-import cellprofiler.modules.crop as cpmc
 import cellprofiler.measurement as cpm
+import cellprofiler.modules.crop as cpmc
 import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 INPUT_IMAGE = "input_image"
 CROP_IMAGE = "crop_image"

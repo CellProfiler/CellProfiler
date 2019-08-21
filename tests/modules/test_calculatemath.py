@@ -1,17 +1,12 @@
 import numpy as np
 
-import cellprofiler.measurement
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
-
 import cellprofiler.modules.calculatemath as C
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 OUTPUT_MEASUREMENTS = "outputmeasurements"
 MATH_OUTPUT_MEASUREMENTS = "_".join(("Math", OUTPUT_MEASUREMENTS))

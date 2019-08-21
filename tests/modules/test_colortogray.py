@@ -1,18 +1,12 @@
 import numpy
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.measurement
 import cellprofiler.image
-import cellprofiler.object
-
-import cellprofiler.modules.injectimage
+import cellprofiler.measurement
 import cellprofiler.modules.colortogray
-
+import cellprofiler.modules.injectimage
+import cellprofiler.object
+import cellprofiler.pipeline
 import tests.modules
 from cellprofiler.workspace import Workspace
 

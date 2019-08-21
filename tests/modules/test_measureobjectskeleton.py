@@ -5,17 +5,13 @@ import traceback
 import numpy as np
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
+import cellprofiler.modules.measureobjectskeleton as M
 import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.measureobjectskeleton as M
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"

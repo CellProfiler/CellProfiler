@@ -1,19 +1,15 @@
 import numpy as np
+import pytest
 from six.moves import StringIO
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpm
+import cellprofiler.modules.correctilluminationcalculate as calc
+import cellprofiler.modules.injectimage as inj
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
-import cellprofiler.measurement as cpm
-import cellprofiler.modules.injectimage as inj
-import cellprofiler.modules.correctilluminationcalculate as calc
-import pytest
 
 INPUT_IMAGE_NAME = "MyImage"
 OUTPUT_IMAGE_NAME = "MyResult"
@@ -128,11 +124,11 @@ def test_zeros():
                                 assert image is not None
                                 assert np.all(image.pixel_data == 0), (
                                     """Failure case:
-                intensity_choice = %(intensity_choice)s
-                dilate_objects = %(dilate_objects)s
-                rescale_option = %(rescale_option)s
-                smoothing_method = %(smoothing_method)s
-                automatic_object_width = %(ow)s"""
+                    intensity_choice = %(intensity_choice)s
+                    dilate_objects = %(dilate_objects)s
+                    rescale_option = %(rescale_option)s
+                    smoothing_method = %(smoothing_method)s
+                    automatic_object_width = %(ow)s"""
                                     % locals()
                                 )
 
@@ -200,11 +196,11 @@ def test_ones_image():
                             assert image is not None
                             assert np.all(np.std(image.pixel_data) < 0.00001), (
                                 """Failure case:
-            each_or_all            = %(ea)s
-            intensity_choice       = %(intensity_choice)s
-            dilate_objects         = %(dilate_objects)s
-            smoothing_method       = %(smoothing_method)s
-            automatic_object_width = %(ow)s"""
+                each_or_all            = %(ea)s
+                intensity_choice       = %(intensity_choice)s
+                dilate_objects         = %(dilate_objects)s
+                smoothing_method       = %(smoothing_method)s
+                automatic_object_width = %(ow)s"""
                                 % locals()
                             )
 
@@ -275,10 +271,10 @@ def test_masked_image():
                         assert image is not None
                         assert np.all(abs(image.pixel_data[mask] - 1 < 0.00001)), (
                             """Failure case:
-            each_or_all            = %(ea)s
-            intensity_choice       = %(intensity_choice)s
-            smoothing_method       = %(smoothing_method)s
-            automatic_object_width = %(ow)s"""
+                each_or_all            = %(ea)s
+                intensity_choice       = %(intensity_choice)s
+                smoothing_method       = %(smoothing_method)s
+                automatic_object_width = %(ow)s"""
                             % locals()
                         )
 

@@ -1,22 +1,18 @@
 import io
 
+import centrosome.cpmorphology as cpmorph
+import centrosome.filter as cpfilter
 import numpy as np
 import pytest
 import scipy.ndimage as scind
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
+import cellprofiler.modules.morph as morph
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.morph as morph
-import centrosome.cpmorphology as cpmorph
-import centrosome.filter as cpfilter
 
 
 def test_load_v2():

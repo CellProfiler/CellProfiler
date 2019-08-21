@@ -4,13 +4,9 @@
 from six.moves import StringIO
 
 import cellprofiler.measurement
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.editobjectsmanually as E
+import cellprofiler.pipeline as cpp
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"

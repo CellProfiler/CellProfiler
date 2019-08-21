@@ -1,17 +1,13 @@
 import numpy as np
 from six.moves import StringIO
 
-import cellprofiler.measurement
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
+import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.workspace as cpw
 import cellprofiler.modules.maskobjects as M
+import cellprofiler.object as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 INPUT_OBJECTS = "inputobjects"
 OUTPUT_OBJECTS = "outputobjects"

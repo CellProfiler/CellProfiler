@@ -31,7 +31,7 @@ MATH_OUTPUT_MEASUREMENTS = "_".join(("Math", OUTPUT_MEASUREMENTS))
 OBJECT = ["object%d" % i for i in range(2)]
 
 
-class TestCalculateMath(unittest.TestCase):
+class TestCalculateMath:
     def run_workspace(
         self,
         operation,

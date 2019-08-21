@@ -25,7 +25,7 @@ AUX_IMAGE_NAME = "auximage"
 AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
-class TestStraightenWorms(unittest.TestCase):
+class TestStraightenWorms:
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

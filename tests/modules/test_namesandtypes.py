@@ -49,7 +49,7 @@ def md(keys_and_counts):
     ]
 
 
-class TestNamesAndTypes(unittest.TestCase):
+class TestNamesAndTypes:
     def test_00_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

@@ -29,7 +29,7 @@ IMAGE_NAME = "image"
 PROJECTED_IMAGE_NAME = "projectedimage"
 
 
-class TestMakeProjection(unittest.TestCase):
+class TestMakeProjection:
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -24,7 +24,7 @@ INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
-class TestEditObjectsManually(unittest.TestCase):
+class TestEditObjectsManually:
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

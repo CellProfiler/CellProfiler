@@ -29,7 +29,7 @@ IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
 
 
-class TestMeasureImageQuality(unittest.TestCase):
+class TestMeasureImageQuality:
     def make_workspace(self, pixel_data, mask=None, objects=None, dimensions=2):
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)

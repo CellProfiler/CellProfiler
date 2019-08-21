@@ -24,7 +24,7 @@ GROUND_TRUTH_OBJ = "Nuclei"
 ID_OBJ = "Protein"
 
 
-class TestMeasureObjectOverlap(unittest.TestCase):
+class TestMeasureObjectOverlap:
     def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
         """make a workspace to test comparing objects"""
         """ ground truth object and ID object  are dictionaires w/ the following keys"""

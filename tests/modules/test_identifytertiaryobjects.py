@@ -27,7 +27,7 @@ TERTIARY = "tertiary"
 OUTLINES = "Outlines"
 
 
-class TestIdentifyTertiaryObjects(unittest.TestCase):
+class TestIdentifyTertiaryObjects:
     def on_pipeline_event(self, caller, event):
         assert not isinstance(event, cpp.LoadExceptionEvent)
 

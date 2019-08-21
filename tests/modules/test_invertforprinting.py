@@ -29,7 +29,7 @@ I_BLUE_OUT = "BlueOutput"
 I_COLOR_OUT = "ColorOutput"
 
 
-class TestInvertForPrinting(unittest.TestCase):
+class TestInvertForPrinting:
     def run_module(
         self,
         color_image=None,

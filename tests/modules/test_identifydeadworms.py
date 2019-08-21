@@ -26,7 +26,7 @@ IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
 
 
-class TestIdentifyDeadWorms(unittest.TestCase):
+class TestIdentifyDeadWorms:
     def test_01_01_load_v1(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

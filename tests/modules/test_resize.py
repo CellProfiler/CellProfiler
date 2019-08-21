@@ -22,7 +22,7 @@ INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"
 
 
-class TestResize(unittest.TestCase):
+class TestResize:
     def test_01_02_load_v1(self):
         data = (
             "eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS"

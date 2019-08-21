@@ -29,7 +29,7 @@ OUTPUT_IMAGE_NAME = "outputimage"
 OBJECTS_NAME = "objects"
 
 
-class TestDefineGrid(unittest.TestCase):
+class TestDefineGrid:
     def make_workspace(self, image, labels):
         module = D.DefineGrid()
         module.set_module_num(1)

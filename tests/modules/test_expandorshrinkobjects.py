@@ -20,7 +20,7 @@ OUTPUT_NAME = "output"
 OUTLINES_NAME = "outlines"
 
 
-class TestExpandOrShrinkObjects(unittest.TestCase):
+class TestExpandOrShrinkObjects:
     def make_workspace(
         self,
         labels,

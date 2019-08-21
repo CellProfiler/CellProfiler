@@ -113,7 +113,7 @@ if MYSQL_PASSWORD == "None":
 MYSQL_USER = os.environ.get("CP_MYSQL_TEST_USER", "cpuser")
 
 
-class TestExportToDatabase(unittest.TestCase):
+class TestExportToDatabase:
     def setUp(self):
         self.__cursor = None
         self.__connection = None

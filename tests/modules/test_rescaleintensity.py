@@ -396,7 +396,7 @@ def test_scale_by_image_maximum_masked(image, mask, module, workspace):
     numpy.testing.assert_array_equal(expected, actual)
 
 
-class TestRescaleIntensity(unittest.TestCase):
+class TestRescaleIntensity:
     def test_01_09_load_v1(self):
         data = (
             "eJztWl9P2zAQd2lhMKSNaRKbtBc/7AE2GqXlj6CaoB3dtG6UVYA2IcSYaV3w"

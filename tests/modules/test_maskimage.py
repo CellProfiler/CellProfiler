@@ -25,7 +25,7 @@ IMAGE_NAME = "image"
 OBJECTS_NAME = "objects"
 
 
-class TestMaskImage(unittest.TestCase):
+class TestMaskImage:
     def test_02_01_mask_with_objects(self):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1

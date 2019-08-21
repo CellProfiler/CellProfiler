@@ -24,7 +24,7 @@ IMAGE2_NAME = "image2"
 OBJECTS_NAME = "objects"
 
 
-class TestMeasureCorrelation(unittest.TestCase):
+class TestMeasureCorrelation:
     def make_workspace(self, image1, image2, objects=None):
         """Make a workspace for testing Threshold"""
         module = M.MeasureColocalization()

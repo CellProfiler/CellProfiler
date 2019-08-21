@@ -21,7 +21,7 @@ def output_image_name(idx):
     return "outputimage%d" % idx
 
 
-class TestUnmixColors(unittest.TestCase):
+class TestUnmixColors:
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

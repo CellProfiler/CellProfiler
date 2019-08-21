@@ -29,7 +29,7 @@ cellprofiler.preferences.set_headless()
 OBJECTS_NAME = "objects"
 
 
-class TestLoadData(unittest.TestCase):
+class TestLoadData:
     @classmethod
     def setUpClass(cls):
         tests.modules.maybe_download_sbs()

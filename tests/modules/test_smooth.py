@@ -28,7 +28,7 @@ INPUT_IMAGE_NAME = "myimage"
 OUTPUT_IMAGE_NAME = "myfilteredimage"
 
 
-class TestSmooth(unittest.TestCase):
+class TestSmooth:
     def make_workspace(self, image, mask):
         """Make a workspace for testing FilterByObjectMeasurement"""
         module = S.Smooth()

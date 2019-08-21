@@ -14,7 +14,7 @@ INPUT_IMAGE_NAME = "Cytoplasm"
 INPUT_OBJECTS_NAME = "inputobjects"
 
 
-class TestMeasureTexture(unittest.TestCase):
+class TestMeasureTexture:
     def make_workspace(self, image, labels, convert=True, mask=None):
         """Make a workspace for testing MeasureTexture"""
         module = cellprofiler.modules.measuretexture.MeasureTexture()

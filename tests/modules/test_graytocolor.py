@@ -22,7 +22,7 @@ import cellprofiler.workspace as cpw
 OUTPUT_IMAGE_NAME = "outputimage"
 
 
-class TestGrayToColor(unittest.TestCase):
+class TestGrayToColor:
     def make_workspace(
         self, scheme, images, adjustments=None, colors=None, weights=None
     ):

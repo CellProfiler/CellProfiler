@@ -27,7 +27,7 @@ GROUND_TRUTH_OBJ = "Nuclei"
 ID_OBJ = "Protein"
 
 
-class TestMeasureImageOverlap(unittest.TestCase):
+class TestMeasureImageOverlap:
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

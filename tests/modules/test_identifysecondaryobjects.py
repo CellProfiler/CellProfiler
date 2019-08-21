@@ -26,7 +26,7 @@ IMAGE_NAME = "image"
 THRESHOLD_IMAGE_NAME = "threshold"
 
 
-class TestIdentifySecondaryObjects(unittest.TestCase):
+class TestIdentifySecondaryObjects:
     def test_01_09_load_v9(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

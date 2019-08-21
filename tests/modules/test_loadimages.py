@@ -3173,7 +3173,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.convtester(pipeline_text, directory)
 
 
-class TestLoadImagesImageProvider(unittest.TestCase):
+class TestLoadImagesImageProvider:
     def test_provide_volume(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
@@ -3235,7 +3235,7 @@ class TestLoadImagesImageProvider(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(actual, expected)
 
 
-class TestLoadImagesImageProviderURL(unittest.TestCase):
+class TestLoadImagesImageProviderURL:
     def test_provide_volume(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 

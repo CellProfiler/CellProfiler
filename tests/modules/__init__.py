@@ -97,7 +97,7 @@ def testimages_url():
     return svn_mirror_url() + "/" + "TestImages"
 
 
-class testExampleImagesDirectory(unittest.TestCase):
+class testExampleImagesDirectory:
     def test_00_00_got_something(self):
         assert (
             example_images_directory()

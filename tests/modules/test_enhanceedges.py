@@ -27,7 +27,7 @@ INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
 
-class TestEnhanceEdges(unittest.TestCase):
+class TestEnhanceEdges:
     def make_workspace(self, image, mask=None):
         """Make a workspace for testing FindEdges"""
         module = F.FindEdges()

@@ -12,7 +12,7 @@ import cellprofiler.pipeline as cpp
 from cellprofiler.modules.loadimages import LoadImages
 
 
-class TestMergeOutputFiles(unittest.TestCase):
+class TestMergeOutputFiles:
     def execute_merge_files(self, mm):
         input_files = []
         output_fd, output_file = tempfile.mkstemp(".mat")

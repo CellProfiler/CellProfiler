@@ -26,7 +26,7 @@ OUTLINE_NAME = "outlineimage"
 OBJECTS_NAME = "objectsname"
 
 
-class TestOverlayOutlines(unittest.TestCase):
+class TestOverlayOutlines:
     def make_workspace(self, image, labels=None, dimensions=2):
         """Make a workspace for testing Threshold"""
         m = cellprofiler.measurement.Measurements()

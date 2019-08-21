@@ -34,7 +34,7 @@ IMG_MEAS = "my_image_measurement"
 OBJ_MEAS = "my_object_measurement"
 
 
-class TestExportToSpreadsheet(unittest.TestCase):
+class TestExportToSpreadsheet:
     def setUp(self):
         self.output_dir = tempfile.mkdtemp()
 

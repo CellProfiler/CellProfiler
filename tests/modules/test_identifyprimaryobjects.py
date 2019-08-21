@@ -25,7 +25,7 @@ MASKING_OBJECTS_NAME = "masking_objects"
 MEASUREMENT_NAME = "my_measurement"
 
 
-class TestIdentifyPrimaryObjects(unittest.TestCase):
+class TestIdentifyPrimaryObjects:
     def load_error_handler(self, caller, event):
         if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.fail(event.error.message)
@@ -3681,7 +3681,7 @@ def draw_circle(img, center, radius, value):
     img[distance <= radius] = value
 
 
-class TestWeightedVariance(unittest.TestCase):
+class TestWeightedVariance:
     def test_01_masked_wv(self):
         output = centrosome.threshold.weighted_variance(
             numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
@@ -3730,7 +3730,7 @@ class TestWeightedVariance(unittest.TestCase):
         assert round(abs(output - 0.25), 7) == 0
 
 
-class TestSumOfEntropies(unittest.TestCase):
+class TestSumOfEntropies:
     def test_01_all_masked(self):
         output = centrosome.threshold.sum_of_entropies(
             numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1

@@ -80,7 +80,7 @@ def feature_radial_cv(bin, bin_count, image_name=IMAGE_NAME):
     )
 
 
-class TestMeasureObjectIntensityDistribution(unittest.TestCase):
+class TestMeasureObjectIntensityDistribution:
     def test_01_00_please_implement_a_test_of_the_new_version(self):
         assert (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution.variable_revision_number

@@ -28,7 +28,7 @@ OBJECTS_NAME = "objects"
 MEASUREMENT_NAME = "measurement"
 
 
-class TestDisplayDataOnImage(unittest.TestCase):
+class TestDisplayDataOnImage:
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

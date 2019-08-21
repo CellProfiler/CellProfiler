@@ -27,7 +27,7 @@ MEASUREMENT_NAME_2 = "Measurement2"
 IMAGE_NAME = "image"
 
 
-class TestClassifyObjects(unittest.TestCase):
+class TestClassifyObjects:
     def make_workspace(
         self, labels, contrast_choice, measurement1=None, measurement2=None
     ):

@@ -24,7 +24,7 @@ IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"
 
 
-class TestFlipAndRotate(unittest.TestCase):
+class TestFlipAndRotate:
     def test_01_03_load_v2(self):
         """Load a v2 pipeline"""
         data = (

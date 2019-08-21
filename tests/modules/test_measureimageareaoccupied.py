@@ -17,7 +17,7 @@ cellprofiler.preferences.set_headless()
 OBJECTS_NAME = "MyObjects"
 
 
-class TestMeasureImageArea(unittest.TestCase):
+class TestMeasureImageArea:
     def make_workspace(self, labels, parent_image=None):
         object_set = cellprofiler.object.ObjectSet()
         objects = cellprofiler.object.Objects()

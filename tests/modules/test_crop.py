@@ -27,7 +27,7 @@ CROPPING = "cropping"
 OUTPUT_IMAGE = "output_image"
 
 
-class TestCrop(unittest.TestCase):
+class TestCrop:
     def make_workspace(
         self, input_pixels, crop_image=None, cropping=None, crop_objects=None
     ):

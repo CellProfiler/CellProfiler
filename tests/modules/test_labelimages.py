@@ -24,7 +24,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.labelimages as L
 
 
-class TestLabelImages(unittest.TestCase):
+class TestLabelImages:
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

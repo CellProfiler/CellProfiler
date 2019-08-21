@@ -27,7 +27,7 @@ TEST_FTR = "my_measurement"
 FIGURE_NAME = "figname"
 
 
-class TestCalculateStatistics(unittest.TestCase):
+class TestCalculateStatistics:
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -29,7 +29,7 @@ AVERAGE_IMAGE_NAME = "Ave"
 DILATED_IMAGE_NAME = "Dilate"
 
 
-class TestCorrectImage_Calculate(unittest.TestCase):
+class TestCorrectImage_Calculate:
     def error_callback(self, calller, event):
         if isinstance(event, cpp.RunExceptionEvent):
             self.fail(event.error.message)

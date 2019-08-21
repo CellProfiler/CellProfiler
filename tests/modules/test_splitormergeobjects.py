@@ -27,7 +27,7 @@ IMAGE_NAME = "image"
 OUTLINE_NAME = "outlines"
 
 
-class TestSplitOrMergeObjects(unittest.TestCase):
+class TestSplitOrMergeObjects:
     def test_01_05_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

@@ -27,7 +27,7 @@ GRID_NAME = "mygrid"
 GUIDING_OBJECTS_NAME = "inputobjects"
 
 
-class TestIdentifyObjectsInGrid(unittest.TestCase):
+class TestIdentifyObjectsInGrid:
     def make_workspace(self, gridding, labels=None):
         module = I.IdentifyObjectsInGrid()
         module.set_module_num(1)

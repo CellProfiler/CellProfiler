@@ -30,7 +30,7 @@ IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
 
 
-class TestMeasureGranularity(unittest.TestCase):
+class TestMeasureGranularity:
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -33,7 +33,7 @@ EDGE_FILE = "my_edges.csv"
 VERTEX_FILE = "my_vertices.csv"
 
 
-class TestMeasureObjectSkeleton(unittest.TestCase):
+class TestMeasureObjectSkeleton:
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 

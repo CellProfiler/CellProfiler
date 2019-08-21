@@ -26,7 +26,7 @@ import centrosome.cpmorphology as cpmorph
 import centrosome.filter as cpfilter
 
 
-class TestMorph(unittest.TestCase):
+class TestMorph:
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

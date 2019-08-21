@@ -287,7 +287,7 @@ class TestBinaryImages(object):
         run_operation(operation, expected, module, workspace)
 
 
-class TestImageMath(unittest.TestCase):
+class TestImageMath:
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

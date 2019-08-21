@@ -45,7 +45,7 @@ MEASUREMENT_FEATURE = "MyFeature"
 MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
-class TestFlagImages(unittest.TestCase):
+class TestFlagImages:
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -24,7 +24,7 @@ from cellprofiler.measurement import C_COUNT
 OBJECT_NAME = "objects"
 
 
-class TestTrackObjects(unittest.TestCase):
+class TestTrackObjects:
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

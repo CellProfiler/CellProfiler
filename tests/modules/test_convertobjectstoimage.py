@@ -202,7 +202,7 @@ def test_run_uint16(workspace, module):
     assert numpy.all(pixel_data == expected)
 
 
-class TestConvertObjectsToImage(unittest.TestCase):
+class TestConvertObjectsToImage:
     def make_workspace_ijv(self):
         module = cellprofiler.modules.convertobjectstoimage.ConvertToImage()
         shape = (14, 16)

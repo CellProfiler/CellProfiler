@@ -24,7 +24,7 @@ OUTPUT_OBJECTS = "output_objects"
 TEST_FTR = "my_measurement"
 
 
-class TestFilterObjects(unittest.TestCase):
+class TestFilterObjects:
     def make_workspace(self, object_dict={}, image_dict={}):
         """Make a workspace for testing FilterByObjectMeasurement"""
         module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()

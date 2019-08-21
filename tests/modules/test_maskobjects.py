@@ -32,7 +32,7 @@ MASKING_IMAGE = "maskingobjects"
 OUTPUT_OUTLINES = "outputoutlines"
 
 
-class TestMaskObjects(unittest.TestCase):
+class TestMaskObjects:
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

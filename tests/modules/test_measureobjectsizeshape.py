@@ -20,7 +20,7 @@ cellprofiler.preferences.set_headless()
 OBJECTS_NAME = "myobjects"
 
 
-class TestMeasureObjectSizeShape(unittest.TestCase):
+class TestMeasureObjectSizeShape:
     def make_workspace(self, labels):
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)

@@ -26,7 +26,7 @@ import tests.modules as T
 import pytest
 
 
-class TestCreateBatchFiles(unittest.TestCase):
+class TestCreateBatchFiles:
     def test_01_00_test_load_version_9_please(self):
         assert C.CreateBatchFiles.variable_revision_number == 8
 

@@ -25,7 +25,7 @@ import cellprofiler.object as cpo
 import cellprofiler.measurement as cpm
 
 
-class TestCorrectIlluminationApply(unittest.TestCase):
+class TestCorrectIlluminationApply:
     def error_callback(self, calller, event):
         if isinstance(event, cpp.RunExceptionEvent):
             self.fail(event.error.message)

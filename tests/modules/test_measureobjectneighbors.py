@@ -24,7 +24,7 @@ OBJECTS_NAME = "objectsname"
 NEIGHBORS_NAME = "neighborsname"
 
 
-class TestMeasureObjectNeighbors(unittest.TestCase):
+class TestMeasureObjectNeighbors:
     def make_workspace(self, labels, mode, distance=0, neighbors_labels=None):
         """Make a workspace for testing MeasureObjectNeighbors"""
         module = M.MeasureObjectNeighbors()

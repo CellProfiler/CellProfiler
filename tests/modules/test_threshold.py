@@ -28,7 +28,7 @@ INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
 
-class TestThreshold(unittest.TestCase):
+class TestThreshold:
     def make_workspace(self, image, mask=None, dimensions=2):
         """Make a workspace for testing Threshold"""
         module = cellprofiler.modules.threshold.Threshold()

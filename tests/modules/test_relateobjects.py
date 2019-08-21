@@ -20,7 +20,7 @@ MEASUREMENT = "Measurement"
 IGNORED_MEASUREMENT = "%s_Foo" % cellprofiler.measurement.C_PARENT
 
 
-class TestRelateObjects(unittest.TestCase):
+class TestRelateObjects:
     def make_workspace(self, parents, children, fake_measurement=False):
         """Make a workspace for testing Relate"""
         pipeline = cellprofiler.pipeline.Pipeline()

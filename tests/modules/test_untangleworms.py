@@ -262,7 +262,7 @@ PARAMS = (
 )
 
 
-class TestUntangleWorms(unittest.TestCase):
+class TestUntangleWorms:
     @classmethod
     def setUpClass(cls):
         handle, path = tempfile.mkstemp(suffix=".png")

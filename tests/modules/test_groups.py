@@ -13,7 +13,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
 
-class TestGroups(unittest.TestCase):
+class TestGroups:
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

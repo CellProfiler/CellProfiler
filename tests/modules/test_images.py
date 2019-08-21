@@ -9,7 +9,7 @@ import cellprofiler.pipeline
 import cellprofiler.workspace
 
 
-class TestImages(unittest.TestCase):
+class TestImages:
     def setUp(self):
         # The Images module needs a workspace and the workspace needs
         # an HDF5 file.

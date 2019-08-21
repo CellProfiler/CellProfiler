@@ -17,7 +17,7 @@ import tests.modules
 cellprofiler.preferences.set_headless()
 
 
-class TestAlign(unittest.TestCase):
+class TestAlign:
     def make_workspace(self, images, masks):
         pipeline = cellprofiler.pipeline.Pipeline()
         object_set = cellprofiler.object.ObjectSet()

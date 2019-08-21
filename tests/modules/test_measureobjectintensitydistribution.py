@@ -82,9 +82,9 @@ def feature_radial_cv(bin, bin_count, image_name=IMAGE_NAME):
 
 class TestMeasureObjectIntensityDistribution(unittest.TestCase):
     def test_01_00_please_implement_a_test_of_the_new_version(self):
-        self.assertEqual(
-            cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution.variable_revision_number,
-            5,
+        assert (
+            cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution.variable_revision_number
+            == 5
         )
 
     def test_01_03_load_v2(self):
@@ -114,42 +114,38 @@ MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variabl
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
-            )
+        assert isinstance(
+            module,
+            cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
         )
-        self.assertEqual(module.image_count.value, 2)
-        self.assertEqual(module.object_count.value, 2)
-        self.assertEqual(module.bin_counts_count.value, 2)
-        self.assertEqual(module.images[0].image_name, "EnhancedGreen")
-        self.assertEqual(module.images[1].image_name, "OrigBlue")
-        self.assertEqual(module.objects[0].object_name, "Nuclei")
-        self.assertEqual(
-            module.objects[0].center_choice,
-            cellprofiler.modules.measureobjectintensitydistribution.C_SELF,
+        assert module.image_count.value == 2
+        assert module.object_count.value == 2
+        assert module.bin_counts_count.value == 2
+        assert module.images[0].image_name == "EnhancedGreen"
+        assert module.images[1].image_name == "OrigBlue"
+        assert module.objects[0].object_name == "Nuclei"
+        assert (
+            module.objects[0].center_choice
+            == cellprofiler.modules.measureobjectintensitydistribution.C_SELF
         )
-        self.assertEqual(module.objects[0].center_object_name, "Cells")
-        self.assertEqual(
-            module.objects[1].center_choice,
-            cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER,
+        assert module.objects[0].center_object_name == "Cells"
+        assert (
+            module.objects[1].center_choice
+            == cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER
         )
-        self.assertEqual(module.objects[1].center_object_name, "Cells")
-        self.assertEqual(module.bin_counts[0].bin_count, 4)
-        self.assertFalse(module.bin_counts[0].wants_scaled)
-        self.assertEqual(module.bin_counts[0].maximum_radius, 200)
-        self.assertEqual(module.bin_counts[1].bin_count, 5)
-        self.assertTrue(module.bin_counts[1].wants_scaled)
-        self.assertEqual(module.bin_counts[1].maximum_radius, 50)
+        assert module.objects[1].center_object_name == "Cells"
+        assert module.bin_counts[0].bin_count == 4
+        assert not module.bin_counts[0].wants_scaled
+        assert module.bin_counts[0].maximum_radius == 200
+        assert module.bin_counts[1].bin_count == 5
+        assert module.bin_counts[1].wants_scaled
+        assert module.bin_counts[1].maximum_radius == 50
 
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -181,48 +177,44 @@ MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variabl
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
-            )
+        assert isinstance(
+            module,
+            cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
         )
-        self.assertEqual(module.image_count.value, 2)
-        self.assertEqual(module.object_count.value, 3)
-        self.assertEqual(module.bin_counts_count.value, 2)
-        self.assertEqual(module.images[0].image_name, "EnhancedGreen")
-        self.assertEqual(module.images[1].image_name, "OrigBlue")
-        self.assertEqual(module.objects[0].object_name, "Nuclei")
-        self.assertEqual(
-            module.objects[0].center_choice,
-            cellprofiler.modules.measureobjectintensitydistribution.C_SELF,
+        assert module.image_count.value == 2
+        assert module.object_count.value == 3
+        assert module.bin_counts_count.value == 2
+        assert module.images[0].image_name == "EnhancedGreen"
+        assert module.images[1].image_name == "OrigBlue"
+        assert module.objects[0].object_name == "Nuclei"
+        assert (
+            module.objects[0].center_choice
+            == cellprofiler.modules.measureobjectintensitydistribution.C_SELF
         )
-        self.assertEqual(module.objects[0].center_object_name, "Cells")
-        self.assertEqual(
-            module.objects[1].center_choice,
-            cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER,
+        assert module.objects[0].center_object_name == "Cells"
+        assert (
+            module.objects[1].center_choice
+            == cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER
         )
-        self.assertEqual(module.objects[1].center_object_name, "Cells")
-        self.assertEqual(
-            module.objects[2].center_choice,
-            cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER,
+        assert module.objects[1].center_object_name == "Cells"
+        assert (
+            module.objects[2].center_choice
+            == cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER
         )
-        self.assertEqual(module.objects[2].center_object_name, "Cells")
-        self.assertEqual(module.bin_counts[0].bin_count, 4)
-        self.assertFalse(module.bin_counts[0].wants_scaled)
-        self.assertEqual(module.bin_counts[0].maximum_radius, 200)
-        self.assertEqual(module.bin_counts[1].bin_count, 5)
-        self.assertTrue(module.bin_counts[1].wants_scaled)
-        self.assertEqual(module.bin_counts[1].maximum_radius, 50)
-        self.assertEqual(len(module.heatmaps), 0)
+        assert module.objects[2].center_object_name == "Cells"
+        assert module.bin_counts[0].bin_count == 4
+        assert not module.bin_counts[0].wants_scaled
+        assert module.bin_counts[0].maximum_radius == 200
+        assert module.bin_counts[1].bin_count == 5
+        assert module.bin_counts[1].wants_scaled
+        assert module.bin_counts[1].maximum_radius == 50
+        assert len(module.heatmaps) == 0
 
     def test_01_05_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -276,29 +268,25 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
-            )
+        assert isinstance(
+            module,
+            cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
         )
-        self.assertEqual(
-            module.wants_zernikes,
-            cellprofiler.modules.measureobjectintensitydistribution.Z_NONE,
+        assert (
+            module.wants_zernikes
+            == cellprofiler.modules.measureobjectintensitydistribution.Z_NONE
         )
-        self.assertEqual(module.zernike_degree, 9)
-        self.assertEqual(len(module.images), 2)
+        assert module.zernike_degree == 9
+        assert len(module.images) == 2
         for group, image_name in zip(module.images, ("CropGreen", "CropRed")):
-            self.assertEqual(group.image_name.value, image_name)
-        self.assertEqual(len(module.objects), 2)
+            assert group.image_name.value == image_name
+        assert len(module.objects) == 2
         for group, (object_name, center_choice, center_object_name) in zip(
             module.objects,
             (
@@ -314,16 +302,16 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 ),
             ),
         ):
-            self.assertEqual(group.object_name.value, object_name)
-            self.assertEqual(group.center_choice.value, center_choice)
-            self.assertEqual(group.center_object_name, center_object_name)
-        self.assertEqual(len(module.bin_counts), 2)
+            assert group.object_name.value == object_name
+            assert group.center_choice.value == center_choice
+            assert group.center_object_name == center_object_name
+        assert len(module.bin_counts) == 2
         for group, (bin_count, scale, max_radius) in zip(
             module.bin_counts, ((5, True, 100), (4, False, 100))
         ):
-            self.assertEqual(group.wants_scaled, scale)
-            self.assertEqual(group.bin_count, bin_count)
-            self.assertEqual(group.maximum_radius, max_radius)
+            assert group.wants_scaled == scale
+            assert group.bin_count == bin_count
+            assert group.maximum_radius == max_radius
         for (
             group,
             (
@@ -367,13 +355,13 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 ),
             ),
         ):
-            self.assertEqual(group.image_name.value, image_name)
-            self.assertEqual(group.object_name.value, object_name)
-            self.assertEqual(int(group.bin_count.value), bin_count)
-            self.assertEqual(group.measurement, measurement)
-            self.assertEqual(group.colormap, colormap)
-            self.assertEqual(group.wants_to_save_display, wants_to_save)
-            self.assertEqual(group.display_name, output_image_name)
+            assert group.image_name.value == image_name
+            assert group.object_name.value == object_name
+            assert int(group.bin_count.value) == bin_count
+            assert group.measurement == measurement
+            assert group.colormap == colormap
+            assert group.wants_to_save_display == wants_to_save
+            assert group.display_name == output_image_name
 
     def test_01_06_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -446,29 +434,25 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
-            )
+        assert isinstance(
+            module,
+            cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
         )
-        self.assertEqual(
-            module.wants_zernikes,
-            cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES,
+        assert (
+            module.wants_zernikes
+            == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES
         )
-        self.assertEqual(module.zernike_degree, 7)
-        self.assertEqual(len(module.images), 2)
+        assert module.zernike_degree == 7
+        assert len(module.images) == 2
         for group, image_name in zip(module.images, ("CropGreen", "CropRed")):
-            self.assertEqual(group.image_name.value, image_name)
-        self.assertEqual(len(module.objects), 2)
+            assert group.image_name.value == image_name
+        assert len(module.objects) == 2
         for group, (object_name, center_choice, center_object_name) in zip(
             module.objects,
             (
@@ -484,16 +468,16 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 ),
             ),
         ):
-            self.assertEqual(group.object_name.value, object_name)
-            self.assertEqual(group.center_choice.value, center_choice)
-            self.assertEqual(group.center_object_name, center_object_name)
-        self.assertEqual(len(module.bin_counts), 2)
+            assert group.object_name.value == object_name
+            assert group.center_choice.value == center_choice
+            assert group.center_object_name == center_object_name
+        assert len(module.bin_counts) == 2
         for group, (bin_count, scale, max_radius) in zip(
             module.bin_counts, ((5, True, 100), (4, False, 100))
         ):
-            self.assertEqual(group.wants_scaled, scale)
-            self.assertEqual(group.bin_count, bin_count)
-            self.assertEqual(group.maximum_radius, max_radius)
+            assert group.wants_scaled == scale
+            assert group.bin_count == bin_count
+            assert group.maximum_radius == max_radius
         for (
             group,
             (
@@ -537,18 +521,18 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 ),
             ),
         ):
-            self.assertEqual(group.image_name.value, image_name)
-            self.assertEqual(group.object_name.value, object_name)
-            self.assertEqual(int(group.bin_count.value), bin_count)
-            self.assertEqual(group.measurement, measurement)
-            self.assertEqual(group.colormap, colormap)
-            self.assertEqual(group.wants_to_save_display, wants_to_save)
-            self.assertEqual(group.display_name, output_image_name)
+            assert group.image_name.value == image_name
+            assert group.object_name.value == object_name
+            assert int(group.bin_count.value) == bin_count
+            assert group.measurement == measurement
+            assert group.colormap == colormap
+            assert group.wants_to_save_display == wants_to_save
+            assert group.display_name == output_image_name
 
         module = pipeline.modules()[1]
-        self.assertEqual(
-            module.wants_zernikes,
-            cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
+        assert (
+            module.wants_zernikes
+            == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE
         )
 
     def test_02_01_01_get_measurement_columns(self):
@@ -590,8 +574,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         column_dictionary = {}
         for object_name, feature, coltype in columns:
             key = (object_name, feature)
-            self.assertFalse(key in column_dictionary)
-            self.assertEqual(coltype, cellprofiler.measurement.COLTYPE_FLOAT)
+            assert not (key in column_dictionary)
+            assert coltype == cellprofiler.measurement.COLTYPE_FLOAT
             column_dictionary[key] = (object_name, feature, coltype)
 
         for object_name in [x.object_name.value for x in module.objects]:
@@ -607,9 +591,9 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                         ):
                             measurement = feature_fn(bin, bin_count, image_name)
                             key = (object_name, measurement)
-                            self.assertTrue(key in column_dictionary)
+                            assert key in column_dictionary
                             del column_dictionary[key]
-        self.assertEqual(len(column_dictionary), 0)
+        assert len(column_dictionary) == 0
 
     def test_02_01_02_get_zernike_columns(self):
         module = (
@@ -663,7 +647,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                 name,
                                 cellprofiler.measurement.COLTYPE_FLOAT,
                             )
-                            self.assertIn(col, columns)
+                            assert col in columns
 
     def test_02_02_01_get_measurements(self):
         module = (
@@ -700,33 +684,26 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             module.bin_counts[i].bin_count.value = bin_count
 
         for object_name in [x.object_name.value for x in module.objects]:
-            self.assertEqual(
-                tuple(module.get_categories(None, object_name)),
-                (cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,),
+            assert tuple(module.get_categories(None, object_name)) == (
+                cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
             )
             for (
                 feature
             ) in cellprofiler.modules.measureobjectintensitydistribution.F_ALL:
-                self.assertTrue(
-                    feature
-                    in module.get_measurements(
-                        None,
-                        object_name,
-                        cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
-                    )
+                assert feature in module.get_measurements(
+                    None,
+                    object_name,
+                    cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
                 )
             for image_name in [x.image_name.value for x in module.images]:
                 for (
                     feature
                 ) in cellprofiler.modules.measureobjectintensitydistribution.F_ALL:
-                    self.assertTrue(
-                        image_name
-                        in module.get_measurement_images(
-                            None,
-                            object_name,
-                            cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
-                            feature,
-                        )
+                    assert image_name in module.get_measurement_images(
+                        None,
+                        object_name,
+                        cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
+                        feature,
                     )
                 for bin_count in [x.bin_count.value for x in module.bin_counts]:
                     for bin in range(1, bin_count + 1):
@@ -735,15 +712,15 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                         ) in (
                             cellprofiler.modules.measureobjectintensitydistribution.F_ALL
                         ):
-                            self.assertTrue(
-                                "%dof%d" % (bin, bin_count)
-                                in module.get_measurement_scales(
-                                    None,
-                                    object_name,
-                                    cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
-                                    feature,
-                                    image_name,
-                                )
+                            assert "%dof%d" % (
+                                bin,
+                                bin_count,
+                            ) in module.get_measurement_scales(
+                                None,
+                                object_name,
+                                cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
+                                feature,
+                                image_name,
                             )
 
     def test_02_02_02_get_zernike_measurements(self):
@@ -801,7 +778,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                     cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
                 )
                 for ftr in ftrs:
-                    self.assertIn(ftr, result)
+                    assert ftr in result
                     iresult = module.get_measurement_images(
                         None,
                         object_name,
@@ -809,7 +786,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                         ftr,
                     )
                     for image in "DNA", "Cytoplasm", "Actin":
-                        self.assertIn(image, iresult)
+                        assert image in iresult
                         sresult = module.get_measurement_scales(
                             None,
                             object_name,
@@ -818,7 +795,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                             image,
                         )
                         for n, m in ((0, 0), (1, 1), (2, 0), (2, 2)):
-                            self.assertIn("%d_%d" % (n, m), sresult)
+                            assert "%d_%d" % (n, m) in sresult
 
     def test_02_03_default_heatmap_values(self):
         module = (
@@ -831,19 +808,19 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         module.images[0].image_name.value = "Bar"
         module.objects[0].object_name.value = "Foo"
         module.bin_counts[0].bin_count.value = 2
-        self.assertEqual(module.heatmaps[0].image_name.get_image_name(), "Bar")
-        self.assertFalse(module.heatmaps[0].image_name.is_visible())
-        self.assertEqual(module.heatmaps[0].object_name.get_objects_name(), "Foo")
-        self.assertFalse(module.heatmaps[0].object_name.is_visible())
-        self.assertEqual(module.heatmaps[0].get_number_of_bins(), 2)
+        assert module.heatmaps[0].image_name.get_image_name() == "Bar"
+        assert not module.heatmaps[0].image_name.is_visible()
+        assert module.heatmaps[0].object_name.get_objects_name() == "Foo"
+        assert not module.heatmaps[0].object_name.is_visible()
+        assert module.heatmaps[0].get_number_of_bins() == 2
         module.add_image()
-        self.assertTrue(module.heatmaps[0].image_name.is_visible())
-        self.assertEqual(module.heatmaps[0].image_name.get_image_name(), IMAGE_NAME)
+        assert module.heatmaps[0].image_name.is_visible()
+        assert module.heatmaps[0].image_name.get_image_name() == IMAGE_NAME
         module.add_object()
-        self.assertTrue(module.heatmaps[0].object_name.is_visible())
-        self.assertEqual(module.heatmaps[0].object_name.get_objects_name(), OBJECT_NAME)
+        assert module.heatmaps[0].object_name.is_visible()
+        assert module.heatmaps[0].object_name.get_objects_name() == OBJECT_NAME
         module.add_bin_count()
-        self.assertEqual(module.heatmaps[0].get_number_of_bins(), 10)
+        assert module.heatmaps[0].get_number_of_bins() == 10
 
     def run_module(
         self,
@@ -947,9 +924,9 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 feature_mean_frac(bin, 4),
                 feature_radial_cv(bin, 4),
             ):
-                self.assertTrue(feature in m.get_feature_names(OBJECT_NAME))
+                assert feature in m.get_feature_names(OBJECT_NAME)
                 data = m.get_current_measurement(OBJECT_NAME, feature)
-                self.assertEqual(len(data), 0)
+                assert len(data) == 0
         for ftr in (
             cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
             cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
@@ -964,8 +941,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                         str(m_),
                     )
                 )
-                self.assertIn(feature, m.get_feature_names(OBJECT_NAME))
-                self.assertEqual(len(m[OBJECT_NAME, feature]), 0)
+                assert feature in m.get_feature_names(OBJECT_NAME)
+                assert len(m[OBJECT_NAME, feature]) == 0
 
     def test_03_02_circle(self):
         """Test the module on a uniform circle"""
@@ -982,45 +959,45 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         bins = labels * (1 + (numpy.sqrt(i * i + j * j) / 10).astype(int))
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
             area = (float(bin) * 2.0 - 1.0) / 16.0
-            self.assertTrue(data[0] > area - 0.1)
-            self.assertTrue(data[0] < area + 0.1)
+            assert data[0] > area - 0.1
+            assert data[0] < area + 0.1
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME
                 + cellprofiler.modules.measureobjectintensitydistribution.F_FRAC_AT_D
             ).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(scipy.stats.mode(heatmap[bins == bin])[0][0], data[0])
+            assert scipy.stats.mode(heatmap[bins == bin])[0][0] == data[0]
             data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
-            self.assertEqual(len(data), 1)
-            self.assertAlmostEqual(data[0], 1, 2)
+            assert len(data) == 1
+            assert round(abs(data[0] - 1), 2) == 0
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME
                 + cellprofiler.modules.measureobjectintensitydistribution.F_MEAN_FRAC
             ).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(scipy.stats.mode(heatmap[bins == bin])[0][0], data[0])
+            assert scipy.stats.mode(heatmap[bins == bin])[0][0] == data[0]
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
-            self.assertEqual(len(data), 1)
-            self.assertAlmostEqual(data[0], 0, 2)
+            assert len(data) == 1
+            assert round(abs(data[0] - 0), 2) == 0
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME
                 + cellprofiler.modules.measureobjectintensitydistribution.F_RADIAL_CV
             ).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(scipy.stats.mode(heatmap[bins == bin])[0][0], data[0])
+            assert scipy.stats.mode(heatmap[bins == bin])[0][0] == data[0]
         module = workspace.module
         assert isinstance(
             module,
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
         )
         data = m[OBJECT_NAME, module.get_zernike_magnitude_name(IMAGE_NAME, 0, 0)]
-        self.assertEqual(len(data), 1)
-        self.assertAlmostEqual(data[0], 1, delta=0.001)
+        assert len(data) == 1
+        assert abs(data[0] - 1) < 0.001
         for n_, m_ in ((1, 1), (2, 0), (2, 2)):
             data = m[OBJECT_NAME, module.get_zernike_magnitude_name(IMAGE_NAME, n_, m_)]
-            self.assertAlmostEqual(data[0], 0, delta=0.001)
+            assert abs(data[0] - 0) < 0.001
 
     def test_03_03_01_half_circle(self):
         """Test the module on a circle and an image that's 1/2 zeros
@@ -1046,19 +1023,19 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         total_intensity = numpy.sum(image[mask])
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
             bin_count = numpy.sum(bin_labels[mask] == bin - 1)
             frac_in_bin = float(bin_count) / numpy.sum(mask)
             bin_intensity = numpy.sum(image[mask & (bin_labels == bin - 1)])
             expected = bin_intensity / total_intensity
-            self.assertTrue(numpy.abs(expected - data[0]) < 0.2 * expected)
+            assert numpy.abs(expected - data[0]) < 0.2 * expected
             data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
             expected = expected / frac_in_bin
-            self.assertTrue(numpy.abs(data[0] - expected) < 0.2 * expected)
+            assert numpy.abs(data[0] - expected) < 0.2 * expected
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
-            self.assertEqual(len(data), 1)
-            self.assertTrue(numpy.abs(data[0] - expected_cv) < 0.2 * expected_cv)
+            assert len(data) == 1
+            assert numpy.abs(data[0] - expected_cv) < 0.2 * expected_cv
 
     def test_03_03_02_half_circle_zernike(self):
         i, j = numpy.mgrid[-50:50, -50:50]
@@ -1087,7 +1064,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                     str(m_),
                 )
             )
-            self.assertAlmostEqual(m[OBJECT_NAME, ftr][0], expected, delta=delta)
+            assert abs(m[OBJECT_NAME, ftr][0] - expected) < delta
         ftr = "_".join(
             (
                 cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY,
@@ -1107,7 +1084,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             zernike_degree=1,
         )
         phase_j_1_1 = m[OBJECT_NAME, ftr][0]
-        self.assertAlmostEqual(abs(phase_i_1_1 - phase_j_1_1), numpy.pi / 2, 0.1)
+        assert round(abs(abs(phase_i_1_1 - phase_j_1_1) - numpy.pi / 2), 0.1) == 0
 
     def test_03_04_line(self):
         """Test the alternate centers with a line"""
@@ -1150,19 +1127,19 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         bin_labels = (normalized_distance * 4).astype(int)
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
             bin_intensity = numpy.sum(image[(labels == 1) & (bin_labels == bin - 1)])
             expected = bin_intensity / total_intensity
-            self.assertTrue(numpy.abs(expected - data[0]) < 0.1 * expected)
+            assert numpy.abs(expected - data[0]) < 0.1 * expected
             data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
             expected = (
                 expected
                 * numpy.sum(labels == 1)
                 / numpy.sum((labels == 1) & (bin_labels == bin - 1))
             )
-            self.assertTrue(numpy.abs(data[0] - expected) < 0.1 * expected)
+            assert numpy.abs(data[0] - expected) < 0.1 * expected
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
 
     def test_03_05_no_scaling(self):
         i, j = numpy.mgrid[-40:40, -40:40]
@@ -1185,19 +1162,19 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         )
         for bin in range(1, 6):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
             bin_intensity = numpy.sum(image[(labels == 1) & (bin_labels == bin - 1)])
             expected = bin_intensity / total_intensity
-            self.assertAlmostEqual(expected, data[0], 4)
+            assert round(abs(expected - data[0]), 4) == 0
             data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
             expected = (
                 expected
                 * numpy.sum(labels == 1)
                 / numpy.sum((labels == 1) & (bin_labels == bin - 1))
             )
-            self.assertAlmostEqual(data[0], expected, 4)
+            assert round(abs(data[0] - expected), 4) == 0
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
 
     def test_03_06_edges_of_objects(self):
         r = numpy.random.RandomState()
@@ -1229,8 +1206,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         frac_at_d = image_sums / numpy.sum(image_sums)
         for i in range(1, 6):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(i, 4))
-            self.assertEqual(len(data), 1)
-            self.assertAlmostEqual(data[0], frac_at_d[i - 1])
+            assert len(data) == 1
+            assert round(abs(data[0] - frac_at_d[i - 1]), 7) == 0
 
     def test_03_07_two_circles(self):
         i, j = numpy.mgrid[-50:51, -50:51]
@@ -1246,11 +1223,11 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         bins = (labels != 0) * (1 + (numpy.sqrt(i * i + j * j) / 10).astype(int))
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 2)
+            assert len(data) == 2
             area = (float(bin) * 2.0 - 1.0) / 16.0
             bin_d = (float(bin) - 0.5) * 8 / 21
-            self.assertLess(numpy.abs(data[0] - area), 0.1)
-            self.assertLess(numpy.abs(data[1] - area * bin_d), 0.1)
+            assert numpy.abs(data[0] - area) < 0.1
+            assert numpy.abs(data[1] - area * bin_d) < 0.1
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME
                 + cellprofiler.modules.measureobjectintensitydistribution.F_FRAC_AT_D
@@ -1258,10 +1235,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
-                self.assertEqual(scipy.stats.mode(heatmap[mask])[0][0], data[label - 1])
+                assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
             data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
-            self.assertEqual(len(data), 2)
-            self.assertAlmostEqual(data[0], 1, 2)
+            assert len(data) == 2
+            assert round(abs(data[0] - 1), 2) == 0
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME
                 + cellprofiler.modules.measureobjectintensitydistribution.F_MEAN_FRAC
@@ -1269,10 +1246,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
-                self.assertEqual(scipy.stats.mode(heatmap[mask])[0][0], data[label - 1])
+                assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
-            self.assertEqual(len(data), 2)
-            self.assertAlmostEqual(data[0], 0, 2)
+            assert len(data) == 2
+            assert round(abs(data[0] - 0), 2) == 0
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME
                 + cellprofiler.modules.measureobjectintensitydistribution.F_RADIAL_CV
@@ -1280,7 +1257,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
-                self.assertEqual(scipy.stats.mode(heatmap[mask])[0][0], data[label - 1])
+                assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
 
     def test_04_01_img_607(self):
         """Regression test of bug IMG-607
@@ -1304,8 +1281,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             m = self.run_module(image, labels, center_labels=center_labels, bin_count=4)
             for bin in range(1, 5):
                 data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-                self.assertEqual(len(data), 3)
-                self.assertTrue(numpy.isnan(data[1]))
+                assert len(data) == 3
+                assert numpy.isnan(data[1])
 
     def test_04_02_center_outside_of_object(self):
         """Make sure MeasureObjectIntensityDistribution can handle oddly shaped objects"""
@@ -1342,12 +1319,12 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             )
             for bin in range(1, 5):
                 data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-                self.assertEqual(len(data), 1)
+                assert len(data) == 1
 
         m = self.run_module(image, labels, bin_count=4)
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 1)
+            assert len(data) == 1
 
     def test_04_03_wrong_size(self):
         """Regression test for IMG-961: objects & image of different sizes

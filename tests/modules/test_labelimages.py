@@ -45,24 +45,24 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, L.LabelImages))
-        self.assertEqual(module.site_count, 3)
-        self.assertEqual(module.row_count, 32)
-        self.assertEqual(module.column_count, 48)
-        self.assertEqual(module.order, L.O_COLUMN)
+        assert isinstance(module, L.LabelImages)
+        assert module.site_count == 3
+        assert module.row_count == 32
+        assert module.column_count == 48
+        assert module.order == L.O_COLUMN
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, L.LabelImages))
-        self.assertEqual(module.site_count, 1)
-        self.assertEqual(module.row_count, 8)
-        self.assertEqual(module.column_count, 12)
-        self.assertEqual(module.order, L.O_ROW)
+        assert isinstance(module, L.LabelImages)
+        assert module.site_count == 1
+        assert module.row_count == 8
+        assert module.column_count == 12
+        assert module.order == L.O_ROW
 
     def make_workspace(self, image_set_count):
         image_set_list = cpi.ImageSetList()
@@ -72,7 +72,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         module.set_module_num(1)
@@ -94,8 +94,8 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
-        self.assertTrue(isinstance(module, L.LabelImages))
+        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(module, L.LabelImages)
         module.row_count.value = 8
         module.column_count.value = 12
         module.order.value = L.O_ROW
@@ -110,13 +110,13 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         plates = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_PLATE)
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
-            self.assertEqual(sites[i], (i % 6) + 1)
+            assert sites[i] == (i % 6) + 1
             this_row = "ABCDEFGH"[int(i / 6 / 12)]
             this_column = (int(i / 6) % 12) + 1
-            self.assertEqual(rows[i], this_row)
-            self.assertEqual(columns[i], this_column)
-            self.assertEqual(wells[i], "%s%02d" % (this_row, this_column))
-            self.assertEqual(plates[i], 1)
+            assert rows[i] == this_row
+            assert columns[i] == this_column
+            assert wells[i] == "%s%02d" % (this_row, this_column)
+            assert plates[i] == 1
 
     def test_02_02_label_plate_by_column(self):
         """Label one complete plate"""
@@ -124,8 +124,8 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
-        self.assertTrue(isinstance(module, L.LabelImages))
+        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(module, L.LabelImages)
         module.row_count.value = 8
         module.column_count.value = 12
         module.order.value = L.O_COLUMN
@@ -140,13 +140,13 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         plates = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_PLATE)
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
-            self.assertEqual(sites[i], (i % 6) + 1)
+            assert sites[i] == (i % 6) + 1
             this_row = "ABCDEFGH"[int(i / 6) % 8]
             this_column = int(i / 6 / 8) + 1
-            self.assertEqual(rows[i], this_row)
-            self.assertEqual(columns[i], this_column)
-            self.assertEqual(wells[i], "%s%02d" % (this_row, this_column))
-            self.assertEqual(plates[i], 1)
+            assert rows[i] == this_row
+            assert columns[i] == this_column
+            assert wells[i] == "%s%02d" % (this_row, this_column)
+            assert plates[i] == 1
 
     def test_02_03_label_many_plates(self):
         nsites = 1
@@ -154,8 +154,8 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 96 * nsites * nplates
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
-        self.assertTrue(isinstance(module, L.LabelImages))
+        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(module, L.LabelImages)
         module.row_count.value = 8
         module.column_count.value = 12
         module.order.value = L.O_ROW
@@ -170,20 +170,20 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         plates = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_PLATE)
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
-            self.assertEqual(sites[i], 1)
+            assert sites[i] == 1
             this_row = "ABCDEFGH"[int(i / 12) % 8]
             this_column = (i % 12) + 1
-            self.assertEqual(rows[i], this_row)
-            self.assertEqual(columns[i], this_column)
-            self.assertEqual(wells[i], "%s%02d" % (this_row, this_column))
-            self.assertEqual(plates[i], int(i / 8 / 12) + 1)
+            assert rows[i] == this_row
+            assert columns[i] == this_column
+            assert wells[i] == "%s%02d" % (this_row, this_column)
+            assert plates[i] == int(i / 8 / 12) + 1
 
     def test_02_04_multichar_row_names(self):
         nimagesets = 1000
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
-        self.assertTrue(isinstance(module, L.LabelImages))
+        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(module, L.LabelImages)
         module.row_count.value = 1000
         module.column_count.value = 1
         module.order.value = L.O_ROW
@@ -199,6 +199,6 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         for i in range(nimagesets):
-            self.assertEqual(sites[i], 1)
+            assert sites[i] == 1
             this_row = abc[int(i / 26 / 26)] + abc[int(i / 26) % 26] + abc[i % 26]
-            self.assertEqual(rows[i], this_row)
+            assert rows[i] == this_row

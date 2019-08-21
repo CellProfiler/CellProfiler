@@ -23,11 +23,12 @@ import cellprofiler.setting as cps
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C
 import tests.modules as T
+import pytest
 
 
 class TestCreateBatchFiles(unittest.TestCase):
     def test_01_00_test_load_version_9_please(self):
-        self.assertEqual(C.CreateBatchFiles.variable_revision_number, 8)
+        assert C.CreateBatchFiles.variable_revision_number == 8
 
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -52,20 +53,20 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
 """
         pipeline = cpp.Pipeline()
         pipeline.loadtxt(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
         assert isinstance(module, C.CreateBatchFiles)
-        self.assertTrue(module.wants_default_output_directory)
-        self.assertEqual(module.custom_output_directory, r"C:\foo\bar")
-        self.assertFalse(module.remote_host_is_windows)
-        self.assertFalse(module.distributed_mode)
-        self.assertEqual(module.default_image_directory, r"C:\bar\baz")
-        self.assertEqual(module.revision, 0)
-        self.assertFalse(module.from_old_matlab)
-        self.assertEqual(len(module.mappings), 1)
+        assert module.wants_default_output_directory
+        assert module.custom_output_directory == r"C:\foo\bar"
+        assert not module.remote_host_is_windows
+        assert not module.distributed_mode
+        assert module.default_image_directory == r"C:\bar\baz"
+        assert module.revision == 0
+        assert not module.from_old_matlab
+        assert len(module.mappings) == 1
         mapping = module.mappings[0]
-        self.assertEqual(mapping.local_directory, r"\\argon-cifs\imaging_docs")
-        self.assertEqual(mapping.remote_directory, r"/imaging/docs")
+        assert mapping.local_directory == r"\\argon-cifs\imaging_docs"
+        assert mapping.remote_directory == r"/imaging/docs"
 
     def test_01_08_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -89,7 +90,7 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 """
         pipeline = cpp.Pipeline()
         pipeline.loadtxt(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
         assert module.wants_default_output_directory.value
         assert module.custom_output_directory.value == "/Users/cellprofiler"
@@ -123,32 +124,30 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module = cpm.Module()
         module.set_module_num(len(pipeline.modules()) + 1)
         pipeline.add_module(module)
-        self.assertRaises(cps.ValidationError, pipeline.test_valid)
+        with pytest.raises(cps.ValidationError):
+            pipeline.test_valid()
 
     def test_04_01_alter_path(self):
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
 
-        self.assertEqual(module.alter_path("foo/bar"), "bar/bar")
-        self.assertEqual(module.alter_path("baz/bar"), "baz/bar")
+        assert module.alter_path("foo/bar") == "bar/bar"
+        assert module.alter_path("baz/bar") == "baz/bar"
 
     def test_04_02_alter_path_regexp(self):
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
 
-        self.assertEqual(
-            module.alter_path("foo/bar", regexp_substitution=True), "bar/bar"
-        )
-        self.assertEqual(
-            module.alter_path("baz/bar", regexp_substitution=True), "baz/bar"
-        )
+        assert module.alter_path("foo/bar", regexp_substitution=True) == "bar/bar"
+        assert module.alter_path("baz/bar", regexp_substitution=True) == "baz/bar"
 
         module.mappings[0].local_directory.value = r"\foo\baz"
         module.remote_host_is_windows.value = True
-        self.assertEqual(
-            module.alter_path(r"\\foo\\baz\\bar", regexp_substitution=True), r"bar\\bar"
+        assert (
+            module.alter_path(r"\\foo\\baz\\bar", regexp_substitution=True)
+            == r"bar\\bar"
         )
 
     if sys.platform == "win32":
@@ -158,20 +157,20 @@ CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.mappings[0].local_directory.value = "\\foo"
             module.mappings[0].remote_directory.value = "\\bar"
 
-            self.assertEqual(module.alter_path("\\foo\\bar"), "/bar/bar")
-            self.assertEqual(module.alter_path("\\FOO\\bar"), "/bar/bar")
-            self.assertEqual(module.alter_path("\\baz\\bar"), "/baz/bar")
+            assert module.alter_path("\\foo\\bar") == "/bar/bar"
+            assert module.alter_path("\\FOO\\bar") == "/bar/bar"
+            assert module.alter_path("\\baz\\bar") == "/baz/bar"
 
         def test_04_04_alter_path_windows_regexp(self):
             module = C.CreateBatchFiles()
             module.mappings[0].local_directory.value = "foo"
             module.mappings[0].remote_directory.value = "bar"
 
-            self.assertEqual(
-                module.alter_path("\\\\foo\\\\bar", regexp_substitution=True),
-                "/foo/bar",
+            assert (
+                module.alter_path("\\\\foo\\\\bar", regexp_substitution=True)
+                == "/foo/bar"
             )
-            self.assertEqual(
-                module.alter_path("\\\\foo\\g<bar>", regexp_substitution=True),
-                "/foo\\g<bar>",
+            assert (
+                module.alter_path("\\\\foo\\g<bar>", regexp_substitution=True)
+                == "/foo\\g<bar>"
             )

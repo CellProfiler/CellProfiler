@@ -63,17 +63,17 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MeasureObjectSkeleton))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.seed_objects_name, "Nucs")
-        self.assertTrue(module.wants_branchpoint_image)
-        self.assertEqual(module.branchpoint_image_name, "BPImg")
+        assert isinstance(module, M.MeasureObjectSkeleton)
+        assert module.image_name == "DNA"
+        assert module.seed_objects_name == "Nucs"
+        assert module.wants_branchpoint_image
+        assert module.branchpoint_image_name == "BPImg"
 
     def make_workspace(
         self, labels, image, mask=None, intensity_image=None, wants_graph=False
@@ -109,8 +109,8 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -134,42 +134,42 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         coltypes = {}
         for feature, expected in zip(features, expected):
             expected_feature = "_".join((M.C_OBJSKELETON, expected, IMAGE_NAME))
-            self.assertEqual(feature, expected_feature)
+            assert feature == expected_feature
             coltypes[expected_feature] = (
                 cpmeas.COLTYPE_FLOAT
                 if expected == M.F_TOTAL_OBJSKELETON_LENGTH
                 else cpmeas.COLTYPE_INTEGER
             )
-        self.assertTrue(all([c[0] == OBJECT_NAME for c in columns]))
-        self.assertTrue(all([c[2] == coltypes[c[1]] for c in columns]))
+        assert all([c[0] == OBJECT_NAME for c in columns])
+        assert all([c[2] == coltypes[c[1]] for c in columns])
 
         categories = module.get_categories(None, OBJECT_NAME)
-        self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], M.C_OBJSKELETON)
-        self.assertEqual(len(module.get_categories(None, "Foo")), 0)
+        assert len(categories) == 1
+        assert categories[0] == M.C_OBJSKELETON
+        assert len(module.get_categories(None, "Foo")) == 0
 
         measurements = module.get_measurements(None, OBJECT_NAME, M.C_OBJSKELETON)
-        self.assertEqual(len(measurements), len(M.F_ALL))
-        self.assertNotEqual(measurements[0], measurements[1])
-        self.assertTrue(all([m in M.F_ALL for m in measurements]))
+        assert len(measurements) == len(M.F_ALL)
+        assert measurements[0] != measurements[1]
+        assert all([m in M.F_ALL for m in measurements])
 
-        self.assertEqual(len(module.get_measurements(None, "Foo", M.C_OBJSKELETON)), 0)
-        self.assertEqual(len(module.get_measurements(None, OBJECT_NAME, "Foo")), 0)
+        assert len(module.get_measurements(None, "Foo", M.C_OBJSKELETON)) == 0
+        assert len(module.get_measurements(None, OBJECT_NAME, "Foo")) == 0
 
         for feature in M.F_ALL:
             images = module.get_measurement_images(
                 None, OBJECT_NAME, M.C_OBJSKELETON, feature
             )
-            self.assertEqual(len(images), 1)
-            self.assertEqual(images[0], IMAGE_NAME)
+            assert len(images) == 1
+            assert images[0] == IMAGE_NAME
 
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature in M.F_ALL:
             mname = "_".join((M.C_OBJSKELETON, expected, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 0)
+            assert len(data) == 0
 
     def test_02_02_trunk(self):
         """Create an image with one soma with one neurite"""
@@ -180,15 +180,15 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, expected in (
             (M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
             (M.F_NUMBER_TRUNKS, 1),
         ):
             mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(data[0], expected)
+            assert len(data) == 1
+            assert data[0] == expected
 
     def test_02_03_trunks(self):
         """Create an image with two soma and a neurite that goes through both"""
@@ -200,16 +200,16 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, expected in (
             (M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
             (M.F_NUMBER_TRUNKS, [2, 1]),
         ):
             mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 2)
+            assert len(data) == 2
             for i in range(2):
-                self.assertEqual(data[i], expected[i])
+                assert data[i] == expected[i]
 
     def test_02_04_branch(self):
         """Create an image with one soma and a neurite with a branch"""
@@ -222,15 +222,15 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, expected in (
             (M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
             (M.F_NUMBER_TRUNKS, 1),
         ):
             mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(data[0], expected)
+            assert len(data) == 1
+            assert data[0] == expected
 
     def test_02_05_img_667(self):
         """Create an image with a one-pixel soma and a neurite with a branch
@@ -246,18 +246,18 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, expected in (
             (M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
             (M.F_NUMBER_TRUNKS, 2),
         ):
             mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(
-                data[0],
+            assert len(data) == 1
+            assert data[0] == expected, "%s: expected %d, got %d" % (
+                feature,
                 expected,
-                "%s: expected %d, got %d" % (feature, expected, data[0]),
+                data[0],
             )
 
     def test_02_06_quadrabranch(self):
@@ -283,18 +283,18 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, expected in (
             (M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
             (M.F_NUMBER_TRUNKS, 3),
         ):
             mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(
-                data[0],
+            assert len(data) == 1
+            assert data[0] == expected, "%s: expected %d, got %d" % (
+                feature,
                 expected,
-                "%s: expected %d, got %d" % (feature, expected, data[0]),
+                data[0],
             )
 
     def test_02_07_wrong_size(self):
@@ -311,16 +311,16 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, expected in (
             (M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
             (M.F_NUMBER_TRUNKS, [2, 1]),
         ):
             mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
-            self.assertEqual(len(data), 2)
+            assert len(data) == 2
             for i in range(2):
-                self.assertEqual(data[i], expected[i])
+                assert data[i] == expected[i]
 
     def test_02_08_skeleton_length(self):
         #
@@ -335,8 +335,8 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         m = workspace.measurements
         ftr = "_".join((M.C_OBJSKELETON, M.F_TOTAL_OBJSKELETON_LENGTH, IMAGE_NAME))
         result = m[OBJECT_NAME, ftr]
-        self.assertEqual(len(result), 1)
-        self.assertAlmostEqual(result[0], 5, delta=np.sqrt(np.finfo(np.float32).eps))
+        assert len(result) == 1
+        assert abs(result[0] - 5) < np.sqrt(np.finfo(np.float32).eps)
 
     def read_graph_file(self, file_name):
         type_dict = dict(
@@ -374,8 +374,8 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
         vertex_graph = self.read_graph_file(VERTEX_FILE)
-        self.assertEqual(len(edge_graph), 0)
-        self.assertEqual(len(vertex_graph), 0)
+        assert len(edge_graph) == 0
+        assert len(vertex_graph) == 0
 
     def test_03_01_graph(self):
         """Make a simple graph"""
@@ -409,15 +409,15 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         # are bogus artifacts of the object hitting the edge of the image
         #
         for vidxx in vidx[-2:]:
-            self.assertEqual(vertex_graph["i"][vidxx], 20)
+            assert vertex_graph["i"][vidxx] == 20
         vidx = vidx[:-2]
 
         expected_vertices = ((0, 0), (0, 20), (10, 10), (17, 10))
-        self.assertEqual(len(vidx), len(expected_vertices))
+        assert len(vidx) == len(expected_vertices)
         for idx, v in enumerate(expected_vertices):
             vv = vertex_graph[vidx[idx]]
-            self.assertEqual(vv["i"], v[0])
-            self.assertEqual(vv["j"], v[1])
+            assert vv["i"] == v[0]
+            assert vv["j"] == v[1]
 
         #
         # Get rid of edges to the bogus vertices
@@ -441,10 +441,10 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
         for i, (v1, v2, length, total_intensity) in enumerate(expected_edges):
             ee = edge_graph[eidx[i]]
             for ve, v in ((v1, ee["v1"]), (v2, ee["v2"])):
-                self.assertEqual(ve[0], vertex_graph["i"][v - 1])
-                self.assertEqual(ve[1], vertex_graph["j"][v - 1])
-            self.assertEqual(length, ee["length"])
-            self.assertAlmostEqual(total_intensity, ee["total_intensity"], 4)
+                assert ve[0] == vertex_graph["i"][v - 1]
+                assert ve[1] == vertex_graph["j"][v - 1]
+            assert length == ee["length"]
+            assert round(abs(total_intensity - ee["total_intensity"]), 4) == 0
 
     def test_03_02_four_branches(self):
         """Test four branchpoints touching the same edge
@@ -533,12 +533,12 @@ MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_numbe
                 for i, (p1, p2, l, mid) in enumerate(expected_edges)
                 if p1 == poi1 and p2 == poi2
             ]
-            self.assertEqual(len(ee), 1)
+            assert len(ee) == 1
             i, p1, p2, l, mid = ee[0]
-            self.assertEqual(l, length)
+            assert l == length
             active_poi = np.zeros(np.max(poi) + off + 1, bool)
             active_poi[np.array([poi1, poi2, mid]) + off] = True
             expected_intensity = np.sum(image[active_poi[poi + off]])
-            self.assertAlmostEqual(expected_intensity, total_intensity, 4)
+            assert round(abs(expected_intensity - total_intensity), 4) == 0
             found_edges[i] = True
-        self.assertTrue(all(found_edges))
+        assert all(found_edges)

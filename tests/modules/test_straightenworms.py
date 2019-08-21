@@ -46,27 +46,27 @@ StraightenWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, S.StraightenWorms))
-        self.assertEqual(module.objects_name, "OverlappingWorms")
-        self.assertEqual(module.straightened_objects_name, "StraightenedWorms")
-        self.assertEqual(module.width, 20)
-        self.assertEqual(
-            module.training_set_directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert isinstance(module, S.StraightenWorms)
+        assert module.objects_name == "OverlappingWorms"
+        assert module.straightened_objects_name == "StraightenedWorms"
+        assert module.width == 20
+        assert (
+            module.training_set_directory.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
         )
-        self.assertEqual(module.training_set_file_name, "TrainingSet.xml")
-        self.assertEqual(module.image_count.value, 2)
+        assert module.training_set_file_name == "TrainingSet.xml"
+        assert module.image_count.value == 2
         for group, input_name, output_name in (
             (module.images[0], "Brightfield", "StraightenedBrightfield"),
             (module.images[1], "Fluorescence", "StraightenedFluorescence"),
         ):
-            self.assertEqual(group.image_name, input_name)
-            self.assertEqual(group.straightened_image_name, output_name)
+            assert group.image_name == input_name
+            assert group.straightened_image_name == output_name
 
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -118,32 +118,31 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         for alignment, module in zip(
             (S.FLIP_TOP, S.FLIP_BOTTOM, S.FLIP_NONE), pipeline.modules()
         ):
-            self.assertTrue(isinstance(module, S.StraightenWorms))
-            self.assertEqual(module.objects_name, "OverlappingWorms")
-            self.assertEqual(module.straightened_objects_name, "StraightenedWorms")
-            self.assertEqual(module.width, 20)
-            self.assertEqual(
-                module.training_set_directory.dir_choice, cps.DEFAULT_INPUT_FOLDER_NAME
+            assert isinstance(module, S.StraightenWorms)
+            assert module.objects_name == "OverlappingWorms"
+            assert module.straightened_objects_name == "StraightenedWorms"
+            assert module.width == 20
+            assert (
+                module.training_set_directory.dir_choice
+                == cps.DEFAULT_INPUT_FOLDER_NAME
             )
-            self.assertEqual(module.training_set_file_name, "TrainingSet.mat")
-            self.assertEqual(len(module.images), 1)
-            self.assertTrue(module.wants_measurements)
-            self.assertEqual(module.number_of_segments, 4)
-            self.assertEqual(module.number_of_stripes, 1)
-            self.assertEqual(module.flip_worms, alignment)
-            self.assertEqual(module.flip_image, "Brightfield")
-            self.assertEqual(module.images[0].image_name, "Brightfield")
-            self.assertEqual(
-                module.images[0].straightened_image_name, "StraightenedImage"
-            )
+            assert module.training_set_file_name == "TrainingSet.mat"
+            assert len(module.images) == 1
+            assert module.wants_measurements
+            assert module.number_of_segments == 4
+            assert module.number_of_stripes == 1
+            assert module.flip_worms == alignment
+            assert module.flip_image == "Brightfield"
+            assert module.images[0].image_name == "Brightfield"
+            assert module.images[0].straightened_image_name == "StraightenedImage"
 
     def make_workspace(
         self, control_points, lengths, radii, image, mask=None, auximage=None
@@ -181,7 +180,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
 
@@ -317,34 +316,34 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         # TODO: need to come back to this and see what needs to be changed for this to be resolved
         # self.assertFalse(np.any(image.mask))
         objectset = workspace.object_set
-        self.assertTrue(isinstance(objectset, cpo.ObjectSet))
+        assert isinstance(objectset, cpo.ObjectSet)
         labels = objectset.get_objects(STRAIGHTENED_OBJECTS_NAME).segmented
-        self.assertTrue(np.all(labels == 0))
+        assert np.all(labels == 0)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertEqual(
+        assert isinstance(m, cpmeas.Measurements)
+        assert (
             m.get_current_image_measurement(
                 "_".join((cellprofiler.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME))
-            ),
-            0,
+            )
+            == 0
         )
-        self.assertEqual(
+        assert (
             len(
                 m.get_current_measurement(
                     STRAIGHTENED_OBJECTS_NAME,
                     cellprofiler.measurement.M_LOCATION_CENTER_X,
                 )
-            ),
-            0,
+            )
+            == 0
         )
-        self.assertEqual(
+        assert (
             len(
                 m.get_current_measurement(
                     STRAIGHTENED_OBJECTS_NAME,
                     cellprofiler.measurement.M_LOCATION_CENTER_Y,
                 )
-            ),
-            0,
+            )
+            == 0
         )
 
     def test_02_02_straighten_straight_worm(self):
@@ -358,41 +357,39 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.wants_measurements.value = False
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 11)
-        self.assertEqual(pixels.shape[0], 19)
+        assert pixels.shape[1] == 11
+        assert pixels.shape[0] == 19
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertEqual(
+        assert isinstance(m, cpmeas.Measurements)
+        assert (
             m.get_current_image_measurement(
                 "_".join((cellprofiler.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME))
-            ),
-            1,
+            )
+            == 1
         )
         v = m.get_current_measurement(
             STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X
         )
-        self.assertEqual(len(v), 1)
-        self.assertAlmostEqual(v[0], 5)
+        assert len(v) == 1
+        assert round(abs(v[0] - 5), 7) == 0
         v = m.get_current_measurement(
             STRAIGHTENED_OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y
         )
-        self.assertEqual(len(v), 1)
-        self.assertAlmostEqual(v[0], 9)
+        assert len(v) == 1
+        assert round(abs(v[0] - 9), 7) == 0
         object_set = workspace.object_set
         objects = object_set.get_objects(STRAIGHTENED_OBJECTS_NAME)
         orig_objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(
-            np.all(objects.segmented == orig_objects.segmented[16:35, 10:21])
-        )
+        assert np.all(objects.segmented == orig_objects.segmented[16:35, 10:21])
 
     def test_02_03_straighten_diagonal_worm(self):
         """Do a straightening on a worm on the 3x4x5 diagonal"""
@@ -405,14 +402,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([20])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 11)
-        self.assertEqual(pixels.shape[0], 31)
+        assert pixels.shape[1] == 11
+        assert pixels.shape[0] == 31
         expected = image[control_points[:, 0, 0], control_points[:, 1, 0]]
         samples = pixels[5:26:5, 5]
         np.testing.assert_almost_equal(expected, samples)
@@ -434,14 +431,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8, 20])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 22)
-        self.assertEqual(pixels.shape[0], 31)
+        assert pixels.shape[1] == 22
+        assert pixels.shape[0] == 31
         np.testing.assert_almost_equal(pixels[0:19, 0:11], image[16:35, 10:21])
         expected = image[control_points[:, 0, 1], control_points[:, 1, 1]]
         samples = pixels[5:26:5, 16]
@@ -463,14 +460,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8, 0, 20])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 33)
-        self.assertEqual(pixels.shape[0], 31)
+        assert pixels.shape[1] == 33
+        assert pixels.shape[0] == 31
         np.testing.assert_almost_equal(pixels[0:19, 0:11], image[16:35, 10:21])
         expected = image[
             control_points[:, 0, 2].astype(int), control_points[:, 1, 2].astype(int)
@@ -482,7 +479,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
         )
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.wants_measurements.value = False
         columns = module.get_measurement_columns(workspace.pipeline)
         for object_name, feature_name in (
@@ -497,43 +494,43 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
             ),
         ):
-            self.assertTrue(
-                any([(o == object_name) and (f == feature_name) for o, f, t in columns])
+            assert any(
+                [(o == object_name) and (f == feature_name) for o, f, t in columns]
             )
 
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], cellprofiler.measurement.C_COUNT)
+        assert len(categories) == 1
+        assert categories[0] == cellprofiler.measurement.C_COUNT
 
         categories = module.get_categories(
             workspace.pipeline, STRAIGHTENED_OBJECTS_NAME
         )
-        self.assertEqual(len(categories), 2)
-        self.assertTrue(cellprofiler.measurement.C_LOCATION in categories)
-        self.assertTrue(cellprofiler.measurement.C_NUMBER in categories)
+        assert len(categories) == 2
+        assert cellprofiler.measurement.C_LOCATION in categories
+        assert cellprofiler.measurement.C_NUMBER in categories
 
         f = module.get_measurements(
             workspace.pipeline, cpmeas.IMAGE, cellprofiler.measurement.C_COUNT
         )
-        self.assertEqual(len(f), 1)
-        self.assertEqual(f[0], STRAIGHTENED_OBJECTS_NAME)
+        assert len(f) == 1
+        assert f[0] == STRAIGHTENED_OBJECTS_NAME
 
         f = module.get_measurements(
             workspace.pipeline,
             STRAIGHTENED_OBJECTS_NAME,
             cellprofiler.measurement.C_NUMBER,
         )
-        self.assertEqual(len(f), 1)
-        self.assertEqual(f[0], cellprofiler.measurement.FTR_OBJECT_NUMBER)
+        assert len(f) == 1
+        assert f[0] == cellprofiler.measurement.FTR_OBJECT_NUMBER
 
         f = module.get_measurements(
             workspace.pipeline,
             STRAIGHTENED_OBJECTS_NAME,
             cellprofiler.measurement.C_LOCATION,
         )
-        self.assertEqual(len(f), 2)
-        self.assertTrue(cellprofiler.measurement.FTR_CENTER_X in f)
-        self.assertTrue(cellprofiler.measurement.FTR_CENTER_Y in f)
+        assert len(f) == 2
+        assert cellprofiler.measurement.FTR_CENTER_X in f
+        assert cellprofiler.measurement.FTR_CENTER_Y in f
 
     def test_03_02_get_measurement_columns_wants_images_vertical(self):
         workspace, module = self.make_workspace(
@@ -543,7 +540,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             np.zeros((20, 10)),
             auximage=np.zeros((20, 10)),
         )
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.wants_measurements.value = True
         module.number_of_segments.value = 5
         module.number_of_stripes.value = 1
@@ -564,39 +561,35 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         columns = module.get_measurement_columns(workspace.pipeline)
         columns = [column for column in columns if column[0] == OBJECTS_NAME]
         for expected_column in expected_columns:
-            self.assertTrue(
-                any(
-                    [
-                        all([x == y for x, y in zip(column, expected_column)])
-                        for column in columns
-                    ]
-                )
+            assert any(
+                [
+                    all([x == y for x, y in zip(column, expected_column)])
+                    for column in columns
+                ]
             )
         for column in columns:
-            self.assertTrue(
-                any(
-                    [
-                        all([x == y for x, y in zip(column, expected_column)])
-                        for expected_column in expected_columns
-                    ]
-                )
+            assert any(
+                [
+                    all([x == y for x, y in zip(column, expected_column)])
+                    for expected_column in expected_columns
+                ]
             )
 
         categories = module.get_categories(workspace.pipeline, OBJECTS_NAME)
-        self.assertTrue(S.C_WORM in categories)
+        assert S.C_WORM in categories
 
         features = module.get_measurements(workspace.pipeline, OBJECTS_NAME, S.C_WORM)
-        self.assertEqual(len(features), 2)
-        self.assertTrue(S.FTR_MEAN_INTENSITY in features)
-        self.assertTrue(S.FTR_STD_INTENSITY in features)
+        assert len(features) == 2
+        assert S.FTR_MEAN_INTENSITY in features
+        assert S.FTR_STD_INTENSITY in features
 
         for ftr in (S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY):
             images = module.get_measurement_images(
                 workspace.pipeline, OBJECTS_NAME, S.C_WORM, ftr
             )
-            self.assertEqual(len(images), 2)
-            self.assertTrue(STRAIGHTENED_IMAGE_NAME in images)
-            self.assertTrue(AUX_STRAIGHTENED_IMAGE_NAME in images)
+            assert len(images) == 2
+            assert STRAIGHTENED_IMAGE_NAME in images
+            assert AUX_STRAIGHTENED_IMAGE_NAME in images
 
         for ftr, image in zip(
             [S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY] * 2,
@@ -605,9 +598,9 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             scales = module.get_measurement_scales(
                 workspace.pipeline, OBJECTS_NAME, S.C_WORM, ftr, image
             )
-            self.assertEqual(len(scales), 5)
+            assert len(scales) == 5
             for expected_scale in range(5):
-                self.assertTrue(module.get_scale_name(None, expected_scale) in scales)
+                assert module.get_scale_name(None, expected_scale) in scales
 
     def test_03_03_get_measurement_columns_horizontal(self):
         workspace, module = self.make_workspace(
@@ -617,7 +610,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             np.zeros((20, 10)),
             auximage=np.zeros((20, 10)),
         )
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.wants_measurements.value = True
         module.number_of_segments.value = 1
         module.number_of_stripes.value = 5
@@ -637,39 +630,35 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         columns = module.get_measurement_columns(workspace.pipeline)
         columns = [column for column in columns if column[0] == OBJECTS_NAME]
         for expected_column in expected_columns:
-            self.assertTrue(
-                any(
-                    [
-                        all([x == y for x, y in zip(column, expected_column)])
-                        for column in columns
-                    ]
-                )
+            assert any(
+                [
+                    all([x == y for x, y in zip(column, expected_column)])
+                    for column in columns
+                ]
             )
         for column in columns:
-            self.assertTrue(
-                any(
-                    [
-                        all([x == y for x, y in zip(column, expected_column)])
-                        for expected_column in expected_columns
-                    ]
-                )
+            assert any(
+                [
+                    all([x == y for x, y in zip(column, expected_column)])
+                    for expected_column in expected_columns
+                ]
             )
 
         categories = module.get_categories(workspace.pipeline, OBJECTS_NAME)
-        self.assertTrue(S.C_WORM in categories)
+        assert S.C_WORM in categories
 
         features = module.get_measurements(workspace.pipeline, OBJECTS_NAME, S.C_WORM)
-        self.assertEqual(len(features), 2)
-        self.assertTrue(S.FTR_MEAN_INTENSITY in features)
-        self.assertTrue(S.FTR_STD_INTENSITY in features)
+        assert len(features) == 2
+        assert S.FTR_MEAN_INTENSITY in features
+        assert S.FTR_STD_INTENSITY in features
 
         for ftr in (S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY):
             images = module.get_measurement_images(
                 workspace.pipeline, OBJECTS_NAME, S.C_WORM, ftr
             )
-            self.assertEqual(len(images), 2)
-            self.assertTrue(STRAIGHTENED_IMAGE_NAME in images)
-            self.assertTrue(AUX_STRAIGHTENED_IMAGE_NAME in images)
+            assert len(images) == 2
+            assert STRAIGHTENED_IMAGE_NAME in images
+            assert AUX_STRAIGHTENED_IMAGE_NAME in images
 
         for ftr, image in zip(
             [S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY] * 2,
@@ -678,9 +667,9 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             scales = module.get_measurement_scales(
                 workspace.pipeline, OBJECTS_NAME, S.C_WORM, ftr, image
             )
-            self.assertEqual(len(scales), 5)
+            assert len(scales) == 5
             for expected_scale in range(5):
-                self.assertTrue(module.get_scale_name(expected_scale, None) in scales)
+                assert module.get_scale_name(expected_scale, None) in scales
 
     def test_03_04_get_measurement_columns_both(self):
         workspace, module = self.make_workspace(
@@ -690,7 +679,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             np.zeros((20, 10)),
             auximage=np.zeros((20, 10)),
         )
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.wants_measurements.value = True
         module.number_of_segments.value = 2
         module.number_of_stripes.value = 3
@@ -717,34 +706,30 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         columns = module.get_measurement_columns(workspace.pipeline)
         columns = [column for column in columns if column[0] == OBJECTS_NAME]
         for expected_column in expected_columns:
-            self.assertTrue(
-                any(
-                    [
-                        all([x == y for x, y in zip(column, expected_column)])
-                        for column in columns
-                    ]
-                )
+            assert any(
+                [
+                    all([x == y for x, y in zip(column, expected_column)])
+                    for column in columns
+                ]
             )
         for column in columns:
-            self.assertTrue(
-                any(
-                    [
-                        all([x == y for x, y in zip(column, expected_column)])
-                        for expected_column in expected_columns
-                    ]
-                )
+            assert any(
+                [
+                    all([x == y for x, y in zip(column, expected_column)])
+                    for expected_column in expected_columns
+                ]
             )
         for ftr in (S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY):
             for image in (STRAIGHTENED_IMAGE_NAME, AUX_STRAIGHTENED_IMAGE_NAME):
                 scales = module.get_measurement_scales(
                     workspace.pipeline, OBJECTS_NAME, S.C_WORM, ftr, image
                 )
-                self.assertEqual(len(scales), 11)
+                assert len(scales) == 11
                 for vscale in vscales:
                     for hscale in hscales:
                         if vscale is None and hscale is None:
                             continue
-                        self.assertTrue(module.get_scale_name(hscale, vscale) in scales)
+                        assert module.get_scale_name(hscale, vscale) in scales
 
     def test_04_00_measure_no_worms(self):
         workspace, module = self.make_workspace(
@@ -754,7 +739,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.number_of_segments.value = 5
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for i in range(5):
             for ftr, function in (
                 (S.FTR_MEAN_INTENSITY, np.mean),
@@ -769,7 +754,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                     )
                 )
                 v = m.get_current_measurement(OBJECTS_NAME, mname)
-                self.assertEqual(len(v), 0)
+                assert len(v) == 0
 
     def test_04_01_measure_one_worm(self):
         r = np.random.RandomState()
@@ -781,14 +766,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([12])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.wants_measurements.value = True
         module.number_of_segments.value = 4
         module.number_of_stripes.value = 3
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
         #
         # The worm goes from 20 to 34. Each segment is 15 / 4 = 3 3/4 long
@@ -843,8 +828,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 )
                 v = m.get_current_measurement(OBJECTS_NAME, mname)
                 expected = function(image, segment, oo.segmented == 1)
-                self.assertEqual(len(v), 1)
-                self.assertAlmostEqual(v[0], expected)
+                assert len(v) == 1
+                assert round(abs(v[0] - expected), 7) == 0
 
     def test_04_02_measure_checkerboarded_worm(self):
         r = np.random.RandomState()
@@ -856,14 +841,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([12])
         radii = np.array([1, 4, 7, 4, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 21
         module.wants_measurements.value = True
         module.number_of_segments.value = 4
         module.number_of_stripes.value = 3
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
         image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
         f1 = 1.0 / 3.0
@@ -1023,8 +1008,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                         )
                     ),
                 )
-                self.assertEqual(len(value), 1)
-                self.assertAlmostEqual(value[0], expected[i])
+                assert len(value) == 1
+                assert round(abs(value[0] - expected[i]), 7) == 0
         weights = s2(j_w)
         expected_means = s2(image[:, :, np.newaxis] * j_w) / weights
         counts = s2(j_w > 0)
@@ -1054,8 +1039,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                         )
                     ),
                 )
-                self.assertEqual(len(value), 1)
-                self.assertAlmostEqual(value[0], expected[i])
+                assert len(value) == 1
+                assert round(abs(value[0] - expected[i]), 7) == 0
 
         ww = i_w[:, :, :, np.newaxis] * j_w[:, :, np.newaxis, :]
         weights = s2(ww)
@@ -1089,14 +1074,14 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                         )
                     )
                     value = m.get_current_measurement(OBJECTS_NAME, mname)
-                    self.assertEqual(len(value), 1)
-                    self.assertAlmostEqual(value[0], expected[segment, stripe])
+                    assert len(value) == 1
+                    assert round(abs(value[0] - expected[segment, stripe]), 7) == 0
 
     def test_05_01_flip_no_worms(self):
         workspace, module = self.make_workspace(
             np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
         )
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.wants_measurements.value = True
         module.number_of_segments.value = 5
         module.flip_worms.value = S.FLIP_TOP
@@ -1113,17 +1098,17 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.wants_measurements.value = True
         module.number_of_segments.value = 3
         module.flip_worms.value = S.FLIP_TOP
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 11)
-        self.assertEqual(pixels.shape[0], 19)
+        assert pixels.shape[1] == 11
+        assert pixels.shape[0] == 19
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
     def test_05_03_flip_top(self):
@@ -1137,17 +1122,17 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.wants_measurements.value = True
         module.number_of_segments.value = 3
         module.flip_worms.value = S.FLIP_TOP
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 11)
-        self.assertEqual(pixels.shape[0], 19)
+        assert pixels.shape[1] == 11
+        assert pixels.shape[0] == 19
         i, j = np.mgrid[34:15:-1, 20:9:-1]
         np.testing.assert_almost_equal(pixels, image[i, j])
 
@@ -1162,17 +1147,17 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.wants_measurements.value = True
         module.number_of_segments.value = 3
         module.flip_worms.value = S.FLIP_BOTTOM
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 11)
-        self.assertEqual(pixels.shape[0], 19)
+        assert pixels.shape[1] == 11
+        assert pixels.shape[0] == 19
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
     def test_05_05_flip_bottom(self):
@@ -1186,16 +1171,16 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         lengths = np.array([8])
         radii = np.array([1, 3, 5, 3, 1])
         workspace, module = self.make_workspace(control_points, lengths, radii, image)
-        self.assertTrue(isinstance(module, S.StraightenWorms))
+        assert isinstance(module, S.StraightenWorms)
         module.width.value = 11
         module.wants_measurements.value = True
         module.number_of_segments.value = 3
         module.flip_worms.value = S.FLIP_BOTTOM
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        assert isinstance(image_set, cpi.ImageSet)
         pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
-        self.assertEqual(pixels.shape[1], 11)
-        self.assertEqual(pixels.shape[0], 19)
+        assert pixels.shape[1] == 11
+        assert pixels.shape[0] == 19
         i, j = np.mgrid[34:15:-1, 20:9:-1]
         np.testing.assert_almost_equal(pixels, image[i, j])

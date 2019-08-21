@@ -94,10 +94,10 @@ class TestRelateObjects(unittest.TestCase):
             for object_name in object_names
         ]
         columns = module.get_measurement_columns(pipeline)
-        self.assertEqual(sum([len(f) for f in features]), len(columns))
+        assert sum([len(f) for f in features]) == len(columns)
         for column in columns:
             index = object_names.index(column[0])
-            self.assertTrue(column[1] in features[index])
+            assert column[1] in features[index]
 
     def test_02_01_relate_zeros(self):
         """Relate a field of empty parents to empty children"""
@@ -109,11 +109,11 @@ class TestRelateObjects(unittest.TestCase):
         parents_of = m.get_current_measurement(
             CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
         )
-        self.assertEqual(numpy.product(parents_of.shape), 0)
+        assert numpy.product(parents_of.shape) == 0
         child_count = m.get_current_measurement(
             PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
         )
-        self.assertEqual(numpy.product(child_count.shape), 0)
+        assert numpy.product(child_count.shape) == 0
         self.features_and_columns_match(workspace)
 
     def test_02_01_relate_one(self):
@@ -128,13 +128,13 @@ class TestRelateObjects(unittest.TestCase):
         parents_of = m.get_current_measurement(
             CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
         )
-        self.assertEqual(numpy.product(parents_of.shape), 1)
-        self.assertEqual(parents_of[0], 1)
+        assert numpy.product(parents_of.shape) == 1
+        assert parents_of[0] == 1
         child_count = m.get_current_measurement(
             PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
         )
-        self.assertEqual(numpy.product(child_count.shape), 1)
-        self.assertEqual(child_count[0], 1)
+        assert numpy.product(child_count.shape) == 1
+        assert child_count[0] == 1
         self.features_and_columns_match(workspace)
 
     def test_02_02_relate_wrong_size(self):
@@ -154,13 +154,13 @@ class TestRelateObjects(unittest.TestCase):
         parents_of = m.get_current_measurement(
             CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
         )
-        self.assertEqual(numpy.product(parents_of.shape), 1)
-        self.assertEqual(parents_of[0], 1)
+        assert numpy.product(parents_of.shape) == 1
+        assert parents_of[0] == 1
         child_count = m.get_current_measurement(
             PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
         )
-        self.assertEqual(numpy.product(child_count.shape), 1)
-        self.assertEqual(child_count[0], 1)
+        assert numpy.product(child_count.shape) == 1
+        assert child_count[0] == 1
         self.features_and_columns_match(workspace)
 
     def test_02_03_relate_ijv(self):
@@ -175,16 +175,16 @@ class TestRelateObjects(unittest.TestCase):
         parents_of = m.get_current_measurement(
             CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
         )
-        self.assertEqual(numpy.product(parents_of.shape), 3)
-        self.assertTrue(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 1)
-        self.assertEqual(parents_of[2], 2)
+        assert numpy.product(parents_of.shape) == 3
+        assert parents_of[0], 1
+        assert parents_of[1] == 1
+        assert parents_of[2] == 2
         child_count = m.get_current_measurement(
             PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
         )
-        self.assertEqual(numpy.product(child_count.shape), 2)
-        self.assertEqual(child_count[0], 2)
-        self.assertEqual(child_count[1], 1)
+        assert numpy.product(child_count.shape) == 2
+        assert child_count[0] == 2
+        assert child_count[1] == 1
 
     def test_03_01_mean(self):
         """Compute the mean for two parents and four children"""
@@ -196,18 +196,18 @@ class TestRelateObjects(unittest.TestCase):
         )
         module.wants_per_parent_means.value = True
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         m.add_measurement(CHILD_OBJECTS, MEASUREMENT, numpy.array([1.0, 2.0, 3.0, 4.0]))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, numpy.array([1, 2, 3, 4]))
         expected = numpy.array([2.0, 3.0])
         module.run(workspace)
         name = "Mean_%s_%s" % (CHILD_OBJECTS, MEASUREMENT)
-        self.assertTrue(name in m.get_feature_names(PARENT_OBJECTS))
+        assert name in m.get_feature_names(PARENT_OBJECTS)
         data = m.get_current_measurement(PARENT_OBJECTS, name)
-        self.assertTrue(numpy.all(data == expected))
+        assert numpy.all(data == expected)
         self.features_and_columns_match(workspace)
         name = "Mean_%s_%s" % (CHILD_OBJECTS, IGNORED_MEASUREMENT)
-        self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
+        assert not (name in m.get_feature_names(PARENT_OBJECTS))
 
     def test_03_02_empty_mean(self):
         # Regression test - if there are no children, the per-parent means
@@ -220,17 +220,17 @@ class TestRelateObjects(unittest.TestCase):
         )
         module.wants_per_parent_means.value = True
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         m.add_measurement(CHILD_OBJECTS, MEASUREMENT, numpy.zeros(0))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, numpy.zeros(0, int))
         module.run(workspace)
         name = "Mean_%s_%s" % (CHILD_OBJECTS, MEASUREMENT)
-        self.assertTrue(name in m.get_feature_names(PARENT_OBJECTS))
+        assert name in m.get_feature_names(PARENT_OBJECTS)
         data = m.get_current_measurement(PARENT_OBJECTS, name)
-        self.assertTrue(numpy.all(numpy.isnan(data)))
+        assert numpy.all(numpy.isnan(data))
         self.features_and_columns_match(workspace)
         name = "Mean_%s_%s" % (CHILD_OBJECTS, IGNORED_MEASUREMENT)
-        self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
+        assert not (name in m.get_feature_names(PARENT_OBJECTS))
 
     def test_04_00_distance_empty(self):
         """Make sure we can handle labels matrices that are all zero"""
@@ -244,9 +244,7 @@ class TestRelateObjects(unittest.TestCase):
             (empty_labels, some_labels, 2),
         ):
             workspace, module = self.make_workspace(parent_labels, child_labels)
-            self.assertTrue(
-                isinstance(module, cellprofiler.modules.relateobjects.Relate)
-            )
+            assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
             module.find_parent_child_distances.value = (
                 cellprofiler.modules.relateobjects.D_BOTH
             )
@@ -259,9 +257,9 @@ class TestRelateObjects(unittest.TestCase):
             ):
                 m = feature % PARENT_OBJECTS
                 v = meas.get_current_measurement(CHILD_OBJECTS, m)
-                self.assertEqual(len(v), n)
+                assert len(v) == n
                 if n > 0:
-                    self.assertTrue(numpy.all(numpy.isnan(v)))
+                    assert numpy.all(numpy.isnan(v))
 
     def test_04_01_distance_centroids(self):
         """Check centroid-centroid distance calculation"""
@@ -285,7 +283,7 @@ class TestRelateObjects(unittest.TestCase):
         )
 
         workspace, module = self.make_workspace(parent_labels, child_labels)
-        self.assertTrue(isinstance(module, cellprofiler.modules.relateobjects.Relate))
+        assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
         module.find_parent_child_distances.value = (
             cellprofiler.modules.relateobjects.D_CENTROID
         )
@@ -296,8 +294,8 @@ class TestRelateObjects(unittest.TestCase):
             CHILD_OBJECTS,
             cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
         )
-        self.assertEqual(v.shape[0], 12)
-        self.assertTrue(numpy.all(numpy.abs(v - expected) < 0.0001))
+        assert v.shape[0] == 12
+        assert numpy.all(numpy.abs(v - expected) < 0.0001)
 
     def test_04_02_distance_minima(self):
         parents = numpy.zeros((11, 11), dtype=numpy.uint8)
@@ -356,7 +354,7 @@ class TestRelateObjects(unittest.TestCase):
         )
 
         workspace, module = self.make_workspace(parent_labels, child_labels)
-        self.assertTrue(isinstance(module, cellprofiler.modules.relateobjects.Relate))
+        assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
         module.find_parent_child_distances.value = (
             cellprofiler.modules.relateobjects.D_CENTROID
         )
@@ -366,17 +364,13 @@ class TestRelateObjects(unittest.TestCase):
             PARENT_OBJECTS,
             "_".join((cellprofiler.modules.relateobjects.C_MEAN, CHILD_OBJECTS)),
         )
-        self.assertTrue(
-            cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
-        )
+        assert cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
         feat_mean = cellprofiler.modules.relateobjects.FF_MEAN % (
             CHILD_OBJECTS,
             cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
         )
         mcolumns = module.get_measurement_columns(workspace.pipeline)
-        self.assertTrue(
-            any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
-        )
+        assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
         m = workspace.measurements
         m[
             CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, 1
@@ -394,11 +388,11 @@ class TestRelateObjects(unittest.TestCase):
             1,
         ]
 
-        self.assertEqual(len(v), 4)
+        assert len(v) == 4
         for idx in range(4):
             if numpy.any(plabel == idx + 1):
-                self.assertAlmostEqual(
-                    v[idx], numpy.mean(expected[plabel == idx + 1]), 4
+                assert (
+                    round(abs(v[idx] - numpy.mean(expected[plabel == idx + 1])), 4) == 0
                 )
 
     def test_calculate_centroid_distances_volume(self):

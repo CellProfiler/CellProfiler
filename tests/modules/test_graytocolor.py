@@ -80,7 +80,7 @@ class TestGrayToColor(unittest.TestCase):
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -122,24 +122,24 @@ class TestGrayToColor(unittest.TestCase):
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, G.GrayToColor))
-        self.assertEqual(module.scheme_choice, G.SCHEME_RGB)
-        self.assertEqual(module.red_image_name, "Origd0")
-        self.assertEqual(module.green_image_name, "Origd2")
-        self.assertEqual(module.blue_image_name, "Origd1")
-        self.assertEqual(module.rgb_image_name, "ColorImage")
+        assert isinstance(module, G.GrayToColor)
+        assert module.scheme_choice == G.SCHEME_RGB
+        assert module.red_image_name == "Origd0"
+        assert module.green_image_name == "Origd2"
+        assert module.blue_image_name == "Origd1"
+        assert module.rgb_image_name == "ColorImage"
         for adjustment_factor in (
             module.red_adjustment_factor,
             module.green_adjustment_factor,
             module.blue_adjustment_factor,
         ):
-            self.assertEqual(adjustment_factor.value, 1)
+            assert adjustment_factor.value == 1
 
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -177,34 +177,34 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, G.GrayToColor))
-        self.assertEqual(module.scheme_choice, G.SCHEME_COMPOSITE)
-        self.assertEqual(module.rgb_image_name, "myimage")
-        self.assertEqual(module.red_image_name, "1")
-        self.assertEqual(module.green_image_name, "2")
-        self.assertEqual(module.blue_image_name, "3")
-        self.assertEqual(module.cyan_image_name, "4")
-        self.assertEqual(module.magenta_image_name, "5")
-        self.assertEqual(module.yellow_image_name, "6")
-        self.assertEqual(module.gray_image_name, "7")
-        self.assertAlmostEqual(module.red_adjustment_factor, 2.1)
-        self.assertAlmostEqual(module.green_adjustment_factor, 2.2)
-        self.assertAlmostEqual(module.blue_adjustment_factor, 2.3)
-        self.assertAlmostEqual(module.cyan_adjustment_factor, 1.1)
-        self.assertAlmostEqual(module.magenta_adjustment_factor, 1.2)
-        self.assertAlmostEqual(module.yellow_adjustment_factor, 1.3)
-        self.assertAlmostEqual(module.gray_adjustment_factor, 1.4)
-        self.assertEqual(len(module.stack_channels), 2)
-        self.assertEqual(module.stack_channels[0].image_name, "DNA")
-        self.assertEqual(module.stack_channels[1].image_name, "GFP")
-        self.assertSequenceEqual(module.stack_channels[0].color.to_rgb(), (127, 0, 255))
-        self.assertSequenceEqual(module.stack_channels[1].color.to_rgb(), (127, 255, 0))
+        assert isinstance(module, G.GrayToColor)
+        assert module.scheme_choice == G.SCHEME_COMPOSITE
+        assert module.rgb_image_name == "myimage"
+        assert module.red_image_name == "1"
+        assert module.green_image_name == "2"
+        assert module.blue_image_name == "3"
+        assert module.cyan_image_name == "4"
+        assert module.magenta_image_name == "5"
+        assert module.yellow_image_name == "6"
+        assert module.gray_image_name == "7"
+        assert round(abs(module.red_adjustment_factor - 2.1), 7) == 0
+        assert round(abs(module.green_adjustment_factor - 2.2), 7) == 0
+        assert round(abs(module.blue_adjustment_factor - 2.3), 7) == 0
+        assert round(abs(module.cyan_adjustment_factor - 1.1), 7) == 0
+        assert round(abs(module.magenta_adjustment_factor - 1.2), 7) == 0
+        assert round(abs(module.yellow_adjustment_factor - 1.3), 7) == 0
+        assert round(abs(module.gray_adjustment_factor - 1.4), 7) == 0
+        assert len(module.stack_channels) == 2
+        assert module.stack_channels[0].image_name == "DNA"
+        assert module.stack_channels[1].image_name == "GFP"
+        assert module.stack_channels[0].color.to_rgb() == (127, 0, 255)
+        assert module.stack_channels[1].color.to_rgb() == (127, 255, 0)
 
     def test_02_01_rgb(self):
         np.random.seed(0)
@@ -236,7 +236,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
             )
             for i in range(3):
                 expected[:, :, i] *= adjustments[i]
-            self.assertTrue(np.all(np.abs(expected - pixel_data) <= 0.00001))
+            assert np.all(np.abs(expected - pixel_data) <= 0.00001)
 
     def test_03_01_cmyk(self):
         np.random.seed(0)
@@ -273,7 +273,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                 ]
             )
             expected = np.sum(expected, 0)
-            self.assertTrue(np.all(np.abs(expected - pixel_data) <= 0.00001))
+            assert np.all(np.abs(expected - pixel_data) <= 0.00001)
 
     def test_04_01_stack(self):
         r = np.random.RandomState()
@@ -282,8 +282,8 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         workspace, module = self.make_workspace(G.SCHEME_STACK, images)
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertSequenceEqual(output.shape[:2], images[0].shape)
-        self.assertEqual(output.shape[2], len(images))
+        assert output.shape[:2] == images[0].shape
+        assert output.shape[2] == len(images)
         for i, image in enumerate(images):
             np.testing.assert_array_almost_equal(output[:, :, i], image)
 
@@ -299,8 +299,8 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         )
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertSequenceEqual(output.shape[:2], images[0].shape)
-        self.assertEqual(output.shape[2], 3)
+        assert output.shape[:2] == images[0].shape
+        assert output.shape[2] == 3
         for i in range(3):
             channel = sum(
                 [

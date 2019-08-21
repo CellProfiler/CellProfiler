@@ -71,21 +71,21 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
-        self.assertEqual(module.image_count.value, 2)
-        self.assertEqual(module.thr, 15.0)
+        assert module.images_or_objects.value == M.M_IMAGES_AND_OBJECTS
+        assert module.image_count.value == 2
+        assert module.thr == 15.0
         for name in [x.image_name.value for x in module.image_groups]:
-            self.assertTrue(name in ["DNA", "Cytoplasm"])
+            assert name in ["DNA", "Cytoplasm"]
 
-        self.assertEqual(module.object_count.value, 2)
+        assert module.object_count.value == 2
         for name in [x.object_name.value for x in module.object_groups]:
-            self.assertTrue(name in ["Nuclei", "Cells"])
+            assert name in ["Nuclei", "Cells"]
 
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -109,21 +109,21 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
-        self.assertEqual(module.image_count.value, 2)
-        self.assertEqual(module.thr, 25.0)
+        assert module.images_or_objects.value == M.M_IMAGES_AND_OBJECTS
+        assert module.image_count.value == 2
+        assert module.thr == 25.0
         for name in [x.image_name.value for x in module.image_groups]:
-            self.assertTrue(name in ["DNA", "Cytoplasm"])
+            assert name in ["DNA", "Cytoplasm"]
 
-        self.assertEqual(module.object_count.value, 2)
+        assert module.object_count.value == 2
         for name in [x.object_name.value for x in module.object_groups]:
-            self.assertTrue(name in ["Nuclei", "Cells"])
+            assert name in ["Nuclei", "Cells"]
 
     all_object_measurement_formats = [
         M.F_CORRELATION_FORMAT,
@@ -152,14 +152,14 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         def cat(name):
             return module.get_categories(None, name) == ["Correlation"]
 
-        self.assertTrue(cat("Image"))
-        self.assertFalse(cat(OBJECTS_NAME))
+        assert cat("Image")
+        assert not cat(OBJECTS_NAME)
         module.images_or_objects.value = M.M_OBJECTS
-        self.assertFalse(cat("Image"))
-        self.assertTrue(cat(OBJECTS_NAME))
+        assert not cat("Image")
+        assert cat(OBJECTS_NAME)
         module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
-        self.assertTrue(cat("Image"))
-        self.assertTrue(cat(OBJECTS_NAME))
+        assert cat("Image")
+        assert cat(OBJECTS_NAME)
 
     def test_02_02_get_measurements(self):
         """Test the get_measurements function for some different cases"""
@@ -179,14 +179,14 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             expected = sorted([_.split("_")[1] for _ in mf])
             return ans == expected
 
-        self.assertTrue(meas("Image"))
-        self.assertFalse(meas(OBJECTS_NAME))
+        assert meas("Image")
+        assert not meas(OBJECTS_NAME)
         module.images_or_objects.value = M.M_OBJECTS
-        self.assertFalse(meas("Image"))
-        self.assertTrue(meas(OBJECTS_NAME))
+        assert not meas("Image")
+        assert meas(OBJECTS_NAME)
         module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
-        self.assertTrue(meas("Image"))
-        self.assertTrue(meas(OBJECTS_NAME))
+        assert meas("Image")
+        assert meas(OBJECTS_NAME)
 
     def test_02_03_get_measurement_images(self):
         """Test the get_measurment_images function for some different cases"""
@@ -217,9 +217,9 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
                         )
                     ]
                     if mf in self.asymmetrical_measurement_formats:
-                        self.assertTrue(all([e in ans for e in expected]))
+                        assert all([e in ans for e in expected])
                     else:
-                        self.assertTrue(any([e in ans for e in expected]))
+                        assert any([e in ans for e in expected])
 
     def test_02_04_01_get_measurement_columns_images(self):
         module = M.MeasureColocalization()
@@ -235,10 +235,10 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             (cpmeas.IMAGE, ftr % (IMAGE2_NAME, IMAGE1_NAME), cpmeas.COLTYPE_FLOAT)
             for ftr in self.asymmetrical_measurement_formats
         ]
-        self.assertEqual(len(columns), len(expected))
+        assert len(columns) == len(expected)
         for column in columns:
-            self.assertTrue(
-                any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
+            assert any(
+                [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
     def test_02_04_02_get_measurement_columns_objects(self):
@@ -255,10 +255,10 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             (OBJECTS_NAME, ftr % (IMAGE2_NAME, IMAGE1_NAME), cpmeas.COLTYPE_FLOAT)
             for ftr in self.asymmetrical_measurement_formats
         ]
-        self.assertEqual(len(columns), len(expected))
+        assert len(columns) == len(expected)
         for column in columns:
-            self.assertTrue(
-                any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
+            assert any(
+                [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
     def test_02_04_03_get_measurement_columns_both(self):
@@ -287,10 +287,10 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             ]
         )
 
-        self.assertEqual(len(columns), len(expected))
+        assert len(columns) == len(expected)
         for column in columns:
-            self.assertTrue(
-                any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
+            assert any(
+                [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
     def test_03_01_correlated(self):
@@ -307,15 +307,15 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             cpmeas.IMAGE, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertAlmostEqual(corr, 1)
+        assert round(abs(corr - 1), 7) == 0
 
-        self.assertEqual(len(m.get_object_names()), 1)
-        self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
+        assert len(m.get_object_names()) == 1
+        assert m.get_object_names()[0] == cpmeas.IMAGE
         columns = module.get_measurement_columns(None)
         features = m.get_feature_names(cpmeas.IMAGE)
-        self.assertEqual(len(columns), len(features))
+        assert len(columns) == len(features)
         for column in columns:
-            self.assertTrue(column[1] in features)
+            assert column[1] in features
 
     def test_03_02_anticorrelated(self):
         """Test two anticorrelated images"""
@@ -336,7 +336,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             cpmeas.IMAGE, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertAlmostEqual(corr, -1)
+        assert round(abs(corr - -1), 7) == 0
 
     def test_04_01_slope(self):
         """Test the slope measurement"""
@@ -351,9 +351,9 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         mi = module.get_measurement_images(None, cpmeas.IMAGE, "Correlation", "Slope")
         slope = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Slope_%s" % mi[0])
         if mi[0] == "%s_%s" % (IMAGE1_NAME, IMAGE2_NAME):
-            self.assertAlmostEqual(slope, 0.5, 5)
+            assert round(abs(slope - 0.5), 5) == 0
         else:
-            self.assertAlmostEqual(slope, 2)
+            assert round(abs(slope - 2), 7) == 0
 
     def test_05_01_crop(self):
         """Test similarly cropping one image to another"""
@@ -372,7 +372,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             cpmeas.IMAGE, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertAlmostEqual(corr, 1)
+        assert round(abs(corr - 1), 7) == 0
 
     def test_05_02_mask(self):
         """Test images with two different masks"""
@@ -399,7 +399,7 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             cpmeas.IMAGE, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertAlmostEqual(corr, 1)
+        assert round(abs(corr - 1), 7) == 0
 
     def test_06_01_objects(self):
         """Test images with two objects"""
@@ -426,22 +426,22 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             OBJECTS_NAME, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertEqual(len(corr), 2)
-        self.assertAlmostEqual(corr[0], 1)
-        self.assertAlmostEqual(corr[1], -1)
+        assert len(corr) == 2
+        assert round(abs(corr[0] - 1), 7) == 0
+        assert round(abs(corr[1] - -1), 7) == 0
 
-        self.assertEqual(len(m.get_object_names()), 2)
-        self.assertTrue(OBJECTS_NAME in m.get_object_names())
+        assert len(m.get_object_names()) == 2
+        assert OBJECTS_NAME in m.get_object_names()
         columns = module.get_measurement_columns(None)
         image_features = m.get_feature_names(cpmeas.IMAGE)
         object_features = m.get_feature_names(OBJECTS_NAME)
-        self.assertEqual(len(columns), len(image_features) + len(object_features))
+        assert len(columns) == len(image_features) + len(object_features)
         for column in columns:
             if column[0] == cpmeas.IMAGE:
-                self.assertTrue(column[1] in image_features)
+                assert column[1] in image_features
             else:
-                self.assertEqual(column[0], OBJECTS_NAME)
-                self.assertTrue(column[1] in object_features)
+                assert column[0] == OBJECTS_NAME
+                assert column[1] in object_features
 
     def test_06_02_cropped_objects(self):
         """Test images and objects with a cropping mask"""
@@ -469,8 +469,8 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             OBJECTS_NAME, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertAlmostEqual(corr[0], 1)
-        self.assertAlmostEqual(corr[1], 1)
+        assert round(abs(corr[0] - 1), 7) == 0
+        assert round(abs(corr[1] - 1), 7) == 0
 
     def test_06_03_no_objects(self):
         """Test images with no objects"""
@@ -491,19 +491,19 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             OBJECTS_NAME, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertEqual(len(corr), 0)
-        self.assertEqual(len(m.get_object_names()), 2)
-        self.assertTrue(OBJECTS_NAME in m.get_object_names())
+        assert len(corr) == 0
+        assert len(m.get_object_names()) == 2
+        assert OBJECTS_NAME in m.get_object_names()
         columns = module.get_measurement_columns(None)
         image_features = m.get_feature_names(cpmeas.IMAGE)
         object_features = m.get_feature_names(OBJECTS_NAME)
-        self.assertEqual(len(columns), len(image_features) + len(object_features))
+        assert len(columns) == len(image_features) + len(object_features)
         for column in columns:
             if column[0] == cpmeas.IMAGE:
-                self.assertTrue(column[1] in image_features)
+                assert column[1] in image_features
             else:
-                self.assertEqual(column[0], OBJECTS_NAME)
-                self.assertTrue(column[1] in object_features)
+                assert column[0] == OBJECTS_NAME
+                assert column[1] in object_features
 
     def test_06_04_wrong_size(self):
         """Regression test of IMG-961 - objects and images of different sizes"""
@@ -524,8 +524,8 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
         corr = m.get_current_measurement(
             OBJECTS_NAME, "Correlation_Correlation_%s" % mi[0]
         )
-        self.assertAlmostEqual(corr[0], 1)
-        self.assertAlmostEqual(corr[1], 1)
+        assert round(abs(corr[0] - 1), 7) == 0
+        assert round(abs(corr[1] - 1), 7) == 0
 
     def test_06_05_last_object_masked(self):
         # Regression test of issue #1553
@@ -551,8 +551,8 @@ MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_nu
             m = workspace.measurements
             feature = M.F_CORRELATION_FORMAT % (IMAGE1_NAME, IMAGE2_NAME)
             values = m[OBJECTS_NAME, feature]
-            self.assertEqual(len(values), 2)
-            self.assertTrue(np.isnan(values[1]))
+            assert len(values) == 2
+            assert np.isnan(values[1])
 
     def test_zero_valued_intensity(self):
         # https://github.com/CellProfiler/CellProfiler/issues/2680

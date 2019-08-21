@@ -53,26 +53,26 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, D.DisplayDataOnImage))
-        self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
-        self.assertEqual(module.measurement, "AreaShape_Zernike_0_0")
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.text_color, "green")
-        self.assertEqual(module.objects_name, "Nuclei")
-        self.assertEqual(module.display_image, "Zernike")
-        self.assertEqual(module.font_size, 10)
-        self.assertEqual(module.decimals, 2)
-        self.assertEqual(module.saved_image_contents, D.E_AXES)
-        self.assertEqual(module.offset, 5)
-        self.assertEqual(module.color_or_text, D.CT_COLOR)
-        self.assertEqual(module.colormap, "jet")
-        self.assertTrue(module.wants_image)
+        assert isinstance(module, D.DisplayDataOnImage)
+        assert module.objects_or_image == D.OI_OBJECTS
+        assert module.measurement == "AreaShape_Zernike_0_0"
+        assert module.image_name == "DNA"
+        assert module.text_color == "green"
+        assert module.objects_name == "Nuclei"
+        assert module.display_image == "Zernike"
+        assert module.font_size == 10
+        assert module.decimals == 2
+        assert module.saved_image_contents == D.E_AXES
+        assert module.offset == 5
+        assert module.color_or_text == D.CT_COLOR
+        assert module.colormap == "jet"
+        assert module.wants_image
 
     def test_01_04_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -99,29 +99,29 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, D.DisplayDataOnImage))
-        self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
-        self.assertEqual(module.measurement, "AreaShape_Zernike_0_0")
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.text_color, "green")
-        self.assertEqual(module.objects_name, "Nuclei")
-        self.assertEqual(module.display_image, "Zernike")
-        self.assertEqual(module.font_size, 10)
-        self.assertEqual(module.decimals, 2)
-        self.assertEqual(module.saved_image_contents, D.E_AXES)
-        self.assertEqual(module.offset, 5)
-        self.assertEqual(module.color_or_text, D.CT_COLOR)
-        self.assertEqual(module.colormap, "jet")
-        self.assertFalse(module.wants_image)
-        self.assertEqual(module.color_map_scale_choice, D.CMS_USE_MEASUREMENT_RANGE)
-        self.assertEqual(module.color_map_scale.min, 0)
-        self.assertEqual(module.color_map_scale.max, 1)
+        assert isinstance(module, D.DisplayDataOnImage)
+        assert module.objects_or_image == D.OI_OBJECTS
+        assert module.measurement == "AreaShape_Zernike_0_0"
+        assert module.image_name == "DNA"
+        assert module.text_color == "green"
+        assert module.objects_name == "Nuclei"
+        assert module.display_image == "Zernike"
+        assert module.font_size == 10
+        assert module.decimals == 2
+        assert module.saved_image_contents == D.E_AXES
+        assert module.offset == 5
+        assert module.color_or_text == D.CT_COLOR
+        assert module.colormap == "jet"
+        assert not module.wants_image
+        assert module.color_map_scale_choice == D.CMS_USE_MEASUREMENT_RANGE
+        assert module.color_map_scale.min == 0
+        assert module.color_map_scale.max == 1
 
     def test_01_06_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -168,30 +168,30 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, D.DisplayDataOnImage))
-        self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
-        self.assertEqual(module.objects_name, "Nuclei")
-        self.assertEqual(module.measurement, "Texture_AngularSecondMoment_CropBlue_3_0")
-        self.assertEqual(module.image_name, "RGBImage")
-        self.assertEqual(module.display_image, "Whatever")
-        self.assertEqual(module.font_size, 11)
-        self.assertEqual(module.decimals, 3)
-        self.assertEqual(module.saved_image_contents, D.E_IMAGE)
-        self.assertEqual(module.offset, 1)
-        self.assertEqual(module.color_or_text, D.CT_COLOR)
-        self.assertEqual(module.colormap, "jet")
-        self.assertTrue(module.wants_image)
-        self.assertEqual(module.color_map_scale_choice, D.CMS_MANUAL)
-        self.assertEqual(module.color_map_scale.min, 0.05)
-        self.assertEqual(module.color_map_scale.max, 1.5)
+        assert isinstance(module, D.DisplayDataOnImage)
+        assert module.objects_or_image == D.OI_OBJECTS
+        assert module.objects_name == "Nuclei"
+        assert module.measurement == "Texture_AngularSecondMoment_CropBlue_3_0"
+        assert module.image_name == "RGBImage"
+        assert module.display_image == "Whatever"
+        assert module.font_size == 11
+        assert module.decimals == 3
+        assert module.saved_image_contents == D.E_IMAGE
+        assert module.offset == 1
+        assert module.color_or_text == D.CT_COLOR
+        assert module.colormap == "jet"
+        assert module.wants_image
+        assert module.color_map_scale_choice == D.CMS_MANUAL
+        assert module.color_map_scale.min == 0.05
+        assert module.color_map_scale.max == 1.5
         module = pipeline.modules()[1]
-        self.assertEqual(module.color_map_scale_choice, D.CMS_USE_MEASUREMENT_RANGE)
+        assert module.color_map_scale_choice == D.CMS_USE_MEASUREMENT_RANGE
 
     def make_workspace(self, measurement, labels=None, image=None):
         object_set = cpo.ObjectSet()
@@ -223,7 +223,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)

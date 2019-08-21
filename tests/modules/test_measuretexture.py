@@ -77,27 +77,25 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         for i, wants_gabor in enumerate((True, False)):
             module = pipeline.modules()[i]
-            self.assertTrue(
-                isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
+            assert isinstance(
+                module, cellprofiler.modules.measuretexture.MeasureTexture
             )
-            self.assertEqual(len(module.image_groups), 2)
-            self.assertEqual(module.image_groups[0].image_name.value, "rawDNA")
-            self.assertEqual(module.image_groups[1].image_name.value, "rawGFP")
-            self.assertEqual(len(module.object_groups), 2)
-            self.assertEqual(module.object_groups[0].object_name.value, "Cells")
-            self.assertEqual(module.object_groups[1].object_name.value, "Nuclei")
-            self.assertEqual(len(module.scale_groups), 2)
-            self.assertEqual(module.scale_groups[0].scale, 3)
-            self.assertEqual(module.scale_groups[1].scale, 5)
+            assert len(module.image_groups) == 2
+            assert module.image_groups[0].image_name.value == "rawDNA"
+            assert module.image_groups[1].image_name.value == "rawGFP"
+            assert len(module.object_groups) == 2
+            assert module.object_groups[0].object_name.value == "Cells"
+            assert module.object_groups[1].object_name.value == "Nuclei"
+            assert len(module.scale_groups) == 2
+            assert module.scale_groups[0].scale == 3
+            assert module.scale_groups[1].scale == 5
 
     def test_load_v3(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
@@ -137,29 +135,27 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         for i, wants_gabor in enumerate((True, False)):
             module = pipeline.modules()[i]
-            self.assertTrue(
-                isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
+            assert isinstance(
+                module, cellprofiler.modules.measuretexture.MeasureTexture
             )
-            self.assertEqual(len(module.image_groups), 2)
-            self.assertEqual(module.image_groups[0].image_name.value, "rawDNA")
-            self.assertEqual(module.image_groups[1].image_name.value, "rawGFP")
-            self.assertEqual(len(module.object_groups), 2)
-            self.assertEqual(module.object_groups[0].object_name.value, "Cells")
-            self.assertEqual(module.object_groups[1].object_name.value, "Nuclei")
-            self.assertEqual(len(module.scale_groups), 2)
-            self.assertEqual(module.scale_groups[0].scale, 3)
-            self.assertEqual(module.scale_groups[1].scale, 5)
-            self.assertEqual(
-                module.images_or_objects, cellprofiler.modules.measuretexture.IO_BOTH
+            assert len(module.image_groups) == 2
+            assert module.image_groups[0].image_name.value == "rawDNA"
+            assert module.image_groups[1].image_name.value == "rawGFP"
+            assert len(module.object_groups) == 2
+            assert module.object_groups[0].object_name.value == "Cells"
+            assert module.object_groups[1].object_name.value == "Nuclei"
+            assert len(module.scale_groups) == 2
+            assert module.scale_groups[0].scale == 3
+            assert module.scale_groups[1].scale == 5
+            assert (
+                module.images_or_objects == cellprofiler.modules.measuretexture.IO_BOTH
             )
 
     def test_load_v4(self):
@@ -221,13 +217,11 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         for i, (wants_gabor, io_choice) in enumerate(
             (
                 (True, cellprofiler.modules.measuretexture.IO_IMAGES),
@@ -236,18 +230,18 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             )
         ):
             module = pipeline.modules()[i]
-            self.assertTrue(
-                isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
+            assert isinstance(
+                module, cellprofiler.modules.measuretexture.MeasureTexture
             )
-            self.assertEqual(len(module.image_groups), 2)
-            self.assertEqual(module.image_groups[0].image_name.value, "rawDNA")
-            self.assertEqual(module.image_groups[1].image_name.value, "rawGFP")
-            self.assertEqual(len(module.object_groups), 2)
-            self.assertEqual(module.object_groups[0].object_name.value, "Cells")
-            self.assertEqual(module.object_groups[1].object_name.value, "Nuclei")
-            self.assertEqual(len(module.scale_groups), 2)
-            self.assertEqual(module.scale_groups[0].scale, 3)
-            self.assertEqual(module.scale_groups[1].scale, 5)
+            assert len(module.image_groups) == 2
+            assert module.image_groups[0].image_name.value == "rawDNA"
+            assert module.image_groups[1].image_name.value == "rawGFP"
+            assert len(module.object_groups) == 2
+            assert module.object_groups[0].object_name.value == "Cells"
+            assert module.object_groups[1].object_name.value == "Nuclei"
+            assert len(module.scale_groups) == 2
+            assert module.scale_groups[0].scale == 3
+            assert module.scale_groups[1].scale == 5
 
     def test_many_objects(self):
         """Regression test for IMG-775"""
@@ -256,9 +250,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         i, j = numpy.mgrid[0:100, 0:100]
         labels = (i / 10).astype(int) + (j / 10).astype(int) * 10 + 1
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-        )
+        assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
         module.scale_groups[0].scale.value = 2
         module.run(workspace)
         m = workspace.measurements
@@ -268,43 +260,35 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             cellprofiler.modules.measuretexture.TEXTURE,
         )
         all_columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertTrue(
-            all(
-                [
-                    oname in (INPUT_OBJECTS_NAME, cellprofiler.measurement.IMAGE)
-                    for oname, feature, coltype in all_columns
-                ]
-            )
+        assert all(
+            [
+                oname in (INPUT_OBJECTS_NAME, cellprofiler.measurement.IMAGE)
+                for oname, feature, coltype in all_columns
+            ]
         )
         all_column_features = [
             feature
             for oname, feature, coltype in all_columns
             if oname == INPUT_OBJECTS_NAME
         ]
-        self.assertTrue(
-            all(
-                [
-                    any(
-                        [
-                            oname == cellprofiler.measurement.IMAGE
-                            and feature == afeature
-                            for oname, feature, coltype in all_columns
-                        ]
-                    )
-                    for afeature in all_column_features
-                ]
-            )
+        assert all(
+            [
+                any(
+                    [
+                        oname == cellprofiler.measurement.IMAGE and feature == afeature
+                        for oname, feature, coltype in all_columns
+                    ]
+                )
+                for afeature in all_column_features
+            ]
         )
         for measurement in cellprofiler.modules.measuretexture.F_HARALICK:
-            self.assertTrue(measurement in all_measurements)
-            self.assertTrue(
-                INPUT_IMAGE_NAME
-                in module.get_measurement_images(
-                    workspace.pipeline,
-                    INPUT_OBJECTS_NAME,
-                    cellprofiler.modules.measuretexture.TEXTURE,
-                    measurement,
-                )
+            assert measurement in all_measurements
+            assert INPUT_IMAGE_NAME in module.get_measurement_images(
+                workspace.pipeline,
+                INPUT_OBJECTS_NAME,
+                cellprofiler.modules.measuretexture.TEXTURE,
+                measurement,
             )
             all_scales = module.get_measurement_scales(
                 workspace.pipeline,
@@ -321,10 +305,10 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                     2,
                     angle,
                 )
-                self.assertTrue(mname in all_column_features)
+                assert mname in all_column_features
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
-                self.assertTrue(numpy.all(values != 0))
-                self.assertTrue("{:d}_{:02d}".format(2, angle) in all_scales)
+                assert numpy.all(values != 0)
+                assert "{:d}_{:02d}".format(2, angle) in all_scales
 
     # def test_03_03_measurement_columns(self):
     #     '''Check that results of get_measurement_columns match the actual column names output'''
@@ -350,9 +334,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         workspace, module = self.make_workspace(
             numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
         )
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-        )
+        assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
         for has_category, object_name in (
             (True, cellprofiler.measurement.IMAGE),
             (True, INPUT_OBJECTS_NAME),
@@ -360,55 +342,41 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         ):
             categories = module.get_categories(workspace.pipeline, object_name)
             if has_category:
-                self.assertEqual(len(categories), 1)
-                self.assertEqual(
-                    categories[0], cellprofiler.modules.measuretexture.TEXTURE
-                )
+                assert len(categories) == 1
+                assert categories[0] == cellprofiler.modules.measuretexture.TEXTURE
             else:
-                self.assertEqual(len(categories), 0)
+                assert len(categories) == 0
         module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
         categories = module.get_categories(
             workspace.pipeline, cellprofiler.measurement.IMAGE
         )
-        self.assertEqual(len(categories), 1)
+        assert len(categories) == 1
         categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
-        self.assertEqual(len(categories), 0)
+        assert len(categories) == 0
         module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
         categories = module.get_categories(
             workspace.pipeline, cellprofiler.measurement.IMAGE
         )
-        self.assertEqual(len(categories), 0)
+        assert len(categories) == 0
         categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
-        self.assertEqual(len(categories), 1)
+        assert len(categories) == 1
 
     def test_measurements(self):
         workspace, module = self.make_workspace(
             numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
         )
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-        )
+        assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
         for object_name in (cellprofiler.measurement.IMAGE, INPUT_OBJECTS_NAME):
             features = module.get_measurements(
                 workspace.pipeline,
                 object_name,
                 cellprofiler.modules.measuretexture.TEXTURE,
             )
-            self.assertTrue(
-                all(
-                    [
-                        f in cellprofiler.modules.measuretexture.F_HARALICK
-                        for f in features
-                    ]
-                )
+            assert all(
+                [f in cellprofiler.modules.measuretexture.F_HARALICK for f in features]
             )
-            self.assertTrue(
-                all(
-                    [
-                        f in features
-                        for f in cellprofiler.modules.measuretexture.F_HARALICK
-                    ]
-                )
+            assert all(
+                [f in features for f in cellprofiler.modules.measuretexture.F_HARALICK]
             )
 
     def test_zeros(self):
@@ -418,11 +386,11 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         )
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         for f in m.get_feature_names(INPUT_OBJECTS_NAME):
             if f.startswith(cellprofiler.modules.measuretexture.TEXTURE):
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
-                self.assertEqual(len(values), 0)
+                assert len(values) == 0
 
     def test_wrong_size(self):
         """Regression test for IMG-961: objects & image different size"""
@@ -439,7 +407,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             if f.startswith(cellprofiler.modules.measuretexture.TEXTURE):
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
                 expected = me.get_current_measurement(INPUT_OBJECTS_NAME, f)
-                self.assertEqual(values, expected)
+                assert values == expected
 
     def test_mask(self):
         numpy.random.seed(42)
@@ -457,7 +425,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             if f.startswith(cellprofiler.modules.measuretexture.TEXTURE):
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
                 expected = me.get_current_measurement(INPUT_OBJECTS_NAME, f)
-                self.assertEqual(values, expected)
+                assert values == expected
 
     def test_no_image_measurements(self):
         image = numpy.ones((10, 10)) * 0.5
@@ -468,17 +436,12 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         module.scale_groups[0].scale.value = 2
         module.run(workspace)
         m = workspace.measurements
-        self.assertFalse(
-            m.has_feature(
-                cellprofiler.measurement.IMAGE,
-                "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
-            )
+        assert not m.has_feature(
+            cellprofiler.measurement.IMAGE,
+            "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
         )
-        self.assertTrue(
-            m.has_feature(
-                INPUT_OBJECTS_NAME,
-                "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
-            )
+        assert m.has_feature(
+            INPUT_OBJECTS_NAME, "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME
         )
 
     def test_no_object_measurements(self):
@@ -490,17 +453,12 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         module.scale_groups[0].scale.value = 2
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(
-            m.has_feature(
-                cellprofiler.measurement.IMAGE,
-                "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
-            )
+        assert m.has_feature(
+            cellprofiler.measurement.IMAGE,
+            "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
         )
-        self.assertFalse(
-            m.has_feature(
-                INPUT_OBJECTS_NAME,
-                "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
-            )
+        assert not m.has_feature(
+            INPUT_OBJECTS_NAME, "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME
         )
 
     def test_missing_direction(self):

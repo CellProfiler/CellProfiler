@@ -82,37 +82,29 @@ class TestCalculateMath(unittest.TestCase):
 
     def test_02_01_add_image_image(self):
         measurements = self.run_workspace(C.O_ADD, True, 2, True, 2)
-        self.assertTrue(
-            measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
-        )
+        assert measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         for i in range(2):
-            self.assertFalse(
-                measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
-            )
+            assert not measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, 4)
+        assert round(abs(data - 4), 7) == 0
 
     def test_02_02_add_image_object(self):
         """Add an image measurement to each of several object measurements"""
         measurements = self.run_workspace(C.O_ADD, True, 2, False, np.array([1, 4, 9]))
-        self.assertFalse(
-            measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
-        )
-        self.assertTrue(measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS))
+        assert not measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
+        assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
         data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
-        self.assertTrue(np.all(data == np.array([3, 6, 11])))
+        assert np.all(data == np.array([3, 6, 11]))
 
     def test_02_03_add_object_image(self):
         """Add an image measurement to each of several object measurements (reverse)"""
         measurements = self.run_workspace(C.O_ADD, False, np.array([1, 4, 9]), True, 2)
-        self.assertFalse(
-            measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
-        )
-        self.assertTrue(measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS))
+        assert not measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
+        assert measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
-        self.assertTrue(np.all(data == np.array([3, 6, 11])))
+        assert np.all(data == np.array([3, 6, 11]))
 
     def test_02_04_add_premultiply(self):
         def fn(module, workspace):
@@ -124,7 +116,7 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_02_05_add_pre_exponentiate(self):
         def fn(module, workspace):
@@ -136,7 +128,7 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_02_06_add_postmultiply(self):
         def fn(module, workspace):
@@ -147,7 +139,7 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_02_07_add_postexponentiate(self):
         def fn(module, workspace):
@@ -158,7 +150,7 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_02_08_add_log(self):
         def fn(module, workspace):
@@ -169,44 +161,40 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_02_09_add_object_object(self):
         measurements = self.run_workspace(
             C.O_ADD, False, np.array([1, 2, 3]), False, np.array([1, 4, 9])
         )
-        self.assertFalse(
-            measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
-        )
+        assert not measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         for i in range(2):
-            self.assertTrue(
-                measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
-            )
+            assert measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
             data = measurements.get_current_measurement(
                 OBJECT[i], MATH_OUTPUT_MEASUREMENTS
             )
-            self.assertTrue(np.all(data == np.array([2, 6, 12])))
+            assert np.all(data == np.array([2, 6, 12]))
 
     def test_03_01_subtract(self):
         measurements = self.run_workspace(C.O_SUBTRACT, True, 7, True, 5)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, 2)
+        assert round(abs(data - 2), 7) == 0
 
     def test_04_01_multiply(self):
         measurements = self.run_workspace(C.O_MULTIPLY, True, 7, True, 5)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, 35)
+        assert round(abs(data - 35), 7) == 0
 
     def test_04_01_divide(self):
         measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 5)
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, 7)
+        assert round(abs(data - 7), 7) == 0
 
     def test_05_01_measurement_columns_image(self):
         module = C.CalculateMath()
@@ -214,13 +202,14 @@ class TestCalculateMath(unittest.TestCase):
         for operand in module.operands:
             operand.operand_choice.value = C.MC_IMAGE
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 1)
-        self.assertEqual(columns[0][0], cpmeas.IMAGE)
-        self.assertEqual(columns[0][1], MATH_OUTPUT_MEASUREMENTS)
-        self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
-        self.assertEqual(module.get_categories(None, cpmeas.IMAGE)[0], "Math")
-        self.assertEqual(
-            module.get_measurements(None, cpmeas.IMAGE, "Math")[0], OUTPUT_MEASUREMENTS
+        assert len(columns) == 1
+        assert columns[0][0] == cpmeas.IMAGE
+        assert columns[0][1] == MATH_OUTPUT_MEASUREMENTS
+        assert columns[0][2] == cpmeas.COLTYPE_FLOAT
+        assert module.get_categories(None, cpmeas.IMAGE)[0] == "Math"
+        assert (
+            module.get_measurements(None, cpmeas.IMAGE, "Math")[0]
+            == OUTPUT_MEASUREMENTS
         )
 
     def test_05_02_measurement_columns_image_object(self):
@@ -230,15 +219,15 @@ class TestCalculateMath(unittest.TestCase):
         module.operands[1].operand_choice.value = C.MC_OBJECT
         module.operands[1].operand_objects.value = OBJECT[1]
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 1)
-        self.assertEqual(columns[0][0], OBJECT[1])
-        self.assertEqual(columns[0][1], MATH_OUTPUT_MEASUREMENTS)
-        self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
-        self.assertEqual(module.get_categories(None, OBJECT[1])[0], "Math")
-        self.assertEqual(
-            module.get_measurements(None, OBJECT[1], "Math")[0], OUTPUT_MEASUREMENTS
+        assert len(columns) == 1
+        assert columns[0][0] == OBJECT[1]
+        assert columns[0][1] == MATH_OUTPUT_MEASUREMENTS
+        assert columns[0][2] == cpmeas.COLTYPE_FLOAT
+        assert module.get_categories(None, OBJECT[1])[0] == "Math"
+        assert (
+            module.get_measurements(None, OBJECT[1], "Math")[0] == OUTPUT_MEASUREMENTS
         )
-        self.assertEqual(len(module.get_categories(None, cpmeas.IMAGE)), 0)
+        assert len(module.get_categories(None, cpmeas.IMAGE)) == 0
 
     def test_05_03_measurement_columns_object_image(self):
         module = C.CalculateMath()
@@ -247,15 +236,15 @@ class TestCalculateMath(unittest.TestCase):
         module.operands[1].operand_choice.value = C.MC_IMAGE
         module.operands[0].operand_objects.value = OBJECT[0]
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 1)
-        self.assertEqual(columns[0][0], OBJECT[0])
-        self.assertEqual(columns[0][1], MATH_OUTPUT_MEASUREMENTS)
-        self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
-        self.assertEqual(module.get_categories(None, OBJECT[0])[0], "Math")
-        self.assertEqual(
-            module.get_measurements(None, OBJECT[0], "Math")[0], OUTPUT_MEASUREMENTS
+        assert len(columns) == 1
+        assert columns[0][0] == OBJECT[0]
+        assert columns[0][1] == MATH_OUTPUT_MEASUREMENTS
+        assert columns[0][2] == cpmeas.COLTYPE_FLOAT
+        assert module.get_categories(None, OBJECT[0])[0] == "Math"
+        assert (
+            module.get_measurements(None, OBJECT[0], "Math")[0] == OUTPUT_MEASUREMENTS
         )
-        self.assertEqual(len(module.get_categories(None, cpmeas.IMAGE)), 0)
+        assert len(module.get_categories(None, cpmeas.IMAGE)) == 0
 
     def test_05_04_measurement_columns_object_object(self):
         module = C.CalculateMath()
@@ -265,18 +254,19 @@ class TestCalculateMath(unittest.TestCase):
         module.operands[0].operand_objects.value = OBJECT[0]
         module.operands[1].operand_objects.value = OBJECT[1]
         columns = list(module.get_measurement_columns(None))
-        self.assertEqual(len(columns), 2)
+        assert len(columns) == 2
         if columns[0][0] == OBJECT[1]:
             columns = [columns[1], columns[0]]
         for i in range(2):
-            self.assertEqual(columns[i][0], OBJECT[i])
-            self.assertEqual(columns[i][1], MATH_OUTPUT_MEASUREMENTS)
-            self.assertEqual(columns[i][2], cpmeas.COLTYPE_FLOAT)
-            self.assertEqual(module.get_categories(None, OBJECT[i])[0], "Math")
-            self.assertEqual(
-                module.get_measurements(None, OBJECT[i], "Math")[0], OUTPUT_MEASUREMENTS
+            assert columns[i][0] == OBJECT[i]
+            assert columns[i][1] == MATH_OUTPUT_MEASUREMENTS
+            assert columns[i][2] == cpmeas.COLTYPE_FLOAT
+            assert module.get_categories(None, OBJECT[i])[0] == "Math"
+            assert (
+                module.get_measurements(None, OBJECT[i], "Math")[0]
+                == OUTPUT_MEASUREMENTS
             )
-        self.assertEqual(len(module.get_categories(None, cpmeas.IMAGE)), 0)
+        assert len(module.get_categories(None, cpmeas.IMAGE)) == 0
 
     def test_06_01_add_object_object_same(self):
         """Regression test: add two measurements from the same object
@@ -292,9 +282,9 @@ class TestCalculateMath(unittest.TestCase):
             C.O_ADD, False, np.array([5, 6]), False, np.array([-1, -1]), fn
         )
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
-        self.assertEqual(len(data), 2)
-        self.assertAlmostEqual(data[0], 10)
-        self.assertAlmostEqual(data[1], 12)
+        assert len(data) == 2
+        assert round(abs(data[0] - 10), 7) == 0
+        assert round(abs(data[1] - 12), 7) == 0
 
     def test_07_01_img_379(self):
         """Regression test for IMG-379, divide by zero"""
@@ -303,14 +293,14 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertTrue(np.isnan(data))
+        assert np.isnan(data)
 
         measurements = self.run_workspace(
             C.O_DIVIDE, False, np.array([1.0]), False, np.array([0.0])
         )
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
-        self.assertEqual(len(data), 1)
-        self.assertTrue(np.isnan(data[0]))
+        assert len(data) == 1
+        assert np.isnan(data[0])
 
     def test_08_01_none_operation(self):
         # In this case, just multiply the array by a constant
@@ -320,17 +310,15 @@ class TestCalculateMath(unittest.TestCase):
         measurements = self.run_workspace(
             C.O_NONE, False, np.array([1, 2, 3]), False, np.array([1, 4, 9]), fn
         )
-        self.assertFalse(
-            measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
-        )
+        assert not measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         # There should be only one operand and a measurement for that operand only
-        self.assertTrue(len(OBJECT), 1)
-        self.assertTrue(measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS))
+        assert len(OBJECT), 1
+        assert measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
         # Check the operation result
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
-        self.assertAlmostEqual(data[0], 2)
-        self.assertAlmostEqual(data[1], 4)
-        self.assertAlmostEqual(data[2], 6)
+        assert round(abs(data[0] - 2), 7) == 0
+        assert round(abs(data[1] - 4), 7) == 0
+        assert round(abs(data[2] - 6), 7) == 0
 
     def test_09_01_img_919(self):
         """Regression test: one measurement, but both operands are from same object
@@ -350,8 +338,8 @@ class TestCalculateMath(unittest.TestCase):
         module.operands[0].operand_objects.value = OBJECT[0]
         module.operands[1].operand_objects.value = OBJECT[0]
         columns = module.get_measurement_columns(None)
-        self.assertEqual(columns[0][0], OBJECT[0])
-        self.assertEqual(len(columns), 1)
+        assert columns[0][0] == OBJECT[0]
+        assert len(columns) == 1
 
     def test_10_1_img_1566(self):
         """Regression test: different numbers of objects"""
@@ -398,7 +386,7 @@ class TestCalculateMath(unittest.TestCase):
 
                 def setup_fn(module, workspace, oo0=oo0, oo1=oo1, flip=flip):
                     m = workspace.measurements
-                    self.assertTrue(isinstance(m, cpmeas.Measurements))
+                    assert isinstance(m, cpmeas.Measurements)
                     if not flip:
                         m.add_relate_measurement(
                             1,
@@ -481,7 +469,7 @@ class TestCalculateMath(unittest.TestCase):
 
             def setup_fn(module, workspace, oo0=oo0, oo1=oo1):
                 m = workspace.measurements
-                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                assert isinstance(m, cpmeas.Measurements)
                 m.add_relate_measurement(
                     1,
                     cellprofiler.measurement.R_PARENT,
@@ -530,15 +518,15 @@ class TestCalculateMath(unittest.TestCase):
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
 
         c = module.get_measurement_columns(None)
-        self.assertEqual(len(c), 1)
-        self.assertEqual(c[0][0], OBJECT[0])
-        self.assertEqual(c[0][1], MATH_OUTPUT_MEASUREMENTS)
+        assert len(c) == 1
+        assert c[0][0] == OBJECT[0]
+        assert c[0][1] == MATH_OUTPUT_MEASUREMENTS
 
-        self.assertEqual(len(module.get_categories(None, OBJECT[0])), 1)
-        self.assertEqual(len(module.get_categories(None, OBJECT[1])), 0)
+        assert len(module.get_categories(None, OBJECT[0])) == 1
+        assert len(module.get_categories(None, OBJECT[1])) == 0
 
-        self.assertEqual(len(module.get_measurements(None, OBJECT[0], C.C_MATH)), 1)
-        self.assertEqual(len(module.get_measurements(None, OBJECT[1], C.C_MATH)), 0)
+        assert len(module.get_measurements(None, OBJECT[0], C.C_MATH)) == 1
+        assert len(module.get_measurements(None, OBJECT[1], C.C_MATH)) == 0
 
     def test_11_01_postadd(self):
         """Test whether the addend is added to the result"""
@@ -551,7 +539,7 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_11_02_constrain_lower(self):
         """Test whether the lower bound option works"""
@@ -565,7 +553,7 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0
 
     def test_11_03_constrain_upper(self):
         """Test whether the upper bound option works"""
@@ -579,4 +567,4 @@ class TestCalculateMath(unittest.TestCase):
         data = measurements.get_current_measurement(
             cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS
         )
-        self.assertAlmostEqual(data, expected)
+        assert round(abs(data - expected), 7) == 0

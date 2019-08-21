@@ -425,16 +425,14 @@ class TestRescaleIntensity(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         module = pipeline.modules()[2]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity)
+        assert isinstance(
+            module, cellprofiler.modules.rescaleintensity.RescaleIntensity
         )
         #
         # image_name = DNA
@@ -452,29 +450,27 @@ class TestRescaleIntensity(unittest.TestCase):
         # matching_image_name = Cytoplasm
         # divisor_value = 2
         # divisor_measurement = Intensity_MeanIntensity_DNA
-        self.assertEqual(module.x_name.value, "DNA")
-        self.assertEqual(module.y_name.value, "RescaledDNA")
-        self.assertEqual(
-            module.rescale_method.value,
-            cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE,
+        assert module.x_name.value == "DNA"
+        assert module.y_name.value == "RescaledDNA"
+        assert (
+            module.rescale_method.value
+            == cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE
         )
-        self.assertEqual(
-            module.wants_automatic_high.value,
-            cellprofiler.modules.rescaleintensity.CUSTOM_VALUE,
+        assert (
+            module.wants_automatic_high.value
+            == cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         )
-        self.assertEqual(
-            module.wants_automatic_low.value,
-            cellprofiler.modules.rescaleintensity.CUSTOM_VALUE,
+        assert (
+            module.wants_automatic_low.value
+            == cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         )
-        self.assertAlmostEqual(module.source_low.value, 0.01)
-        self.assertAlmostEqual(module.source_high.value, 0.99)
-        self.assertAlmostEqual(module.source_scale.min, 0.1)
-        self.assertAlmostEqual(module.source_scale.max, 0.9)
-        self.assertEqual(module.matching_image_name.value, "Cytoplasm")
-        self.assertAlmostEqual(module.divisor_value.value, 2)
-        self.assertEqual(
-            module.divisor_measurement.value, "Intensity_MeanIntensity_DNA"
-        )
+        assert round(abs(module.source_low.value - 0.01), 7) == 0
+        assert round(abs(module.source_high.value - 0.99), 7) == 0
+        assert round(abs(module.source_scale.min - 0.1), 7) == 0
+        assert round(abs(module.source_scale.max - 0.9), 7) == 0
+        assert module.matching_image_name.value == "Cytoplasm"
+        assert round(abs(module.divisor_value.value - 2), 7) == 0
+        assert module.divisor_measurement.value == "Intensity_MeanIntensity_DNA"
 
     def make_workspace(
         self,
@@ -487,7 +483,7 @@ class TestRescaleIntensity(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         object_set = cellprofiler.object.ObjectSet()
@@ -599,7 +595,7 @@ class TestRescaleIntensity(unittest.TestCase):
             cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         )
         module.source_high.value = 0.6
-        self.assertFalse(module.is_aggregation_module())
+        assert not module.is_aggregation_module()
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
@@ -610,8 +606,8 @@ class TestRescaleIntensity(unittest.TestCase):
         image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
         expected = (image1 - numpy.min(image2)) / (1 - numpy.min(image2))
         workspace, module = self.make_workspace([image1, image2])
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity)
+        assert isinstance(
+            module, cellprofiler.modules.rescaleintensity.RescaleIntensity
         )
         module.rescale_method.value = (
             cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
@@ -623,7 +619,7 @@ class TestRescaleIntensity(unittest.TestCase):
             cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         )
         module.source_high.value = 1
-        self.assertTrue(module.is_aggregation_module())
+        assert module.is_aggregation_module()
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -644,7 +640,7 @@ class TestRescaleIntensity(unittest.TestCase):
             cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
         )
         module.source_low.value = 0.1
-        self.assertFalse(module.is_aggregation_module())
+        assert not module.is_aggregation_module()
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels, expected)
@@ -655,8 +651,8 @@ class TestRescaleIntensity(unittest.TestCase):
         image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
         expected = image1 / numpy.max(image2)
         workspace, module = self.make_workspace([image1, image2])
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity)
+        assert isinstance(
+            module, cellprofiler.modules.rescaleintensity.RescaleIntensity
         )
         image_set_2 = workspace.image_set_list.get_image_set(1)
         image_set_2.add(INPUT_NAME, cellprofiler.image.Image(image2))
@@ -670,7 +666,7 @@ class TestRescaleIntensity(unittest.TestCase):
             cellprofiler.modules.rescaleintensity.HIGH_ALL_IMAGES
         )
         module.source_low.value = 0
-        self.assertTrue(module.is_aggregation_module())
+        assert module.is_aggregation_module()
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data

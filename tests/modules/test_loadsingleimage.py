@@ -79,13 +79,11 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 4)
+        assert len(pipeline.modules()) == 4
 
         dir_choice = [
             cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
@@ -94,22 +92,20 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
             cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
         ]
         for i, module in enumerate(pipeline.modules()):
-            self.assertTrue(
-                isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+            assert isinstance(
+                module, cellprofiler.modules.loadsingleimage.LoadSingleImage
             )
-            self.assertEqual(module.directory.dir_choice, dir_choice[i])
-            self.assertEqual(module.directory.custom_path, "path%d" % (i + 1))
+            assert module.directory.dir_choice == dir_choice[i]
+            assert module.directory.custom_path == "path%d" % (i + 1)
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
-        self.assertEqual(len(module.file_settings), 2)
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert len(module.file_settings) == 2
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
-        self.assertEqual(fs.image_name, "DNA")
+        assert fs.file_name == "foo.tif"
+        assert fs.image_name == "DNA"
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
-        self.assertEqual(fs.image_name, "Cytoplasm")
+        assert fs.file_name == "bar.tif"
+        assert fs.image_name == "Cytoplasm"
 
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -141,31 +137,27 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 4)
+        assert len(pipeline.modules()) == 4
 
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
-        self.assertEqual(len(module.file_settings), 2)
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert len(module.file_settings) == 2
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
-        self.assertEqual(fs.image_name, "DNA")
+        assert fs.file_name == "foo.tif"
+        assert fs.image_name == "DNA"
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
-        self.assertEqual(fs.image_name, "Cytoplasm")
+        assert fs.file_name == "bar.tif"
+        assert fs.image_name == "Cytoplasm"
         module = pipeline.modules()[3]
         fs = module.file_settings[0]
-        self.assertEqual(
-            fs.file_name,
-            "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/"
-            "ExampleSBSImages/Channel1-01-A-01.tif",
+        assert (
+            fs.file_name
+            == "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/"
+            "ExampleSBSImages/Channel1-01-A-01.tif"
         )
 
         dir_choice = [
@@ -175,10 +167,10 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
             cellprofiler.setting.URL_FOLDER_NAME,
         ]
         for i, module in enumerate(pipeline.modules()):
-            self.assertTrue(
-                isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+            assert isinstance(
+                module, cellprofiler.modules.loadsingleimage.LoadSingleImage
             )
-            self.assertEqual(module.directory.dir_choice, dir_choice[i])
+            assert module.directory.dir_choice == dir_choice[i]
 
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -195,26 +187,22 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
-        self.assertEqual(len(module.file_settings), 2)
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert len(module.file_settings) == 2
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
-        self.assertEqual(fs.image_name, "DNA")
+        assert fs.file_name == "foo.tif"
+        assert fs.image_name == "DNA"
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
-        self.assertEqual(fs.image_name, "Cytoplasm")
-        self.assertTrue(fs.rescale)
+        assert fs.file_name == "bar.tif"
+        assert fs.image_name == "Cytoplasm"
+        assert fs.rescale
 
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -233,30 +221,24 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
-        self.assertEqual(len(module.file_settings), 2)
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert len(module.file_settings) == 2
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
-        self.assertEqual(
-            fs.image_objects_choice, cellprofiler.modules.loadsingleimage.IO_IMAGES
-        )
-        self.assertEqual(fs.image_name, "DNA")
-        self.assertFalse(fs.rescale)
+        assert fs.file_name == "foo.tif"
+        assert fs.image_objects_choice == cellprofiler.modules.loadsingleimage.IO_IMAGES
+        assert fs.image_name == "DNA"
+        assert not fs.rescale
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
-        self.assertEqual(fs.image_name, "Cytoplasm")
-        self.assertTrue(fs.rescale)
+        assert fs.file_name == "bar.tif"
+        assert fs.image_name == "Cytoplasm"
+        assert fs.rescale
 
     def test_01_05_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -283,39 +265,33 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
-        self.assertEqual(len(module.file_settings), 2)
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert len(module.file_settings) == 2
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
-        self.assertEqual(
-            fs.image_objects_choice, cellprofiler.modules.loadsingleimage.IO_IMAGES
-        )
-        self.assertEqual(fs.image_name, "DNA")
-        self.assertEqual(fs.objects_name, "MyObjects")
-        self.assertTrue(fs.wants_outlines)
-        self.assertEqual(fs.outlines_name, "MyOutlines")
-        self.assertFalse(fs.rescale)
+        assert fs.file_name == "foo.tif"
+        assert fs.image_objects_choice == cellprofiler.modules.loadsingleimage.IO_IMAGES
+        assert fs.image_name == "DNA"
+        assert fs.objects_name == "MyObjects"
+        assert fs.wants_outlines
+        assert fs.outlines_name == "MyOutlines"
+        assert not fs.rescale
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
-        self.assertEqual(
-            fs.image_objects_choice, cellprofiler.modules.loadsingleimage.IO_OBJECTS
+        assert fs.file_name == "bar.tif"
+        assert (
+            fs.image_objects_choice == cellprofiler.modules.loadsingleimage.IO_OBJECTS
         )
-        self.assertEqual(fs.image_name, "Cytoplasm")
-        self.assertEqual(fs.objects_name, "Cells")
-        self.assertFalse(fs.wants_outlines)
-        self.assertEqual(fs.outlines_name, "MyOutlines")
-        self.assertTrue(fs.rescale)
+        assert fs.image_name == "Cytoplasm"
+        assert fs.objects_name == "Cells"
+        assert not fs.wants_outlines
+        assert fs.outlines_name == "MyOutlines"
+        assert fs.rescale
 
     def get_image_name(self, idx):
         return "MyImage%d" % idx
@@ -334,7 +310,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -358,8 +334,8 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
-        self.assertEqual(m.image_set_count, 1)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert m.image_set_count == 1
         f = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
@@ -369,8 +345,8 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 )
             ),
         )
-        self.assertEqual(len(f), 1)
-        self.assertEqual(f[0], file_name)
+        assert len(f) == 1
+        assert f[0] == file_name
         p = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
@@ -380,16 +356,16 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 )
             ),
         )
-        self.assertEqual(len(p), 1)
-        self.assertEqual(p[0], self.test_path)
+        assert len(p) == 1
+        assert p[0] == self.test_path
         s = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
                 (cellprofiler.modules.loadsingleimage.C_SCALING, self.get_image_name(0))
             ),
         )
-        self.assertEqual(len(s), 1)
-        self.assertEqual(s[0], 4095)
+        assert len(s) == 1
+        assert s[0] == 4095
         md = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
@@ -399,8 +375,8 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 )
             ),
         )
-        self.assertEqual(len(md), 1)
-        self.assertEqual(self.test_md5, md[0])
+        assert len(md) == 1
+        assert self.test_md5 == md[0]
 
     def test_02_02_scale(self):
         """Load an image twice, as scaled and unscaled"""
@@ -408,9 +384,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         path = self.test_path
         cellprofiler.preferences.set_default_image_directory(path)
         workspace, module = self.make_workspace(file_names)
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         module.file_settings[0].rescale.value = False
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
@@ -455,8 +429,8 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             m,
             cellprofiler.image.ImageSetList(),
         )
-        self.assertTrue(pipeline.prepare_run(workspace))
-        self.assertGreater(m.image_set_count, 1)
+        assert pipeline.prepare_run(workspace)
+        assert m.image_set_count > 1
         pipeline.prepare_group(workspace, {}, m.get_image_numbers())
         #
         # Skip to the second image set
@@ -469,22 +443,20 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         m_file = "_".join(
             (cellprofiler.measurement.C_FILE_NAME, self.get_image_name(0))
         )
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, m_file, 2], filename)
+        assert m[cellprofiler.measurement.IMAGE, m_file, 2] == filename
         #
         # Can we retrieve the image?
         #
         pixel_data = m.get_image(self.get_image_name(0)).pixel_data
-        self.assertFalse(numpy.isscalar(pixel_data))
+        assert not numpy.isscalar(pixel_data)
 
     def test_03_01_measurement_columns(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = self.make_workspace(file_names)
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 12)
-        self.assertTrue([c[0] == cellprofiler.measurement.IMAGE for c in columns])
+        assert len(columns) == 12
+        assert [c[0] == cellprofiler.measurement.IMAGE for c in columns]
         for image_name in [self.get_image_name(i) for i in range(2)]:
             for feature in (
                 cellprofiler.modules.loadsingleimage.C_FILE_NAME,
@@ -495,20 +467,18 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 cellprofiler.modules.loadsingleimage.C_WIDTH,
             ):
                 measurement = "_".join((feature, image_name))
-                self.assertTrue(measurement in [c[1] for c in columns])
+                assert measurement in [c[1] for c in columns]
 
     def test_03_02_categories(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = self.make_workspace(file_names)
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         categories = module.get_categories(workspace.pipeline, "Foo")
-        self.assertEqual(len(categories), 0)
+        assert len(categories) == 0
         categories = module.get_categories(
             workspace.pipeline, cellprofiler.measurement.IMAGE
         )
-        self.assertEqual(len(categories), 6)
+        assert len(categories) == 6
         for category in (
             cellprofiler.modules.loadsingleimage.C_FILE_NAME,
             cellprofiler.modules.loadsingleimage.C_MD5_DIGEST,
@@ -517,34 +487,32 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             cellprofiler.modules.loadsingleimage.C_HEIGHT,
             cellprofiler.modules.loadsingleimage.C_WIDTH,
         ):
-            self.assertTrue(category in categories)
+            assert category in categories
 
     def test_03_03_measurements(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = self.make_workspace(file_names)
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
-        )
+        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         measurements = module.get_measurements(workspace.pipeline, "foo", "bar")
-        self.assertEqual(len(measurements), 0)
+        assert len(measurements) == 0
         measurements = module.get_measurements(
             workspace.pipeline, cellprofiler.measurement.IMAGE, "bar"
         )
-        self.assertEqual(len(measurements), 0)
+        assert len(measurements) == 0
         measurements = module.get_measurements(
             workspace.pipeline, "foo", cellprofiler.modules.loadsingleimage.C_PATH_NAME
         )
-        self.assertEqual(len(measurements), 0)
+        assert len(measurements) == 0
         categories = module.get_categories(
             workspace.pipeline, cellprofiler.measurement.IMAGE
         )
-        self.assertEqual(len(categories), 6)
+        assert len(categories) == 6
         for category in categories:
             measurements = module.get_measurements(
                 workspace.pipeline, cellprofiler.measurement.IMAGE, category
             )
             for i in range(2):
-                self.assertTrue(self.get_image_name(i) in measurements)
+                assert self.get_image_name(i) in measurements
 
     def test_03_04_object_measurement_columns(self):
         module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
@@ -590,25 +558,19 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             ),
         )
         for expected_column in expected_columns:
-            self.assertTrue(
-                any(
-                    [
-                        column[0] == expected_column[0]
-                        and column[1] == expected_column[1]
-                        for column in columns
-                    ]
-                )
+            assert any(
+                [
+                    column[0] == expected_column[0] and column[1] == expected_column[1]
+                    for column in columns
+                ]
             )
 
         for column in columns:
-            self.assertTrue(
-                any(
-                    [
-                        column[0] == expected_column[0]
-                        and column[1] == expected_column[1]
-                        for expected_column in expected_columns
-                    ]
-                )
+            assert any(
+                [
+                    column[0] == expected_column[0] and column[1] == expected_column[1]
+                    for expected_column in expected_columns
+                ]
             )
 
     def test_03_05_object_categories(self):
@@ -635,16 +597,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             ),
         ):
             categories = module.get_categories(None, object_name)
-            self.assertTrue(
-                all([category in expected_categories for category in categories])
-            )
-            self.assertTrue(
-                all(
-                    [
-                        expected_category in categories
-                        for expected_category in expected_categories
-                    ]
-                )
+            assert all([category in expected_categories for category in categories])
+            assert all(
+                [
+                    expected_category in categories
+                    for expected_category in expected_categories
+                ]
             )
 
     def test_03_06_object_measurements(self):
@@ -684,14 +642,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             ),
         ):
             features = module.get_measurements(None, object_name, category)
-            self.assertTrue(all([feature in expected_features for feature in features]))
-            self.assertTrue(
-                all(
-                    [
-                        expected_feature in features
-                        for expected_feature in expected_features
-                    ]
-                )
+            assert all([feature in expected_features for feature in features])
+            assert all(
+                [expected_feature in features for expected_feature in expected_features]
             )
 
     def test_04_01_load_objects(self):
@@ -719,9 +672,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline = cellprofiler.pipeline.Pipeline()
 
             def callback(caller, event):
-                self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
-                )
+                assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
@@ -737,13 +688,13 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
             o = object_set.get_objects(OBJECTS_NAME)
             numpy.testing.assert_equal(labels, o.segmented)
-            self.assertEqual(
+            assert (
                 m.get_current_image_measurement(
                     "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
-                ),
-                9,
+                )
+                == 9
             )
-            self.assertEqual(
+            assert (
                 m.get_current_image_measurement(
                     "_".join(
                         (
@@ -751,10 +702,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                             OBJECTS_NAME,
                         )
                     )
-                ),
-                filename,
+                )
+                == filename
             )
-            self.assertEqual(
+            assert (
                 m.get_current_image_measurement(
                     "_".join(
                         (
@@ -762,8 +713,8 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                             OBJECTS_NAME,
                         )
                     )
-                ),
-                directory,
+                )
+                == directory
             )
             for feature in (
                 cellprofiler.measurement.M_LOCATION_CENTER_X,
@@ -771,7 +722,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
             ):
                 values = m.get_current_measurement(OBJECTS_NAME, feature)
-                self.assertEqual(len(values), 9)
+                assert len(values) == 9
         finally:
             try:
                 os.remove(os.path.join(directory, filename))
@@ -807,9 +758,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline = cellprofiler.pipeline.Pipeline()
 
             def callback(caller, event):
-                self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
-                )
+                assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)

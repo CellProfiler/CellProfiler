@@ -29,7 +29,7 @@ OUTLINES = "Outlines"
 
 class TestIdentifyTertiaryObjects(unittest.TestCase):
     def on_pipeline_event(self, caller, event):
-        self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        assert not isinstance(event, cpp.LoadExceptionEvent)
 
     def make_workspace(self, primary_labels, secondary_labels):
         """Make a workspace that has objects for the input labels
@@ -70,21 +70,21 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module = workspace.module
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue("Image" in measurements.get_object_names())
+        assert "Image" in measurements.get_object_names()
         count_feature = "Count_%s" % TERTIARY
-        self.assertTrue(count_feature in measurements.get_feature_names("Image"))
+        assert count_feature in measurements.get_feature_names("Image")
         value = measurements.get_current_measurement("Image", count_feature)
-        self.assertEqual(np.product(value.shape), 1)
-        self.assertEqual(value, 0)
-        self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
+        assert np.product(value.shape) == 1
+        assert value == 0
+        assert TERTIARY in workspace.object_set.get_object_names()
         output_objects = workspace.object_set.get_objects(TERTIARY)
-        self.assertTrue(np.all(output_objects.segmented == primary_labels))
+        assert np.all(output_objects.segmented == primary_labels)
         columns = module.get_measurement_columns(workspace.pipeline)
         for object_name in (cpm.IMAGE, PRIMARY, SECONDARY, TERTIARY):
             ocolumns = [x for x in columns if x[0] == object_name]
             features = measurements.get_feature_names(object_name)
-            self.assertEqual(len(ocolumns), len(features))
-            self.assertTrue(all([column[1] in features for column in ocolumns]))
+            assert len(ocolumns) == len(features)
+            assert all([column[1] in features for column in ocolumns])
 
     def test_01_01_one_object(self):
         """Test creation of a single tertiary object"""
@@ -99,42 +99,38 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module = workspace.module
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue("Image" in measurements.get_object_names())
+        assert "Image" in measurements.get_object_names()
         count_feature = "Count_%s" % TERTIARY
-        self.assertTrue(count_feature in measurements.get_feature_names("Image"))
+        assert count_feature in measurements.get_feature_names("Image")
         value = measurements.get_current_measurement("Image", count_feature)
-        self.assertEqual(np.product(value.shape), 1)
-        self.assertEqual(value, 1)
+        assert np.product(value.shape) == 1
+        assert value == 1
 
-        self.assertTrue(TERTIARY in measurements.get_object_names())
+        assert TERTIARY in measurements.get_object_names()
         child_count_feature = "Children_%s_Count" % TERTIARY
         for parent_name in (PRIMARY, SECONDARY):
             parents_of_feature = "Parent_%s" % parent_name
-            self.assertTrue(
-                parents_of_feature in measurements.get_feature_names(TERTIARY)
-            )
+            assert parents_of_feature in measurements.get_feature_names(TERTIARY)
             value = measurements.get_current_measurement(TERTIARY, parents_of_feature)
-            self.assertTrue(np.product(value.shape), 1)
-            self.assertTrue(value[0], 1)
-            self.assertTrue(
-                child_count_feature in measurements.get_feature_names(parent_name)
-            )
+            assert np.product(value.shape), 1
+            assert value[0], 1
+            assert child_count_feature in measurements.get_feature_names(parent_name)
             value = measurements.get_current_measurement(
                 parent_name, child_count_feature
             )
-            self.assertTrue(np.product(value.shape), 1)
-            self.assertTrue(value[0], 1)
+            assert np.product(value.shape), 1
+            assert value[0], 1
 
         for axis, expected in (("X", 5), ("Y", 4)):
             feature = "Location_Center_%s" % axis
-            self.assertTrue(feature in measurements.get_feature_names(TERTIARY))
+            assert feature in measurements.get_feature_names(TERTIARY)
             value = measurements.get_current_measurement(TERTIARY, feature)
-            self.assertTrue(np.product(value.shape), 1)
-            self.assertEqual(value[0], expected)
+            assert np.product(value.shape), 1
+            assert value[0] == expected
 
-        self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
+        assert TERTIARY in workspace.object_set.get_object_names()
         output_objects = workspace.object_set.get_objects(TERTIARY)
-        self.assertTrue(np.all(output_objects.segmented == expected_labels))
+        assert np.all(output_objects.segmented == expected_labels)
 
     def test_01_02_two_objects(self):
         """Test creation of two tertiary objects"""
@@ -157,7 +153,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         measurements = workspace.measurements
         count_feature = "Count_%s" % TERTIARY
         value = measurements.get_current_measurement("Image", count_feature)
-        self.assertEqual(value, 2)
+        assert value == 2
 
         child_count_feature = "Children_%s_Count" % TERTIARY
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
@@ -169,10 +165,10 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             cvalue = measurements.get_current_measurement(
                 parent_name, child_count_feature
             )
-            self.assertTrue(np.all(cvalue == 1))
+            assert np.all(cvalue == 1)
             pvalue = measurements.get_current_measurement(TERTIARY, parents_of_feature)
             for value in (pvalue, cvalue):
-                self.assertTrue(np.product(value.shape), 2)
+                assert np.product(value.shape), 2
             #
             # Make an array that maps the parent label index to the
             # corresponding child label index
@@ -182,7 +178,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 label = center[idx]
                 label_map[label] = pvalue[center[idx] - 1]
             expected_labels = label_map[parent_labels]
-            self.assertTrue(np.all(expected_labels == output_labels))
+            assert np.all(expected_labels == output_labels)
 
     def test_01_03_overlapping_secondary(self):
         """Make sure that an overlapping tertiary is assigned to the larger parent"""
@@ -200,7 +196,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         expected_secondary_parents[expected_primary_parents > 0] = 1
         workspace = self.make_workspace(primary_labels, secondary_labels)
         module = workspace.module
-        self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
+        assert isinstance(module, cpmit.IdentifyTertiarySubregion)
         module.run(workspace)
         measurements = workspace.measurements
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
@@ -213,7 +209,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             label_map = np.zeros((np.product(pvalue.shape) + 1,), int)
             label_map[1:] = pvalue.flatten()
             mapped_labels = label_map[output_labels]
-            self.assertTrue(np.all(parent_labels == mapped_labels))
+            assert np.all(parent_labels == mapped_labels)
 
     def test_01_04_wrong_size(self):
         """Regression test of img-961, what if objects have different sizes?
@@ -235,7 +231,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         expected_secondary_parents[expected_primary_parents > 0] = 1
         workspace = self.make_workspace(primary_labels, secondary_labels)
         module = workspace.module
-        self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
+        assert isinstance(module, cpmit.IdentifyTertiarySubregion)
         module.run(workspace)
 
     def test_03_01_get_measurement_columns(self):
@@ -279,10 +275,10 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 cpm.COLTYPE_INTEGER,
             ),
         )
-        self.assertEqual(len(columns), len(expected))
+        assert len(columns) == len(expected)
         for column in columns:
-            self.assertTrue(
-                any([all([cv == ev for cv, ev in zip(column, ec)]) for ec in expected])
+            assert any(
+                [all([cv == ev for cv, ev in zip(column, ec)]) for ec in expected]
             )
 
     def test_04_01_do_not_shrink(self):
@@ -302,7 +298,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         measurements = workspace.measurements
 
         output_objects = workspace.object_set.get_objects(TERTIARY)
-        self.assertTrue(np.all(output_objects.segmented == expected_labels))
+        assert np.all(output_objects.segmented == expected_labels)
 
     def test_04_02_do_not_shrink_identical(self):
         """Test a case where the primary and secondary objects are identical"""
@@ -333,12 +329,12 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.shrink_primary.value = False
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(TERTIARY)
-        self.assertTrue(np.all(output_objects.segmented == expected_labels))
+        assert np.all(output_objects.segmented == expected_labels)
 
         measurements = workspace.measurements
         count_feature = "Count_%s" % TERTIARY
         value = measurements.get_current_measurement("Image", count_feature)
-        self.assertEqual(value, 3)
+        assert value == 3
 
         child_count_feature = "Children_%s_Count" % TERTIARY
         for parent_name in PRIMARY, SECONDARY:
@@ -350,16 +346,16 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 parent_name, child_count_feature
             )
             for parent, expected_child_count in ((1, 1), (2, 0), (3, 1), (4, 0)):
-                self.assertEqual(child_count[parent - 1], expected_child_count)
+                assert child_count[parent - 1] == expected_child_count
             for child in (1, 3):
-                self.assertEqual(parent_of[child - 1], child)
+                assert parent_of[child - 1] == child
 
         for location_feature in (
             cellprofiler.measurement.M_LOCATION_CENTER_X,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
         ):
             values = measurements.get_current_measurement(TERTIARY, location_feature)
-            self.assertTrue(np.all(np.isnan(values) == [False, True, False]))
+            assert np.all(np.isnan(values) == [False, True, False])
 
     def test_04_03_do_not_shrink_missing(self):
         # Regression test of 705
@@ -386,7 +382,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 module.shrink_primary.value = False
                 module.run(workspace)
                 output_objects = workspace.object_set.get_objects(TERTIARY)
-                self.assertTrue(np.all(output_objects.segmented == expected_labels))
+                assert np.all(output_objects.segmented == expected_labels)
 
                 m = workspace.measurements
 
@@ -394,29 +390,29 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 primary_name = module.primary_objects_name.value
                 ftr = cellprofiler.measurement.FF_PARENT % primary_name
                 pparents = m[child_name, ftr]
-                self.assertEqual(len(pparents), 3 if missing_primary else 2)
+                assert len(pparents) == (3 if missing_primary else 2)
                 if missing_primary:
-                    self.assertEqual(pparents[missing - 1], 0)
+                    assert pparents[missing - 1] == 0
 
                 secondary_name = module.secondary_objects_name.value
                 ftr = cellprofiler.measurement.FF_PARENT % secondary_name
                 pparents = m[child_name, ftr]
-                self.assertEqual(len(pparents), 3 if missing_primary else 2)
+                assert len(pparents) == (3 if missing_primary else 2)
                 if not missing_primary:
-                    self.assertTrue(all([x in pparents for x in range(1, 3)]))
+                    assert all([x in pparents for x in range(1, 3)])
 
                 ftr = cellprofiler.measurement.FF_CHILDREN_COUNT % child_name
                 children = m[primary_name, ftr]
-                self.assertEqual(len(children), 2 if missing_primary else 3)
+                assert len(children) == (2 if missing_primary else 3)
                 if not missing_primary:
-                    self.assertEqual(children[missing - 1], 0)
-                    self.assertTrue(np.all(np.delete(children, missing - 1) == 1))
+                    assert children[missing - 1] == 0
+                    assert np.all(np.delete(children, missing - 1) == 1)
                 else:
-                    self.assertTrue(np.all(children == 1))
+                    assert np.all(children == 1)
 
                 children = m[secondary_name, ftr]
-                self.assertEqual(len(children), 3 if missing_primary else 2)
-                self.assertTrue(np.all(children == 1))
+                assert len(children) == (3 if missing_primary else 2)
+                assert np.all(children == 1)
 
     def test_05_00_no_relationships(self):
         workspace = self.make_workspace(
@@ -431,7 +427,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             result = m.get_relationships(
                 workspace.module.module_num, relationship, parent, TERTIARY
             )
-            self.assertEqual(len(result), 0)
+            assert len(result) == 0
 
     def test_05_01_relationships(self):
         primary = np.zeros((10, 30), int)
@@ -450,12 +446,12 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             result = m.get_relationships(
                 workspace.module.module_num, relationship, parent, TERTIARY
             )
-            self.assertEqual(len(result), 3)
+            assert len(result) == 3
             for i in range(3):
-                self.assertEqual(result[cpm.R_FIRST_IMAGE_NUMBER][i], 1)
-                self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][i], 1)
-                self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][i], i + 1)
-                self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i], i + 1)
+                assert result[cpm.R_FIRST_IMAGE_NUMBER][i] == 1
+                assert result[cpm.R_SECOND_IMAGE_NUMBER][i] == 1
+                assert result[cpm.R_FIRST_OBJECT_NUMBER][i] == i + 1
+                assert result[cpm.R_SECOND_OBJECT_NUMBER][i] == i + 1
 
     def test_06_01_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -474,7 +470,7 @@ IdentifyTertiaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.loadtxt(StringIO(data))

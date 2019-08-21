@@ -68,14 +68,14 @@ class TestSmooth(unittest.TestCase):
         data = zlib.decompress(data)
         pipeline = cpp.Pipeline()
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         smooth = pipeline.modules()[1]
-        self.assertEqual(smooth.module_name, "Smooth")
-        self.assertEqual(smooth.image_name.value, "OrigBlue")
-        self.assertEqual(smooth.filtered_image_name.value, "CorrBlue")
-        self.assertEqual(smooth.smoothing_method.value, S.FIT_POLYNOMIAL)
-        self.assertTrue(smooth.wants_automatic_object_size)
-        self.assertTrue(smooth.clip)
+        assert smooth.module_name == "Smooth"
+        assert smooth.image_name.value == "OrigBlue"
+        assert smooth.filtered_image_name.value == "CorrBlue"
+        assert smooth.smoothing_method.value == S.FIT_POLYNOMIAL
+        assert smooth.wants_automatic_object_size
+        assert smooth.clip
 
     def test_01_03_load_v02(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -96,15 +96,15 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 """
         pipeline = cpp.Pipeline()
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         smooth = pipeline.modules()[0]
-        self.assertTrue(isinstance(smooth, S.Smooth))
-        self.assertEqual(smooth.image_name, "InputImage")
-        self.assertEqual(smooth.filtered_image_name, "OutputImage")
-        self.assertTrue(smooth.wants_automatic_object_size)
-        self.assertEqual(smooth.object_size, 19)
-        self.assertEqual(smooth.smoothing_method, S.MEDIAN_FILTER)
-        self.assertFalse(smooth.clip)
+        assert isinstance(smooth, S.Smooth)
+        assert smooth.image_name == "InputImage"
+        assert smooth.filtered_image_name == "OutputImage"
+        assert smooth.wants_automatic_object_size
+        assert smooth.object_size == 19
+        assert smooth.smoothing_method == S.MEDIAN_FILTER
+        assert not smooth.clip
 
     def test_02_01_fit_polynomial(self):
         """Test the smooth module with polynomial fitting"""
@@ -121,13 +121,13 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         mask[40:60, 45:65] = False
         for clip in (False, True):
             expected = fit_polynomial(image, mask, clip)
-            self.assertEqual(np.all((expected >= 0) & (expected <= 1)), clip)
+            assert np.all((expected >= 0) & (expected <= 1)) == clip
             workspace, module = self.make_workspace(image, mask)
             module.smoothing_method.value = S.FIT_POLYNOMIAL
             module.clip.value = clip
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertFalse(result is None)
+            assert not (result is None)
             np.testing.assert_almost_equal(result.pixel_data, expected)
 
     def test_03_01_gaussian_auto_small(self):
@@ -143,7 +143,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.smoothing_method.value = S.GAUSSIAN_FILTER
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
+        assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
     def test_03_02_gaussian_auto_large(self):
@@ -158,7 +158,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.smoothing_method.value = S.GAUSSIAN_FILTER
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
+        assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
     def test_03_03_gaussian_manual(self):
@@ -176,7 +176,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.object_size.value = 15.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
+        assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
     def test_04_01_median(self):
@@ -191,7 +191,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.smoothing_method.value = S.MEDIAN_FILTER
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
+        assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
     def test_05_01_bilateral(self):
@@ -215,5 +215,5 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.object_size.value = 16.0 * 2.35
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
+        assert not (result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)

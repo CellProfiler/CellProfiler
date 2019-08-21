@@ -95,13 +95,13 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, F.FlagImage))
+        assert isinstance(module, F.FlagImage)
         expected = (
             (
                 "QCFlag",
@@ -120,29 +120,33 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
                 (("Intensity_MeanIntensity_Cytoplasm", None, 0.8),),
             ),
         )
-        self.assertEqual(len(expected), module.flag_count.value)
+        assert len(expected) == module.flag_count.value
         for flag, (feature_name, combine, skip, measurements) in zip(
             module.flags, expected
         ):
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
-            self.assertEqual(flag.category, "Metadata")
-            self.assertEqual(flag.feature_name, feature_name)
-            self.assertEqual(flag.wants_skip, skip)
+            assert isinstance(flag, cps.SettingsGroup)
+            assert flag.category == "Metadata"
+            assert flag.feature_name == feature_name
+            assert flag.wants_skip == skip
             if combine is not None:
-                self.assertEqual(flag.combination_choice, combine)
-            self.assertEqual(len(measurements), flag.measurement_count.value)
+                assert flag.combination_choice == combine
+            assert len(measurements) == flag.measurement_count.value
             for measurement, (measurement_name, min_value, max_value) in zip(
                 flag.measurement_settings, measurements
             ):
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
-                self.assertEqual(measurement.source_choice, F.S_IMAGE)
-                self.assertEqual(measurement.measurement, measurement_name)
-                self.assertEqual(measurement.wants_minimum.value, min_value is not None)
+                assert isinstance(measurement, cps.SettingsGroup)
+                assert measurement.source_choice == F.S_IMAGE
+                assert measurement.measurement == measurement_name
+                assert measurement.wants_minimum.value == (min_value is not None)
                 if measurement.wants_minimum.value:
-                    self.assertAlmostEqual(measurement.minimum_value.value, min_value)
-                self.assertEqual(measurement.wants_maximum.value, max_value is not None)
+                    assert (
+                        round(abs(measurement.minimum_value.value - min_value), 7) == 0
+                    )
+                assert measurement.wants_maximum.value == (max_value is not None)
                 if measurement.wants_maximum.value:
-                    self.assertAlmostEqual(measurement.maximum_value.value, max_value)
+                    assert (
+                        round(abs(measurement.maximum_value.value - max_value), 7) == 0
+                    )
 
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -201,13 +205,13 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, F.FlagImage))
+        assert isinstance(module, F.FlagImage)
         expected = (
             (
                 "QCFlag",
@@ -226,32 +230,36 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_
                 (("Intensity_MeanIntensity_Cytoplasm", None, 0.8, "dunno.txt"),),
             ),
         )
-        self.assertEqual(len(expected), module.flag_count.value)
+        assert len(expected) == module.flag_count.value
         for flag, (feature_name, combine, skip, measurements) in zip(
             module.flags, expected
         ):
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
-            self.assertEqual(flag.category, "Metadata")
-            self.assertEqual(flag.feature_name, feature_name)
-            self.assertEqual(flag.wants_skip, skip)
+            assert isinstance(flag, cps.SettingsGroup)
+            assert flag.category == "Metadata"
+            assert flag.feature_name == feature_name
+            assert flag.wants_skip == skip
             if combine is not None:
-                self.assertEqual(flag.combination_choice, combine)
-            self.assertEqual(len(measurements), flag.measurement_count.value)
+                assert flag.combination_choice == combine
+            assert len(measurements) == flag.measurement_count.value
             for (
                 measurement,
                 (measurement_name, min_value, max_value, rules_file),
             ) in zip(flag.measurement_settings, measurements):
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
-                self.assertEqual(measurement.source_choice, F.S_IMAGE)
-                self.assertEqual(measurement.measurement, measurement_name)
-                self.assertEqual(measurement.wants_minimum.value, min_value is not None)
+                assert isinstance(measurement, cps.SettingsGroup)
+                assert measurement.source_choice == F.S_IMAGE
+                assert measurement.measurement == measurement_name
+                assert measurement.wants_minimum.value == (min_value is not None)
                 if measurement.wants_minimum.value:
-                    self.assertAlmostEqual(measurement.minimum_value.value, min_value)
-                self.assertEqual(measurement.wants_maximum.value, max_value is not None)
+                    assert (
+                        round(abs(measurement.minimum_value.value - min_value), 7) == 0
+                    )
+                assert measurement.wants_maximum.value == (max_value is not None)
                 if measurement.wants_maximum.value:
-                    self.assertAlmostEqual(measurement.maximum_value.value, max_value)
-                self.assertEqual(measurement.rules_file_name, rules_file)
-                self.assertEqual(measurement.rules_class, "1")
+                    assert (
+                        round(abs(measurement.maximum_value.value - max_value), 7) == 0
+                    )
+                assert measurement.rules_file_name == rules_file
+                assert measurement.rules_class == "1"
 
     def test_01_05_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -314,13 +322,13 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, F.FlagImage))
+        assert isinstance(module, F.FlagImage)
         expected = (
             (
                 "QCFlag",
@@ -339,32 +347,36 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 (("Intensity_MeanIntensity_Cytoplasm", None, 0.8, "dunno.txt", "3"),),
             ),
         )
-        self.assertEqual(len(expected), module.flag_count.value)
+        assert len(expected) == module.flag_count.value
         for flag, (feature_name, combine, skip, measurements) in zip(
             module.flags, expected
         ):
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
-            self.assertEqual(flag.category, "Metadata")
-            self.assertEqual(flag.feature_name, feature_name)
-            self.assertEqual(flag.wants_skip, skip)
+            assert isinstance(flag, cps.SettingsGroup)
+            assert flag.category == "Metadata"
+            assert flag.feature_name == feature_name
+            assert flag.wants_skip == skip
             if combine is not None:
-                self.assertEqual(flag.combination_choice, combine)
-            self.assertEqual(len(measurements), flag.measurement_count.value)
+                assert flag.combination_choice == combine
+            assert len(measurements) == flag.measurement_count.value
             for (
                 measurement,
                 (measurement_name, min_value, max_value, rules_file, rules_class),
             ) in zip(flag.measurement_settings, measurements):
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
-                self.assertEqual(measurement.source_choice, F.S_IMAGE)
-                self.assertEqual(measurement.measurement, measurement_name)
-                self.assertEqual(measurement.wants_minimum.value, min_value is not None)
+                assert isinstance(measurement, cps.SettingsGroup)
+                assert measurement.source_choice == F.S_IMAGE
+                assert measurement.measurement == measurement_name
+                assert measurement.wants_minimum.value == (min_value is not None)
                 if measurement.wants_minimum.value:
-                    self.assertAlmostEqual(measurement.minimum_value.value, min_value)
-                self.assertEqual(measurement.wants_maximum.value, max_value is not None)
+                    assert (
+                        round(abs(measurement.minimum_value.value - min_value), 7) == 0
+                    )
+                assert measurement.wants_maximum.value == (max_value is not None)
                 if measurement.wants_maximum.value:
-                    self.assertAlmostEqual(measurement.maximum_value.value, max_value)
-                self.assertEqual(measurement.rules_file_name, rules_file)
-                self.assertEqual(measurement.rules_class, rules_class)
+                    assert (
+                        round(abs(measurement.maximum_value.value - max_value), 7) == 0
+                    )
+                assert measurement.rules_file_name == rules_file
+                assert measurement.rules_class == rules_class
 
     def make_workspace(self, image_measurements, object_measurements):
         """Make a workspace with a FlagImage module and the given measurements
@@ -392,14 +404,14 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 np.array(object_measurements[i]),
             )
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
+        assert isinstance(flag, cps.SettingsGroup)
         flag.category.value = MEASUREMENT_CATEGORY
         flag.feature_name.value = MEASUREMENT_FEATURE
         module.set_module_num(1)
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -449,43 +461,43 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
     def test_02_01_positive_image_measurement(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
+        assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+        assert isinstance(measurement, cps.SettingsGroup)
         measurement.measurement.value = image_measurement_name(0)
         measurement.wants_minimum.value = False
         measurement.wants_maximum.value = True
         measurement.maximum_value.value = 0.95
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-        self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
-        self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
+        assert isinstance(m, cpmeas.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
+        assert workspace.disposition == cpw.DISPOSITION_CONTINUE
 
     def test_02_02_negative_image_measurement(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
+        assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+        assert isinstance(measurement, cps.SettingsGroup)
         measurement.measurement.value = image_measurement_name(0)
         measurement.wants_minimum.value = True
         measurement.minimum_value.value = 0.1
         measurement.wants_maximum.value = False
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-        self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
+        assert isinstance(m, cpmeas.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
     def test_03_00_no_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            assert isinstance(measurement, cps.SettingsGroup)
             measurement.source_choice.value = F.S_AVERAGE_OBJECT
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -499,17 +511,17 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = 0.2
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
     def test_03_01_positive_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            assert isinstance(measurement, cps.SettingsGroup)
             measurement.source_choice.value = F.S_AVERAGE_OBJECT
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -523,17 +535,17 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = 0.2
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
     def test_03_02_negative_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            assert isinstance(measurement, cps.SettingsGroup)
             measurement.source_choice.value = F.S_AVERAGE_OBJECT
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -547,17 +559,17 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = 0.3
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
     def test_04_00_no_object_measurements(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            assert isinstance(measurement, cps.SettingsGroup)
             measurement.source_choice.value = F.S_ALL_OBJECTS
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -571,17 +583,17 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.minimum_value.value = 0.15
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
     def test_04_01_positive_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            assert isinstance(measurement, cps.SettingsGroup)
             measurement.source_choice.value = F.S_ALL_OBJECTS
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -595,17 +607,17 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.minimum_value.value = 0.15
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
     def test_04_02_negative_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             measurement = flag.measurement_settings[0]
-            self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+            assert isinstance(measurement, cps.SettingsGroup)
             measurement.source_choice.value = F.S_ALL_OBJECTS
             measurement.object_name.value = OBJECT_NAME
             measurement.measurement.value = object_measurement_name(0)
@@ -619,9 +631,9 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.minimum_value.value = 0.05
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
     def test_05_01_two_measurements_any(self):
         for measurements, expected in (
@@ -632,23 +644,21 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         ):
             module, workspace = self.make_workspace(measurements, [])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             flag.combination_choice.value = F.C_ANY
             module.add_measurement(flag)
             for i in range(2):
                 measurement = flag.measurement_settings[i]
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                assert isinstance(measurement, cps.SettingsGroup)
                 measurement.measurement.value = image_measurement_name(i)
                 measurement.wants_minimum.value = False
                 measurement.wants_maximum.value = True
                 measurement.maximum_value.value = 0.5
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(
-                m.get_current_image_measurement(MEASUREMENT_NAME), expected
-            )
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
     def test_05_02_two_measurements_all(self):
         for measurements, expected in (
@@ -659,23 +669,21 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         ):
             module, workspace = self.make_workspace(measurements, [])
             flag = module.flags[0]
-            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            assert isinstance(flag, cps.SettingsGroup)
             flag.combination_choice.value = F.C_ALL
             module.add_measurement(flag)
             for i in range(2):
                 measurement = flag.measurement_settings[i]
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                assert isinstance(measurement, cps.SettingsGroup)
                 measurement.measurement.value = image_measurement_name(i)
                 measurement.wants_minimum.value = False
                 measurement.wants_maximum.value = True
                 measurement.maximum_value.value = 0.5
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(
-                m.get_current_image_measurement(MEASUREMENT_NAME), expected
-            )
+            assert isinstance(m, cpmeas.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
     def test_06_01_get_measurement_columns(self):
         module = F.FlagImage()
@@ -685,67 +693,63 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         module.flags[1].category.value = "Hello"
         module.flags[1].feature_name.value = "World"
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 2)
-        self.assertTrue(
-            all(
-                [
-                    column[0] == cpmeas.IMAGE
-                    and column[1] in ("Foo_Bar", "Hello_World")
-                    and column[2] == cpmeas.COLTYPE_INTEGER
-                    for column in columns
-                ]
-            )
+        assert len(columns) == 2
+        assert all(
+            [
+                column[0] == cpmeas.IMAGE
+                and column[1] in ("Foo_Bar", "Hello_World")
+                and column[2] == cpmeas.COLTYPE_INTEGER
+                for column in columns
+            ]
         )
-        self.assertNotEqual(columns[0][1], columns[1][1])
+        assert columns[0][1] != columns[1][1]
         categories = module.get_categories(None, "foo")
-        self.assertEqual(len(categories), 0)
+        assert len(categories) == 0
         categories = module.get_categories(None, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 2)
-        self.assertTrue("Foo" in categories)
-        self.assertTrue("Hello" in categories)
-        self.assertEqual(
-            len(module.get_measurements(None, cpmeas.IMAGE, "Whatever")), 0
-        )
+        assert len(categories) == 2
+        assert "Foo" in categories
+        assert "Hello" in categories
+        assert len(module.get_measurements(None, cpmeas.IMAGE, "Whatever")) == 0
         for category, feature in (("Foo", "Bar"), ("Hello", "World")):
             features = module.get_measurements(None, cpmeas.IMAGE, category)
-            self.assertEqual(len(features), 1)
-            self.assertEqual(features[0], feature)
+            assert len(features) == 1
+            assert features[0] == feature
 
     def test_07_01_skip(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
+        assert isinstance(flag, cps.SettingsGroup)
         flag.wants_skip.value = True
         measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+        assert isinstance(measurement, cps.SettingsGroup)
         measurement.measurement.value = image_measurement_name(0)
         measurement.wants_minimum.value = False
         measurement.wants_maximum.value = True
         measurement.maximum_value.value = 0.95
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-        self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
-        self.assertEqual(workspace.disposition, cpw.DISPOSITION_SKIP)
+        assert isinstance(m, cpmeas.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
+        assert workspace.disposition == cpw.DISPOSITION_SKIP
 
     def test_07_02_dont_skip(self):
         module, workspace = self.make_workspace([1], [])
         flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
+        assert isinstance(flag, cps.SettingsGroup)
         flag.wants_skip.value = True
         measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+        assert isinstance(measurement, cps.SettingsGroup)
         measurement.measurement.value = image_measurement_name(0)
         measurement.wants_minimum.value = True
         measurement.minimum_value.value = 0.1
         measurement.wants_maximum.value = False
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-        self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
-        self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
+        assert isinstance(m, cpmeas.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
+        assert workspace.disposition == cpw.DISPOSITION_CONTINUE
 
     def test_08_01_filter_by_rule(self):
         rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n" % (
@@ -765,10 +769,10 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             ):
                 module, workspace = self.make_workspace([value], [])
                 flag = module.flags[0]
-                self.assertTrue(isinstance(flag, cps.SettingsGroup))
+                assert isinstance(flag, cps.SettingsGroup)
                 flag.wants_skip.value = False
                 measurement = flag.measurement_settings[0]
-                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                assert isinstance(measurement, cps.SettingsGroup)
                 measurement.source_choice.value = F.S_RULES
                 measurement.rules_file_name.value = rules_file
                 measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
@@ -776,11 +780,9 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.rules_class.set_value([str(choice)])
                 module.run(workspace)
                 m = workspace.measurements
-                self.assertTrue(isinstance(m, cpmeas.Measurements))
-                self.assertIn(MEASUREMENT_NAME, m.get_feature_names(cpmeas.IMAGE))
-                self.assertEqual(
-                    m.get_current_image_measurement(MEASUREMENT_NAME), expected
-                )
+                assert isinstance(m, cpmeas.Measurements)
+                assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+                assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
         finally:
             os.remove(rules_path)
 
@@ -811,10 +813,10 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 ):
                     module, workspace = self.make_workspace([measurement_value], [])
                     flag = module.flags[0]
-                    self.assertTrue(isinstance(flag, cps.SettingsGroup))
+                    assert isinstance(flag, cps.SettingsGroup)
                     flag.wants_skip.value = False
                     measurement = flag.measurement_settings[0]
-                    self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                    assert isinstance(measurement, cps.SettingsGroup)
                     measurement.source_choice.value = F.S_RULES
                     measurement.rules_file_name.value = rules_file
                     measurement.rules_directory.dir_choice = (
@@ -824,14 +826,12 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     measurement.rules_class.set_value(rules_classes)
 
                     m = workspace.measurements
-                    self.assertTrue(isinstance(m, cpmeas.Measurements))
+                    assert isinstance(m, cpmeas.Measurements)
                     module.run(workspace)
-                    self.assertTrue(
-                        MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
-                    )
+                    assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
                     value = m.get_current_image_measurement(MEASUREMENT_NAME)
                     expected_value = 1 if expected_class in rules_classes else 0
-                    self.assertEqual(value, expected_value)
+                    assert value == expected_value
         finally:
             os.remove(rules_path)
 
@@ -840,14 +840,14 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         with self.make_classifier(module, 1):
             module.run(workspace)
             m = workspace.measurements
-            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 1)
+            assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
 
     def test_09_02_classify_false(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 2):
             module.run(workspace)
             m = workspace.measurements
-            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 0)
+            assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
 
     def test_09_03_classify_multiple_select_true(self):
         module, workspace = self.make_workspace([1], [])
@@ -860,7 +860,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         ):
             module.run(workspace)
             m = workspace.measurements
-            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 1)
+            assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
 
     def test_09_04_classify_multiple_select_false(self):
         module, workspace = self.make_workspace([1], [])
@@ -873,13 +873,13 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         ):
             module.run(workspace)
             m = workspace.measurements
-            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 0)
+            assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
 
     def test_09_01_batch(self):
         orig_path = "/foo/bar"
 
         def fn_alter_path(path, **varargs):
-            self.assertEqual(path, orig_path)
+            assert path == orig_path
             return "/imaging/analysis"
 
         module = F.FlagImage()
@@ -887,4 +887,4 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         rd.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         rd.custom_path = orig_path
         module.prepare_to_create_batch(None, fn_alter_path)
-        self.assertEqual(rd.custom_path, "/imaging/analysis")
+        assert rd.custom_path == "/imaging/analysis"

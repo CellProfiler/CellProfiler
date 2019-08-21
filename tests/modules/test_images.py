@@ -23,7 +23,7 @@ class TestImages(unittest.TestCase):
     def tearDown(self):
         self.measurements.close()
         os.unlink(self.temp_filename)
-        self.assertFalse(os.path.exists(self.temp_filename))
+        assert not os.path.exists(self.temp_filename)
 
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -40,21 +40,17 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.images.Images))
-        self.assertEqual(
-            module.filter_choice, cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
-        )
-        self.assertEqual(
-            module.filter.value,
-            'or (directory does startwith "foo") (file does contain "bar")',
+        assert isinstance(module, cellprofiler.modules.images.Images)
+        assert module.filter_choice == cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
+        assert (
+            module.filter.value
+            == 'or (directory does startwith "foo") (file does contain "bar")'
         )
 
     def test_01_02_load_v2(self):
@@ -77,19 +73,17 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             pipeline = cellprofiler.pipeline.Pipeline()
 
             def callback(caller, event):
-                self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-                )
+                assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
             pipeline.add_listener(callback)
             pipeline.load(io.StringIO(data % fctext))
-            self.assertEqual(len(pipeline.modules()), 1)
+            assert len(pipeline.modules()) == 1
             module = pipeline.modules()[0]
-            self.assertTrue(isinstance(module, cellprofiler.modules.images.Images))
-            self.assertEqual(module.filter_choice, fc)
-            self.assertEqual(
-                module.filter.value,
-                'or (directory does startwith "foo") (file does contain "bar")',
+            assert isinstance(module, cellprofiler.modules.images.Images)
+            assert module.filter_choice == fc
+            assert (
+                module.filter.value
+                == 'or (directory does startwith "foo") (file does contain "bar")'
             )
 
     def test_02_04_filter_url(self):
@@ -132,10 +126,10 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         )
         file_list = pipeline.get_filtered_file_list(workspace)
         if expected:
-            self.assertEqual(len(file_list), 1)
-            self.assertEqual(file_list[0], url)
+            assert len(file_list) == 1
+            assert file_list[0] == url
         else:
-            self.assertEqual(len(file_list), 0)
+            assert len(file_list) == 0
 
     def test_02_05_filter_standard(self):
         module = cellprofiler.modules.images.Images()

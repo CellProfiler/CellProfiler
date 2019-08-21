@@ -21,6 +21,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.definegrid as D
 from centrosome.filter import enhance_dark_holes
+import pytest
 
 GRID_NAME = "grid"
 INPUT_IMAGE_NAME = "inputimage"
@@ -47,8 +48,8 @@ class TestDefineGrid(unittest.TestCase):
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -79,8 +80,8 @@ class TestDefineGrid(unittest.TestCase):
                     i * columns + j + 1
                 )
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, D.DefineGrid)
+        assert isinstance(workspace, cpw.Workspace)
         module.grid_rows.value = rows
         module.grid_columns.value = columns
         module.ordering.value = D.NUM_BY_COLUMNS
@@ -88,25 +89,21 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.Grid))
-        self.assertEqual(gridding.rows, rows)
-        self.assertEqual(gridding.columns, columns)
-        self.assertEqual(gridding.x_spacing, spacing_x)
-        self.assertEqual(gridding.y_spacing, spacing_y)
-        self.assertEqual(gridding.x_location_of_lowest_x_spot, first_x)
-        self.assertEqual(gridding.y_location_of_lowest_y_spot, first_y)
-        self.assertTrue(
-            np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x)
-        )
-        self.assertTrue(
-            np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y)
-        )
+        assert isinstance(gridding, cpg.Grid)
+        assert gridding.rows == rows
+        assert gridding.columns == columns
+        assert gridding.x_spacing == spacing_x
+        assert gridding.y_spacing == spacing_y
+        assert gridding.x_location_of_lowest_x_spot == first_x
+        assert gridding.y_location_of_lowest_y_spot == first_y
+        assert np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x)
+        assert np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y)
         spot_table = np.arange(rows * columns) + 1
         spot_table.shape = (rows, columns)
-        self.assertTrue(np.all(gridding.spot_table == spot_table))
+        assert np.all(gridding.spot_table == spot_table)
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, value in (
             (D.F_COLUMNS, columns),
             (D.F_ROWS, rows),
@@ -116,23 +113,24 @@ class TestDefineGrid(unittest.TestCase):
             (D.F_Y_SPACING, spacing_y),
         ):
             measurement = "_".join((D.M_CATEGORY, GRID_NAME, feature))
-            self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
-            self.assertEqual(m.get_current_image_measurement(measurement), value)
+            assert m.has_feature(cpmeas.IMAGE, measurement)
+            assert m.get_current_image_measurement(measurement) == value
 
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(image is not None)
+        assert image is not None
 
     def test_02_02_fail(self):
         image = np.zeros((50, 100))
         labels = np.zeros((50, 100), int)
         labels[20:40, 51:62] = 1
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, D.DefineGrid)
+        assert isinstance(workspace, cpw.Workspace)
         module.ordering.value = D.NUM_BY_COLUMNS
         module.auto_or_manual.value = D.AM_AUTOMATIC
         module.wants_image.value = True
-        self.assertRaises(RuntimeError, module.run, workspace)
+        with pytest.raises(RuntimeError):
+            module.run(workspace)
 
     def test_03_01_coordinates_plus_savedimagesize(self):
         image = np.zeros((50, 100))
@@ -144,8 +142,8 @@ class TestDefineGrid(unittest.TestCase):
         spacing_y = 10
         spacing_x = 9
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, D.DefineGrid)
+        assert isinstance(workspace, cpw.Workspace)
         module.grid_rows.value = rows
         module.grid_columns.value = columns
         module.ordering.value = D.NUM_BY_COLUMNS
@@ -162,25 +160,21 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.Grid))
-        self.assertEqual(gridding.rows, rows)
-        self.assertEqual(gridding.columns, columns)
-        self.assertEqual(gridding.x_spacing, spacing_x)
-        self.assertEqual(gridding.y_spacing, spacing_y)
-        self.assertEqual(gridding.x_location_of_lowest_x_spot, first_x)
-        self.assertEqual(gridding.y_location_of_lowest_y_spot, first_y)
-        self.assertTrue(
-            np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x)
-        )
-        self.assertTrue(
-            np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y)
-        )
+        assert isinstance(gridding, cpg.Grid)
+        assert gridding.rows == rows
+        assert gridding.columns == columns
+        assert gridding.x_spacing == spacing_x
+        assert gridding.y_spacing == spacing_y
+        assert gridding.x_location_of_lowest_x_spot == first_x
+        assert gridding.y_location_of_lowest_y_spot == first_y
+        assert np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x)
+        assert np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y)
         spot_table = np.arange(rows * columns) + 1
         spot_table.shape = (rows, columns)
-        self.assertTrue(np.all(gridding.spot_table == spot_table))
+        assert np.all(gridding.spot_table == spot_table)
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for feature, value in (
             (D.F_COLUMNS, columns),
             (D.F_ROWS, rows),
@@ -190,11 +184,11 @@ class TestDefineGrid(unittest.TestCase):
             (D.F_Y_SPACING, spacing_y),
         ):
             measurement = "_".join((D.M_CATEGORY, GRID_NAME, feature))
-            self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
-            self.assertEqual(m.get_current_image_measurement(measurement), value)
+            assert m.has_feature(cpmeas.IMAGE, measurement)
+            assert m.get_current_image_measurement(measurement) == value
 
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(image is not None)
+        assert image is not None
         shape = image.pixel_data.shape
-        self.assertEqual(shape[0], 50)
-        self.assertEqual(shape[1], 100)
+        assert shape[0] == 50
+        assert shape[1] == 100

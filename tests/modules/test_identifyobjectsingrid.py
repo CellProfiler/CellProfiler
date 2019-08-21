@@ -43,7 +43,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -59,7 +59,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         return workspace, module
 
     def make_rectangular_grid(self, gridding):
-        self.assertTrue(isinstance(gridding, cpg.Grid))
+        assert isinstance(gridding, cpg.Grid)
         i0 = gridding.y_location_of_lowest_y_spot
         j0 = gridding.x_location_of_lowest_x_spot
         di = gridding.y_spacing
@@ -98,75 +98,69 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         jdist = j - x_locations[expected]
         expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
         workspace, module = self.make_workspace(gridding)
-        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        assert isinstance(module, I.IdentifyObjectsInGrid)
         module.diameter_choice.value = I.AM_MANUAL
         module.diameter.value = diameter
         module.shape_choice.value = I.SHAPE_CIRCLE_FORCED
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
-        self.assertTrue(
-            np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
-        )
+        assert np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
         #
         # Check measurements
         #
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-        self.assertTrue(np.all(xm == x_locations[1:]))
+        assert np.all(xm == x_locations[1:])
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-        self.assertTrue(np.all(ym == y_locations[1:]))
+        assert np.all(ym == y_locations[1:])
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count, gridding.rows * gridding.columns)
+        assert count == gridding.rows * gridding.columns
 
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 4)
+        assert len(columns) == 4
         count_feature = "Count_%s" % OUTPUT_OBJECTS_NAME
-        self.assertTrue(
-            all(
-                [
-                    column[0]
-                    == ("Image" if column[1] == count_feature else OUTPUT_OBJECTS_NAME)
-                    for column in columns
-                ]
-            )
+        assert all(
+            [
+                column[0]
+                == ("Image" if column[1] == count_feature else OUTPUT_OBJECTS_NAME)
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            all(
-                [
-                    column[1]
-                    in (
-                        "Location_Center_X",
-                        "Location_Center_Y",
-                        count_feature,
-                        "Number_Object_Number",
-                    )
-                    for column in columns
-                ]
-            )
+        assert all(
+            [
+                column[1]
+                in (
+                    "Location_Center_X",
+                    "Location_Center_Y",
+                    count_feature,
+                    "Number_Object_Number",
+                )
+                for column in columns
+            ]
         )
         #
         # Check the measurements
         #
         categories = list(module.get_categories(None, OUTPUT_OBJECTS_NAME))
-        self.assertEqual(len(categories), 2)
+        assert len(categories) == 2
         categories.sort()
-        self.assertEqual(categories[0], "Location")
-        self.assertEqual(categories[1], "Number")
+        assert categories[0] == "Location"
+        assert categories[1] == "Number"
         categories = module.get_categories(None, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], "Count")
+        assert len(categories) == 1
+        assert categories[0] == "Count"
         measurements = module.get_measurements(None, cpmeas.IMAGE, "Count")
-        self.assertEqual(len(measurements), 1)
-        self.assertEqual(measurements[0], OUTPUT_OBJECTS_NAME)
+        assert len(measurements) == 1
+        assert measurements[0] == OUTPUT_OBJECTS_NAME
         measurements = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Location")
-        self.assertEqual(len(measurements), 2)
-        self.assertTrue(all(m in ("Center_X", "Center_Y") for m in measurements))
-        self.assertTrue("Center_X" in measurements)
-        self.assertTrue("Center_Y" in measurements)
+        assert len(measurements) == 2
+        assert all(m in ("Center_X", "Center_Y") for m in measurements)
+        assert "Center_X" in measurements
+        assert "Center_Y" in measurements
         measurements = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Number")
-        self.assertEqual(len(measurements), 1)
-        self.assertEqual(measurements[0], "Object_Number")
+        assert len(measurements) == 1
+        assert measurements[0] == "Object_Number"
 
     def test_02_02_forced_location_auto(self):
         #
@@ -208,15 +202,13 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         p[0] = 0
         guide_labels = p[guide_labels]
         workspace, module = self.make_workspace(gridding, guide_labels)
-        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        assert isinstance(module, I.IdentifyObjectsInGrid)
         module.diameter_choice.value = I.AM_AUTOMATIC
         module.shape_choice.value = I.SHAPE_CIRCLE_FORCED
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
-        self.assertTrue(
-            np.all(
-                labels[mask] == expected[0 : labels.shape[0], 0 : labels.shape[1]][mask]
-            )
+        assert np.all(
+            labels[mask] == expected[0 : labels.shape[0], 0 : labels.shape[1]][mask]
         )
 
     def test_03_01_natural_circle(self):
@@ -257,23 +249,21 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
             idist ** 2 + jdist ** 2 > ((random_diameters[guide_labels] + 1) / 2) ** 2
         ] = 0
         workspace, module = self.make_workspace(gridding, guide_labels)
-        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        assert isinstance(module, I.IdentifyObjectsInGrid)
         module.diameter_choice.value = I.AM_MANUAL
         module.diameter.value = diameter
         module.shape_choice.value = I.SHAPE_CIRCLE_NATURAL
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
-        self.assertTrue(
-            np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
-        )
+        assert np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-        self.assertTrue(np.all(xm == x_locations[1:]))
+        assert np.all(xm == x_locations[1:])
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-        self.assertTrue(np.all(ym == y_locations[1:]))
+        assert np.all(ym == y_locations[1:])
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count, gridding.rows * gridding.columns)
+        assert count == gridding.rows * gridding.columns
 
     def test_03_02_natural_circle_edges(self):
         #
@@ -335,23 +325,21 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         # run the module
         #
         workspace, module = self.make_workspace(gridding, guide_labels)
-        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        assert isinstance(module, I.IdentifyObjectsInGrid)
         module.diameter_choice.value = I.AM_MANUAL
         module.diameter.value = diameter
         module.shape_choice.value = I.SHAPE_CIRCLE_NATURAL
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
-        self.assertTrue(
-            np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
-        )
+        assert np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-        self.assertTrue(np.all(xm == x_locations[1:]))
+        assert np.all(xm == x_locations[1:])
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-        self.assertTrue(np.all(ym == y_locations[1:]))
+        assert np.all(ym == y_locations[1:])
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count, gridding.rows * gridding.columns)
+        assert count == gridding.rows * gridding.columns
 
     def test_03_03_img_891(self):
         """Regression test of img-891, last spot filtered out"""
@@ -397,25 +385,23 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         expected[expected == np.max(guide_labels)] = 0
         guide_labels[guide_labels == np.max(guide_labels)] = 0
         workspace, module = self.make_workspace(gridding, guide_labels)
-        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        assert isinstance(module, I.IdentifyObjectsInGrid)
         module.diameter_choice.value = I.AM_MANUAL
         module.diameter.value = diameter
         module.shape_choice.value = I.SHAPE_CIRCLE_NATURAL
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
-        self.assertTrue(
-            np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
-        )
+        assert np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-        self.assertEqual(len(xm), 96)
-        self.assertTrue(np.all(xm[:-1] == x_locations[1:-1]))
-        self.assertTrue(np.isnan(xm[-1]))
+        assert len(xm) == 96
+        assert np.all(xm[:-1] == x_locations[1:-1])
+        assert np.isnan(xm[-1])
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-        self.assertTrue(np.all(ym[:-1] == y_locations[1:-1]))
+        assert np.all(ym[:-1] == y_locations[1:-1])
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count, gridding.rows * gridding.columns)
+        assert count == gridding.rows * gridding.columns
 
     def test_04_01_natural(self):
         # Use natural objects.
@@ -496,20 +482,18 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         # run the module
         #
         workspace, module = self.make_workspace(gridding, guide_labels)
-        self.assertTrue(isinstance(module, I.IdentifyObjectsInGrid))
+        assert isinstance(module, I.IdentifyObjectsInGrid)
         module.diameter_choice.value = I.AM_MANUAL
         module.diameter.value = diameter
         module.shape_choice.value = I.SHAPE_NATURAL
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
-        self.assertTrue(
-            np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
-        )
+        assert np.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-        self.assertTrue(np.all(xm == x_locations[1:]))
+        assert np.all(xm == x_locations[1:])
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-        self.assertTrue(np.all(ym == y_locations[1:]))
+        assert np.all(ym == y_locations[1:])
         count = m.get_current_image_measurement("Count_%s" % OUTPUT_OBJECTS_NAME)
-        self.assertEqual(count, gridding.rows * gridding.columns)
+        assert count == gridding.rows * gridding.columns

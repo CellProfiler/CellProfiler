@@ -40,7 +40,7 @@ class TestMeasureObjectOverlap(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -83,11 +83,11 @@ class TestMeasureObjectOverlap(unittest.TestCase):
 
         columns = module.get_measurement_columns(workspace.pipeline)
         # All columns should be unique
-        self.assertEqual(len(columns), len(set([x[1] for x in columns])))
+        assert len(columns) == len(set([x[1] for x in columns]))
         # All columns should be floats and done on images
         x = columns[-1]
-        self.assertTrue(all([x[0] == cellprofiler.measurement.IMAGE]))
-        self.assertTrue(all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT]))
+        assert all([x[0] == cellprofiler.measurement.IMAGE])
+        assert all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT])
         for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
             field = "_".join(
                 (
@@ -97,7 +97,7 @@ class TestMeasureObjectOverlap(unittest.TestCase):
                     ID_OBJ,
                 )
             )
-            self.assertTrue(field in [x[1] for x in columns])
+            assert field in [x[1] for x in columns]
 
     def test_04_05_get_measurement_scales(self):
         workspace, module = self.make_obj_workspace(
@@ -115,8 +115,8 @@ class TestMeasureObjectOverlap(unittest.TestCase):
             None,
         )
 
-        self.assertEqual(len(scales), 1)
-        self.assertEqual(scales[0], "_".join((GROUND_TRUTH_OBJ, ID_OBJ)))
+        assert len(scales) == 1
+        assert scales[0] == "_".join((GROUND_TRUTH_OBJ, ID_OBJ))
 
     def test_05_00_test_measure_overlap_no_objects(self):
         # Regression test of issue #934 - no objects
@@ -132,15 +132,13 @@ class TestMeasureObjectOverlap(unittest.TestCase):
             mname = module.measurement_name(feature)
             value = m[cellprofiler.measurement.IMAGE, mname, 1]
             if feature == cellprofiler.modules.measureobjectoverlap.FTR_TRUE_NEG_RATE:
-                self.assertEqual(value, 1)
+                assert value == 1
             elif (
                 feature == cellprofiler.modules.measureobjectoverlap.FTR_FALSE_POS_RATE
             ):
-                self.assertEqual(value, 0)
+                assert value == 0
             else:
-                self.assertTrue(
-                    numpy.isnan(value), msg="%s was %f. not nan" % (mname, value)
-                )
+                assert numpy.isnan(value), "%s was %f. not nan" % (mname, value)
         #
         # Make sure they don't crash
         #
@@ -176,7 +174,7 @@ class TestMeasureObjectOverlap(unittest.TestCase):
         module.wants_emd.value = False
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cellprofiler.measurement.Measurements))
+        assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
     def test_05_02_test_objects_rand_index(self):
         r = numpy.random.RandomState()
@@ -212,7 +210,7 @@ class TestMeasureObjectOverlap(unittest.TestCase):
         )
         expected_rand_index = measurements.get_current_image_measurement(mname)
         rand_index = measurements.get_current_image_measurement(mname)
-        self.assertAlmostEqual(rand_index, expected_rand_index)
+        assert round(abs(rand_index - expected_rand_index), 7) == 0
         mname = "_".join(
             (
                 cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,

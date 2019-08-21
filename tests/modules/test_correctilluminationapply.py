@@ -71,7 +71,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        assert np.all(output_image.pixel_data == expected)
 
     def test_01_02_subtract(self):
         """Test correction by subtraction"""
@@ -116,7 +116,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        assert np.all(output_image.pixel_data == expected)
 
     def test_02_01_color_by_bw(self):
         """Correct a color image with a black & white illumination fn"""
@@ -161,7 +161,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        assert np.all(output_image.pixel_data == expected)
 
     def test_02_02_color_by_color(self):
         """Correct a color image with a black & white illumination fn"""
@@ -206,4 +206,4 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        assert np.all(output_image.pixel_data == expected)

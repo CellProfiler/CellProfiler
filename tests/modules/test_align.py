@@ -69,23 +69,21 @@ Name the second output image:AlignedImage2
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(six.moves.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
-        self.assertEqual(
-            module.alignment_method, cellprofiler.modules.align.M_MUTUAL_INFORMATION
+        assert isinstance(module, cellprofiler.modules.align.Align)
+        assert (
+            module.alignment_method == cellprofiler.modules.align.M_MUTUAL_INFORMATION
         )
-        self.assertEqual(module.crop_mode, cellprofiler.modules.align.C_CROP)
-        self.assertEqual(module.first_input_image, "Image1")
-        self.assertEqual(module.second_input_image, "Image2")
-        self.assertTrue(module.first_output_image, "AlignedImage1")
-        self.assertTrue(module.second_output_image, "AlignedImage2")
+        assert module.crop_mode == cellprofiler.modules.align.C_CROP
+        assert module.first_input_image == "Image1"
+        assert module.second_input_image == "Image2"
+        assert module.first_output_image, "AlignedImage1"
+        assert module.second_output_image, "AlignedImage2"
 
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -119,13 +117,11 @@ Name the second output image:AlignedImage2
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(six.moves.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         for module, crop_method in zip(
             pipeline.modules(),
             (
@@ -134,15 +130,16 @@ Name the second output image:AlignedImage2
                 cellprofiler.modules.align.C_PAD,
             ),
         ):
-            self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
-            self.assertEqual(
-                module.alignment_method, cellprofiler.modules.align.M_MUTUAL_INFORMATION
+            assert isinstance(module, cellprofiler.modules.align.Align)
+            assert (
+                module.alignment_method
+                == cellprofiler.modules.align.M_MUTUAL_INFORMATION
             )
-            self.assertEqual(module.crop_mode, crop_method)
-            self.assertEqual(module.first_input_image, "Image1")
-            self.assertEqual(module.second_input_image, "Image2")
-            self.assertTrue(module.first_output_image, "AlignedImage1")
-            self.assertTrue(module.second_output_image, "AlignedImage2")
+            assert module.crop_mode == crop_method
+            assert module.first_input_image == "Image1"
+            assert module.second_input_image == "Image2"
+            assert module.first_output_image, "AlignedImage1"
+            assert module.second_output_image, "AlignedImage2"
 
     def test_02_01_crop(self):
         """Align two images and crop the result"""
@@ -201,17 +198,13 @@ Name the second output image:AlignedImage2
                         workspace, module = self.make_workspace(
                             (image1, image2), (mask1, mask2)
                         )
-                        self.assertTrue(
-                            isinstance(module, cellprofiler.modules.align.Align)
-                        )
+                        assert isinstance(module, cellprofiler.modules.align.Align)
                         module.alignment_method.value = method
                         module.crop_mode.value = cellprofiler.modules.align.C_CROP
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
-                        self.assertTrue(
-                            isinstance(m, cellprofiler.measurement.Measurements)
-                        )
+                        assert isinstance(m, cellprofiler.measurement.Measurements)
                         off_i0 = -m.get_current_image_measurement(
                             "Align_Yshift_Aligned0"
                         )
@@ -225,29 +218,27 @@ Name the second output image:AlignedImage2
                             "Align_Xshift_Aligned1"
                         )
 
-                        self.assertEqual(off_i0 - off_i1, offset[0])
-                        self.assertEqual(off_j0 - off_j1, offset[1])
+                        assert off_i0 - off_i1 == offset[0]
+                        assert off_j0 - off_j1 == offset[1]
                         out_shape = output.pixel_data.shape
-                        self.assertEqual(out_shape[0], shape[0] - abs(offset[0]))
-                        self.assertEqual(out_shape[1], shape[1] - abs(offset[1]))
+                        assert out_shape[0] == shape[0] - abs(offset[0])
+                        assert out_shape[1] == shape[1] - abs(offset[1])
                         i_slice = self.single_slice_helper(-off_i0, out_shape[0])
                         j_slice = self.single_slice_helper(-off_j0, out_shape[1])
                         numpy.testing.assert_almost_equal(
                             image1[i_slice, j_slice], output.pixel_data
                         )
                         if mask1 is not None:
-                            self.assertTrue(
-                                numpy.all(output.mask == mask1[i_slice, j_slice])
-                            )
+                            assert numpy.all(output.mask == mask1[i_slice, j_slice])
 
                         if offset[0] == 0 and offset[1] == 0:
-                            self.assertFalse(output.has_crop_mask)
+                            assert not output.has_crop_mask
                         else:
                             temp = output.crop_mask.copy()
-                            self.assertEqual(tuple(temp.shape), shape)
-                            self.assertTrue(numpy.all(temp[i_slice, j_slice]))
+                            assert tuple(temp.shape) == shape
+                            assert numpy.all(temp[i_slice, j_slice])
                             temp[i_slice, j_slice] = False
-                            self.assertTrue(numpy.all(~temp))
+                            assert numpy.all(~temp)
 
                         output = workspace.image_set.get_image("Aligned1")
                         i_slice = self.single_slice_helper(-off_i1, out_shape[0])
@@ -257,17 +248,15 @@ Name the second output image:AlignedImage2
                             image2[i_slice, j_slice], output.pixel_data
                         )
                         if mask2 is not None:
-                            self.assertTrue(
-                                numpy.all(output.mask == mask2[i_slice, j_slice])
-                            )
+                            assert numpy.all(output.mask == mask2[i_slice, j_slice])
                         if offset[0] == 0 and offset[1] == 0:
-                            self.assertFalse(output.has_crop_mask)
+                            assert not output.has_crop_mask
                         else:
                             temp = output.crop_mask.copy()
-                            self.assertEqual(tuple(temp.shape), shape)
-                            self.assertTrue(numpy.all(temp[i_slice, j_slice]))
+                            assert tuple(temp.shape) == shape
+                            assert numpy.all(temp[i_slice, j_slice])
                             temp[i_slice, j_slice] = False
-                            self.assertTrue(numpy.all(~temp))
+                            assert numpy.all(~temp)
 
     def single_slice_helper(self, offset, size):
         """Return a single slice starting at the offset (or zero)"""
@@ -351,17 +340,13 @@ Name the second output image:AlignedImage2
                         workspace, module = self.make_workspace(
                             (image1, image2), (mask1, mask2)
                         )
-                        self.assertTrue(
-                            isinstance(module, cellprofiler.modules.align.Align)
-                        )
+                        assert isinstance(module, cellprofiler.modules.align.Align)
                         module.alignment_method.value = method
                         module.crop_mode.value = cellprofiler.modules.align.C_PAD
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
-                        self.assertTrue(
-                            isinstance(m, cellprofiler.measurement.Measurements)
-                        )
+                        assert isinstance(m, cellprofiler.measurement.Measurements)
                         off_i0 = -m.get_current_image_measurement(
                             "Align_Yshift_Aligned0"
                         )
@@ -375,8 +360,8 @@ Name the second output image:AlignedImage2
                             "Align_Xshift_Aligned1"
                         )
 
-                        self.assertEqual(off_i0 - off_i1, offset[0])
-                        self.assertEqual(off_j0 - off_j1, offset[1])
+                        assert off_i0 - off_i1 == offset[0]
+                        assert off_j0 - off_j1 == offset[1]
 
                         i_slice = slice(off_i0, off_i0 + image1.shape[0])
                         j_slice = slice(off_j0, off_j0 + image1.shape[1])
@@ -384,13 +369,11 @@ Name the second output image:AlignedImage2
                             image1, output.pixel_data[i_slice, j_slice]
                         )
                         if mask1 is not None:
-                            self.assertTrue(
-                                numpy.all(output.mask[i_slice, j_slice] == mask1)
-                            )
+                            assert numpy.all(output.mask[i_slice, j_slice] == mask1)
 
                         temp = output.mask.copy()
                         temp[i_slice, j_slice] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
                         output = workspace.image_set.get_image("Aligned1")
                         i_slice = slice(off_i1, off_i1 + image2.shape[0])
@@ -399,12 +382,10 @@ Name the second output image:AlignedImage2
                             image2, output.pixel_data[i_slice, j_slice]
                         )
                         if mask2 is not None:
-                            self.assertTrue(
-                                numpy.all(mask2 == output.mask[i_slice, j_slice])
-                            )
+                            assert numpy.all(mask2 == output.mask[i_slice, j_slice])
                         temp = output.mask.copy()
                         temp[i_slice, j_slice] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
     def test_02_03_same_size(self):
         """Align two images keeping sizes the same"""
@@ -469,17 +450,13 @@ Name the second output image:AlignedImage2
                         workspace, module = self.make_workspace(
                             (image1, image2), (mask1, mask2)
                         )
-                        self.assertTrue(
-                            isinstance(module, cellprofiler.modules.align.Align)
-                        )
+                        assert isinstance(module, cellprofiler.modules.align.Align)
                         module.alignment_method.value = method
                         module.crop_mode.value = cellprofiler.modules.align.C_SAME_SIZE
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
-                        self.assertTrue(
-                            isinstance(m, cellprofiler.measurement.Measurements)
-                        )
+                        assert isinstance(m, cellprofiler.measurement.Measurements)
                         off_i0 = -m.get_current_image_measurement(
                             "Align_Yshift_Aligned0"
                         )
@@ -493,8 +470,8 @@ Name the second output image:AlignedImage2
                             "Align_Xshift_Aligned1"
                         )
 
-                        self.assertEqual(off_i0 - off_i1, offset[0])
-                        self.assertEqual(off_j0 - off_j1, offset[1])
+                        assert off_i0 - off_i1 == offset[0]
+                        assert off_j0 - off_j1 == offset[1]
 
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
@@ -502,15 +479,13 @@ Name the second output image:AlignedImage2
                             image1[si_in, sj_in], output.pixel_data[si_out, sj_out]
                         )
                         if mask1 is not None:
-                            self.assertTrue(
-                                numpy.all(
-                                    output.mask[si_out, sj_out] == mask1[si_in, sj_in]
-                                )
+                            assert numpy.all(
+                                output.mask[si_out, sj_out] == mask1[si_in, sj_in]
                             )
 
                         temp = output.mask.copy()
                         temp[si_out, sj_out] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
                         output = workspace.image_set.get_image("Aligned1")
                         si_in, si_out = self.slice_same(off_i1, shape[0])
@@ -519,14 +494,12 @@ Name the second output image:AlignedImage2
                             image2[si_in, sj_in], output.pixel_data[si_out, sj_out]
                         )
                         if mask2 is not None:
-                            self.assertTrue(
-                                numpy.all(
-                                    mask2[si_in, sj_in] == output.mask[si_out, sj_out]
-                                )
+                            assert numpy.all(
+                                mask2[si_in, sj_in] == output.mask[si_out, sj_out]
                             )
                         temp = output.mask.copy()
                         temp[si_out, sj_out] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
     def slice_same(self, offset, orig_size):
         if offset < 0:
@@ -556,7 +529,7 @@ Name the second output image:AlignedImage2
             workspace, module = self.make_workspace(
                 (image1, image2, image3), (None, None, None)
             )
-            self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+            assert isinstance(module, cellprofiler.modules.align.Align)
             module.alignment_method.value = (
                 cellprofiler.modules.align.M_CROSS_CORRELATION
             )
@@ -568,24 +541,24 @@ Name the second output image:AlignedImage2
             output = workspace.image_set.get_image("Aligned2")
             m = workspace.measurements
             columns = module.get_measurement_columns(workspace.pipeline)
-            self.assertEqual(len(columns), 6)
+            assert len(columns) == 6
             align_measurements = [
                 x
                 for x in m.get_feature_names(cellprofiler.measurement.IMAGE)
                 if x.startswith("Align")
             ]
-            self.assertEqual(len(align_measurements), 6)
-            self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+            assert len(align_measurements) == 6
+            assert isinstance(m, cellprofiler.measurement.Measurements)
             off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
             off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
             off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
             off_j1 = -m.get_current_image_measurement("Align_Xshift_Aligned1")
             off_i2 = -m.get_current_image_measurement("Align_Yshift_Aligned2")
             off_j2 = -m.get_current_image_measurement("Align_Xshift_Aligned2")
-            self.assertEqual(off_i0 - off_i1, offset[0])
-            self.assertEqual(off_j0 - off_j1, offset[1])
-            self.assertEqual(off_i0 - off_i2, offset[0])
-            self.assertEqual(off_j0 - off_j2, offset[1])
+            assert off_i0 - off_i1 == offset[0]
+            assert off_j0 - off_j1 == offset[1]
+            assert off_i0 - off_i2 == offset[0]
+            assert off_j0 - off_j2 == offset[1]
 
             i_slice = self.single_slice_helper(off_i2, shape[0])
             j_slice = self.single_slice_helper(off_j2, shape[1])
@@ -611,7 +584,7 @@ Name the second output image:AlignedImage2
             workspace, module = self.make_workspace(
                 (image1, image2, image3), (None, None, None)
             )
-            self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+            assert isinstance(module, cellprofiler.modules.align.Align)
             module.alignment_method.value = (
                 cellprofiler.modules.align.M_CROSS_CORRELATION
             )
@@ -621,17 +594,17 @@ Name the second output image:AlignedImage2
             ].align_choice.value = cellprofiler.modules.align.A_SEPARATELY
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+            assert isinstance(m, cellprofiler.measurement.Measurements)
             off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
             off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
             off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
             off_j1 = -m.get_current_image_measurement("Align_Xshift_Aligned1")
             off_i2 = -m.get_current_image_measurement("Align_Yshift_Aligned2")
             off_j2 = -m.get_current_image_measurement("Align_Xshift_Aligned2")
-            self.assertEqual(off_i0 - off_i1, offset[0] + 5)
-            self.assertEqual(off_j0 - off_j1, offset[1] + 5)
-            self.assertEqual(off_i0 - off_i2, offset[0])
-            self.assertEqual(off_j0 - off_j2, offset[1])
+            assert off_i0 - off_i1 == offset[0] + 5
+            assert off_j0 - off_j1 == offset[1] + 5
+            assert off_i0 - off_i2 == offset[0]
+            assert off_j0 - off_j2 == offset[1]
             output = workspace.image_set.get_image("Aligned2")
             i_slice = self.single_slice_helper(off_i2, shape[0])
             j_slice = self.single_slice_helper(off_j2, shape[1])
@@ -709,17 +682,13 @@ Name the second output image:AlignedImage2
                         workspace, module = self.make_workspace(
                             (image1, image2), (mask1, mask2)
                         )
-                        self.assertTrue(
-                            isinstance(module, cellprofiler.modules.align.Align)
-                        )
+                        assert isinstance(module, cellprofiler.modules.align.Align)
                         module.alignment_method.value = method
                         module.crop_mode.value = cellprofiler.modules.align.C_SAME_SIZE
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
-                        self.assertTrue(
-                            isinstance(m, cellprofiler.measurement.Measurements)
-                        )
+                        assert isinstance(m, cellprofiler.measurement.Measurements)
                         off_i0 = -m.get_current_image_measurement(
                             "Align_Yshift_Aligned0"
                         )
@@ -733,8 +702,8 @@ Name the second output image:AlignedImage2
                             "Align_Xshift_Aligned1"
                         )
 
-                        self.assertEqual(off_i0 - off_i1, offset[0])
-                        self.assertEqual(off_j0 - off_j1, offset[1])
+                        assert off_i0 - off_i1 == offset[0]
+                        assert off_j0 - off_j1 == offset[1]
 
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
@@ -743,15 +712,13 @@ Name the second output image:AlignedImage2
                             output.pixel_data[si_out, sj_out, :],
                         )
                         if mask1 is not None:
-                            self.assertTrue(
-                                numpy.all(
-                                    output.mask[si_out, sj_out] == mask1[si_in, sj_in]
-                                )
+                            assert numpy.all(
+                                output.mask[si_out, sj_out] == mask1[si_in, sj_in]
                             )
 
                         temp = output.mask.copy()
                         temp[si_out, sj_out] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
                         output = workspace.image_set.get_image("Aligned1")
                         si_in, si_out = self.slice_same(off_i1, shape[0])
@@ -761,14 +728,12 @@ Name the second output image:AlignedImage2
                             output.pixel_data[si_out, sj_out, :],
                         )
                         if mask2 is not None:
-                            self.assertTrue(
-                                numpy.all(
-                                    mask2[si_in, sj_in] == output.mask[si_out, sj_out]
-                                )
+                            assert numpy.all(
+                                mask2[si_in, sj_in] == output.mask[si_out, sj_out]
                             )
                         temp = output.mask.copy()
                         temp[si_out, sj_out] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
     def test_03_04_align_binary(self):
         numpy.random.seed(0)
@@ -825,17 +790,13 @@ Name the second output image:AlignedImage2
                         workspace, module = self.make_workspace(
                             (image1, image2), (mask1, mask2)
                         )
-                        self.assertTrue(
-                            isinstance(module, cellprofiler.modules.align.Align)
-                        )
+                        assert isinstance(module, cellprofiler.modules.align.Align)
                         module.alignment_method.value = method
                         module.crop_mode.value = cellprofiler.modules.align.C_SAME_SIZE
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
-                        self.assertTrue(
-                            isinstance(m, cellprofiler.measurement.Measurements)
-                        )
+                        assert isinstance(m, cellprofiler.measurement.Measurements)
                         off_i0 = -m.get_current_image_measurement(
                             "Align_Yshift_Aligned0"
                         )
@@ -849,25 +810,23 @@ Name the second output image:AlignedImage2
                             "Align_Xshift_Aligned1"
                         )
 
-                        self.assertEqual(off_i0 - off_i1, offset[0])
-                        self.assertEqual(off_j0 - off_j1, offset[1])
+                        assert off_i0 - off_i1 == offset[0]
+                        assert off_j0 - off_j1 == offset[1]
 
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
-                        self.assertEqual(output.pixel_data.dtype.kind, "b")
+                        assert output.pixel_data.dtype.kind == "b"
                         numpy.testing.assert_equal(
                             image1[si_in, sj_in], output.pixel_data[si_out, sj_out]
                         )
                         if mask1 is not None:
-                            self.assertTrue(
-                                numpy.all(
-                                    output.mask[si_out, sj_out] == mask1[si_in, sj_in]
-                                )
+                            assert numpy.all(
+                                output.mask[si_out, sj_out] == mask1[si_in, sj_in]
                             )
 
                         temp = output.mask.copy()
                         temp[si_out, sj_out] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
                         output = workspace.image_set.get_image("Aligned1")
                         si_in, si_out = self.slice_same(off_i1, shape[0])
@@ -876,69 +835,65 @@ Name the second output image:AlignedImage2
                             image2[si_in, sj_in], output.pixel_data[si_out, sj_out]
                         )
                         if mask2 is not None:
-                            self.assertTrue(
-                                numpy.all(
-                                    mask2[si_in, sj_in] == output.mask[si_out, sj_out]
-                                )
+                            assert numpy.all(
+                                mask2[si_in, sj_in] == output.mask[si_out, sj_out]
                             )
                         temp = output.mask.copy()
                         temp[si_out, sj_out] = False
-                        self.assertTrue(numpy.all(~temp))
+                        assert numpy.all(~temp)
 
     def test_04_01_measurement_columns(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
         )
-        self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+        assert isinstance(module, cellprofiler.modules.align.Align)
         columns = module.get_measurement_columns(workspace.pipeline)
-        self.assertEqual(len(columns), 6)
+        assert len(columns) == 6
         for i in range(3):
             for axis in ("X", "Y"):
                 feature = cellprofiler.modules.align.MEASUREMENT_FORMAT % (
                     axis,
                     "Aligned%d" % i,
                 )
-                self.assertTrue(feature in [c[1] for c in columns])
-        self.assertTrue(all([c[0] == cellprofiler.measurement.IMAGE for c in columns]))
-        self.assertTrue(
-            all([c[2] == cellprofiler.measurement.COLTYPE_INTEGER for c in columns])
-        )
+                assert feature in [c[1] for c in columns]
+        assert all([c[0] == cellprofiler.measurement.IMAGE for c in columns])
+        assert all([c[2] == cellprofiler.measurement.COLTYPE_INTEGER for c in columns])
 
     def test_04_02_categories(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
         )
-        self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+        assert isinstance(module, cellprofiler.modules.align.Align)
         c = module.get_categories(workspace.pipeline, cellprofiler.measurement.IMAGE)
-        self.assertEqual(len(c), 1)
-        self.assertEqual(c[0], cellprofiler.modules.align.C_ALIGN)
+        assert len(c) == 1
+        assert c[0] == cellprofiler.modules.align.C_ALIGN
 
         c = module.get_categories(workspace.pipeline, "Aligned0")
-        self.assertEqual(len(c), 0)
+        assert len(c) == 0
 
     def test_04_03_measurements(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
         )
-        self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+        assert isinstance(module, cellprofiler.modules.align.Align)
         m = module.get_measurements(
             workspace.pipeline,
             cellprofiler.measurement.IMAGE,
             cellprofiler.modules.align.C_ALIGN,
         )
-        self.assertEqual(len(m), 2)
-        self.assertTrue("Xshift" in m)
-        self.assertTrue("Yshift" in m)
+        assert len(m) == 2
+        assert "Xshift" in m
+        assert "Yshift" in m
 
     def test_04_04_measurement_images(self):
         workspace, module = self.make_workspace(
             (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
             (None, None, None),
         )
-        self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+        assert isinstance(module, cellprofiler.modules.align.Align)
         for measurement in ("Xshift", "Yshift"):
             image_names = module.get_measurement_images(
                 workspace.pipeline,
@@ -946,9 +901,9 @@ Name the second output image:AlignedImage2
                 cellprofiler.modules.align.C_ALIGN,
                 measurement,
             )
-            self.assertEqual(len(image_names), 3)
+            assert len(image_names) == 3
             for i in range(3):
-                self.assertTrue("Aligned%d" % i in image_names)
+                assert "Aligned%d" % i in image_names
 
     def test_05_01_align_self(self):
         """Align an image from the fly screen against itself.
@@ -962,8 +917,8 @@ Name the second output image:AlignedImage2
         module.crop_mode.value = cellprofiler.modules.align.C_PAD
         module.run(workspace)
         m = workspace.measurements
-        self.assertEqual(m.get_current_image_measurement("Align_Xshift_Aligned1"), 0)
-        self.assertEqual(m.get_current_image_measurement("Align_Yshift_Aligned1"), 0)
+        assert m.get_current_image_measurement("Align_Xshift_Aligned1") == 0
+        assert m.get_current_image_measurement("Align_Yshift_Aligned1") == 0
 
     def test_06_01_different_sizes_crop(self):
         """Test align with images of different sizes
@@ -987,22 +942,22 @@ Name the second output image:AlignedImage2
                 ((image2, image1), "Aligned1", "Aligned0"),
             ):
                 workspace, module = self.make_workspace(order, (None, None))
-                self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+                assert isinstance(module, cellprofiler.modules.align.Align)
                 module.alignment_method.value = method
                 module.crop_mode.value = cellprofiler.modules.align.C_CROP
                 module.run(workspace)
                 i1 = workspace.image_set.get_image(i1_name)
-                self.assertTrue(isinstance(i1, cellprofiler.image.Image))
+                assert isinstance(i1, cellprofiler.image.Image)
                 p1 = i1.pixel_data
                 i2 = workspace.image_set.get_image(i2_name)
                 p2 = i2.pixel_data
-                self.assertEqual(tuple(p1.shape), tuple(p2.shape))
-                self.assertTrue(numpy.all(p1 == p2))
-                self.assertTrue(i1.has_crop_mask)
+                assert tuple(p1.shape) == tuple(p2.shape)
+                assert numpy.all(p1 == p2)
+                assert i1.has_crop_mask
                 crop_mask = numpy.zeros(shape, bool)
                 crop_mask[2:-2, 2:-2] = True
-                self.assertTrue(numpy.all(i1.crop_mask == crop_mask))
-                self.assertFalse(i2.has_crop_mask)
+                assert numpy.all(i1.crop_mask == crop_mask)
+                assert not i2.has_crop_mask
 
     def test_06_02_different_sizes_pad(self):
         """Test align with images of different sizes
@@ -1018,18 +973,18 @@ Name the second output image:AlignedImage2
         ] = 0.5
         image2 = image1[2:-2, 2:-2]
         workspace, module = self.make_workspace((image1, image2), (None, None))
-        self.assertTrue(isinstance(module, cellprofiler.modules.align.Align))
+        assert isinstance(module, cellprofiler.modules.align.Align)
         module.crop_mode.value = cellprofiler.modules.align.C_PAD
         module.run(workspace)
         i1 = workspace.image_set.get_image("Aligned0")
-        self.assertTrue(isinstance(i1, cellprofiler.image.Image))
+        assert isinstance(i1, cellprofiler.image.Image)
         p1 = i1.pixel_data
         i2 = workspace.image_set.get_image("Aligned1")
         p2 = i2.pixel_data
-        self.assertEqual(tuple(p1.shape), tuple(p2.shape))
-        self.assertTrue(numpy.all(p1[2:-2, 2:-2] == p2[2:-2, 2:-2]))
-        self.assertFalse(i1.has_mask)
+        assert tuple(p1.shape) == tuple(p2.shape)
+        assert numpy.all(p1[2:-2, 2:-2] == p2[2:-2, 2:-2])
+        assert not i1.has_mask
         mask = numpy.zeros(shape, bool)
         mask[2:-2, 2:-2] = True
-        self.assertTrue(i2.has_mask)
-        self.assertTrue(numpy.all(mask == i2.mask))
+        assert i2.has_mask
+        assert numpy.all(mask == i2.mask)

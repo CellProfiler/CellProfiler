@@ -113,29 +113,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         module = pipeline.modules()[2]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert (
+            module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
         )
-        self.assertEqual(
-            module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        assert (
+            module.single_load_as_choice
+            == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
         )
-        self.assertEqual(
-            module.single_load_as_choice,
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+        assert module.single_image_provider.value == "PI"
+        assert (
+            module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
         )
-        self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(
-            module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
-        )
-        self.assertEqual(module.assignments_count.value, 5)
+        assert module.assignments_count.value == 5
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as in (
             (
@@ -174,10 +170,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
                 cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
             ),
         ):
-            self.assertEqual(assignment.rule_filter.value, rule)
-            self.assertEqual(assignment.image_name, image_name)
-            self.assertEqual(assignment.object_name, objects_name)
-            self.assertEqual(assignment.load_as_choice, load_as)
+            assert assignment.rule_filter.value == rule
+            assert assignment.image_name == image_name
+            assert assignment.object_name == objects_name
+            assert assignment.load_as_choice == load_as
 
     def test_00_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -242,29 +238,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|s
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         module = pipeline.modules()[2]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert (
+            module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
         )
-        self.assertEqual(
-            module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        assert (
+            module.single_load_as_choice
+            == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
         )
-        self.assertEqual(
-            module.single_load_as_choice,
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+        assert module.single_image_provider.value == "PI"
+        assert (
+            module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
         )
-        self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(
-            module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
-        )
-        self.assertEqual(module.assignments_count.value, 5)
+        assert module.assignments_count.value == 5
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as in (
             (
@@ -303,10 +295,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|s
                 cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
             ),
         ):
-            self.assertEqual(assignment.rule_filter.value, rule)
-            self.assertEqual(assignment.image_name, image_name)
-            self.assertEqual(assignment.object_name, objects_name)
-            self.assertEqual(assignment.load_as_choice, load_as)
+            assert assignment.rule_filter.value == rule
+            assert assignment.image_name == image_name
+            assert assignment.object_name == objects_name
+            assert assignment.load_as_choice == load_as
 
     def test_00_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -369,33 +361,29 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         module = pipeline.modules()[2]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert (
+            module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
         )
-        self.assertEqual(
-            module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        assert (
+            module.single_load_as_choice
+            == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
         )
-        self.assertEqual(
-            module.single_load_as_choice,
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+        assert module.single_image_provider.value == "PI"
+        assert (
+            module.single_rescale
+            == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
         )
-        self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(
-            module.single_rescale,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+        assert (
+            module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
         )
-        self.assertEqual(
-            module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
-        )
-        self.assertEqual(module.assignments_count.value, 5)
+        assert module.assignments_count.value == 5
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as, rescale in (
             (
@@ -439,10 +427,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
                 cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
             ),
         ):
-            self.assertEqual(assignment.rule_filter.value, rule)
-            self.assertEqual(assignment.image_name, image_name)
-            self.assertEqual(assignment.object_name, objects_name)
-            self.assertEqual(assignment.load_as_choice, load_as)
+            assert assignment.rule_filter.value == rule
+            assert assignment.image_name == image_name
+            assert assignment.object_name == objects_name
+            assert assignment.load_as_choice == load_as
 
     def test_00_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -515,33 +503,29 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
+        assert len(pipeline.modules()) == 3
         module = pipeline.modules()[2]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert (
+            module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
         )
-        self.assertEqual(
-            module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        assert (
+            module.single_load_as_choice
+            == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
         )
-        self.assertEqual(
-            module.single_load_as_choice,
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+        assert module.single_image_provider.value == "PI"
+        assert (
+            module.single_rescale
+            == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
         )
-        self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(
-            module.single_rescale,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+        assert (
+            module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
         )
-        self.assertEqual(
-            module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
-        )
-        self.assertEqual(module.assignments_count.value, 5)
+        assert module.assignments_count.value == 5
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as, rescale in (
             (
@@ -585,16 +569,16 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
             ),
         ):
-            self.assertEqual(assignment.rule_filter.value, rule)
-            self.assertEqual(assignment.image_name.value, image_name)
-            self.assertEqual(assignment.object_name.value, objects_name)
-            self.assertEqual(assignment.load_as_choice.value, load_as)
-            self.assertEqual(assignment.rescale.value, rescale)
-            self.assertEqual(
-                assignment.manual_rescale.value,
-                cellprofiler.modules.namesandtypes.DEFAULT_MANUAL_RESCALE,
+            assert assignment.rule_filter.value == rule
+            assert assignment.image_name.value == image_name
+            assert assignment.object_name.value == objects_name
+            assert assignment.load_as_choice.value == load_as
+            assert assignment.rescale.value == rescale
+            assert (
+                assignment.manual_rescale.value
+                == cellprofiler.modules.namesandtypes.DEFAULT_MANUAL_RESCALE
             )
-        self.assertEqual(len(module.single_images), 0)
+        assert len(module.single_images) == 0
 
     #     def test_00_05_load_v5(self):
     #             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -909,9 +893,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
-        self.assertTrue(module.prepare_run(workspace))
+        assert module.prepare_run(workspace)
         tags = m.get_metadata_tags()
-        self.assertEqual(len(tags), len(expected_tags))
+        assert len(tags) == len(expected_tags)
         for tag, expected_tag in zip(tags, expected_tags):
             for et in expected_tag:
                 ftr = (
@@ -924,10 +908,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             else:
                 self.fail("%s not in %s" % (tag, ",".join(expected_tag)))
         iscds = m.get_channel_descriptors()
-        self.assertEqual(len(iscds), len(channels))
+        assert len(iscds) == len(channels)
         for channel_name in list(channels.keys()):
             iscd_match = [x for x in iscds if x.name == channel_name]
-            self.assertEqual(len(iscd_match), 1)
+            assert len(iscd_match) == 1
             iscd = iscd_match[0]
             assert isinstance(
                 iscd, cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor
@@ -940,17 +924,17 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                     )
                 else:
                     url_ftr = "_".join((cellprofiler.measurement.C_URL, channel_name))
-                self.assertEqual(
-                    expected_url,
-                    m[cellprofiler.measurement.IMAGE, url_ftr, image_number],
+                assert (
+                    expected_url
+                    == m[cellprofiler.measurement.IMAGE, url_ftr, image_number]
                 )
                 for key, channel in expected_metadata:
                     if channel != channel_name:
                         continue
                     md_ftr = "_".join((cellprofiler.measurement.C_METADATA, key))
-                    self.assertEqual(
-                        metadata[key],
-                        m[cellprofiler.measurement.IMAGE, md_ftr, image_number],
+                    assert (
+                        metadata[key]
+                        == m[cellprofiler.measurement.IMAGE, md_ftr, image_number]
                     )
         return workspace
 
@@ -1288,13 +1272,13 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             cellprofiler.measurement.C_FILE_NAME + "_" + C2,
             image_numbers,
         ]
-        self.assertTrue(all([f == "illum.tif" for f in filenames]))
+        assert all([f == "illum.tif" for f in filenames])
         urls = m[
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.C_URL + "_" + C2,
             image_numbers,
         ]
-        self.assertTrue(all([url == si.image_plane.url for url in urls]))
+        assert all([url == si.image_plane.url for url in urls])
 
     def test_01_13_single_image_by_metadata(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
@@ -1373,7 +1357,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 feature + "_" + IMAGE_NAME,
                 numpy.arange(len(expected)) + 1,
             )
-            self.assertSequenceEqual(expected, list(values))
+            assert expected == list(values)
 
     def test_02_02_prepare_to_create_batch_multiple(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
@@ -1444,7 +1428,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             values = m.get_measurement(
                 cellprofiler.measurement.IMAGE, feature + "_" + name, numpy.arange(1, 3)
             )
-            self.assertSequenceEqual(list(expected), list(values))
+            assert list(expected) == list(values)
 
     def test_02_03_prepare_to_create_batch_single_image(self):
         si_names = ["si1", "si2"]
@@ -1523,7 +1507,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             values = m.get_measurement(
                 cellprofiler.measurement.IMAGE, feature + "_" + name, numpy.arange(1, 3)
             )
-            self.assertSequenceEqual(list(expected), list(values))
+            assert list(expected) == list(values)
 
     # def test_02_04_create_batch_files_imagesets(self):
     #     # Regression test of issue 1129
@@ -1803,30 +1787,30 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, shape)
-        self.assertTrue(numpy.all(pixel_data >= 0))
-        self.assertTrue(numpy.all(pixel_data <= 1))
+        assert pixel_data.shape == shape
+        assert numpy.all(pixel_data >= 0)
+        assert numpy.all(pixel_data <= 1)
         m = workspace.measurements
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_MD5_DIGEST + "_" + IMAGE_NAME,
-            ],
-            md5,
+            ]
+            == md5
         )
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_HEIGHT + "_" + IMAGE_NAME,
-            ],
-            21,
+            ]
+            == 21
         )
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_WIDTH + "_" + IMAGE_NAME,
-            ],
-            31,
+            ]
+            == 31
         )
 
     def test_03_02_load_monochrome_as_color(self):
@@ -1838,9 +1822,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, target_shape)
-        self.assertTrue(numpy.all(pixel_data >= 0))
-        self.assertTrue(numpy.all(pixel_data <= 1))
+        assert pixel_data.shape == target_shape
+        assert numpy.all(pixel_data >= 0)
+        assert numpy.all(pixel_data <= 1)
         numpy.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 1])
         numpy.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
 
@@ -1853,11 +1837,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (264, 542, 3))
-        self.assertTrue(numpy.all(pixel_data >= 0))
-        self.assertTrue(numpy.all(pixel_data <= 1))
-        self.assertTrue(numpy.any(pixel_data[:, :, 0] != pixel_data[:, :, 1]))
-        self.assertTrue(numpy.any(pixel_data[:, :, 0] != pixel_data[:, :, 2]))
+        assert pixel_data.shape == (264, 542, 3)
+        assert numpy.all(pixel_data >= 0)
+        assert numpy.all(pixel_data <= 1)
+        assert numpy.any(pixel_data[:, :, 0] != pixel_data[:, :, 1])
+        assert numpy.any(pixel_data[:, :, 0] != pixel_data[:, :, 2])
 
     def get_monochrome_image_path(self):
         folder = "ExampleGrayToColor"
@@ -1872,9 +1856,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, target.shape)
-        self.assertTrue(numpy.all(pixel_data >= 0))
-        self.assertTrue(numpy.all(pixel_data <= 1))
+        assert pixel_data.shape == target.shape
+        assert numpy.all(pixel_data >= 0)
+        assert numpy.all(pixel_data <= 1)
 
     def test_03_05_load_color_as_monochrome(self):
         shape = (21, 31, 3)
@@ -1886,9 +1870,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, shape[:2])
-        self.assertTrue(numpy.all(pixel_data >= 0))
-        self.assertTrue(numpy.all(pixel_data <= 1))
+        assert pixel_data.shape == shape[:2]
+        assert numpy.all(pixel_data >= 0)
+        assert numpy.all(pixel_data <= 1)
 
     def test_03_06_load_monochrome_plane(self):
         path = tests.modules.maybe_download_tesst_image("5channel.tif")
@@ -1901,11 +1885,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             )
             image = workspace.image_set.get_image(IMAGE_NAME)
             pixel_data = image.pixel_data
-            self.assertSequenceEqual(pixel_data.shape, (64, 64))
+            assert pixel_data.shape == (64, 64)
             if i == 0:
                 plane_0 = pixel_data.copy()
             else:
-                self.assertTrue(numpy.any(pixel_data != plane_0))
+                assert numpy.any(pixel_data != plane_0)
 
     def test_03_07_load_raw(self):
         folder = "namesandtypes_03_07"
@@ -1916,9 +1900,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (34, 19))
-        self.assertTrue(numpy.all(pixel_data >= 0))
-        self.assertTrue(numpy.all(pixel_data <= 1.0 / 16.0))
+        assert pixel_data.shape == (34, 19)
+        assert numpy.all(pixel_data >= 0)
+        assert numpy.all(pixel_data <= 1.0 / 16.0)
 
     def test_03_08_load_mask(self):
         path = tests.modules.maybe_download_example_image(
@@ -1930,8 +1914,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, target.shape)
-        self.assertEqual(numpy.sum(~pixel_data), numpy.sum(target == 0))
+        assert pixel_data.shape == target.shape
+        assert numpy.sum(~pixel_data) == numpy.sum(target == 0)
 
     def test_03_09_load_objects(self):
         path = tests.modules.maybe_download_example_image(
@@ -1947,23 +1931,23 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         assert isinstance(o, cellprofiler.object.Objects)
         areas = o.areas
         counts = numpy.bincount(target.flatten())
-        self.assertEqual(areas[0], counts[1])
-        self.assertEqual(areas[1], counts[2])
-        self.assertEqual(areas[2], counts[3])
+        assert areas[0] == counts[1]
+        assert areas[1] == counts[2]
+        assert areas[2] == counts[3]
         m = workspace.measurements
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_MD5_DIGEST + "_" + OBJECTS_NAME,
-            ],
-            md5,
+            ]
+            == md5
         )
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_WIDTH + "_" + OBJECTS_NAME,
-            ],
-            target.shape[1],
+            ]
+            == target.shape[1]
         )
 
     def test_03_10_load_overlapped_objects(self):
@@ -1980,7 +1964,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             )
             o = workspace.object_set.get_objects(OBJECTS_NAME)
             assert isinstance(o, cellprofiler.object.Objects)
-            self.assertEqual(o.count, 2)
+            assert o.count == 2
             mask = numpy.zeros(overlapped_objects_data_masks[0].shape, bool)
             expected_mask = (
                 overlapped_objects_data_masks[0] | overlapped_objects_data_masks[1]
@@ -1988,9 +1972,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             for i in range(2):
                 expected = overlapped_objects_data_masks[i]
                 i, j = o.ijv[o.ijv[:, 2] == i + 1, :2].transpose()
-                self.assertTrue(numpy.all(expected[i, j]))
+                assert numpy.all(expected[i, j])
                 mask[i, j] = True
-            self.assertFalse(numpy.any(mask[~expected_mask]))
+            assert not numpy.any(mask[~expected_mask])
         finally:
             try:
                 os.unlink(path)
@@ -2017,20 +2001,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                     )
                     image = workspace.image_set.get_image(IMAGE_NAME)
                     pixel_data = image.pixel_data
-                    self.assertTrue(numpy.all(pixel_data >= 0))
+                    assert numpy.all(pixel_data >= 0)
                     if (
                         rescaled
                         == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA
                     ):
-                        self.assertTrue(numpy.any(pixel_data > 1.0 / 16.0))
+                        assert numpy.any(pixel_data > 1.0 / 16.0)
                     elif (
                         rescaled
                         == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
                     ):
-                        self.assertTrue(numpy.all(pixel_data <= 1.0 / 16.0))
-                        self.assertTrue(numpy.any(pixel_data > 1.0 / 32.0))
+                        assert numpy.all(pixel_data <= 1.0 / 16.0)
+                        assert numpy.any(pixel_data > 1.0 / 32.0)
                     else:
-                        self.assertTrue(numpy.all(pixel_data <= 1.0 / 32.0))
+                        assert numpy.all(pixel_data <= 1.0 / 32.0)
 
     def test_03_12_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image
@@ -2054,7 +2038,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         )
         image = workspace.image_set.get_image("lsi")
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, target.shape)
+        assert pixel_data.shape == target.shape
 
     def test_03_13_load_single_object(self):
         path = tests.modules.maybe_download_example_image(
@@ -2081,23 +2065,23 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         assert isinstance(o, cellprofiler.object.Objects)
         counts = numpy.bincount(target.flatten())
         areas = o.areas
-        self.assertEqual(areas[0], counts[1])
-        self.assertEqual(areas[1], counts[2])
-        self.assertEqual(areas[2], counts[3])
+        assert areas[0] == counts[1]
+        assert areas[1] == counts[2]
+        assert areas[2] == counts[3]
         m = workspace.measurements
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_MD5_DIGEST + "_lsi",
-            ],
-            md5,
+            ]
+            == md5
         )
-        self.assertEqual(
+        assert (
             m[
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.modules.loadimages.C_WIDTH + "_lsi",
-            ],
-            target.shape[1],
+            ]
+            == target.shape[1]
         )
 
     def test_04_01_get_measurement_columns(self):
@@ -2108,7 +2092,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             for m in p.modules()
             if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)
         ]
-        self.assertEqual(len(nts), 1)
+        assert len(nts) == 1
         m = nts[0]
         m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         m.add_assignment()
@@ -2132,13 +2116,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             cellprofiler.measurement.C_FRAME,
         ):
             mname = "_".join((ftr, IMAGE_NAME))
-            self.assertTrue(
-                any(
-                    [
-                        c[0] == cellprofiler.measurement.IMAGE and c[1] == mname
-                        for c in columns
-                    ]
-                )
+            assert any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE and c[1] == mname
+                    for c in columns
+                ]
             )
 
         for ftr in (
@@ -2153,22 +2135,18 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             cellprofiler.measurement.C_COUNT,
         ):
             mname = "_".join((ftr, OBJECTS_NAME))
-            self.assertTrue(
-                any(
-                    [
-                        c[0] == cellprofiler.measurement.IMAGE and c[1] == mname
-                        for c in columns
-                    ]
-                )
+            assert any(
+                [
+                    c[0] == cellprofiler.measurement.IMAGE and c[1] == mname
+                    for c in columns
+                ]
             )
 
         for mname in (
             cellprofiler.measurement.M_LOCATION_CENTER_X,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
         ):
-            self.assertTrue(
-                any([c[0] == OBJECTS_NAME and c[1] == mname for c in columns])
-            )
+            assert any([c[0] == OBJECTS_NAME and c[1] == mname for c in columns])
 
     def test_04_02_get_categories(self):
         p = cellprofiler.pipeline.Pipeline()
@@ -2178,34 +2156,34 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             for m in p.modules()
             if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)
         ]
-        self.assertEqual(len(nts), 1)
+        assert len(nts) == 1
         m = nts[0]
         m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         m.assignments[0].image_name.value = IMAGE_NAME
         categories = m.get_categories(p, cellprofiler.measurement.IMAGE)
-        self.assertFalse(cellprofiler.measurement.C_OBJECTS_FILE_NAME in categories)
-        self.assertFalse(cellprofiler.measurement.C_OBJECTS_PATH_NAME in categories)
-        self.assertFalse(cellprofiler.measurement.C_OBJECTS_URL in categories)
-        self.assertTrue(cellprofiler.measurement.C_FILE_NAME in categories)
-        self.assertTrue(cellprofiler.measurement.C_PATH_NAME in categories)
-        self.assertTrue(cellprofiler.measurement.C_URL in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_MD5_DIGEST in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_SCALING in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_WIDTH in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_HEIGHT in categories)
-        self.assertTrue(cellprofiler.measurement.C_SERIES in categories)
-        self.assertTrue(cellprofiler.measurement.C_FRAME in categories)
+        assert not (cellprofiler.measurement.C_OBJECTS_FILE_NAME in categories)
+        assert not (cellprofiler.measurement.C_OBJECTS_PATH_NAME in categories)
+        assert not (cellprofiler.measurement.C_OBJECTS_URL in categories)
+        assert cellprofiler.measurement.C_FILE_NAME in categories
+        assert cellprofiler.measurement.C_PATH_NAME in categories
+        assert cellprofiler.measurement.C_URL in categories
+        assert cellprofiler.modules.loadimages.C_MD5_DIGEST in categories
+        assert cellprofiler.modules.loadimages.C_SCALING in categories
+        assert cellprofiler.modules.loadimages.C_WIDTH in categories
+        assert cellprofiler.modules.loadimages.C_HEIGHT in categories
+        assert cellprofiler.measurement.C_SERIES in categories
+        assert cellprofiler.measurement.C_FRAME in categories
         m.add_assignment()
         m.assignments[
             1
         ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
         m.assignments[1].object_name.value = OBJECTS_NAME
         categories = m.get_categories(p, cellprofiler.measurement.IMAGE)
-        self.assertTrue(cellprofiler.measurement.C_OBJECTS_FILE_NAME in categories)
-        self.assertTrue(cellprofiler.measurement.C_OBJECTS_PATH_NAME in categories)
-        self.assertTrue(cellprofiler.measurement.C_OBJECTS_URL in categories)
+        assert cellprofiler.measurement.C_OBJECTS_FILE_NAME in categories
+        assert cellprofiler.measurement.C_OBJECTS_PATH_NAME in categories
+        assert cellprofiler.measurement.C_OBJECTS_URL in categories
         categories = m.get_categories(p, OBJECTS_NAME)
-        self.assertTrue(cellprofiler.measurement.C_LOCATION in categories)
+        assert cellprofiler.measurement.C_LOCATION in categories
 
     def test_04_03_get_measurements(self):
         p = cellprofiler.pipeline.Pipeline()
@@ -2215,7 +2193,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             for m in p.modules()
             if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)
         ]
-        self.assertEqual(len(nts), 1)
+        assert len(nts) == 1
         m = nts[0]
         m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         m.assignments[0].image_name.value = IMAGE_NAME
@@ -2230,8 +2208,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             cellprofiler.measurement.C_URL,
         ):
             mnames = m.get_measurements(p, cellprofiler.measurement.IMAGE, cname)
-            self.assertEqual(len(mnames), 1)
-            self.assertEqual(mnames[0], IMAGE_NAME)
+            assert len(mnames) == 1
+            assert mnames[0] == IMAGE_NAME
 
         for cname in (
             cellprofiler.measurement.C_OBJECTS_FILE_NAME,
@@ -2240,8 +2218,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             cellprofiler.measurement.C_COUNT,
         ):
             mnames = m.get_measurements(p, cellprofiler.measurement.IMAGE, cname)
-            self.assertEqual(len(mnames), 1)
-            self.assertEqual(mnames[0], OBJECTS_NAME)
+            assert len(mnames) == 1
+            assert mnames[0] == OBJECTS_NAME
 
         for cname in (
             cellprofiler.modules.loadimages.C_MD5_DIGEST,
@@ -2252,22 +2230,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             cellprofiler.measurement.C_FRAME,
         ):
             mnames = m.get_measurements(p, cellprofiler.measurement.IMAGE, cname)
-            self.assertEqual(len(mnames), 2)
-            self.assertTrue(all([x in mnames for x in (IMAGE_NAME, OBJECTS_NAME)]))
+            assert len(mnames) == 2
+            assert all([x in mnames for x in (IMAGE_NAME, OBJECTS_NAME)])
 
         mnames = m.get_measurements(
             p, OBJECTS_NAME, cellprofiler.measurement.C_LOCATION
         )
-        self.assertTrue(
-            all(
-                [
-                    x in mnames
-                    for x in (
-                        cellprofiler.measurement.FTR_CENTER_X,
-                        cellprofiler.measurement.FTR_CENTER_Y,
-                    )
-                ]
-            )
+        assert all(
+            [
+                x in mnames
+                for x in (
+                    cellprofiler.measurement.FTR_CENTER_X,
+                    cellprofiler.measurement.FTR_CENTER_Y,
+                )
+            ]
         )
 
     def test_05_01_validate_single_channel(self):
@@ -2303,13 +2279,13 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         image = workspace.image_set.get_image("imagename")
 
-        self.assertEqual(3, image.dimensions)
+        assert 3 == image.dimensions
 
-        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+        assert (9, 9, 9) == image.pixel_data.shape
 
-        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
+        assert (0.3 / 0.7, 1.0, 1.0) == image.spacing
 
-        self.assertTrue(image.pixel_data.dtype.kind == "f")
+        assert image.pixel_data.dtype.kind == "f"
 
     def test_load_color_volume(self):
         path = os.path.realpath(
@@ -2322,13 +2298,13 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         image = workspace.image_set.get_image("imagename")
 
-        self.assertEqual(3, image.dimensions)
+        assert 3 == image.dimensions
 
-        self.assertEqual((9, 9, 9, 3), image.pixel_data.shape)
+        assert (9, 9, 9, 3) == image.pixel_data.shape
 
-        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
+        assert (0.3 / 0.7, 1.0, 1.0) == image.spacing
 
-        self.assertTrue(image.pixel_data.dtype.kind == "f")
+        assert image.pixel_data.dtype.kind == "f"
 
     def test_load_binary_mask(self):
         path = os.path.realpath(
@@ -2341,13 +2317,13 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         image = workspace.image_set.get_image("imagename")
 
-        self.assertEqual(3, image.dimensions)
+        assert 3 == image.dimensions
 
-        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+        assert (9, 9, 9) == image.pixel_data.shape
 
-        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
+        assert (0.3 / 0.7, 1.0, 1.0) == image.spacing
 
-        self.assertTrue(image.pixel_data.dtype.kind == "b")
+        assert image.pixel_data.dtype.kind == "b"
 
     def test_load_illumination_function(self):
         path = os.path.realpath(
@@ -2360,10 +2336,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
 
         image = workspace.image_set.get_image("imagename")
 
-        self.assertEqual(3, image.dimensions)
+        assert 3 == image.dimensions
 
-        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+        assert (9, 9, 9) == image.pixel_data.shape
 
-        self.assertEqual((0.3 / 0.7, 1.0, 1.0), image.spacing)
+        assert (0.3 / 0.7, 1.0, 1.0) == image.spacing
 
-        self.assertTrue(image.pixel_data.dtype.kind == "f")
+        assert image.pixel_data.dtype.kind == "f"

@@ -99,17 +99,17 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, U.UnmixColors))
-        self.assertEqual(module.input_image_name, "Color")
-        self.assertEqual(module.stain_count.value, 13)
-        self.assertEqual(module.outputs[0].image_name, "Hematoxylin")
-        self.assertEqual(module.outputs[-1].image_name, "RedWine")
+        assert isinstance(module, U.UnmixColors)
+        assert module.input_image_name == "Color"
+        assert module.stain_count.value == 13
+        assert module.outputs[0].image_name == "Hematoxylin"
+        assert module.outputs[-1].image_name == "RedWine"
         for i, stain in enumerate(
             (
                 U.CHOICE_HEMATOXYLIN,
@@ -125,10 +125,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
                 U.CHOICE_PAS,
             )
         ):
-            self.assertEqual(module.outputs[i].stain_choice, stain)
-        self.assertAlmostEqual(module.outputs[-1].red_absorbance.value, 0.1)
-        self.assertAlmostEqual(module.outputs[-1].green_absorbance.value, 0.2)
-        self.assertAlmostEqual(module.outputs[-1].blue_absorbance.value, 0.3)
+            assert module.outputs[i].stain_choice == stain
+        assert round(abs(module.outputs[-1].red_absorbance.value - 0.1), 7) == 0
+        assert round(abs(module.outputs[-1].green_absorbance.value - 0.2), 7) == 0
+        assert round(abs(module.outputs[-1].blue_absorbance.value - 0.3), 7) == 0
 
     def make_workspace(self, pixels, choices):
         """Make a workspace for running UnmixColors
@@ -139,7 +139,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
 

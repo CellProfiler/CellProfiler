@@ -99,10 +99,9 @@ def testimages_url():
 
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
-        self.assertTrue(
-            example_images_directory(),
-            "You need to have the example images checked out to run these tests",
-        )
+        assert (
+            example_images_directory()
+        ), "You need to have the example images checked out to run these tests"
 
 
 def load_pipeline(test_case, encoded_data):
@@ -183,7 +182,11 @@ def make_12_bit_image(folder, filename, shape):
             is i, j, c or y, x, c
     """
     r = np.random.RandomState()
-    r.seed(np.frombuffer(hashlib.sha1("/".join([folder, filename]).encode()).digest(), np.uint8))
+    r.seed(
+        np.frombuffer(
+            hashlib.sha1("/".join([folder, filename]).encode()).digest(), np.uint8
+        )
+    )
     img = (r.uniform(size=shape) * 4095).astype(np.uint16)
     path = os.path.join(example_images_directory(), folder, filename)
     if not os.path.isdir(os.path.dirname(path)):
@@ -213,7 +216,9 @@ def make_12_bit_image(folder, filename, shape):
     ]
     ifds = sorted(
         ifds,
-        key=functools.cmp_to_key(lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())),
+        key=functools.cmp_to_key(
+            lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())
+        ),
     )
     old_end = offset + 2 + nentries * 12
     new_end = offset + 2 + len(ifds) * 12

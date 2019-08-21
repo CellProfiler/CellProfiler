@@ -60,7 +60,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.direction.value = F.E_HORIZONTAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.hsobel(image)))
+        assert np.all(output.pixel_data == FIL.hsobel(image))
 
     def test_02_02_sobel_vertical(self):
         """Test the Sobel vertical transform"""
@@ -71,7 +71,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.direction.value = F.E_VERTICAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.vsobel(image)))
+        assert np.all(output.pixel_data == FIL.vsobel(image))
 
     def test_02_03_sobel_all(self):
         """Test the Sobel transform"""
@@ -82,7 +82,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.direction.value = F.E_ALL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.sobel(image)))
+        assert np.all(output.pixel_data == FIL.sobel(image))
 
     def test_03_01_prewitt_horizontal(self):
         """Test the prewitt horizontal transform"""
@@ -93,7 +93,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.direction.value = F.E_HORIZONTAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.hprewitt(image)))
+        assert np.all(output.pixel_data == FIL.hprewitt(image))
 
     def test_03_02_prewitt_vertical(self):
         """Test the prewitt vertical transform"""
@@ -104,7 +104,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.direction.value = F.E_VERTICAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.vprewitt(image)))
+        assert np.all(output.pixel_data == FIL.vprewitt(image))
 
     def test_03_03_prewitt_all(self):
         """Test the prewitt transform"""
@@ -115,7 +115,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.direction.value = F.E_ALL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.prewitt(image)))
+        assert np.all(output.pixel_data == FIL.prewitt(image))
 
     def test_04_01_roberts(self):
         """Test the roberts transform"""
@@ -125,7 +125,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_ROBERTS
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.roberts(image)))
+        assert np.all(output.pixel_data == FIL.roberts(image))
 
     def test_05_01_log_automatic(self):
         """Test the laplacian of gaussian with automatic sigma"""
@@ -142,7 +142,7 @@ class TestEnhanceEdges(unittest.TestCase):
             image, np.ones(image.shape, bool), int(sigma * 4) + 1, sigma
         ).astype(np.float32)
 
-        self.assertTrue(np.all(output.pixel_data == expected))
+        assert np.all(output.pixel_data == expected)
 
     def test_05_02_log_manual(self):
         """Test the laplacian of gaussian with manual sigma"""
@@ -159,7 +159,7 @@ class TestEnhanceEdges(unittest.TestCase):
             image, np.ones(image.shape, bool), int(sigma * 4) + 1, sigma
         ).astype(np.float32)
 
-        self.assertTrue(np.all(output.pixel_data == expected))
+        assert np.all(output.pixel_data == expected)
 
     def test_06_01_canny(self):
         """Test the canny method"""
@@ -177,7 +177,7 @@ class TestEnhanceEdges(unittest.TestCase):
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         t1, t2 = otsu3(FIL.sobel(image))
         result = FIL.canny(image, np.ones(image.shape, bool), 1.0, t1, t2)
-        self.assertTrue(np.all(output.pixel_data == result))
+        assert np.all(output.pixel_data == result)
 
     def test_07_01_kirsch(self):
         r = np.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])

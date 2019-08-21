@@ -44,22 +44,22 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, C.CalculateStatistics))
-        self.assertEqual(module.grouping_values, "Metadata_Controls")
-        self.assertEqual(len(module.dose_values), 1)
+        assert isinstance(module, C.CalculateStatistics)
+        assert module.grouping_values == "Metadata_Controls"
+        assert len(module.dose_values) == 1
         dv = module.dose_values[0]
-        self.assertEqual(dv.measurement, "Metadata_SBS_Doses")
-        self.assertFalse(dv.log_transform)
-        self.assertTrue(dv.wants_save_figure)
-        self.assertEqual(dv.figure_name, "DoseResponsePlot")
-        self.assertEqual(dv.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertEqual(dv.pathname.custom_path, "Test")
+        assert dv.measurement == "Metadata_SBS_Doses"
+        assert not dv.log_transform
+        assert dv.wants_save_figure
+        assert dv.figure_name == "DoseResponsePlot"
+        assert dv.pathname.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert dv.pathname.custom_path == "Test"
 
     # def test_02_01_compare_to_matlab(self):
     #     expected = {
@@ -417,7 +417,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 if nimages is None:
                     nimages = len(odict[feature])
                 else:
-                    self.assertEqual(nimages, len(odict[feature]))
+                    assert nimages == len(odict[feature])
                 if object_name == cpmeas.IMAGE and feature in dose_measurements:
                     if len(module.dose_values) > 1:
                         module.add_dose_value()
@@ -456,11 +456,11 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         )
         module.post_run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
             feature = "_".join((category, INPUT_OBJECTS, TEST_FTR))
             value = m.get_experiment_measurement(feature)
-            self.assertFalse(np.isnan(value))
+            assert not np.isnan(value)
 
     def test_02_03_make_path(self):
         # regression test of issue #1478
@@ -494,7 +494,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             dose_group.pathname.custom_path = my_subdir
             dose_group.figure_name.value = FIGURE_NAME
             module.post_run(workspace)
-            self.assertTrue(os.path.isfile(fnpath))
+            assert os.path.isfile(fnpath)
         finally:
             if os.path.exists(fnpath):
                 os.remove(fnpath)

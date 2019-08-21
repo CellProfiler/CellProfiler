@@ -45,6 +45,7 @@ import cellprofiler.utilities.legacy
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.loadimages as LI
+import pytest
 
 np.random.seed(9804)
 
@@ -188,7 +189,7 @@ class TestExportToDatabase(unittest.TestCase):
     def get_sqlite_cursor(self, module):
         import sqlite3
 
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         file_name = os.path.join(
             module.directory.get_absolute_path(), module.sqlite_file.value
         )
@@ -201,7 +202,7 @@ class TestExportToDatabase(unittest.TestCase):
         # If this fails, you need to write a test for your variable revision
         # number change.
         #
-        self.assertEqual(E.ExportToDatabase.variable_revision_number, 27)
+        assert E.ExportToDatabase.variable_revision_number == 27
 
     def test_01_04_load_v11(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -246,18 +247,18 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
-        self.assertEqual(module.directory.dir_choice, DEFAULT_OUTPUT_SUBFOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
-        self.assertEqual(module.sql_file_prefix, "SQL_")
-        self.assertEqual(module.db_name, "DefaultDB")
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL_CSV
+        assert module.directory.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME
+        assert module.directory.custom_path == r"./\g<Plate>"
+        assert module.sql_file_prefix == "SQL_"
+        assert module.db_name == "DefaultDB"
 
     def test_01_05_load_v12(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -301,19 +302,19 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.directory.dir_choice, DEFAULT_OUTPUT_SUBFOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
-        self.assertEqual(module.sql_file_prefix, "SQL_")
-        self.assertEqual(module.db_name, "DefaultDB")
-        self.assertEqual(module.max_column_size, 64)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.directory.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME
+        assert module.directory.custom_path == r"./\g<Plate>"
+        assert module.sql_file_prefix == "SQL_"
+        assert module.db_name == "DefaultDB"
+        assert module.max_column_size == 64
 
     def test_01_06_load_v13(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -358,19 +359,19 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:13|
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.directory.dir_choice, DEFAULT_OUTPUT_SUBFOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, r"./\g<Plate>")
-        self.assertEqual(module.sql_file_prefix, "SQL_")
-        self.assertEqual(module.db_name, "DefaultDB")
-        self.assertEqual(module.max_column_size, 61)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.directory.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME
+        assert module.directory.custom_path == r"./\g<Plate>"
+        assert module.sql_file_prefix == "SQL_"
+        assert module.db_name == "DefaultDB"
+        assert module.max_column_size == 61
 
     def test_01_07_load_v15(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -403,35 +404,35 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL_CSV)
-        self.assertEqual(module.db_name, "Heel")
-        self.assertFalse(module.want_table_prefix)
-        self.assertEqual(module.table_prefix, "Ouch")
-        self.assertEqual(module.sql_file_prefix, "LQS_")
-        self.assertEqual(module.directory.dir_choice, ABSOLUTE_FOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, "//achilles/red/shoes")
-        self.assertFalse(module.save_cpa_properties)
-        self.assertEqual(module.db_host, "Zeus")
-        self.assertEqual(module.db_user, "Hera")
-        self.assertEqual(module.db_passwd, "Athena")
-        self.assertEqual(module.sqlite_file, "Poseidon")
-        self.assertTrue(module.wants_agg_mean)
-        self.assertFalse(module.wants_agg_median)
-        self.assertFalse(module.wants_agg_std_dev)
-        self.assertTrue(module.wants_agg_mean_well)
-        self.assertTrue(module.wants_agg_median_well)
-        self.assertFalse(module.wants_agg_std_dev_well)
-        self.assertEqual(module.objects_choice, E.O_ALL)
-        self.assertEqual(module.max_column_size, 62)
-        self.assertEqual(module.separate_object_tables, E.OT_PER_OBJECT)
-        self.assertFalse(module.wants_properties_image_url_prepend)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL_CSV
+        assert module.db_name == "Heel"
+        assert not module.want_table_prefix
+        assert module.table_prefix == "Ouch"
+        assert module.sql_file_prefix == "LQS_"
+        assert module.directory.dir_choice == ABSOLUTE_FOLDER_NAME
+        assert module.directory.custom_path == "//achilles/red/shoes"
+        assert not module.save_cpa_properties
+        assert module.db_host == "Zeus"
+        assert module.db_user == "Hera"
+        assert module.db_passwd == "Athena"
+        assert module.sqlite_file == "Poseidon"
+        assert module.wants_agg_mean
+        assert not module.wants_agg_median
+        assert not module.wants_agg_std_dev
+        assert module.wants_agg_mean_well
+        assert module.wants_agg_median_well
+        assert not module.wants_agg_std_dev_well
+        assert module.objects_choice == E.O_ALL
+        assert module.max_column_size == 62
+        assert module.separate_object_tables == E.OT_PER_OBJECT
+        assert not module.wants_properties_image_url_prepend
 
     def test_01_22_load_v22(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -512,49 +513,47 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_name, "Gamma")
-        self.assertTrue(module.want_table_prefix)
-        self.assertEqual(module.table_prefix, "Delta_")
-        self.assertEqual(module.sql_file_prefix, "Iota_")
-        self.assertEqual(module.experiment_name, "Sigma")
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertTrue(module.save_cpa_properties)
-        self.assertEqual(module.location_object, "Cells")
-        self.assertEqual(
-            module.properties_image_url_prepend, "http://server.university.edu"
-        )
-        self.assertEqual(module.properties_plate_type, "384")
-        self.assertEqual(module.properties_plate_metadata, "Plate")
-        self.assertEqual(module.properties_well_metadata, "Well")
-        self.assertFalse(module.properties_export_all_image_defaults)
-        self.assertTrue(module.properties_wants_groups)
-        self.assertTrue(module.properties_wants_filters)
-        self.assertTrue(module.create_filters_for_plates)
-        self.assertTrue(module.create_workspace_file)
-        self.assertEqual(len(module.image_groups), 2)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.db_name == "Gamma"
+        assert module.want_table_prefix
+        assert module.table_prefix == "Delta_"
+        assert module.sql_file_prefix == "Iota_"
+        assert module.experiment_name == "Sigma"
+        assert module.directory.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert module.save_cpa_properties
+        assert module.location_object == "Cells"
+        assert module.properties_image_url_prepend == "http://server.university.edu"
+        assert module.properties_plate_type == "384"
+        assert module.properties_plate_metadata == "Plate"
+        assert module.properties_well_metadata == "Well"
+        assert not module.properties_export_all_image_defaults
+        assert module.properties_wants_groups
+        assert module.properties_wants_filters
+        assert module.create_filters_for_plates
+        assert module.create_workspace_file
+        assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
             (module.image_groups[0], "DNA", "NucleicAcid", "green"),
             (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
-            self.assertFalse(image_group.wants_automatic_image_name)
-            self.assertEqual(image_group.image_cols, input_image_name)
-            self.assertEqual(image_group.image_name, output_image_name)
-            self.assertEqual(image_group.image_channel_colors, color)
+            assert not image_group.wants_automatic_image_name
+            assert image_group.image_cols == input_image_name
+            assert image_group.image_name == output_image_name
+            assert image_group.image_channel_colors == color
 
-        self.assertEqual(len(module.group_field_groups), 1)
+        assert len(module.group_field_groups) == 1
         g = module.group_field_groups[0]
-        self.assertEqual(g.group_name, "WellGroup")
-        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+        assert g.group_name == "WellGroup"
+        assert g.group_statement == "Image_Metadata_Plate, Image_Metadata_Well"
 
-        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        assert len(module.workspace_measurement_groups) == 2
         for (
             g,
             measurement_display,
@@ -592,20 +591,20 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 "ImageNumber",
             ),
         ):
-            self.assertEqual(g.measurement_display, measurement_display)
-            self.assertEqual(g.x_measurement_type, x_measurement_type)
-            self.assertEqual(g.x_object_name, x_object_name)
-            self.assertEqual(g.x_measurement_name, x_measurement_name)
-            self.assertEqual(g.x_index_name, x_index_name)
-            self.assertEqual(g.y_measurement_type, y_measurement_type)
-            self.assertEqual(g.y_object_name, y_object_name)
-            self.assertEqual(g.y_measurement_name, y_measurement_name)
-            self.assertEqual(g.y_index_name, y_index_name)
+            assert g.measurement_display == measurement_display
+            assert g.x_measurement_type == x_measurement_type
+            assert g.x_object_name == x_object_name
+            assert g.x_measurement_name == x_measurement_name
+            assert g.x_index_name == x_index_name
+            assert g.y_measurement_type == y_measurement_type
+            assert g.y_object_name == y_object_name
+            assert g.y_measurement_name == y_measurement_name
+            assert g.y_index_name == y_index_name
 
-        self.assertEqual(len(module.filter_field_groups), 1)
+        assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
-        self.assertEqual(g.filter_name, "Site1Filter")
-        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
+        assert g.filter_name == "Site1Filter"
+        assert g.filter_statement == "Image_Metadata_Plate = '1'"
 
     def test_01_23_load_v23(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -687,51 +686,49 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:23
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_name, "Gamma")
-        self.assertTrue(module.want_table_prefix)
-        self.assertEqual(module.table_prefix, "Delta_")
-        self.assertEqual(module.sql_file_prefix, "Iota_")
-        self.assertEqual(module.experiment_name, "Sigma")
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertTrue(module.save_cpa_properties)
-        self.assertEqual(module.location_object, "Cells")
-        self.assertEqual(
-            module.properties_image_url_prepend, "http://server.university.edu"
-        )
-        self.assertEqual(module.properties_plate_type, "384")
-        self.assertEqual(module.properties_plate_metadata, "Plate")
-        self.assertEqual(module.properties_well_metadata, "Well")
-        self.assertFalse(module.properties_export_all_image_defaults)
-        self.assertTrue(module.properties_wants_groups)
-        self.assertTrue(module.properties_wants_filters)
-        self.assertTrue(module.create_filters_for_plates)
-        self.assertTrue(module.create_workspace_file)
-        self.assertEqual(module.properties_class_table_name, "Hoopla")
-        self.assertFalse(module.wants_relationship_table)
-        self.assertEqual(len(module.image_groups), 2)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.db_name == "Gamma"
+        assert module.want_table_prefix
+        assert module.table_prefix == "Delta_"
+        assert module.sql_file_prefix == "Iota_"
+        assert module.experiment_name == "Sigma"
+        assert module.directory.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert module.save_cpa_properties
+        assert module.location_object == "Cells"
+        assert module.properties_image_url_prepend == "http://server.university.edu"
+        assert module.properties_plate_type == "384"
+        assert module.properties_plate_metadata == "Plate"
+        assert module.properties_well_metadata == "Well"
+        assert not module.properties_export_all_image_defaults
+        assert module.properties_wants_groups
+        assert module.properties_wants_filters
+        assert module.create_filters_for_plates
+        assert module.create_workspace_file
+        assert module.properties_class_table_name == "Hoopla"
+        assert not module.wants_relationship_table
+        assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
             (module.image_groups[0], "DNA", "NucleicAcid", "green"),
             (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
-            self.assertFalse(image_group.wants_automatic_image_name)
-            self.assertEqual(image_group.image_cols, input_image_name)
-            self.assertEqual(image_group.image_name, output_image_name)
-            self.assertEqual(image_group.image_channel_colors, color)
+            assert not image_group.wants_automatic_image_name
+            assert image_group.image_cols == input_image_name
+            assert image_group.image_name == output_image_name
+            assert image_group.image_channel_colors == color
 
-        self.assertEqual(len(module.group_field_groups), 1)
+        assert len(module.group_field_groups) == 1
         g = module.group_field_groups[0]
-        self.assertEqual(g.group_name, "WellGroup")
-        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+        assert g.group_name == "WellGroup"
+        assert g.group_statement == "Image_Metadata_Plate, Image_Metadata_Well"
 
-        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        assert len(module.workspace_measurement_groups) == 2
         for (
             g,
             measurement_display,
@@ -769,20 +766,20 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:23
                 "ImageNumber",
             ),
         ):
-            self.assertEqual(g.measurement_display, measurement_display)
-            self.assertEqual(g.x_measurement_type, x_measurement_type)
-            self.assertEqual(g.x_object_name, x_object_name)
-            self.assertEqual(g.x_measurement_name, x_measurement_name)
-            self.assertEqual(g.x_index_name, x_index_name)
-            self.assertEqual(g.y_measurement_type, y_measurement_type)
-            self.assertEqual(g.y_object_name, y_object_name)
-            self.assertEqual(g.y_measurement_name, y_measurement_name)
-            self.assertEqual(g.y_index_name, y_index_name)
+            assert g.measurement_display == measurement_display
+            assert g.x_measurement_type == x_measurement_type
+            assert g.x_object_name == x_object_name
+            assert g.x_measurement_name == x_measurement_name
+            assert g.x_index_name == x_index_name
+            assert g.y_measurement_type == y_measurement_type
+            assert g.y_object_name == y_object_name
+            assert g.y_measurement_name == y_measurement_name
+            assert g.y_index_name == y_index_name
 
-        self.assertEqual(len(module.filter_field_groups), 1)
+        assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
-        self.assertEqual(g.filter_name, "Site1Filter")
-        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
+        assert g.filter_name == "Site1Filter"
+        assert g.filter_statement == "Image_Metadata_Plate = '1'"
 
     def test_01_24_load_v24(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -865,51 +862,49 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:24
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_name, "Gamma")
-        self.assertTrue(module.want_table_prefix)
-        self.assertEqual(module.table_prefix, "Delta_")
-        self.assertEqual(module.sql_file_prefix, "Iota_")
-        self.assertEqual(module.experiment_name, "Sigma")
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertTrue(module.save_cpa_properties)
-        self.assertEqual(module.location_object, "Cells")
-        self.assertEqual(
-            module.properties_image_url_prepend, "http://server.university.edu"
-        )
-        self.assertEqual(module.properties_plate_type, "384")
-        self.assertEqual(module.properties_plate_metadata, "Plate")
-        self.assertEqual(module.properties_well_metadata, "Well")
-        self.assertFalse(module.properties_export_all_image_defaults)
-        self.assertTrue(module.properties_wants_groups)
-        self.assertTrue(module.properties_wants_filters)
-        self.assertTrue(module.create_filters_for_plates)
-        self.assertTrue(module.create_workspace_file)
-        self.assertEqual(module.properties_class_table_name, "Hoopla")
-        self.assertTrue(module.wants_relationship_table)
-        self.assertEqual(len(module.image_groups), 2)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.db_name == "Gamma"
+        assert module.want_table_prefix
+        assert module.table_prefix == "Delta_"
+        assert module.sql_file_prefix == "Iota_"
+        assert module.experiment_name == "Sigma"
+        assert module.directory.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert module.save_cpa_properties
+        assert module.location_object == "Cells"
+        assert module.properties_image_url_prepend == "http://server.university.edu"
+        assert module.properties_plate_type == "384"
+        assert module.properties_plate_metadata == "Plate"
+        assert module.properties_well_metadata == "Well"
+        assert not module.properties_export_all_image_defaults
+        assert module.properties_wants_groups
+        assert module.properties_wants_filters
+        assert module.create_filters_for_plates
+        assert module.create_workspace_file
+        assert module.properties_class_table_name == "Hoopla"
+        assert module.wants_relationship_table
+        assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
             (module.image_groups[0], "DNA", "NucleicAcid", "green"),
             (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
-            self.assertFalse(image_group.wants_automatic_image_name)
-            self.assertEqual(image_group.image_cols, input_image_name)
-            self.assertEqual(image_group.image_name, output_image_name)
-            self.assertEqual(image_group.image_channel_colors, color)
+            assert not image_group.wants_automatic_image_name
+            assert image_group.image_cols == input_image_name
+            assert image_group.image_name == output_image_name
+            assert image_group.image_channel_colors == color
 
-        self.assertEqual(len(module.group_field_groups), 1)
+        assert len(module.group_field_groups) == 1
         g = module.group_field_groups[0]
-        self.assertEqual(g.group_name, "WellGroup")
-        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+        assert g.group_name == "WellGroup"
+        assert g.group_statement == "Image_Metadata_Plate, Image_Metadata_Well"
 
-        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        assert len(module.workspace_measurement_groups) == 2
         for (
             g,
             measurement_display,
@@ -947,21 +942,21 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:24
                 "ImageNumber",
             ),
         ):
-            self.assertEqual(g.measurement_display, measurement_display)
-            self.assertEqual(g.x_measurement_type, x_measurement_type)
-            self.assertEqual(g.x_object_name, x_object_name)
-            self.assertEqual(g.x_measurement_name, x_measurement_name)
-            self.assertEqual(g.x_index_name, x_index_name)
-            self.assertEqual(g.y_measurement_type, y_measurement_type)
-            self.assertEqual(g.y_object_name, y_object_name)
-            self.assertEqual(g.y_measurement_name, y_measurement_name)
-            self.assertEqual(g.y_index_name, y_index_name)
+            assert g.measurement_display == measurement_display
+            assert g.x_measurement_type == x_measurement_type
+            assert g.x_object_name == x_object_name
+            assert g.x_measurement_name == x_measurement_name
+            assert g.x_index_name == x_index_name
+            assert g.y_measurement_type == y_measurement_type
+            assert g.y_object_name == y_object_name
+            assert g.y_measurement_name == y_measurement_name
+            assert g.y_index_name == y_index_name
 
-        self.assertEqual(len(module.filter_field_groups), 1)
+        assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
-        self.assertEqual(g.filter_name, "Site1Filter")
-        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
-        self.assertEqual(module.allow_overwrite, E.OVERWRITE_DATA)
+        assert g.filter_name == "Site1Filter"
+        assert g.filter_statement == "Image_Metadata_Plate = '1'"
+        assert module.allow_overwrite == E.OVERWRITE_DATA
 
     def test_01_25_load_v25(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1045,52 +1040,50 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_name, "Gamma")
-        self.assertTrue(module.want_table_prefix)
-        self.assertEqual(module.table_prefix, "Delta_")
-        self.assertEqual(module.sql_file_prefix, "Iota_")
-        self.assertEqual(module.experiment_name, "Sigma")
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertTrue(module.save_cpa_properties)
-        self.assertEqual(module.location_object, "Cells")
-        self.assertTrue(module.wants_properties_image_url_prepend)
-        self.assertEqual(
-            module.properties_image_url_prepend, "http://server.university.edu"
-        )
-        self.assertEqual(module.properties_plate_type, "384")
-        self.assertEqual(module.properties_plate_metadata, "Plate")
-        self.assertEqual(module.properties_well_metadata, "Well")
-        self.assertFalse(module.properties_export_all_image_defaults)
-        self.assertTrue(module.properties_wants_groups)
-        self.assertTrue(module.properties_wants_filters)
-        self.assertTrue(module.create_filters_for_plates)
-        self.assertTrue(module.create_workspace_file)
-        self.assertEqual(module.properties_class_table_name, "Hoopla")
-        self.assertTrue(module.wants_relationship_table)
-        self.assertEqual(len(module.image_groups), 2)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.db_name == "Gamma"
+        assert module.want_table_prefix
+        assert module.table_prefix == "Delta_"
+        assert module.sql_file_prefix == "Iota_"
+        assert module.experiment_name == "Sigma"
+        assert module.directory.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert module.save_cpa_properties
+        assert module.location_object == "Cells"
+        assert module.wants_properties_image_url_prepend
+        assert module.properties_image_url_prepend == "http://server.university.edu"
+        assert module.properties_plate_type == "384"
+        assert module.properties_plate_metadata == "Plate"
+        assert module.properties_well_metadata == "Well"
+        assert not module.properties_export_all_image_defaults
+        assert module.properties_wants_groups
+        assert module.properties_wants_filters
+        assert module.create_filters_for_plates
+        assert module.create_workspace_file
+        assert module.properties_class_table_name == "Hoopla"
+        assert module.wants_relationship_table
+        assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
             (module.image_groups[0], "DNA", "NucleicAcid", "green"),
             (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
-            self.assertFalse(image_group.wants_automatic_image_name)
-            self.assertEqual(image_group.image_cols, input_image_name)
-            self.assertEqual(image_group.image_name, output_image_name)
-            self.assertEqual(image_group.image_channel_colors, color)
+            assert not image_group.wants_automatic_image_name
+            assert image_group.image_cols == input_image_name
+            assert image_group.image_name == output_image_name
+            assert image_group.image_channel_colors == color
 
-        self.assertEqual(len(module.group_field_groups), 1)
+        assert len(module.group_field_groups) == 1
         g = module.group_field_groups[0]
-        self.assertEqual(g.group_name, "WellGroup")
-        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+        assert g.group_name == "WellGroup"
+        assert g.group_statement == "Image_Metadata_Plate, Image_Metadata_Well"
 
-        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        assert len(module.workspace_measurement_groups) == 2
         for (
             g,
             measurement_display,
@@ -1128,21 +1121,21 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
                 "ImageNumber",
             ),
         ):
-            self.assertEqual(g.measurement_display, measurement_display)
-            self.assertEqual(g.x_measurement_type, x_measurement_type)
-            self.assertEqual(g.x_object_name, x_object_name)
-            self.assertEqual(g.x_measurement_name, x_measurement_name)
-            self.assertEqual(g.x_index_name, x_index_name)
-            self.assertEqual(g.y_measurement_type, y_measurement_type)
-            self.assertEqual(g.y_object_name, y_object_name)
-            self.assertEqual(g.y_measurement_name, y_measurement_name)
-            self.assertEqual(g.y_index_name, y_index_name)
+            assert g.measurement_display == measurement_display
+            assert g.x_measurement_type == x_measurement_type
+            assert g.x_object_name == x_object_name
+            assert g.x_measurement_name == x_measurement_name
+            assert g.x_index_name == x_index_name
+            assert g.y_measurement_type == y_measurement_type
+            assert g.y_object_name == y_object_name
+            assert g.y_measurement_name == y_measurement_name
+            assert g.y_index_name == y_index_name
 
-        self.assertEqual(len(module.filter_field_groups), 1)
+        assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
-        self.assertEqual(g.filter_name, "Site1Filter")
-        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
-        self.assertEqual(module.allow_overwrite, E.OVERWRITE_NEVER)
+        assert g.filter_name == "Site1Filter"
+        assert g.filter_statement == "Image_Metadata_Plate = '1'"
+        assert module.allow_overwrite == E.OVERWRITE_NEVER
 
     def test_01_26_load_v26(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1231,53 +1224,51 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertEqual(module.db_type, E.DB_MYSQL)
-        self.assertEqual(module.db_name, "Gamma")
-        self.assertTrue(module.want_table_prefix)
-        self.assertEqual(module.table_prefix, "Delta_")
-        self.assertEqual(module.sql_file_prefix, "Iota_")
-        self.assertEqual(module.experiment_name, "Sigma")
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertTrue(module.save_cpa_properties)
-        self.assertEqual(module.location_object, "Cells")
-        self.assertFalse(module.wants_properties_image_url_prepend)
-        self.assertEqual(
-            module.properties_image_url_prepend, "http://server.university.edu"
-        )
-        self.assertEqual(module.properties_plate_type, "384")
-        self.assertEqual(module.properties_plate_metadata, "Plate")
-        self.assertEqual(module.properties_well_metadata, "Well")
-        self.assertFalse(module.properties_export_all_image_defaults)
-        self.assertTrue(module.properties_wants_groups)
-        self.assertTrue(module.properties_wants_filters)
-        self.assertTrue(module.create_filters_for_plates)
-        self.assertTrue(module.create_workspace_file)
-        self.assertEqual(module.properties_class_table_name, "Hoopla")
-        self.assertTrue(module.wants_relationship_table)
-        self.assertEqual(module.properties_classification_type, E.CT_OBJECT)
-        self.assertEqual(len(module.image_groups), 2)
+        assert isinstance(module, E.ExportToDatabase)
+        assert module.db_type == E.DB_MYSQL
+        assert module.db_name == "Gamma"
+        assert module.want_table_prefix
+        assert module.table_prefix == "Delta_"
+        assert module.sql_file_prefix == "Iota_"
+        assert module.experiment_name == "Sigma"
+        assert module.directory.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+        assert module.save_cpa_properties
+        assert module.location_object == "Cells"
+        assert not module.wants_properties_image_url_prepend
+        assert module.properties_image_url_prepend == "http://server.university.edu"
+        assert module.properties_plate_type == "384"
+        assert module.properties_plate_metadata == "Plate"
+        assert module.properties_well_metadata == "Well"
+        assert not module.properties_export_all_image_defaults
+        assert module.properties_wants_groups
+        assert module.properties_wants_filters
+        assert module.create_filters_for_plates
+        assert module.create_workspace_file
+        assert module.properties_class_table_name == "Hoopla"
+        assert module.wants_relationship_table
+        assert module.properties_classification_type == E.CT_OBJECT
+        assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
             (module.image_groups[0], "DNA", "NucleicAcid", "green"),
             (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
-            self.assertFalse(image_group.wants_automatic_image_name)
-            self.assertEqual(image_group.image_cols, input_image_name)
-            self.assertEqual(image_group.image_name, output_image_name)
-            self.assertEqual(image_group.image_channel_colors, color)
+            assert not image_group.wants_automatic_image_name
+            assert image_group.image_cols == input_image_name
+            assert image_group.image_name == output_image_name
+            assert image_group.image_channel_colors == color
 
-        self.assertEqual(len(module.group_field_groups), 1)
+        assert len(module.group_field_groups) == 1
         g = module.group_field_groups[0]
-        self.assertEqual(g.group_name, "WellGroup")
-        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+        assert g.group_name == "WellGroup"
+        assert g.group_statement == "Image_Metadata_Plate, Image_Metadata_Well"
 
-        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        assert len(module.workspace_measurement_groups) == 2
         for (
             g,
             measurement_display,
@@ -1315,21 +1306,21 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "ImageNumber",
             ),
         ):
-            self.assertEqual(g.measurement_display, measurement_display)
-            self.assertEqual(g.x_measurement_type, x_measurement_type)
-            self.assertEqual(g.x_object_name, x_object_name)
-            self.assertEqual(g.x_measurement_name, x_measurement_name)
-            self.assertEqual(g.x_index_name, x_index_name)
-            self.assertEqual(g.y_measurement_type, y_measurement_type)
-            self.assertEqual(g.y_object_name, y_object_name)
-            self.assertEqual(g.y_measurement_name, y_measurement_name)
-            self.assertEqual(g.y_index_name, y_index_name)
+            assert g.measurement_display == measurement_display
+            assert g.x_measurement_type == x_measurement_type
+            assert g.x_object_name == x_object_name
+            assert g.x_measurement_name == x_measurement_name
+            assert g.x_index_name == x_index_name
+            assert g.y_measurement_type == y_measurement_type
+            assert g.y_object_name == y_object_name
+            assert g.y_measurement_name == y_measurement_name
+            assert g.y_index_name == y_index_name
 
-        self.assertEqual(len(module.filter_field_groups), 1)
+        assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
-        self.assertEqual(g.filter_name, "Site1Filter")
-        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
-        self.assertEqual(module.allow_overwrite, E.OVERWRITE_NEVER)
+        assert g.filter_name == "Site1Filter"
+        assert g.filter_statement == "Image_Metadata_Plate = '1'"
+        assert module.allow_overwrite == E.OVERWRITE_NEVER
 
     def test_01_27_load_v27(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1404,10 +1395,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         pipeline.load(StringIO(data))
         module = pipeline.modules()[0]
         assert isinstance(module, E.ExportToDatabase)
-        self.assertEqual(module.properties_classification_type, E.CT_IMAGE)
-        self.assertEqual(len(module.workspace_measurement_groups), 1)
+        assert module.properties_classification_type == E.CT_IMAGE
+        assert len(module.workspace_measurement_groups) == 1
         g = module.workspace_measurement_groups[0]
-        self.assertEqual(g.y_object_name, "MyObjects")
+        assert g.y_object_name == "MyObjects"
 
     RTEST_NONE = 0
     RTEST_SOME = 1
@@ -1663,7 +1654,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         pipeline = cpp.Pipeline()
 
         def callback_handler(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback_handler)
         pipeline.add_module(test_module)
@@ -1703,7 +1694,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
     def load_database(self, output_dir, module, image_set_count=1):
         """Load a database written by DB_MYSQL_CSV"""
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         curdir = os.path.abspath(os.curdir)
         os.chdir(output_dir)
         try:
@@ -1720,7 +1711,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
                 object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
+                assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -1736,7 +1727,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         for t in (E.T_RELATIONSHIPS, E.V_RELATIONSHIPS):
             statement = "select count('x') from %s" % module.get_table_name(t)
             cursor.execute(statement)
-            self.assertEqual(cursor.fetchall()[0][0], 0)
+            assert cursor.fetchall()[0][0] == 0
 
     def tteesstt_relate(self, measurements, module, cursor):
         v_name = module.get_table_name(E.V_RELATIONSHIPS)
@@ -1766,7 +1757,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module_num, relationship, object_name1, object_name2
             ):
                 cursor.execute(statement % (object_name1, object_name2, i1, o1, i2, o2))
-                self.assertEqual(cursor.fetchall()[0][0], 1)
+                assert cursor.fetchall()[0][0] == 1
 
     def drop_tables(self, module, table_suffixes=None):
         """Drop all tables and views  that match the prefix"""
@@ -1780,7 +1771,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 ) % (info_table, module.db_name.value, module.table_prefix.value)
                 cursor.execute(statement)
                 for (table_name,) in cursor.fetchall():
-                    self.assertTrue(table_name.startswith(module.table_prefix.value))
+                    assert table_name.startswith(module.table_prefix.value)
                     statement = "drop %s %s.%s" % (
                         thing,
                         module.db_name.value,
@@ -1807,7 +1798,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_02_01_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -1835,13 +1826,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -1850,22 +1842,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Make sure no relationships tables were created.
             #
-            self.assertFalse(module.wants_relationship_table)
+            assert not module.wants_relationship_table
             for t in (E.T_RELATIONSHIPS, E.T_RELATIONSHIP_TYPES):
                 statement = "select count('x') from INFORMATION_SCHEMA.TABLES "
                 statement += "where table_schema=%s and table_name=%s"
                 self.cursor.execute(
                     statement, (module.db_name.value, module.get_table_name(t))
                 )
-                self.assertEqual(self.cursor.fetchall()[0][0], 0)
+                assert self.cursor.fetchall()[0][0] == 0
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -1874,7 +1867,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_02_015_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -1894,7 +1887,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename), "Can't find %s" % filename)
+                assert os.path.isfile(filename), "Can't find %s" % filename
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -1920,13 +1913,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -1941,12 +1935,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertEqual(row[3], i + 1)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert row[3] == i + 1
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -1955,7 +1950,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_02_016_write_mysql_db_dont_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -1973,7 +1968,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename), "No such file: " + filename)
+                assert os.path.isfile(filename), "No such file: " + filename
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -2001,14 +1996,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], len(ALTOBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == len(ALTOBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
                 "%s_%s, %s_%s "
@@ -2028,21 +2024,22 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 6)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value, 4)
-                self.assertEqual(row[3], i + 1)
-                self.assertAlmostEqual(row[4], ALTOBJ_VALUE[i], 4)
-                self.assertEqual(row[5], i + 1)
+                assert len(row) == 6
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 4) == 0
+                assert row[3] == i + 1
+                assert round(abs(row[4] - ALTOBJ_VALUE[i]), 4) == 0
+                assert row[5] == i + 1
             for i in range(len(OBJ_VALUE), len(ALTOBJ_VALUE)):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 6)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[4], ALTOBJ_VALUE[i], 4)
-                self.assertEqual(row[5], i + 1)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 6
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[4] - ALTOBJ_VALUE[i]), 4) == 0
+                assert row[5] == i + 1
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2052,7 +2049,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -2081,15 +2078,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 7)
-            self.assertEqual(row[0], 1)
-            self.assertEqual(row[1], 1)
-            self.assertEqual(row[2], 1)
-            self.assertAlmostEqual(row[3], INT_VALUE)
-            self.assertAlmostEqual(row[4], FLOAT_VALUE)
-            self.assertEqual(row[5], STRING_VALUE)
-            self.assertEqual(row[6], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 7
+            assert row[0] == 1
+            assert row[1] == 1
+            assert row[2] == 1
+            assert round(abs(row[3] - INT_VALUE), 7) == 0
+            assert round(abs(row[4] - FLOAT_VALUE), 7) == 0
+            assert row[5] == STRING_VALUE
+            assert row[6] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2098,11 +2096,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2110,7 +2109,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -2149,15 +2148,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 7)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertAlmostEqual(row[6], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 7
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            assert round(abs(row[6] - np.mean(OBJ_VALUE)), 4) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2171,12 +2171,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2189,7 +2190,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             True, long_measurement=True
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -2231,15 +2232,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 7)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE, 4)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertAlmostEqual(row[6], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 7
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 4) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            assert round(abs(row[6] - np.mean(OBJ_VALUE)), 4) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2253,12 +2255,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2276,7 +2279,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         om[0] = np.NaN
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -2294,7 +2297,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
+                assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -2323,14 +2326,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertTrue(row[2] is None)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertAlmostEqual(row[5], np.mean(om[~np.isnan(om)]))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert row[2] is None
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert round(abs(row[5] - np.mean(om[~np.isnan(om)])), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2339,14 +2343,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
                 if i == 0:
-                    self.assertTrue(row[2] is None)
+                    assert row[2] is None
                 else:
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2365,7 +2370,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         om[0] = np.inf
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -2383,7 +2388,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             object_file = "%s_%s.CSV" % (base_name, cpmeas.OBJECT)
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
+                assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -2412,15 +2417,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertTrue(row[2] is None)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert row[2] is None
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
             mask = ~(np.isnan(om) | np.isinf(om))
-            self.assertAlmostEqual(row[5], np.mean(om[mask]))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert round(abs(row[5] - np.mean(om[mask])), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2429,14 +2435,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
                 if i == 0:
-                    self.assertTrue(row[2] is None)
+                    assert row[2] is None
                 else:
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2455,7 +2462,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         om[0] = np.NaN
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -2485,14 +2492,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertTrue(row[2] is None)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertAlmostEqual(row[5], np.mean(om[np.isfinite(om)]))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert row[2] is None
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert round(abs(row[5] - np.mean(om[np.isfinite(om)])), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2501,11 +2509,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertTrue(row[2] is None or i != 0)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert row[2] is None or i != 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2513,7 +2522,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write to MySQL, even if illegal characters are in the column name"""
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -2548,14 +2557,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2569,12 +2579,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2582,7 +2593,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -2598,8 +2609,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             long_img_column = mappings["Image_%s" % LONG_IMG_MEASUREMENT]
             long_obj_column = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
-            self.assertTrue(len(long_img_column) <= 50)
-            self.assertTrue(len(long_obj_column) <= 50)
+            assert len(long_img_column) <= 50
+            assert len(long_obj_column) <= 50
             #
             # Now read the image file from the database
             #
@@ -2619,14 +2630,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2640,12 +2652,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2657,10 +2670,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """
         backslash_string = "\\Why worry?"
         workspace, module = self.make_workspace(False)
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         module.objects_choice.value = E.O_NONE
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
         try:
             module.prepare_run(workspace)
@@ -2672,9 +2685,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 1)
-            self.assertEqual(row[0], backslash_string)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 1
+            assert row[0] == backslash_string
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Experiment"))
 
@@ -2682,7 +2696,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False, image_set_count=2)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -2711,15 +2725,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(2):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 7)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], 1)
-                self.assertEqual(row[2], i + 1)
-                self.assertAlmostEqual(row[3], INT_VALUE)
-                self.assertAlmostEqual(row[4], FLOAT_VALUE)
-                self.assertEqual(row[5], STRING_VALUE)
-                self.assertEqual(row[6], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 7
+                assert row[0] == i + 1
+                assert row[1] == 1
+                assert row[2] == i + 1
+                assert round(abs(row[3] - INT_VALUE), 7) == 0
+                assert round(abs(row[4] - FLOAT_VALUE), 7) == 0
+                assert row[5] == STRING_VALUE
+                assert row[6] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -2729,11 +2744,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], j + 1)
-                    self.assertEqual(row[1], i + 1)
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == j + 1
+                    assert row[1] == i + 1
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -2745,7 +2761,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """
 
         def interaction_handler(*args, **vargs):
-            self.assertTrue(len(args) > 0)
+            assert len(args) > 0
             result = args[0].handle_interaction(*args[1:], **vargs)
             ran_interaction_handler[0] = True
             return result
@@ -2764,7 +2780,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor = None
             connection = None
             try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                assert isinstance(module, E.ExportToDatabase)
                 module.db_type.value = E.DB_SQLITE
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
@@ -2776,7 +2792,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.prepare_run(workspace)
                 module.prepare_group(workspace, {}, [1])
                 module.run(workspace)
-                self.assertEqual(with_interaction_handler, ran_interaction_handler[0])
+                assert with_interaction_handler == ran_interaction_handler[0]
                 cursor, connection = self.get_sqlite_cursor(module)
                 self.check_experiment_table(cursor, module, workspace.measurements)
                 #
@@ -2796,13 +2812,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 )
                 cursor.execute(statement)
                 row = cursor.fetchone()
-                self.assertEqual(len(row), 5)
-                self.assertEqual(row[0], 1)
-                self.assertAlmostEqual(row[1], INT_VALUE)
-                self.assertAlmostEqual(row[2], FLOAT_VALUE)
-                self.assertEqual(row[3], STRING_VALUE)
-                self.assertEqual(row[4], len(OBJ_VALUE))
-                self.assertRaises(StopIteration, cursor.__next__)
+                assert len(row) == 5
+                assert row[0] == 1
+                assert round(abs(row[1] - INT_VALUE), 7) == 0
+                assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+                assert row[3] == STRING_VALUE
+                assert row[4] == len(OBJ_VALUE)
+                with pytest.raises(StopIteration):
+                    cursor.__next__()
                 statement = (
                     "select ImageNumber, ObjectNumber, %s_%s "
                     "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -2811,11 +2828,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 cursor.execute(statement)
                 for i, value in enumerate(OBJ_VALUE):
                     row = cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], 1)
-                    self.assertEqual(row[1], i + 1)
-                    self.assertAlmostEqual(row[2], value)
-                self.assertRaises(StopIteration, cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == 1
+                    assert row[1] == i + 1
+                    assert round(abs(row[2] - value), 7) == 0
+                with pytest.raises(StopIteration):
+                    cursor.__next__()
             finally:
                 if cursor is not None:
                     cursor.close()
@@ -2836,7 +2854,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         cursor = None
         connection = None
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -2858,9 +2876,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             cursor.execute(statement)
             row = cursor.fetchone()
-            self.assertEqual(len(row), 1)
-            self.assertEqual(row[0], backslash_string)
-            self.assertRaises(StopIteration, cursor.__next__)
+            assert len(row) == 1
+            assert row[0] == backslash_string
+            with pytest.raises(StopIteration):
+                cursor.__next__()
         finally:
             if cursor is not None:
                 cursor.close()
@@ -2892,7 +2911,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         cursor = None
         connection = None
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -2922,13 +2941,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             cursor.execute(statement)
             row = cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2937,11 +2957,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                cursor.__next__()
         finally:
             if cursor is not None:
                 cursor.close()
@@ -2960,7 +2981,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         cursor = None
         connection = None
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.allow_overwrite.value = E.OVERWRITE_DATA
             module.wants_agg_mean.value = False
@@ -2992,13 +3013,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor.execute(statement)
             for i in range(2):
                 row = cursor.fetchone()
-                self.assertEqual(len(row), 5)
-                self.assertEqual(row[0], i + 1)
-                self.assertAlmostEqual(row[1], INT_VALUE)
-                self.assertAlmostEqual(row[2], FLOAT_VALUE)
-                self.assertEqual(row[3], STRING_VALUE)
-                self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.__next__)
+                assert len(row) == 5
+                assert row[0] == i + 1
+                assert round(abs(row[1] - INT_VALUE), 7) == 0
+                assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+                assert row[3] == STRING_VALUE
+                assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -3008,11 +3030,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
                     row = cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], j + 1)
-                    self.assertEqual(row[1], i + 1)
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == j + 1
+                    assert row[1] == i + 1
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                cursor.__next__()
         finally:
             if cursor is not None:
                 cursor.close()
@@ -3036,13 +3059,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         mapping.add(k1)
         mapping.add(k2)
         mapping.do_mapping()
-        self.assertEqual(
-            mapping[k1],
-            "bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC",
+        assert (
+            mapping[k1]
+            == "bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
         )
-        self.assertEqual(
-            mapping[k2],
-            "ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC",
+        assert (
+            mapping[k2]
+            == "ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC"
         )
 
     def test_04_02_leave_start_intact(self):
@@ -3053,8 +3076,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         mapping.add(k1)
         mapping.add(k2)
         mapping.do_mapping()
-        self.assertTrue(mapping[k1].startswith("leaveme_"))
-        self.assertTrue(mapping[k2].startswith("keepmee_"))
+        assert mapping[k1].startswith("leaveme_")
+        assert mapping[k2].startswith("keepmee_")
 
     def per_object_statement(self, module, object_name, fields):
         """Return a statement that will select the given fields from the table"""
@@ -3091,18 +3114,21 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         )
         cursor.execute(statement)
         row = cursor.fetchone()
-        self.assertRaises(StopIteration, cursor.__next__)
-        self.assertEqual(len(row), 3)
+        with pytest.raises(StopIteration):
+            cursor.__next__()
+        assert len(row) == 3
         for feature, value in zip(
             (cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP), row
         ):
-            self.assertTrue(cellprofiler.utilities.legacy.equals(value, m.get_experiment_measurement(feature)))
+            assert cellprofiler.utilities.legacy.equals(
+                value, m.get_experiment_measurement(feature)
+            )
 
     def test_05_01_write_mysql_db(self):
         """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3131,24 +3157,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3157,7 +3185,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_05_02_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3178,7 +3206,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
             )
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
+                assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -3204,24 +3232,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3231,7 +3261,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write directly to the mysql DB, not to a file"""
         workspace, module = self.make_workspace(False)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3259,24 +3289,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3284,7 +3316,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3319,26 +3351,28 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, long_obj_column]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3354,7 +3388,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         om[0] = np.NaN
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -3373,7 +3407,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 output_dir, "%s_%s.CSV" % (base_name, OBJECT_NAME)
             )
             for filename in (sql_file, image_file, object_file):
-                self.assertTrue(os.path.isfile(filename))
+                assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
             sql_text = fd.read()
             fd.close()
@@ -3402,28 +3436,30 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertTrue(row[2] is None)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertAlmostEqual(row[5], np.mean(om[~np.isnan(om)]))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert row[2] is None
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert round(abs(row[5] - np.mean(om[~np.isnan(om)])), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
                 if i == 0:
-                    self.assertTrue(row[2] is None)
+                    assert row[2] is None
                 else:
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3442,7 +3478,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         om[:] = np.NaN
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -3472,25 +3508,27 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertTrue(row[2] is None)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertTrue(row[5] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert row[2] is None
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3507,7 +3545,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         om[:] = np.inf
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
@@ -3537,25 +3575,27 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertTrue(row[2] is None)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertTrue(row[5] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert row[2] is None
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3563,7 +3603,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write to MySQL, even if illegal characters are in the column name"""
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3598,26 +3638,28 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, wierd_obj_column]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3625,7 +3667,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3641,8 +3683,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             long_img_column = mappings["Image_%s" % LONG_IMG_MEASUREMENT]
             long_obj_column = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
-            self.assertTrue(len(long_img_column) <= 50)
-            self.assertTrue(len(long_obj_column) <= 50)
+            assert len(long_img_column) <= 50
+            assert len(long_obj_column) <= 50
             #
             # Now read the image file from the database
             #
@@ -3662,26 +3704,28 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
-            self.assertEqual(len(row), 6)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertEqual(row[5], 100)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            assert len(row) == 6
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            assert row[5] == 100
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, long_obj_column]
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 4)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-                self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 4
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+                assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3689,7 +3733,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         """Write two object tables using OT_PER_OBJECT"""
         workspace, module = self.make_workspace(False, alt_object=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3709,11 +3753,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read from the other table
             #
@@ -3723,11 +3768,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], ALTOBJ_VALUE[i], 4)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - ALTOBJ_VALUE[i]), 4) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
@@ -3739,7 +3785,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             True, alt_object=True
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3764,11 +3810,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read from the other table
             #
@@ -3778,11 +3825,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], ALTOBJ_VALUE[i], 4)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - ALTOBJ_VALUE[i]), 4) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3796,7 +3844,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             True, image_set_count=2
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -3825,13 +3873,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for j in range(2):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 5)
-                self.assertEqual(row[0], j + 1)
-                self.assertAlmostEqual(row[1], INT_VALUE)
-                self.assertAlmostEqual(row[2], FLOAT_VALUE)
-                self.assertEqual(row[3], STRING_VALUE)
-                self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 5
+                assert row[0] == j + 1
+                assert round(abs(row[1] - INT_VALUE), 7) == 0
+                assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+                assert row[3] == STRING_VALUE
+                assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
@@ -3839,11 +3888,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], j + 1)
-                    self.assertEqual(row[1], i + 1)
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == j + 1
+                    assert row[1] == i + 1
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3883,15 +3933,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(2):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 7)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], 1)
-                self.assertEqual(row[2], i + 1)
-                self.assertAlmostEqual(row[3], INT_VALUE)
-                self.assertAlmostEqual(row[4], FLOAT_VALUE)
-                self.assertEqual(row[5], STRING_VALUE)
-                self.assertEqual(row[6], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 7
+                assert row[0] == i + 1
+                assert row[1] == 1
+                assert row[2] == i + 1
+                assert round(abs(row[3] - INT_VALUE), 7) == 0
+                assert round(abs(row[4] - FLOAT_VALUE), 7) == 0
+                assert row[5] == STRING_VALUE
+                assert row[6] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -3901,11 +3952,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], j + 1)
-                    self.assertEqual(row[1], i + 1)
-                    self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == j + 1
+                    assert row[1] == i + 1
+                    assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -3949,16 +4001,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(2):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 8)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], 1)
-                self.assertEqual(row[2], i + 1)
-                self.assertAlmostEqual(row[3], INT_VALUE)
-                self.assertAlmostEqual(row[4], FLOAT_VALUE)
-                self.assertEqual(row[5], STRING_VALUE)
-                self.assertEqual(row[6], len(OBJ_VALUE))
-                self.assertAlmostEqual(row[7], np.mean(OBJ_VALUE), delta=0.0001)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 8
+                assert row[0] == i + 1
+                assert row[1] == 1
+                assert row[2] == i + 1
+                assert round(abs(row[3] - INT_VALUE), 7) == 0
+                assert round(abs(row[4] - FLOAT_VALUE), 7) == 0
+                assert row[5] == STRING_VALUE
+                assert row[6] == len(OBJ_VALUE)
+                assert abs(row[7] - np.mean(OBJ_VALUE)) < 0.0001
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -3973,12 +4026,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 4)
-                    self.assertEqual(row[0], j + 1)
-                    self.assertEqual(row[1], i + 1)
-                    self.assertAlmostEqual(row[2], value)
-                    self.assertAlmostEqual(row[3], value)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 4
+                    assert row[0] == j + 1
+                    assert row[1] == i + 1
+                    assert round(abs(row[2] - value), 7) == 0
+                    assert round(abs(row[3] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -3988,7 +4042,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         cursor = None
         connection = None
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4018,24 +4072,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             cursor.execute(statement)
             row = cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0], 1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.__next__)
+            assert len(row) == 5
+            assert row[0] == 1
+            assert round(abs(row[1] - INT_VALUE), 7) == 0
+            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+            assert row[3] == STRING_VALUE
+            assert row[4] == len(OBJ_VALUE)
+            with pytest.raises(StopIteration):
+                cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i + 1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == 1
+                assert row[1] == i + 1
+                assert round(abs(row[2] - value), 7) == 0
+            with pytest.raises(StopIteration):
+                cursor.__next__()
         finally:
             if cursor is not None:
                 cursor.close()
@@ -4075,7 +4131,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         if self.mysql_has_median:
             aggs.append(("median", np.median))
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4106,18 +4162,18 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 statement = self.select_well_agg(module, aggname, fields)
                 self.cursor.execute(statement)
                 rows = self.cursor.fetchall()
-                self.assertEqual(len(rows), 1)
+                assert len(rows) == 1
                 row = rows[0]
-                self.assertEqual(row[0], PLATE)
-                self.assertEqual(row[1], WELL)
+                assert row[0] == PLATE
+                assert row[1] == WELL
                 for i, (object_name, feature) in enumerate(meas):
                     value = row[i + 2]
                     values = m[object_name, feature, image_numbers]
                     expected = aggfn(values)
                     if np.isnan(expected):
-                        self.assertTrue(value is None)
+                        assert value is None
                     else:
-                        self.assertAlmostEqual(float(value), expected)
+                        assert round(abs(float(value) - expected), 7) == 0
         finally:
             self.drop_tables(
                 module, ["Per_Image", "Per_Object"] + ["Per_Well_" + x for x, _ in aggs]
@@ -4132,7 +4188,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         if self.mysql_has_median:
             aggs.append(("median", np.median))
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4163,18 +4219,18 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 statement = self.select_well_agg(module, aggname, fields)
                 self.cursor.execute(statement)
                 rows = self.cursor.fetchall()
-                self.assertEqual(len(rows), 1)
+                assert len(rows) == 1
                 row = rows[0]
-                self.assertEqual(row[0], PLATE)
-                self.assertEqual(row[1], WELL)
+                assert row[0] == PLATE
+                assert row[1] == WELL
                 for i, (object_name, feature) in enumerate(meas):
                     value = row[i + 2]
                     values = m[object_name, feature, image_numbers]
                     expected = aggfn(values)
                     if np.isnan(expected):
-                        self.assertTrue(value is None)
+                        assert value is None
                     else:
-                        self.assertAlmostEqual(float(value), expected)
+                        assert round(abs(float(value) - expected), 7) == 0
         finally:
             self.drop_tables(
                 module,
@@ -4186,7 +4242,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_08_01_image_thumbnails(self):
         workspace, module = self.make_workspace(False)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4201,9 +4257,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.thumbnail_image_names.load_choices(workspace.pipeline)
             module.thumbnail_image_names.value = module.thumbnail_image_names.choices[0]
             columns = module.get_measurement_columns(workspace.pipeline)
-            self.assertEqual(len(columns), 1)
+            assert len(columns) == 1
             expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
-            self.assertEqual(columns[0][1], expected_thumbnail_column)
+            assert columns[0][1] == expected_thumbnail_column
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -4213,7 +4269,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(stmt)
             result = self.cursor.fetchall()
             im = PILImage.open(StringIO(result[0][0].decode("base64")))
-            self.assertEqual(tuple(im.size), (200, 200))
+            assert tuple(im.size) == (200, 200)
 
         finally:
             self.drop_tables(module, ["Per_Image"])
@@ -4223,7 +4279,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         cursor = None
         connection = None
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4236,9 +4292,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.thumbnail_image_names.load_choices(workspace.pipeline)
             module.thumbnail_image_names.value = module.thumbnail_image_names.choices[0]
             columns = module.get_measurement_columns(workspace.pipeline)
-            self.assertEqual(len(columns), 1)
+            assert len(columns) == 1
             expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
-            self.assertEqual(columns[0][1], expected_thumbnail_column)
+            assert columns[0][1] == expected_thumbnail_column
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -4249,7 +4305,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor.execute(stmt)
             result = cursor.fetchall()
             im = PILImage.open(io.BytesIO(base64.b64decode(result[0][0])))
-            self.assertEqual(tuple(im.size), (200, 200))
+            assert tuple(im.size) == (200, 200)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -4267,10 +4323,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, E.ExportToDatabase)
+        assert isinstance(workspace, cpw.Workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        assert isinstance(measurements, cpmeas.Measurements)
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4294,10 +4350,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 2)
-                self.assertEqual(row[0], i + 1)
-                self.assertTrue(row[1] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 2
+                assert row[0] == i + 1
+                assert row[1] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4311,11 +4368,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4329,10 +4387,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 2)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], INT_VALUE)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 2
+                assert row[0] == i + 1
+                assert row[1] == INT_VALUE
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4346,11 +4405,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4360,10 +4420,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, E.ExportToDatabase)
+        assert isinstance(workspace, cpw.Workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        assert isinstance(measurements, cpmeas.Measurements)
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4387,11 +4447,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], i + 1)
-                self.assertTrue(row[1] is None)
-                self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == i + 1
+                assert row[1] is None
+                assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4405,11 +4466,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4423,11 +4485,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], INT_VALUE)
-                self.assertAlmostEqual(row[2], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == i + 1
+                assert row[1] == INT_VALUE
+                assert round(abs(row[2] - np.mean(OBJ_VALUE)), 4) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4441,11 +4504,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4455,10 +4519,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, E.ExportToDatabase)
+        assert isinstance(workspace, cpw.Workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        assert isinstance(measurements, cpmeas.Measurements)
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4482,10 +4546,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 2)
-                self.assertEqual(row[0], i + 1)
-                self.assertTrue(row[1] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 2
+                assert row[0] == i + 1
+                assert row[1] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4496,11 +4561,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4514,10 +4580,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 2)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], INT_VALUE)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 2
+                assert row[0] == i + 1
+                assert row[1] == INT_VALUE
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4528,11 +4595,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -4542,10 +4610,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, E.ExportToDatabase)
+        assert isinstance(workspace, cpw.Workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        assert isinstance(measurements, cpmeas.Measurements)
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4569,11 +4637,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], i + 1)
-                self.assertTrue(row[1] is None)
-                self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == i + 1
+                assert row[1] is None
+                assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4584,11 +4653,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4602,11 +4672,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], INT_VALUE)
-                self.assertAlmostEqual(row[2], np.mean(OBJ_VALUE), 4)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 3
+                assert row[0] == i + 1
+                assert row[1] == INT_VALUE
+                assert round(abs(row[2] - np.mean(OBJ_VALUE)), 4) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4617,11 +4688,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4636,10 +4708,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.interaction_handler = self.get_interaction_handler(
                     ran_interaction_handler
                 )
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
-            self.assertTrue(isinstance(workspace, cpw.Workspace))
+            assert isinstance(module, E.ExportToDatabase)
+            assert isinstance(workspace, cpw.Workspace)
             measurements = workspace.measurements
-            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            assert isinstance(measurements, cpmeas.Measurements)
             module.db_type.value = E.DB_SQLITE
             module.directory.dir_choice = ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
@@ -4655,9 +4727,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     workspace.set_image_set_for_testing_only(i + 1)
                     measurements.next_image_set(i + 1)
                     module.run(workspace)
-                    self.assertEqual(
-                        with_interaction_handler, ran_interaction_handler[0]
-                    )
+                    assert with_interaction_handler == ran_interaction_handler[0]
                     ran_interaction_handler[0] = False
                 #
                 # Read the image data after the run but before group.
@@ -4671,10 +4741,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 cursor.execute(statement)
                 for i in range(count):
                     row = cursor.fetchone()
-                    self.assertEqual(len(row), 2)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertTrue(row[1] is None)
-                self.assertRaises(StopIteration, cursor.__next__)
+                    assert len(row) == 2
+                    assert row[0] == i + 1
+                    assert row[1] is None
+                with pytest.raises(StopIteration):
+                    cursor.__next__()
                 #
                 # Read the object data too
                 #
@@ -4688,16 +4759,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 for i in range(count):
                     for j in range(len(OBJ_VALUE)):
                         row = cursor.fetchone()
-                        self.assertEqual(len(row), 3)
-                        self.assertEqual(row[0], i + 1)
-                        self.assertEqual(row[1], j + 1)
-                        self.assertTrue(row[2] is None)
-                self.assertRaises(StopIteration, cursor.__next__)
+                        assert len(row) == 3
+                        assert row[0] == i + 1
+                        assert row[1] == j + 1
+                        assert row[2] is None
+                with pytest.raises(StopIteration):
+                    cursor.__next__()
                 #
                 # Run post_group and see that the values do show up
                 #
                 module.post_group(workspace, {})
-                self.assertEqual(with_interaction_handler, ran_interaction_handler[0])
+                assert with_interaction_handler == ran_interaction_handler[0]
                 image_table = module.table_prefix.value + "Per_Image"
                 statement = "select ImageNumber, Image_%s from %s" % (
                     GROUP_IMG_MEASUREMENT,
@@ -4706,10 +4778,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 cursor.execute(statement)
                 for i in range(count):
                     row = cursor.fetchone()
-                    self.assertEqual(len(row), 2)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], INT_VALUE)
-                self.assertRaises(StopIteration, cursor.__next__)
+                    assert len(row) == 2
+                    assert row[0] == i + 1
+                    assert row[1] == INT_VALUE
+                with pytest.raises(StopIteration):
+                    cursor.__next__()
                 #
                 # Read the object data
                 #
@@ -4723,11 +4796,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 for i in range(count):
                     for j in range(len(OBJ_VALUE)):
                         row = cursor.fetchone()
-                        self.assertEqual(len(row), 3)
-                        self.assertEqual(row[0], i + 1)
-                        self.assertEqual(row[1], j + 1)
-                        self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-                self.assertRaises(StopIteration, cursor.__next__)
+                        assert len(row) == 3
+                        assert row[0] == i + 1
+                        assert row[1] == j + 1
+                        assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
+                with pytest.raises(StopIteration):
+                    cursor.__next__()
             finally:
                 cursor.close()
                 connection.close()
@@ -4739,10 +4813,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        assert isinstance(module, E.ExportToDatabase)
+        assert isinstance(workspace, cpw.Workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        assert isinstance(measurements, cpmeas.Measurements)
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4766,10 +4840,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 2)
-                self.assertEqual(row[0], i + 1)
-                self.assertTrue(row[1] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 2
+                assert row[0] == i + 1
+                assert row[1] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4783,11 +4858,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertTrue(row[2] is None)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert row[2] is None
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             self.close_connection()
             #
             # Run post_group and see that the values do show up
@@ -4801,10 +4877,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.cursor.execute(statement)
             for i in range(count):
                 row = self.cursor.fetchone()
-                self.assertEqual(len(row), 2)
-                self.assertEqual(row[0], i + 1)
-                self.assertEqual(row[1], INT_VALUE)
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                assert len(row) == 2
+                assert row[0] == i + 1
+                assert row[1] == INT_VALUE
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4818,11 +4895,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
                     row = self.cursor.fetchone()
-                    self.assertEqual(len(row), 3)
-                    self.assertEqual(row[0], i + 1)
-                    self.assertEqual(row[1], j + 1)
-                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+                    assert len(row) == 3
+                    assert row[0] == i + 1
+                    assert row[1] == j + 1
+                    assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             #
             # Finally, confirm that the Per_Object item is a view
             #
@@ -4831,7 +4909,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 % (module.db_name.value, object_table)
             )
             self.cursor.execute(statement)
-            self.assertNotEqual(len(self.cursor.fetchall()), 0)
+            assert len(self.cursor.fetchall()) != 0
         finally:
             self.drop_tables(module, ["Per_Image"])
             self.drop_views(module, ["Per_Object"])
@@ -4852,7 +4930,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, alt_object=True
         )
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         file_name = "%s_%s.properties" % (DB_NAME, module.get_table_prefix())
         path = os.path.join(output_dir, file_name)
         #
@@ -4924,8 +5002,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     "%s_%s_%s" % (cpmeas.IMAGE, C_FILE_NAME, IMAGE_NAME),
                 ),
             ):
-                self.assertTrue(k in dictionary)
-                self.assertEqual(dictionary[k], v)
+                assert k in dictionary
+                assert dictionary[k] == v
         finally:
             E.ExportToDatabase.get_measurement_columns = old_get_measurement_columns
             os.chdir(output_dir)
@@ -4936,7 +5014,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_11_01_experiment_table_combine(self):
         workspace, module = self.make_workspace(False, True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4962,9 +5040,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             experiment_id = int(self.cursor.fetchone()[0])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             properties = module.get_property_file_text(workspace)
-            self.assertEqual(len(properties), 1)
+            assert len(properties) == 1
             for k, v in list(properties[0].properties.items()):
                 statement = """
                 select max(value) from Experiment_Properties where
@@ -4976,15 +5055,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 )
                 self.cursor.execute(statement)
                 dbvalue = self.cursor.fetchone()[0]
-                self.assertRaises(StopIteration, self.cursor.__next__)
-                self.assertEqual(dbvalue, v)
+                with pytest.raises(StopIteration):
+                    self.cursor.__next__()
+                assert dbvalue == v
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
     def test_11_02_experiment_table_separate(self):
         workspace, module = self.make_workspace(False, True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5009,9 +5089,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             )
             self.cursor.execute(statement)
             experiment_id = int(self.cursor.fetchone()[0])
-            self.assertRaises(StopIteration, self.cursor.__next__)
+            with pytest.raises(StopIteration):
+                self.cursor.__next__()
             properties = module.get_property_file_text(workspace)
-            self.assertEqual(len(properties), 2)
+            assert len(properties) == 2
             for k, v in list(properties[0].properties.items()):
                 statement = """
                 select max(value) from Experiment_Properties where
@@ -5023,8 +5104,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 )
                 self.cursor.execute(statement)
                 dbvalue = self.cursor.fetchone()[0]
-                self.assertRaises(StopIteration, self.cursor.__next__)
-                self.assertEqual(dbvalue, v)
+                with pytest.raises(StopIteration):
+                    self.cursor.__next__()
+                assert dbvalue == v
         finally:
             self.drop_tables(
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
@@ -5037,7 +5119,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5062,7 +5144,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5086,7 +5168,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         )
         cursor = None
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5120,7 +5202,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             relationship_test_type=self.RTEST_SOME,
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5147,7 +5229,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             relationship_test_type=self.RTEST_SOME,
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5174,7 +5256,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ran_interaction_handler
                 )
             try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                assert isinstance(module, E.ExportToDatabase)
                 module.db_type.value = E.DB_SQLITE
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
@@ -5209,7 +5291,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             relationship_test_type=self.RTEST_DUPLICATE,
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5247,7 +5329,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             relationship_test_type=self.RTEST_SOME,
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5282,7 +5364,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             relationship_test_type=self.RTEST_SOME,
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5313,7 +5395,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ran_interaction_handler
                 )
             try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                assert isinstance(module, E.ExportToDatabase)
                 module.db_type.value = E.DB_SQLITE
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
@@ -5350,7 +5432,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor = None
             connection = None
             try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                assert isinstance(module, E.ExportToDatabase)
                 module.db_type.value = E.DB_SQLITE
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
@@ -5389,7 +5471,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -5410,7 +5492,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
         workspace, module = self.make_workspace(False)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.allow_overwrite.value = E.OVERWRITE_NEVER
             module.wants_agg_mean.value = False
@@ -5418,8 +5500,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            self.assertTrue(module.prepare_run(workspace))
-            self.assertFalse(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
+            assert not module.prepare_run(workspace)
         finally:
             self.drop_tables(module)
 
@@ -5429,7 +5511,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
         workspace, module = self.make_workspace(False)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.allow_overwrite.value = E.OVERWRITE_DATA
             module.wants_agg_mean.value = False
@@ -5437,13 +5519,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            self.assertTrue(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
             #
             # There should be no rows in the image table after prepare_run
             #
             how_many = "select count('x') from %s" % module.get_table_name(cpmeas.IMAGE)
             self.cursor.execute(how_many)
-            self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            assert self.cursor.fetchall()[0][0] == 0
             self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -5451,13 +5533,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # There should be one row after "run"
             #
             self.cursor.execute(how_many)
-            self.assertEqual(self.cursor.fetchall()[0][0], 1)
-            self.assertTrue(module.prepare_run(workspace))
+            assert self.cursor.fetchall()[0][0] == 1
+            assert module.prepare_run(workspace)
             #
             # The row should still be there after the second prepare_run
             #
             self.cursor.execute(how_many)
-            self.assertEqual(self.cursor.fetchall()[0][0], 1)
+            assert self.cursor.fetchall()[0][0] == 1
         finally:
             self.drop_tables(module)
 
@@ -5467,7 +5549,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
         workspace, module = self.make_workspace(False)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.allow_overwrite.value = E.OVERWRITE_ALL
             module.wants_agg_mean.value = False
@@ -5475,13 +5557,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            self.assertTrue(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
             #
             # There should be no rows in the image table after prepare_run
             #
             how_many = "select count('x') from %s" % module.get_table_name(cpmeas.IMAGE)
             self.cursor.execute(how_many)
-            self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            assert self.cursor.fetchall()[0][0] == 0
             self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -5489,20 +5571,20 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # There should be one row after "run"
             #
             self.cursor.execute(how_many)
-            self.assertEqual(self.cursor.fetchall()[0][0], 1)
+            assert self.cursor.fetchall()[0][0] == 1
             self.close_connection()
-            self.assertTrue(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
             #
             # The row should not be there after the second prepare_run
             #
             self.cursor.execute(how_many)
-            self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            assert self.cursor.fetchall()[0][0] == 0
         finally:
             self.drop_tables(module)
 
     def test_13_04_sqlite_no_overwrite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
         module.directory.dir_choice = ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
@@ -5513,14 +5595,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module.objects_choice.value = E.O_ALL
         module.separate_object_tables.value = E.OT_COMBINE
         try:
-            self.assertTrue(module.prepare_run(workspace))
-            self.assertFalse(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
+            assert not module.prepare_run(workspace)
         finally:
             finally_fn()
 
     def test_13_05_sqlite_keep_schema(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
         module.allow_overwrite.value = E.OVERWRITE_DATA
         module.directory.dir_choice = ABSOLUTE_FOLDER_NAME
@@ -5532,26 +5614,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module.separate_object_tables.value = E.OT_COMBINE
         cursor, connection = self.get_sqlite_cursor(module)
         try:
-            self.assertTrue(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
             #
             # There should be no rows in the image table after prepare_run
             #
             how_many = "select count('x') from %s" % module.get_table_name(cpmeas.IMAGE)
             cursor.execute(how_many)
-            self.assertEqual(cursor.fetchall()[0][0], 0)
+            assert cursor.fetchall()[0][0] == 0
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # There should be one row after "run"
             #
             cursor.execute(how_many)
-            self.assertEqual(cursor.fetchall()[0][0], 1)
-            self.assertTrue(module.prepare_run(workspace))
+            assert cursor.fetchall()[0][0] == 1
+            assert module.prepare_run(workspace)
             #
             # The row should still be there after the second prepare_run
             #
             cursor.execute(how_many)
-            self.assertEqual(cursor.fetchall()[0][0], 1)
+            assert cursor.fetchall()[0][0] == 1
         finally:
             cursor.close()
             connection.close()
@@ -5559,7 +5641,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
     def test_13_06_sqlite_drop_schema(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
         module.allow_overwrite.value = E.OVERWRITE_ALL
         module.directory.dir_choice = ABSOLUTE_FOLDER_NAME
@@ -5571,26 +5653,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module.separate_object_tables.value = E.OT_COMBINE
         cursor, connection = self.get_sqlite_cursor(module)
         try:
-            self.assertTrue(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
             #
             # There should be no rows in the image table after prepare_run
             #
             how_many = "select count('x') from %s" % module.get_table_name(cpmeas.IMAGE)
             cursor.execute(how_many)
-            self.assertEqual(cursor.fetchall()[0][0], 0)
+            assert cursor.fetchall()[0][0] == 0
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # There should be one row after "run"
             #
             cursor.execute(how_many)
-            self.assertEqual(cursor.fetchall()[0][0], 1)
-            self.assertTrue(module.prepare_run(workspace))
+            assert cursor.fetchall()[0][0] == 1
+            assert module.prepare_run(workspace)
             #
             # The row should not be there after the second prepare_run
             #
             cursor.execute(how_many)
-            self.assertEqual(cursor.fetchall()[0][0], 0)
+            assert cursor.fetchall()[0][0] == 0
         finally:
             self.drop_tables(module)
 
@@ -5606,8 +5688,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         with E.DBContext(module) as (connection, cursor):
             cursor.execute("select 1")
             result = cursor.fetchall()
-            self.assertEqual(len(result), 1)
-            self.assertEqual(result[0][0], 1)
+            assert len(result) == 1
+            assert result[0][0] == 1
 
     def test_14_01_dbcontext_sqlite(self):
         output_dir = tempfile.mkdtemp()
@@ -5619,8 +5701,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             with E.DBContext(module) as (connection, cursor):
                 cursor.execute("select 1")
                 result = cursor.fetchall()
-                self.assertEqual(len(result), 1)
-                self.assertEqual(result[0][0], 1)
+                assert len(result) == 1
+                assert result[0][0] == 1
         finally:
             try:
                 for filename in os.listdir(output_dir):
@@ -5634,7 +5716,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module = self.make_workspace(False, post_run_test=True)
         try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
             module.allow_overwrite.value = E.OVERWRITE_ALL
             module.wants_agg_mean.value = False
@@ -5645,19 +5727,19 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             workspace.measurements[
                 cpmeas.EXPERIMENT, STRING_IMG_MEASUREMENT
             ] = STRING_VALUE
-            self.assertTrue(module.prepare_run(workspace))
+            assert module.prepare_run(workspace)
             self.cursor.execute(
                 "select %s from %s"
                 % (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT))
             )
             result = self.cursor.fetchall()[0][0]
-            self.assertTrue(result is None)
+            assert result is None
             self.close_connection()
             module.post_run(workspace)
             self.cursor.execute(
                 "select %s from %s"
                 % (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT))
             )
-            self.assertEqual(self.cursor.fetchall()[0][0], STRING_VALUE)
+            assert self.cursor.fetchall()[0][0] == STRING_VALUE
         finally:
             self.drop_tables(module)

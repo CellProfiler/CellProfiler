@@ -84,36 +84,31 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
-        self.assertTrue("Image" in measurements.get_object_names())
-        self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue(
-            "Threshold_FinalThreshold_my_object"
-            in measurements.get_feature_names("Image")
+        assert numpy.all(segmented == 0)
+        assert "Image" in measurements.get_object_names()
+        assert "my_object" in measurements.get_object_names()
+        assert "Threshold_FinalThreshold_my_object" in measurements.get_feature_names(
+            "Image"
         )
-        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
+        assert "Count_my_object" in measurements.get_feature_names("Image")
         count = measurements.get_current_measurement("Image", "Count_my_object")
-        self.assertEqual(count, 0)
-        self.assertTrue(
-            "Location_Center_X" in measurements.get_feature_names("my_object")
-        )
+        assert count == 0
+        assert "Location_Center_X" in measurements.get_feature_names("my_object")
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 0)
-        self.assertTrue(
-            "Location_Center_Y" in measurements.get_feature_names("my_object")
-        )
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 0
+        assert "Location_Center_Y" in measurements.get_feature_names("my_object")
         location_center_y = measurements.get_current_measurement(
             "my_object", "Location_Center_Y"
         )
-        self.assertTrue(isinstance(location_center_y, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape), 0)
+        assert isinstance(location_center_y, numpy.ndarray)
+        assert numpy.product(location_center_y.shape) == 0
 
     def test_02_001_test_zero_objects_wa_in_lo_in(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -142,11 +137,11 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        assert numpy.all(segmented == 0)
 
     def test_02_002_test_zero_objects_wa_di_lo_in(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -173,11 +168,11 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        assert numpy.all(segmented == 0)
 
     def test_02_003_test_zero_objects_wa_in_lo_sh(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -204,11 +199,11 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        assert numpy.all(segmented == 0)
 
     def test_02_004_test_zero_objects_wa_di_lo_sh(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -233,11 +228,11 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        assert numpy.all(segmented == 0)
 
     def test_02_01_test_one_object(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -264,51 +259,46 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented[img > 0] == 1))
-        self.assertTrue(numpy.all(img[segmented == 1] > 0))
-        self.assertTrue("Image" in measurements.get_object_names())
-        self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue(
-            "Threshold_FinalThreshold_my_object"
-            in measurements.get_feature_names("Image")
+        assert numpy.all(segmented[img > 0] == 1)
+        assert numpy.all(img[segmented == 1] > 0)
+        assert "Image" in measurements.get_object_names()
+        assert "my_object" in measurements.get_object_names()
+        assert "Threshold_FinalThreshold_my_object" in measurements.get_feature_names(
+            "Image"
         )
         threshold = measurements.get_current_measurement(
             "Image", "Threshold_FinalThreshold_my_object"
         )
-        self.assertTrue(threshold < 0.5)
-        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
+        assert threshold < 0.5
+        assert "Count_my_object" in measurements.get_feature_names("Image")
         count = measurements.get_current_measurement("Image", "Count_my_object")
-        self.assertEqual(count, 1)
-        self.assertTrue(
-            "Location_Center_Y" in measurements.get_feature_names("my_object")
-        )
+        assert count == 1
+        assert "Location_Center_Y" in measurements.get_feature_names("my_object")
         location_center_y = measurements.get_current_measurement(
             "my_object", "Location_Center_Y"
         )
-        self.assertTrue(isinstance(location_center_y, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape), 1)
-        self.assertTrue(location_center_y[0] > 8)
-        self.assertTrue(location_center_y[0] < 12)
-        self.assertTrue(
-            "Location_Center_X" in measurements.get_feature_names("my_object")
-        )
+        assert isinstance(location_center_y, numpy.ndarray)
+        assert numpy.product(location_center_y.shape) == 1
+        assert location_center_y[0] > 8
+        assert location_center_y[0] < 12
+        assert "Location_Center_X" in measurements.get_feature_names("my_object")
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 1)
-        self.assertTrue(location_center_x[0] > 13)
-        self.assertTrue(location_center_x[0] < 16)
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 1
+        assert location_center_x[0] > 13
+        assert location_center_x[0] < 16
         columns = x.get_measurement_columns(pipeline)
         for object_name in (cellprofiler.measurement.IMAGE, "my_object"):
             ocolumns = [x for x in columns if x[0] == object_name]
             features = measurements.get_feature_names(object_name)
-            self.assertEqual(len(ocolumns), len(features))
-            self.assertTrue(all([column[1] in features for column in ocolumns]))
+            assert len(ocolumns) == len(features)
+            assert all([column[1] in features for column in ocolumns])
 
     def test_02_02_test_two_objects(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -335,46 +325,41 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
-        self.assertTrue("Image" in measurements.get_object_names())
-        self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue(
-            "Threshold_FinalThreshold_my_object"
-            in measurements.get_feature_names("Image")
+        assert "Image" in measurements.get_object_names()
+        assert "my_object" in measurements.get_object_names()
+        assert "Threshold_FinalThreshold_my_object" in measurements.get_feature_names(
+            "Image"
         )
         threshold = measurements.get_current_measurement(
             "Image", "Threshold_FinalThreshold_my_object"
         )
-        self.assertTrue(threshold < 0.6)
-        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
+        assert threshold < 0.6
+        assert "Count_my_object" in measurements.get_feature_names("Image")
         count = measurements.get_current_measurement("Image", "Count_my_object")
-        self.assertEqual(count, 2)
-        self.assertTrue(
-            "Location_Center_Y" in measurements.get_feature_names("my_object")
-        )
+        assert count == 2
+        assert "Location_Center_Y" in measurements.get_feature_names("my_object")
         location_center_y = measurements.get_current_measurement(
             "my_object", "Location_Center_Y"
         )
-        self.assertTrue(isinstance(location_center_y, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape), 2)
-        self.assertTrue(location_center_y[0] > 8)
-        self.assertTrue(location_center_y[0] < 12)
-        self.assertTrue(location_center_y[1] > 28)
-        self.assertTrue(location_center_y[1] < 32)
-        self.assertTrue(
-            "Location_Center_Y" in measurements.get_feature_names("my_object")
-        )
+        assert isinstance(location_center_y, numpy.ndarray)
+        assert numpy.product(location_center_y.shape) == 2
+        assert location_center_y[0] > 8
+        assert location_center_y[0] < 12
+        assert location_center_y[1] > 28
+        assert location_center_y[1] < 32
+        assert "Location_Center_Y" in measurements.get_feature_names("my_object")
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 2)
-        self.assertTrue(location_center_x[0] > 33)
-        self.assertTrue(location_center_x[0] < 37)
-        self.assertTrue(location_center_x[1] > 13)
-        self.assertTrue(location_center_x[1] < 16)
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 2
+        assert location_center_x[0] > 33
+        assert location_center_x[0] < 37
+        assert location_center_x[1] > 13
+        assert location_center_x[1] < 16
 
     def test_02_03_test_threshold_range(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -403,43 +388,38 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
-        self.assertTrue("Image" in measurements.get_object_names())
-        self.assertTrue("my_object" in measurements.get_object_names())
-        self.assertTrue(
-            "Threshold_FinalThreshold_my_object"
-            in measurements.get_feature_names("Image")
+        assert "Image" in measurements.get_object_names()
+        assert "my_object" in measurements.get_object_names()
+        assert "Threshold_FinalThreshold_my_object" in measurements.get_feature_names(
+            "Image"
         )
         threshold = measurements.get_current_measurement(
             "Image", "Threshold_FinalThreshold_my_object"
         )
-        self.assertTrue(threshold < 0.8)
-        self.assertTrue(threshold > 0.6)
-        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
+        assert threshold < 0.8
+        assert threshold > 0.6
+        assert "Count_my_object" in measurements.get_feature_names("Image")
         count = measurements.get_current_measurement("Image", "Count_my_object")
-        self.assertEqual(count, 1)
-        self.assertTrue(
-            "Location_Center_Y" in measurements.get_feature_names("my_object")
-        )
+        assert count == 1
+        assert "Location_Center_Y" in measurements.get_feature_names("my_object")
         location_center_y = measurements.get_current_measurement(
             "my_object", "Location_Center_Y"
         )
-        self.assertTrue(isinstance(location_center_y, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape), 1)
-        self.assertTrue(location_center_y[0] > 8)
-        self.assertTrue(location_center_y[0] < 12)
-        self.assertTrue(
-            "Location_Center_X" in measurements.get_feature_names("my_object")
-        )
+        assert isinstance(location_center_y, numpy.ndarray)
+        assert numpy.product(location_center_y.shape) == 1
+        assert location_center_y[0] > 8
+        assert location_center_y[0] < 12
+        assert "Location_Center_X" in measurements.get_feature_names("my_object")
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 1)
-        self.assertTrue(location_center_x[0] > 33)
-        self.assertTrue(location_center_x[0] < 36)
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 1
+        assert location_center_x[0] > 33
+        assert location_center_x[0] < 36
 
     def test_02_04_fill_holes(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -472,8 +452,8 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertTrue(objects.segmented[10, 10] > 0)
-        self.assertTrue(objects.segmented[30, 30] > 0)
+        assert objects.segmented[10, 10] > 0
+        assert objects.segmented[30, 30] > 0
 
     def test_02_05_dont_fill_holes(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -507,8 +487,8 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertTrue(objects.segmented[10, 10] == 0)
-        self.assertTrue(objects.segmented[30, 30] == 0)
+        assert objects.segmented[10, 10] == 0
+        assert objects.segmented[30, 30] == 0
 
     def test_02_05_01_fill_holes_within_holes(self):
         "Regression test of img-1431"
@@ -543,9 +523,9 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertTrue(objects.segmented[20, 20] == 1)
-        self.assertTrue(objects.segmented[22, 20] == 1)
-        self.assertTrue(objects.segmented[26, 20] == 1)
+        assert objects.segmented[20, 20] == 1
+        assert objects.segmented[22, 20] == 1
+        assert objects.segmented[26, 20] == 1
 
     def test_02_06_test_watershed_shape_shape(self):
         """Identify by local_maxima:shape & intensity:shape
@@ -743,7 +723,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 2)
+        assert numpy.max(objects.segmented) == 2
 
     def test_02_07_test_watershed_shape_intensity(self):
         """Identify by local_maxima:shape & watershed:intensity
@@ -943,8 +923,8 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 2)
-        self.assertEqual(objects.segmented[7, 11], objects.segmented[7, 4])
+        assert numpy.max(objects.segmented) == 2
+        assert objects.segmented[7, 11] == objects.segmented[7, 4]
 
     def test_02_08_test_watershed_intensity_distance_single(self):
         """Identify by local_maxima:intensity & watershed:shape - one object
@@ -1147,7 +1127,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 1)
+        assert numpy.max(objects.segmented) == 1
 
     def test_02_08_test_watershed_intensity_distance_triple(self):
         """Identify by local_maxima:intensity & watershed:shape - 3 objects w/o filter
@@ -1349,7 +1329,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 3)
+        assert numpy.max(objects.segmented) == 3
 
     def test_02_09_test_watershed_intensity_distance_filter(self):
         """Identify by local_maxima:intensity & watershed:shape - filtered
@@ -1551,7 +1531,7 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 1)
+        assert numpy.max(objects.segmented) == 1
 
     def test_02_10_test_watershed_intensity_distance_double(self):
         """Identify by local_maxima:intensity & watershed:shape - two objects
@@ -1756,8 +1736,8 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 2)
-        self.assertNotEqual(objects.segmented[12, 7], objects.segmented[4, 7])
+        assert numpy.max(objects.segmented) == 2
+        assert objects.segmented[12, 7] != objects.segmented[4, 7]
 
     def test_02_11_propagate(self):
         """Test the propagate unclump method"""
@@ -1944,10 +1924,10 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented), 2)
+        assert numpy.max(objects.segmented) == 2
         # This point has a closer "crow-fly" distance to the upper object
         # but should be in the lower one because of the serpentine path
-        self.assertEqual(objects.segmented[14, 9], objects.segmented[9, 9])
+        assert objects.segmented[14, 9] == objects.segmented[9, 9]
 
     def test_02_12_fly(self):
         """Run identify on the fly image"""
@@ -1995,23 +1975,19 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(pipeline, event):
-            self.assertFalse(
-                isinstance(
-                    event,
-                    (
-                        cellprofiler.pipeline.RunExceptionEvent,
-                        cellprofiler.pipeline.LoadExceptionEvent,
-                    ),
-                )
+            assert not isinstance(
+                event,
+                (
+                    cellprofiler.pipeline.RunExceptionEvent,
+                    cellprofiler.pipeline.LoadExceptionEvent,
+                ),
             )
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
         x = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(
-                x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
-            )
+        assert isinstance(
+            x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
 
         img = fly_image()
@@ -2105,9 +2081,9 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 )
             )
             output = object_set.get_objects(x.y_name.value)
-            self.assertEqual(output.count, 4)
-            self.assertTrue(numpy.all(output.segmented[expected == 0] == 0))
-            self.assertEqual(len(numpy.unique(output.segmented[expected == 1])), 1)
+            assert output.count == 4
+            assert numpy.all(output.segmented[expected == 0] == 0)
+            assert len(numpy.unique(output.segmented[expected == 1])) == 1
 
     def test_04_10_load_v10(self):
         # Sorry about this overly-long pipeline, it seemed like we need to
@@ -2452,220 +2428,196 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
         module = pipeline.modules()[4]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertEqual(module.x_name, "Channel0")
-        self.assertEqual(module.y_name, "Cells")
-        self.assertEqual(module.size_range.min, 15)
-        self.assertEqual(module.size_range.max, 45)
-        self.assertTrue(module.exclude_size)
-        self.assertTrue(module.exclude_border_objects)
-        self.assertEqual(
-            module.unclump_method,
-            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+        assert module.x_name == "Channel0"
+        assert module.y_name == "Cells"
+        assert module.size_range.min == 15
+        assert module.size_range.max == 45
+        assert module.exclude_size
+        assert module.exclude_border_objects
+        assert (
+            module.unclump_method
+            == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
         )
-        self.assertEqual(
-            module.watershed_method,
-            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
+        assert (
+            module.watershed_method
+            == cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
         )
-        self.assertTrue(module.automatic_smoothing)
-        self.assertEqual(module.smoothing_filter_size, 11)
-        self.assertTrue(module.automatic_suppression)
-        self.assertEqual(module.maxima_suppression_size, 9)
-        self.assertTrue(module.low_res_maxima)
-        self.assertEqual(
-            module.fill_holes,
-            cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING,
+        assert module.automatic_smoothing
+        assert module.smoothing_filter_size == 11
+        assert module.automatic_suppression
+        assert module.maxima_suppression_size == 9
+        assert module.low_res_maxima
+        assert (
+            module.fill_holes
+            == cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING
         )
-        self.assertEqual(
-            module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
+        assert (
+            module.limit_choice
+            == cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
         )
-        self.assertEqual(module.maximum_object_count, 499)
+        assert module.maximum_object_count == 499
         #
-        self.assertEqual(
-            module.threshold.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE
+        assert (
+            module.threshold.threshold_scope
+            == cellprofiler.modules.identify.TS_ADAPTIVE
         )
-        self.assertEqual(
-            module.threshold.local_operation.value, centrosome.threshold.TM_OTSU
+        assert module.threshold.local_operation.value == centrosome.threshold.TM_OTSU
+        assert module.threshold.threshold_smoothing_scale == 1.3488
+        assert round(abs(module.threshold.threshold_correction_factor - 0.80), 7) == 0
+        assert round(abs(module.threshold.threshold_range.min - 0.01), 7) == 0
+        assert round(abs(module.threshold.threshold_range.max - 0.90), 7) == 0
+        assert round(abs(module.threshold.manual_threshold - 0.03), 7) == 0
+        assert module.threshold.thresholding_measurement == "Metadata_Threshold"
+        assert (
+            module.threshold.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
         )
-        self.assertEqual(module.threshold.threshold_smoothing_scale, 1.3488)
-        self.assertAlmostEqual(module.threshold.threshold_correction_factor, 0.80)
-        self.assertAlmostEqual(module.threshold.threshold_range.min, 0.01)
-        self.assertAlmostEqual(module.threshold.threshold_range.max, 0.90)
-        self.assertAlmostEqual(module.threshold.manual_threshold, 0.03)
-        self.assertEqual(
-            module.threshold.thresholding_measurement, "Metadata_Threshold"
+        assert (
+            module.threshold.assign_middle_to_foreground
+            == cellprofiler.modules.identify.O_FOREGROUND
         )
-        self.assertEqual(
-            module.threshold.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS
-        )
-        self.assertEqual(
-            module.threshold.assign_middle_to_foreground,
-            cellprofiler.modules.identify.O_FOREGROUND,
-        )
-        self.assertEqual(module.threshold.adaptive_window_size, 12)
+        assert module.threshold.adaptive_window_size == 12
         #
         # Test alternate settings using subsequent instances of IDPrimary
         #
         module = pipeline.modules()[5]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertFalse(module.exclude_size)
-        self.assertFalse(module.exclude_border_objects)
-        self.assertEqual(
-            module.unclump_method,
-            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+        assert not module.exclude_size
+        assert not module.exclude_border_objects
+        assert (
+            module.unclump_method
+            == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
         )
-        self.assertEqual(
-            module.watershed_method, cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        assert (
+            module.watershed_method
+            == cellprofiler.modules.identifyprimaryobjects.WA_NONE
         )
-        self.assertFalse(module.automatic_smoothing)
-        self.assertFalse(module.automatic_suppression)
-        self.assertFalse(module.low_res_maxima)
-        self.assertEqual(
-            module.fill_holes, cellprofiler.modules.identifyprimaryobjects.FH_NEVER
+        assert not module.automatic_smoothing
+        assert not module.automatic_suppression
+        assert not module.low_res_maxima
+        assert module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_NEVER
+        assert (
+            module.limit_choice
+            == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
         )
-        self.assertEqual(
-            module.limit_choice, cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
+        assert (
+            module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
         )
-        self.assertEqual(
-            module.threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL
+        assert (
+            module.threshold.global_operation.value
+            == cellprofiler.modules.threshold.TM_LI
         )
-        self.assertEqual(
-            module.threshold.global_operation.value,
-            cellprofiler.modules.threshold.TM_LI,
+        assert (
+            module.threshold.two_class_otsu
+            == cellprofiler.modules.identify.O_THREE_CLASS
         )
-        self.assertEqual(
-            module.threshold.two_class_otsu, cellprofiler.modules.identify.O_THREE_CLASS
+        assert (
+            module.threshold.assign_middle_to_foreground
+            == cellprofiler.modules.identify.O_BACKGROUND
         )
-        self.assertEqual(
-            module.threshold.assign_middle_to_foreground,
-            cellprofiler.modules.identify.O_BACKGROUND,
-        )
-        self.assertTrue(module.use_advanced.value)
+        assert module.use_advanced.value
 
         module = pipeline.modules()[6]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertEqual(
-            module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_NONE
+        assert (
+            module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_NONE
         )
-        self.assertEqual(
-            module.watershed_method,
-            cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
+        assert (
+            module.watershed_method
+            == cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
         )
-        self.assertEqual(module.limit_choice, "None")
-        self.assertEqual(module.threshold.global_operation.value, "None")
-        self.assertEqual(module.threshold.threshold_smoothing_scale, 0)
-        self.assertTrue(module.use_advanced.value)
+        assert module.limit_choice == "None"
+        assert module.threshold.global_operation.value == "None"
+        assert module.threshold.threshold_smoothing_scale == 0
+        assert module.use_advanced.value
 
         module = pipeline.modules()[7]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertEqual(
-            module.unclump_method, cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
+        assert (
+            module.unclump_method
+            == cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
         )
-        self.assertEqual(
-            module.watershed_method,
-            cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
+        assert (
+            module.watershed_method
+            == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
         )
-        self.assertEqual(
-            module.threshold.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL
+        assert (
+            module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
         )
-        self.assertEqual(
-            module.threshold.global_operation.value,
-            centrosome.threshold.TM_ROBUST_BACKGROUND,
+        assert (
+            module.threshold.global_operation.value
+            == centrosome.threshold.TM_ROBUST_BACKGROUND
         )
-        self.assertEqual(module.threshold.lower_outlier_fraction.value, 0.02)
-        self.assertEqual(module.threshold.upper_outlier_fraction.value, 0.02)
-        self.assertEqual(
-            module.threshold.averaging_method.value,
-            cellprofiler.modules.identify.RB_MODE,
+        assert module.threshold.lower_outlier_fraction.value == 0.02
+        assert module.threshold.upper_outlier_fraction.value == 0.02
+        assert (
+            module.threshold.averaging_method.value
+            == cellprofiler.modules.identify.RB_MODE
         )
-        self.assertEqual(
-            module.threshold.variance_method.value, cellprofiler.modules.identify.RB_SD
+        assert (
+            module.threshold.variance_method.value
+            == cellprofiler.modules.identify.RB_SD
         )
-        self.assertEqual(module.threshold.number_of_deviations.value, 0)
-        self.assertEqual(module.threshold.threshold_correction_factor.value, 1.6)
-        self.assertTrue(module.use_advanced.value)
+        assert module.threshold.number_of_deviations.value == 0
+        assert module.threshold.threshold_correction_factor.value == 1.6
+        assert module.use_advanced.value
 
         module = pipeline.modules()[8]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertEqual(
-            module.threshold.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        assert (
+            module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
         )
-        self.assertEqual(
-            module.threshold.global_operation.value,
-            cellprofiler.modules.threshold.TM_MANUAL,
+        assert (
+            module.threshold.global_operation.value
+            == cellprofiler.modules.threshold.TM_MANUAL
         )
-        self.assertTrue(module.use_advanced.value)
+        assert module.use_advanced.value
 
         module = pipeline.modules()[9]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertEqual(
-            module.threshold.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        assert (
+            module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
         )
-        self.assertEqual(
-            module.threshold.global_operation.value,
-            cellprofiler.modules.threshold.TM_MEASUREMENT,
+        assert (
+            module.threshold.global_operation.value
+            == cellprofiler.modules.threshold.TM_MEASUREMENT
         )
-        self.assertTrue(module.use_advanced.value)
+        assert module.use_advanced.value
 
         module = pipeline.modules()[10]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
-        self.assertEqual(module.threshold.threshold_scope, "None")
-        self.assertEqual(
-            module.threshold.global_operation.value,
-            centrosome.threshold.TM_ROBUST_BACKGROUND,
+        assert module.threshold.threshold_scope == "None"
+        assert (
+            module.threshold.global_operation.value
+            == centrosome.threshold.TM_ROBUST_BACKGROUND
         )
-        self.assertEqual(module.threshold.lower_outlier_fraction, 0.05)
-        self.assertEqual(module.threshold.upper_outlier_fraction, 0.05)
-        self.assertEqual(
-            module.threshold.averaging_method, cellprofiler.modules.identify.RB_MEAN
+        assert module.threshold.lower_outlier_fraction == 0.05
+        assert module.threshold.upper_outlier_fraction == 0.05
+        assert (
+            module.threshold.averaging_method == cellprofiler.modules.identify.RB_MEAN
         )
-        self.assertEqual(
-            module.threshold.variance_method, cellprofiler.modules.identify.RB_SD
-        )
-        self.assertEqual(module.threshold.number_of_deviations, 2)
-        self.assertTrue(module.use_advanced.value)
+        assert module.threshold.variance_method == cellprofiler.modules.identify.RB_SD
+        assert module.threshold.number_of_deviations == 2
+        assert module.use_advanced.value
 
     def test_04_10_01_load_new_robust_background(self):
         #
@@ -2822,9 +2774,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
@@ -2845,12 +2795,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 module,
                 cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects,
             )
-            self.assertEqual(module.threshold.lower_outlier_fraction, 0.1)
-            self.assertEqual(module.threshold.upper_outlier_fraction, 0.2)
-            self.assertEqual(module.threshold.number_of_deviations, 2.5)
-            self.assertEqual(module.threshold.averaging_method, averaging_method)
-            self.assertEqual(module.threshold.variance_method, variance_method)
-            self.assertTrue(module.use_advanced.value)
+            assert module.threshold.lower_outlier_fraction == 0.1
+            assert module.threshold.upper_outlier_fraction == 0.2
+            assert module.threshold.number_of_deviations == 2.5
+            assert module.threshold.averaging_method == averaging_method
+            assert module.threshold.variance_method == variance_method
+            assert module.use_advanced.value
 
     def test_05_01_discard_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -2882,31 +2832,25 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(objects.segmented[25, 25], 1, "The small object was not there")
-        self.assertEqual(
-            objects.segmented[100, 100], 0, "The large object was not filtered out"
-        )
-        self.assertTrue(
-            objects.small_removed_segmented[25, 25] > 0,
-            "The small object was not in the small_removed label set",
-        )
-        self.assertTrue(
-            objects.small_removed_segmented[100, 100] > 0,
-            "The large object was not in the small-removed label set",
-        )
-        self.assertTrue(
-            objects.unedited_segmented[25, 25],
-            "The small object was not in the unedited set",
-        )
-        self.assertTrue(
-            objects.unedited_segmented[100, 100],
-            "The large object was not in the unedited set",
-        )
+        assert objects.segmented[25, 25] == 1, "The small object was not there"
+        assert objects.segmented[100, 100] == 0, "The large object was not filtered out"
+        assert (
+            objects.small_removed_segmented[25, 25] > 0
+        ), "The small object was not in the small_removed label set"
+        assert (
+            objects.small_removed_segmented[100, 100] > 0
+        ), "The large object was not in the small-removed label set"
+        assert objects.unedited_segmented[
+            25, 25
+        ], "The small object was not in the unedited set"
+        assert objects.unedited_segmented[
+            100, 100
+        ], "The large object was not in the unedited set"
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 1)
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 1
 
     def test_05_02_keep_large(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -2938,23 +2882,19 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertTrue(objects.segmented[25, 25], "The small object was not there")
-        self.assertTrue(
-            objects.segmented[100, 100], "The large object was filtered out"
-        )
-        self.assertTrue(
-            objects.unedited_segmented[25, 25],
-            "The small object was not in the unedited set",
-        )
-        self.assertTrue(
-            objects.unedited_segmented[100, 100],
-            "The large object was not in the unedited set",
-        )
+        assert objects.segmented[25, 25], "The small object was not there"
+        assert objects.segmented[100, 100], "The large object was filtered out"
+        assert objects.unedited_segmented[
+            25, 25
+        ], "The small object was not in the unedited set"
+        assert objects.unedited_segmented[
+            100, 100
+        ], "The large object was not in the unedited set"
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 2)
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 2
 
     def test_05_03_discard_small(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -2986,33 +2926,25 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             )
         )
         objects = object_set.get_objects("my_object")
-        self.assertEqual(
-            objects.segmented[25, 25], 0, "The small object was not filtered out"
-        )
-        self.assertEqual(
-            objects.segmented[100, 100], 1, "The large object was not present"
-        )
-        self.assertTrue(
-            objects.small_removed_segmented[25, 25] == 0,
-            "The small object was in the small_removed label set",
-        )
-        self.assertTrue(
-            objects.small_removed_segmented[100, 100] > 0,
-            "The large object was not in the small-removed label set",
-        )
-        self.assertTrue(
-            objects.unedited_segmented[25, 25],
-            "The small object was not in the unedited set",
-        )
-        self.assertTrue(
-            objects.unedited_segmented[100, 100],
-            "The large object was not in the unedited set",
-        )
+        assert objects.segmented[25, 25] == 0, "The small object was not filtered out"
+        assert objects.segmented[100, 100] == 1, "The large object was not present"
+        assert (
+            objects.small_removed_segmented[25, 25] == 0
+        ), "The small object was in the small_removed label set"
+        assert (
+            objects.small_removed_segmented[100, 100] > 0
+        ), "The large object was not in the small-removed label set"
+        assert objects.unedited_segmented[
+            25, 25
+        ], "The small object was not in the unedited set"
+        assert objects.unedited_segmented[
+            100, 100
+        ], "The large object was not in the unedited set"
         location_center_x = measurements.get_current_measurement(
             "my_object", "Location_Center_X"
         )
-        self.assertTrue(isinstance(location_center_x, numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape), 1)
+        assert isinstance(location_center_x, numpy.ndarray)
+        assert numpy.product(location_center_x.shape) == 1
 
     def test_05_02_discard_edge(self):
         x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -3046,16 +2978,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         objects = object_set.get_objects("my_object")
         for center, p in zip(centers, present):
             if p:
-                self.assertTrue(objects.segmented[center[0], center[1]] > 0)
-                self.assertTrue(
-                    objects.small_removed_segmented[center[0], center[1]] > 0
-                )
+                assert objects.segmented[center[0], center[1]] > 0
+                assert objects.small_removed_segmented[center[0], center[1]] > 0
             else:
-                self.assertTrue(objects.segmented[center[0], center[1]] == 0)
-                self.assertTrue(
-                    objects.small_removed_segmented[center[0], center[1]] == 0
-                )
-            self.assertTrue(objects.unedited_segmented[center[0], center[1]] > 0)
+                assert objects.segmented[center[0], center[1]] == 0
+                assert objects.small_removed_segmented[center[0], center[1]] == 0
+            assert objects.unedited_segmented[center[0], center[1]] > 0
 
     def test_05_03_discard_with_mask(self):
         """Check discard of objects that are on the border of a mask"""
@@ -3092,16 +3020,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         objects = object_set.get_objects("my_object")
         for center, p in zip(centers, present):
             if p:
-                self.assertTrue(objects.segmented[center[0], center[1]] > 0)
-                self.assertTrue(
-                    objects.small_removed_segmented[center[0], center[1]] > 0
-                )
+                assert objects.segmented[center[0], center[1]] > 0
+                assert objects.small_removed_segmented[center[0], center[1]] > 0
             else:
-                self.assertTrue(objects.segmented[center[0], center[1]] == 0)
-                self.assertTrue(
-                    objects.small_removed_segmented[center[0], center[1]] == 0
-                )
-            self.assertTrue(objects.unedited_segmented[center[0], center[1]] > 0)
+                assert objects.segmented[center[0], center[1]] == 0
+                assert objects.small_removed_segmented[center[0], center[1]] == 0
+            assert objects.unedited_segmented[center[0], center[1]] > 0
 
     def test_06_01_regression_diagonal(self):
         """Regression test - was using one-connected instead of 3-connected structuring element"""
@@ -3134,12 +3058,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented[img > 0] == 1))
-        self.assertTrue(numpy.all(img[segmented == 1] > 0))
+        assert numpy.all(segmented[img > 0] == 1)
+        assert numpy.all(img[segmented == 1] > 0)
 
     def test_06_02_regression_adaptive_mask(self):
         """Regression test - mask all but one pixel / adaptive"""
@@ -3167,11 +3091,11 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 pipeline, x, image_set, object_set, measurements, None
             )
         )
-        self.assertEqual(len(object_set.object_names), 1)
-        self.assertTrue("my_object" in object_set.object_names)
+        assert len(object_set.object_names) == 1
+        assert "my_object" in object_set.object_names
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        assert numpy.all(segmented == 0)
 
     # def test_11_01_test_robust_background_fly(self):
     #     image = fly_image()
@@ -3230,13 +3154,11 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 cellprofiler.measurement.COLTYPE_INTEGER,
             )
         ]
-        self.assertEqual(len(columns), len(expected_columns))
+        assert len(columns) == len(expected_columns)
         for column in columns:
-            self.assertTrue(
-                any(
-                    all([colval == exval for colval, exval in zip(column, expected)])
-                    for expected in expected_columns
-                )
+            assert any(
+                all([colval == exval for colval, exval in zip(column, expected)])
+                for expected in expected_columns
             )
 
     def test_17_01_regression_holes(self):
@@ -3342,12 +3264,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         measurements = workspace.measurements
         x.run(workspace)
         my_objects = workspace.object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(my_objects.segmented[3, 3] != 0)
+        assert my_objects.segmented[3, 3] != 0
         if my_objects.unedited_segmented[3, 3] == 2:
             unedited_segmented = my_objects.unedited_segmented
         else:
             unedited_segmented = numpy.array([0, 2, 1])[my_objects.unedited_segmented]
-        self.assertTrue(numpy.all(unedited_segmented[mask] == expected[mask]))
+        assert numpy.all(unedited_segmented[mask] == expected[mask])
 
     def test_17_02_regression_holes(self):
         """Regression test - fill holes caused by filtered object
@@ -3457,8 +3379,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         )
         x.run(workspace)
         my_objects = object_set.get_objects("my_object")
-        self.assertTrue(my_objects.segmented[3, 3] != 0)
-        self.assertTrue(numpy.all(my_objects.segmented[mask] == expected[mask]))
+        assert my_objects.segmented[3, 3] != 0
+        assert numpy.all(my_objects.segmented[mask] == expected[mask])
 
     def test_18_02_erase_objects(self):
         """Set up a limit on the # of objects and exceed it - erasing objects"""
@@ -3495,12 +3417,10 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             pipeline, x, image_set, object_set, measurements, image_set_list
         )
         x.run(workspace)
-        self.assertEqual(
-            measurements.get_current_image_measurement("Count_my_object"), 0
-        )
+        assert measurements.get_current_image_measurement("Count_my_object") == 0
         my_objects = object_set.get_objects("my_object")
-        self.assertTrue(numpy.all(my_objects.segmented == 0))
-        self.assertEqual(numpy.max(my_objects.unedited_segmented), 4)
+        assert numpy.all(my_objects.segmented == 0)
+        assert numpy.max(my_objects.unedited_segmented) == 4
 
     def test_18_03_dont_erase_objects(self):
         """Ask to erase objects, but don't"""
@@ -3537,11 +3457,9 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             pipeline, x, image_set, object_set, measurements, image_set_list
         )
         x.run(workspace)
-        self.assertEqual(
-            measurements.get_current_image_measurement("Count_my_object"), 4
-        )
+        assert measurements.get_current_image_measurement("Count_my_object") == 4
         my_objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(my_objects.segmented), 4)
+        assert numpy.max(my_objects.segmented) == 4
 
     def test_19_01_threshold_by_measurement(self):
         """Set threshold based on mean image intensity"""
@@ -3579,15 +3497,10 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             pipeline, x, image_set, object_set, measurements, image_set_list
         )
         x.run(workspace)
-        self.assertEqual(
-            measurements.get_current_image_measurement("Count_MyObject"), 1
-        )
-        self.assertEqual(
-            measurements.get_current_image_measurement(
-                "Threshold_FinalThreshold_MyObject"
-            ),
-            numpy.mean(pixels),
-        )
+        assert measurements.get_current_image_measurement("Count_MyObject") == 1
+        assert measurements.get_current_image_measurement(
+            "Threshold_FinalThreshold_MyObject"
+        ) == numpy.mean(pixels)
 
     def test_20_01_threshold_smoothing_automatic(self):
         image = numpy.array(
@@ -3773,13 +3686,13 @@ class TestWeightedVariance(unittest.TestCase):
         output = centrosome.threshold.weighted_variance(
             numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
         )
-        self.assertEqual(output, 0)
+        assert output == 0
 
     def test_02_zero_wv(self):
         output = centrosome.threshold.weighted_variance(
             numpy.zeros((3, 3)), numpy.ones((3, 3), bool), numpy.ones((3, 3), bool)
         )
-        self.assertEqual(output, 0)
+        assert output == 0
 
     def test_03_fg_0_bg_0(self):
         """Test all foreground pixels same, all background same, wv = 0"""
@@ -3789,7 +3702,7 @@ class TestWeightedVariance(unittest.TestCase):
         output = centrosome.threshold.weighted_variance(
             img, numpy.ones(img.shape, bool), binary_image
         )
-        self.assertEqual(output, 0)
+        assert output == 0
 
     def test_04_values(self):
         """Test with two foreground and two background values"""
@@ -3801,7 +3714,7 @@ class TestWeightedVariance(unittest.TestCase):
         output = centrosome.threshold.weighted_variance(
             img, numpy.ones((2, 2), bool), binary_image
         )
-        self.assertAlmostEqual(output, 0.25)
+        assert round(abs(output - 0.25), 7) == 0
 
     def test_05_mask(self):
         """Test, masking out one of the background values"""
@@ -3814,7 +3727,7 @@ class TestWeightedVariance(unittest.TestCase):
         mask = numpy.array([[False, True, True], [False, True, True]])
         binary_image = numpy.array([[False, False, False], [True, True, True]])
         output = centrosome.threshold.weighted_variance(img, mask, binary_image)
-        self.assertAlmostEqual(output, 0.25)
+        assert round(abs(output - 0.25), 7) == 0
 
 
 class TestSumOfEntropies(unittest.TestCase):
@@ -3822,14 +3735,14 @@ class TestSumOfEntropies(unittest.TestCase):
         output = centrosome.threshold.sum_of_entropies(
             numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
         )
-        self.assertEqual(output, 0)
+        assert output == 0
 
     def test_020_all_zero(self):
         """Can't take the log of zero, so all zero matrix = 0"""
         output = centrosome.threshold.sum_of_entropies(
             numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
         )
-        self.assertAlmostEqual(output, 0)
+        assert round(abs(output - 0), 7) == 0
 
     def test_03_fg_bg_equal(self):
         img = numpy.ones((128, 128))
@@ -3854,7 +3767,7 @@ class TestSumOfEntropies(unittest.TestCase):
         of = centrosome.threshold.sum_of_entropies(
             img, one_of_each | binary_mask, binary_mask
         )
-        self.assertAlmostEqual(output, ob + of)
+        assert round(abs(output - ob + of), 7) == 0
 
     def test_04_fg_bg_different(self):
         img = numpy.ones((128, 128))
@@ -3875,4 +3788,4 @@ class TestSumOfEntropies(unittest.TestCase):
         of = centrosome.threshold.sum_of_entropies(
             img, one_of_each | binary_mask, binary_mask
         )
-        self.assertAlmostEqual(output, ob + of)
+        assert round(abs(output - ob + of), 7) == 0

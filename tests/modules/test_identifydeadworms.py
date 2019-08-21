@@ -42,18 +42,18 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
-        self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.object_name, "DeadWorms")
-        self.assertEqual(module.worm_width, 6)
-        self.assertEqual(module.worm_length, 114)
-        self.assertEqual(module.angle_count, 180)
-        self.assertTrue(module.wants_automatic_distance)
+        assert isinstance(module, ID.IdentifyDeadWorms)
+        assert module.image_name == "BinaryWorms"
+        assert module.object_name == "DeadWorms"
+        assert module.worm_width == 6
+        assert module.worm_length == 114
+        assert module.angle_count == 180
+        assert module.wants_automatic_distance
 
     def test_01_01_load_v2(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
@@ -73,20 +73,20 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
-        self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.object_name, "DeadWorms")
-        self.assertEqual(module.worm_width, 6)
-        self.assertEqual(module.worm_length, 114)
-        self.assertEqual(module.angle_count, 180)
-        self.assertFalse(module.wants_automatic_distance)
-        self.assertEqual(module.space_distance, 6)
-        self.assertEqual(module.angular_distance, 45)
+        assert isinstance(module, ID.IdentifyDeadWorms)
+        assert module.image_name == "BinaryWorms"
+        assert module.object_name == "DeadWorms"
+        assert module.worm_width == 6
+        assert module.worm_length == 114
+        assert module.angle_count == 180
+        assert not module.wants_automatic_distance
+        assert module.space_distance == 6
+        assert module.angular_distance == 45
 
     def make_workspace(self, pixel_data, mask=None):
         image = cpi.Image(pixel_data, mask)
@@ -103,8 +103,8 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -126,7 +126,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         count = workspace.measurements.get_current_image_measurement(
             "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
         )
-        self.assertEqual(count, 0)
+        assert count == 0
 
     def test_02_02_one_worm(self):
         """Find a single worm"""
@@ -145,24 +145,24 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         module.angle_count.value = 16
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         count = m.get_current_image_measurement(
             "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
         )
-        self.assertEqual(count, 1)
+        assert count == 1
         x = m.get_current_measurement(
             OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X
         )
-        self.assertEqual(len(x), 1)
-        self.assertAlmostEqual(x[0], 9.0, 1)
+        assert len(x) == 1
+        assert round(abs(x[0] - 9.0), 1) == 0
         y = m.get_current_measurement(
             OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y
         )
-        self.assertEqual(len(y), 1)
-        self.assertAlmostEqual(y[0], 10.0, 1)
+        assert len(y) == 1
+        assert round(abs(y[0] - 10.0), 1) == 0
         a = m.get_current_measurement(OBJECTS_NAME, ID.M_ANGLE)
-        self.assertEqual(len(a), 1)
-        self.assertAlmostEqual(a[0], 135, 0)
+        assert len(a) == 1
+        assert round(abs(a[0] - 135), 0) == 0
 
     def test_02_03_crossing_worms(self):
         """Find two worms that cross"""
@@ -188,36 +188,36 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         module.angle_count.value = 16
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         count = m.get_current_image_measurement(
             "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
         )
-        self.assertEqual(count, 2)
+        assert count == 2
         a = m.get_current_measurement(OBJECTS_NAME, ID.M_ANGLE)
-        self.assertEqual(len(a), 2)
+        assert len(a) == 2
         if a[0] > 90:
             order = np.array([0, 1])
         else:
             order = np.array([1, 0])
-        self.assertAlmostEqual(a[order[0]], 135, 0)
-        self.assertAlmostEqual(a[order[1]], 45, 0)
+        assert round(abs(a[order[0]] - 135), 0) == 0
+        assert round(abs(a[order[1]] - 45), 0) == 0
         x = m.get_current_measurement(
             OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X
         )
-        self.assertEqual(len(x), 2)
-        self.assertAlmostEqual(x[order[0]], 9.0, 0)
-        self.assertAlmostEqual(x[order[1]], 10.0, 0)
+        assert len(x) == 2
+        assert round(abs(x[order[0]] - 9.0), 0) == 0
+        assert round(abs(x[order[1]] - 10.0), 0) == 0
         y = m.get_current_measurement(
             OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y
         )
-        self.assertEqual(len(y), 2)
-        self.assertAlmostEqual(y[order[0]], 10.0, 0)
-        self.assertAlmostEqual(y[order[1]], 9.0, 0)
+        assert len(y) == 2
+        assert round(abs(y[order[0]] - 10.0), 0) == 0
+        assert round(abs(y[order[1]] - 9.0), 0) == 0
 
     def test_03_01_measurement_columns(self):
         """Test get_measurement_columns"""
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        assert isinstance(module, ID.IdentifyDeadWorms)
         columns = module.get_measurement_columns(workspace.pipeline)
         expected = (
             (
@@ -242,34 +242,33 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
                 cpmeas.COLTYPE_INTEGER,
             ),
         )
-        self.assertEqual(len(columns), len(expected))
+        assert len(columns) == len(expected)
         for e in expected:
-            self.assertTrue(
-                any(all([x == y for x, y in zip(c, e)]) for c in columns),
-                "could not find " + repr(e),
-            )
+            assert any(
+                all([x == y for x, y in zip(c, e)]) for c in columns
+            ), "could not find " + repr(e)
 
     def test_04_01_find_adjacent_by_distance_empty(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        assert isinstance(module, ID.IdentifyDeadWorms)
 
         first, second = module.find_adjacent_by_distance(
             np.zeros(0), np.zeros(0), np.zeros(0)
         )
-        self.assertEqual(len(first), 0)
-        self.assertEqual(len(second), 0)
+        assert len(first) == 0
+        assert len(second) == 0
 
     def test_04_02_find_adjacent_by_distance_one(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        assert isinstance(module, ID.IdentifyDeadWorms)
 
         first, second = module.find_adjacent_by_distance(
             np.zeros(1), np.zeros(1), np.zeros(1)
         )
-        self.assertEqual(len(first), 1)
-        self.assertEqual(first[0], 0)
-        self.assertEqual(len(second), 1)
-        self.assertEqual(second[0], 0)
+        assert len(first) == 1
+        assert first[0] == 0
+        assert len(second) == 1
+        assert second[0] == 0
 
     def test_04_03_find_adjacent_by_distance_easy(self):
         #
@@ -277,7 +276,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         # within the space_distance
         #
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        assert isinstance(module, ID.IdentifyDeadWorms)
         module.space_distance.value = 10
         # Take find_adjacent_by_distance internals into account: consecutive i
         # will create a single cross-product
@@ -291,13 +290,13 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         order = np.lexsort((second, first))
         first = first[order]
         second = second[order]
-        self.assertEqual(len(first), 50)
-        self.assertEqual(len(second), 50)
+        assert len(first) == 50
+        assert len(second) == 50
         for i in range(50):
-            self.assertEqual(first[i], int(i / 5))
+            assert first[i] == int(i / 5)
         for i in range(25):
-            self.assertEqual(second[i], i % 5)
-            self.assertEqual(second[i + 25], (i % 5) + 5)
+            assert second[i] == i % 5
+            assert second[i + 25] == (i % 5) + 5
 
     def test_04_04_find_adjacent_by_distance_hard(self):
         #
@@ -305,7 +304,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         # within the space_distance
         #
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
-        self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
+        assert isinstance(module, ID.IdentifyDeadWorms)
         module.space_distance.value = 10
         r = np.random.RandomState(44)
         for idx, scramble in enumerate(
@@ -339,7 +338,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
             unscramble = np.zeros(13, int)
             unscramble[scramble] = np.arange(13)
             first, second = module.find_adjacent_by_distance(i, j, a)
-            self.assertEqual(len(first), 9 + 16 + 25 + 1)
-            self.assertEqual(len(second), 9 + 16 + 25 + 1)
+            assert len(first) == 9 + 16 + 25 + 1
+            assert len(second) == 9 + 16 + 25 + 1
             for f, s in zip(first, second):
-                self.assertTrue((i[f] - i[s]) ** 2 + (j[f] - j[s]) ** 2 <= 100)
+                assert (i[f] - i[s]) ** 2 + (j[f] - j[s]) ** 2 <= 100

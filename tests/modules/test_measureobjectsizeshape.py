@@ -35,7 +35,7 @@ class TestMeasureObjectSizeShape(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -57,24 +57,19 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(
-                module,
-                cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape,
-            )
+        assert isinstance(
+            module, cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape
         )
-        self.assertEqual(len(module.object_groups), 2)
+        assert len(module.object_groups) == 2
         for og, expected in zip(module.object_groups, ("Nuclei", "Cells")):
-            self.assertEqual(og.name, expected)
-        self.assertTrue(module.calculate_zernikes)
+            assert og.name == expected
+        assert module.calculate_zernikes
 
     def test_01_00_zeros(self):
         """Run on an empty labels matrix"""
@@ -123,7 +118,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         ):
             m = cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + f
             a = measurements.get_current_measurement("SomeObjects", m)
-            self.assertEqual(len(a), 0)
+            assert len(a) == 0
 
     def test_01_02_run(self):
         """Run with a rectangle, cross and circle"""
@@ -161,16 +156,16 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.features_and_columns_match(measurements, module, pipeline)
 
         a = measurements.get_current_measurement("SomeObjects", "AreaShape_Area")
-        self.assertEqual(len(a), 2)
-        self.assertEqual(a[0], 32)
-        self.assertEqual(a[1], 20)
+        assert len(a) == 2
+        assert a[0] == 32
+        assert a[1] == 20
         #
         # Mini-test of the form factor of a circle
         #
         ff = measurements.get_current_measurement(
             "OtherObjects", "AreaShape_FormFactor"
         )
-        self.assertEqual(len(ff), 1)
+        assert len(ff) == 1
         perim = measurements.get_current_measurement(
             "OtherObjects", "AreaShape_Perimeter"
         )
@@ -178,23 +173,23 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         # The perimeter is obtained geometrically and is overestimated.
         expected = 100 * numpy.pi
         diff = abs((perim[0] - expected) / (perim[0] + expected))
-        self.assertTrue(diff < 0.05, "perimeter off by %f" % diff)
+        assert diff < 0.05, "perimeter off by %f" % diff
         wrongness = (perim[0] / expected) ** 2
 
         # It's an approximate circle...
         expected = numpy.pi * 50.0 ** 2
         diff = abs((area[0] - expected) / (area[0] + expected))
-        self.assertTrue(diff < 0.05, "area off by %f" % diff)
+        assert diff < 0.05, "area off by %f" % diff
         wrongness *= expected / area[0]
 
-        self.assertAlmostEqual(ff[0] * wrongness, 1.0)
+        assert round(abs(ff[0] * wrongness - 1.0), 7) == 0
         for object_name, object_count in (("SomeObjects", 2), ("OtherObjects", 1)):
             for measurement in module.get_measurements(
                 pipeline, object_name, "AreaShape"
             ):
                 feature_name = "AreaShape_%s" % measurement
                 m = measurements.get_current_measurement(object_name, feature_name)
-                self.assertEqual(len(m), object_count)
+                assert len(m) == object_count
 
     def test_02_01_categories(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
@@ -202,9 +197,9 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module.set_settings_from_values(settings, 1, module.module_class())
         for object_name in settings[:-1]:
             categories = module.get_categories(None, object_name)
-            self.assertEqual(len(categories), 1)
-            self.assertEqual(categories[0], "AreaShape")
-        self.assertEqual(len(module.get_categories(None, "Bogus")), 0)
+            assert len(categories) == 1
+            assert categories[0] == "AreaShape"
+        assert len(module.get_categories(None, "Bogus")) == 0
 
     def test_02_02_measurements_zernike(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
@@ -217,8 +212,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 cellprofiler.modules.measureobjectsizeshape.F_STANDARD
                 + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
             ):
-                self.assertTrue(measurement in measurements)
-            self.assertTrue("Zernike_3_1" in measurements)
+                assert measurement in measurements
+            assert "Zernike_3_1" in measurements
 
     def test_02_03_measurements_no_zernike(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
@@ -231,8 +226,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 cellprofiler.modules.measureobjectsizeshape.F_STANDARD
                 + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
             ):
-                self.assertTrue(measurement in measurements)
-            self.assertFalse("Zernike_3_1" in measurements)
+                assert measurement in measurements
+            assert not ("Zernike_3_1" in measurements)
 
     def test_03_01_non_contiguous(self):
         """make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects"""
@@ -253,7 +248,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         workspace = cellprofiler.workspace.Workspace(
@@ -268,8 +263,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         values = measurements.get_current_measurement(
             "SomeObjects", "AreaShape_Perimeter"
         )
-        self.assertEqual(len(values), 1)
-        self.assertEqual(values[0], 54)
+        assert len(values) == 1
+        assert values[0] == 54
 
     def test_03_02_zernikes_are_different(self):
         """Regression test of IMG-773"""
@@ -297,7 +292,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         workspace = cellprofiler.workspace.Workspace(
@@ -316,8 +311,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         ]
         for feature in features:
             values = measurements.get_current_measurement("SomeObjects", feature)
-            self.assertEqual(len(values), 2)
-            self.assertNotEqual(values[0], values[1])
+            assert len(values) == 2
+            assert values[0] != values[1]
 
     def test_04_01_extent(self):
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
@@ -338,7 +333,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
+            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
         pipeline.add_listener(callback)
         workspace = cellprofiler.workspace.Workspace(
@@ -359,8 +354,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                 )
             ),
         )
-        self.assertEqual(len(values), 1)
-        self.assertAlmostEqual(values[0], 0.75)
+        assert len(values) == 1
+        assert round(abs(values[0] - 0.75), 7) == 0
 
     def test_05_01_overlapping(self):
         """Test object measurement with two overlapping objects in ijv format"""
@@ -401,9 +396,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             pipeline.add_module(module)
 
             def callback(caller, event):
-                self.assertFalse(
-                    isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
-                )
+                assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
                 pipeline.add_listener(callback)
 
             workspace = cellprofiler.workspace.Workspace(
@@ -422,19 +415,17 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             if oname != "SomeObjects":
                 continue
             measurements = mlist[0]
-            self.assertTrue(
-                isinstance(measurements, cellprofiler.measurement.Measurements)
-            )
+            assert isinstance(measurements, cellprofiler.measurement.Measurements)
             v1 = measurements.get_current_measurement(oname, feature)
-            self.assertEqual(len(v1), 1)
+            assert len(v1) == 1
             v1 = v1[0]
             measurements = mlist[1]
             v2 = measurements.get_current_measurement(oname, feature)
-            self.assertEqual(len(v2), 1)
+            assert len(v2) == 1
             v2 = v2[0]
             expected = (v1, v2)
             v = mlist[2].get_current_measurement(oname, feature)
-            self.assertEqual(tuple(v), expected)
+            assert tuple(v) == expected
 
     def test_06_01_max_radius(self):
         labels = numpy.zeros((20, 10), int)
@@ -449,22 +440,22 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             + "_"
             + cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
         )
-        self.assertEqual(len(max_radius), 2)
-        self.assertEqual(max_radius[0], 2)
-        self.assertEqual(max_radius[1], 3)
+        assert len(max_radius) == 2
+        assert max_radius[0] == 2
+        assert max_radius[1] == 3
 
     def features_and_columns_match(self, measurements, module, pipeline):
-        self.assertEqual(len(measurements.get_object_names()), 3)
-        self.assertTrue("SomeObjects" in measurements.get_object_names())
-        self.assertTrue("OtherObjects" in measurements.get_object_names())
+        assert len(measurements.get_object_names()) == 3
+        assert "SomeObjects" in measurements.get_object_names()
+        assert "OtherObjects" in measurements.get_object_names()
         features = measurements.get_feature_names("SomeObjects")
         features += measurements.get_feature_names("OtherObjects")
         columns = module.get_measurement_columns(pipeline)
-        self.assertEqual(len(features), len(columns))
+        assert len(features) == len(columns)
         for column in columns:
-            self.assertTrue(column[0] in ["SomeObjects", "OtherObjects"])
-            self.assertTrue(column[1] in features)
-            self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_FLOAT)
+            assert column[0] in ["SomeObjects", "OtherObjects"]
+            assert column[1] in features
+            assert column[2] == cellprofiler.measurement.COLTYPE_FLOAT
 
     def test_run_volume(self):
         labels = numpy.zeros((10, 20, 40), dtype=numpy.uint8)

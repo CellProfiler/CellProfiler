@@ -359,36 +359,32 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(six.moves.StringIO(data))
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(
-            module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY
+        assert isinstance(module, cellprofiler.modules.imagemath.ImageMath)
+        assert module.operation == cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY
+        assert module.exponent == 1.5
+        assert module.after_factor == 0.5
+        assert module.addend == 0.1
+        assert module.truncate_low
+        assert not module.truncate_high
+        assert module.ignore_mask
+        assert module.output_image_name == "LogTransformed"
+        assert (
+            module.images[0].image_or_measurement
+            == cellprofiler.modules.imagemath.IM_IMAGE
         )
-        self.assertEqual(module.exponent, 1.5)
-        self.assertEqual(module.after_factor, 0.5)
-        self.assertEqual(module.addend, 0.1)
-        self.assertTrue(module.truncate_low)
-        self.assertFalse(module.truncate_high)
-        self.assertTrue(module.ignore_mask)
-        self.assertEqual(module.output_image_name, "LogTransformed")
-        self.assertEqual(
-            module.images[0].image_or_measurement,
-            cellprofiler.modules.imagemath.IM_IMAGE,
+        assert module.images[0].image_name == "DNA"
+        assert module.images[0].factor == 1.2
+        assert (
+            module.images[1].image_or_measurement
+            == cellprofiler.modules.imagemath.IM_MEASUREMENT
         )
-        self.assertEqual(module.images[0].image_name, "DNA")
-        self.assertEqual(module.images[0].factor, 1.2)
-        self.assertEqual(
-            module.images[1].image_or_measurement,
-            cellprofiler.modules.imagemath.IM_MEASUREMENT,
-        )
-        self.assertEqual(module.images[1].measurement, "Count_Nuclei")
-        self.assertEqual(module.images[1].factor, 1.5)
+        assert module.images[1].measurement == "Count_Nuclei"
+        assert module.images[1].factor == 1.5
 
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -461,36 +457,32 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(six.moves.StringIO(data))
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
-        self.assertEqual(
-            module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM
+        assert isinstance(module, cellprofiler.modules.imagemath.ImageMath)
+        assert module.operation == cellprofiler.modules.imagemath.O_LOG_TRANSFORM
+        assert module.exponent == 1.5
+        assert module.after_factor == 0.5
+        assert module.addend == 0.1
+        assert module.truncate_low
+        assert not module.truncate_high
+        assert module.ignore_mask
+        assert module.output_image_name == "LogTransformed"
+        assert (
+            module.images[0].image_or_measurement
+            == cellprofiler.modules.imagemath.IM_IMAGE
         )
-        self.assertEqual(module.exponent, 1.5)
-        self.assertEqual(module.after_factor, 0.5)
-        self.assertEqual(module.addend, 0.1)
-        self.assertTrue(module.truncate_low)
-        self.assertFalse(module.truncate_high)
-        self.assertTrue(module.ignore_mask)
-        self.assertEqual(module.output_image_name, "LogTransformed")
-        self.assertEqual(
-            module.images[0].image_or_measurement,
-            cellprofiler.modules.imagemath.IM_IMAGE,
+        assert module.images[0].image_name == "DNA"
+        assert module.images[0].factor == 1.2
+        assert (
+            module.images[1].image_or_measurement
+            == cellprofiler.modules.imagemath.IM_MEASUREMENT
         )
-        self.assertEqual(module.images[0].image_name, "DNA")
-        self.assertEqual(module.images[0].factor, 1.2)
-        self.assertEqual(
-            module.images[1].image_or_measurement,
-            cellprofiler.modules.imagemath.IM_MEASUREMENT,
-        )
-        self.assertEqual(module.images[1].measurement, "Count_Nuclei")
-        self.assertEqual(module.images[1].factor, 1.5)
+        assert module.images[1].measurement == "Count_Nuclei"
+        assert module.images[1].factor == 1.5
 
     def run_imagemath(self, images, modify_module_fn=None, measurement=None):
         """Run the ImageMath module, returning the image created
@@ -540,16 +532,16 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         if mask is None and not image.has_crop_mask:
             numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
-            self.assertFalse(image.has_mask)
+            assert not image.has_mask
         elif mask is not None and ignore:
             numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
-            self.assertTrue(image.has_mask)
+            assert image.has_mask
         elif mask is not None and not ignore:
-            self.assertTrue(image.has_mask)
+            assert image.has_mask
 
             if not image.has_crop_mask:
-                self.assertTrue(numpy.all(mask == image.mask))
+                assert numpy.all(mask == image.mask)
 
             numpy.testing.assert_array_almost_equal(
                 image.pixel_data[image.mask], expected[image.mask]
@@ -831,7 +823,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             {"pixel_data": numpy.random.uniform(size=(10, 10)) > 0.5} for i in range(2)
         ]
         output = self.run_imagemath(images, fn)
-        self.assertTrue(output.pixel_data.dtype == numpy.bool)
+        assert output.pixel_data.dtype == numpy.bool
 
     def test_06_01_divide(self):
         def fn(module):

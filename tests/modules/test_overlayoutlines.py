@@ -76,25 +76,21 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
 """
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines)
-        )
-        self.assertFalse(module.blank_image)
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.output_image_name, "PrimaryOverlay")
-        self.assertEqual(module.wants_color, "Color")
-        self.assertEqual(
-            module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE
-        )
-        self.assertEqual(module.line_mode.value, "Inner")
-        self.assertEqual(len(module.outlines), 2)
+        assert isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines)
+        assert not module.blank_image
+        assert module.image_name == "DNA"
+        assert module.output_image_name == "PrimaryOverlay"
+        assert module.wants_color == "Color"
+        assert module.max_type == cellprofiler.modules.overlayoutlines.MAX_IMAGE
+        assert module.line_mode.value == "Inner"
+        assert len(module.outlines) == 2
         for outline, name, color in zip(
             module.outlines, ("PrimaryOutlines", "SecondaryOutlines"), ("Red", "Green")
         ):
-            self.assertEqual(outline.objects_name.value, cellprofiler.setting.NONE)
-            self.assertEqual(outline.color, color)
+            assert outline.objects_name.value == cellprofiler.setting.NONE
+            assert outline.color == color
 
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -123,20 +119,16 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
 """
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(
-            isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines)
-        )
-        self.assertFalse(module.blank_image)
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.output_image_name, "PrimaryOverlay")
-        self.assertEqual(module.wants_color, "Color")
-        self.assertEqual(
-            module.max_type, cellprofiler.modules.overlayoutlines.MAX_IMAGE
-        )
-        self.assertEqual(module.line_mode.value, "Inner")
-        self.assertEqual(len(module.outlines), 2)
+        assert isinstance(module, cellprofiler.modules.overlayoutlines.OverlayOutlines)
+        assert not module.blank_image
+        assert module.image_name == "DNA"
+        assert module.output_image_name == "PrimaryOverlay"
+        assert module.wants_color == "Color"
+        assert module.max_type == cellprofiler.modules.overlayoutlines.MAX_IMAGE
+        assert module.line_mode.value == "Inner"
+        assert len(module.outlines) == 2
         for outline, name, color, choice, objects_name in (
             (
                 module.outlines[0],
@@ -153,8 +145,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
                 "Cells",
             ),
         ):
-            self.assertEqual(outline.color, color)
-            self.assertEqual(outline.objects_name, objects_name)
+            assert outline.color == color
+            assert outline.objects_name == objects_name
 
     def test_02_01_gray_to_color_outlines(self):
         numpy.random.seed(0)
@@ -253,7 +245,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.line_mode.value = "Inner"
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output_image.pixel_data == expected))
+        assert numpy.all(output_image.pixel_data == expected)
 
     def test_03_01_blank_to_gray(self):
         numpy.random.seed(0)

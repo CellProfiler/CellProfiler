@@ -46,50 +46,45 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
-        self.assertTrue(module.wants_metadata)
-        self.assertEqual(len(module.extraction_methods), 2)
+        assert isinstance(module, cellprofiler.modules.metadata.Metadata)
+        assert module.wants_metadata
+        assert len(module.extraction_methods) == 2
         em0, em1 = module.extraction_methods
-        self.assertEqual(
-            em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
+        assert (
+            em0.extraction_method == cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
         )
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
-        self.assertEqual(
-            em0.file_regexp.value,
-            r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$",
+        assert em0.source == cellprofiler.modules.metadata.XM_FILE_NAME
+        assert (
+            em0.file_regexp.value
+            == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
         )
-        self.assertEqual(
-            em0.folder_regexp.value, r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-        )
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
-        self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
-        self.assertFalse(em0.wants_case_insensitive)
+        assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
+        assert em0.filter_choice == cellprofiler.modules.metadata.F_ALL_IMAGES
+        assert em0.filter == 'or (file does contain "Channel2")'
+        assert not em0.wants_case_insensitive
 
-        self.assertEqual(
-            em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+        assert (
+            em1.extraction_method == cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
         )
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(
-            em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert em1.source == cellprofiler.modules.metadata.XM_FOLDER_NAME
+        assert em1.filter_choice == cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert (
+            em1.csv_location.get_dir_choice()
+            == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         )
-        self.assertEqual(
-            em1.csv_location.get_dir_choice(), cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        assert em1.csv_location.get_custom_path() == "/imaging/analysis"
+        assert em1.csv_filename.value == "metadata.csv"
+        assert (
+            em1.csv_joiner.value
+            == "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]"
         )
-        self.assertEqual(em1.csv_location.get_custom_path(), "/imaging/analysis")
-        self.assertEqual(em1.csv_filename.value, "metadata.csv")
-        self.assertEqual(
-            em1.csv_joiner.value,
-            "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]",
-        )
-        self.assertFalse(em1.wants_case_insensitive)
+        assert not em1.wants_case_insensitive
 
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -123,50 +118,45 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
-        self.assertTrue(module.wants_metadata)
-        self.assertEqual(len(module.extraction_methods), 2)
+        assert isinstance(module, cellprofiler.modules.metadata.Metadata)
+        assert module.wants_metadata
+        assert len(module.extraction_methods) == 2
         em0, em1 = module.extraction_methods
-        self.assertEqual(
-            em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
+        assert (
+            em0.extraction_method == cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
         )
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
-        self.assertEqual(
-            em0.file_regexp.value,
-            r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$",
+        assert em0.source == cellprofiler.modules.metadata.XM_FILE_NAME
+        assert (
+            em0.file_regexp.value
+            == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
         )
-        self.assertEqual(
-            em0.folder_regexp.value, r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-        )
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
-        self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
-        self.assertFalse(em0.wants_case_insensitive)
+        assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
+        assert em0.filter_choice == cellprofiler.modules.metadata.F_ALL_IMAGES
+        assert em0.filter == 'or (file does contain "Channel2")'
+        assert not em0.wants_case_insensitive
 
-        self.assertEqual(
-            em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+        assert (
+            em1.extraction_method == cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
         )
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(
-            em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert em1.source == cellprofiler.modules.metadata.XM_FOLDER_NAME
+        assert em1.filter_choice == cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert (
+            em1.csv_location.get_dir_choice()
+            == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         )
-        self.assertEqual(
-            em1.csv_location.get_dir_choice(), cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        assert em1.csv_location.get_custom_path() == "/imaging/analysis"
+        assert em1.csv_filename.value == "metadata.csv"
+        assert (
+            em1.csv_joiner.value
+            == "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]"
         )
-        self.assertEqual(em1.csv_location.get_custom_path(), "/imaging/analysis")
-        self.assertEqual(em1.csv_filename.value, "metadata.csv")
-        self.assertEqual(
-            em1.csv_joiner.value,
-            "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]",
-        )
-        self.assertTrue(em1.wants_case_insensitive)
+        assert em1.wants_case_insensitive
 
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -200,53 +190,46 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
-        self.assertTrue(module.wants_metadata)
-        self.assertEqual(
-            module.data_type_choice, cellprofiler.modules.metadata.DTC_TEXT
-        )
-        self.assertEqual(len(module.extraction_methods), 2)
+        assert isinstance(module, cellprofiler.modules.metadata.Metadata)
+        assert module.wants_metadata
+        assert module.data_type_choice == cellprofiler.modules.metadata.DTC_TEXT
+        assert len(module.extraction_methods) == 2
         em0, em1 = module.extraction_methods
-        self.assertEqual(
-            em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
+        assert (
+            em0.extraction_method == cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
         )
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
-        self.assertEqual(
-            em0.file_regexp.value,
-            r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$",
+        assert em0.source == cellprofiler.modules.metadata.XM_FILE_NAME
+        assert (
+            em0.file_regexp.value
+            == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
         )
-        self.assertEqual(
-            em0.folder_regexp.value, r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-        )
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
-        self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
-        self.assertFalse(em0.wants_case_insensitive)
+        assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
+        assert em0.filter_choice == cellprofiler.modules.metadata.F_ALL_IMAGES
+        assert em0.filter == 'or (file does contain "Channel2")'
+        assert not em0.wants_case_insensitive
 
-        self.assertEqual(
-            em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+        assert (
+            em1.extraction_method == cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
         )
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(
-            em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert em1.source == cellprofiler.modules.metadata.XM_FOLDER_NAME
+        assert em1.filter_choice == cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert (
+            em1.csv_location.get_dir_choice()
+            == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         )
-        self.assertEqual(
-            em1.csv_location.get_dir_choice(), cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        assert em1.csv_location.get_custom_path() == "/imaging/analysis"
+        assert em1.csv_filename.value == "metadata.csv"
+        assert (
+            em1.csv_joiner.value
+            == "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]"
         )
-        self.assertEqual(em1.csv_location.get_custom_path(), "/imaging/analysis")
-        self.assertEqual(em1.csv_filename.value, "metadata.csv")
-        self.assertEqual(
-            em1.csv_joiner.value,
-            "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]",
-        )
-        self.assertTrue(em1.wants_case_insensitive)
+        assert em1.wants_case_insensitive
 
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -282,19 +265,15 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.metadata.Metadata))
-        self.assertTrue(module.wants_metadata)
-        self.assertEqual(
-            module.data_type_choice, cellprofiler.modules.metadata.DTC_CHOOSE
-        )
+        assert isinstance(module, cellprofiler.modules.metadata.Metadata)
+        assert module.wants_metadata
+        assert module.data_type_choice == cellprofiler.modules.metadata.DTC_CHOOSE
         d = cellprofiler.setting.DataTypes.decode_data_types(
             module.data_types.value_text
         )
@@ -304,42 +283,39 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
             ("WellColumn", cellprofiler.setting.DataTypes.DT_FLOAT),
             ("ChannelNumber", cellprofiler.setting.DataTypes.DT_INTEGER),
         ):
-            self.assertTrue(k in d)
-            self.assertEqual(d[k], v)
-        self.assertEqual(len(module.extraction_methods), 2)
+            assert k in d
+            assert d[k] == v
+        assert len(module.extraction_methods) == 2
         em0, em1 = module.extraction_methods
-        self.assertEqual(
-            em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
+        assert (
+            em0.extraction_method == cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
         )
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
-        self.assertEqual(
-            em0.file_regexp.value,
-            r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$",
+        assert em0.source == cellprofiler.modules.metadata.XM_FILE_NAME
+        assert (
+            em0.file_regexp.value
+            == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
         )
-        self.assertEqual(
-            em0.folder_regexp.value, r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-        )
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
-        self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
-        self.assertFalse(em0.wants_case_insensitive)
+        assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
+        assert em0.filter_choice == cellprofiler.modules.metadata.F_ALL_IMAGES
+        assert em0.filter == 'or (file does contain "Channel2")'
+        assert not em0.wants_case_insensitive
 
-        self.assertEqual(
-            em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+        assert (
+            em1.extraction_method == cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
         )
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(
-            em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert em1.source == cellprofiler.modules.metadata.XM_FOLDER_NAME
+        assert em1.filter_choice == cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        assert (
+            em1.csv_location.get_dir_choice()
+            == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         )
-        self.assertEqual(
-            em1.csv_location.get_dir_choice(), cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        assert em1.csv_location.get_custom_path() == "/imaging/analysis"
+        assert em1.csv_filename.value == "metadata.csv"
+        assert (
+            em1.csv_joiner.value
+            == "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]"
         )
-        self.assertEqual(em1.csv_location.get_custom_path(), "/imaging/analysis")
-        self.assertEqual(em1.csv_filename.value, "metadata.csv")
-        self.assertEqual(
-            em1.csv_joiner.value,
-            "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]",
-        )
-        self.assertTrue(em1.wants_case_insensitive)
+        assert em1.wants_case_insensitive
 
     def test_01_05_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -376,28 +352,25 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
 
         em0, em1 = module.extraction_methods
 
-        self.assertEqual(
-            em0.csv_location.get_dir_choice(), cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        assert (
+            em0.csv_location.get_dir_choice()
+            == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         )
-        self.assertEqual(em0.csv_location.get_custom_path(), "/imaging/analysis")
-        self.assertEqual(em0.csv_filename.value, "metadata.csv")
+        assert em0.csv_location.get_custom_path() == "/imaging/analysis"
+        assert em0.csv_filename.value == "metadata.csv"
 
-        self.assertEqual(
-            em1.csv_location.get_dir_choice(), cellprofiler.setting.URL_FOLDER_NAME
-        )
-        self.assertEqual(em1.csv_location.get_custom_path(), "https://cellprofiler.org")
-        self.assertEqual(em1.csv_filename.value, "metadata.csv")
+        assert em1.csv_location.get_dir_choice() == cellprofiler.setting.URL_FOLDER_NAME
+        assert em1.csv_location.get_custom_path() == "https://cellprofiler.org"
+        assert em1.csv_filename.value == "metadata.csv"
 
     def check(self, module, url, dd, keys=None, xml=None):
         """Check that running the metadata module on a url generates the expected dictionary"""
@@ -418,13 +391,13 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         if xml is not None:
             file_list.add_metadata(url, xml)
         ipds = pipeline.get_image_plane_details(workspace)
-        self.assertEqual(len(ipds), len(dd))
+        assert len(ipds) == len(dd)
         for d, ipd in zip(dd, ipds):
-            self.assertDictContainsSubset(d, ipd.metadata)
+            assert dict(ipd.metadata, **d) == ipd.metadata
         all_keys = list(pipeline.get_available_metadata_keys().keys())
         if keys is not None:
             for key in keys:
-                self.assertIn(key, all_keys)
+                assert key in all_keys
 
     def test_02_01_get_metadata_from_filename(self):
         module = cellprofiler.modules.metadata.Metadata()
@@ -582,7 +555,7 @@ C10,BRD041618,1.5,2
             module.set_module_num(2)
             pipeline.add_module(module)
             columns = module.get_measurement_columns(pipeline)
-            self.assertFalse(any([c[1] == "Counter" for c in columns]))
+            assert not any([c[1] == "Counter" for c in columns])
             for feature_name, data_type in (
                 (
                     "Metadata_Treatment",
@@ -590,15 +563,13 @@ C10,BRD041618,1.5,2
                 ),
                 ("Metadata_Dose", cellprofiler.measurement.COLTYPE_FLOAT),
             ):
-                self.assertTrue(
-                    any(
-                        [
-                            c[0] == cellprofiler.measurement.IMAGE
-                            and c[1] == feature_name
-                            and c[2] == data_type
-                            for c in columns
-                        ]
-                    )
+                assert any(
+                    [
+                        c[0] == cellprofiler.measurement.IMAGE
+                        and c[1] == feature_name
+                        and c[2] == data_type
+                        for c in columns
+                    ]
                 )
         finally:
             try:
@@ -958,10 +929,9 @@ C10,BRD041618,bar
             pipeline.add_module(imgs)
             module.set_module_num(2)
             pipeline.add_module(module)
-            self.assertIn(
-                cellprofiler.measurement.M_WELL,
-                [c[1] for c in module.get_measurement_columns(pipeline)],
-            )
+            assert cellprofiler.measurement.M_WELL in [
+                c[1] for c in module.get_measurement_columns(pipeline)
+            ]
 
     def test_03_02_well_row_column_before_import(self):
         # Regression test for issue #1347

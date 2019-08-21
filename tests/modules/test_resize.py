@@ -47,21 +47,17 @@ class TestResize(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[1]
-        self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "ResizedDNA")
-        self.assertEqual(module.size_method, cellprofiler.modules.resize.R_BY_FACTOR)
-        self.assertAlmostEqual(module.resizing_factor.value, 0.25)
-        self.assertEqual(
-            module.interpolation, cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
-        )
+        assert module.x_name == "DNA"
+        assert module.y_name == "ResizedDNA"
+        assert module.size_method == cellprofiler.modules.resize.R_BY_FACTOR
+        assert round(abs(module.resizing_factor.value - 0.25), 7) == 0
+        assert module.interpolation == cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
 
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -93,30 +89,28 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))
-        self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "ResizedDNA")
-        self.assertEqual(module.size_method, cellprofiler.modules.resize.R_TO_SIZE)
-        self.assertAlmostEqual(module.resizing_factor.value, 0.25)
-        self.assertEqual(module.specific_width, 141)
-        self.assertEqual(module.specific_height, 169)
-        self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_BILINEAR)
-        self.assertEqual(module.additional_image_count.value, 1)
+        assert isinstance(module, cellprofiler.modules.resize.Resize)
+        assert module.x_name == "DNA"
+        assert module.y_name == "ResizedDNA"
+        assert module.size_method == cellprofiler.modules.resize.R_TO_SIZE
+        assert round(abs(module.resizing_factor.value - 0.25), 7) == 0
+        assert module.specific_width == 141
+        assert module.specific_height == 169
+        assert module.interpolation == cellprofiler.modules.resize.I_BILINEAR
+        assert module.additional_image_count.value == 1
         additional_image = module.additional_images[0]
-        self.assertEqual(additional_image.input_image_name, "Actin")
-        self.assertEqual(additional_image.output_image_name, "ResizedActin")
+        assert additional_image.input_image_name == "Actin"
+        assert additional_image.output_image_name == "ResizedActin"
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.resize.Resize))
-        self.assertEqual(module.interpolation, cellprofiler.modules.resize.I_BICUBIC)
+        assert isinstance(module, cellprofiler.modules.resize.Resize)
+        assert module.interpolation == cellprofiler.modules.resize.I_BICUBIC
 
     def make_workspace(
         self, image, size_method, interpolation, mask=None, cropping=None, dimensions=2
@@ -290,7 +284,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(expected.shape == result.shape)
+        assert expected.shape == result.shape
 
     def test_05_01_resize_with_cropping(self):
         # This is a regression test for issue # 967
@@ -312,10 +306,10 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.resizing_factor.value = 0.5
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertEqual(tuple(result.mask.shape), (5, 10))
-        self.assertEqual(tuple(result.crop_mask.shape), (5, 10))
+        assert tuple(result.mask.shape) == (5, 10)
+        assert tuple(result.crop_mask.shape) == (5, 10)
         x = result.crop_image_similarly(numpy.zeros(result.crop_mask.shape))
-        self.assertEqual(tuple(x.shape), (5, 10))
+        assert tuple(x.shape) == (5, 10)
 
     def test_05_02_resize_with_cropping_bigger(self):
         # This is a regression test for issue # 967
@@ -337,10 +331,10 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.resizing_factor.value = 2
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertEqual(tuple(result.mask.shape), (20, 40))
-        self.assertEqual(tuple(result.crop_mask.shape), (20, 40))
+        assert tuple(result.mask.shape) == (20, 40)
+        assert tuple(result.crop_mask.shape) == (20, 40)
         x = result.crop_image_similarly(numpy.zeros(result.crop_mask.shape))
-        self.assertEqual(tuple(x.shape), (20, 40))
+        assert tuple(x.shape) == (20, 40)
 
     def test_05_03_resize_color(self):
         # Regression test of issue #1416
@@ -353,7 +347,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.resizing_factor.value = 0.5
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))
+        assert tuple(result.pixel_data.shape) == (10, 11, 3)
 
     def test_05_04_resize_color_bw(self):
         # Regression test of issue #1416
@@ -371,7 +365,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertEqual(tuple(result.pixel_data.shape), (5, 11, 3))
+        assert tuple(result.pixel_data.shape) == (5, 11, 3)
 
     def test_05_05_resize_color_color(self):
         # Regression test of issue #1416
@@ -389,7 +383,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         )
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))
+        assert tuple(result.pixel_data.shape) == (10, 11, 3)
 
     def test_06_01_resize_volume_factor_grayscale(self):
         numpy.random.seed(73)

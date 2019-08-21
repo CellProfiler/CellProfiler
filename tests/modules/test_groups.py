@@ -31,17 +31,17 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, G.Groups))
-        self.assertTrue(module.wants_groups)
-        self.assertEqual(module.grouping_metadata_count.value, 1)
+        assert isinstance(module, G.Groups)
+        assert module.wants_groups
+        assert module.grouping_metadata_count.value == 1
         g0 = module.grouping_metadata[0]
-        self.assertEqual(g0.metadata_choice, "Plate")
+        assert g0.metadata_choice == "Plate"
 
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -59,17 +59,17 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, G.Groups))
-        self.assertTrue(module.wants_groups)
-        self.assertEqual(module.grouping_metadata_count.value, 1)
+        assert isinstance(module, G.Groups)
+        assert module.wants_groups
+        assert module.grouping_metadata_count.value == 1
         g0 = module.grouping_metadata[0]
-        self.assertEqual(g0.metadata_choice, "Plate")
+        assert g0.metadata_choice == "Plate"
 
     def make_image_sets(self, key_metadata, channel_metadata):
         """Make image sets by permuting key and channel metadata
@@ -126,7 +126,11 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         # Scramble the image sets
         #
         r = np.random.RandomState()
-        r.seed(np.frombuffer("".join(["%s=%s" % kv for kv in key_metadata]).encode(), np.uint8))
+        r.seed(
+            np.frombuffer(
+                "".join(["%s=%s" % kv for kv in key_metadata]).encode(), np.uint8
+            )
+        )
         image_sets = [image_sets[i] for i in r.permutation(len(image_sets))]
 
         m = cpmeas.Measurements()
@@ -184,12 +188,12 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         expected_file_names = m[
             cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + "DNA", image_numbers
         ]
-        self.assertTrue(groups.prepare_run(workspace))
-        self.assertEqual(len(image_numbers), 2 * 3 * 4)
+        assert groups.prepare_run(workspace)
+        assert len(image_numbers) == 2 * 3 * 4
         output_file_names = m[
             cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + "DNA", image_numbers
         ]
-        self.assertSequenceEqual(list(expected_file_names), list(output_file_names))
+        assert list(expected_file_names) == list(output_file_names)
 
     def test_02_01_group_on_one(self):
         groups = G.Groups()
@@ -220,7 +224,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_numbers = m.get_image_numbers()
-        self.assertEqual(len(image_numbers), 24)
+        assert len(image_numbers) == 24
         np.testing.assert_array_equal(
             np.hstack([np.ones(12, int), np.ones(12, int) * 2]),
             m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers],
@@ -233,27 +237,24 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         key_list, groupings = pipeline.get_groupings(workspace)
-        self.assertEqual(len(key_list), 1)
-        self.assertEqual(key_list[0], "Metadata_Plate")
-        self.assertEqual(len(groupings), 2)
+        assert len(key_list) == 1
+        assert key_list[0] == "Metadata_Plate"
+        assert len(groupings) == 2
 
         for group_number, plate, (grouping, image_set_list) in zip(
             (1, 2), ("P-12345", "P-23456"), groupings
         ):
-            self.assertDictEqual(grouping, dict(Metadata_Plate=plate))
-            self.assertEqual(len(image_set_list), 3 * 4)
-            self.assertSequenceEqual(
-                list(image_set_list),
-                list(range((group_number - 1) * 12 + 1, group_number * 12 + 1)),
+            assert grouping == dict(Metadata_Plate=plate)
+            assert len(image_set_list) == 3 * 4
+            assert list(image_set_list) == list(
+                range((group_number - 1) * 12 + 1, group_number * 12 + 1)
             )
             for image_number in range(
                 1 + (group_number - 1) * 12, 1 + group_number * 12
             ):
                 for image_name in ("DNA", "GFP"):
                     ftr = "_".join((cpmeas.C_FILE_NAME, image_name))
-                    self.assertTrue(
-                        m[cpmeas.IMAGE, ftr, image_number].startswith(plate)
-                    )
+                    assert m[cpmeas.IMAGE, ftr, image_number].startswith(plate)
 
     def test_02_01_group_on_two(self):
         groups, workspace = self.make_image_sets(
@@ -281,7 +282,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         groups.grouping_metadata[0].metadata_choice.value = "Plate"
         groups.add_grouping_metadata()
         groups.grouping_metadata[1].metadata_choice.value = "Site"
-        self.assertTrue(groups.prepare_run(workspace))
+        assert groups.prepare_run(workspace)
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_numbers = m.get_image_numbers()
@@ -289,25 +290,25 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         key_list, groupings = pipeline.get_groupings(workspace)
-        self.assertEqual(len(key_list), 2)
-        self.assertEqual(key_list[0], "Metadata_Plate")
-        self.assertEqual(key_list[1], "Metadata_Site")
-        self.assertEqual(len(groupings), 8)
+        assert len(key_list) == 2
+        assert key_list[0] == "Metadata_Plate"
+        assert key_list[1] == "Metadata_Site"
+        assert len(groupings) == 8
 
         idx = 0
         for plate in ("P-12345", "P-23456"):
             for site in ("1", "2", "3", "4"):
                 grouping, image_set_list = groupings[idx]
                 idx += 1
-                self.assertEqual(grouping["Metadata_Plate"], plate)
-                self.assertEqual(grouping["Metadata_Site"], site)
-                self.assertEqual(len(image_set_list), 3)
+                assert grouping["Metadata_Plate"] == plate
+                assert grouping["Metadata_Site"] == site
+                assert len(image_set_list) == 3
                 ftr = "_".join((cpmeas.C_FILE_NAME, "DNA"))
                 for image_number in image_set_list:
                     file_name = m[cpmeas.IMAGE, ftr, image_number]
                     p, w, s, rest = file_name.split("_")
-                    self.assertEqual(p, plate)
-                    self.assertEqual(s, site)
+                    assert p == plate
+                    assert s == site
 
     def test_03_01_get_measurement_columns_nogroups(self):
         #
@@ -316,7 +317,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         groups = G.Groups()
         groups.wants_groups.value = False
         columns = groups.get_measurement_columns(None)
-        self.assertEqual(len(columns), 0)
+        assert len(columns) == 0
 
     def test_03_02_get_measurement_columns_groups(self):
         #
@@ -332,15 +333,15 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             groups.grouping_metadata[i].metadata_choice.choices.extend(choices)
             groups.grouping_metadata[i].metadata_choice.value = choice
         columns = groups.get_measurement_columns(None)
-        self.assertEqual(len(columns), 4)
+        assert len(columns) == 4
         column = columns[0]
-        self.assertEqual(column[0], cpmeas.EXPERIMENT)
-        self.assertEqual(column[1], cpmeas.M_GROUPING_TAGS)
-        self.assertTrue(column[2].startswith(cpmeas.COLTYPE_VARCHAR))
+        assert column[0] == cpmeas.EXPERIMENT
+        assert column[1] == cpmeas.M_GROUPING_TAGS
+        assert column[2].startswith(cpmeas.COLTYPE_VARCHAR)
         column_metadata = []
         for column in columns[1:]:
-            self.assertEqual(column[0], cpmeas.IMAGE)
-            self.assertEqual(column[2], cpmeas.COLTYPE_VARCHAR)
+            assert column[0] == cpmeas.IMAGE
+            assert column[2] == cpmeas.COLTYPE_VARCHAR
             column_metadata.append(column[1])
         for choice in choices:
-            self.assertTrue(cpmeas.C_METADATA + "_" + choice in column_metadata)
+            assert cpmeas.C_METADATA + "_" + choice in column_metadata

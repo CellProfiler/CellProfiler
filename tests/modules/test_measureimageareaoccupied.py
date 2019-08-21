@@ -53,14 +53,14 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), 0.0)
-        self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), 100)
+        assert m.get_current_measurement("Image", mn("AreaOccupied")) == 0.0
+        assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
         columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cellprofiler.measurement.IMAGE)
-        self.assertEqual(len(columns), len(features))
+        assert len(columns) == len(features)
         for column in columns:
-            self.assertTrue(column[1] in features)
+            assert column[1] in features
 
     def test_01_01_one_object(self):
         labels = numpy.zeros((10, 10), int)
@@ -75,10 +75,8 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(
-            m.get_current_measurement("Image", mn("AreaOccupied")), area_occupied
-        )
-        self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), 100)
+        assert m.get_current_measurement("Image", mn("AreaOccupied")) == area_occupied
+        assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
     def test_01_02_object_with_cropping(self):
         labels = numpy.zeros((10, 10), int)
@@ -98,13 +96,9 @@ class TestMeasureImageArea(unittest.TestCase):
         def mn(x):
             return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(
-            m.get_current_measurement("Image", mn("AreaOccupied")), area_occupied
-        )
-        self.assertEqual(m.get_current_measurement("Image", mn("Perimeter")), perimeter)
-        self.assertEqual(
-            m.get_current_measurement("Image", mn("TotalArea")), total_area
-        )
+        assert m.get_current_measurement("Image", mn("AreaOccupied")) == area_occupied
+        assert m.get_current_measurement("Image", mn("Perimeter")) == perimeter
+        assert m.get_current_measurement("Image", mn("TotalArea")) == total_area
 
     def test_02_01_get_measurement_columns(self):
         module = (
@@ -130,10 +124,10 @@ class TestMeasureImageArea(unittest.TestCase):
                 cellprofiler.measurement.COLTYPE_FLOAT,
             ),
         )
-        self.assertEqual(len(columns), len(expected))
+        assert len(columns) == len(expected)
         for column in columns:
-            self.assertTrue(
-                any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
+            assert any(
+                [all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected]
             )
 
     def test_objects_volume(self):
@@ -246,9 +240,7 @@ MeasureImageAreaOccupied:[module_num:1|svn_version:\'Unknown\'|variable_revision
 """
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-            )
+            assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(callback)

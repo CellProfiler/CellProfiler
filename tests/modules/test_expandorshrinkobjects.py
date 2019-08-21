@@ -66,20 +66,20 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
-        self.assertTrue(OUTLINES_NAME not in workspace.get_outline_names())
+        assert numpy.all(objects.segmented == expected)
+        assert OUTLINES_NAME not in workspace.get_outline_names()
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         count = m.get_current_image_measurement("Count_" + OUTPUT_NAME)
         if not numpy.isscalar(count):
             count = count[0]
-        self.assertEqual(count, 1)
+        assert count == 1
         location_x = m.get_current_measurement(OUTPUT_NAME, "Location_Center_X")
-        self.assertEqual(len(location_x), 1)
-        self.assertEqual(location_x[0], 4)
+        assert len(location_x) == 1
+        assert location_x[0] == 4
         location_y = m.get_current_measurement(OUTPUT_NAME, "Location_Center_Y")
-        self.assertEqual(len(location_y), 1)
-        self.assertEqual(location_y[0], 4)
+        assert len(location_y) == 1
+        assert location_y[0] == 4
 
     def test_02_02_expand_twice(self):
         '''Expand an object "twice"'''
@@ -92,7 +92,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)
 
     def test_02_03_expand_two(self):
         """Expand two objects once"""
@@ -108,7 +108,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)
 
     def test_03_01_expand_inf(self):
         """Expand two objects infinitely"""
@@ -122,8 +122,8 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented[distance < 0] == 1))
-        self.assertTrue(numpy.all(objects.segmented[distance > 0] == 2))
+        assert numpy.all(objects.segmented[distance < 0] == 1)
+        assert numpy.all(objects.segmented[distance > 0] == 2)
 
     def test_04_01_divide(self):
         """Divide two touching objects"""
@@ -136,7 +136,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)
 
     def test_04_02_dont_divide(self):
         """Don't divide an object that would disappear"""
@@ -151,7 +151,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)
 
     def test_05_01_shrink(self):
         """Shrink once"""
@@ -163,7 +163,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)
 
     def test_06_01_shrink_inf(self):
         """Shrink infinitely"""
@@ -176,7 +176,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)
 
     def test_06_02_shrink_inf_fill_holes(self):
         """Shrink infinitely after filling a hole"""
@@ -191,7 +191,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertFalse(numpy.all(objects.segmented == expected))
+        assert not numpy.all(objects.segmented == expected)
         # Test success after filling the hole
         workspace, module = self.make_workspace(
             labels,
@@ -200,4 +200,4 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         )
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(numpy.all(objects.segmented == expected))
+        assert numpy.all(objects.segmented == expected)

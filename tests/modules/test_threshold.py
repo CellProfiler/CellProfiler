@@ -55,9 +55,7 @@ class TestThreshold(unittest.TestCase):
         return workspace, module
 
     def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
-        self.assertEqual(
-            cellprofiler.modules.threshold.Threshold.variable_revision_number, 10
-        )
+        assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 10
 
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -134,29 +132,23 @@ class TestThreshold(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
-        self.assertEqual(module.x_name.value, "RainbowPony")
-        self.assertEqual(module.y_name.value, "GrayscalePony")
-        self.assertEqual(
-            module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL
+        assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+        assert module.x_name.value == "RainbowPony"
+        assert module.y_name.value == "GrayscalePony"
+        assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
+        assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+        assert module.threshold_smoothing_scale.value == 1.3488
+        assert module.threshold_correction_factor.value == 1.1
+        assert module.threshold_range.min == 0.07
+        assert module.threshold_range.max == 0.99
+        assert module.manual_threshold.value == 0.1
+        assert module.thresholding_measurement.value == "Pony_Perimeter"
+        assert module.two_class_otsu.value == cellprofiler.modules.threshold.O_TWO_CLASS
+        assert (
+            module.assign_middle_to_foreground.value
+            == cellprofiler.modules.threshold.O_FOREGROUND
         )
-        self.assertEqual(
-            module.global_operation.value, cellprofiler.modules.threshold.TM_LI
-        )
-        self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
-        self.assertEqual(module.threshold_correction_factor.value, 1.1)
-        self.assertEqual(module.threshold_range.min, 0.07)
-        self.assertEqual(module.threshold_range.max, 0.99)
-        self.assertEqual(module.manual_threshold.value, 0.1)
-        self.assertEqual(module.thresholding_measurement.value, "Pony_Perimeter")
-        self.assertEqual(
-            module.two_class_otsu.value, cellprofiler.modules.threshold.O_TWO_CLASS
-        )
-        self.assertEqual(
-            module.assign_middle_to_foreground.value,
-            cellprofiler.modules.threshold.O_FOREGROUND,
-        )
-        self.assertEqual(module.adaptive_window_size.value, 13)
+        assert module.adaptive_window_size.value == 13
 
     def test_01_08_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -240,29 +232,23 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|show_
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
-        self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "ThreshBlue")
-        self.assertEqual(
-            module.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+        assert module.x_name == "DNA"
+        assert module.y_name == "ThreshBlue"
+        assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
+        assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+        assert module.threshold_smoothing_scale == 0
+        assert module.threshold_correction_factor == 1.0
+        assert module.threshold_range.min == 0.0
+        assert module.threshold_range.max == 1.0
+        assert module.manual_threshold == 0.0
+        assert module.thresholding_measurement == "None"
+        assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+        assert (
+            module.assign_middle_to_foreground
+            == cellprofiler.modules.threshold.O_FOREGROUND
         )
-        self.assertEqual(
-            module.global_operation.value, cellprofiler.modules.threshold.TM_LI
-        )
-        self.assertEqual(module.threshold_smoothing_scale, 0)
-        self.assertEqual(module.threshold_correction_factor, 1.0)
-        self.assertEqual(module.threshold_range.min, 0.0)
-        self.assertEqual(module.threshold_range.max, 1.0)
-        self.assertEqual(module.manual_threshold, 0.0)
-        self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(
-            module.two_class_otsu, cellprofiler.modules.threshold.O_TWO_CLASS
-        )
-        self.assertEqual(
-            module.assign_middle_to_foreground,
-            cellprofiler.modules.threshold.O_FOREGROUND,
-        )
-        self.assertEqual(module.adaptive_window_size, 50)
+        assert module.adaptive_window_size == 50
 
     def test_01_09_load_v9(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -401,53 +387,37 @@ Threshold:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[4]
-        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
-        self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "Threshold")
-        self.assertEqual(
-            module.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+        assert module.x_name == "DNA"
+        assert module.y_name == "Threshold"
+        assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
+        assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+        assert module.threshold_smoothing_scale == 0
+        assert module.threshold_correction_factor == 1.0
+        assert module.threshold_range.min == 0.0
+        assert module.threshold_range.max == 1.0
+        assert module.manual_threshold == 0.0
+        assert module.thresholding_measurement == "None"
+        assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+        assert (
+            module.assign_middle_to_foreground
+            == cellprofiler.modules.threshold.O_FOREGROUND
         )
-        self.assertEqual(
-            module.global_operation.value, cellprofiler.modules.threshold.TM_LI
-        )
-        self.assertEqual(module.threshold_smoothing_scale, 0)
-        self.assertEqual(module.threshold_correction_factor, 1.0)
-        self.assertEqual(module.threshold_range.min, 0.0)
-        self.assertEqual(module.threshold_range.max, 1.0)
-        self.assertEqual(module.manual_threshold, 0.0)
-        self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(
-            module.two_class_otsu, cellprofiler.modules.threshold.O_TWO_CLASS
-        )
-        self.assertEqual(
-            module.assign_middle_to_foreground,
-            cellprofiler.modules.threshold.O_FOREGROUND,
-        )
-        self.assertEqual(module.adaptive_window_size, 50)
+        assert module.adaptive_window_size == 50
 
         module = pipeline.modules()[5]
-        self.assertEqual(
-            module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL
-        )
-        self.assertEqual(
-            module.global_operation.value, cellprofiler.modules.threshold.TM_MANUAL
-        )
+        assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
+        assert module.global_operation.value == cellprofiler.modules.threshold.TM_MANUAL
 
         module = pipeline.modules()[6]
-        self.assertEqual(
-            module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL
-        )
-        self.assertEqual(
-            module.global_operation.value, centrosome.threshold.TM_ROBUST_BACKGROUND
+        assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
+        assert (
+            module.global_operation.value == centrosome.threshold.TM_ROBUST_BACKGROUND
         )
 
         module = pipeline.modules()[7]
-        self.assertEqual(
-            module.threshold_scope.value, cellprofiler.modules.threshold.TS_GLOBAL
-        )
-        self.assertEqual(
-            module.global_operation.value, cellprofiler.modules.threshold.TM_LI
-        )
+        assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
+        assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
 
     def test_01_10_load_v10(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -530,30 +500,24 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.threshold.Threshold))
-        self.assertEqual(module.x_name, "DNA")
-        self.assertEqual(module.y_name, "Threshold")
-        self.assertEqual(
-            module.threshold_scope, cellprofiler.modules.threshold.TS_GLOBAL
+        assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+        assert module.x_name == "DNA"
+        assert module.y_name == "Threshold"
+        assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
+        assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+        assert module.threshold_smoothing_scale == 0
+        assert module.threshold_correction_factor == 1.0
+        assert module.threshold_range.min == 0.0
+        assert module.threshold_range.max == 1.0
+        assert module.manual_threshold == 0.0
+        assert module.thresholding_measurement == "None"
+        assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+        assert (
+            module.assign_middle_to_foreground
+            == cellprofiler.modules.threshold.O_FOREGROUND
         )
-        self.assertEqual(
-            module.global_operation.value, cellprofiler.modules.threshold.TM_LI
-        )
-        self.assertEqual(module.threshold_smoothing_scale, 0)
-        self.assertEqual(module.threshold_correction_factor, 1.0)
-        self.assertEqual(module.threshold_range.min, 0.0)
-        self.assertEqual(module.threshold_range.max, 1.0)
-        self.assertEqual(module.manual_threshold, 0.0)
-        self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(
-            module.two_class_otsu, cellprofiler.modules.threshold.O_TWO_CLASS
-        )
-        self.assertEqual(
-            module.assign_middle_to_foreground,
-            cellprofiler.modules.threshold.O_FOREGROUND,
-        )
-        self.assertEqual(module.adaptive_window_size, 50)
-        self.assertEqual(module.local_operation.value, centrosome.threshold.TM_OTSU)
+        assert module.adaptive_window_size == 50
+        assert module.local_operation.value == centrosome.threshold.TM_OTSU
 
     def test_04_01_binary_manual(self):
         """Test a binary threshold with manual threshold value"""
@@ -566,7 +530,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         module.manual_threshold.value = 0.5
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output.pixel_data == expected))
+        assert numpy.all(output.pixel_data == expected)
 
     def test_04_02_binary_global(self):
         """Test a binary threshold with Otsu global method"""
@@ -579,7 +543,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         module.global_operation.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output.pixel_data == expected))
+        assert numpy.all(output.pixel_data == expected)
 
     def test_04_03_binary_correction(self):
         """Test a binary threshold with a correction factor"""
@@ -593,7 +557,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         module.threshold_correction_factor.value = 0.5
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output.pixel_data == expected))
+        assert numpy.all(output.pixel_data == expected)
 
     def test_04_04_low_bounds(self):
         """Test a binary threshold with a low bound"""
@@ -608,7 +572,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         module.threshold_range.min = 0.7
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output.pixel_data == expected))
+        assert numpy.all(output.pixel_data == expected)
 
     def test_04_05_high_bounds(self):
         """Test a binary threshold with a high bound"""
@@ -622,7 +586,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
         module.threshold_range.max = 0.1
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(output.pixel_data == expected))
+        assert numpy.all(output.pixel_data == expected)
 
     def test_04_07_threshold_from_measurement(self):
         """Test a binary threshold from previous measurements"""
@@ -672,7 +636,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
         ]
-        self.assertAlmostEqual(m_threshold, threshold)
+        assert round(abs(m_threshold - threshold), 7) == 0
 
     def test_05_04_otsu3_high(self):
         """Test the three-class otsu, weighted variance middle = foreground"""
@@ -702,7 +666,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
         ]
-        self.assertAlmostEqual(m_threshold, threshold)
+        assert round(abs(m_threshold - threshold), 7) == 0
 
     def test_06_01_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small
@@ -728,9 +692,9 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
             cellprofiler.image.Image(image, mask=numpy.ones_like(image, bool)),
             workspace,
         )
-        self.assertTrue(threshold[0, 0] != threshold[0, 109])
-        self.assertTrue(threshold[0, 0] != threshold[119, 0])
-        self.assertTrue(threshold[0, 0] != threshold[119, 109])
+        assert threshold[0, 0] != threshold[0, 109]
+        assert threshold[0, 0] != threshold[119, 0]
+        assert threshold[0, 0] != threshold[119, 109]
 
     def test_06_01_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small
@@ -756,9 +720,9 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
             cellprofiler.image.Image(image, mask=numpy.ones_like(image, bool)),
             workspace,
         )
-        self.assertTrue(threshold[0, 0] != threshold[0, 109])
-        self.assertTrue(threshold[0, 0] != threshold[119, 0])
-        self.assertTrue(threshold[0, 0] != threshold[119, 109])
+        assert threshold[0, 0] != threshold[0, 109]
+        assert threshold[0, 0] != threshold[119, 0]
+        assert threshold[0, 0] != threshold[119, 109]
 
     def test_07_01_small_images(self):
         """Test mixture of gaussians thresholding with few pixels
@@ -792,7 +756,7 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
                 l1, g1 = x.get_threshold(
                     cellprofiler.image.Image(image, mask=mask), workspace
                 )
-                self.assertAlmostEqual(l1, l)
+                assert round(abs(l1 - l), 7) == 0
 
     def test_08_01_test_manual_background(self):
         """Test manual background"""
@@ -807,8 +771,8 @@ Threshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show
             ),
             workspace,
         )
-        self.assertTrue(threshold == 0.5)
-        self.assertTrue(threshold == 0.5)
+        assert threshold == 0.5
+        assert threshold == 0.5
 
     def test_09_01_threshold_li_uniform_image(self):
         workspace, module = self.make_workspace(0.1 * numpy.ones((10, 10)))

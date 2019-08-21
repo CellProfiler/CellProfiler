@@ -51,25 +51,25 @@ class TestFlipAndRotate(unittest.TestCase):
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
+        assert len(pipeline.modules()) == 2
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, F.FlipAndRotate))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.output_name, "FlippedOrigBlue")
-        self.assertEqual(module.flip_choice, F.FLIP_NONE)
-        self.assertEqual(module.rotate_choice, F.ROTATE_MOUSE)
-        self.assertFalse(module.wants_crop.value)
-        self.assertEqual(module.how_often, F.IO_INDIVIDUALLY)
-        self.assertEqual(module.angle, 0)
-        self.assertEqual(module.first_pixel.x, 0)
-        self.assertEqual(module.first_pixel.y, 0)
-        self.assertEqual(module.second_pixel.x, 0)
-        self.assertEqual(module.second_pixel.y, 100)
-        self.assertEqual(module.horiz_or_vert, F.C_HORIZONTALLY)
+        assert isinstance(module, F.FlipAndRotate)
+        assert module.image_name == "DNA"
+        assert module.output_name == "FlippedOrigBlue"
+        assert module.flip_choice == F.FLIP_NONE
+        assert module.rotate_choice == F.ROTATE_MOUSE
+        assert not module.wants_crop.value
+        assert module.how_often == F.IO_INDIVIDUALLY
+        assert module.angle == 0
+        assert module.first_pixel.x == 0
+        assert module.first_pixel.y == 0
+        assert module.second_pixel.x == 0
+        assert module.second_pixel.y == 100
+        assert module.horiz_or_vert == F.C_HORIZONTALLY
 
     def run_module(self, image, mask=None, fn=None):
         """Run the FlipAndRotate module
@@ -95,7 +95,7 @@ class TestFlipAndRotate(unittest.TestCase):
         pipeline.add_module(module)
 
         def error_callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            assert not isinstance(event, cpp.RunExceptionEvent)
 
         pipeline.add_listener(error_callback)
         measurements = cpmeas.Measurements()
@@ -104,7 +104,7 @@ class TestFlipAndRotate(unittest.TestCase):
         )
         module.run(workspace)
         feature = F.M_ROTATION_F % OUTPUT_IMAGE
-        self.assertTrue(feature in measurements.get_feature_names(cpmeas.IMAGE))
+        assert feature in measurements.get_feature_names(cpmeas.IMAGE)
         angle = measurements.get_current_image_measurement(feature)
         output_image = image_set.get_image(OUTPUT_IMAGE)
         return output_image, angle
@@ -121,17 +121,15 @@ class TestFlipAndRotate(unittest.TestCase):
         expected[:, 0] = image[:, 2]
 
         def fn(module):
-            self.assertTrue(isinstance(module, F.FlipAndRotate))
+            assert isinstance(module, F.FlipAndRotate)
             module.flip_choice.value = F.FLIP_LEFT_TO_RIGHT
             module.rotate_choice.value = F.ROTATE_NONE
 
         output_image, angle = self.run_module(image, mask=mask, fn=fn)
-        self.assertEqual(angle, 0)
-        self.assertTrue(np.all(output_image.mask == expected_mask))
-        self.assertTrue(
-            np.all(
-                np.abs(output_image.pixel_data - expected) <= np.finfo(np.float32).eps
-            )
+        assert angle == 0
+        assert np.all(output_image.mask == expected_mask)
+        assert np.all(
+            np.abs(output_image.pixel_data - expected) <= np.finfo(np.float32).eps
         )
 
     def test_02_02_flip_top_to_bottom(self):
@@ -146,16 +144,14 @@ class TestFlipAndRotate(unittest.TestCase):
         expected[0, :] = image[2, :]
 
         def fn(module):
-            self.assertTrue(isinstance(module, F.FlipAndRotate))
+            assert isinstance(module, F.FlipAndRotate)
             module.flip_choice.value = F.FLIP_TOP_TO_BOTTOM
             module.rotate_choice.value = F.ROTATE_NONE
 
         output_image, angle = self.run_module(image, mask=mask, fn=fn)
-        self.assertEqual(angle, 0)
-        self.assertTrue(np.all(output_image.mask == expected_mask))
-        self.assertTrue(
-            np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
-        )
+        assert angle == 0
+        assert np.all(output_image.mask == expected_mask)
+        assert np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
 
     def test_02_03_flip_both(self):
         np.random.seed(0)
@@ -170,16 +166,14 @@ class TestFlipAndRotate(unittest.TestCase):
         ]
 
         def fn(module):
-            self.assertTrue(isinstance(module, F.FlipAndRotate))
+            assert isinstance(module, F.FlipAndRotate)
             module.flip_choice.value = F.FLIP_BOTH
             module.rotate_choice.value = F.ROTATE_NONE
 
         output_image, angle = self.run_module(image, mask=mask, fn=fn)
-        self.assertEqual(angle, 0)
-        self.assertTrue(np.all(output_image.mask == expected_mask))
-        self.assertTrue(
-            np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
-        )
+        assert angle == 0
+        assert np.all(output_image.mask == expected_mask)
+        assert np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
 
     def test_03_01_rotate_angle(self):
         """Rotate an image through an angle"""
@@ -190,10 +184,10 @@ class TestFlipAndRotate(unittest.TestCase):
         i, j = np.mgrid[-5:6, -9:10]
         angle = np.arctan2(i.astype(float) / 5.0, j.astype(float) / 9.0)
         img = (1 + np.cos(angle)) / 2
-        self.assertAlmostEqual(img[5, 0], 0)
-        self.assertAlmostEqual(img[5, 18], 1)
-        self.assertAlmostEqual(img[0, 9], 0.5)
-        self.assertAlmostEqual(img[10, 9], 0.5)
+        assert round(abs(img[5, 0] - 0), 7) == 0
+        assert round(abs(img[5, 18] - 1), 7) == 0
+        assert round(abs(img[0, 9] - 0.5), 7) == 0
+        assert round(abs(img[10, 9] - 0.5), 7) == 0
         #
         # The pixels with low values get masked out
         #
@@ -204,14 +198,14 @@ class TestFlipAndRotate(unittest.TestCase):
         for angle in range(10, 360, 10):
 
             def fn(module, angle=angle):
-                self.assertTrue(isinstance(module, F.FlipAndRotate))
+                assert isinstance(module, F.FlipAndRotate)
                 module.flip_choice.value = F.FLIP_NONE
                 module.rotate_choice.value = F.ROTATE_ANGLE
                 module.wants_crop.value = False
                 module.angle.value = angle
 
             output_image, measured_angle = self.run_module(img, mask, fn)
-            self.assertAlmostEqual(measured_angle, angle, 3)
+            assert round(abs(measured_angle - angle), 3) == 0
             rangle = float(angle) * np.pi / 180.0
             pixel_data = output_image.pixel_data
             #
@@ -226,10 +220,10 @@ class TestFlipAndRotate(unittest.TestCase):
             )
             i_width = np.max(corners_out_i) - np.min(corners_out_i)
             j_width = np.max(corners_out_j) - np.min(corners_out_j)
-            self.assertTrue(i_width < pixel_data.shape[0])
-            self.assertTrue(i_width > pixel_data.shape[0] - 2)
-            self.assertTrue(j_width < pixel_data.shape[1])
-            self.assertTrue(j_width > pixel_data.shape[1] - 2)
+            assert i_width < pixel_data.shape[0]
+            assert i_width > pixel_data.shape[0] - 2
+            assert j_width < pixel_data.shape[1]
+            assert j_width > pixel_data.shape[1] - 2
             # The maximum rotates clockwise - i starts at center and increases
             # and j starts at max and decreases
             #
@@ -241,8 +235,8 @@ class TestFlipAndRotate(unittest.TestCase):
                 pixel_data.shape[1] - 1,
                 max(0, int(np.cos(rangle) * 8 + float(pixel_data.shape[1] / 2))),
             )
-            self.assertTrue(pixel_data[i_max, j_max] > 0.9)
-            self.assertTrue(output_image.mask[i_max, j_max])
+            assert pixel_data[i_max, j_max] > 0.9
+            assert output_image.mask[i_max, j_max]
             i_min = min(
                 pixel_data.shape[0] - 1,
                 max(0, int(np.sin(rangle) * 8 + float(pixel_data.shape[0]) / 2)),
@@ -251,15 +245,15 @@ class TestFlipAndRotate(unittest.TestCase):
                 pixel_data.shape[1] - 1,
                 max(0, int(-np.cos(rangle) * 8 + float(pixel_data.shape[1]) / 2)),
             )
-            self.assertTrue(pixel_data[i_min, j_min] < 0.1)
-            self.assertFalse(output_image.mask[i_min, j_min])
+            assert pixel_data[i_min, j_min] < 0.1
+            assert not output_image.mask[i_min, j_min]
             #
             # The corners of the image should be masked except for angle
             # in 90,180,270
             #
             if angle not in (90, 180, 270):
                 for ci, cj in ((0, 0), (-1, 0), (-1, -1), (0, -1)):
-                    self.assertFalse(output_image.mask[ci, cj])
+                    assert not output_image.mask[ci, cj]
 
     def test_03_02_rotate_coordinates(self):
         """Test rotating a line to the horizontal and vertical"""
@@ -272,7 +266,7 @@ class TestFlipAndRotate(unittest.TestCase):
         for option in (F.C_HORIZONTALLY, F.C_VERTICALLY):
 
             def fn(module):
-                self.assertTrue(isinstance(module, F.FlipAndRotate))
+                assert isinstance(module, F.FlipAndRotate)
                 module.flip_choice.value = F.FLIP_NONE
                 module.rotate_choice.value = F.ROTATE_COORDINATES
                 module.horiz_or_vert.value = option
@@ -284,28 +278,42 @@ class TestFlipAndRotate(unittest.TestCase):
             pixels = output_image.pixel_data
 
             if option == F.C_HORIZONTALLY:
-                self.assertAlmostEqual(
-                    angle,
-                    np.arctan2(pt1[0] - pt0[0], pt1[1] - pt0[1]) * 180.0 / np.pi,
-                    3,
+                assert (
+                    round(
+                        abs(
+                            angle
+                            - np.arctan2(pt1[0] - pt0[0], pt1[1] - pt0[1])
+                            * 180.0
+                            / np.pi
+                        ),
+                        3,
+                    )
+                    == 0
                 )
                 #
                 # Account for extra pixels due to twisting
                 #
                 line_i = 4 + (pixels.shape[0] - 20) / 2
                 line_j = 4 + (pixels.shape[1] - 20) / 2
-                self.assertTrue(np.all(pixels[line_i, line_j : line_j + 12] > 0.2))
-                self.assertTrue(np.all(pixels[:20, :20][np.abs(i - line_i) > 1] < 0.1))
+                assert np.all(pixels[line_i, line_j : line_j + 12] > 0.2)
+                assert np.all(pixels[:20, :20][np.abs(i - line_i) > 1] < 0.1)
             else:
-                self.assertAlmostEqual(
-                    angle,
-                    -np.arctan2(pt1[1] - pt0[1], pt1[0] - pt0[0]) * 180.0 / np.pi,
-                    3,
+                assert (
+                    round(
+                        abs(
+                            angle
+                            - -np.arctan2(pt1[1] - pt0[1], pt1[0] - pt0[0])
+                            * 180.0
+                            / np.pi
+                        ),
+                        3,
+                    )
+                    == 0
                 )
                 line_i = 4 + (pixels.shape[0] - 20) / 2
                 line_j = 15 + (pixels.shape[1] - 20) / 2
-                self.assertTrue(np.all(pixels[line_i : line_i + 12, line_j] > 0.2))
-                self.assertTrue(np.all(pixels[:20, :20][np.abs(j - line_j) > 1] < 0.1))
+                assert np.all(pixels[line_i : line_i + 12, line_j] > 0.2)
+                assert np.all(pixels[:20, :20][np.abs(j - line_j) > 1] < 0.1)
 
     def test_04_01_crop(self):
         """Turn cropping on and check that the cropping mask covers the mask"""
@@ -317,7 +325,7 @@ class TestFlipAndRotate(unittest.TestCase):
             # Run the module with cropping to get the crop mask
             #
             def fn(module, angle=angle):
-                self.assertTrue(isinstance(module, F.FlipAndRotate))
+                assert isinstance(module, F.FlipAndRotate)
                 module.flip_choice.value = F.FLIP_NONE
                 module.rotate_choice.value = F.ROTATE_ANGLE
                 module.angle.value = angle
@@ -326,20 +334,20 @@ class TestFlipAndRotate(unittest.TestCase):
             crop_output_image, angle = self.run_module(image, fn=fn)
             crop_mask = crop_output_image.crop_mask
             crop_image = crop_output_image.pixel_data
-            self.assertTrue(np.all(crop_output_image.mask[1:-1, 1:-1]))
+            assert np.all(crop_output_image.mask[1:-1, 1:-1])
 
             #
             # Run the module without cropping to get the mask
             #
             def fn(module, angle=angle):
-                self.assertTrue(isinstance(module, F.FlipAndRotate))
+                assert isinstance(module, F.FlipAndRotate)
                 module.flip_choice.value = F.FLIP_NONE
                 module.rotate_choice.value = F.ROTATE_ANGLE
                 module.angle.value = angle
                 module.wants_crop.value = False
 
             output_image, angle = self.run_module(image, fn=fn)
-            self.assertTrue(isinstance(crop_output_image, cpi.Image))
+            assert isinstance(crop_output_image, cpi.Image)
             pixel_data = output_image.pixel_data
             slop = (np.array(pixel_data.shape) - np.array(image.shape)) / 2
             mask = output_image.mask
@@ -361,22 +369,20 @@ class TestFlipAndRotate(unittest.TestCase):
         module = F.FlipAndRotate()
         module.output_name.value = OUTPUT_IMAGE
         columns = module.get_measurement_columns(None)
-        self.assertEqual(len(columns), 1)
-        self.assertEqual(columns[0][0], cpmeas.IMAGE)
-        self.assertEqual(columns[0][1], F.M_ROTATION_F % OUTPUT_IMAGE)
-        self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
+        assert len(columns) == 1
+        assert columns[0][0] == cpmeas.IMAGE
+        assert columns[0][1] == F.M_ROTATION_F % OUTPUT_IMAGE
+        assert columns[0][2] == cpmeas.COLTYPE_FLOAT
 
         categories = module.get_categories(None, cpmeas.IMAGE)
-        self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], F.M_ROTATION_CATEGORY)
-        self.assertEqual(len(module.get_categories(None, "Foo")), 0)
+        assert len(categories) == 1
+        assert categories[0] == F.M_ROTATION_CATEGORY
+        assert len(module.get_categories(None, "Foo")) == 0
 
         measurements = module.get_measurements(
             None, cpmeas.IMAGE, F.M_ROTATION_CATEGORY
         )
-        self.assertEqual(len(measurements), 1)
-        self.assertEqual(measurements[0], OUTPUT_IMAGE)
-        self.assertEqual(len(module.get_measurements(None, cpmeas.IMAGE, "Foo")), 0)
-        self.assertEqual(
-            len(module.get_measurements(None, "Foo", F.M_ROTATION_CATEGORY)), 0
-        )
+        assert len(measurements) == 1
+        assert measurements[0] == OUTPUT_IMAGE
+        assert len(module.get_measurements(None, cpmeas.IMAGE, "Foo")) == 0
+        assert len(module.get_measurements(None, "Foo", F.M_ROTATION_CATEGORY)) == 0

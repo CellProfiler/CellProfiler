@@ -107,7 +107,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
@@ -130,12 +130,12 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
             morph.F_THIN,
             morph.F_VBREAK,
         ]
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, morph.Morph))
-        self.assertEqual(module.image_name, "InputImage")
-        self.assertEqual(module.output_image_name, "MorphImage")
-        self.assertEqual(len(module.functions), len(ops))
+        assert isinstance(module, morph.Morph)
+        assert module.image_name == "InputImage"
+        assert module.output_image_name == "MorphImage"
+        assert len(module.functions) == len(ops)
 
     # https://github.com/CellProfiler/CellProfiler/issues/3349
     def test_load_with_extracted_operations(self):
@@ -304,7 +304,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
 """
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            assert not isinstance(event, cpp.LoadExceptionEvent)
 
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
@@ -366,11 +366,9 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
             expected = function(input, footprint=footprint)
         if not gray_out:
             expected = expected > 0
-            self.assertTrue(np.all(output == expected))
+            assert np.all(output == expected)
         else:
-            self.assertTrue(
-                np.all(np.abs(output - expected) < np.finfo(np.float32).eps)
-            )
+            assert np.all(np.abs(output - expected) < np.finfo(np.float32).eps)
 
     def test_02_015_binary_branchpoints(self):
         self.binary_tteesstt("branchpoints", cpmorph.branchpoints)
@@ -436,7 +434,7 @@ Morph:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_wind
         expected = np.zeros((20, 15), bool)
         expected[2:18, 3:13] = True
         result = self.execute(image, "convex hull")
-        self.assertTrue(np.all(result == expected))
+        assert np.all(result == expected)
 
     def test_02_26_binary_skelpe(self):
         def fn(x):

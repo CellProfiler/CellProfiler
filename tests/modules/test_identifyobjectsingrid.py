@@ -1,6 +1,3 @@
-"""test_identifyobjectsingrid.py - test the IdentifyObjectsInGrid module
-"""
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless

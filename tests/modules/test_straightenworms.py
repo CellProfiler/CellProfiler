@@ -1,5 +1,3 @@
-"""test_straightenworms - test the StraightenWorms module"""
-
 import centrosome.cpmorphology as morph
 import numpy as np
 from six.moves import StringIO

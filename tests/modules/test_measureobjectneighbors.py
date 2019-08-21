@@ -1,6 +1,3 @@
-"""test_measureobjectneighbors.py Test the MeasureObjectNeighbors module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

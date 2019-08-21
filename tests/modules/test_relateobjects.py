@@ -11,7 +11,6 @@ import cellprofiler.workspace
 
 cellprofiler.preferences.set_headless()
 
-
 PARENT_OBJECTS = "parentobjects"
 CHILD_OBJECTS = "childobjects"
 MEASUREMENT = "Measurement"

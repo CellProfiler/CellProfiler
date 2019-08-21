@@ -1,6 +1,3 @@
-"""test_correctilluminationapply.py
-"""
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless

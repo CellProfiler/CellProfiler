@@ -1,6 +1,3 @@
-"""test_maskimage - Test the MaskImage module
-"""
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless

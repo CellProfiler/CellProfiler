@@ -17,7 +17,6 @@ import cellprofiler.workspace
 
 cellprofiler.preferences.set_headless()
 
-
 INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"
 

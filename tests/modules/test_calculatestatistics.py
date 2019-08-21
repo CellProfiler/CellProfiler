@@ -1,6 +1,3 @@
-"""test_calculatestatistics.py - test the CalculateStatistics module
-"""
-
 import os
 import tempfile
 

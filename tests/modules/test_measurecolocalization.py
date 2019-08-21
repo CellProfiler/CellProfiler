@@ -1,5 +1,3 @@
-"""test_measurecorrelation - test the MeasureCorrelation module"""
-
 import numpy as np
 from six.moves import StringIO
 

@@ -1,6 +1,3 @@
-"""test_colortogray.py - test the ColorToGray module
-"""
-
 import numpy
 from six.moves import StringIO
 

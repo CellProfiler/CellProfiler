@@ -1,6 +1,3 @@
-"""test_morph - test the morphology module
-"""
-
 import io
 
 import numpy as np

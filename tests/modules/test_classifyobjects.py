@@ -1,6 +1,3 @@
-"""test_classifyobjects - test the ClassifyObjects module
-"""
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless

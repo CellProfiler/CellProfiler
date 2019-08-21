@@ -1,6 +1,3 @@
-"""test_identifydeadworms.py - test the IdentifyDeadWorms module
-"""
-
 import numpy as np
 from scipy.ndimage import binary_fill_holes
 from six.moves import StringIO

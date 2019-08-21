@@ -1,6 +1,3 @@
-"""test_identifytertiaryobjects.py - test the IdentifyTertiaryObjects module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

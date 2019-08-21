@@ -1,6 +1,3 @@
-"""test_makeprojection - Test the MakeProjection module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

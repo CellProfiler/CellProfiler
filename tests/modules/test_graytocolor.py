@@ -1,6 +1,3 @@
-"""test_graytocolor.py - Test the GrayToColor module
-"""
-
 import base64
 import zlib
 

@@ -1,6 +1,3 @@
-""" test_displaydataonimage - test the DisplayDataOnImage module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

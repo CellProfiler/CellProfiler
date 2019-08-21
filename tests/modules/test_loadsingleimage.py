@@ -1,6 +1,3 @@
-"""test_loadsingleimage - Test the LoadSingleImage module
-"""
-
 import hashlib
 import os
 import tempfile

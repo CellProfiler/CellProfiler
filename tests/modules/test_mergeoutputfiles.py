@@ -1,5 +1,3 @@
-"""test_mergeoutputfiles.py - test the MergeOutputFiles module"""
-
 import os
 import tempfile
 

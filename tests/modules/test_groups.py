@@ -1,6 +1,3 @@
-"""test_groups.py - test the Groups module
-"""
-
 import os
 from io import StringIO
 

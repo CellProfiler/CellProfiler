@@ -1,5 +1,3 @@
-"""test_calculatemath.py - Test the CalculateMath module"""
-
 import numpy as np
 
 import cellprofiler.measurement

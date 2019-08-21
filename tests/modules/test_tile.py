@@ -1,6 +1,3 @@
-"""test_tile.py - Test the tile module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

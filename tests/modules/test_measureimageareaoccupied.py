@@ -11,7 +11,6 @@ import cellprofiler.workspace
 
 cellprofiler.preferences.set_headless()
 
-
 OBJECTS_NAME = "MyObjects"
 
 

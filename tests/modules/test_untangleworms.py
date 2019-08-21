@@ -1,5 +1,3 @@
-"""test_untangleworms.py - test the UntangleWorms module"""
-
 import base64
 import io
 import os

@@ -1,6 +1,3 @@
-"""test_enhanceedges - test the EnhanceEdges module
-"""
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless

@@ -1,6 +1,3 @@
-"""test_createbatchfiles - test the CreateBatchFiles module
-"""
-
 import sys
 
 from six.moves import StringIO

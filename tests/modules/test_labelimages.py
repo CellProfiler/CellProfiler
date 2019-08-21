@@ -1,6 +1,3 @@
-"""test_labelimages.py - test the labelimages module
-"""
-
 from six.moves import StringIO
 
 from cellprofiler.preferences import set_headless

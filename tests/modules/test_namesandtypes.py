@@ -2,7 +2,6 @@ import hashlib
 import io
 import os
 import tempfile
-import urllib.error
 import urllib.request
 
 import bioformats
@@ -1697,16 +1696,16 @@ def run_workspace(
 
     script = (
         """
-    importPackage(Packages.org.cellprofiler.imageset);
-    var ls = new java.util.ArrayList();
-    for (var ipd in Iterator(ipds)) {
-        ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
-    }
-    var kwlist = new java.util.ArrayList();
-    kwlist.add("ImageNumber");
-    var imageSet = new ImageSet(ls, kwlist);
-    imageSet.compress(names, null);
-    """
+        importPackage(Packages.org.cellprofiler.imageset);
+        var ls = new java.util.ArrayList();
+        for (var ipd in Iterator(ipds)) {
+            ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
+        }
+        var kwlist = new java.util.ArrayList();
+        kwlist.add("ImageNumber");
+        var imageSet = new ImageSet(ls, kwlist);
+        imageSet.compress(names, null);
+        """
         % stack
     )
     blob = javabridge.run_script(script, dict(ipds=ipds.o, names=names.o))

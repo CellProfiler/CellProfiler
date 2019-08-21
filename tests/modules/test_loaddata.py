@@ -543,15 +543,15 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         ]
         csv_text = (
             """"%s","%s","%s"
-    1,1,1
-    2,1.5,"Hi"
-    3,1,"Hello"
-    4,1.7,"Hola"
-    5,1.2,"Bonjour"
-    6,1.5,"Gutentag"
-    7,1.1,"Hej"
-    8,2.3,"Bevakasha"
-    """
+        1,1,1
+        2,1.5,"Hi"
+        3,1,"Hello"
+        4,1.7,"Hola"
+        5,1.2,"Bonjour"
+        6,1.5,"Gutentag"
+        7,1.1,"Hej"
+        8,2.3,"Bevakasha"
+        """
             % colnames
         )
         pipeline, module, filename = make_pipeline(csv_text)
@@ -578,9 +578,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         colnames = ("Image_FileName_Foo", "Image_PathName_Foo")
         csv_text = (
             """"%s","%s"
-    "Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
-    "Channel1-02.tif","/imaging/analysis/2500_01_01_Jones"
-    """
+        "Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
+        "Channel1-02.tif","/imaging/analysis/2500_01_01_Jones"
+        """
             % colnames
         )
         pipeline, module, filename = make_pipeline(csv_text)
@@ -605,15 +605,15 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         ]
         csv_text = (
             """"%s","%s","%s"
-    1,1,1
-    2,1.5,"Hi"
-    3,1,"Hello"
-    4,1.7,"Hola"
-    5,1.2,"Bonjour"
-    6,1.5,"Gutentag"
-    7,1.1,"Hej"
-    1234567890123,2.3,"Bevakasha"
-    """
+        1,1,1
+        2,1.5,"Hi"
+        3,1,"Hello"
+        4,1.7,"Hola"
+        5,1.2,"Bonjour"
+        6,1.5,"Gutentag"
+        7,1.1,"Hej"
+        1234567890123,2.3,"Bevakasha"
+        """
             % colnames
         )
         pipeline, module, filename = make_pipeline(csv_text)
@@ -954,8 +954,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         #
         csv_text = (
             """"Image_FileName_DNA"
-    "%s"
-    """
+        "%s"
+        """
             % test_filename
         )
         pipeline, module, filename = make_pipeline(csv_text)

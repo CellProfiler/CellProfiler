@@ -1,6 +1,3 @@
-"""test_definegrid - test the DefineGrid module
-"""
-
 import numpy as np
 
 from cellprofiler.preferences import set_headless

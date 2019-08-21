@@ -1,7 +1,3 @@
-"""test_measureimagequality.py - test the MeasureImageQuality module
-"""
-
-
 import io
 
 import numpy as np

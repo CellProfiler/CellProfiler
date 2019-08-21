@@ -1,6 +1,3 @@
-"""test_trackobjects.py - testing of the TrackObjects module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

@@ -1,6 +1,3 @@
-"""test_measuregranularity - Test the MeasureGranularity module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

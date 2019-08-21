@@ -1,6 +1,3 @@
-"""test_correctilluminationcalculate.py - test the CorrectIlluminationCalculate module
-"""
-
 import numpy as np
 from six.moves import StringIO
 
@@ -131,11 +128,11 @@ def test_zeros():
                                 assert image is not None
                                 assert np.all(image.pixel_data == 0), (
                                     """Failure case:
-            intensity_choice = %(intensity_choice)s
-            dilate_objects = %(dilate_objects)s
-            rescale_option = %(rescale_option)s
-            smoothing_method = %(smoothing_method)s
-            automatic_object_width = %(ow)s"""
+                intensity_choice = %(intensity_choice)s
+                dilate_objects = %(dilate_objects)s
+                rescale_option = %(rescale_option)s
+                smoothing_method = %(smoothing_method)s
+                automatic_object_width = %(ow)s"""
                                     % locals()
                                 )
 
@@ -203,11 +200,11 @@ def test_ones_image():
                             assert image is not None
                             assert np.all(np.std(image.pixel_data) < 0.00001), (
                                 """Failure case:
-        each_or_all            = %(ea)s
-        intensity_choice       = %(intensity_choice)s
-        dilate_objects         = %(dilate_objects)s
-        smoothing_method       = %(smoothing_method)s
-        automatic_object_width = %(ow)s"""
+            each_or_all            = %(ea)s
+            intensity_choice       = %(intensity_choice)s
+            dilate_objects         = %(dilate_objects)s
+            smoothing_method       = %(smoothing_method)s
+            automatic_object_width = %(ow)s"""
                                 % locals()
                             )
 
@@ -278,10 +275,10 @@ def test_masked_image():
                         assert image is not None
                         assert np.all(abs(image.pixel_data[mask] - 1 < 0.00001)), (
                             """Failure case:
-        each_or_all            = %(ea)s
-        intensity_choice       = %(intensity_choice)s
-        smoothing_method       = %(smoothing_method)s
-        automatic_object_width = %(ow)s"""
+            each_or_all            = %(ea)s
+            intensity_choice       = %(intensity_choice)s
+            smoothing_method       = %(smoothing_method)s
+            automatic_object_width = %(ow)s"""
                             % locals()
                         )
 

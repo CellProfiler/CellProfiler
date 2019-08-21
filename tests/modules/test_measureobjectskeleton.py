@@ -1,6 +1,3 @@
-"""test_measureobjectskeleton.py - test the MeasureObjectSkeleton module
-"""
-
 import os
 import tempfile
 import traceback

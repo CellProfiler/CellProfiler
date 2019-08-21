@@ -1,8 +1,3 @@
-"""test_injectimage.py - test the InjectImage module (which is used for testing)
-"""
-
-import unittest
-
 import numpy
 
 from cellprofiler.preferences import set_headless

@@ -1,6 +1,3 @@
-"""test_flipandrotate - test the FlipAndRotate module
-"""
-
 import base64
 import zlib
 

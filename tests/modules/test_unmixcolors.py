@@ -1,6 +1,3 @@
-"""test_unmixcolors - test the unmixcolors module
-"""
-
 import numpy as np
 from six.moves import StringIO
 

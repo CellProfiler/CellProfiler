@@ -1,6 +1,3 @@
-"""test_flagimages.py - Test the FlagImages module
-"""
-
 import contextlib
 import os
 import tempfile

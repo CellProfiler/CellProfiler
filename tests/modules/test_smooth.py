@@ -1,6 +1,3 @@
-"""test_smooth.py - test the smooth module
-"""
-
 import base64
 import io
 import zlib

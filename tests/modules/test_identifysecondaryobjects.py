@@ -15,7 +15,6 @@ import cellprofiler.workspace
 
 cellprofiler.preferences.set_headless()
 
-
 INPUT_OBJECTS_NAME = "input_objects"
 OUTPUT_OBJECTS_NAME = "output_objects"
 NEW_OBJECTS_NAME = "new_objects"

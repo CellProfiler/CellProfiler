@@ -23,7 +23,7 @@ IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10479
@@ -52,7 +52,7 @@ Number of angles:180
     assert module.wants_automatic_distance
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10479
@@ -86,7 +86,7 @@ Angular distance:45
     assert module.angular_distance == 45
 
 
-def make_workspace(self, pixel_data, mask=None):
+def make_workspace(pixel_data, mask=None):
     image = cpi.Image(pixel_data, mask)
     image_set_list = cpi.ImageSetList()
 
@@ -118,9 +118,9 @@ def make_workspace(self, pixel_data, mask=None):
     return workspace, module
 
 
-def test_zeros(self):
+def test_zeros():
     """Run the module with an image of all zeros"""
-    workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+    workspace, module = make_workspace(np.zeros((20, 10), bool))
     module.run(workspace)
     count = workspace.measurements.get_current_image_measurement(
         "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
@@ -128,7 +128,7 @@ def test_zeros(self):
     assert count == 0
 
 
-def test_one_worm(self):
+def test_one_worm():
     """Find a single worm"""
     image = np.zeros((20, 20), bool)
     index, count, i, j = get_line_pts(
@@ -139,7 +139,7 @@ def test_one_worm(self):
     )
     image[i, j] = True
     image = binary_fill_holes(image)
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.worm_length.value = 12
     module.worm_width.value = 5
     module.angle_count.value = 16
@@ -165,7 +165,7 @@ def test_one_worm(self):
     assert round(abs(a[0] - 135), 0) == 0
 
 
-def test_crossing_worms(self):
+def test_crossing_worms():
     """Find two worms that cross"""
     image = np.zeros((20, 20), bool)
     index, count, i, j = get_line_pts(
@@ -183,7 +183,7 @@ def test_crossing_worms(self):
     )
     image[i, j] = True
     image = binary_fill_holes(image)
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.worm_length.value = 17
     module.worm_width.value = 5
     module.angle_count.value = 16
@@ -216,9 +216,9 @@ def test_crossing_worms(self):
     assert round(abs(y[order[1]] - 9.0), 0) == 0
 
 
-def test_measurement_columns(self):
+def test_measurement_columns():
     """Test get_measurement_columns"""
-    workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+    workspace, module = make_workspace(np.zeros((20, 10), bool))
     assert isinstance(module, ID.IdentifyDeadWorms)
     columns = module.get_measurement_columns(workspace.pipeline)
     expected = (
@@ -251,8 +251,8 @@ def test_measurement_columns(self):
         ), "could not find " + repr(e)
 
 
-def test_find_adjacent_by_distance_empty(self):
-    workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+def test_find_adjacent_by_distance_empty():
+    workspace, module = make_workspace(np.zeros((20, 10), bool))
     assert isinstance(module, ID.IdentifyDeadWorms)
 
     first, second = module.find_adjacent_by_distance(
@@ -262,8 +262,8 @@ def test_find_adjacent_by_distance_empty(self):
     assert len(second) == 0
 
 
-def test_find_adjacent_by_distance_one(self):
-    workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+def test_find_adjacent_by_distance_one():
+    workspace, module = make_workspace(np.zeros((20, 10), bool))
     assert isinstance(module, ID.IdentifyDeadWorms)
 
     first, second = module.find_adjacent_by_distance(
@@ -275,12 +275,12 @@ def test_find_adjacent_by_distance_one(self):
     assert second[0] == 0
 
 
-def test_find_adjacent_by_distance_easy(self):
+def test_find_adjacent_by_distance_easy():
     #
     # Feed "find_adjacent_by_distance" points whose "i" are all
     # within the space_distance
     #
-    workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+    workspace, module = make_workspace(np.zeros((20, 10), bool))
     assert isinstance(module, ID.IdentifyDeadWorms)
     module.space_distance.value = 10
     # Take find_adjacent_by_distance internals into account: consecutive i
@@ -304,12 +304,12 @@ def test_find_adjacent_by_distance_easy(self):
         assert second[i + 25] == (i % 5) + 5
 
 
-def test_find_adjacent_by_distance_hard(self):
+def test_find_adjacent_by_distance_hard():
     #
     # Feed "find_adjacent_by_distance" points whose "i" are not all
     # within the space_distance
     #
-    workspace, module = self.make_workspace(np.zeros((20, 10), bool))
+    workspace, module = make_workspace(np.zeros((20, 10), bool))
     assert isinstance(module, ID.IdentifyDeadWorms)
     module.space_distance.value = 10
     r = np.random.RandomState(44)

@@ -27,24 +27,24 @@ EDGE_FILE = "my_edges.csv"
 VERTEX_FILE = "my_vertices.csv"
 
 
-def setUp(self):
-    self.temp_dir = tempfile.mkdtemp()
+def setUp():
+    temp_dir = tempfile.mkdtemp()
 
 
-def tearDown(self):
-    if hasattr(self, "temp_dir"):
+def tearDown():
+    if hasattr("temp_dir"):
         for file_name in (EDGE_FILE, VERTEX_FILE):
-            p = os.path.join(self.temp_dir, file_name)
+            p = os.path.join(temp_dir, file_name)
             try:
                 if os.path.exists(p):
                     os.remove(p)
             except:
                 print(("Failed to remove %s" % p))
                 traceback.print_exc()
-        os.rmdir(self.temp_dir)
+        os.rmdir(temp_dir)
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8977
@@ -71,9 +71,7 @@ Branchpoint image name\x3A:BPImg
     assert module.branchpoint_image_name == "BPImg"
 
 
-def make_workspace(
-    self, labels, image, mask=None, intensity_image=None, wants_graph=False
-):
+def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=False):
     m = cpmeas.Measurements()
     image_set_list = cpi.ImageSetList()
     m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
@@ -97,7 +95,7 @@ def make_workspace(
     if wants_graph:
         module.wants_objskeleton_graph.value = True
         module.directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.temp_dir
+        module.directory.custom_path = temp_dir
         module.edge_file_name.value = EDGE_FILE
         module.vertex_file_name.value = VERTEX_FILE
     module.set_module_num(1)
@@ -116,8 +114,8 @@ def make_workspace(
     return workspace, module
 
 
-def test_empty(self):
-    workspace, module = self.make_workspace(
+def test_empty():
+    workspace, module = make_workspace(
         np.zeros((20, 10), int), np.zeros((20, 10), bool)
     )
     #
@@ -169,13 +167,13 @@ def test_empty(self):
         assert len(data) == 0
 
 
-def test_trunk(self):
+def test_trunk():
     """Create an image with one soma with one neurite"""
     image = np.zeros((20, 15), bool)
     image[9, 5:] = True
     labels = np.zeros((20, 15), int)
     labels[6:12, 2:8] = 1
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -189,14 +187,14 @@ def test_trunk(self):
         assert data[0] == expected
 
 
-def test_trunks(self):
+def test_trunks():
     """Create an image with two soma and a neurite that goes through both"""
     image = np.zeros((30, 15), bool)
     image[1:25, 7] = True
     labels = np.zeros((30, 15), int)
     labels[6:13, 3:10] = 1
     labels[18:26, 3:10] = 2
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -211,7 +209,7 @@ def test_trunks(self):
             assert data[i] == expected[i]
 
 
-def test_branch(self):
+def test_branch():
     """Create an image with one soma and a neurite with a branch"""
     image = np.zeros((30, 15), bool)
     image[6:15, 7] = True
@@ -219,7 +217,7 @@ def test_branch(self):
     image[15 + np.arange(3), 7 - np.arange(3)] = True
     labels = np.zeros((30, 15), int)
     labels[1:8, 3:10] = 1
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -233,7 +231,7 @@ def test_branch(self):
         assert data[0] == expected
 
 
-def test_img_667(self):
+def test_img_667():
     """Create an image with a one-pixel soma and a neurite with a branch
 
     Regression test of IMG-667
@@ -244,7 +242,7 @@ def test_img_667(self):
     image[15 + np.arange(3), 7 - np.arange(3)] = True
     labels = np.zeros((30, 15), int)
     labels[10, 7] = 1
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -262,7 +260,7 @@ def test_img_667(self):
         )
 
 
-def test_quadrabranch(self):
+def test_quadrabranch():
     """An odd example that I noticed and thought was worthy of a test
 
     You get this pattern:
@@ -282,7 +280,7 @@ def test_quadrabranch(self):
     image[15 + np.arange(3), 7 - np.arange(3)] = True
     labels = np.zeros((30, 15), int)
     labels[13, 7] = 1
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -300,7 +298,7 @@ def test_quadrabranch(self):
         )
 
 
-def test_wrong_size(self):
+def test_wrong_size():
     """Regression of img-961, image and labels size differ
 
     Assume that image is primary, labels outside of image are ignored
@@ -311,7 +309,7 @@ def test_wrong_size(self):
     labels = np.zeros((30, 20), int)
     labels[6:13, 3:10] = 1
     labels[18:26, 3:10] = 2
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -326,7 +324,7 @@ def test_wrong_size(self):
             assert data[i] == expected[i]
 
 
-def test_skeleton_length(self):
+def test_skeleton_length():
     #
     # Soma ends at x=8, neurite ends at x=15. Length should be 7
     #
@@ -334,7 +332,7 @@ def test_skeleton_length(self):
     image[9, 5:15] = True
     labels = np.zeros((20, 20), int)
     labels[6:12, 2:8] = 1
-    workspace, module = self.make_workspace(labels, image)
+    workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
     ftr = "_".join((M.C_OBJSKELETON, M.F_TOTAL_OBJSKELETON_LENGTH, IMAGE_NAME))
@@ -343,7 +341,7 @@ def test_skeleton_length(self):
     assert abs(result[0] - 5) < np.sqrt(np.finfo(np.float32).eps)
 
 
-def read_graph_file(self, file_name):
+def read_graph_file(file_name):
     type_dict = dict(
         image_number="i4",
         v1="i4",
@@ -357,7 +355,7 @@ def read_graph_file(self, file_name):
         kind="S1",
     )
 
-    path = os.path.join(self.temp_dir, file_name)
+    path = os.path.join(temp_dir, file_name)
     fd = open(path, "r")
     fields = fd.readline().strip().split(",")
     dt = np.dtype(dict(names=fields, formats=[type_dict[x] for x in fields]))
@@ -368,9 +366,9 @@ def read_graph_file(self, file_name):
     return np.loadtxt(fd, dt, delimiter=",")
 
 
-def test_graph(self):
+def test_graph():
     """Does graph neurons work on an empty image?"""
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         np.zeros((20, 10), int),
         np.zeros((20, 10), bool),
         intensity_image=np.zeros((20, 10)),
@@ -378,13 +376,13 @@ def test_graph(self):
     )
     module.prepare_run(workspace)
     module.run(workspace)
-    edge_graph = self.read_graph_file(EDGE_FILE)
-    vertex_graph = self.read_graph_file(VERTEX_FILE)
+    edge_graph = read_graph_file(EDGE_FILE)
+    vertex_graph = read_graph_file(VERTEX_FILE)
     assert len(edge_graph) == 0
     assert len(vertex_graph) == 0
 
 
-def test_graph(self):
+def test_graph():
     """Make a simple graph"""
     #
     # The skeleton looks something like this:
@@ -403,13 +401,13 @@ def test_graph(self):
     labels[(i > 8) & (np.abs(j) < 2)] = 1
     np.random.seed(31)
     intensity = np.random.uniform(size=skel.shape)
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         labels, skel, intensity_image=intensity, wants_graph=True
     )
     module.prepare_run(workspace)
     module.run(workspace)
-    edge_graph = self.read_graph_file(EDGE_FILE)
-    vertex_graph = self.read_graph_file(VERTEX_FILE)
+    edge_graph = read_graph_file(EDGE_FILE)
+    vertex_graph = read_graph_file(VERTEX_FILE)
     vidx = np.lexsort((vertex_graph["j"], vertex_graph["i"]))
     #
     # There should be two vertices at the bottom of the array - these
@@ -454,7 +452,7 @@ def test_graph(self):
         assert round(abs(total_intensity - ee["total_intensity"]), 4) == 0
 
 
-def test_four_branches(self):
+def test_four_branches():
     """Test four branchpoints touching the same edge
 
     This exercises quite a bit of corner-case code. The permutation
@@ -507,13 +505,13 @@ def test_four_branches(self):
         (4, 7, 3, -2),
         (5, 10, 3, -5),
     )
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         labels, skel, intensity_image=image, wants_graph=True
     )
     module.prepare_run(workspace)
     module.run(workspace)
-    vertex_graph = self.read_graph_file(VERTEX_FILE)
-    edge_graph = self.read_graph_file(EDGE_FILE)
+    vertex_graph = read_graph_file(VERTEX_FILE)
+    edge_graph = read_graph_file(EDGE_FILE)
 
     vertex_number = np.zeros(len(np.unique(poi[poi >= 1])), int)
     for v in vertex_graph:

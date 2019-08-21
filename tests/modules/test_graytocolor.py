@@ -17,7 +17,7 @@ import cellprofiler.workspace as cpw
 OUTPUT_IMAGE_NAME = "outputimage"
 
 
-def make_workspace(self, scheme, images, adjustments=None, colors=None, weights=None):
+def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
     module = G.GrayToColor()
     module.scheme_choice.value = scheme
     if scheme not in (G.SCHEME_COMPOSITE, G.SCHEME_STACK):
@@ -91,7 +91,7 @@ def make_workspace(self, scheme, images, adjustments=None, colors=None, weights=
     return workspace, module
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = (
         "eJztWUFv2jAUdmiK1k2b2Gm7VPNxmtoooZrUcRlQtg6p0KqgnucSQy2FGBmn"
         "a/cL9hP2M3vccXGWkOABAVPaghJkJc953/v8nr8EjBuV9kmlCj8aJmxU2vtd"
@@ -134,7 +134,7 @@ def test_load_v2(self):
         assert adjustment_factor.value == 1
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20151029194828
@@ -200,7 +200,7 @@ Weight:3.0
     assert module.stack_channels[1].color.to_rgb() == (127, 255, 0)
 
 
-def test_rgb(self):
+def test_rgb():
     np.random.seed(0)
     for combination in (
         (True, True, True),
@@ -217,7 +217,7 @@ def test_rgb(self):
             for i in range(3)
         ]
         images += [None] * 4
-        workspace, module = self.make_workspace(G.SCHEME_RGB, images, adjustments)
+        workspace, module = make_workspace(G.SCHEME_RGB, images, adjustments)
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -230,7 +230,7 @@ def test_rgb(self):
         assert np.all(np.abs(expected - pixel_data) <= 0.00001)
 
 
-def test_cmyk(self):
+def test_cmyk():
     np.random.seed(0)
     for combination in [[(i & 2 ^ j) != 0 for j in range(4)] for i in range(1, 16)]:
         adjustments = np.random.uniform(size=7)
@@ -239,7 +239,7 @@ def test_cmyk(self):
             for i in range(4)
         ]
         images = [None] * 3 + images
-        workspace, module = self.make_workspace(G.SCHEME_CMYK, images, adjustments)
+        workspace, module = make_workspace(G.SCHEME_CMYK, images, adjustments)
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -264,11 +264,11 @@ def test_cmyk(self):
         assert np.all(np.abs(expected - pixel_data) <= 0.00001)
 
 
-def test_stack(self):
+def test_stack():
     r = np.random.RandomState()
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
-    workspace, module = self.make_workspace(G.SCHEME_STACK, images)
+    workspace, module = make_workspace(G.SCHEME_STACK, images)
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
     assert output.shape[:2] == images[0].shape
@@ -277,14 +277,14 @@ def test_stack(self):
         np.testing.assert_array_almost_equal(output[:, :, i], image)
 
 
-def test_composite(self):
+def test_composite():
     r = np.random.RandomState()
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
     colors = [r.randint(0, 255, size=3) for _ in range(5)]
     weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
     color_names = ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         G.SCHEME_COMPOSITE, images, colors=color_names, weights=weights
     )
     module.run(workspace)

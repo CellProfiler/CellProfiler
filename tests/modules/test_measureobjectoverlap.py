@@ -21,7 +21,7 @@ GROUND_TRUTH_OBJ = "Nuclei"
 ID_OBJ = "Protein"
 
 
-def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
+def make_obj_workspace(ground_truth_obj, id_obj, ground_truth, id):
     """make a workspace to test comparing objects"""
     """ ground truth object and ID object  are dictionaires w/ the following keys"""
     """i - i component of pixel coordinates
@@ -70,8 +70,8 @@ def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
     return workspace, module
 
 
-def test_get_measurement_columns(self):
-    workspace, module = self.make_obj_workspace(
+def test_get_measurement_columns():
+    workspace, module = make_obj_workspace(
         numpy.zeros((0, 3), int),
         numpy.zeros((0, 3), int),
         dict(image=numpy.zeros((20, 10), bool)),
@@ -97,8 +97,8 @@ def test_get_measurement_columns(self):
         assert field in [x[1] for x in columns]
 
 
-def test_get_measurement_scales(self):
-    workspace, module = self.make_obj_workspace(
+def test_get_measurement_scales():
+    workspace, module = make_obj_workspace(
         numpy.zeros((0, 3), int),
         numpy.zeros((0, 3), int),
         dict(image=numpy.zeros((20, 10), bool)),
@@ -117,9 +117,9 @@ def test_get_measurement_scales(self):
     assert scales[0] == "_".join((GROUND_TRUTH_OBJ, ID_OBJ))
 
 
-def test_test_measure_overlap_no_objects(self):
+def test_test_measure_overlap_no_objects():
     # Regression test of issue #934 - no objects
-    workspace, module = self.make_obj_workspace(
+    workspace, module = make_obj_workspace(
         numpy.zeros((0, 3), int),
         numpy.zeros((0, 3), int),
         dict(image=numpy.zeros((20, 10), bool)),
@@ -139,14 +139,14 @@ def test_test_measure_overlap_no_objects(self):
     #
     # Make sure they don't crash
     #
-    workspace, module = self.make_obj_workspace(
+    workspace, module = make_obj_workspace(
         numpy.zeros((0, 3), int),
         numpy.ones((1, 3), int),
         dict(image=numpy.zeros((20, 10), bool)),
         dict(image=numpy.zeros((20, 10), bool)),
     )
     module.run(workspace)
-    workspace, module = self.make_obj_workspace(
+    workspace, module = make_obj_workspace(
         numpy.ones((1, 3), int),
         numpy.zeros((0, 3), int),
         dict(image=numpy.zeros((20, 10), bool)),
@@ -155,11 +155,11 @@ def test_test_measure_overlap_no_objects(self):
     module.run(workspace)
 
 
-def test_test_measure_overlap_objects(self):
+def test_test_measure_overlap_objects():
     r = numpy.random.RandomState()
     r.seed(51)
 
-    workspace, module = self.make_obj_workspace(
+    workspace, module = make_obj_workspace(
         numpy.column_stack(
             [r.randint(0, 20, 150), r.randint(0, 10, 150), r.randint(1, 5, 150)]
         ),
@@ -175,7 +175,7 @@ def test_test_measure_overlap_objects(self):
     assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
 
-def test_test_objects_rand_index(self):
+def test_test_objects_rand_index():
     r = numpy.random.RandomState()
     r.seed(52)
     base = numpy.zeros((100, 100), bool)
@@ -190,7 +190,7 @@ def test_test_objects_rand_index(self):
     gt_labels, _ = scipy.ndimage.label(gt, numpy.ones((3, 3), bool))
     test_labels, _ = scipy.ndimage.label(test, numpy.ones((3, 3), bool))
 
-    workspace, module = self.make_obj_workspace(
+    workspace, module = make_obj_workspace(
         gt_labels,
         test_labels,
         dict(image=numpy.ones(gt_labels.shape)),
@@ -221,4 +221,4 @@ def test_test_objects_rand_index(self):
     adjusted_rand_index = measurements.get_current_image_measurement(mname)
 
 
-#        self.assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)
+#        assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)

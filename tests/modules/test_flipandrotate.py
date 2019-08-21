@@ -23,7 +23,7 @@ IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"
 
 
-def test_load_v2(self):
+def test_load_v2():
     """Load a v2 pipeline"""
     data = (
         "eJztWFtPGkEUXhCtl6bVpEn7OI/SAlmstkoaFaWmpIJEaBtjbDuyA0wyO0N2"
@@ -70,7 +70,7 @@ def test_load_v2(self):
     assert module.horiz_or_vert == F.C_HORIZONTALLY
 
 
-def run_module(self, image, mask=None, fn=None):
+def run_module(image, mask=None, fn=None):
     """Run the FlipAndRotate module
 
     image - pixel data to be transformed
@@ -109,7 +109,7 @@ def run_module(self, image, mask=None, fn=None):
     return output_image, angle
 
 
-def test_flip_left_to_right(self):
+def test_flip_left_to_right():
     np.random.seed(0)
     image = np.random.uniform(size=(3, 3))
     mask = np.array([[True, True, True], [False, True, True], [True, False, True]])
@@ -125,7 +125,7 @@ def test_flip_left_to_right(self):
         module.flip_choice.value = F.FLIP_LEFT_TO_RIGHT
         module.rotate_choice.value = F.ROTATE_NONE
 
-    output_image, angle = self.run_module(image, mask=mask, fn=fn)
+    output_image, angle = run_module(image, mask=mask, fn=fn)
     assert angle == 0
     assert np.all(output_image.mask == expected_mask)
     assert np.all(
@@ -133,7 +133,7 @@ def test_flip_left_to_right(self):
     )
 
 
-def test_flip_top_to_bottom(self):
+def test_flip_top_to_bottom():
     np.random.seed(0)
     image = np.random.uniform(size=(3, 3)).astype(np.float32)
     mask = np.array([[True, True, True], [False, True, True], [True, False, True]])
@@ -149,13 +149,13 @@ def test_flip_top_to_bottom(self):
         module.flip_choice.value = F.FLIP_TOP_TO_BOTTOM
         module.rotate_choice.value = F.ROTATE_NONE
 
-    output_image, angle = self.run_module(image, mask=mask, fn=fn)
+    output_image, angle = run_module(image, mask=mask, fn=fn)
     assert angle == 0
     assert np.all(output_image.mask == expected_mask)
     assert np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
 
 
-def test_flip_both(self):
+def test_flip_both():
     np.random.seed(0)
     image = np.random.uniform(size=(3, 3)).astype(np.float32)
     mask = np.array([[True, True, True], [False, True, True], [True, False, True]])
@@ -172,13 +172,13 @@ def test_flip_both(self):
         module.flip_choice.value = F.FLIP_BOTH
         module.rotate_choice.value = F.ROTATE_NONE
 
-    output_image, angle = self.run_module(image, mask=mask, fn=fn)
+    output_image, angle = run_module(image, mask=mask, fn=fn)
     assert angle == 0
     assert np.all(output_image.mask == expected_mask)
     assert np.all(np.abs(output_image.pixel_data - expected) <= np.finfo(float).eps)
 
 
-def test_rotate_angle(self):
+def test_rotate_angle():
     """Rotate an image through an angle"""
     #
     # Draw a rectangle with intensity that varies monotonically according
@@ -207,7 +207,7 @@ def test_rotate_angle(self):
             module.wants_crop.value = False
             module.angle.value = angle
 
-        output_image, measured_angle = self.run_module(img, mask, fn)
+        output_image, measured_angle = run_module(img, mask, fn)
         assert round(abs(measured_angle - angle), 3) == 0
         rangle = float(angle) * np.pi / 180.0
         pixel_data = output_image.pixel_data
@@ -259,7 +259,7 @@ def test_rotate_angle(self):
                 assert not output_image.mask[ci, cj]
 
 
-def test_rotate_coordinates(self):
+def test_rotate_coordinates():
     """Test rotating a line to the horizontal and vertical"""
 
     img = np.zeros((20, 20))
@@ -278,7 +278,7 @@ def test_rotate_coordinates(self):
             module.first_pixel.value = pt0
             module.second_pixel.value = pt1
 
-        output_image, angle = self.run_module(img, fn=fn)
+        output_image, angle = run_module(img, fn=fn)
         pixels = output_image.pixel_data
 
         if option == F.C_HORIZONTALLY:
@@ -316,7 +316,7 @@ def test_rotate_coordinates(self):
             assert np.all(pixels[:20, :20][np.abs(j - line_j) > 1] < 0.1)
 
 
-def test_crop(self):
+def test_crop():
     """Turn cropping on and check that the cropping mask covers the mask"""
     image = np.random.uniform(size=(19, 21))
     i, j = np.mgrid[0:19, 0:21].astype(float)
@@ -332,7 +332,7 @@ def test_crop(self):
             module.angle.value = angle
             module.wants_crop.value = True
 
-        crop_output_image, angle = self.run_module(image, fn=fn)
+        crop_output_image, angle = run_module(image, fn=fn)
         crop_mask = crop_output_image.crop_mask
         crop_image = crop_output_image.pixel_data
         assert np.all(crop_output_image.mask[1:-1, 1:-1])
@@ -347,7 +347,7 @@ def test_crop(self):
             module.angle.value = angle
             module.wants_crop.value = False
 
-        output_image, angle = self.run_module(image, fn=fn)
+        output_image, angle = run_module(image, fn=fn)
         assert isinstance(crop_output_image, cpi.Image)
         pixel_data = output_image.pixel_data
         slop = (np.array(pixel_data.shape) - np.array(image.shape)) / 2
@@ -362,11 +362,11 @@ def test_crop(self):
         # Slight misregistration: rotate returns even # shape
         #
         # recrop_image = crop_output_image.crop_image_similarly(pixel_data)
-        # self.assertTrue(np.all(recrop_image == crop_image))
-        # self.assertTrue(np.all(crop_output_image.crop_image_similarly(mask)))
+        # assertTrue(np.all(recrop_image == crop_image))
+        # assertTrue(np.all(crop_output_image.crop_image_similarly(mask)))
 
 
-def test_get_measurements(self):
+def test_get_measurements():
     """Test the get_measurements and allied methods"""
     module = F.FlipAndRotate()
     module.output_name.value = OUTPUT_IMAGE

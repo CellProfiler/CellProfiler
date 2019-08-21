@@ -23,7 +23,7 @@ IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10252
@@ -71,7 +71,7 @@ Object name:Cytoplasm
             ("Nuclei", "Cells", "Cytoplasm"),
         ),
     ):
-        # self.assertTrue(isinstance(image_setting, M.MeasureGranularity))
+        # assertTrue(isinstance(image_setting, M.MeasureGranularity))
         assert image_setting.image_name == image_name
         assert round(abs(image_setting.subsample_size.value - subsample_size), 7) == 0
         assert round(abs(image_setting.image_sample_size.value - bsize), 7) == 0
@@ -83,7 +83,6 @@ Object name:Cytoplasm
 
 
 def make_pipeline(
-    self,
     image,
     mask,
     subsample_size,
@@ -132,9 +131,9 @@ def make_pipeline(
     return module, workspace
 
 
-def test_all_masked(self):
+def test_all_masked():
     """Run on a totally masked image"""
-    module, workspace = self.make_pipeline(
+    module, workspace = make_pipeline(
         np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16
     )
     assert isinstance(module, M.MeasureGranularity)
@@ -148,9 +147,9 @@ def test_all_masked(self):
         assert np.isnan(value)
 
 
-def test_zeros(self):
+def test_zeros():
     """Run on an image of all zeros"""
-    module, workspace = self.make_pipeline(np.zeros((40, 40)), None, 0.25, 0.25, 10, 16)
+    module, workspace = make_pipeline(np.zeros((40, 40)), None, 0.25, 0.25, 10, 16)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements
@@ -162,7 +161,7 @@ def test_zeros(self):
         assert round(abs(value - 0), 7) == 0
 
 
-def test_no_scaling(self):
+def test_no_scaling():
     """Run on an image without subsampling or background scaling"""
     #
     # Make an image with granularity at scale 1
@@ -170,7 +169,7 @@ def test_no_scaling(self):
     i, j = np.mgrid[0:10, 0:10]
     image = (i % 2 == j % 2).astype(float)
     expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    module, workspace = self.make_pipeline(image, None, 1, 1, 10, 16)
+    module, workspace = make_pipeline(image, None, 1, 1, 10, 16)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements
@@ -182,7 +181,7 @@ def test_no_scaling(self):
         assert round(abs(value - expected[i - 1]), 7) == 0
 
 
-def test_subsampling(self):
+def test_subsampling():
     """Run on an image with subsampling"""
     #
     # Make an image with granularity at scale 2
@@ -194,7 +193,7 @@ def test_subsampling(self):
     # need an additional two erosions before disappearing
     #
     expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    module, workspace = self.make_pipeline(image, None, 0.5, 1, 10, 16)
+    module, workspace = make_pipeline(image, None, 0.5, 1, 10, 16)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements
@@ -206,7 +205,7 @@ def test_subsampling(self):
         assert round(abs(value - expected[i - 1]), 7) == 0
 
 
-def test_background_sampling(self):
+def test_background_sampling():
     """Run on an image with background subsampling"""
     #
     # Make an image with granularity at scale 2
@@ -222,7 +221,7 @@ def test_background_sampling(self):
     # need an additional two erosions before disappearing
     #
     expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    module, workspace = self.make_pipeline(image, None, 1, 0.5, 10, 16)
+    module, workspace = make_pipeline(image, None, 1, 0.5, 10, 16)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements
@@ -234,7 +233,7 @@ def test_background_sampling(self):
         assert round(abs(value - expected[i - 1]), 7) == 0
 
 
-def test_filter_background(self):
+def test_filter_background():
     """Run on an image, filtering out the background
 
     This test makes sure that the grey_closing happens correctly
@@ -267,7 +266,7 @@ def test_filter_background(self):
     # need an additional two erosions before disappearing
     #
     expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    module, workspace = self.make_pipeline(image, None, 1, 1, 5, 16)
+    module, workspace = make_pipeline(image, None, 1, 1, 5, 16)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements
@@ -279,11 +278,11 @@ def test_filter_background(self):
         assert round(abs(value - expected[i - 1]), 7) == 0
 
 
-def test_all_masked(self):
+def test_all_masked():
     """Run on objects and a totally masked image"""
     labels = np.ones((40, 40), int)
     labels[20:, :] = 2
-    module, workspace = self.make_pipeline(
+    module, workspace = make_pipeline(
         np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16, labels
     )
     assert isinstance(module, M.MeasureGranularity)
@@ -300,9 +299,9 @@ def test_all_masked(self):
         assert np.all(np.isnan(values)) or np.all(values == 0)
 
 
-def test_no_objects(self):
+def test_no_objects():
     """Run on a labels matrix with no objects"""
-    module, workspace = self.make_pipeline(
+    module, workspace = make_pipeline(
         np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, np.zeros((40, 40), int)
     )
     assert isinstance(module, M.MeasureGranularity)
@@ -318,11 +317,11 @@ def test_no_objects(self):
         assert len(values) == 0
 
 
-def test_zeros(self):
+def test_zeros():
     """Run on an image of all zeros"""
     labels = np.ones((40, 40), int)
     labels[20:, :] = 2
-    module, workspace = self.make_pipeline(
+    module, workspace = make_pipeline(
         np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, labels
     )
     assert isinstance(module, M.MeasureGranularity)
@@ -339,7 +338,7 @@ def test_zeros(self):
         np.testing.assert_almost_equal(values, 0)
 
 
-def test_no_scaling(self):
+def test_no_scaling():
     """Run on an image without subsampling or background scaling"""
     #
     # Make an image with granularity at scale 1
@@ -349,7 +348,7 @@ def test_no_scaling(self):
     expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     labels = np.ones((40, 30), int)
     labels[20:, :] = 2
-    module, workspace = self.make_pipeline(image, None, 1, 1, 10, 16, labels)
+    module, workspace = make_pipeline(image, None, 1, 1, 10, 16, labels)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements
@@ -364,7 +363,7 @@ def test_no_scaling(self):
         np.testing.assert_almost_equal(values, expected[i - 1])
 
 
-def test_subsampling(self):
+def test_subsampling():
     """Run on an image with subsampling"""
     #
     # Make an image with granularity at scale 2
@@ -378,7 +377,7 @@ def test_subsampling(self):
     expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     labels = np.ones((80, 80), int)
     labels[40:, :] = 2
-    module, workspace = self.make_pipeline(image, None, 0.5, 1, 10, 16, labels)
+    module, workspace = make_pipeline(image, None, 0.5, 1, 10, 16, labels)
     assert isinstance(module, M.MeasureGranularity)
     module.run(workspace)
     m = workspace.measurements

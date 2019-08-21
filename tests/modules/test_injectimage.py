@@ -16,12 +16,12 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.workspace as cpw
 
 
-def test_init(self):
+def test_init():
     image = numpy.zeros((10, 10), dtype=float)
     x = InjectImage("my_image", image)
 
 
-def test_get_from_image_set(self):
+def test_get_from_image_set():
     image = numpy.zeros((10, 10), dtype=float)
     ii = InjectImage("my_image", image)
     pipeline = cellprofiler.pipeline.Pipeline()

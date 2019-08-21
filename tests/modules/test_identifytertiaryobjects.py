@@ -22,11 +22,11 @@ TERTIARY = "tertiary"
 OUTLINES = "Outlines"
 
 
-def on_pipeline_event(self, caller, event):
+def on_pipeline_event(caller, event):
     assert not isinstance(event, cpp.LoadExceptionEvent)
 
 
-def make_workspace(self, primary_labels, secondary_labels):
+def make_workspace(primary_labels, secondary_labels):
     """Make a workspace that has objects for the input labels
 
     returns a workspace with the following
@@ -58,11 +58,11 @@ def make_workspace(self, primary_labels, secondary_labels):
     return workspace
 
 
-def test_zeros(self):
+def test_zeros():
     """Test IdentifyTertiarySubregion on an empty image"""
     primary_labels = np.zeros((10, 10), int)
     secondary_labels = np.zeros((10, 10), int)
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     module.run(workspace)
     measurements = workspace.measurements
@@ -83,7 +83,7 @@ def test_zeros(self):
         assert all([column[1] in features for column in ocolumns])
 
 
-def test_one_object(self):
+def test_one_object():
     """Test creation of a single tertiary object"""
     primary_labels = np.zeros((10, 10), int)
     secondary_labels = np.zeros((10, 10), int)
@@ -92,7 +92,7 @@ def test_one_object(self):
     expected_labels = np.zeros((10, 10), int)
     expected_labels[2:7, 3:8] = 1
     expected_labels[4, 5] = 0
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     module.run(workspace)
     measurements = workspace.measurements
@@ -128,7 +128,7 @@ def test_one_object(self):
     assert np.all(output_objects.segmented == expected_labels)
 
 
-def test_two_objects(self):
+def test_two_objects():
     """Test creation of two tertiary objects"""
     primary_labels = np.zeros((10, 20), int)
     secondary_labels = np.zeros((10, 20), int)
@@ -143,7 +143,7 @@ def test_two_objects(self):
         expected_secondary_parents[x - 2 : x + 3, y - 2 : y + 3] = secondary_label
         expected_secondary_parents[x, y] = 0
 
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     module.run(workspace)
     measurements = workspace.measurements
@@ -175,7 +175,7 @@ def test_two_objects(self):
         assert np.all(expected_labels == output_labels)
 
 
-def test_overlapping_secondary(self):
+def test_overlapping_secondary():
     """Make sure that an overlapping tertiary is assigned to the larger parent"""
     expected_primary_parents = np.zeros((10, 20), int)
     expected_secondary_parents = np.zeros((10, 20), int)
@@ -189,7 +189,7 @@ def test_overlapping_secondary(self):
     expected_primary_parents[4, 9] = 2  # the outline of primary # 2
     expected_primary_parents[4, 10] = 2  # the outline of primary # 1
     expected_secondary_parents[expected_primary_parents > 0] = 1
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     assert isinstance(module, cpmit.IdentifyTertiarySubregion)
     module.run(workspace)
@@ -207,7 +207,7 @@ def test_overlapping_secondary(self):
         assert np.all(parent_labels == mapped_labels)
 
 
-def test_wrong_size(self):
+def test_wrong_size():
     """Regression test of img-961, what if objects have different sizes?
 
     Slightly bizarre use case: maybe if user wants to measure background
@@ -225,13 +225,13 @@ def test_wrong_size(self):
     expected_primary_parents[4, 9] = 2  # the outline of primary # 2
     expected_primary_parents[4, 10] = 2  # the outline of primary # 1
     expected_secondary_parents[expected_primary_parents > 0] = 1
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     assert isinstance(module, cpmit.IdentifyTertiarySubregion)
     module.run(workspace)
 
 
-def test_get_measurement_columns(self):
+def test_get_measurement_columns():
     """Test the get_measurement_columns method"""
     module = cpmit.IdentifyTertiarySubregion()
     module.primary_objects_name.value = PRIMARY
@@ -265,7 +265,7 @@ def test_get_measurement_columns(self):
         assert any([all([cv == ev for cv, ev in zip(column, ec)]) for ec in expected])
 
 
-def test_do_not_shrink(self):
+def test_do_not_shrink():
     """Test the option to not shrink the smaller objects"""
     primary_labels = np.zeros((10, 10), int)
     secondary_labels = np.zeros((10, 10), int)
@@ -275,7 +275,7 @@ def test_do_not_shrink(self):
     expected_labels[2:7, 3:8] = 1
     expected_labels[3:6, 4:7] = 0
 
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     module.shrink_primary.value = False
     module.run(workspace)
@@ -285,7 +285,7 @@ def test_do_not_shrink(self):
     assert np.all(output_objects.segmented == expected_labels)
 
 
-def test_do_not_shrink_identical(self):
+def test_do_not_shrink_identical():
     """Test a case where the primary and secondary objects are identical"""
     primary_labels = np.zeros((20, 20), int)
     secondary_labels = np.zeros((20, 20), int)
@@ -308,7 +308,7 @@ def test_do_not_shrink_identical(self):
     secondary_labels[3:6, 14:17] = 2
     primary_labels[13:16, 14:17] = 4
     secondary_labels[13:16, 14:17] = 4
-    workspace = self.make_workspace(primary_labels, secondary_labels)
+    workspace = make_workspace(primary_labels, secondary_labels)
 
     module = workspace.module
     module.shrink_primary.value = False
@@ -341,7 +341,7 @@ def test_do_not_shrink_identical(self):
         assert np.all(np.isnan(values) == [False, True, False])
 
 
-def test_do_not_shrink_missing(self):
+def test_do_not_shrink_missing():
     # Regression test of 705
 
     for missing in range(1, 3):
@@ -360,7 +360,7 @@ def test_do_not_shrink_missing(self):
                     secondary_labels[(i - 2) : (i + 3), (j - 2) : (j + 3)] = sidx
                     sidx += 1
             expected_labels = secondary_labels * (primary_labels == 0)
-            workspace = self.make_workspace(primary_labels, secondary_labels)
+            workspace = make_workspace(primary_labels, secondary_labels)
 
             module = workspace.module
             module.shrink_primary.value = False
@@ -399,8 +399,8 @@ def test_do_not_shrink_missing(self):
             assert np.all(children == 1)
 
 
-def test_no_relationships(self):
-    workspace = self.make_workspace(np.zeros((10, 10), int), np.zeros((10, 10), int))
+def test_no_relationships():
+    workspace = make_workspace(np.zeros((10, 10), int), np.zeros((10, 10), int))
     workspace.module.run(workspace)
     m = workspace.measurements
     for parent, relationship in (
@@ -413,14 +413,14 @@ def test_no_relationships(self):
         assert len(result) == 0
 
 
-def test_relationships(self):
+def test_relationships():
     primary = np.zeros((10, 30), int)
     secondary = np.zeros((10, 30), int)
     for i in range(3):
         center_j = 5 + i * 10
         primary[3:6, (center_j - 1) : (center_j + 2)] = i + 1
         secondary[2:7, (center_j - 2) : (center_j + 3)] = i + 1
-    workspace = self.make_workspace(primary, secondary)
+    workspace = make_workspace(primary, secondary)
     workspace.module.run(workspace)
     m = workspace.measurements
     for parent, relationship in (
@@ -438,7 +438,7 @@ def test_relationships(self):
             assert result[cpm.R_SECOND_OBJECT_NUMBER][i] == i + 1
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827

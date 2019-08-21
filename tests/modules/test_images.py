@@ -9,22 +9,20 @@ import cellprofiler.workspace
 
 
 class TestImages:
-    def setUp(self):
+    def setUp():
         # The Images module needs a workspace and the workspace needs
         # an HDF5 file.
         #
-        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.measurements = cellprofiler.measurement.Measurements(
-            filename=self.temp_filename
-        )
-        os.close(self.temp_fd)
+        temp_fd, temp_filename = tempfile.mkstemp(".h5")
+        measurements = cellprofiler.measurement.Measurements(filename=temp_filename)
+        os.close(temp_fd)
 
-    def tearDown(self):
-        self.measurements.close()
-        os.unlink(self.temp_filename)
-        assert not os.path.exists(self.temp_filename)
+    def tearDown():
+        measurements.close()
+        os.unlink(temp_filename)
+        assert not os.path.exists(temp_filename)
 
-    def test_load_v1(self):
+    def test_load_v1():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120209212234
@@ -52,7 +50,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
             == 'or (directory does startwith "foo") (file does contain "bar")'
         )
 
-    def test_load_v2(self):
+    def test_load_v2():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120209212234
@@ -85,7 +83,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                 == 'or (directory does startwith "foo") (file does contain "bar")'
             )
 
-    def test_filter_url(self):
+    def test_filter_url():
         module = cellprofiler.modules.images.Images()
         module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
         for url, filter_value, expected in (
@@ -111,9 +109,9 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             ),
         ):
             module.filter.value = filter_value
-            self.check(module, url, expected)
+            check(module, url, expected)
 
-    def check(self, module, url, expected):
+    def check(module, url, expected):
         """Check filtering of one URL using the module as configured"""
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_urls([url])
@@ -130,7 +128,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         else:
             assert len(file_list) == 0
 
-    def test_filter_standard(self):
+    def test_filter_standard():
         module = cellprofiler.modules.images.Images()
         module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_IMAGES
         for url, expected in (
@@ -138,4 +136,4 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             ("file:/foo/.bar/baz.tif", False),
             ("file:/TestImages/foo.bar", False),
         ):
-            self.check(module, url, expected)
+            check(module, url, expected)

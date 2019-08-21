@@ -19,7 +19,7 @@ IMAGE2_NAME = "image2"
 OBJECTS_NAME = "objects"
 
 
-def make_workspace(self, image1, image2, objects=None):
+def make_workspace(image1, image2, objects=None):
     """Make a workspace for testing Threshold"""
     module = M.MeasureColocalization()
     image_set_list = cpi.ImageSetList()
@@ -43,7 +43,7 @@ def make_workspace(self, image1, image2, objects=None):
     return workspace, module
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8905
@@ -78,7 +78,7 @@ Select an object to measure:Cells
         assert name in ["Nuclei", "Cells"]
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20160216135025
@@ -134,7 +134,7 @@ asymmetrical_measurement_formats = [
 ]
 
 
-def test_get_categories(self):
+def test_get_categories():
     """Test the get_categories function for some different cases"""
     module = M.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
@@ -155,7 +155,7 @@ def test_get_categories(self):
     assert cat(OBJECTS_NAME)
 
 
-def test_get_measurements(self):
+def test_get_measurements():
     """Test the get_measurements function for some different cases"""
     module = M.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
@@ -167,9 +167,9 @@ def test_get_measurements(self):
         ans = list(module.get_measurements(None, name, "Correlation"))
         ans.sort()
         if name == "Image":
-            mf = self.all_image_measurement_formats
+            mf = all_image_measurement_formats
         else:
-            mf = self.all_object_measurement_formats
+            mf = all_object_measurement_formats
         expected = sorted([_.split("_")[1] for _ in mf])
         return ans == expected
 
@@ -183,7 +183,7 @@ def test_get_measurements(self):
     assert meas(OBJECTS_NAME)
 
 
-def test_get_measurement_images(self):
+def test_get_measurement_images():
     """Test the get_measurment_images function for some different cases"""
     for iocase, names in (
         (M.M_IMAGES, [cpmeas.IMAGE]),
@@ -196,8 +196,8 @@ def test_get_measurement_images(self):
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = iocase
         for name, mfs in (
-            (cpmeas.IMAGE, self.all_image_measurement_formats),
-            (OBJECTS_NAME, self.all_object_measurement_formats),
+            (cpmeas.IMAGE, all_image_measurement_formats),
+            (OBJECTS_NAME, all_object_measurement_formats),
         ):
             if name not in names:
                 continue
@@ -211,13 +211,13 @@ def test_get_measurement_images(self):
                         (IMAGE2_NAME, IMAGE1_NAME),
                     )
                 ]
-                if mf in self.asymmetrical_measurement_formats:
+                if mf in asymmetrical_measurement_formats:
                     assert all([e in ans for e in expected])
                 else:
                     assert any([e in ans for e in expected])
 
 
-def test_01_get_measurement_columns_images(self):
+def test_01_get_measurement_columns_images():
     module = M.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -226,17 +226,17 @@ def test_01_get_measurement_columns_images(self):
     columns = module.get_measurement_columns(None)
     expected = [
         (cpmeas.IMAGE, ftr % (IMAGE1_NAME, IMAGE2_NAME), cpmeas.COLTYPE_FLOAT)
-        for ftr in self.all_image_measurement_formats
+        for ftr in all_image_measurement_formats
     ] + [
         (cpmeas.IMAGE, ftr % (IMAGE2_NAME, IMAGE1_NAME), cpmeas.COLTYPE_FLOAT)
-        for ftr in self.asymmetrical_measurement_formats
+        for ftr in asymmetrical_measurement_formats
     ]
     assert len(columns) == len(expected)
     for column in columns:
         assert any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
 
 
-def test_02_get_measurement_columns_objects(self):
+def test_02_get_measurement_columns_objects():
     module = M.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -245,17 +245,17 @@ def test_02_get_measurement_columns_objects(self):
     columns = module.get_measurement_columns(None)
     expected = [
         (OBJECTS_NAME, ftr % (IMAGE1_NAME, IMAGE2_NAME), cpmeas.COLTYPE_FLOAT)
-        for ftr in self.all_object_measurement_formats
+        for ftr in all_object_measurement_formats
     ] + [
         (OBJECTS_NAME, ftr % (IMAGE2_NAME, IMAGE1_NAME), cpmeas.COLTYPE_FLOAT)
-        for ftr in self.asymmetrical_measurement_formats
+        for ftr in asymmetrical_measurement_formats
     ]
     assert len(columns) == len(expected)
     for column in columns:
         assert any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
 
 
-def test_03_get_measurement_columns_both(self):
+def test_03_get_measurement_columns_both():
     module = M.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -265,19 +265,19 @@ def test_03_get_measurement_columns_both(self):
     expected = (
         [
             (cpmeas.IMAGE, ftr % (IMAGE1_NAME, IMAGE2_NAME), cpmeas.COLTYPE_FLOAT)
-            for ftr in self.all_image_measurement_formats
+            for ftr in all_image_measurement_formats
         ]
         + [
             (cpmeas.IMAGE, ftr % (IMAGE2_NAME, IMAGE1_NAME), cpmeas.COLTYPE_FLOAT)
-            for ftr in self.asymmetrical_measurement_formats
+            for ftr in asymmetrical_measurement_formats
         ]
         + [
             (OBJECTS_NAME, ftr % (IMAGE1_NAME, IMAGE2_NAME), cpmeas.COLTYPE_FLOAT)
-            for ftr in self.all_object_measurement_formats
+            for ftr in all_object_measurement_formats
         ]
         + [
             (OBJECTS_NAME, ftr % (IMAGE2_NAME, IMAGE1_NAME), cpmeas.COLTYPE_FLOAT)
-            for ftr in self.asymmetrical_measurement_formats
+            for ftr in asymmetrical_measurement_formats
         ]
     )
 
@@ -286,12 +286,12 @@ def test_03_get_measurement_columns_both(self):
         assert any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
 
 
-def test_correlated(self):
+def test_correlated():
     np.random.seed(0)
     image = np.random.uniform(size=(10, 10))
     i1 = cpi.Image(image)
     i2 = cpi.Image(image)
-    workspace, module = self.make_workspace(i1, i2)
+    workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, cpmeas.IMAGE, "Correlation", "Correlation")
@@ -307,7 +307,7 @@ def test_correlated(self):
         assert column[1] in features
 
 
-def test_anticorrelated(self):
+def test_anticorrelated():
     """Test two anticorrelated images"""
     #
     # Make a checkerboard pattern and reverse it for one image
@@ -317,7 +317,7 @@ def test_anticorrelated(self):
     image2 = 1 - image1
     i1 = cpi.Image(image1)
     i2 = cpi.Image(image2)
-    workspace, module = self.make_workspace(i1, i2)
+    workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, cpmeas.IMAGE, "Correlation", "Correlation")
@@ -325,14 +325,14 @@ def test_anticorrelated(self):
     assert round(abs(corr - -1), 7) == 0
 
 
-def test_slope(self):
+def test_slope():
     """Test the slope measurement"""
     np.random.seed(0)
     image1 = np.random.uniform(size=(10, 10)).astype(np.float32)
     image2 = image1 * 0.5
     i1 = cpi.Image(image1)
     i2 = cpi.Image(image2)
-    workspace, module = self.make_workspace(i1, i2)
+    workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, cpmeas.IMAGE, "Correlation", "Slope")
@@ -343,7 +343,7 @@ def test_slope(self):
         assert round(abs(slope - 2), 7) == 0
 
 
-def test_crop(self):
+def test_crop():
     """Test similarly cropping one image to another"""
     np.random.seed(0)
     image1 = np.random.uniform(size=(20, 20))
@@ -351,7 +351,7 @@ def test_crop(self):
     crop_mask = np.zeros((20, 20), bool)
     crop_mask[5:16, 5:16] = True
     i2 = cpi.Image(image1[5:16, 5:16], crop_mask=crop_mask)
-    workspace, module = self.make_workspace(i1, i2)
+    workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, cpmeas.IMAGE, "Correlation", "Correlation")
@@ -359,7 +359,7 @@ def test_crop(self):
     assert round(abs(corr - 1), 7) == 0
 
 
-def test_mask(self):
+def test_mask():
     """Test images with two different masks"""
     np.random.seed(0)
     image1 = np.random.uniform(size=(20, 20))
@@ -375,7 +375,7 @@ def test_mask(self):
     image2[~mask] = 1 - image1[~mask]
     i1 = cpi.Image(image1, mask=mask1)
     i2 = cpi.Image(image2, mask=mask2)
-    workspace, module = self.make_workspace(i1, i2)
+    workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, cpmeas.IMAGE, "Correlation", "Correlation")
@@ -383,7 +383,7 @@ def test_mask(self):
     assert round(abs(corr - 1), 7) == 0
 
 
-def test_objects(self):
+def test_objects():
     """Test images with two objects"""
     labels = np.zeros((10, 10), int)
     labels[:4, :4] = 1
@@ -399,7 +399,7 @@ def test_objects(self):
     i2 = cpi.Image(image2)
     o = cpo.Objects()
     o.segmented = labels
-    workspace, module = self.make_workspace(i1, i2, o)
+    workspace, module = make_workspace(i1, i2, o)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, OBJECTS_NAME, "Correlation", "Correlation")
@@ -422,7 +422,7 @@ def test_objects(self):
             assert column[1] in object_features
 
 
-def test_cropped_objects(self):
+def test_cropped_objects():
     """Test images and objects with a cropping mask"""
     np.random.seed(0)
     image1 = np.random.uniform(size=(20, 20))
@@ -439,7 +439,7 @@ def test_cropped_objects(self):
     # Make the objects have the cropped image as a parent
     #
     o.parent_image = i2
-    workspace, module = self.make_workspace(i1, i2, o)
+    workspace, module = make_workspace(i1, i2, o)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, OBJECTS_NAME, "Correlation", "Correlation")
@@ -448,7 +448,7 @@ def test_cropped_objects(self):
     assert round(abs(corr[1] - 1), 7) == 0
 
 
-def test_no_objects(self):
+def test_no_objects():
     """Test images with no objects"""
     labels = np.zeros((10, 10), int)
     i, j = np.mgrid[0:10, 0:10]
@@ -458,7 +458,7 @@ def test_no_objects(self):
     i2 = cpi.Image(image2)
     o = cpo.Objects()
     o.segmented = labels
-    workspace, module = self.make_workspace(i1, i2, o)
+    workspace, module = make_workspace(i1, i2, o)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, OBJECTS_NAME, "Correlation", "Correlation")
@@ -478,7 +478,7 @@ def test_no_objects(self):
             assert column[1] in object_features
 
 
-def test_wrong_size(self):
+def test_wrong_size():
     """Regression test of IMG-961 - objects and images of different sizes"""
     np.random.seed(0)
     image1 = np.random.uniform(size=(20, 20))
@@ -488,7 +488,7 @@ def test_wrong_size(self):
     labels[6:, 6:] = 2
     o = cpo.Objects()
     o.segmented = labels
-    workspace, module = self.make_workspace(i1, i1, o)
+    workspace, module = make_workspace(i1, i1, o)
     module.run(workspace)
     m = workspace.measurements
     mi = module.get_measurement_images(None, OBJECTS_NAME, "Correlation", "Correlation")
@@ -497,7 +497,7 @@ def test_wrong_size(self):
     assert round(abs(corr[1] - 1), 7) == 0
 
 
-def test_last_object_masked(self):
+def test_last_object_masked():
     # Regression test of issue #1553
     # MeasureColocalization was truncating the measurements
     # if the last had no pixels or all pixels masked.
@@ -514,7 +514,7 @@ def test_last_object_masked(self):
     objects.segmented = labels
 
     for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             cpi.Image(image1, mask=mask1), cpi.Image(image2, mask=mask2), objects
         )
         module.run(workspace)
@@ -525,7 +525,7 @@ def test_last_object_masked(self):
         assert np.isnan(values[1])
 
 
-def test_zero_valued_intensity(self):
+def test_zero_valued_intensity():
     # https://github.com/CellProfiler/CellProfiler/issues/2680
     image1 = np.zeros((10, 10), dtype=np.float32)
 
@@ -539,9 +539,7 @@ def test_zero_valued_intensity(self):
 
     objects.segmented = labels
 
-    workspace, module = self.make_workspace(
-        cpi.Image(image1), cpi.Image(image2), objects
-    )
+    workspace, module = make_workspace(cpi.Image(image1), cpi.Image(image2), objects)
 
     module.run(workspace)
 
@@ -556,7 +554,7 @@ def test_zero_valued_intensity(self):
     assert np.isnan(values[0])
 
 
-def test_non_overlapping_object_intensity(self):
+def test_non_overlapping_object_intensity():
     # https://github.com/CellProfiler/CellProfiler/issues/2764
     image1 = np.random.rand(10, 10)
     image1[:5, :] = 0
@@ -567,9 +565,7 @@ def test_non_overlapping_object_intensity(self):
     objects = cpo.Objects()
     objects.segmented = np.ones_like(image1, dtype=np.uint8)
 
-    workspace, module = self.make_workspace(
-        cpi.Image(image1), cpi.Image(image2), objects
-    )
+    workspace, module = make_workspace(cpi.Image(image1), cpi.Image(image2), objects)
 
     module.run(workspace)
 

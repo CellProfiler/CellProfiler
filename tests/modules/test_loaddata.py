@@ -42,7 +42,7 @@ class TestLoadData:
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
-    def make_pipeline(self, csv_text, name=None):
+    def make_pipeline(csv_text, name=None):
         if name is None:
             handle, name = tempfile.mkstemp(".csv")
             fd = os.fdopen(handle, "w")
@@ -65,11 +65,11 @@ class TestLoadData:
         pipeline.add_listener(error_callback)
         return pipeline, module, name
 
-    def test_revision(self):
+    def test_revision():
         """Remember to update this and write another test on new revision"""
         assert cellprofiler.modules.loaddata.LoadData().variable_revision_number == 6
 
-    def test_load_v4(self):
+    def test_load_v4():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9722
@@ -108,7 +108,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         assert len(module.metadata_fields.selections) == 1
         assert module.metadata_fields.selections[0] == "Well"
 
-    def test_load_v5(self):
+    def test_load_v5():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10534
@@ -155,7 +155,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_w
         assert module.metadata_fields.selections[0] == "Column"
         assert module.metadata_fields.selections[1] == "Row"
 
-    def test_load_v6(self):
+    def test_load_v6():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10536
@@ -203,44 +203,44 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert module.metadata_fields.selections[0] == "Column"
         assert module.metadata_fields.selections[1] == "Row"
 
-    def test_string_image_measurement(self):
+    def test_string_image_measurement():
         csv_text = """"Test_Measurement"
 "Hello, world"
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         assert not numpy.isreal(data)
         assert data == "Hello, world"
         os.remove(filename)
 
-    def test_float_image_measurement(self):
+    def test_float_image_measurement():
         csv_text = """"Test_Measurement"
 1.5
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         assert numpy.isreal(data)
         assert round(abs(data - 1.5), 7) == 0
         os.remove(filename)
 
-    def test_int_image_measurement(self):
+    def test_int_image_measurement():
         csv_text = """"Test_Measurement"
 1
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         assert isinstance(data, numpy.int), "data is type %s, not np.int" % (type(data))
         assert data == 1
         os.remove(filename)
 
-    def test_long_int_image_measurement(self):
+    def test_long_int_image_measurement():
         csv_text = """"Test_Measurement"
 1234567890123
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         assert isinstance(
@@ -249,21 +249,21 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert data == "1234567890123"
         os.remove(filename)
 
-    def test_metadata(self):
+    def test_metadata():
         csv_text = """"Metadata_Plate"
 "P-12345"
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Metadata_Plate")
         assert data == "P-12345"
         os.remove(filename)
 
-    def test_metadata_row_and_column(self):
+    def test_metadata_row_and_column():
         csv_text = """"Metadata_Row","Metadata_Column"
 "C","03"
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         assert any(
             [
@@ -302,11 +302,11 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             )
             assert value == expected
 
-    def test_metadata_row_and_column_and_well(self):
+    def test_metadata_row_and_column_and_well():
         csv_text = """"Metadata_Row","Metadata_Column","Metadata_Well"
 "C","03","B14"
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         assert any(
             [
@@ -345,21 +345,21 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             )
             assert value == expected
 
-    def test_load_file(self):
+    def test_load_file():
         csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 """ % (
-            self.test_filename,
-            self.test_path,
+            test_filename,
+            test_path,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         c0_ran = [False]
 
         def callback(workspace):
             imgset = workspace.image_set
             image = imgset.get_image("DNA")
             pixels = image.pixel_data
-            assert pixels.shape[0] == self.test_shape[0]
+            assert pixels.shape[0] == test_shape[0]
             c0_ran[0] = True
 
         c0 = C0()
@@ -372,22 +372,22 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             assert isinstance(m, cellprofiler.measurement.Measurements)
             assert c0_ran[0]
             hexdigest = m.get_current_image_measurement("MD5Digest_DNA")
-            assert hexdigest == self.test_md5
+            assert hexdigest == test_md5
             assert "PathName_DNA" in m.get_feature_names(cellprofiler.measurement.IMAGE)
-            assert m.get_current_image_measurement("PathName_DNA") == self.test_path
+            assert m.get_current_image_measurement("PathName_DNA") == test_path
             assert "FileName_DNA" in m.get_feature_names(cellprofiler.measurement.IMAGE)
-            assert m.get_current_image_measurement("FileName_DNA") == self.test_filename
+            assert m.get_current_image_measurement("FileName_DNA") == test_filename
         finally:
             os.remove(filename)
 
-    def test_dont_load_file(self):
+    def test_dont_load_file():
         csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 """ % (
-            self.test_filename,
-            self.test_path,
+            test_filename,
+            test_path,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         c0_ran = [False]
 
         def callback(workspace):
@@ -406,7 +406,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_load_planes(self):
+    def test_load_planes():
         file_name = "RLM1 SSN3 300308 008015000.flex"
         tests.modules.maybe_download_tesst_image(file_name)
         path = tests.modules.testimages_directory()
@@ -433,7 +433,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                 )
             )
         csv_text = "\n".join(csv_lines)
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler.measurement.Measurements()
         image_set_list = cellprofiler.image.ImageSetList()
@@ -461,7 +461,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_some_rows(self):
+    def test_some_rows():
         csv_text = """"Test_Measurement"
 1
 2
@@ -474,7 +474,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 9
 10
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         module.wants_rows.value = True
         module.row_range.min = 4
         module.row_range.max = 6
@@ -486,7 +486,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert numpy.all(data == numpy.arange(4, 7))
         os.remove(filename)
 
-    def test_img_717(self):
+    def test_img_717():
         """Regression test of img-717, column without underbar"""
         csv_text = """"Image","Test_Measurement"
 "foo",1
@@ -500,7 +500,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 "foo",9
 "foo",10
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         module.wants_rows.value = True
         module.row_range.min = 4
         module.row_range.max = 6
@@ -512,7 +512,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert numpy.all(data == numpy.arange(4, 7))
         os.remove(filename)
 
-    def test_alternate_image_start(self):
+    def test_alternate_image_start():
         csv_text = """"Metadata_Measurement"
 1
 2
@@ -525,7 +525,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 9
 10
 """
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         m = pipeline.run(image_set_start=2)
         data = m.get_all_measurements(
             cellprofiler.measurement.IMAGE, "Metadata_Measurement"
@@ -533,7 +533,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         assert all([data[i - 2] == i for i in range(2, 11)])
         os.remove(filename)
 
-    def test_get_measurement_columns(self):
+    def test_get_measurement_columns():
         """Test the get_measurement_columns method"""
         colnames = ("Integer_Measurement", "Float_Measurement", "String_Measurement")
         coltypes = [
@@ -554,7 +554,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
     """
             % colnames
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         for colname, coltype in zip(colnames, coltypes):
             assert any(
@@ -569,7 +569,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             ), ("Failed to find %s" % colname)
         os.remove(filename)
 
-    def test_file_name_measurement_columns(self):
+    def test_file_name_measurement_columns():
         """Regression test bug IMG-315
 
         A csv header of Image_FileName_Foo or Image_PathName_Foo should
@@ -583,7 +583,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
     """
             % colnames
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         try:
             columns = module.get_measurement_columns(pipeline)
             assert "FileName_Foo" in [c[1] for c in columns]
@@ -591,7 +591,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         finally:
             os.remove(filename)
 
-    def test_long_integer_column(self):
+    def test_long_integer_column():
         """This is a regression test of IMG-644 where a 13-digit number got turned into an int"""
         colnames = (
             "Long_Integer_Measurement",
@@ -616,7 +616,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
     """
             % colnames
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         fmt = "%15s %30s %20s"
         print((fmt % ("Object", "Feature", "Type")))
@@ -635,7 +635,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             ), ("Failed to find %s" % colname)
         os.remove(filename)
 
-    def test_objects_measurement_columns(self):
+    def test_objects_measurement_columns():
         csv_text = """%s_%s,%s_%s
 Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
 """ % (
@@ -644,7 +644,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
             cellprofiler.measurement.C_OBJECTS_PATH_NAME,
             OBJECTS_NAME,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         expected_columns = (
             (
@@ -684,7 +684,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 ]
             )
 
-    def test_get_groupings(self):
+    def test_get_groupings():
         """Test the get_groupings method"""
         dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         pattern = "Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif"
@@ -698,7 +698,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                     match.group("ROW"),
                     match.group("COL"),
                 )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadText)
         module.wants_images.value = True
         module.wants_image_groupings.value = True
@@ -742,7 +742,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 assert match
                 assert row == match.group("ROW")
 
-    def test_load_bcb_file(self):
+    def test_load_bcb_file():
 
         csv_text = """ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
 MX_PLATE_ID,ASSAY_WELL_POSITION,ASSAY_WELL_ROLE,SITE_X,SITE_Y,\
@@ -755,17 +755,17 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 "BRD-K71194192-001-01-6","2.132352941","ChemBridge","",\
 "Oc1ccnc(SCC(=O)Nc2ccc(Oc3ccccc3)cc2)n1"
 """ % (
-            self.test_path,
-            self.test_filename,
+            test_path,
+            test_filename,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         c0_ran = [False]
 
         def callback(workspace):
             imgset = workspace.image_set
             image = imgset.get_image("DAPI")
             pixels = image.pixel_data
-            assert pixels.shape[0] == self.test_shape[0]
+            assert pixels.shape[0] == test_shape[0]
             c0_ran[0] = True
 
         c0 = C0()
@@ -778,21 +778,19 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             assert isinstance(m, cellprofiler.measurement.Measurements)
             assert c0_ran[0]
             hexdigest = m.get_current_image_measurement("MD5Digest_DAPI")
-            assert hexdigest == self.test_md5
+            assert hexdigest == test_md5
             assert "PathName_DAPI" in m.get_feature_names(
                 cellprofiler.measurement.IMAGE
             )
-            assert m.get_current_image_measurement("PathName_DAPI") == self.test_path
+            assert m.get_current_image_measurement("PathName_DAPI") == test_path
             assert "FileName_DAPI" in m.get_feature_names(
                 cellprofiler.measurement.IMAGE
             )
-            assert (
-                m.get_current_image_measurement("FileName_DAPI") == self.test_filename
-            )
+            assert m.get_current_image_measurement("FileName_DAPI") == test_filename
         finally:
             os.remove(filename)
 
-    def test_scaling(self):
+    def test_scaling():
         """Test loading an image scaled and unscaled"""
         folder = "loaddata"
         file_name = "1-162hrh2ax2.tif"
@@ -803,7 +801,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         )
         c0_image = []
         for rescale in (False, True):
-            pipeline, module, filename = self.make_pipeline(csv_text)
+            pipeline, module, filename = make_pipeline(csv_text)
             try:
                 module.rescale.value = rescale
 
@@ -823,7 +821,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         unscaled, scaled = c0_image
         numpy.testing.assert_almost_equal(unscaled * 65535.0 / 4095.0, scaled)
 
-    def test_load_objects(self):
+    def test_load_objects():
         r = numpy.random.RandomState()
         r.seed(1101)
         labels = r.randint(0, 10, size=(30, 20)).astype(numpy.uint8)
@@ -847,7 +845,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             png_path,
             sbs_dir,
         )
-        pipeline, module, csv_name = self.make_pipeline(csv_text)
+        pipeline, module, csv_name = make_pipeline(csv_text)
         assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         module.wants_images.value = True
@@ -887,7 +885,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             os.remove(name)
             os.remove(csv_name)
 
-    # def test_load_unicode(self):
+    # def test_load_unicode():
     #     base_directory = tempfile.mkdtemp()
     #     directory = u"\u2211\u03B1"
     #     filename = u"\u03B2.jpg"
@@ -906,27 +904,27 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
     #                     "%s,%s,%s\n" %
     #                     (filename.encode('utf8'), base_path.encode('utf8'),
     #                      unicode_value.encode('utf8')))
-    #         pipeline, module, _ = self.make_pipeline(csv_text, csv_path)
+    #         pipeline, module, _ = make_pipeline(csv_text, csv_path)
     #         image_set_list = cpi.ImageSetList()
     #         m = cpmeas.Measurements()
     #         workspace = cpw.Workspace(pipeline, module, None, None,
     #                                   m, image_set_list)
-    #         self.assertTrue(module.prepare_run(workspace))
-    #         self.assertEqual(len(m.get_image_numbers()), 1)
+    #         assertTrue(module.prepare_run(workspace))
+    #         assertEqual(len(m.get_image_numbers()), 1)
     #         key_names, group_list = pipeline.get_groupings(workspace)
-    #         self.assertEqual(len(group_list), 1)
+    #         assertEqual(len(group_list), 1)
     #         group_keys, image_numbers = group_list[0]
-    #         self.assertEqual(len(image_numbers), 1)
+    #         assertEqual(len(image_numbers), 1)
     #         module.prepare_group(workspace, group_keys, image_numbers)
     #         image_set = image_set_list.get_image_set(image_numbers[0] - 1)
     #         workspace = cpw.Workspace(pipeline, module, image_set,
     #                                   cpo.ObjectSet(), m, image_set_list)
     #         module.run(workspace)
     #         pixel_data = image_set.get_image("MyFile").pixel_data
-    #         self.assertEqual(pixel_data.shape[0], 30)
-    #         self.assertEqual(pixel_data.shape[1], 20)
+    #         assertEqual(pixel_data.shape[0], 30)
+    #         assertEqual(pixel_data.shape[1], 20)
     #         value = m.get_current_image_measurement("Metadata_Unicode")
-    #         self.assertEqual(value, unicode_value)
+    #         assertEqual(value, unicode_value)
     #     finally:
     #         if os.path.exists(path):
     #             try:
@@ -950,7 +948,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
     #             except:
     #                 pass
 
-    def test_load_filename(self):
+    def test_load_filename():
         #
         # Load a file, only specifying the FileName in the CSV
         #
@@ -958,12 +956,12 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             """"Image_FileName_DNA"
     "%s"
     """
-            % self.test_filename
+            % test_filename
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         module.image_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
-        module.image_directory.custom_path = self.test_path
+        module.image_directory.custom_path = test_path
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline,
@@ -976,21 +974,21 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert module.prepare_run(workspace)
         assert (
             m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1)
-            == self.test_filename
+            == test_filename
         )
         path = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
-        assert path == self.test_path
+        assert path == test_path
         assert m.get_measurement(
             cellprofiler.measurement.IMAGE, "URL_DNA", 1
         ) == cellprofiler.modules.loadimages.pathname2url(
-            os.path.join(self.test_path, self.test_filename)
+            os.path.join(test_path, test_filename)
         )
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
-        assert tuple(img.pixel_data.shape) == self.test_shape
+        assert tuple(img.pixel_data.shape) == test_shape
 
-    def test_load_url(self):
+    def test_load_url():
         #
         # Load, only specifying URL
         #
@@ -1004,7 +1002,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 "cp_logo_url_filename": tests.modules.cp_logo_url_filename,
             }
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1037,7 +1035,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         img = workspace.image_set.get_image("DNA", must_be_color=True)
         assert tuple(img.pixel_data.shape) == tests.modules.cp_logo_url_shape
 
-    def test_extra_fields(self):
+    def test_extra_fields():
         #
         # Regression test of issue #853, extra fields
         #
@@ -1051,7 +1049,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 "cp_logo_url_filename": tests.modules.cp_logo_url_filename,
             }
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1085,7 +1083,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         img = workspace.image_set.get_image("DNA", must_be_color=True)
         assert tuple(img.pixel_data.shape) == tests.modules.cp_logo_url_shape
 
-    def test_extra_lines(self):
+    def test_extra_lines():
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         #
@@ -1099,7 +1097,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             file_name,
             dir,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         try:
             assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
             m = cellprofiler.measurement.Measurements()
@@ -1119,7 +1117,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         finally:
             os.remove(filename)
 
-    def test_extra_lines_skip_rows(self):
+    def test_extra_lines_skip_rows():
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         # Different code path from 13_04
@@ -1141,7 +1139,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             file_names[1],
             path,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         try:
             assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
             m = cellprofiler.measurement.Measurements()
@@ -1164,20 +1162,20 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         finally:
             os.remove(filename)
 
-    def test_load_default_input_folder(self):
+    def test_load_default_input_folder():
         # Regression test of issue #1365 - load a file from the default
         # input folder and check that PathName_xxx is absolute
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"\n"%s","%s"''' % (
-            self.test_filename,
-            self.test_path,
+            test_filename,
+            test_path,
         )
-        pipeline, module, filename = self.make_pipeline(csv_text)
+        pipeline, module, filename = make_pipeline(csv_text)
         try:
             assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
             module.image_directory.dir_choice = (
                 cellprofiler.setting.ABSOLUTE_FOLDER_NAME
             )
-            module.image_directory.custom_path = self.test_path
+            module.image_directory.custom_path = test_path
             m = cellprofiler.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(
                 pipeline,
@@ -1190,21 +1188,21 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             assert module.prepare_run(workspace)
             assert (
                 m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1)
-                == self.test_filename
+                == test_filename
             )
             path_out = m.get_measurement(
                 cellprofiler.measurement.IMAGE, "PathName_DNA", 1
             )
-            assert self.test_path == path_out
+            assert test_path == path_out
             assert m.get_measurement(
                 cellprofiler.measurement.IMAGE, "URL_DNA", 1
             ) == cellprofiler.modules.loadimages.pathname2url(
-                os.path.join(self.test_path, self.test_filename)
+                os.path.join(test_path, test_filename)
             )
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
-            assert tuple(img.pixel_data.shape) == self.test_shape
+            assert tuple(img.pixel_data.shape) == test_shape
         finally:
             os.remove(filename)
 
@@ -1213,11 +1211,11 @@ class C0(cellprofiler.module.Module):
     module_name = "C0"
     variable_revision_number = 1
 
-    def create_settings(self):
-        self.callback = None
+    def create_settings():
+        callback = None
 
-    def settings(self):
+    def settings():
         return []
 
-    def run(self, workspace):
-        self.callback(workspace)
+    def run(workspace):
+        callback(workspace)

@@ -21,7 +21,7 @@ AUX_IMAGE_NAME = "auximage"
 AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10732
@@ -62,7 +62,7 @@ Straightened image name:StraightenedFluorescence
         assert group.straightened_image_name == output_name
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10891
@@ -136,9 +136,7 @@ Name the output straightened image:StraightenedImage
         assert module.images[0].straightened_image_name == "StraightenedImage"
 
 
-def make_workspace(
-    self, control_points, lengths, radii, image, mask=None, auximage=None
-):
+def make_workspace(control_points, lengths, radii, image, mask=None, auximage=None):
     """Create a workspace containing the control point measurements
 
     control_points - an n x 2 x m array where n is the # of control points,
@@ -160,8 +158,8 @@ def make_workspace(
     # Trick the module into thinking it's read the data file
 
     class P:
-        def __init__(self):
-            self.radii_from_training = radii
+        def __init__():
+            radii_from_training = radii
 
     module.training_set_directory.dir_choice = cps.URL_FOLDER_NAME
     module.training_set_directory.custom_path = "http://www.cellprofiler.org"
@@ -200,7 +198,7 @@ def make_workspace(
     for i in range(control_points.shape[2]):
         if lengths[i] == 0:
             continue
-        self.rebuild_worm_from_control_points_approx(
+        rebuild_worm_from_control_points_approx(
             control_points[:, :, i], radii, labels, i + 1
         )
     objects.segmented = labels
@@ -213,9 +211,7 @@ def make_workspace(
     return workspace, module
 
 
-def rebuild_worm_from_control_points_approx(
-    self, control_coords, worm_radii, labels, idx
-):
+def rebuild_worm_from_control_points_approx(control_coords, worm_radii, labels, idx):
     """Rebuild a worm from its control coordinates
 
     Given a worm specified by some control points along its spline,
@@ -296,8 +292,8 @@ def rebuild_worm_from_control_points_approx(
     labels[i[mask], j[mask]] = idx
 
 
-def test_straighten_nothing(self):
-    workspace, module = self.make_workspace(
+def test_straighten_nothing():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
     )
     module.run(workspace)
@@ -308,7 +304,7 @@ def test_straighten_nothing(self):
     # TODO: an all False array - as of v1.1 it is returning an all True array. I don't know
     # TODO: enough about map_coordinates to know what it should be doing here or why, so I'll
     # TODO: need to come back to this and see what needs to be changed for this to be resolved
-    # self.assertFalse(np.any(image.mask))
+    # assertFalse(np.any(image.mask))
     objectset = workspace.object_set
     assert isinstance(objectset, cpo.ObjectSet)
     labels = objectset.get_objects(STRAIGHTENED_OBJECTS_NAME).segmented
@@ -339,7 +335,7 @@ def test_straighten_nothing(self):
     )
 
 
-def test_straighten_straight_worm(self):
+def test_straighten_straight_worm():
     """Do a "straightening" that is a 1-1 mapping"""
     r = np.random.RandomState()
     r.seed(0)
@@ -349,7 +345,7 @@ def test_straighten_straight_worm(self):
     )
     lengths = np.array([8])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = False
@@ -385,7 +381,7 @@ def test_straighten_straight_worm(self):
     assert np.all(objects.segmented == orig_objects.segmented[16:35, 10:21])
 
 
-def test_straighten_diagonal_worm(self):
+def test_straighten_diagonal_worm():
     """Do a straightening on a worm on the 3x4x5 diagonal"""
     r = np.random.RandomState()
     r.seed(23)
@@ -395,7 +391,7 @@ def test_straighten_diagonal_worm(self):
     )
     lengths = np.array([20])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.run(workspace)
@@ -409,7 +405,7 @@ def test_straighten_diagonal_worm(self):
     np.testing.assert_almost_equal(expected, samples)
 
 
-def test_straighten_two_worms(self):
+def test_straighten_two_worms():
     """Straighten the worms from tests 02_02 and 02_03 together"""
     r = np.random.RandomState()
     r.seed(0)
@@ -425,7 +421,7 @@ def test_straighten_two_worms(self):
     )
     lengths = np.array([8, 20])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.run(workspace)
@@ -440,7 +436,7 @@ def test_straighten_two_worms(self):
     np.testing.assert_almost_equal(expected, samples)
 
 
-def test_straighten_missing_worm(self):
+def test_straighten_missing_worm():
     r = np.random.RandomState()
     r.seed(0)
     image = r.uniform(size=(60, 30))
@@ -455,7 +451,7 @@ def test_straighten_missing_worm(self):
     )
     lengths = np.array([8, 0, 20])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.run(workspace)
@@ -472,8 +468,8 @@ def test_straighten_missing_worm(self):
     np.testing.assert_almost_equal(expected, samples)
 
 
-def test_get_measurement_columns(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_columns():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
     )
     assert isinstance(module, S.StraightenWorms)
@@ -521,8 +517,8 @@ def test_get_measurement_columns(self):
     assert cellprofiler.measurement.FTR_CENTER_Y in f
 
 
-def test_get_measurement_columns_wants_images_vertical(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_columns_wants_images_vertical():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)),
         np.zeros(0),
         np.zeros(5),
@@ -592,8 +588,8 @@ def test_get_measurement_columns_wants_images_vertical(self):
             assert module.get_scale_name(None, expected_scale) in scales
 
 
-def test_get_measurement_columns_horizontal(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_columns_horizontal():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)),
         np.zeros(0),
         np.zeros(5),
@@ -662,8 +658,8 @@ def test_get_measurement_columns_horizontal(self):
             assert module.get_scale_name(expected_scale, None) in scales
 
 
-def test_get_measurement_columns_both(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_columns_both():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)),
         np.zeros(0),
         np.zeros(5),
@@ -716,8 +712,8 @@ def test_get_measurement_columns_both(self):
                     assert module.get_scale_name(hscale, vscale) in scales
 
 
-def test_measure_no_worms(self):
-    workspace, module = self.make_workspace(
+def test_measure_no_worms():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
     )
     module.wants_measurements.value = True
@@ -737,7 +733,7 @@ def test_measure_no_worms(self):
             assert len(v) == 0
 
 
-def test_measure_one_worm(self):
+def test_measure_one_worm():
     r = np.random.RandomState()
     r.seed(0)
     image = r.uniform(size=(60, 30))
@@ -746,7 +742,7 @@ def test_measure_one_worm(self):
     )
     lengths = np.array([12])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
@@ -808,7 +804,7 @@ def test_measure_one_worm(self):
             assert round(abs(v[0] - expected), 7) == 0
 
 
-def test_measure_checkerboarded_worm(self):
+def test_measure_checkerboarded_worm():
     r = np.random.RandomState()
     r.seed(42)
     image = r.uniform(size=(60, 30))
@@ -817,7 +813,7 @@ def test_measure_checkerboarded_worm(self):
     )
     lengths = np.array([12])
     radii = np.array([1, 4, 7, 4, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 21
     module.wants_measurements.value = True
@@ -1053,8 +1049,8 @@ def test_measure_checkerboarded_worm(self):
                 assert round(abs(value[0] - expected[segment, stripe]), 7) == 0
 
 
-def test_flip_no_worms(self):
-    workspace, module = self.make_workspace(
+def test_flip_no_worms():
+    workspace, module = make_workspace(
         np.zeros((5, 2, 0)), np.zeros(0), np.zeros(5), np.zeros((20, 10))
     )
     assert isinstance(module, S.StraightenWorms)
@@ -1064,7 +1060,7 @@ def test_flip_no_worms(self):
     module.run(workspace)
 
 
-def test_flip_dont_flip_top(self):
+def test_flip_dont_flip_top():
     r = np.random.RandomState()
     r.seed(0)
     image = r.uniform(size=(60, 30))
@@ -1074,7 +1070,7 @@ def test_flip_dont_flip_top(self):
     )
     lengths = np.array([8])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
@@ -1089,7 +1085,7 @@ def test_flip_dont_flip_top(self):
     np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
 
-def test_flip_top(self):
+def test_flip_top():
     r = np.random.RandomState()
     r.seed(0)
     image = r.uniform(size=(60, 30))
@@ -1099,7 +1095,7 @@ def test_flip_top(self):
     )
     lengths = np.array([8])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
@@ -1115,7 +1111,7 @@ def test_flip_top(self):
     np.testing.assert_almost_equal(pixels, image[i, j])
 
 
-def test_flip_dont_flip_bottom(self):
+def test_flip_dont_flip_bottom():
     r = np.random.RandomState()
     r.seed(53)
     image = r.uniform(size=(60, 30))
@@ -1125,7 +1121,7 @@ def test_flip_dont_flip_bottom(self):
     )
     lengths = np.array([8])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
@@ -1140,7 +1136,7 @@ def test_flip_dont_flip_bottom(self):
     np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
 
-def test_flip_bottom(self):
+def test_flip_bottom():
     r = np.random.RandomState()
     r.seed(54)
     image = r.uniform(size=(60, 30))
@@ -1150,7 +1146,7 @@ def test_flip_bottom(self):
     )
     lengths = np.array([8])
     radii = np.array([1, 3, 5, 3, 1])
-    workspace, module = self.make_workspace(control_points, lengths, radii, image)
+    workspace, module = make_workspace(control_points, lengths, radii, image)
     assert isinstance(module, S.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True

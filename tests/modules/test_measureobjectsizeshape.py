@@ -19,7 +19,7 @@ cellprofiler.preferences.set_headless()
 OBJECTS_NAME = "myobjects"
 
 
-def make_workspace(self, labels):
+def make_workspace(labels):
     image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
@@ -43,7 +43,7 @@ def make_workspace(self, labels):
     return workspace, module
 
 
-def test_01_load_v1(self):
+def test_01_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8957
@@ -71,7 +71,7 @@ Calculate the Zernike features?:Yes
     assert module.calculate_zernikes
 
 
-def test_zeros(self):
+def test_zeros():
     """Run on an empty labels matrix"""
     object_set = cellprofiler.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
@@ -121,7 +121,7 @@ def test_zeros(self):
         assert len(a) == 0
 
 
-def test_run(self):
+def test_run():
     """Run with a rectangle, cross and circle"""
     object_set = cellprofiler.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
@@ -154,7 +154,7 @@ def test_run(self):
         image_set_list,
     )
     module.run(workspace)
-    self.features_and_columns_match(measurements, module, pipeline)
+    features_and_columns_match(measurements, module, pipeline)
 
     a = measurements.get_current_measurement("SomeObjects", "AreaShape_Area")
     assert len(a) == 2
@@ -187,7 +187,7 @@ def test_run(self):
             assert len(m) == object_count
 
 
-def test_categories(self):
+def test_categories():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
@@ -198,7 +198,7 @@ def test_categories(self):
     assert len(module.get_categories(None, "Bogus")) == 0
 
 
-def test_measurements_zernike(self):
+def test_measurements_zernike():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
@@ -213,7 +213,7 @@ def test_measurements_zernike(self):
         assert "Zernike_3_1" in measurements
 
 
-def test_measurements_no_zernike(self):
+def test_measurements_no_zernike():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "No"]
     module.set_settings_from_values(settings, 1, module.module_class())
@@ -228,7 +228,7 @@ def test_measurements_no_zernike(self):
         assert not ("Zernike_3_1" in measurements)
 
 
-def test_non_contiguous(self):
+def test_non_contiguous():
     """make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects"""
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
@@ -264,7 +264,7 @@ def test_non_contiguous(self):
     assert values[0] == 54
 
 
-def test_zernikes_are_different(self):
+def test_zernikes_are_different():
     """Regression test of IMG-773"""
 
     numpy.random.seed(32)
@@ -311,7 +311,7 @@ def test_zernikes_are_different(self):
         assert values[0] != values[1]
 
 
-def test_extent(self):
+def test_extent():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
@@ -355,7 +355,7 @@ def test_extent(self):
     assert round(abs(values[0] - 0.75), 7) == 0
 
 
-def test_overlapping(self):
+def test_overlapping():
     """Test object measurement with two overlapping objects in ijv format"""
 
     i, j = numpy.mgrid[0:10, 0:20]
@@ -424,11 +424,11 @@ def test_overlapping(self):
         assert tuple(v) == expected
 
 
-def test_max_radius(self):
+def test_max_radius():
     labels = numpy.zeros((20, 10), int)
     labels[3:8, 3:6] = 1
     labels[11:19, 2:7] = 2
-    workspace, module = self.make_workspace(labels)
+    workspace, module = make_workspace(labels)
     module.run(workspace)
     m = workspace.measurements
     max_radius = m.get_current_measurement(
@@ -442,7 +442,7 @@ def test_max_radius(self):
     assert max_radius[1] == 3
 
 
-def features_and_columns_match(self, measurements, module, pipeline):
+def features_and_columns_match(measurements, module, pipeline):
     assert len(measurements.get_object_names()) == 3
     assert "SomeObjects" in measurements.get_object_names()
     assert "OtherObjects" in measurements.get_object_names()
@@ -456,11 +456,11 @@ def features_and_columns_match(self, measurements, module, pipeline):
         assert column[2] == cellprofiler.measurement.COLTYPE_FLOAT
 
 
-def test_run_volume(self):
+def test_run_volume():
     labels = numpy.zeros((10, 20, 40), dtype=numpy.uint8)
     labels[:, 5:15, 25:35] = 1
 
-    workspace, module = self.make_workspace(labels)
+    workspace, module = make_workspace(labels)
     workspace.pipeline.set_volumetric(True)
     module.run(workspace)
 
@@ -517,12 +517,12 @@ def test_run_volume(self):
 
 
 # https://github.com/CellProfiler/CellProfiler/issues/2813
-def test_run_without_zernikes(self):
+def test_run_without_zernikes():
     cells_resource = os.path.realpath(
         os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
     )
 
-    workspace, module = self.make_workspace(skimage.io.imread(cells_resource))
+    workspace, module = make_workspace(skimage.io.imread(cells_resource))
 
     module.calculate_zernikes.value = False
 
@@ -534,12 +534,12 @@ def test_run_without_zernikes(self):
         assert "Zernike_" not in feature
 
 
-def test_run_with_zernikes(self):
+def test_run_with_zernikes():
     cells_resource = os.path.realpath(
         os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
     )
 
-    workspace, module = self.make_workspace(skimage.io.imread(cells_resource))
+    workspace, module = make_workspace(skimage.io.imread(cells_resource))
 
     module.calculate_zernikes.value = True
 

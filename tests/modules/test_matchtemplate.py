@@ -15,45 +15,43 @@ import cellprofiler.workspace
 
 
 @pytest.fixture()
-def image_set(self, image_set_list):
+def image_set(image_set_list):
     return image_set_list.get_image_set(0)
 
 
 @pytest.fixture()
-def image_set_list(self):
+def image_set_list():
     return cellprofiler.image.ImageSetList()
 
 
 @pytest.fixture()
-def measurements(self):
+def measurements():
     return cellprofiler.measurement.Measurements()
 
 
 @pytest.fixture()
-def module(self):
+def module():
     return cellprofiler.modules.matchtemplate.MatchTemplate()
 
 
 @pytest.fixture()
-def object_set(self):
+def object_set():
     return cellprofiler.object.ObjectSet()
 
 
 @pytest.fixture()
-def pipeline(self):
+def pipeline():
     return cellprofiler.pipeline.Pipeline()
 
 
 @pytest.fixture()
-def workspace(
-    self, pipeline, module, image_set, object_set, measurements, image_set_list
-):
+def workspace(pipeline, module, image_set, object_set, measurements, image_set_list):
     return cellprofiler.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
 
 
-def test_run(self, module, image_set, workspace):
+def test_run(module, image_set, workspace):
     coins = skimage.data.coins()
 
     image = cellprofiler.image.Image(coins)

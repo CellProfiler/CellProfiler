@@ -25,7 +25,7 @@ I_COLOR_OUT = "ColorOutput"
 
 
 def run_module(
-    self, color_image=None, red_image=None, green_image=None, blue_image=None, fn=None
+    color_image=None, red_image=None, green_image=None, blue_image=None, fn=None
 ):
     """Run the InvertForPrinting module
 
@@ -79,7 +79,7 @@ def run_module(
     return result
 
 
-def test_color_to_color(self):
+def test_color_to_color():
     np.random.seed(0)
     color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -88,7 +88,7 @@ def test_color_to_color(self):
         module.input_color_choice.value = I.CC_COLOR
         module.output_color_choice.value = I.CC_COLOR
 
-    d = self.run_module(color_image=color_image, fn=fn)
+    d = run_module(color_image=color_image, fn=fn)
     assert len(d) == 2
     assert I_COLOR_OUT in list(d.keys())
     result = d[I_COLOR_OUT]
@@ -99,7 +99,7 @@ def test_color_to_color(self):
         assert np.all(np.abs(diff) <= np.finfo(float).eps)
 
 
-def test_color_to_bw(self):
+def test_color_to_bw():
     np.random.seed(0)
     color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -108,7 +108,7 @@ def test_color_to_bw(self):
         module.input_color_choice.value = I.CC_COLOR
         module.output_color_choice.value = I.CC_GRAYSCALE
 
-    d = self.run_module(color_image=color_image, fn=fn)
+    d = run_module(color_image=color_image, fn=fn)
     assert len(d) == 4
     assert all(
         [color in list(d.keys()) for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]
@@ -119,7 +119,7 @@ def test_color_to_bw(self):
         assert np.all(np.abs(diff) <= np.finfo(float).eps)
 
 
-def test_bw_to_color(self):
+def test_bw_to_color():
     np.random.seed(0)
     color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -128,7 +128,7 @@ def test_bw_to_color(self):
         module.input_color_choice.value = I.CC_GRAYSCALE
         module.output_color_choice.value = I.CC_COLOR
 
-    d = self.run_module(
+    d = run_module(
         red_image=color_image[:, :, 0],
         green_image=color_image[:, :, 1],
         blue_image=color_image[:, :, 2],
@@ -143,7 +143,7 @@ def test_bw_to_color(self):
         )
 
 
-def test_bw_to_bw(self):
+def test_bw_to_bw():
     np.random.seed(0)
     color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
 
@@ -152,7 +152,7 @@ def test_bw_to_bw(self):
         module.input_color_choice.value = I.CC_GRAYSCALE
         module.output_color_choice.value = I.CC_GRAYSCALE
 
-    d = self.run_module(
+    d = run_module(
         red_image=color_image[:, :, 0],
         green_image=color_image[:, :, 1],
         blue_image=color_image[:, :, 2],
@@ -169,7 +169,7 @@ def test_bw_to_bw(self):
         )
 
 
-def test_missing_image(self):
+def test_missing_image():
     np.random.seed(0)
     color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
     for present in (
@@ -186,7 +186,7 @@ def test_missing_image(self):
             module.input_color_choice.value = I.CC_GRAYSCALE
             module.output_color_choice.value = I.CC_GRAYSCALE
 
-        d = self.run_module(
+        d = run_module(
             red_image=color_image[:, :, 0] if present[0] else None,
             green_image=color_image[:, :, 1] if present[1] else None,
             blue_image=color_image[:, :, 2] if present[2] else None,

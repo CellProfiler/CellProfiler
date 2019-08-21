@@ -21,9 +21,7 @@ CROPPING = "cropping"
 OUTPUT_IMAGE = "output_image"
 
 
-def make_workspace(
-    self, input_pixels, crop_image=None, cropping=None, crop_objects=None
-):
+def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=None):
     """Return a workspace with the given images installed and the crop module"""
     image_set_list = cpi.ImageSetList()
     image_set = image_set_list.get_image_set(0)
@@ -60,9 +58,9 @@ def make_workspace(
     return workspace, module
 
 
-def test_zeros(self):
+def test_zeros():
     """Test cropping an image with a mask of all zeros"""
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         np.zeros((10, 10)), crop_image=np.zeros((10, 10), bool)
     )
     module.shape.value = cpmc.SH_IMAGE
@@ -90,9 +88,9 @@ def test_zeros(self):
     assert values == 0
 
 
-def test_zeros_and_remove_all(self):
+def test_zeros_and_remove_all():
     """Test cropping and removing rows and columns on a blank image"""
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         np.zeros((10, 10)), crop_image=np.zeros((10, 10), bool)
     )
     module.shape.value = cpmc.SH_IMAGE
@@ -102,7 +100,7 @@ def test_zeros_and_remove_all(self):
     assert np.product(output_image.pixel_data.shape) == 0
 
 
-def test_crop_edges_with_image(self):
+def test_crop_edges_with_image():
     """Test cropping and removing rows and columns with an image"""
     x, y = np.mgrid[0:10, 0:10]
     input_image = x / 100.0 + y / 10.0
@@ -112,7 +110,7 @@ def test_crop_edges_with_image(self):
     expected_image = np.zeros((6, 3), np.float32)
     expected_image[0, 0] = input_image[2, 3]
     expected_image[5, 2] = input_image[7, 5]
-    workspace, module = self.make_workspace(input_image, crop_image=crop_image)
+    workspace, module = make_workspace(input_image, crop_image=crop_image)
     module.shape.value = cpmc.SH_IMAGE
     module.remove_rows_and_columns.value = cpmc.RM_EDGES
     module.run(workspace)
@@ -120,7 +118,7 @@ def test_crop_edges_with_image(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_all_with_image(self):
+def test_crop_all_with_image():
     """Test cropping and removing rows and columns with an image"""
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
@@ -130,7 +128,7 @@ def test_crop_all_with_image(self):
     expected_image = input_image[(2, 7), :][:, (3, 5)]
     expected_image[1, 0] = 0
     expected_image[0, 1] = 0
-    workspace, module = self.make_workspace(input_image, crop_image=crop_image)
+    workspace, module = make_workspace(input_image, crop_image=crop_image)
     module.shape.value = cpmc.SH_IMAGE
     module.remove_rows_and_columns.value = cpmc.RM_ALL
     module.run(workspace)
@@ -138,7 +136,7 @@ def test_crop_all_with_image(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_edges_with_cropping(self):
+def test_crop_edges_with_cropping():
     """Test cropping and removing rows and columns with an image cropping"""
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
@@ -148,7 +146,7 @@ def test_crop_edges_with_cropping(self):
     expected_image = np.zeros((6, 3))
     expected_image[0, 0] = input_image[2, 3]
     expected_image[5, 2] = input_image[7, 5]
-    workspace, module = self.make_workspace(input_image, cropping=crop_image)
+    workspace, module = make_workspace(input_image, cropping=crop_image)
     module.shape.value = cpmc.SH_CROPPING
     module.remove_rows_and_columns.value = cpmc.RM_EDGES
     module.run(workspace)
@@ -156,11 +154,11 @@ def test_crop_edges_with_cropping(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_ellipse_x_major(self):
+def test_crop_with_ellipse_x_major():
     """Crop with an ellipse that has its major axis in the X direction"""
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_ELLIPSE
     module.remove_rows_and_columns.value = cpmc.RM_EDGES
     module.ellipse_center.set_value((4, 5))
@@ -177,10 +175,10 @@ def test_crop_with_ellipse_x_major(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_ellipse_y_major(self):
+def test_crop_with_ellipse_y_major():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_ELLIPSE
     module.remove_rows_and_columns.value = cpmc.RM_EDGES
     module.ellipse_center.set_value((5, 4))
@@ -197,11 +195,11 @@ def test_crop_with_ellipse_y_major(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_rectangle(self):
+def test_crop_with_rectangle():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
     expected_image = input_image[2:8, 1:9]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((2, 8))
@@ -211,11 +209,11 @@ def test_crop_with_rectangle(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_rectangle_unbounded_xmin(self):
+def test_crop_with_rectangle_unbounded_xmin():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
     expected_image = input_image[2:8, :9]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((0, 9))
     module.vertical_limits.set_value((2, 8))
@@ -225,11 +223,11 @@ def test_crop_with_rectangle_unbounded_xmin(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_rectangle_unbounded_xmax(self):
+def test_crop_with_rectangle_unbounded_xmax():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
     expected_image = input_image[2:8, 1:]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((1, "end"))
     module.vertical_limits.set_value((2, 8))
@@ -239,11 +237,11 @@ def test_crop_with_rectangle_unbounded_xmax(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_rectangle_unbounded_ymin(self):
+def test_crop_with_rectangle_unbounded_ymin():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
     expected_image = input_image[:8, 1:9]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((0, 8))
@@ -253,11 +251,11 @@ def test_crop_with_rectangle_unbounded_ymin(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_rectangle_unbounded_ymax(self):
+def test_crop_with_rectangle_unbounded_ymax():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
     expected_image = input_image[2:, 1:9]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((2, "end"))
@@ -267,12 +265,12 @@ def test_crop_with_rectangle_unbounded_ymax(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_color_with_rectangle(self):
+def test_crop_color_with_rectangle():
     """Regression test: make sure cropping works with a color image"""
     i, j, k = np.mgrid[0:10, 0:10, 0:3]
     input_image = (i / 1000.0 + j / 100.0 + k).astype(np.float32)
     expected_image = input_image[2:8, 1:9, :]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((2, 8))
@@ -282,11 +280,11 @@ def test_crop_color_with_rectangle(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_crop_with_rectangle_float_bounds(self):
+def test_crop_with_rectangle_float_bounds():
     x, y = np.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(np.float32)
     expected_image = input_image[2:8, 1:9]
-    workspace, module = self.make_workspace(input_image)
+    workspace, module = make_workspace(input_image)
     module.shape.value = cpmc.SH_RECTANGLE
     module.horizontal_limits.set_value((1.2, 9.0000003))
     module.vertical_limits.set_value((2.5, 8.999999))
@@ -296,13 +294,13 @@ def test_crop_with_rectangle_float_bounds(self):
     assert np.all(output_image.pixel_data == expected_image)
 
 
-def test_mask_with_objects(self):
+def test_mask_with_objects():
     np.random.seed()
     input_image = np.random.uniform(size=(20, 10))
     input_objects = np.zeros((20, 10), dtype=int)
     input_objects[2:7, 3:8] = 1
     input_objects[12:17, 3:8] = 2
-    workspace, module = self.make_workspace(input_image, crop_objects=input_objects)
+    workspace, module = make_workspace(input_image, crop_objects=input_objects)
     module.shape.value = cpmc.SH_OBJECTS
     module.objects_source.value = CROP_OBJECTS
     module.remove_rows_and_columns.value = cpmc.RM_NO
@@ -313,13 +311,13 @@ def test_mask_with_objects(self):
     assert np.all(output_image.mask == (input_objects > 0))
 
 
-def test_crop_with_objects(self):
+def test_crop_with_objects():
     np.random.seed()
     input_image = np.random.uniform(size=(20, 10))
     input_objects = np.zeros((20, 10), dtype=int)
     input_objects[2:7, 3:8] = 1
     input_objects[12:17, 3:8] = 2
-    workspace, module = self.make_workspace(input_image, crop_objects=input_objects)
+    workspace, module = make_workspace(input_image, crop_objects=input_objects)
     module.shape.value = cpmc.SH_OBJECTS
     module.objects_source.value = CROP_OBJECTS
     module.remove_rows_and_columns.value = cpmc.RM_EDGES

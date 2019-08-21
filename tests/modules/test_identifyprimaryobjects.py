@@ -21,12 +21,12 @@ MASKING_OBJECTS_NAME = "masking_objects"
 MEASUREMENT_NAME = "my_measurement"
 
 
-def load_error_handler(self, caller, event):
+def load_error_handler(caller, event):
     if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
-        self.fail(event.error.message)
+        fail(event.error.message)
 
 
-def make_workspace(self, image, mask=None, labels=None):
+def make_workspace(image, mask=None, labels=None):
     """Make a workspace and IdentifyPrimaryObjects module
 
     image - the intensity image for thresholding
@@ -56,11 +56,11 @@ def make_workspace(self, image, mask=None, labels=None):
     return workspace, module
 
 
-def test_init(self):
+def test_init():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
 
 
-def test_test_zero_objects(self):
+def test_test_zero_objects():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -109,7 +109,7 @@ def test_test_zero_objects(self):
     assert numpy.product(location_center_y.shape) == 0
 
 
-def test_test_zero_objects_wa_in_lo_in(self):
+def test_test_zero_objects_wa_in_lo_in():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -139,7 +139,7 @@ def test_test_zero_objects_wa_in_lo_in(self):
     assert numpy.all(segmented == 0)
 
 
-def test_test_zero_objects_wa_di_lo_in(self):
+def test_test_zero_objects_wa_di_lo_in():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -169,7 +169,7 @@ def test_test_zero_objects_wa_di_lo_in(self):
     assert numpy.all(segmented == 0)
 
 
-def test_test_zero_objects_wa_in_lo_sh(self):
+def test_test_zero_objects_wa_in_lo_sh():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -199,7 +199,7 @@ def test_test_zero_objects_wa_in_lo_sh(self):
     assert numpy.all(segmented == 0)
 
 
-def test_test_zero_objects_wa_di_lo_sh(self):
+def test_test_zero_objects_wa_di_lo_sh():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -229,7 +229,7 @@ def test_test_zero_objects_wa_di_lo_sh(self):
     assert numpy.all(segmented == 0)
 
 
-def test_test_one_object(self):
+def test_test_one_object():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -296,7 +296,7 @@ def test_test_one_object(self):
         assert all([column[1] in features for column in ocolumns])
 
 
-def test_test_two_objects(self):
+def test_test_two_objects():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -358,7 +358,7 @@ def test_test_two_objects(self):
     assert location_center_x[1] < 16
 
 
-def test_test_threshold_range(self):
+def test_test_threshold_range():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -419,7 +419,7 @@ def test_test_threshold_range(self):
     assert location_center_x[0] < 36
 
 
-def test_fill_holes(self):
+def test_fill_holes():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -454,7 +454,7 @@ def test_fill_holes(self):
     assert objects.segmented[30, 30] > 0
 
 
-def test_dont_fill_holes(self):
+def test_dont_fill_holes():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -490,7 +490,7 @@ def test_dont_fill_holes(self):
     assert objects.segmented[30, 30] == 0
 
 
-def test_01_fill_holes_within_holes(self):
+def test_01_fill_holes_within_holes():
     "Regression test of img-1431"
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -528,7 +528,7 @@ def test_01_fill_holes_within_holes(self):
     assert objects.segmented[26, 20] == 1
 
 
-def test_test_watershed_shape_shape(self):
+def test_test_watershed_shape_shape():
     """Identify by local_maxima:shape & intensity:shape
 
     Create an object whose intensity is high near the middle
@@ -591,7 +591,7 @@ def test_test_watershed_shape_shape(self):
     assert numpy.max(objects.segmented) == 2
 
 
-def test_test_watershed_shape_intensity(self):
+def test_test_watershed_shape_intensity():
     """Identify by local_maxima:shape & watershed:intensity
 
     Create an object with an hourglass shape to get two maxima, but
@@ -655,7 +655,7 @@ def test_test_watershed_shape_intensity(self):
     assert objects.segmented[7, 11] == objects.segmented[7, 4]
 
 
-def test_test_watershed_intensity_distance_single(self):
+def test_test_watershed_intensity_distance_single():
     """Identify by local_maxima:intensity & watershed:shape - one object
 
     Create an object with an hourglass shape and a peak in the middle.
@@ -721,7 +721,7 @@ def test_test_watershed_intensity_distance_single(self):
     assert numpy.max(objects.segmented) == 1
 
 
-def test_test_watershed_intensity_distance_triple(self):
+def test_test_watershed_intensity_distance_triple():
     """Identify by local_maxima:intensity & watershed:shape - 3 objects w/o filter
 
     Create an object with an hourglass shape and a peak in the middle.
@@ -786,7 +786,7 @@ def test_test_watershed_intensity_distance_triple(self):
     assert numpy.max(objects.segmented) == 3
 
 
-def test_test_watershed_intensity_distance_filter(self):
+def test_test_watershed_intensity_distance_filter():
     """Identify by local_maxima:intensity & watershed:shape - filtered
 
     Create an object with an hourglass shape and a peak in the middle.
@@ -851,7 +851,7 @@ def test_test_watershed_intensity_distance_filter(self):
     assert numpy.max(objects.segmented) == 1
 
 
-def test_test_watershed_intensity_distance_double(self):
+def test_test_watershed_intensity_distance_double():
     """Identify by local_maxima:intensity & watershed:shape - two objects
 
     Create an object with an hourglass shape and peaks in the top and
@@ -920,7 +920,7 @@ def test_test_watershed_intensity_distance_double(self):
     assert objects.segmented[12, 7] != objects.segmented[4, 7]
 
 
-def test_propagate(self):
+def test_propagate():
     """Test the propagate unclump method"""
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -988,7 +988,7 @@ def test_propagate(self):
     assert objects.segmented[14, 9] == objects.segmented[9, 9]
 
 
-def test_fly(self):
+def test_fly():
     """Run identify on the fly image"""
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -1082,7 +1082,7 @@ Variance method:Standard deviation
                 )
 
 
-def test_maxima_suppression_zero(self):
+def test_maxima_suppression_zero():
     # Regression test for issue #877
     # if maxima_suppression_size = 1 or 0, use a 4-connected structuring
     # element.
@@ -1144,7 +1144,7 @@ def test_maxima_suppression_zero(self):
         assert len(numpy.unique(output.segmented[expected == 1])) == 1
 
 
-def test_load_v10(self):
+def test_load_v10():
     # Sorry about this overly-long pipeline, it seemed like we need to
     # revisit many of the choices.
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1646,7 +1646,7 @@ Size of adaptive window:12
     assert module.use_advanced.value
 
 
-def test_01_load_new_robust_background(self):
+def test_01_load_new_robust_background():
     #
     # Test custom robust background parameters.
     #
@@ -1829,7 +1829,7 @@ Variance method:Median absolute deviation
         assert module.use_advanced.value
 
 
-def test_discard_large(self):
+def test_discard_large():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -1880,7 +1880,7 @@ def test_discard_large(self):
     assert numpy.product(location_center_x.shape) == 1
 
 
-def test_keep_large(self):
+def test_keep_large():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -1925,7 +1925,7 @@ def test_keep_large(self):
     assert numpy.product(location_center_x.shape) == 2
 
 
-def test_discard_small(self):
+def test_discard_small():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
@@ -1976,7 +1976,7 @@ def test_discard_small(self):
     assert numpy.product(location_center_x.shape) == 1
 
 
-def test_discard_edge(self):
+def test_discard_edge():
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -2016,7 +2016,7 @@ def test_discard_edge(self):
         assert objects.unedited_segmented[center[0], center[1]] > 0
 
 
-def test_discard_with_mask(self):
+def test_discard_with_mask():
     """Check discard of objects that are on the border of a mask"""
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
@@ -2059,7 +2059,7 @@ def test_discard_with_mask(self):
         assert objects.unedited_segmented[center[0], center[1]] > 0
 
 
-def test_regression_diagonal(self):
+def test_regression_diagonal():
     """Regression test - was using one-connected instead of 3-connected structuring element"""
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -2098,7 +2098,7 @@ def test_regression_diagonal(self):
     assert numpy.all(img[segmented == 1] > 0)
 
 
-def test_regression_adaptive_mask(self):
+def test_regression_adaptive_mask():
     """Regression test - mask all but one pixel / adaptive"""
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
@@ -2131,18 +2131,18 @@ def test_regression_adaptive_mask(self):
     assert numpy.all(segmented == 0)
 
 
-# def test_test_robust_background_fly(self):
+# def test_test_robust_background_fly():
 #     image = fly_image()
-#     workspace, x = self.make_workspace(image)
+#     workspace, x = make_workspace(image)
 #     x.threshold.threshold_scope.value = I.TS_GLOBAL
 #     x.threshold_method.value = T.TM_ROBUST_BACKGROUND
 #     local_threshold,threshold = x.get_threshold(
 #         cpi.Image(image), np.ones(image.shape,bool), workspace)
-#     self.assertTrue(threshold > 0.09)
-#     self.assertTrue(threshold < 0.095)
+#     assertTrue(threshold > 0.09)
+#     assertTrue(threshold < 0.095)
 
 
-def test_get_measurement_columns(self):
+def test_get_measurement_columns():
     """Test the get_measurement_columns method"""
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     oname = "my_object"
@@ -2197,7 +2197,7 @@ def test_get_measurement_columns(self):
         )
 
 
-def test_regression_holes(self):
+def test_regression_holes():
     """Regression test - fill holes caused by filtered object
 
     This was created as a regression test for the bug, IMG-191, but
@@ -2282,7 +2282,7 @@ def test_regression_holes(self):
         ],
         bool,
     )
-    workspace, x = self.make_workspace(pixels)
+    workspace, x = make_workspace(pixels)
     x.use_advanced.value = True
     x.exclude_size.value = True
     x.size_range.min = 6
@@ -2306,7 +2306,7 @@ def test_regression_holes(self):
     assert numpy.all(unedited_segmented[mask] == expected[mask])
 
 
-def test_regression_holes(self):
+def test_regression_holes():
     """Regression test - fill holes caused by filtered object
 
     This is the real regression test for IMG-191. The smaller object
@@ -2418,7 +2418,7 @@ def test_regression_holes(self):
     assert numpy.all(my_objects.segmented[mask] == expected[mask])
 
 
-def test_erase_objects(self):
+def test_erase_objects():
     """Set up a limit on the # of objects and exceed it - erasing objects"""
     maximum_object_count = 3
     pixels = numpy.zeros((20, 21))
@@ -2459,7 +2459,7 @@ def test_erase_objects(self):
     assert numpy.max(my_objects.unedited_segmented) == 4
 
 
-def test_dont_erase_objects(self):
+def test_dont_erase_objects():
     """Ask to erase objects, but don't"""
     maximum_object_count = 5
     pixels = numpy.zeros((20, 21))
@@ -2499,7 +2499,7 @@ def test_dont_erase_objects(self):
     assert numpy.max(my_objects.segmented) == 4
 
 
-def test_threshold_by_measurement(self):
+def test_threshold_by_measurement():
     """Set threshold based on mean image intensity"""
     pixels = numpy.zeros((10, 10))
     pixels[2:6, 2:6] = 0.5
@@ -2539,7 +2539,7 @@ def test_threshold_by_measurement(self):
     ) == numpy.mean(pixels)
 
 
-def test_threshold_smoothing_automatic(self):
+def test_threshold_smoothing_automatic():
     image = numpy.array(
         [
             [0, 0, 0, 0, 0, 0, 0],
@@ -2562,7 +2562,7 @@ def test_threshold_smoothing_automatic(self):
             [0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     assert isinstance(
         module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
     )
@@ -2580,7 +2580,7 @@ def test_threshold_smoothing_automatic(self):
     numpy.testing.assert_array_equal(expected, labels)
 
 
-def test_threshold_smoothing_manual(self):
+def test_threshold_smoothing_manual():
     image = numpy.array(
         [
             [0, 0, 0, 0, 0, 0, 0],
@@ -2603,7 +2603,7 @@ def test_threshold_smoothing_manual(self):
             [0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     assert isinstance(
         module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
     )
@@ -2620,7 +2620,7 @@ def test_threshold_smoothing_manual(self):
     numpy.testing.assert_array_equal(expected, labels)
 
 
-def test_threshold_no_smoothing(self):
+def test_threshold_no_smoothing():
     image = numpy.array(
         [
             [0, 0, 0, 0, 0, 0, 0],
@@ -2647,7 +2647,7 @@ def test_threshold_no_smoothing(self):
         cellprofiler.modules.identify.TS_MANUAL,
         cellprofiler.modules.identify.TS_MEASUREMENT,
     ):
-        workspace, module = self.make_workspace(image)
+        workspace, module = make_workspace(image)
         assert isinstance(
             module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
         )
@@ -2710,19 +2710,19 @@ def draw_circle(img, center, radius, value):
 
 
 class TestWeightedVariance:
-    def test_01_masked_wv(self):
+    def test_01_masked_wv():
         output = centrosome.threshold.weighted_variance(
             numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
         )
         assert output == 0
 
-    def test_02_zero_wv(self):
+    def test_02_zero_wv():
         output = centrosome.threshold.weighted_variance(
             numpy.zeros((3, 3)), numpy.ones((3, 3), bool), numpy.ones((3, 3), bool)
         )
         assert output == 0
 
-    def test_03_fg_0_bg_0(self):
+    def test_03_fg_0_bg_0():
         """Test all foreground pixels same, all background same, wv = 0"""
         img = numpy.zeros((4, 4))
         img[:, 2:4] = 1
@@ -2732,7 +2732,7 @@ class TestWeightedVariance:
         )
         assert output == 0
 
-    def test_04_values(self):
+    def test_04_values():
         """Test with two foreground and two background values"""
         #
         # The log of this array is [-4,-3],[-2,-1] and
@@ -2744,7 +2744,7 @@ class TestWeightedVariance:
         )
         assert round(abs(output - 0.25), 7) == 0
 
-    def test_05_mask(self):
+    def test_05_mask():
         """Test, masking out one of the background values"""
         #
         # The log of this array is [-4,-3],[-2,-1] and
@@ -2759,20 +2759,20 @@ class TestWeightedVariance:
 
 
 class TestSumOfEntropies:
-    def test_01_all_masked(self):
+    def test_01_all_masked():
         output = centrosome.threshold.sum_of_entropies(
             numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
         )
         assert output == 0
 
-    def test_020_all_zero(self):
+    def test_020_all_zero():
         """Can't take the log of zero, so all zero matrix = 0"""
         output = centrosome.threshold.sum_of_entropies(
             numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
         )
         assert round(abs(output - 0), 7) == 0
 
-    def test_03_fg_bg_equal(self):
+    def test_03_fg_bg_equal():
         img = numpy.ones((128, 128))
         img[0:64, :] *= 0.15
         img[64:128, :] *= 0.85
@@ -2797,7 +2797,7 @@ class TestSumOfEntropies:
         )
         assert round(abs(output - ob + of), 7) == 0
 
-    def test_04_fg_bg_different(self):
+    def test_04_fg_bg_different():
         img = numpy.ones((128, 128))
         img[0:64, 0:64] *= 0.15
         img[0:64, 64:128] *= 0.3

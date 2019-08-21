@@ -26,7 +26,7 @@ INPUT_IMAGE_NAME = "myimage"
 OUTPUT_IMAGE_NAME = "myfilteredimage"
 
 
-def make_workspace(self, image, mask):
+def make_workspace(image, mask):
     """Make a workspace for testing FilterByObjectMeasurement"""
     module = S.Smooth()
     pipeline = cpp.Pipeline()
@@ -42,7 +42,7 @@ def make_workspace(self, image, mask):
     return workspace, module
 
 
-def test_load_v01(self):
+def test_load_v01():
     data = base64.b64decode(
         "eJztWN1u0zAUdrqsbCDt5wourV0hxKJ0iGr0hnUrE5GWrqLVBHd4rdtZcuLKcaaWJ"
         "+CSR+JxuNwjEJekSUxo0mxMqlRXlnvs853P57MT17WbvYvmKXxrmNBu9g6HhGLYoU"
@@ -71,7 +71,7 @@ def test_load_v01(self):
     assert smooth.clip
 
 
-def test_load_v02(self):
+def test_load_v02():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130522170932
@@ -101,7 +101,7 @@ Clip intensity at 0 and 1:No
     assert not smooth.clip
 
 
-def test_fit_polynomial(self):
+def test_fit_polynomial():
     """Test the smooth module with polynomial fitting"""
     np.random.seed(0)
     #
@@ -117,7 +117,7 @@ def test_fit_polynomial(self):
     for clip in (False, True):
         expected = fit_polynomial(image, mask, clip)
         assert np.all((expected >= 0) & (expected <= 1)) == clip
-        workspace, module = self.make_workspace(image, mask)
+        workspace, module = make_workspace(image, mask)
         module.smoothing_method.value = S.FIT_POLYNOMIAL
         module.clip.value = clip
         module.run(workspace)
@@ -126,7 +126,7 @@ def test_fit_polynomial(self):
         np.testing.assert_almost_equal(result.pixel_data, expected)
 
 
-def test_gaussian_auto_small(self):
+def test_gaussian_auto_small():
     """Test the smooth module with Gaussian smoothing in automatic mode"""
     sigma = 100.0 / 40.0 / 2.35
     np.random.seed(0)
@@ -135,7 +135,7 @@ def test_gaussian_auto_small(self):
     mask[40:60, 45:65] = False
     fn = lambda x: gaussian_filter(x, sigma, mode="constant", cval=0.0)
     expected = smooth_with_function_and_mask(image, fn, mask)
-    workspace, module = self.make_workspace(image, mask)
+    workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = S.GAUSSIAN_FILTER
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -143,7 +143,7 @@ def test_gaussian_auto_small(self):
     np.testing.assert_almost_equal(result.pixel_data, expected)
 
 
-def test_gaussian_auto_large(self):
+def test_gaussian_auto_large():
     """Test the smooth module with Gaussian smoothing in large automatic mode"""
     sigma = 30.0 / 2.35
     image = np.random.uniform(size=(3200, 100)).astype(np.float32)
@@ -151,7 +151,7 @@ def test_gaussian_auto_large(self):
     mask[40:60, 45:65] = False
     fn = lambda x: gaussian_filter(x, sigma, mode="constant", cval=0.0)
     expected = smooth_with_function_and_mask(image, fn, mask)
-    workspace, module = self.make_workspace(image, mask)
+    workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = S.GAUSSIAN_FILTER
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -159,7 +159,7 @@ def test_gaussian_auto_large(self):
     np.testing.assert_almost_equal(result.pixel_data, expected)
 
 
-def test_gaussian_manual(self):
+def test_gaussian_manual():
     """Test the smooth module with Gaussian smoothing, manual sigma"""
     sigma = 15.0 / 2.35
     np.random.seed(0)
@@ -168,7 +168,7 @@ def test_gaussian_manual(self):
     mask[40:60, 45:65] = False
     fn = lambda x: gaussian_filter(x, sigma, mode="constant", cval=0.0)
     expected = smooth_with_function_and_mask(image, fn, mask)
-    workspace, module = self.make_workspace(image, mask)
+    workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = S.GAUSSIAN_FILTER
     module.wants_automatic_object_size.value = False
     module.object_size.value = 15.0
@@ -178,7 +178,7 @@ def test_gaussian_manual(self):
     np.testing.assert_almost_equal(result.pixel_data, expected)
 
 
-def test_median(self):
+def test_median():
     """test the smooth module with median filtering"""
     object_size = 100.0 / 40.0
     np.random.seed(0)
@@ -186,7 +186,7 @@ def test_median(self):
     mask = np.ones(image.shape, bool)
     mask[40:60, 45:65] = False
     expected = median_filter(image, mask, object_size / 2 + 1)
-    workspace, module = self.make_workspace(image, mask)
+    workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = S.MEDIAN_FILTER
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -194,7 +194,7 @@ def test_median(self):
     np.testing.assert_almost_equal(result.pixel_data, expected)
 
 
-def test_bilateral(self):
+def test_bilateral():
     """test the smooth module with bilateral filtering"""
     sigma = 16.0
     sigma_range = 0.2
@@ -208,7 +208,7 @@ def test_bilateral(self):
         sigma_color=sigma_range,
         sigma_spatial=sigma,
     )
-    workspace, module = self.make_workspace(image, mask)
+    workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = S.SMOOTH_KEEPING_EDGES
     module.sigma_range.value = sigma_range
     module.wants_automatic_object_size.value = False

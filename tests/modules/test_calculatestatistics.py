@@ -25,7 +25,7 @@ TEST_FTR = "my_measurement"
 FIGURE_NAME = "figname"
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9525
@@ -59,7 +59,7 @@ File output location:Default Output Folder\x7CTest
     assert dv.pathname.custom_path == "Test"
 
 
-# def test_compare_to_matlab(self):
+# def test_compare_to_matlab():
 #     expected = {
 #         'EC50_DistCytoplasm_Correlation_Correlation_CorrGreenCorrBlue':3.982812,
 #         'EC50_DistCytoplasm_Intensity_LowerQuartileIntensity_CorrGreen':4.139827,
@@ -359,7 +359,7 @@ File output location:Default Output Folder\x7CTest
 #         module.set_module_num(1)
 #         pipeline.add_module(module)
 #         def callback(caller, event):
-#             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+#             assertFalse(isinstance(event, cpp.RunExceptionEvent))
 #         workspace = cpw.Workspace(pipeline, module, image_set,
 #                                   cpo.ObjectSet(), m,
 #                                   image_set_list)
@@ -371,14 +371,14 @@ File output location:Default Output Folder\x7CTest
 #             value = m.get_experiment_measurement(feature_name)
 #             e_value = expected[feature_name]
 #             diff = abs(value-e_value) *2 /abs(value+e_value)
-#             self.assertTrue(diff < .05, "%s: Matlab: %f, Python: %f diff: %f" %
+#             assertTrue(diff < .05, "%s: Matlab: %f, Python: %f diff: %f" %
 #                             (feature_name, e_value, value, diff))
 #             if diff > .01:
 #                 print ("Warning: > 1%% difference for %s: Matlab: %f, Python: %f diff: %f" %
 #                        (feature_name, e_value, value, diff))
 #             if feature_name.startswith("EC50"):
 #                 filename = "EC49_"+feature_name[5:]+".pdf"
-#                 self.assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
+#                 assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
 #     finally:
 #         try:
 #             if m is not None:
@@ -391,7 +391,7 @@ File output location:Default Output Folder\x7CTest
 #         os.rmdir(temp_dir)
 
 
-def make_workspace(self, mdict, controls_measurement, dose_measurements=[]):
+def make_workspace(mdict, controls_measurement, dose_measurements=[]):
     """Make a workspace and module for running CalculateStatistics
 
     mdict - a two-level dictionary that mimics the measurements structure
@@ -432,7 +432,7 @@ def make_workspace(self, mdict, controls_measurement, dose_measurements=[]):
     return workspace, module
 
 
-def test_NAN(self):
+def test_NAN():
     """Regression test of IMG-762
 
     If objects have NAN values, the means are NAN and the
@@ -448,9 +448,7 @@ def test_NAN(self):
             ]
         },
     }
-    workspace, module = self.make_workspace(
-        mdict, "Metadata_Controls", ["Metadata_Doses"]
-    )
+    workspace, module = make_workspace(mdict, "Metadata_Controls", ["Metadata_Doses"])
     module.post_run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -460,7 +458,7 @@ def test_NAN(self):
         assert not np.isnan(value)
 
 
-def test_make_path(self):
+def test_make_path():
     # regression test of issue #1478
     # If the figure directory doesn't exist, it should be created
     #
@@ -474,9 +472,7 @@ def test_make_path(self):
             ]
         },
     }
-    workspace, module = self.make_workspace(
-        mdict, "Metadata_Controls", ["Metadata_Doses"]
-    )
+    workspace, module = make_workspace(mdict, "Metadata_Controls", ["Metadata_Doses"])
     assert isinstance(module, C.CalculateStatistics)
     my_dir = tempfile.mkdtemp()
     my_subdir = os.path.join(my_dir, "foo")

@@ -18,7 +18,7 @@ def output_image_name(idx):
     return "outputimage%d" % idx
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10268
@@ -127,7 +127,7 @@ Blue absorbance\x3A:0.3
     assert round(abs(module.outputs[-1].blue_absorbance.value - 0.3), 7) == 0
 
 
-def make_workspace(self, pixels, choices):
+def make_workspace(pixels, choices):
     """Make a workspace for running UnmixColors
 
     pixels - input image
@@ -182,11 +182,9 @@ def make_image(expected, absorbances):
     return image
 
 
-def test_zeros(self):
+def test_zeros():
     """Test on an image of all zeros"""
-    workspace, module = self.make_workspace(
-        np.zeros((10, 20, 3)), [U.CHOICE_HEMATOXYLIN]
-    )
+    workspace, module = make_workspace(np.zeros((10, 20, 3)), [U.CHOICE_HEMATOXYLIN])
     module.run(workspace)
     image = workspace.image_set.get_image(output_image_name(0))
     #
@@ -195,11 +193,9 @@ def test_zeros(self):
     np.testing.assert_almost_equal(image.pixel_data, 1, 2)
 
 
-def test_ones(self):
+def test_ones():
     """Test on an image of all ones"""
-    workspace, module = self.make_workspace(
-        np.ones((10, 20, 3)), [U.CHOICE_HEMATOXYLIN]
-    )
+    workspace, module = make_workspace(np.ones((10, 20, 3)), [U.CHOICE_HEMATOXYLIN])
     module.run(workspace)
     image = workspace.image_set.get_image(output_image_name(0))
     #
@@ -208,19 +204,19 @@ def test_ones(self):
     np.testing.assert_almost_equal(image.pixel_data, 0, 2)
 
 
-def test_one_stain(self):
+def test_one_stain():
     """Test on a single stain"""
 
     np.random.seed(23)
     expected = np.random.uniform(size=(10, 20))
-    image = self.make_image(expected, U.ST_HEMATOXYLIN)
-    workspace, module = self.make_workspace(image, [U.CHOICE_HEMATOXYLIN])
+    image = make_image(expected, U.ST_HEMATOXYLIN)
+    workspace, module = make_workspace(image, [U.CHOICE_HEMATOXYLIN])
     module.run(workspace)
     image = workspace.image_set.get_image(output_image_name(0))
     np.testing.assert_almost_equal(image.pixel_data, expected, 2)
 
 
-def test_two_stains(self):
+def test_two_stains():
     """Test on two stains mixed together"""
     np.random.seed(24)
     expected_1 = np.random.uniform(size=(10, 20)) * 0.5
@@ -229,11 +225,9 @@ def test_two_stains(self):
     # The absorbances should add in log space and multiply in
     # the image space
     #
-    image = self.make_image(expected_1, U.ST_HEMATOXYLIN)
-    image *= self.make_image(expected_2, U.ST_EOSIN)
-    workspace, module = self.make_workspace(
-        image, [U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN]
-    )
+    image = make_image(expected_1, U.ST_HEMATOXYLIN)
+    image *= make_image(expected_2, U.ST_EOSIN)
+    workspace, module = make_workspace(image, [U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN])
     module.run(workspace)
     image_1 = workspace.image_set.get_image(output_image_name(0))
     np.testing.assert_almost_equal(image_1.pixel_data, expected_1, 2)
@@ -241,13 +235,13 @@ def test_two_stains(self):
     np.testing.assert_almost_equal(image_2.pixel_data, expected_2, 2)
 
 
-def test_custom_stain(self):
+def test_custom_stain():
     """Test on a custom value for the stains"""
     np.random.seed(25)
     absorbance = np.random.uniform(size=3)
     expected = np.random.uniform(size=(10, 20))
-    image = self.make_image(expected, absorbance)
-    workspace, module = self.make_workspace(image, [U.CHOICE_CUSTOM])
+    image = make_image(expected, absorbance)
+    workspace, module = make_workspace(image, [U.CHOICE_CUSTOM])
     (
         module.outputs[0].red_absorbance.value,
         module.outputs[0].green_absorbance.value,

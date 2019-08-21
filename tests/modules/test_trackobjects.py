@@ -22,7 +22,7 @@ from cellprofiler.measurement import C_COUNT
 OBJECT_NAME = "objects"
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9227
@@ -71,7 +71,7 @@ Maximum gap:6
     assert module.max_frame_distance == 6
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10400
@@ -174,7 +174,7 @@ Maximum gap:4
         assert module.max_frame_distance == 4
 
 
-def test_load_v5(self):
+def test_load_v5():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140723174500
@@ -239,7 +239,7 @@ Maximum lifetime:1000
     assert m.max_lifetime == 1000
 
 
-def test_load_v6(self):
+def test_load_v6():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140723174500
@@ -308,7 +308,7 @@ Mitosis max distance:41
     assert m.mitosis_max_distance == 41
 
 
-def runTrackObjects(self, labels_list, fn=None, measurement=None):
+def runTrackObjects(labels_list, fn=None, measurement=None):
     """Run two cycles of TrackObjects
 
     labels1 - the labels matrix for the first cycle
@@ -367,7 +367,7 @@ def runTrackObjects(self, labels_list, fn=None, measurement=None):
     return measurements
 
 
-def test_track_nothing(self):
+def test_track_nothing():
     """Run TrackObjects on an empty labels matrix"""
     columns = []
 
@@ -375,7 +375,7 @@ def test_track_nothing(self):
         if workspace is not None and index == 0:
             columns += module.get_measurement_columns(workspace.pipeline)
 
-    measurements = self.runTrackObjects(
+    measurements = runTrackObjects(
         (np.zeros((10, 10), int), np.zeros((10, 10), int)), fn
     )
 
@@ -408,20 +408,20 @@ def test_track_nothing(self):
         assert value == 0
 
 
-def test_00_track_one_then_nothing(self):
+def test_00_track_one_then_nothing():
     """Run track objects on an object that disappears
 
     Regression test of IMG-1090
     """
     labels = np.zeros((10, 10), int)
     labels[3:6, 2:7] = 1
-    measurements = self.runTrackObjects((labels, np.zeros((10, 10), int)))
+    measurements = runTrackObjects((labels, np.zeros((10, 10), int)))
     feature = "_".join((T.F_PREFIX, T.F_LOST_OBJECT_COUNT, OBJECT_NAME, "50"))
     value = measurements.get_current_image_measurement(feature)
     assert value == 1
 
 
-def test_track_one_distance(self):
+def test_track_one_distance():
     """Track an object that doesn't move using distance"""
     labels = np.zeros((10, 10), int)
     labels[3:6, 2:7] = 1
@@ -431,7 +431,7 @@ def test_track_one_distance(self):
             module.pixel_radius.value = 1
             module.tracking_method.value = "Distance"
 
-    measurements = self.runTrackObjects((labels, labels), fn)
+    measurements = runTrackObjects((labels, labels), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "1"))
@@ -456,10 +456,10 @@ def test_track_one_distance(self):
     assert m(T.F_LOST_OBJECT_COUNT) == 0
     assert m(T.F_SPLIT_COUNT) == 0
     assert m(T.F_MERGE_COUNT) == 0
-    self.check_relationships(measurements, [1], [1], [2], [1])
+    check_relationships(measurements, [1], [1], [2], [1])
 
 
-def test_track_one_moving(self):
+def test_track_one_moving():
     """Track an object that moves"""
 
     labels_list = []
@@ -477,7 +477,7 @@ def test_track_one_moving(self):
             module.pixel_radius.value = 3
             module.tracking_method.value = "Distance"
 
-    measurements = self.runTrackObjects(labels_list, fn)
+    measurements = runTrackObjects(labels_list, fn)
 
     def m(feature, expected):
         name = "_".join((T.F_PREFIX, feature, "3"))
@@ -505,7 +505,7 @@ def test_track_one_moving(self):
     assert m(T.F_MERGE_COUNT) == 0
     image_numbers = np.arange(1, len(labels_list) + 1)
     object_numbers = np.ones(len(image_numbers))
-    self.check_relationships(
+    check_relationships(
         measurements,
         image_numbers[:-1],
         object_numbers[:-1],
@@ -514,7 +514,7 @@ def test_track_one_moving(self):
     )
 
 
-def test_track_split(self):
+def test_track_split():
     """Track an object that splits"""
     labels1 = np.zeros((11, 9), int)
     labels1[1:10, 1:8] = 1
@@ -527,7 +527,7 @@ def test_track_split(self):
             module.pixel_radius.value = 5
             module.tracking_method.value = "Distance"
 
-    measurements = self.runTrackObjects((labels1, labels2, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2, labels2), fn)
 
     def m(feature, idx):
         name = "_".join((T.F_PREFIX, feature, "5"))
@@ -553,12 +553,12 @@ def test_track_split(self):
     assert m(T.F_LOST_OBJECT_COUNT) == 0
     assert m(T.F_SPLIT_COUNT) == 1
     assert m(T.F_MERGE_COUNT) == 0
-    self.check_relationships(
+    check_relationships(
         measurements, [1, 1, 2, 2], [1, 1, 1, 2], [2, 2, 3, 3], [1, 2, 1, 2]
     )
 
 
-def test_track_negative(self):
+def test_track_negative():
     """Track unrelated objects"""
     labels1 = np.zeros((10, 10), int)
     labels1[1:5, 1:5] = 1
@@ -570,7 +570,7 @@ def test_track_negative(self):
             module.pixel_radius.value = 1
             module.tracking_method.value = "Distance"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "1"))
@@ -591,7 +591,7 @@ def test_track_negative(self):
     assert m(T.F_MERGE_COUNT) == 0
 
 
-def test_track_ambiguous(self):
+def test_track_ambiguous():
     """Track disambiguation from among two possible parents"""
     labels1 = np.zeros((20, 20), int)
     labels1[1:4, 1:4] = 1
@@ -604,7 +604,7 @@ def test_track_ambiguous(self):
             module.pixel_radius.value = 20
             module.tracking_method.value = "Distance"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "20"))
@@ -616,7 +616,7 @@ def test_track_ambiguous(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 2
 
 
-def test_overlap_positive(self):
+def test_overlap_positive():
     """Track overlapping objects"""
     labels1 = np.zeros((10, 10), int)
     labels1[3:6, 4:7] = 1
@@ -628,7 +628,7 @@ def test_overlap_positive(self):
             module.pixel_radius.value = 2
             module.tracking_method.value = "Overlap"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "2"))
@@ -640,7 +640,7 @@ def test_overlap_positive(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 1
 
 
-def test_overlap_negative(self):
+def test_overlap_negative():
     """Track objects that don't overlap"""
     labels1 = np.zeros((20, 20), int)
     labels1[3:6, 4:7] = 1
@@ -652,7 +652,7 @@ def test_overlap_negative(self):
             module.pixel_radius.value = 2
             module.tracking_method.value = "Overlap"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "2"))
@@ -664,7 +664,7 @@ def test_overlap_negative(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 0
 
 
-def test_overlap_ambiguous(self):
+def test_overlap_ambiguous():
     """Track an object that overlaps two parents"""
     labels1 = np.zeros((20, 20), int)
     labels1[1:5, 1:5] = 1
@@ -677,7 +677,7 @@ def test_overlap_ambiguous(self):
             module.pixel_radius.value = 2
             module.tracking_method.value = "Overlap"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "2"))
@@ -689,7 +689,7 @@ def test_overlap_ambiguous(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 2
 
 
-def test_measurement_positive(self):
+def test_measurement_positive():
     """Test tracking an object by measurement"""
     labels1 = np.zeros((10, 10), int)
     labels1[3:6, 4:7] = 1
@@ -701,7 +701,7 @@ def test_measurement_positive(self):
             module.pixel_radius.value = 2
             module.tracking_method.value = "Measurements"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn, [[1], [1]])
+    measurements = runTrackObjects((labels1, labels2), fn, [[1], [1]])
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "2"))
@@ -713,7 +713,7 @@ def test_measurement_positive(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 1
 
 
-def test_measurement_negative(self):
+def test_measurement_negative():
     """Test tracking with too great a jump between successive images"""
     labels1 = np.zeros((20, 20), int)
     labels1[3:6, 4:7] = 1
@@ -725,7 +725,7 @@ def test_measurement_negative(self):
             module.pixel_radius.value = 2
             module.tracking_method.value = "Measurements"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn, [[1], [1]])
+    measurements = runTrackObjects((labels1, labels2), fn, [[1], [1]])
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "2"))
@@ -737,7 +737,7 @@ def test_measurement_negative(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 0
 
 
-def test_ambiguous(self):
+def test_ambiguous():
     """Test measurement with ambiguous parent choice"""
     labels1 = np.zeros((20, 20), int)
     labels1[1:5, 1:5] = 1
@@ -750,7 +750,7 @@ def test_ambiguous(self):
             module.pixel_radius.value = 4
             module.tracking_method.value = "Measurements"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn, [[1, 10], [9]])
+    measurements = runTrackObjects((labels1, labels2), fn, [[1, 10], [9]])
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "4"))
@@ -762,7 +762,7 @@ def test_ambiguous(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 2
 
 
-def test_cross_numbered_objects(self):
+def test_cross_numbered_objects():
     """Test labeling when object 1 in one image becomes object 2 in next"""
 
     i, j = np.mgrid[0:10, 0:20]
@@ -773,7 +773,7 @@ def test_cross_numbered_objects(self):
         if idx == 0:
             module.tracking_method.value = "LAP"
 
-    measurements = self.runTrackObjects([np.array(p)[labels] for p in pp], fn)
+    measurements = runTrackObjects([np.array(p)[labels] for p in pp], fn)
 
     def m(feature, i):
         name = "_".join((T.F_PREFIX, feature))
@@ -793,7 +793,7 @@ def test_cross_numbered_objects(self):
             pi = m(T.F_PARENT_IMAGE_NUMBER, i)
             np.testing.assert_array_equal(pi, i)
     image_numbers, _ = np.mgrid[1 : (len(pp) + 1), 0:4]
-    self.check_relationships(
+    check_relationships(
         measurements,
         image_numbers[:-1, :].flatten(),
         pp[:-1, :].flatten(),
@@ -802,7 +802,7 @@ def test_cross_numbered_objects(self):
     )
 
 
-def test_measurement_columns(self):
+def test_measurement_columns():
     """Test get_measurement_columns function"""
     module = T.TrackObjects()
     module.object_name.value = OBJECT_NAME
@@ -825,7 +825,7 @@ def test_measurement_columns(self):
             assert column[0] == object_name
 
 
-def test_measurement_columns_lap(self):
+def test_measurement_columns_lap():
     """Test get_measurement_columns function for LAP"""
     module = T.TrackObjects()
     module.object_name.value = OBJECT_NAME
@@ -923,7 +923,7 @@ def test_measurement_columns_lap(self):
                     )
 
 
-def test_measurements(self):
+def test_measurements():
     """Test the different measurement pieces"""
     module = T.TrackObjects()
     module.object_name.value = OBJECT_NAME
@@ -951,7 +951,7 @@ def test_measurements(self):
         assert int(scales[0]) == 10
 
 
-def make_lap2_workspace(self, objs, nimages, group_numbers=None, group_indexes=None):
+def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     """Make a workspace to test the second half of LAP
 
     objs - a N x 5 array of "objects" composed of the
@@ -1111,7 +1111,7 @@ def make_lap2_workspace(self, objs, nimages, group_numbers=None, group_indexes=N
     return workspace, module
 
 
-def check_measurements(self, workspace, d):
+def check_measurements(workspace, d):
     """Check measurements against expected values
 
     workspace - workspace that was run
@@ -1148,7 +1148,6 @@ def check_measurements(self, workspace, d):
 
 
 def check_relationships(
-    self,
     m,
     expected_parent_image_numbers,
     expected_parent_object_numbers,
@@ -1204,13 +1203,13 @@ def check_relationships(
         np.testing.assert_array_equal(expected, actual)
 
 
-def test_lap_none(self):
+def test_lap_none():
     """Run the second part of LAP on one image of nothing"""
-    with self.MonkeyPatchedDelete(self):
-        workspace, module = self.make_lap2_workspace(np.zeros((0, 7)), 1)
+    with MonkeyPatchedDelete():
+        workspace, module = make_lap2_workspace(np.zeros((0, 7)), 1)
         assert isinstance(module, T.TrackObjects)
         module.run_as_data_tool(workspace)
-        self.check_measurements(
+        check_measurements(
             workspace,
             {
                 T.F_LABEL: [np.zeros(0, int)],
@@ -1227,15 +1226,15 @@ def test_lap_none(self):
         )
 
 
-def test_lap_one(self):
+def test_lap_one():
     """Run the second part of LAP on one image of one object"""
-    with self.MonkeyPatchedDelete(self):
-        workspace, module = self.make_lap2_workspace(
+    with MonkeyPatchedDelete():
+        workspace, module = make_lap2_workspace(
             np.array([[0, 1, 0, 0, 100, 100, 25]]), 1
         )
         assert isinstance(module, T.TrackObjects)
         module.run_as_data_tool(workspace)
-        self.check_measurements(
+        check_measurements(
             workspace,
             {
                 T.F_LABEL: [np.array([1])],
@@ -1253,10 +1252,10 @@ def test_lap_one(self):
         )
 
 
-def test_bridge_gap(self):
+def test_bridge_gap():
     """Bridge a gap of zero frames between two objects"""
-    with self.MonkeyPatchedDelete(self):
-        workspace, module = self.make_lap2_workspace(
+    with MonkeyPatchedDelete():
+        workspace, module = make_lap2_workspace(
             np.array([[0, 1, 0, 0, 1, 2, 25], [2, 2, 0, 0, 101, 102, 25]]), 3
         )
         assert isinstance(module, T.TrackObjects)
@@ -1268,7 +1267,7 @@ def test_bridge_gap(self):
         module.max_gap_score.value = 142
         module.run_as_data_tool(workspace)
         distance = np.array([np.sqrt(2 * 100 * 100)])
-        self.check_measurements(
+        check_measurements(
             workspace,
             {
                 T.F_LABEL: [np.array([1]), np.zeros(0), np.array([1])],
@@ -1295,13 +1294,13 @@ def test_bridge_gap(self):
                 T.F_SPLIT_COUNT: [0, 0, 0],
             },
         )
-        self.check_relationships(workspace.measurements, [1], [1], [3], [1])
+        check_relationships(workspace.measurements, [1], [1], [3], [1])
 
 
-def test_maintain_gap(self):
+def test_maintain_gap():
     """Maintain object identity across a large gap"""
-    with self.MonkeyPatchedDelete(self):
-        workspace, module = self.make_lap2_workspace(
+    with MonkeyPatchedDelete():
+        workspace, module = make_lap2_workspace(
             np.array([[0, 1, 0, 0, 1, 2, 25], [2, 2, 0, 0, 101, 102, 25]]), 3
         )
         assert isinstance(module, T.TrackObjects)
@@ -1312,7 +1311,7 @@ def test_maintain_gap(self):
         module.gap_cost.value = 140
         module.max_gap_score.value = 142
         module.run_as_data_tool(workspace)
-        self.check_measurements(
+        check_measurements(
             workspace,
             {
                 T.F_LABEL: [np.array([1]), np.zeros(0), np.array([2])],
@@ -1326,10 +1325,10 @@ def test_maintain_gap(self):
         )
 
 
-def test_filter_gap(self):
+def test_filter_gap():
     """Filter a gap due to an unreasonable score"""
-    with self.MonkeyPatchedDelete(self):
-        workspace, module = self.make_lap2_workspace(
+    with MonkeyPatchedDelete():
+        workspace, module = make_lap2_workspace(
             np.array([[0, 1, 0, 0, 1, 2, 25], [2, 2, 0, 0, 101, 102, 25]]), 3
         )
         assert isinstance(module, T.TrackObjects)
@@ -1341,7 +1340,7 @@ def test_filter_gap(self):
         module.gap_cost.value = 142
         module.max_gap_score.value = 140
         module.run_as_data_tool(workspace)
-        self.check_measurements(
+        check_measurements(
             workspace,
             {
                 T.F_LABEL: [np.array([1]), np.zeros(0), np.array([2])],
@@ -1351,9 +1350,9 @@ def test_filter_gap(self):
         )
 
 
-def test_split(self):
+def test_split():
     """Track an object splitting"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 100, 100, 50],
@@ -1377,7 +1376,7 @@ def test_split(self):
     d200 = np.sqrt(200)
     tot = np.sqrt(13 ** 2 + 14 ** 2)
     lin = tot / (d200 + 5)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([1, 1]), np.array([1, 1])],
@@ -1415,9 +1414,9 @@ def test_split(self):
     )
 
 
-def test_dont_split(self):
+def test_dont_split():
     """Track an object splitting"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 100, 100, 50],
@@ -1433,7 +1432,7 @@ def test_dont_split(self):
     module.split_cost.value = 28
     module.max_split_score.value = 30
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([1, 2]), np.array([1, 2])],
@@ -1461,9 +1460,9 @@ def test_dont_split(self):
     )
 
 
-def test_split_filter(self):
+def test_split_filter():
     """Prevent a split by setting the filter too low"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 100, 100, 50],
@@ -1479,7 +1478,7 @@ def test_split_filter(self):
     module.split_cost.value = 30
     module.max_split_score.value = 28
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([1, 2]), np.array([1, 2])],
@@ -1507,9 +1506,9 @@ def test_split_filter(self):
     )
 
 
-def test_merge(self):
+def test_merge():
     """Merge two objects into one"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 110, 110, 25],
@@ -1525,7 +1524,7 @@ def test_merge(self):
     module.merge_cost.value = 30
     module.max_merge_score.value = 30
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1, 1]), np.array([1, 1]), np.array([1])],
@@ -1553,9 +1552,9 @@ def test_merge(self):
     )
 
 
-def test_dont_merge(self):
+def test_dont_merge():
     """Don't merge because of low alternative merge cost"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 110, 110, 25],
@@ -1588,9 +1587,9 @@ def test_dont_merge(self):
     assert labels[2][0] == 1
 
 
-def test_filter_merge(self):
+def test_filter_merge():
     """Don't merge because of low alternative merge cost"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 110, 110, 25],
@@ -1623,7 +1622,7 @@ def test_filter_merge(self):
     assert labels[2][0] == 1
 
 
-def test_img_1111(self):
+def test_img_1111():
     """Regression test of img-1111"""
     data = np.array(
         [
@@ -1678,13 +1677,13 @@ def test_img_1111(self):
         ]
     )
     data = data[:8, :]
-    workspace, module = self.make_lap2_workspace(data, np.max(data[:, 0]) + 1)
+    workspace, module = make_lap2_workspace(data, np.max(data[:, 0]) + 1)
     module.run_as_data_tool(workspace)
 
 
-def test_multi_group(self):
+def test_multi_group():
     """Run several tests in different groups"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 1, 2, 25],
@@ -1721,7 +1720,7 @@ def test_multi_group(self):
     d200 = np.sqrt(200)
     tot = np.sqrt(13 ** 2 + 14 ** 2)
     lin = tot / (d200 + 5)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [
@@ -1853,9 +1852,9 @@ def test_multi_group(self):
     )
 
 
-def test_filter_by_final_age(self):
+def test_filter_by_final_age():
     """Filter an object by the final age"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 100, 100, 50],
@@ -1884,7 +1883,7 @@ def test_filter_by_final_age(self):
     module.wants_maximum_lifetime.value = False
     module.max_lifetime.value = 100
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([1, np.NaN]), np.array([1])],
@@ -1900,9 +1899,9 @@ def test_filter_by_final_age(self):
     )
 
 
-def test_mitosis(self):
+def test_mitosis():
     """Track a mitosis"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 103, 104, 50],
@@ -1924,7 +1923,7 @@ def test_mitosis(self):
     module.mitosis_cost.value = 6
     module.mitosis_max_distance.value = 20
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([1, 1]), np.array([1, 1])],
@@ -1962,9 +1961,9 @@ def test_mitosis(self):
     )
 
 
-def test_no_mitosis(self):
+def test_no_mitosis():
     """Don't track a mitosis"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 103, 104, 50],
@@ -1986,7 +1985,7 @@ def test_no_mitosis(self):
     module.mitosis_max_distance.value = 20
     module.gap_cost.value = 1
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([2, 3]), np.array([2, 3])],
@@ -2014,9 +2013,9 @@ def test_no_mitosis(self):
     )
 
 
-def test_mitosis_distance_filter(self):
+def test_mitosis_distance_filter():
     """Don't track a mitosis"""
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 103, 104, 50],
@@ -2038,7 +2037,7 @@ def test_mitosis_distance_filter(self):
     module.mitosis_max_distance.value = 15
     module.gap_cost.value = 1
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([2, 3]), np.array([2, 3])],
@@ -2066,9 +2065,9 @@ def test_mitosis_distance_filter(self):
     )
 
 
-def test_alternate_child_mitoses(self):
+def test_alternate_child_mitoses():
     # Test that LAP can pick the best of two possible child alternates
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 103, 104, 50],
@@ -2087,7 +2086,7 @@ def test_alternate_child_mitoses(self):
     module.mitosis_cost.value = 6
     module.mitosis_max_distance.value = 20
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1]), np.array([1, 1, 2]), np.array([1, 1])],
@@ -2105,9 +2104,9 @@ def test_alternate_child_mitoses(self):
     )
 
 
-def test_alternate_parent_mitoses(self):
+def test_alternate_parent_mitoses():
     # Test that LAP can pick the best of two possible parent alternates
-    workspace, module = self.make_lap2_workspace(
+    workspace, module = make_lap2_workspace(
         np.array(
             [
                 [0, 1, 0, 0, 100, 100, 50],
@@ -2126,7 +2125,7 @@ def test_alternate_parent_mitoses(self):
     module.mitosis_cost.value = 6
     module.mitosis_max_distance.value = 20
     module.run_as_data_tool(workspace)
-    self.check_measurements(
+    check_measurements(
         workspace,
         {
             T.F_LABEL: [np.array([1, 2]), np.array([1, 1]), np.array([1, 1])],
@@ -2151,26 +2150,26 @@ class MonkeyPatchedDelete(object):
     indices in calls to numpy.delete
 
     Usage:
-        with MonkeyPatchedDelete(self):
+        with MonkeyPatchedDelete():
             ... do test ...
     """
 
-    def __init__(self, test):
-        self.__test = test
+    def __init__(test):
+        __test = test
 
-    def __enter__(self):
-        self.old_delete = np.delete
-        np.delete = self.monkey_patched_delete
+    def __enter__():
+        old_delete = np.delete
+        np.delete = monkey_patched_delete
 
-    def __exit__(self, type, value, traceback):
-        np.delete = self.old_delete
+    def __exit__(type, value, traceback):
+        np.delete = old_delete
 
-    def monkey_patched_delete(self, array, indices, axis):
-        self.__test.assertTrue(np.all(indices >= 0))
-        return self.old_delete(array, indices, axis)
+    def monkey_patched_delete(array, indices, axis):
+        __test.assertTrue(np.all(indices >= 0))
+        return old_delete(array, indices, axis)
 
 
-def test_save_image(self):
+def test_save_image():
     module = T.TrackObjects()
     module.set_module_num(1)
     module.object_name.value = OBJECT_NAME
@@ -2204,7 +2203,7 @@ def test_save_image(self):
     assert shape[1] == 480
 
 
-def test_get_no_gap_pair_scores(self):
+def test_get_no_gap_pair_scores():
     for F, L, max_gap in (
         (np.zeros((0, 3)), np.zeros((0, 3)), 1),
         (np.ones((1, 3)), np.ones((1, 3)), 1),
@@ -2216,7 +2215,7 @@ def test_get_no_gap_pair_scores(self):
         assert len(d) == 0
 
 
-def test_get_gap_pair_scores(self):
+def test_get_gap_pair_scores():
     L = np.array(
         [
             [0.0, 0.0, 1, 0, 0, 0, 1],
@@ -2251,7 +2250,7 @@ def test_get_gap_pair_scores(self):
     np.testing.assert_array_almost_equal(d, expected_d * expected_rho)
 
 
-def test_neighbour_track_nothing(self):
+def test_neighbour_track_nothing():
     """Run TrackObjects on an empty labels matrix"""
     columns = []
 
@@ -2260,7 +2259,7 @@ def test_neighbour_track_nothing(self):
             columns += module.get_measurement_columns(workspace.pipeline)
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects(
+    measurements = runTrackObjects(
         (np.zeros((10, 10), int), np.zeros((10, 10), int)), fn
     )
 
@@ -2293,7 +2292,7 @@ def test_neighbour_track_nothing(self):
         assert value == 0
 
 
-def test_00_neighbour_track_one_then_nothing(self):
+def test_00_neighbour_track_one_then_nothing():
     """Run track objects on an object that disappears
 
     Regression test of IMG-1090
@@ -2305,13 +2304,13 @@ def test_00_neighbour_track_one_then_nothing(self):
         if workspace is not None and index == 0:
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects((labels, np.zeros((10, 10), int)), fn)
+    measurements = runTrackObjects((labels, np.zeros((10, 10), int)), fn)
     feature = "_".join((T.F_PREFIX, T.F_LOST_OBJECT_COUNT, OBJECT_NAME, "50"))
     value = measurements.get_current_image_measurement(feature)
     assert value == 1
 
 
-def test_neighbour_track_one_by_distance(self):
+def test_neighbour_track_one_by_distance():
     """Track an object that doesn't move."""
     labels = np.zeros((10, 10), int)
     labels[3:6, 2:7] = 1
@@ -2321,7 +2320,7 @@ def test_neighbour_track_one_by_distance(self):
             module.pixel_radius.value = 1
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects((labels, labels), fn)
+    measurements = runTrackObjects((labels, labels), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "1"))
@@ -2346,10 +2345,10 @@ def test_neighbour_track_one_by_distance(self):
     assert m(T.F_LOST_OBJECT_COUNT) == 0
     assert m(T.F_SPLIT_COUNT) == 0
     assert m(T.F_MERGE_COUNT) == 0
-    self.check_relationships(measurements, [1], [1], [2], [1])
+    check_relationships(measurements, [1], [1], [2], [1])
 
 
-def test_neighbour_track_one_moving(self):
+def test_neighbour_track_one_moving():
     """Track an object that moves"""
 
     labels_list = []
@@ -2367,7 +2366,7 @@ def test_neighbour_track_one_moving(self):
             module.pixel_radius.value = 3
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects(labels_list, fn)
+    measurements = runTrackObjects(labels_list, fn)
 
     def m(feature, expected):
         name = "_".join((T.F_PREFIX, feature, "3"))
@@ -2395,7 +2394,7 @@ def test_neighbour_track_one_moving(self):
     assert m(T.F_MERGE_COUNT) == 0
     image_numbers = np.arange(1, len(labels_list) + 1)
     object_numbers = np.ones(len(image_numbers))
-    self.check_relationships(
+    check_relationships(
         measurements,
         image_numbers[:-1],
         object_numbers[:-1],
@@ -2404,7 +2403,7 @@ def test_neighbour_track_one_moving(self):
     )
 
 
-def test_neighbour_track_negative(self):
+def test_neighbour_track_negative():
     """Track unrelated objects"""
     labels1 = np.zeros((10, 10), int)
     labels1[1:5, 1:5] = 1
@@ -2416,7 +2415,7 @@ def test_neighbour_track_negative(self):
             module.pixel_radius.value = 1
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "1"))
@@ -2437,7 +2436,7 @@ def test_neighbour_track_negative(self):
     assert m(T.F_MERGE_COUNT) == 0
 
 
-def test_neighbour_track_ambiguous(self):
+def test_neighbour_track_ambiguous():
     """Track disambiguation from among two possible parents"""
     labels1 = np.zeros((20, 20), int)
     labels1[1:4, 1:4] = 1
@@ -2450,7 +2449,7 @@ def test_neighbour_track_ambiguous(self):
             module.pixel_radius.value = 20
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "20"))
@@ -2462,7 +2461,7 @@ def test_neighbour_track_ambiguous(self):
     assert m(T.F_PARENT_OBJECT_NUMBER) == 2
 
 
-def test_neighbour_track_group_with_drop(self):
+def test_neighbour_track_group_with_drop():
     """Track groups with one lost"""
     labels1 = np.zeros((20, 20), int)
     labels1[2, 2] = 1
@@ -2483,7 +2482,7 @@ def test_neighbour_track_group_with_drop(self):
             module.average_cell_diameter.value = 5
             module.tracking_method.value = "Follow Neighbors"
 
-    measurements = self.runTrackObjects((labels1, labels2), fn)
+    measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
         name = "_".join((T.F_PREFIX, feature, "20"))
@@ -2491,4 +2490,4 @@ def test_neighbour_track_group_with_drop(self):
         assert len(values) == 1
         return values[0]
 
-    self.check_relationships(measurements, [1, 1, 1], [1, 2, 4], [2, 2, 2], [1, 2, 4])
+    check_relationships(measurements, [1, 1, 1], [1, 2, 4], [2, 2, 2], [1, 2, 4])

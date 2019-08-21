@@ -20,7 +20,7 @@ IMAGE_NAME = "image"
 PROJECTED_IMAGE_NAME = "projectedimage"
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10000
@@ -91,7 +91,7 @@ Frequency\x3A:6
         assert module.frequency == 6
 
 
-def run_image_set(self, projection_type, images_and_masks, frequency=9, run_last=True):
+def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True):
     image_set_list = cpi.ImageSetList()
     image_count = len(images_and_masks)
     for i in range(image_count):
@@ -147,7 +147,7 @@ def run_image_set(self, projection_type, images_and_masks, frequency=9, run_last
     return image
 
 
-def test_average(self):
+def test_average():
     np.random.seed(0)
     images_and_masks = [
         (np.random.uniform(size=(10, 10)).astype(np.float32), None) for i in range(3)
@@ -156,12 +156,12 @@ def test_average(self):
     for image, mask in images_and_masks:
         expected += image
     expected = expected / len(images_and_masks)
-    image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+    image = run_image_set(M.P_AVERAGE, images_and_masks)
     assert not image.has_mask
     assert np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps)
 
 
-def test_average_mask(self):
+def test_average_mask():
     np.random.seed(0)
     images_and_masks = [
         (
@@ -178,7 +178,7 @@ def test_average_mask(self):
         expected_count[mask] += 1
         expected_mask = mask | expected_mask
     expected = expected / expected_count
-    image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+    image = run_image_set(M.P_AVERAGE, images_and_masks)
     assert image.has_mask
     assert np.all(expected_mask == image.mask)
     np.testing.assert_almost_equal(
@@ -186,7 +186,7 @@ def test_average_mask(self):
     )
 
 
-def test_average_color(self):
+def test_average_color():
     np.random.seed(0)
     images_and_masks = [
         (np.random.uniform(size=(10, 10, 3)).astype(np.float32), None) for i in range(3)
@@ -195,12 +195,12 @@ def test_average_color(self):
     for image, mask in images_and_masks:
         expected += image
     expected = expected / len(images_and_masks)
-    image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+    image = run_image_set(M.P_AVERAGE, images_and_masks)
     assert not image.has_mask
     assert np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps)
 
 
-def test_average_masked_color(self):
+def test_average_masked_color():
     np.random.seed(0)
     images_and_masks = [
         (
@@ -217,7 +217,7 @@ def test_average_masked_color(self):
         expected_count[mask] += 1
         expected_mask = mask | expected_mask
     expected = expected / expected_count[:, :, np.newaxis]
-    image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+    image = run_image_set(M.P_AVERAGE, images_and_masks)
     assert image.has_mask
     np.testing.assert_equal(image.mask, expected_mask)
     np.testing.assert_almost_equal(
@@ -225,7 +225,7 @@ def test_average_masked_color(self):
     )
 
 
-def test_maximum(self):
+def test_maximum():
     np.random.seed(0)
     images_and_masks = [
         (np.random.uniform(size=(10, 10)).astype(np.float32), None) for i in range(3)
@@ -233,12 +233,12 @@ def test_maximum(self):
     expected = np.zeros((10, 10), np.float32)
     for image, mask in images_and_masks:
         expected = np.maximum(expected, image)
-    image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
+    image = run_image_set(M.P_MAXIMUM, images_and_masks)
     assert not image.has_mask
     assert np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps)
 
 
-def test_maximum_mask(self):
+def test_maximum_mask():
     np.random.seed(0)
     images_and_masks = [
         (
@@ -252,7 +252,7 @@ def test_maximum_mask(self):
     for image, mask in images_and_masks:
         expected[mask] = np.maximum(expected[mask], image[mask])
         expected_mask = mask | expected_mask
-    image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
+    image = run_image_set(M.P_MAXIMUM, images_and_masks)
     assert image.has_mask
     assert np.all(expected_mask == image.mask)
     assert np.all(
@@ -261,7 +261,7 @@ def test_maximum_mask(self):
     )
 
 
-def test_maximum_color(self):
+def test_maximum_color():
     np.random.seed(0)
     images_and_masks = [
         (np.random.uniform(size=(10, 10, 3)).astype(np.float32), None) for i in range(3)
@@ -269,17 +269,17 @@ def test_maximum_color(self):
     expected = np.zeros((10, 10, 3), np.float32)
     for image, mask in images_and_masks:
         expected = np.maximum(expected, image)
-    image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
+    image = run_image_set(M.P_MAXIMUM, images_and_masks)
     assert not image.has_mask
     assert np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps)
 
 
-def test_variance(self):
+def test_variance():
     np.random.seed(41)
     images_and_masks = [
         (np.random.uniform(size=(20, 10)).astype(np.float32), None) for i in range(10)
     ]
-    image = self.run_image_set(M.P_VARIANCE, images_and_masks)
+    image = run_image_set(M.P_VARIANCE, images_and_masks)
     images = np.array([x[0] for x in images_and_masks])
     x = np.sum(images, 0)
     x2 = np.sum(images ** 2, 0)
@@ -287,18 +287,18 @@ def test_variance(self):
     np.testing.assert_almost_equal(image.pixel_data, expected, 4)
 
 
-def test_power(self):
+def test_power():
     image = np.ones((20, 10))
     images_and_masks = [(image.copy(), None) for i in range(9)]
     for i, (img, _) in enumerate(images_and_masks):
         img[5, 5] *= np.sin(2 * np.pi * float(i) / 9.0)
-    image_out = self.run_image_set(M.P_POWER, images_and_masks, frequency=9)
+    image_out = run_image_set(M.P_POWER, images_and_masks, frequency=9)
     i, j = np.mgrid[: image.shape[0], : image.shape[1]]
     np.testing.assert_almost_equal(image_out.pixel_data[(i != 5) & (j != 5)], 0)
     assert image_out.pixel_data[5, 5] > 1
 
 
-def test_brightfield(self):
+def test_brightfield():
     image = np.ones((20, 10))
     images_and_masks = [(image.copy(), None) for i in range(9)]
     for i, (img, _) in enumerate(images_and_masks):
@@ -306,13 +306,13 @@ def test_brightfield(self):
             img[:5, :5] = 0
         else:
             img[:5, 5:] = 0
-    image_out = self.run_image_set(M.P_BRIGHTFIELD, images_and_masks)
+    image_out = run_image_set(M.P_BRIGHTFIELD, images_and_masks)
     i, j = np.mgrid[: image.shape[0], : image.shape[1]]
     np.testing.assert_almost_equal(image_out.pixel_data[(i > 5) | (j < 5)], 0)
     np.testing.assert_almost_equal(image_out.pixel_data[(i < 5) & (j >= 5)], 1)
 
 
-def test_minimum(self):
+def test_minimum():
     np.random.seed(0)
     images_and_masks = [
         (np.random.uniform(size=(10, 10)).astype(np.float32), None) for i in range(3)
@@ -320,12 +320,12 @@ def test_minimum(self):
     expected = np.ones((10, 10), np.float32)
     for image, mask in images_and_masks:
         expected = np.minimum(expected, image)
-    image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+    image = run_image_set(M.P_MINIMUM, images_and_masks)
     assert not image.has_mask
     assert np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps)
 
 
-def test_minimum_mask(self):
+def test_minimum_mask():
     np.random.seed(72)
     images_and_masks = [
         (
@@ -339,7 +339,7 @@ def test_minimum_mask(self):
     for image, mask in images_and_masks:
         expected[mask] = np.minimum(expected[mask], image[mask])
         expected_mask = mask | expected_mask
-    image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+    image = run_image_set(M.P_MINIMUM, images_and_masks)
     assert image.has_mask
     assert np.any(image.mask == False)
     assert np.all(expected_mask == image.mask)
@@ -350,7 +350,7 @@ def test_minimum_mask(self):
     assert np.all(image.pixel_data[~image.mask] == 0)
 
 
-def test_minimum_color(self):
+def test_minimum_color():
     np.random.seed(0)
     images_and_masks = [
         (np.random.uniform(size=(10, 10, 3)).astype(np.float32), None) for i in range(3)
@@ -358,21 +358,21 @@ def test_minimum_color(self):
     expected = np.ones((10, 10, 3), np.float32)
     for image, mask in images_and_masks:
         expected = np.minimum(expected, image)
-    image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+    image = run_image_set(M.P_MINIMUM, images_and_masks)
     assert not image.has_mask
     assert np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps)
 
 
-def test_mask_unmasked(self):
+def test_mask_unmasked():
     np.random.seed(81)
     images_and_masks = [(np.random.uniform(size=(10, 10)), None) for i in range(3)]
-    image = self.run_image_set(M.P_MASK, images_and_masks)
+    image = run_image_set(M.P_MASK, images_and_masks)
     assert tuple(image.pixel_data.shape) == (10, 10)
     assert np.all(image.pixel_data == True)
     assert not image.has_mask
 
 
-def test_mask(self):
+def test_mask():
     np.random.seed(81)
     images_and_masks = [
         (np.random.uniform(size=(10, 10)), np.random.uniform(size=(10, 10)) > 0.3)
@@ -381,11 +381,11 @@ def test_mask(self):
     expected = np.ones((10, 10), bool)
     for _, mask in images_and_masks:
         expected = expected & mask
-    image = self.run_image_set(M.P_MASK, images_and_masks)
+    image = run_image_set(M.P_MASK, images_and_masks)
     assert np.all(image.pixel_data == expected)
 
 
-def test_filtered(self):
+def test_filtered():
     """Make sure the image shows up in the image set even if filtered
 
     This is similar to issue # 310 - the last image may be filtered before
@@ -394,7 +394,7 @@ def test_filtered(self):
     """
     np.random.seed(81)
     images_and_masks = [(np.random.uniform(size=(10, 10)), None) for i in range(3)]
-    image = self.run_image_set(M.P_AVERAGE, images_and_masks, run_last=False)
+    image = run_image_set(M.P_AVERAGE, images_and_masks, run_last=False)
     np.testing.assert_array_almost_equal(
         image.pixel_data, (images_and_masks[0][0] + images_and_masks[1][0]) / 2
     )

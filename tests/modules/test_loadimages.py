@@ -42,7 +42,7 @@ class ConvtesterMixin:
 
     """
 
-    def convtester(self, pipeline_text, directory, fn_filter=(lambda x: True)):
+    def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
         """Test whether a converted pipeline yields the same output
 
         pipeline_text - the pipeline as a text file
@@ -108,7 +108,7 @@ class ConvtesterMixin:
                 ]
             )
         ]
-        self.assertCountEqual(ffexpected, ff2)
+        assertCountEqual(ffexpected, ff2)
         for feature in ff1:
             if feature.startswith(cellprofiler.measurement.C_METADATA):
                 assert m2.has_feature(cellprofiler.measurement.IMAGE, feature)
@@ -171,16 +171,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def setUpClass(cls):
         tests.modules.maybe_download_sbs()
 
-    def setUp(self):
-        self.directory = None
+    def setUp():
+        directory = None
 
-    def tearDown(self):
+    def tearDown():
         bioformats.formatreader.clear_image_reader_cache()
-        if self.directory is not None:
+        if directory is not None:
             try:
                 for path in (
-                    os.path.sep.join((self.directory, "*", "*")),
-                    os.path.sep.join((self.directory, "*")),
+                    os.path.sep.join((directory, "*", "*")),
+                    os.path.sep.join((directory, "*")),
                 ):
                     files = glob.glob(path)
                     for filename in files:
@@ -188,16 +188,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             os.remove(filename)
                         else:
                             os.rmdir(filename)
-                os.rmdir(self.directory)
+                os.rmdir(directory)
             except:
                 sys.stderr.write("Failed during file delete / teardown\n")
                 traceback.print_exc()
 
-    def error_callback(self, calller, event):
+    def error_callback(calller, event):
         if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
-            self.fail(event.error.message)
+            fail(event.error.message)
 
-    def test_load_url(self):
+    def test_load_url():
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
             "broad",
             tests.modules.cp_logo_url_folder,
@@ -208,7 +208,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert logo.pixel_data.shape == tests.modules.cp_logo_url_shape
         lip.release_memory()
 
-    def test_load_Nikon_tif(self):
+    def test_load_Nikon_tif():
         """This is the Nikon format TIF file from IMG-838"""
         tests.modules.maybe_download_tesst_image("NikonTIF.tif")
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
@@ -218,7 +218,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert tuple(image.shape) == (731, 805, 3)
         assert round(abs(numpy.sum(image.astype(numpy.float64)) - 560730.83), 0) == 0
 
-    def test_load_Metamorph_tif(self):
+    def test_load_Metamorph_tif():
         """Regression test of IMG-883
 
         This file generated a null-pointer exception in the MetamorphReader
@@ -239,7 +239,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     # With Subimager and the new file_ui framework, you'd load individual
     # planes.
     @unittest.skip
-    def test_load_5channel_tif(self):
+    def test_load_5channel_tif():
         """Load a 5-channel image"""
         tests.modules.maybe_download_tesst_image("5channel.tif")
         path = tests.modules.testimages_directory()
@@ -291,7 +291,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert pixels.ndim == 3
         assert tuple(pixels.shape) == (64, 64, 5)
 
-    def test_load_C01(self):
+    def test_load_C01():
         """IMG-457: Test loading of a .c01 file"""
         file_name = "icd002235_090127090001_a01f00d1.c01"
         tests.modules.maybe_download_tesst_image(file_name)
@@ -304,12 +304,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         m.update((image * 65535).astype(numpy.uint16))
         assert m.digest() == "SER\r\xc4\xd5\x02\x13@P\x12\x99\xe2(e\x85"
 
-    def test_file_metadata(self):
+    def test_file_metadata():
         """Test file metadata on two sets of two files
 
         """
         directory = tempfile.mkdtemp()
-        self.directory = directory
+        directory = directory
         data = base64.b64decode(tests.modules.tif_8_1)
         filenames = [
             "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
@@ -352,7 +352,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         ].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
         load_images.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         pipeline.add_module(load_images)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
@@ -403,10 +403,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert m.get_current_measurement("Image", "Metadata_well_col") == "12"
         assert m.get_current_measurement("Image", "Metadata_site") == "2"
 
-    def test_path_metadata(self):
+    def test_path_metadata():
         """Test recovery of path metadata"""
         directory = tempfile.mkdtemp()
-        self.directory = directory
+        directory = directory
         data = base64.b64decode(tests.modules.tif_8_1)
         path_and_file = [
             (
@@ -432,10 +432,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             fd.write(data)
             fd.close()
 
-    def test_missing_image(self):
+    def test_missing_image():
         """Test expected failure when an image is missing from the set"""
         directory = tempfile.mkdtemp()
-        self.directory = directory
+        directory = directory
         data = base64.b64decode(tests.modules.tif_8_1)
         filename = "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
         fd = open(os.path.join(directory, filename), "wb")
@@ -473,7 +473,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         ].file_metadata.value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
         load_images.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         pipeline.add_module(load_images)
         image_set_list = cellprofiler.image.ImageSetList()
         assert not load_images.prepare_run(
@@ -487,7 +487,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             )
         )
 
-    def test_conflict(self):
+    def test_conflict():
         """Test expected failure when two images have the same metadata"""
         directory = tempfile.mkdtemp()
         data = base64.b64decode(tests.modules.tif_8_1)
@@ -535,7 +535,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.set_module_num(1)
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
-            pipeline.add_listener(self.error_callback)
+            pipeline.add_listener(error_callback)
             image_set_list = cellprofiler.image.ImageSetList()
             assert not load_images.prepare_run(
                 cellprofiler.workspace.Workspace(
@@ -553,7 +553,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 os.remove(os.path.join(directory, filename))
             os.rmdir(directory)
 
-    def test_hierarchy(self):
+    def test_hierarchy():
         """Regression test a file applicable to multiple files
 
         The bug is documented in IMG-202
@@ -614,7 +614,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.set_module_num(1)
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
-            pipeline.add_listener(self.error_callback)
+            pipeline.add_listener(error_callback)
             image_set_list = cellprofiler.image.ImageSetList()
             m = cellprofiler.measurement.Measurements()
             load_images.prepare_run(
@@ -647,7 +647,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 os.remove(os.path.join(directory, filename))
             os.rmdir(directory)
 
-    def test_allowed_conflict(self):
+    def test_allowed_conflict():
         """Test choice of newest file when there is a conflict"""
         filenames = [
             "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
@@ -724,7 +724,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 load_images.set_module_num(1)
                 pipeline = cellprofiler.pipeline.Pipeline()
                 pipeline.add_module(load_images)
-                pipeline.add_listener(self.error_callback)
+                pipeline.add_listener(error_callback)
                 image_set_list = cellprofiler.image.ImageSetList()
                 m = cellprofiler.measurement.Measurements()
                 workspace = cellprofiler.workspace.Workspace(
@@ -773,7 +773,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 except:
                     print(("Failed to remove " + directory))
 
-    def test_subfolders(self):
+    def test_subfolders():
         """Test recursion down the list of subfolders"""
         directory = tempfile.mkdtemp()
         filenames = [
@@ -817,7 +817,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.check_images.value = False
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
-            pipeline.add_listener(self.error_callback)
+            pipeline.add_listener(error_callback)
             image_set_list = cellprofiler.image.ImageSetList()
             m = cellprofiler.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(
@@ -862,7 +862,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     print(("Failed to remove " + path))
                     traceback.print_exc()
 
-    def test_some_subfolders(self):
+    def test_some_subfolders():
         """Test recursion down the list of subfolders, some folders filtered"""
         directory = tempfile.mkdtemp()
         filenames = [
@@ -905,7 +905,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             load_images.check_images.value = False
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
-            pipeline.add_listener(self.error_callback)
+            pipeline.add_listener(error_callback)
             image_set_list = cellprofiler.image.ImageSetList()
             m = cellprofiler.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(
@@ -950,7 +950,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     print(("Failed to remove " + path))
                     traceback.print_exc()
 
-    def get_example_pipeline_data(self):
+    def get_example_pipeline_data():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
         Version:1
         SVNRevision:9157
@@ -982,8 +982,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """
         return data
 
-    def test_get_measurement_columns(self):
-        data = self.get_example_pipeline_data()
+    def test_get_measurement_columns():
+        data = get_example_pipeline_data()
         fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
@@ -1033,8 +1033,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         for c in returned_cols:
             assert c in expected_cols
 
-    def test_get_measurements(self):
-        data = self.get_example_pipeline_data()
+    def test_get_measurements():
+        data = get_example_pipeline_data()
         fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
@@ -1056,8 +1056,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 module.get_measurements(pipeline, cellprofiler.measurement.IMAGE, cat)
             )
 
-    def test_get_categories(self):
-        data = self.get_example_pipeline_data()
+    def test_get_categories():
+        data = get_example_pipeline_data()
         fd = io.StringIO(data)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
@@ -1075,7 +1075,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         ]
         assert set(results) == set(expected)
 
-    def test_get_movie_measurements(self):
+    def test_get_movie_measurements():
         # AVI movies should have time metadata
         module = cellprofiler.modules.loadimages.LoadImages()
         base_expected_cols = [
@@ -1152,7 +1152,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     assert len(features) == len(set(features))
                     assert all([feature in expected_features for feature in features])
 
-    def test_get_flex_measurements(self):
+    def test_get_flex_measurements():
         # AVI movies should have time metadata
         module = cellprofiler.modules.loadimages.LoadImages()
         base_expected_cols = [
@@ -1227,7 +1227,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 assert len(features) == len(set(features))
                 assert all([feature in expected_features for feature in features])
 
-    def test_get_object_measurement_columns(self):
+    def test_get_object_measurement_columns():
         module = cellprofiler.modules.loadimages.LoadImages()
         channel = module.images[0].channels[0]
         channel.image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
@@ -1258,7 +1258,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 ]
             )
 
-    def test_get_object_categories(self):
+    def test_get_object_categories():
         module = cellprofiler.modules.loadimages.LoadImages()
         channel = module.images[0].channels[0]
         channel.image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
@@ -1288,7 +1288,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for category in categories:
                 assert category in expected_categories
 
-    def test_get_object_measurements(self):
+    def test_get_object_measurements():
         module = cellprofiler.modules.loadimages.LoadImages()
         channel = module.images[0].channels[0]
         channel.image_object_choice.value = cellprofiler.modules.loadimages.IO_OBJECTS
@@ -1326,7 +1326,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 for expected_feature in expected_features:
                     assert expected_feature in features
 
-    def test_get_groupings(self):
+    def test_get_groupings():
         """Get groupings for the SBS image set"""
         sbs_path = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
@@ -1347,7 +1347,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1385,7 +1385,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 assert match
                 assert row == match.group("ROW")
 
-    def test_load_avi(self):
+    def test_load_avi():
         if (
             cellprofiler.modules.loadimages.FF_AVI_MOVIES
             not in cellprofiler.modules.loadimages.FF
@@ -1404,7 +1404,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1462,7 +1462,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         )
         assert t == 1
 
-    def test_load_stk(self):
+    def test_load_stk():
         for path in [
             "//iodine/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM",
             "/imaging/analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM",
@@ -1483,7 +1483,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1522,7 +1522,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert tuple(img2.shape) == (1040, 1388)
         assert numpy.any(img1 != img2)
 
-    def test_01_load_2_stk(self):
+    def test_01_load_2_stk():
         # Regression test of bug 327
         path = tests.modules.testimages_directory()
         tests.modules.maybe_download_tesst_image("C0.stk")
@@ -1547,7 +1547,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1556,7 +1556,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_run(workspace)
         assert m.image_set_count == 7
 
-    def test_02_load_stk(self):
+    def test_02_load_stk():
         # Regression test of issue #783 - color STK.
         path = tests.modules.testimages_directory()
         tests.modules.maybe_download_tesst_image("C0.stk")
@@ -1570,7 +1570,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1585,7 +1585,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         pixel_data = image.pixel_data
         assert tuple(pixel_data.shape) == (800, 800, 3)
 
-    def test_load_flex(self):
+    def test_load_flex():
         file_name = "RLM1 SSN3 300308 008015000.flex"
         tests.modules.maybe_download_tesst_image(file_name)
         flex_path = tests.modules.testimages_directory()
@@ -1602,7 +1602,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1643,7 +1643,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 )
                 m.next_image_set()
 
-    def test_group_interleaved_avi_frames(self):
+    def test_group_interleaved_avi_frames():
         #
         # Test interleaved grouping by movie frames
         #
@@ -1675,7 +1675,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1741,7 +1741,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert t == 1
         assert m.get_current_image_measurement("Frame_Channel03") == 7
 
-    def test_group_separated_avi_frames(self):
+    def test_group_separated_avi_frames():
         #
         # Test separated grouping by movie frames
         #
@@ -1773,7 +1773,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1839,7 +1839,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         assert t == 1
         assert m.get_current_image_measurement("Frame_Channel03") == 27
 
-    def test_load_flex_interleaved(self):
+    def test_load_flex_interleaved():
         # needs better test case file
         file_name = "RLM1 SSN3 300308 008015000.flex"
         tests.modules.maybe_download_tesst_image(file_name)
@@ -1862,7 +1862,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1914,7 +1914,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 )
                 m.next_image_set()
 
-    def test_load_flex_separated(self):
+    def test_load_flex_separated():
         # Needs better test case file
         flex_path = tests.modules.testimages_directory()
         file_name = "RLM1 SSN3 300308 008015000.flex"
@@ -1937,7 +1937,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -1990,7 +1990,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 )
                 m.next_image_set()
 
-    # def test_load_unscaled(self):
+    # def test_load_unscaled():
     #     '''Load a image with and without rescaling'''
     #     make_12_bit_image('ExampleSpecklesImages', '1-162hrh2ax2.tif', (21, 31))
     #     path = os.path.join(example_images_directory(),
@@ -2005,7 +2005,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     module.set_module_num(1)
     #     pipeline = P.Pipeline()
     #     pipeline.add_module(module)
-    #     pipeline.add_listener(self.error_callback)
+    #     pipeline.add_listener(error_callback)
     #     image_set_list = I.ImageSetList()
     #     m = measurements.Measurements()
     #     workspace = W.Workspace(pipeline, module, None, None, m,
@@ -2019,10 +2019,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     module.run(workspace)
     #     scales = m.get_all_measurements(measurements.IMAGE,
     #                                     LI.C_SCALING + "_MyImage")
-    #     self.assertEqual(len(scales), 1)
-    #     self.assertEqual(scales[0], 4095)
+    #     assertEqual(len(scales), 1)
+    #     assertEqual(scales[0], 4095)
     #     image = image_set.get_image("MyImage")
-    #     self.assertTrue(np.all(image.pixel_data <= 1.0 / 16.0))
+    #     assertTrue(np.all(image.pixel_data <= 1.0 / 16.0))
     #     pixel_data = image.pixel_data
     #     module.images[0].channels[0].rescale.value = True
     #     image_set_list = I.ImageSetList()
@@ -2039,9 +2039,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     np.testing.assert_almost_equal(pixel_data * 65535.0 / 4095.0,
     #                                    image.pixel_data)
 
-    def make_objects_workspace(self, image, mode="L", filename="myfile.tif"):
+    def make_objects_workspace(image, mode="L", filename="myfile.tif"):
         directory = tempfile.mkdtemp()
-        self.directory = directory
+        directory = directory
         path = os.path.join(directory, filename)
         if mode == "raw":
             fd = open(path, "wb")
@@ -2065,7 +2065,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -2083,8 +2083,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         )
         return workspace, module
 
-    def test_load_empty_objects(self):
-        workspace, module = self.make_objects_workspace(numpy.zeros((20, 30), int))
+    def test_load_empty_objects():
+        workspace, module = make_objects_workspace(numpy.zeros((20, 30), int))
         module.run(workspace)
         assert isinstance(module, cellprofiler.modules.loadimages.LoadImages)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
@@ -2115,11 +2115,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             == 0
         )
 
-    def test_load_indexed_objects(self):
+    def test_load_indexed_objects():
         r = numpy.random.RandomState()
         r.seed(1202)
         image = r.randint(0, 10, size=(20, 30))
-        workspace, module = self.make_objects_workspace(image)
+        workspace, module = make_objects_workspace(image)
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert numpy.all(o.segmented == image)
@@ -2148,16 +2148,16 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         )
         assert numpy.all(v == y)
 
-    def test_load_sparse_objects(self):
+    def test_load_sparse_objects():
         r = numpy.random.RandomState()
         r.seed(1203)
         image = r.randint(0, 10, size=(20, 30))
-        workspace, module = self.make_objects_workspace(image * 10)
+        workspace, module = make_objects_workspace(image * 10)
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert numpy.all(o.segmented == image)
 
-    def test_load_color_objects(self):
+    def test_load_color_objects():
         r = numpy.random.RandomState()
         r.seed(1203)
         image = r.randint(0, 10, size=(20, 30))
@@ -2177,17 +2177,17 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             ]
         )
         cimage = colors[image]
-        workspace, module = self.make_objects_workspace(
+        workspace, module = make_objects_workspace(
             cimage, mode="RGB", filename="myimage.png"
         )
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert numpy.all(o.segmented == image)
 
-    def test_object_outlines(self):
+    def test_object_outlines():
         image = numpy.zeros((30, 40), int)
         image[10:15, 20:30] = 1
-        workspace, module = self.make_objects_workspace(image)
+        workspace, module = make_objects_workspace(image)
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert numpy.all(o.segmented == image)
@@ -2197,10 +2197,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         outlines = image_set.get_image(OUTLINES_NAME)
         numpy.testing.assert_equal(outlines.pixel_data, expected_outlines)
 
-    def test_overlapped_objects(self):
-        workspace, module = self.make_objects_workspace(
-            overlapped_objects_data, mode="raw"
-        )
+    def test_overlapped_objects():
+        workspace, module = make_objects_workspace(overlapped_objects_data, mode="raw")
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert o.count == 2
@@ -2216,7 +2214,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             else:
                 assert "Object number %d not found" % object_number
 
-    def test_batch_images(self):
+    def test_batch_images():
         module = cellprofiler.modules.loadimages.LoadImages()
         module.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
@@ -2235,7 +2233,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -2284,7 +2282,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 os.path.join(path, file_name)
             )
 
-    def test_batch_movies(self):
+    def test_batch_movies():
         module = cellprofiler.modules.loadimages.LoadImages()
         module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
@@ -2306,7 +2304,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.set_module_num(1)
         image_set_list = cellprofiler.image.ImageSetList()
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -2356,7 +2354,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 == image_number - 1
             )
 
-    def test_batch_flex(self):
+    def test_batch_flex():
         module = cellprofiler.modules.loadimages.LoadImages()
         module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
@@ -2379,7 +2377,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         image_set_list = cellprofiler.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         pipeline.add_module(module)
         workspace = cellprofiler.workspace.Workspace(
             pipeline, module, None, None, m, image_set_list
@@ -2426,10 +2424,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     == i
                 )
 
-    # def test_load_unicode(self):
+    # def test_load_unicode():
     #     '''Load an image from a unicode - encoded location'''
-    #     self.directory = tempfile.mkdtemp()
-    #     directory = os.path.join(self.directory, u"\u2211a")
+    #     directory = tempfile.mkdtemp()
+    #     directory = os.path.join(directory, u"\u2211a")
     #     os.mkdir(directory)
     #     filename = u"\u03b1\u00b2.jpg"
     #     path = os.path.join(directory, filename)
@@ -2448,46 +2446,46 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     pipeline = cpp.Pipeline()
     #
     #     def callback(caller, event):
-    #         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+    #         assertFalse(isinstance(event, cpp.RunExceptionEvent))
     #
     #     pipeline.add_listener(callback)
     #     pipeline.add_module(module)
     #     m = measurements.Measurements()
     #     workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
-    #     self.assertTrue(module.prepare_run(workspace))
-    #     self.assertEqual(len(m.get_image_numbers()), 1)
+    #     assertTrue(module.prepare_run(workspace))
+    #     assertEqual(len(m.get_image_numbers()), 1)
     #     key_names, group_list = pipeline.get_groupings(workspace)
-    #     self.assertEqual(len(group_list), 1)
+    #     assertEqual(len(group_list), 1)
     #     group_keys, image_numbers = group_list[0]
-    #     self.assertEqual(len(image_numbers), 1)
+    #     assertEqual(len(image_numbers), 1)
     #     module.prepare_group(workspace, group_keys, image_numbers)
     #     image_set = image_set_list.get_image_set(image_numbers[0] - 1)
     #     workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
     #                             m, image_set_list)
     #     module.run(workspace)
     #     image_provider = image_set.get_image_provider(IMAGE_NAME)
-    #     self.assertEqual(image_provider.get_filename(), filename)
+    #     assertEqual(image_provider.get_filename(), filename)
     #     pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
-    #     self.assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
+    #     assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
     #     file_feature = '_'.join((LI.C_FILE_NAME, IMAGE_NAME))
     #     file_measurement = m.get_current_image_measurement(file_feature)
-    #     self.assertEqual(file_measurement, filename)
+    #     assertEqual(file_measurement, filename)
     #     path_feature = '_'.join((LI.C_PATH_NAME, IMAGE_NAME))
     #     path_measurement = m.get_current_image_measurement(path_feature)
-    #     self.assertEqual(os.path.split(directory)[1],
+    #     assertEqual(os.path.split(directory)[1],
     #                      os.path.split(path_measurement)[1])
 
-    def make_prepare_run_workspace(self, file_names):
+    def make_prepare_run_workspace(file_names):
         """Make a workspace and image files for prepare_run
 
-        file_names - a list of file names of files to create in self.directory
+        file_names - a list of file names of files to create in directory
 
         returns tuple of workspace and module
         """
-        self.directory = tempfile.mkdtemp()
+        directory = tempfile.mkdtemp()
         data = base64.b64decode(tests.modules.png_8_1)
         for file_name in file_names:
-            path = os.path.join(self.directory, file_name)
+            path = os.path.join(directory, file_name)
             fd = open(path, "wb")
             fd.write(data)
             fd.close()
@@ -2495,7 +2493,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module = cellprofiler.modules.loadimages.LoadImages()
         module.set_module_num(1)
         module.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
-        module.location.custom_path = self.directory
+        module.location.custom_path = directory
 
         pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -2519,14 +2517,14 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             module,
         )
 
-    def test_prepare_run_measurements(self):
+    def test_prepare_run_measurements():
         filenames = [
             "channel1-A01.png",
             "channel2-A01.png",
             "channel1-A02.png",
             "channel2-A02.png",
         ]
-        workspace, module = self.make_prepare_run_workspace(filenames)
+        workspace, module = make_prepare_run_workspace(filenames)
         assert isinstance(module, cellprofiler.modules.loadimages.LoadImages)
         module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.add_imagecb()
@@ -2541,11 +2539,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         for i in range(1, 3):
             for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
                 filename = "channel%d-A0%d.png" % (j, i)
-                full_path = os.path.join(self.directory, filename)
+                full_path = os.path.join(directory, filename)
                 url = "file:" + urllib.request.pathname2url(full_path)
                 for category, expected in (
                     (cellprofiler.measurement.C_FILE_NAME, filename),
-                    (cellprofiler.measurement.C_PATH_NAME, self.directory),
+                    (cellprofiler.measurement.C_PATH_NAME, directory),
                     (cellprofiler.measurement.C_URL, url),
                 ):
                     value = m.get_measurement(
@@ -2556,7 +2554,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     assert value == expected
 
     @unittest.expectedFailure  # fly image URLs have moved
-    def test_00_load_from_url(self):
+    def test_00_load_from_url():
         from bioformats.formatreader import release_image_reader
 
         module = cellprofiler.modules.loadimages.LoadImages()
@@ -2636,7 +2634,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         release_image_reader(IMAGE_NAME)
         assert not os.path.exists(pathname)
 
-        # def test_01_load_url_mat(self):
+        # def test_01_load_url_mat():
         #     #
         #     # Unfortunately, MAT files end up in temporary files using a different
         #     # mechanism than everything else
@@ -2646,14 +2644,14 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         #         example_images_url() + "/ExampleSBSImages/Channel1ILLUM.mat?r11710")
         #     pathname = image_provider.get_full_name()
         #     image = image_provider.provide_image(None)
-        #     self.assertEqual(tuple(image.pixel_data.shape), (640, 640))
+        #     assertEqual(tuple(image.pixel_data.shape), (640, 640))
         #     expected_md5 = "f3c4d57ee62fa2fd96e3686179656d82"
         #     md5 = image_provider.get_md5_hash(None)
-        #     self.assertEqual(expected_md5, md5)
+        #     assertEqual(expected_md5, md5)
         #     image_provider.release_memory()
-        #     self.assertFalse(os.path.exists(pathname))
+        #     assertFalse(os.path.exists(pathname))
 
-        # def test_load_url_with_groups(self):
+        # def test_load_url_with_groups():
         #     module = LI.LoadImages()
         #     module.set_module_num(1)
         #     module.location.dir_choice = LI.URL_FOLDER_NAME
@@ -2676,7 +2674,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         #
         #     pipeline = cpp.Pipeline()
         #     def callback(caller, event):
-        #         self.assertFalse(isinstance(event, (
+        #         assertFalse(isinstance(event, (
         #             cpp.LoadExceptionEvent, cpp.RunExceptionEvent)))
         #     pipeline.add_listener(callback)
         #     pipeline.add_module(module)
@@ -2684,22 +2682,22 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         #     m = measurements.Measurements()
         #     image_set_list = I.ImageSetList()
         #     workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
-        #     self.assertTrue(module.prepare_run(workspace))
+        #     assertTrue(module.prepare_run(workspace))
         #     image_numbers = m.get_image_numbers()
-        #     self.assertEqual(len(image_numbers), 3)
+        #     assertEqual(len(image_numbers), 3)
         #
         #     key_names, group_list = module.get_groupings(workspace)
-        #     self.assertEqual(len(key_names), 1)
-        #     self.assertEqual(key_names[0], "Column")
-        #     self.assertEqual(len(group_list), 2)
-        #     self.assertEqual(group_list[0][0]["Column"], "0")
-        #     self.assertEqual(len(group_list[0][1]), 2)
-        #     self.assertEqual(tuple(group_list[0][1]), tuple(image_numbers[:2]))
-        #     self.assertEqual(group_list[1][0]["Column"], "2")
-        #     self.assertEqual(len(group_list[1][1]), 1)
-        #     self.assertEqual(group_list[1][1][0], image_numbers[-1])
+        #     assertEqual(len(key_names), 1)
+        #     assertEqual(key_names[0], "Column")
+        #     assertEqual(len(group_list), 2)
+        #     assertEqual(group_list[0][0]["Column"], "0")
+        #     assertEqual(len(group_list[0][1]), 2)
+        #     assertEqual(tuple(group_list[0][1]), tuple(image_numbers[:2]))
+        #     assertEqual(group_list[1][0]["Column"], "2")
+        #     assertEqual(len(group_list[1][1]), 1)
+        #     assertEqual(group_list[1][1][0], image_numbers[-1])
 
-    #     def test_single_channel(self):
+    #     def test_single_channel():
     #         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     # Version:3
     # DateRevision:20120830205040
@@ -2739,9 +2737,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #         maybe_download_fly()
     #         directory = os.path.join(example_images_directory(),
     #                                  "ExampleFlyImages")
-    #         self.convtester(pipeline_text, directory)
+    #         convtester(pipeline_text, directory)
 
-    def test_three_channels(self):
+    def test_three_channels():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
@@ -2814,9 +2812,9 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleFlyImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_regexp(self):
+    def test_regexp():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
@@ -2889,9 +2887,9 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleFlyImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_order_by_metadata(self):
+    def test_order_by_metadata():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
@@ -2964,9 +2962,9 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleFlyImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_directory_metadata(self):
+    def test_directory_metadata():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
@@ -3039,9 +3037,9 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleFlyImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_objects(self):
+    def test_objects():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
@@ -3114,9 +3112,9 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleFlyImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_group_by_metadata(self):
+    def test_group_by_metadata():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120917145632
@@ -3172,11 +3170,11 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
 
 class TestLoadImagesImageProvider:
-    def test_provide_volume(self):
+    def test_provide_volume():
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
         provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
@@ -3199,7 +3197,7 @@ class TestLoadImagesImageProvider:
 
         numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
-    def test_provide_npy(self):
+    def test_provide_npy():
         resource_directory = os.path.realpath(
             os.path.join(os.path.dirname(__file__), "..", "resources")
         )
@@ -3217,7 +3215,7 @@ class TestLoadImagesImageProvider:
 
         numpy.testing.assert_array_almost_equal(actual, expected)
 
-    def test_provide_npy_volume(self):
+    def test_provide_npy_volume():
         resource_directory = os.path.realpath(
             os.path.join(os.path.dirname(__file__), "..", "resources")
         )
@@ -3238,7 +3236,7 @@ class TestLoadImagesImageProvider:
 
 
 class TestLoadImagesImageProviderURL:
-    def test_provide_volume(self):
+    def test_provide_volume():
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
 
         provider = cellprofiler.modules.loadimages.LoadImagesImageProviderURL(
@@ -3260,7 +3258,7 @@ class TestLoadImagesImageProviderURL:
 
         numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
-    def test_provide_volume_3_planes(self):
+    def test_provide_volume_3_planes():
         data = numpy.random.rand(3, 256, 256)
 
         path = tempfile.NamedTemporaryFile(suffix=".tif", delete=False).name

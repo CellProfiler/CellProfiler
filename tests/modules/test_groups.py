@@ -12,7 +12,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120213205828
@@ -42,7 +42,7 @@ Metadata category:Plate
     assert g0.metadata_choice == "Plate"
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120213205828
@@ -71,7 +71,7 @@ Metadata category:Plate
     assert g0.metadata_choice == "Plate"
 
 
-def make_image_sets(self, key_metadata, channel_metadata):
+def make_image_sets(key_metadata, channel_metadata):
     """Make image sets by permuting key and channel metadata
 
     key_metadata: collection of 2 tuples. 2 tuple is key + collection of
@@ -155,8 +155,8 @@ def make_image_sets(self, key_metadata, channel_metadata):
     return module, workspace
 
 
-def test_compute_no_groups(self):
-    groups, workspace = self.make_image_sets(
+def test_compute_no_groups():
+    groups, workspace = make_image_sets(
         (
             ("Plate", ("P-12345", "P-23456")),
             ("Well", ("A01", "A02", "A03")),
@@ -191,9 +191,9 @@ def test_compute_no_groups(self):
     assert list(expected_file_names) == list(output_file_names)
 
 
-def test_group_on_one(self):
+def test_group_on_one():
     groups = G.Groups()
-    groups, workspace = self.make_image_sets(
+    groups, workspace = make_image_sets(
         (
             ("Plate", ("P-12345", "P-23456")),
             ("Well", ("A01", "A02", "A03")),
@@ -251,8 +251,8 @@ def test_group_on_one(self):
                 assert m[cpmeas.IMAGE, ftr, image_number].startswith(plate)
 
 
-def test_group_on_two(self):
-    groups, workspace = self.make_image_sets(
+def test_group_on_two():
+    groups, workspace = make_image_sets(
         (
             ("Plate", ("P-12345", "P-23456")),
             ("Well", ("A01", "A02", "A03")),
@@ -306,7 +306,7 @@ def test_group_on_two(self):
                 assert s == site
 
 
-def test_get_measurement_columns_nogroups(self):
+def test_get_measurement_columns_nogroups():
     #
     # Don't return the metadata grouping tags measurement if no groups
     #
@@ -316,7 +316,7 @@ def test_get_measurement_columns_nogroups(self):
     assert len(columns) == 0
 
 
-def test_get_measurement_columns_groups(self):
+def test_get_measurement_columns_groups():
     #
     # Return the metadata grouping tags measurement if groups
     #

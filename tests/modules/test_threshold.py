@@ -25,7 +25,7 @@ INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
 
-def make_workspace(self, image, mask=None, dimensions=2):
+def make_workspace(image, mask=None, dimensions=2):
     """Make a workspace for testing Threshold"""
     module = cellprofiler.modules.threshold.Threshold()
     module.x_name.value = INPUT_IMAGE_NAME
@@ -51,11 +51,11 @@ def make_workspace(self, image, mask=None, dimensions=2):
     return workspace, module
 
 
-def test_write_a_test_for_the_new_variable_revision_please(self):
+def test_write_a_test_for_the_new_variable_revision_please():
     assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 10
 
 
-def test_load_v7(self):
+def test_load_v7():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     Version:3
     DateRevision:20130226215424
@@ -149,7 +149,7 @@ def test_load_v7(self):
     assert module.adaptive_window_size.value == 13
 
 
-def test_load_v8(self):
+def test_load_v8():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -250,7 +250,7 @@ Variance method:Standard deviation
     assert module.adaptive_window_size == 50
 
 
-def test_load_v9(self):
+def test_load_v9():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -418,7 +418,7 @@ Variance method:Standard deviation
     assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
 
 
-def test_load_v10(self):
+def test_load_v10():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -519,12 +519,12 @@ Thresholding method:Otsu
     assert module.local_operation.value == centrosome.threshold.TM_OTSU
 
 
-def test_binary_manual(self):
+def test_binary_manual():
     """Test a binary threshold with manual threshold value"""
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20))
     expected = image > 0.5
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.manual_threshold.value = 0.5
@@ -533,13 +533,13 @@ def test_binary_manual(self):
     assert numpy.all(output.pixel_data == expected)
 
 
-def test_binary_global(self):
+def test_binary_global():
     """Test a binary threshold with Otsu global method"""
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20))
     threshold = skimage.filters.threshold_otsu(image)
     expected = image > threshold
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
@@ -547,13 +547,13 @@ def test_binary_global(self):
     assert numpy.all(output.pixel_data == expected)
 
 
-def test_binary_correction(self):
+def test_binary_correction():
     """Test a binary threshold with a correction factor"""
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20))
     threshold = skimage.filters.threshold_otsu(image) * 0.5
     expected = image > threshold
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.threshold_correction_factor.value = 0.5
@@ -562,14 +562,14 @@ def test_binary_correction(self):
     assert numpy.all(output.pixel_data == expected)
 
 
-def test_low_bounds(self):
+def test_low_bounds():
     """Test a binary threshold with a low bound"""
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20))
     image[(image > 0.4) & (image < 0.6)] = 0.5
     expected = image > 0.7
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.threshold_range.min = 0.7
@@ -578,13 +578,13 @@ def test_low_bounds(self):
     assert numpy.all(output.pixel_data == expected)
 
 
-def test_high_bounds(self):
+def test_high_bounds():
     """Test a binary threshold with a high bound"""
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(40, 40))
     expected = image > 0.1
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.threshold_range.max = 0.1
@@ -593,11 +593,11 @@ def test_high_bounds(self):
     assert numpy.all(output.pixel_data == expected)
 
 
-def test_threshold_from_measurement(self):
+def test_threshold_from_measurement():
     """Test a binary threshold from previous measurements"""
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20))
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.manual_threshold.value = 0.5
@@ -614,7 +614,7 @@ def test_threshold_from_measurement(self):
     module2.run(workspace)
 
 
-def test_otsu3_low(self):
+def test_otsu3_low():
     """Test the three-class otsu, weighted variance middle = background"""
     numpy.random.seed(0)
     image = numpy.hstack(
@@ -629,7 +629,7 @@ def test_otsu3_low(self):
     limage, d = centrosome.threshold.log_transform(image)
     t1, t2 = centrosome.otsu.otsu3(limage)
     threshold = centrosome.threshold.inverse_log_transform(t2, d)
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
@@ -645,7 +645,7 @@ def test_otsu3_low(self):
     assert round(abs(m_threshold - threshold), 7) == 0
 
 
-def test_otsu3_high(self):
+def test_otsu3_high():
     """Test the three-class otsu, weighted variance middle = foreground"""
     numpy.random.seed(0)
     image = numpy.hstack(
@@ -660,7 +660,7 @@ def test_otsu3_high(self):
     limage, d = centrosome.threshold.log_transform(image)
     t1, t2 = centrosome.otsu.otsu3(limage)
     threshold = centrosome.threshold.inverse_log_transform(t1, d)
-    workspace, module = self.make_workspace(image)
+    workspace, module = make_workspace(image)
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
@@ -676,7 +676,7 @@ def test_otsu3_high(self):
     assert round(abs(m_threshold - threshold), 7) == 0
 
 
-def test_adaptive_otsu_small(self):
+def test_adaptive_otsu_small():
     """Test the function, get_threshold, using Otsu adaptive / small
 
     Use a small image (125 x 125) to break the image into four
@@ -693,7 +693,7 @@ def test_adaptive_otsu_small(self):
             r = numpy.random.uniform(0, numpy.pi * 2, (60, 55))
             rsin = (numpy.sin(r) + 1) / 2
             image[i0:i1, j0:j1] = dmin + rsin * dmult
-    workspace, x = self.make_workspace(image)
+    workspace, x = make_workspace(image)
     x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
     x.global_operation.value = centrosome.threshold.TM_OTSU
     threshold, global_threshold = x.get_threshold(
@@ -704,7 +704,7 @@ def test_adaptive_otsu_small(self):
     assert threshold[0, 0] != threshold[119, 109]
 
 
-def test_adaptive_otsu_small(self):
+def test_adaptive_otsu_small():
     """Test the function, get_threshold, using Otsu adaptive / small
 
     Use a small image (125 x 125) to break the image into four
@@ -721,7 +721,7 @@ def test_adaptive_otsu_small(self):
             r = numpy.random.uniform(0, numpy.pi * 2, (60, 55))
             rsin = (numpy.sin(r) + 1) / 2
             image[i0:i1, j0:j1] = dmin + rsin * dmult
-    workspace, x = self.make_workspace(image)
+    workspace, x = make_workspace(image)
     x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
     x.global_operation.value = centrosome.threshold.TM_OTSU
     threshold, global_threshold = x.get_threshold(
@@ -732,7 +732,7 @@ def test_adaptive_otsu_small(self):
     assert threshold[0, 0] != threshold[119, 109]
 
 
-def test_small_images(self):
+def test_small_images():
     """Test mixture of gaussians thresholding with few pixels
 
     Run MOG to see if it blows up, given 0-10 pixels"""
@@ -752,7 +752,7 @@ def test_small_images(self):
             if i:
                 p = r.permutation(numpy.prod(image.shape))[:i]
                 mask[ii[p], jj[p]] = True
-            workspace, x = self.make_workspace(image, mask)
+            workspace, x = make_workspace(image, mask)
             x.global_operation.value = threshold_method
             x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
             l, g = x.get_threshold(
@@ -767,9 +767,9 @@ def test_small_images(self):
             assert round(abs(l1 - l), 7) == 0
 
 
-def test_test_manual_background(self):
+def test_test_manual_background():
     """Test manual background"""
-    workspace, x = self.make_workspace(numpy.zeros((10, 10)))
+    workspace, x = make_workspace(numpy.zeros((10, 10)))
     x = cellprofiler.modules.threshold.Threshold()
     x.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     x.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
@@ -784,8 +784,8 @@ def test_test_manual_background(self):
     assert threshold == 0.5
 
 
-def test_threshold_li_uniform_image(self):
-    workspace, module = self.make_workspace(0.1 * numpy.ones((10, 10)))
+def test_threshold_li_uniform_image():
+    workspace, module = make_workspace(0.1 * numpy.ones((10, 10)))
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -800,7 +800,7 @@ def test_threshold_li_uniform_image(self):
     numpy.testing.assert_almost_equal(t_global, 0.1)
 
 
-def test_threshold_li_uniform_partial_mask(self):
+def test_threshold_li_uniform_partial_mask():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
@@ -811,7 +811,7 @@ def test_threshold_li_uniform_partial_mask(self):
 
     data[mask] = 0.0
 
-    workspace, module = self.make_workspace(data, mask)
+    workspace, module = make_workspace(data, mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -826,14 +826,14 @@ def test_threshold_li_uniform_partial_mask(self):
     numpy.testing.assert_almost_equal(t_global, 0.0)
 
 
-def test_threshold_li_full_mask(self):
+def test_threshold_li_full_mask():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
 
     mask = numpy.zeros_like(data, dtype=numpy.bool)
 
-    workspace, module = self.make_workspace(data, mask)
+    workspace, module = make_workspace(data, mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -848,12 +848,12 @@ def test_threshold_li_full_mask(self):
     numpy.testing.assert_almost_equal(t_global, 0.0)
 
 
-def test_threshold_li_image(self):
+def test_threshold_li_image():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
 
-    workspace, module = self.make_workspace(data)
+    workspace, module = make_workspace(data)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -870,12 +870,12 @@ def test_threshold_li_image(self):
     numpy.testing.assert_almost_equal(t_global, expected)
 
 
-def test_threshold_li_image_automatic(self):
+def test_threshold_li_image_automatic():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
 
-    workspace, module = self.make_workspace(data)
+    workspace, module = make_workspace(data)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -898,12 +898,12 @@ def test_threshold_li_image_automatic(self):
     numpy.testing.assert_almost_equal(t_global, expected)
 
 
-def test_threshold_li_volume(self):
+def test_threshold_li_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = self.make_workspace(data, dimensions=3)
+    workspace, module = make_workspace(data, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -920,12 +920,12 @@ def test_threshold_li_volume(self):
     numpy.testing.assert_almost_equal(t_global, expected)
 
 
-def test_threshold_robust_background_mean_sd_volume(self):
+def test_threshold_robust_background_mean_sd_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = self.make_workspace(data, dimensions=3)
+    workspace, module = make_workspace(data, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -958,12 +958,12 @@ def test_threshold_robust_background_mean_sd_volume(self):
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
 
-def test_threshold_robust_background_median_sd_volume(self):
+def test_threshold_robust_background_median_sd_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = self.make_workspace(data, dimensions=3)
+    workspace, module = make_workspace(data, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -996,12 +996,12 @@ def test_threshold_robust_background_median_sd_volume(self):
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
 
-def test_threshold_robust_background_mode_sd_volume(self):
+def test_threshold_robust_background_mode_sd_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = self.make_workspace(data, dimensions=3)
+    workspace, module = make_workspace(data, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1034,12 +1034,12 @@ def test_threshold_robust_background_mode_sd_volume(self):
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
 
-def test_threshold_robust_background_mean_mad_volume(self):
+def test_threshold_robust_background_mean_mad_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = self.make_workspace(data, dimensions=3)
+    workspace, module = make_workspace(data, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1072,14 +1072,14 @@ def test_threshold_robust_background_mean_mad_volume(self):
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
 
-def test_threshold_otsu_full_mask(self):
+def test_threshold_otsu_full_mask():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
 
     mask = numpy.zeros_like(data, dtype=numpy.bool)
 
-    workspace, module = self.make_workspace(data, mask=mask)
+    workspace, module = make_workspace(data, mask=mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1102,7 +1102,7 @@ def test_threshold_otsu_full_mask(self):
     assert t_global == t_global_expected
 
 
-def test_threshold_otsu_partial_mask_uniform_data(self):
+def test_threshold_otsu_partial_mask_uniform_data():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
@@ -1113,7 +1113,7 @@ def test_threshold_otsu_partial_mask_uniform_data(self):
 
     data[mask] = 0.2
 
-    workspace, module = self.make_workspace(data, mask=mask)
+    workspace, module = make_workspace(data, mask=mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1136,12 +1136,12 @@ def test_threshold_otsu_partial_mask_uniform_data(self):
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
 
-def test_threshold_otsu_uniform_data(self):
+def test_threshold_otsu_uniform_data():
     data = numpy.ones((10, 10), dtype=numpy.float32)
 
     data *= 0.2
 
-    workspace, module = self.make_workspace(data)
+    workspace, module = make_workspace(data)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1164,7 +1164,7 @@ def test_threshold_otsu_uniform_data(self):
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
 
 
-def test_threshold_otsu_image(self):
+def test_threshold_otsu_image():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
@@ -1173,7 +1173,7 @@ def test_threshold_otsu_image(self):
 
     mask[1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(data, mask=mask)
+    workspace, module = make_workspace(data, mask=mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1208,7 +1208,7 @@ def test_threshold_otsu_image(self):
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 
-def test_threshold_otsu_volume(self):
+def test_threshold_otsu_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
@@ -1217,7 +1217,7 @@ def test_threshold_otsu_volume(self):
 
     mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(data, mask=mask, dimensions=3)
+    workspace, module = make_workspace(data, mask=mask, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1257,14 +1257,14 @@ def test_threshold_otsu_volume(self):
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 
-def test_threshold_otsu3_full_mask(self):
+def test_threshold_otsu3_full_mask():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
 
     mask = numpy.zeros_like(data, dtype=numpy.bool)
 
-    workspace, module = self.make_workspace(data, mask=mask)
+    workspace, module = make_workspace(data, mask=mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1300,7 +1300,7 @@ def test_threshold_otsu3_full_mask(self):
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 
-def test_threshold_otsu3_image(self):
+def test_threshold_otsu3_image():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10)
@@ -1309,7 +1309,7 @@ def test_threshold_otsu3_image(self):
 
     mask[1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(data, mask=mask)
+    workspace, module = make_workspace(data, mask=mask)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
@@ -1345,7 +1345,7 @@ def test_threshold_otsu3_image(self):
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 
-def test_threshold_otsu3_volume(self):
+def test_threshold_otsu3_volume():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
@@ -1354,7 +1354,7 @@ def test_threshold_otsu3_volume(self):
 
     mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(data, mask=mask, dimensions=3)
+    workspace, module = make_workspace(data, mask=mask, dimensions=3)
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 

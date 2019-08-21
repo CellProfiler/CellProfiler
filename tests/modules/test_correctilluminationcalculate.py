@@ -24,12 +24,12 @@ AVERAGE_IMAGE_NAME = "Ave"
 DILATED_IMAGE_NAME = "Dilate"
 
 
-def error_callback(self, calller, event):
+def error_callback(calller, event):
     if isinstance(event, cpp.RunExceptionEvent):
-        self.fail(event.error.message)
+        fail(event.error.message)
 
 
-def make_workspaces(self, images_and_masks):
+def make_workspaces(images_and_masks):
     """Make a workspace for each image set provided
 
     images_and_masks - a collection of two-tuples: image+mask
@@ -45,7 +45,7 @@ def make_workspaces(self, images_and_masks):
     module.average_image_name.value = AVERAGE_IMAGE_NAME
     module.dilated_image_name.value = DILATED_IMAGE_NAME
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     measurements = cpm.Measurements()
 
     for i, (image, mask) in enumerate(images_and_masks):
@@ -62,11 +62,11 @@ def make_workspaces(self, images_and_masks):
     return workspaces, module
 
 
-def test_zeros(self):
+def test_zeros():
     """Test all combinations of options with an image of all zeros"""
     for image in (np.zeros((10, 10)), np.zeros((10, 10, 3))):
         pipeline = cpp.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         inj_module = inj.InjectImage("MyImage", image)
         inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
@@ -140,12 +140,12 @@ def test_zeros(self):
                                 )
 
 
-def test_ones_image(self):
+def test_ones_image():
     """The illumination correction of an image of all ones should be uniform
 
     """
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     for image in (np.ones((10, 10)), np.ones((10, 10, 3))):
         inj_module = inj.InjectImage("MyImage", image)
         inj_module.set_module_num(1)
@@ -212,10 +212,10 @@ def test_ones_image(self):
                             )
 
 
-def test_masked_image(self):
+def test_masked_image():
     """A masked image should be insensitive to points outside the mask"""
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     np.random.seed(12)
     for image in (
         np.random.uniform(size=(10, 10)),
@@ -286,7 +286,7 @@ def test_masked_image(self):
                         )
 
 
-def test_filtered(self):
+def test_filtered():
     """Regression test of issue #310
 
     post_group should add the composite image to the image set
@@ -298,7 +298,7 @@ def test_filtered(self):
     i0 = r.uniform(size=(11, 13))
     i1 = r.uniform(size=(11, 13))
     i2 = r.uniform(size=(11, 13))
-    workspaces, module = self.make_workspaces(((i0, None), (i1, None), (i2, None)))
+    workspaces, module = make_workspaces(((i0, None), (i1, None), (i2, None)))
     module.each_or_all.value = calc.EA_ALL_ACROSS
     module.smoothing_method.value = calc.SM_TO_AVERAGE
     module.save_average_image.value = True
@@ -319,7 +319,7 @@ def test_filtered(self):
     assert AVERAGE_IMAGE_NAME in image_set.names
 
 
-def test_not_filtered(self):
+def test_not_filtered():
     """Regression test of issue #310, negative case
 
     post_group should not add the composite image to the image set
@@ -330,7 +330,7 @@ def test_not_filtered(self):
     i0 = r.uniform(size=(11, 13))
     i1 = r.uniform(size=(11, 13))
     i2 = r.uniform(size=(11, 13))
-    workspaces, module = self.make_workspaces(((i0, None), (i1, None), (i2, None)))
+    workspaces, module = make_workspaces(((i0, None), (i1, None), (i2, None)))
     module.each_or_all.value = calc.EA_ALL_ACROSS
     module.smoothing_method.value = calc.SM_TO_AVERAGE
     module.save_average_image.value = True
@@ -353,11 +353,11 @@ def test_not_filtered(self):
         assert len([x for x in image_set.names if x == image_name]) == 1
 
 
-def test_Background(self):
+def test_Background():
     """Test an image with four distinct backgrounds"""
 
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     image = np.ones((40, 40))
     image[10, 10] = 0.25
     image[10, 30] = 0.5
@@ -397,12 +397,12 @@ def test_Background(self):
     assert np.all(image.pixel_data[20:, 20:] == 0.9)
 
 
-def test_no_smoothing(self):
+def test_no_smoothing():
     """Make sure that no smoothing takes place if smoothing is turned off"""
     input_image = np.random.uniform(size=(10, 10))
     image_name = "InputImage"
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     inj_module = inj.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
@@ -435,7 +435,7 @@ def test_no_smoothing(self):
     )
 
 
-def test_FitPolynomial(self):
+def test_FitPolynomial():
     """Test fitting a polynomial to different gradients"""
 
     y, x = (np.mgrid[0:20, 0:20]).astype(float) / 20.0
@@ -452,7 +452,7 @@ def test_FitPolynomial(self):
         (image_xy, "XYImage"),
     ):
         pipeline = cpp.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
         inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
@@ -487,7 +487,7 @@ def test_FitPolynomial(self):
         )
 
 
-def test_gaussian_filter(self):
+def test_gaussian_filter():
     """Test gaussian filtering a gaussian of a point"""
     input_image = np.zeros((101, 101))
     input_image[50, 50] = 1
@@ -495,7 +495,7 @@ def test_gaussian_filter(self):
     i, j = np.mgrid[-50:51, -50:51]
     expected_image = np.e ** (-(i ** 2 + j ** 2) / (2 * (10.0 / 2.35) ** 2))
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     inj_module = inj.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
@@ -532,7 +532,7 @@ def test_gaussian_filter(self):
     )
 
 
-def test_median_filter(self):
+def test_median_filter():
     """Test median filtering of a point"""
     input_image = np.zeros((101, 101))
     input_image[50, 50] = 1
@@ -543,7 +543,7 @@ def test_median_filter(self):
         -filter_distance : filter_distance + 1, -filter_distance : filter_distance + 1
     ] = 1
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     inj_module = inj.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
@@ -576,14 +576,14 @@ def test_median_filter(self):
     assert np.all(image.pixel_data == expected_image)
 
 
-def test_smooth_to_average(self):
+def test_smooth_to_average():
     """Test smoothing to an average value"""
     np.random.seed(0)
     input_image = np.random.uniform(size=(10, 10)).astype(np.float32)
     image_name = "InputImage"
     expected_image = np.ones((10, 10)) * input_image.mean()
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     inj_module = inj.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
@@ -616,7 +616,7 @@ def test_smooth_to_average(self):
     np.testing.assert_almost_equal(image.pixel_data, expected_image)
 
 
-def test_splines(self):
+def test_splines():
     for (
         automatic,
         bg_mode,
@@ -669,7 +669,7 @@ def test_splines(self):
         bg *= 0.2
         image += bg
 
-        workspaces, module = self.make_workspaces(((image, None),))
+        workspaces, module = make_workspaces(((image, None),))
         assert isinstance(module, calc.CorrectIlluminationCalculate)
         module.intensity_choice.value = calc.IC_BACKGROUND
         module.each_or_all.value = calc.EA_EACH
@@ -692,7 +692,7 @@ def test_splines(self):
             assert not np.all(diff < 0.05)
 
 
-def test_splines_scaled(self):
+def test_splines_scaled():
     #
     # Make an image with a random background
     #
@@ -711,7 +711,7 @@ def test_splines_scaled(self):
     bg *= 0.2
     image += bg
 
-    workspaces, module = self.make_workspaces(((image, None),))
+    workspaces, module = make_workspaces(((image, None),))
     assert isinstance(module, calc.CorrectIlluminationCalculate)
     module.intensity_choice.value = calc.IC_BACKGROUND
     module.each_or_all.value = calc.EA_EACH
@@ -727,7 +727,7 @@ def test_splines_scaled(self):
     np.all(diff < 0.05)
 
 
-def test_splines_masked(self):
+def test_splines_masked():
     #
     # Make an image with a random background
     #
@@ -749,7 +749,7 @@ def test_splines_masked(self):
     #
     image[~mask] += bg[~mask]
 
-    workspaces, module = self.make_workspaces(((image, mask),))
+    workspaces, module = make_workspaces(((image, mask),))
     assert isinstance(module, calc.CorrectIlluminationCalculate)
     module.intensity_choice.value = calc.IC_BACKGROUND
     module.each_or_all.value = calc.EA_EACH
@@ -765,7 +765,7 @@ def test_splines_masked(self):
     #
     # Make sure test fails w/o mask
     #
-    workspaces, module = self.make_workspaces(((image, None),))
+    workspaces, module = make_workspaces(((image, None),))
     assert isinstance(module, calc.CorrectIlluminationCalculate)
     module.intensity_choice.value = calc.IC_BACKGROUND
     module.each_or_all.value = calc.EA_EACH
@@ -780,7 +780,7 @@ def test_splines_masked(self):
     assert not np.all(diff < 0.05)
 
 
-def test_splines_cropped(self):
+def test_splines_cropped():
     #
     # Make an image with a random background
     #
@@ -803,7 +803,7 @@ def test_splines_cropped(self):
     #
     image[~mask] += bg[~mask]
 
-    workspaces, module = self.make_workspaces(((image, mask),))
+    workspaces, module = make_workspaces(((image, mask),))
     assert isinstance(module, calc.CorrectIlluminationCalculate)
     module.intensity_choice.value = calc.IC_BACKGROUND
     module.each_or_all.value = calc.EA_EACH
@@ -819,7 +819,7 @@ def test_splines_cropped(self):
     #
     # Make sure test fails w/o mask
     #
-    workspaces, module = self.make_workspaces(((image, None),))
+    workspaces, module = make_workspaces(((image, None),))
     assert isinstance(module, calc.CorrectIlluminationCalculate)
     module.intensity_choice.value = calc.IC_BACKGROUND
     module.each_or_all.value = calc.EA_EACH
@@ -834,7 +834,7 @@ def test_splines_cropped(self):
     assert not np.all(diff < 0.05)
 
 
-def test_intermediate_images(self):
+def test_intermediate_images():
     """Make sure the average and dilated image flags work"""
     for average_flag, dilated_flag in (
         (False, False),
@@ -843,7 +843,7 @@ def test_intermediate_images(self):
         (True, True),
     ):
         pipeline = cpp.Pipeline()
-        pipeline.add_listener(self.error_callback)
+        pipeline.add_listener(error_callback)
         inj_module = inj.InjectImage("InputImage", np.zeros((10, 10)))
         inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
@@ -883,14 +883,14 @@ def test_intermediate_images(self):
                 image_set.get_image("DilatedImage")
 
 
-def test_rescale(self):
+def test_rescale():
     """Test basic rescaling of an image with two values"""
     input_image = np.ones((10, 10))
     input_image[0:5, :] *= 0.5
     image_name = "InputImage"
     expected_image = input_image * 2
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     inj_module = inj.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
@@ -923,7 +923,7 @@ def test_rescale(self):
     assert np.all(image.pixel_data == expected_image)
 
 
-def test_rescale_outlier(self):
+def test_rescale_outlier():
     """Test rescaling with one low outlier"""
     input_image = np.ones((10, 10))
     input_image[0:5, :] *= 0.5
@@ -932,7 +932,7 @@ def test_rescale_outlier(self):
     expected_image = input_image * 2
     expected_image[0, 0] = 1
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     inj_module = inj.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
@@ -965,7 +965,7 @@ def test_rescale_outlier(self):
     assert np.all(image.pixel_data == expected_image)
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9411
@@ -1221,7 +1221,7 @@ Name the dilated image:Illum5Dilated
         assert module.dilated_image_name == dilated_image_name
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10125

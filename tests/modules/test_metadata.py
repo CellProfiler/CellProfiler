@@ -14,7 +14,7 @@ OME_XML = open(
 ).read()
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -80,7 +80,7 @@ Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'ChannelNumber\', \'
     assert not em1.wants_case_insensitive
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -148,7 +148,7 @@ Case insensitive matching:Yes
     assert em1.wants_case_insensitive
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -217,7 +217,7 @@ Case insensitive matching:Yes
     assert em1.wants_case_insensitive
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120112154631
@@ -297,7 +297,7 @@ Case insensitive matching:Yes
     assert em1.wants_case_insensitive
 
 
-def test_load_v5(self):
+def test_load_v5():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -352,7 +352,7 @@ Use case insensitive matching?:No
     assert em1.csv_filename.value == "metadata.csv"
 
 
-def check(self, module, url, dd, keys=None, xml=None):
+def check(module, url, dd, keys=None, xml=None):
     """Check that running the metadata module on a url generates the expected dictionary"""
     pipeline = cellprofiler.pipeline.Pipeline()
     imgs = cellprofiler.modules.images.Images()
@@ -378,7 +378,7 @@ def check(self, module, url, dd, keys=None, xml=None):
             assert key in all_keys
 
 
-def test_get_metadata_from_filename(self):
+def test_get_metadata_from_filename():
     module = cellprofiler.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
@@ -388,7 +388,7 @@ def test_get_metadata_from_filename(self):
     em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
     em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-    self.check(
+    check(
         module,
         url,
         [{"Plate": "P-12345", "Well": "B08", "Site": "5", "Wavelength": "2"}],
@@ -396,7 +396,7 @@ def test_get_metadata_from_filename(self):
     )
 
 
-def test_get_metadata_from_path(self):
+def test_get_metadata_from_path():
     module = cellprofiler.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
@@ -406,10 +406,10 @@ def test_get_metadata_from_path(self):
     em.folder_regexp.value = r".*[/\\](?P<Plate>.+)$"
     em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345/_B08_s5_w2.tif"
-    self.check(module, url, [{"Plate": "P-12345"}], ("Plate",))
+    check(module, url, [{"Plate": "P-12345"}], ("Plate",))
 
 
-def test_filter_positive(self):
+def test_filter_positive():
     module = cellprofiler.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
@@ -420,14 +420,14 @@ def test_filter_positive(self):
     em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
     em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-    self.check(
+    check(
         module,
         url,
         [{"Plate": "P-12345", "Well": "B08", "Site": "5", "Wavelength": "2"}],
     )
 
 
-def test_filter_negative(self):
+def test_filter_negative():
     module = cellprofiler.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
@@ -438,14 +438,14 @@ def test_filter_negative(self):
     em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
     em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-    self.check(
+    check(
         module,
         url,
         [{"Plate": "P-12345", "Well": "B08", "Site": "5", "Wavelength": "2"}],
     )
 
 
-def test_imported_extraction(self):
+def test_imported_extraction():
     metadata_csv = """WellName,Treatment,Dose,Counter
 B08,DMSO,0,1
 C10,BRD041618,1.5,2
@@ -489,7 +489,7 @@ C10,BRD041618,1.5,2
             module.IPD_JOIN_NAME,
         )
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -505,7 +505,7 @@ C10,BRD041618,1.5,2
             ],
         )
         url = "file:/imaging/analysis/P-12345_C10_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -521,7 +521,7 @@ C10,BRD041618,1.5,2
             ],
         )
         url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [{"Plate": "P-12345", "Well": "A01", "Site": "2", "Wavelength": "3"}],
@@ -554,7 +554,7 @@ C10,BRD041618,1.5,2
             pass
 
 
-def test_imported_extraction_case_insensitive(self):
+def test_imported_extraction_case_insensitive():
     metadata_csv = """WellName,Treatment
 b08,DMSO
 C10,BRD041618
@@ -588,7 +588,7 @@ C10,BRD041618
         )
         em.wants_case_insensitive.value = True
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -602,7 +602,7 @@ C10,BRD041618
             ],
         )
         url = "file:/imaging/analysis/P-12345_c10_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -616,7 +616,7 @@ C10,BRD041618
             ],
         )
         url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [{"Plate": "P-12345", "Well": "A01", "Site": "2", "Wavelength": "3"}],
@@ -628,7 +628,7 @@ C10,BRD041618
             pass
 
 
-def test_imported_extraction_case_sensitive(self):
+def test_imported_extraction_case_sensitive():
     metadata_csv = """WellName,Treatment
 b08,DMSO
 C10,BRD041618
@@ -662,13 +662,13 @@ C10,BRD041618
         )
         em.wants_case_insensitive.value = False
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-        self.check(
+        check(
             module,
             url,
             [{"Plate": "P-12345", "Well": "B08", "Site": "5", "Wavelength": "2"}],
         )
         url = "file:/imaging/analysis/P-12345_C10_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -682,7 +682,7 @@ C10,BRD041618
             ],
         )
         url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [{"Plate": "P-12345", "Well": "A01", "Site": "2", "Wavelength": "3"}],
@@ -694,7 +694,7 @@ C10,BRD041618
             pass
 
 
-def test_numeric_joining(self):
+def test_numeric_joining():
     # Check that Metadata correctly joins metadata items
     # that are supposed to be extracted as numbers
     metadata_csv = """Site,Treatment
@@ -734,7 +734,7 @@ def test_numeric_joining(self):
         )
         em.wants_case_insensitive.value = False
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -748,7 +748,7 @@ def test_numeric_joining(self):
             ],
         )
         url = "file:/imaging/analysis/P-12345_C10_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -762,7 +762,7 @@ def test_numeric_joining(self):
             ],
         )
         url = "file:/imaging/analysis/P-12345_A01_s3_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [{"Plate": "P-12345", "Well": "A01", "Site": "3", "Wavelength": "3"}],
@@ -774,7 +774,7 @@ def test_numeric_joining(self):
             pass
 
 
-def test_too_many_columns(self):
+def test_too_many_columns():
     # Regression test of issue #853
     # Allow .csv files which have rows with more fields than there
     # are header fields.
@@ -811,7 +811,7 @@ C10,BRD041618,bar
         )
         em.wants_case_insensitive.value = True
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -825,7 +825,7 @@ C10,BRD041618,bar
             ],
         )
         url = "file:/imaging/analysis/P-12345_c10_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -839,7 +839,7 @@ C10,BRD041618,bar
             ],
         )
         url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
-        self.check(
+        check(
             module,
             url,
             [{"Plate": "P-12345", "Well": "A01", "Site": "2", "Wavelength": "3"}],
@@ -851,7 +851,7 @@ C10,BRD041618,bar
             pass
 
 
-def test_well_row_column(self):
+def test_well_row_column():
     # Make sure that Metadata_Well is generated if we have
     # Metadata_Row and Metadata_Column
     #
@@ -873,7 +873,7 @@ def test_well_row_column(self):
         ) % locals()
         em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
         url = "file:/imaging/analysis/Channel1-C-05.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -897,7 +897,7 @@ def test_well_row_column(self):
         ]
 
 
-def test_well_row_column_before_import(self):
+def test_well_row_column_before_import():
     # Regression test for issue #1347
     # WellRow and WellColumn must be united asap so they can
     # be used downstream.
@@ -935,7 +935,7 @@ C05,DMSO
             module.IPD_JOIN_NAME,
         )
         url = "file:/imaging/analysis/Channel1-C-05.tif"
-        self.check(
+        check(
             module,
             url,
             [
@@ -952,7 +952,7 @@ C05,DMSO
         os.remove(path)
 
 
-def test_ome_metadata(self):
+def test_ome_metadata():
     # Test loading one URL with the humongous stack XML
     # (pat self on back if passes)
     module = cellprofiler.modules.metadata.Metadata()
@@ -982,4 +982,4 @@ def test_ome_metadata(self):
                     T=str(0),
                 )
             )
-    self.check(module, url, metadata, xml=OME_XML)
+    check(module, url, metadata, xml=OME_XML)

@@ -43,7 +43,7 @@ class TestLoadSingleImage(
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
-    def test_load_v1(self):
+    def test_load_v1():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9524
@@ -105,7 +105,7 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
         assert fs.file_name == "bar.tif"
         assert fs.image_name == "Cytoplasm"
 
-    def test_load_v2(self):
+    def test_load_v2():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9524
@@ -170,7 +170,7 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
             )
             assert module.directory.dir_choice == dir_choice[i]
 
-    def test_load_v3(self):
+    def test_load_v3():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9524
@@ -202,7 +202,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         assert fs.image_name == "Cytoplasm"
         assert fs.rescale
 
-    def test_load_v4(self):
+    def test_load_v4():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9524
@@ -238,7 +238,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4
         assert fs.image_name == "Cytoplasm"
         assert fs.rescale
 
-    def test_load_v5(self):
+    def test_load_v5():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9524
@@ -291,10 +291,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         assert fs.outlines_name == "MyOutlines"
         assert fs.rescale
 
-    def get_image_name(self, idx):
+    def get_image_name(idx):
         return "MyImage%d" % idx
 
-    def make_workspace(self, file_names):
+    def make_workspace(file_names):
         module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
         module.set_module_num(1)
         module.directory.set_dir_choice(
@@ -303,7 +303,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         for i, file_name in enumerate(file_names):
             if i > 0:
                 module.add_file()
-            module.file_settings[i].image_name.value = self.get_image_name(i)
+            module.file_settings[i].image_name.value = get_image_name(i)
             module.file_settings[i].file_name.value = file_name
         pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -323,11 +323,11 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         )
         return workspace, module
 
-    def test_load_one(self):
-        folder = self.test_folder
-        file_name = self.test_filename
-        cellprofiler.preferences.set_default_image_directory(self.test_path)
-        workspace, module = self.make_workspace([file_name])
+    def test_load_one():
+        folder = test_folder
+        file_name = test_filename
+        cellprofiler.preferences.set_default_image_directory(test_path)
+        workspace, module = make_workspace([file_name])
         assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         module.prepare_run(workspace)
         module.run(workspace)
@@ -337,10 +337,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         f = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
-                (
-                    cellprofiler.modules.loadsingleimage.C_FILE_NAME,
-                    self.get_image_name(0),
-                )
+                (cellprofiler.modules.loadsingleimage.C_FILE_NAME, get_image_name(0))
             ),
         )
         assert len(f) == 1
@@ -348,18 +345,15 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         p = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
-                (
-                    cellprofiler.modules.loadsingleimage.C_PATH_NAME,
-                    self.get_image_name(0),
-                )
+                (cellprofiler.modules.loadsingleimage.C_PATH_NAME, get_image_name(0))
             ),
         )
         assert len(p) == 1
-        assert p[0] == self.test_path
+        assert p[0] == test_path
         s = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
-                (cellprofiler.modules.loadsingleimage.C_SCALING, self.get_image_name(0))
+                (cellprofiler.modules.loadsingleimage.C_SCALING, get_image_name(0))
             ),
         )
         assert len(s) == 1
@@ -367,33 +361,30 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         md = m.get_all_measurements(
             cellprofiler.measurement.IMAGE,
             "_".join(
-                (
-                    cellprofiler.modules.loadsingleimage.C_MD5_DIGEST,
-                    self.get_image_name(0),
-                )
+                (cellprofiler.modules.loadsingleimage.C_MD5_DIGEST, get_image_name(0))
             ),
         )
         assert len(md) == 1
-        assert self.test_md5 == md[0]
+        assert test_md5 == md[0]
 
-    def test_scale(self):
+    def test_scale():
         """Load an image twice, as scaled and unscaled"""
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
-        path = self.test_path
+        path = test_path
         cellprofiler.preferences.set_default_image_directory(path)
-        workspace, module = self.make_workspace(file_names)
+        workspace, module = make_workspace(file_names)
         assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         module.file_settings[0].rescale.value = False
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
         module.run(workspace)
         unscaled, scaled = [
-            workspace.image_set.get_image(self.get_image_name(i)).pixel_data
+            workspace.image_set.get_image(get_image_name(i)).pixel_data
             for i in range(2)
         ]
         numpy.testing.assert_almost_equal(unscaled * 65535.0 / 4095.0, scaled)
 
-    def test_prepare_run(self):
+    def test_prepare_run():
         # regression test for issue #673 and #1161
         #
         # If LoadSingleImage appears first, pathname data does not show
@@ -408,7 +399,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         lsi.set_module_num(1)
         lsi.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         lsi.directory.custom_path = path
-        lsi.file_settings[0].image_name.value = self.get_image_name(0)
+        lsi.file_settings[0].image_name.value = get_image_name(0)
         lsi.file_settings[0].file_name.value = filename
         pipeline.add_module(lsi)
         li = cellprofiler.modules.loadimages.LoadImages()
@@ -438,24 +429,22 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         #
         # Are the measurements populated?
         #
-        m_file = "_".join(
-            (cellprofiler.measurement.C_FILE_NAME, self.get_image_name(0))
-        )
+        m_file = "_".join((cellprofiler.measurement.C_FILE_NAME, get_image_name(0)))
         assert m[cellprofiler.measurement.IMAGE, m_file, 2] == filename
         #
         # Can we retrieve the image?
         #
-        pixel_data = m.get_image(self.get_image_name(0)).pixel_data
+        pixel_data = m.get_image(get_image_name(0)).pixel_data
         assert not numpy.isscalar(pixel_data)
 
-    def test_measurement_columns(self):
+    def test_measurement_columns():
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
-        workspace, module = self.make_workspace(file_names)
+        workspace, module = make_workspace(file_names)
         assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         columns = module.get_measurement_columns(workspace.pipeline)
         assert len(columns) == 12
         assert [c[0] == cellprofiler.measurement.IMAGE for c in columns]
-        for image_name in [self.get_image_name(i) for i in range(2)]:
+        for image_name in [get_image_name(i) for i in range(2)]:
             for feature in (
                 cellprofiler.modules.loadsingleimage.C_FILE_NAME,
                 cellprofiler.modules.loadsingleimage.C_MD5_DIGEST,
@@ -467,9 +456,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 measurement = "_".join((feature, image_name))
                 assert measurement in [c[1] for c in columns]
 
-    def test_categories(self):
+    def test_categories():
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
-        workspace, module = self.make_workspace(file_names)
+        workspace, module = make_workspace(file_names)
         assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         categories = module.get_categories(workspace.pipeline, "Foo")
         assert len(categories) == 0
@@ -487,9 +476,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         ):
             assert category in categories
 
-    def test_measurements(self):
+    def test_measurements():
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
-        workspace, module = self.make_workspace(file_names)
+        workspace, module = make_workspace(file_names)
         assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         measurements = module.get_measurements(workspace.pipeline, "foo", "bar")
         assert len(measurements) == 0
@@ -510,9 +499,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 workspace.pipeline, cellprofiler.measurement.IMAGE, category
             )
             for i in range(2):
-                assert self.get_image_name(i) in measurements
+                assert get_image_name(i) in measurements
 
-    def test_object_measurement_columns(self):
+    def test_object_measurement_columns():
         module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
         module.file_settings[
             0
@@ -571,7 +560,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 ]
             )
 
-    def test_object_categories(self):
+    def test_object_categories():
         module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
         module.file_settings[
             0
@@ -603,7 +592,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 ]
             )
 
-    def test_object_measurements(self):
+    def test_object_measurements():
         module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
         module.file_settings[
             0
@@ -645,7 +634,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 [expected_feature in features for expected_feature in expected_features]
             )
 
-    def test_load_objects(self):
+    def test_load_objects():
         r = numpy.random.RandomState()
         r.seed(41)
         labels = numpy.random.randint(0, 10, size=(30, 40))
@@ -728,7 +717,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             except:
                 print(("Failed to delete directory " + directory))
 
-    def test_object_outlines(self):
+    def test_object_outlines():
         labels = numpy.zeros((30, 40), int)
         labels[10:15, 20:30] = 1
         expected_outlines = labels != 0
@@ -779,7 +768,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             except:
                 print(("Failed to delete directory " + directory))
 
-    def test_convert_single_image(self):
+    def test_convert_single_image():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120831182904
@@ -846,9 +835,9 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_convert_two_images(self):
+    def test_convert_two_images():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120831182904
@@ -922,9 +911,9 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_convert_with_metadata(self):
+    def test_convert_with_metadata():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120831182904
@@ -989,9 +978,9 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)
 
-    def test_convert_objects(self):
+    def test_convert_objects():
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120831182904
@@ -1058,4 +1047,4 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        self.convtester(pipeline_text, directory)
+        convtester(pipeline_text, directory)

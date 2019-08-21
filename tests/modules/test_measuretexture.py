@@ -13,7 +13,7 @@ INPUT_IMAGE_NAME = "Cytoplasm"
 INPUT_OBJECTS_NAME = "inputobjects"
 
 
-def make_workspace(self, image, labels, convert=True, mask=None):
+def make_workspace(image, labels, convert=True, mask=None):
     """Make a workspace for testing MeasureTexture"""
     module = cellprofiler.modules.measuretexture.MeasureTexture()
     module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
@@ -42,7 +42,7 @@ def make_workspace(self, image, labels, convert=True, mask=None):
     return workspace, module
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10865
@@ -95,7 +95,7 @@ Number of angles to compute for Gabor:6
         assert module.scale_groups[1].scale == 5
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10865
@@ -153,7 +153,7 @@ Number of angles to compute for Gabor:6
         assert module.images_or_objects == cellprofiler.modules.measuretexture.IO_BOTH
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20141017202435
@@ -237,13 +237,13 @@ Measure images or objects?:Both
         assert module.scale_groups[1].scale == 5
 
 
-def test_many_objects(self):
+def test_many_objects():
     """Regression test for IMG-775"""
     numpy.random.seed(22)
     image = numpy.random.uniform(size=(100, 100))
     i, j = numpy.mgrid[0:100, 0:100]
     labels = (i / 10).astype(int) + (j / 10).astype(int) * 10 + 1
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
     module.scale_groups[0].scale.value = 2
     module.run(workspace)
@@ -305,7 +305,7 @@ def test_many_objects(self):
             assert "{:d}_{:02d}".format(2, angle) in all_scales
 
 
-# def test_measurement_columns(self):
+# def test_measurement_columns():
 #     '''Check that results of get_measurement_columns match the actual column names output'''
 #     data = 'eJztW91u2zYUph0naFqgSHexBesNd9d2iSA7SZcEQ2vPXjcPsRs0Xn8wbJgi0TEHWjQkKrU39N32GHuEXe4RJtqyJXFyJMuSJ6cSQEiH5seP5/DwHEqyWrXOWe0beCTJsFXr7HcxQfCcKKxLjf4pHFATD/dg3UAKQxqk+ilsUR3+YBFYPoDlw1P55PTgEFZk+QTEOArN1n37tHsMwJZ9vmOXovPTpiMXPIXLF4gxrF+Zm6AEdp36P+3yWjGwcknQa4VYyHQppvVNvUs7o8HspxbVLILaSt/b2D7aVv8SGebL7hTo/HyOh4hc4N+RoMK02St0jU1MdQfv9C/WzngpE3i5HXqfu3YoCHYo2eWhp563/x647UsBdnvgab/jyFjX8DXWLIVA3FeuZqPg/ckh/W34+tsAjXZtjDsOwW0J49ga21klCEfjLfjwBVBxxlsNwe0IvLx00JDtfztUVAb7ClN7SYw/DL8p4LlcR4SYEe0+T/9FcQcRcSUfrgSe7h3KUey9LejJ5Td24DDMHtKc+mX0jWPn5tnZj62IvKJ/v7NXR1y96yNGB0Qx+wvoPW99heGKPlwRtGk0vnm4MH3vCfpy+SUzLfgdoZcKmemblN3C4txnQj9cbqCuYhEGmzzIwQY2kMqoMVrKDxbFlSU58fi4JeCnxxS/7bFbNYQ36jzGyTOyJI+PvbJz4RlX2vEy6flbNF7aupfTjM/z9Et6nhaNH2U5Xnw/WlLvtOYnAHcUR7+nIJrf3wH++eFyvafoOiKVuPG0qTOkm5iNnPoo/dwV+uFyg0KdMmiZyO0nblyKmweT0n9RfjkgDiSpr+gv5Yi4uOtP9Os21VGaeSZoXl7wG03dvv1awk5fxbRT0P5oEX3fhvB9IejL5V+kJ/uPnp9//Yq+fyZ9+Xh8Xafk2U/y/snPf1Q+PF7ADnH3qUH5vvOeQtXeb5nOneAydumF8B8L/FzmdniHFMMxxOGHiWlaVGc91zjjuoYycmuSjGNx8uYbhK96/JnINX8AoKvz/HgR+y2RHyLls7h+E2THF9RAVwa1dG15vcP407q/Cto/xI3raeaDqPf7WdGvGjLOpPJBmnl6nfJB0vl8XeL/qvN+1uJEVtb7qvSTpaP/fZxpP39Jcj+2alxW9lFZm+e0909xcX/turiCgAt637RK+4xfTnEDDaL3E7Se6OVvSGVuR+uyLjzjhljX0CDF/tZlnd12XBWsZp1E7edjs9tt0TercTDXN8fluOzgwvYRnwD/uuIytRjBOvrPRiLN9b0jjIMXN35PRrFOds9a/Lxt+THHZQOXlfiS4/K4m+M+XlwV3Oznef7LcTkux+W424X7u+DixPcbXPa+N+ftf/XwBOWJJ8CfJ7isIkIGBuXfTRlSf/xxjykRqmiTr2ukM/uy6fnQhvMMQniqAk91Hg/WkM5wdzQwbDaL0b7CsCo1ndpzu7Y2reW8vRDeoPfzN/KaSKW6phijGefFtCYKX0Xgq8zj6yPFtAzE0JDZJ6k1ETsT0bWr10+2A/i88120pU8fPrh7k38B4Pcr19/+eR6Hb2OjWLgP/P/zuheCKwG/n4/9Gizm149uaD/VMavt/wXhfSus'
 #     # alternate data: 1 image, 1 object, tex scale=3, gabor angles=6
@@ -326,8 +326,8 @@ def test_many_objects(self):
 #                 assert (obname, m, 'float') in module.get_measurement_columns(pipeline), 'no entry matching %s in get_measurement_columns.'%((obname, m, 'float'))
 
 
-def test_categories(self):
-    workspace, module = self.make_workspace(
+def test_categories():
+    workspace, module = make_workspace(
         numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
     )
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
@@ -358,8 +358,8 @@ def test_categories(self):
     assert len(categories) == 1
 
 
-def test_measurements(self):
-    workspace, module = self.make_workspace(
+def test_measurements():
+    workspace, module = make_workspace(
         numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
     )
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
@@ -375,9 +375,9 @@ def test_measurements(self):
         )
 
 
-def test_zeros(self):
+def test_zeros():
     """Make sure the module can run on an empty labels matrix"""
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
     )
     module.run(workspace)
@@ -389,15 +389,15 @@ def test_zeros(self):
             assert len(values) == 0
 
 
-def test_wrong_size(self):
+def test_wrong_size():
     """Regression test for IMG-961: objects & image different size"""
     numpy.random.seed(42)
     image = numpy.random.uniform(size=(10, 30))
     labels = numpy.ones((20, 20), int)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     module.run(workspace)
     m = workspace.measurements
-    workspace, module = self.make_workspace(image[:, :20], labels[:10, :])
+    workspace, module = make_workspace(image[:, :20], labels[:10, :])
     module.run(workspace)
     me = workspace.measurements
     for f in m.get_feature_names(INPUT_OBJECTS_NAME):
@@ -407,16 +407,16 @@ def test_wrong_size(self):
             assert values == expected
 
 
-def test_mask(self):
+def test_mask():
     numpy.random.seed(42)
     image = numpy.random.uniform(size=(10, 30))
     mask = numpy.zeros(image.shape, bool)
     mask[:, :20] = True
     labels = numpy.ones((10, 30), int)
-    workspace, module = self.make_workspace(image, labels, mask=mask)
+    workspace, module = make_workspace(image, labels, mask=mask)
     module.run(workspace)
     m = workspace.measurements
-    workspace, module = self.make_workspace(image[:, :20], labels[:, :20])
+    workspace, module = make_workspace(image[:, :20], labels[:, :20])
     module.run(workspace)
     me = workspace.measurements
     for f in m.get_feature_names(INPUT_OBJECTS_NAME):
@@ -426,10 +426,10 @@ def test_mask(self):
             assert values == expected
 
 
-def test_no_image_measurements(self):
+def test_no_image_measurements():
     image = numpy.ones((10, 10)) * 0.5
     labels = numpy.ones((10, 10), int)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
     module.scale_groups[0].scale.value = 2
@@ -444,10 +444,10 @@ def test_no_image_measurements(self):
     )
 
 
-def test_no_object_measurements(self):
+def test_no_object_measurements():
     image = numpy.ones((10, 10)) * 0.5
     labels = numpy.ones((10, 10), int)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
     module.scale_groups[0].scale.value = 2
@@ -462,13 +462,13 @@ def test_no_object_measurements(self):
     )
 
 
-def test_missing_direction(self):
+def test_missing_direction():
     image = numpy.random.rand(10, 10)
 
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
     labels[2:6, 3] = 1
 
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
 
     module.run(workspace)
 
@@ -482,12 +482,12 @@ def test_missing_direction(self):
             assert numpy.all(values == 0)
 
 
-def test_volume_image_measurements(self):
+def test_volume_image_measurements():
     image = numpy.random.rand(10, 10, 10)
 
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
 
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
 
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
 
@@ -506,12 +506,12 @@ def test_volume_image_measurements(self):
         )
 
 
-def test_volume_object_measurements_no_objects(self):
+def test_volume_object_measurements_no_objects():
     image = numpy.random.rand(10, 10, 10)
 
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
 
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
 
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
 
@@ -530,13 +530,13 @@ def test_volume_object_measurements_no_objects(self):
         )
 
 
-def test_volume_object_measurements(self):
+def test_volume_object_measurements():
     image = numpy.random.rand(10, 10, 10)
 
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
     labels[2:6, 4:8, 2:6] = 1
 
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
 
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
 
@@ -555,10 +555,10 @@ def test_volume_object_measurements(self):
         )
 
 
-def test_get_measurement_scales_image(self):
+def test_get_measurement_scales_image():
     image = numpy.random.rand(10, 10)
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     workspace.pipeline.set_volumetric(False)
 
     measurement_scales = module.get_measurement_scales(
@@ -572,10 +572,10 @@ def test_get_measurement_scales_image(self):
     assert len(measurement_scales) == 4
 
 
-def test_get_measurement_scales_volume(self):
+def test_get_measurement_scales_volume():
     image = numpy.random.rand(10, 10, 10)
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     workspace.pipeline.set_volumetric(True)
 
     measurement_scales = module.get_measurement_scales(
@@ -589,10 +589,10 @@ def test_get_measurement_scales_volume(self):
     assert len(measurement_scales) == 13
 
 
-def test_get_measurement_columns_image(self):
+def test_get_measurement_columns_image():
     image = numpy.random.rand(10, 10)
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     workspace.pipeline.set_volumetric(False)
 
     measurement_columns = module.get_measurement_columns(workspace.pipeline)
@@ -600,10 +600,10 @@ def test_get_measurement_columns_image(self):
     assert len(measurement_columns) == 2 * 4 * 13
 
 
-def test_get_measurement_columns_volume(self):
+def test_get_measurement_columns_volume():
     image = numpy.random.rand(10, 10, 10)
     labels = numpy.zeros_like(image, dtype=numpy.uint8)
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     workspace.pipeline.set_volumetric(True)
 
     measurement_columns = module.get_measurement_columns(workspace.pipeline)

@@ -17,19 +17,19 @@ import cellprofiler.object as cpo
 import cellprofiler.measurement as cpm
 
 
-def error_callback(self, calller, event):
+def error_callback(calller, event):
     if isinstance(event, cpp.RunExceptionEvent):
-        self.fail(event.error.message)
+        fail(event.error.message)
 
 
-def test_divide(self):
+def test_divide():
     """Test correction by division"""
     np.random.seed(0)
     image = np.random.uniform(size=(10, 10)).astype(np.float32)
     illum = np.random.uniform(size=(10, 10)).astype(np.float32)
     expected = image / illum
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     input_module = inj.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
@@ -64,7 +64,7 @@ def test_divide(self):
     assert np.all(output_image.pixel_data == expected)
 
 
-def test_subtract(self):
+def test_subtract():
     """Test correction by subtraction"""
     np.random.seed(0)
     image = np.random.uniform(size=(10, 10)).astype(np.float32)
@@ -72,7 +72,7 @@ def test_subtract(self):
     expected = image - illum
     expected[expected < 0] = 0
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     input_module = inj.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
@@ -108,7 +108,7 @@ def test_subtract(self):
     assert np.all(output_image.pixel_data == expected)
 
 
-def test_color_by_bw(self):
+def test_color_by_bw():
     """Correct a color image with a black & white illumination fn"""
     np.random.seed(0)
     image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
@@ -116,7 +116,7 @@ def test_color_by_bw(self):
     expected = image - illum[:, :, np.newaxis]
     expected[expected < 0] = 0
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     input_module = inj.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
@@ -152,7 +152,7 @@ def test_color_by_bw(self):
     assert np.all(output_image.pixel_data == expected)
 
 
-def test_color_by_color(self):
+def test_color_by_color():
     """Correct a color image with a black & white illumination fn"""
     np.random.seed(0)
     image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
@@ -160,7 +160,7 @@ def test_color_by_color(self):
     expected = image - illum
     expected[expected < 0] = 0
     pipeline = cpp.Pipeline()
-    pipeline.add_listener(self.error_callback)
+    pipeline.add_listener(error_callback)
     input_module = inj.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)

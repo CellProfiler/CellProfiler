@@ -16,7 +16,7 @@ INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9120
@@ -44,7 +44,7 @@ Do you want to renumber the objects created by this module or retain the origina
     assert not module.wants_image_display
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9120
@@ -76,7 +76,7 @@ Image name\x3A:DNA
     assert not module.allow_overlap
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9120
@@ -109,7 +109,7 @@ Allow overlapping objects:Yes
     assert module.allow_overlap
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150319195827
@@ -142,7 +142,7 @@ Allow overlapping objects?:No
     assert not module.allow_overlap.value
 
 
-def test_measurements(self):
+def test_measurements():
     module = E.EditObjectsManually()
     module.object_name.value = INPUT_OBJECTS_NAME
     module.filtered_objects.value = OUTPUT_OBJECTS_NAME

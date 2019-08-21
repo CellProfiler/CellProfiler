@@ -26,7 +26,7 @@ IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
 
 
-def make_workspace(self, pixel_data, mask=None, objects=None, dimensions=2):
+def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
     image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
@@ -57,8 +57,8 @@ def make_workspace(self, pixel_data, mask=None, objects=None, dimensions=2):
     return workspace
 
 
-def test_zeros(self):
-    workspace = self.make_workspace(np.zeros((100, 100)))
+def test_zeros():
+    workspace = make_workspace(np.zeros((100, 100)))
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = True
@@ -94,15 +94,11 @@ def test_zeros(self):
                 feature_name,
                 value,
             )
-    self.features_and_columns_match(m, q, pipeline=workspace.pipeline)
+    features_and_columns_match(m, q, pipeline=workspace.pipeline)
 
 
 def features_and_columns_match(
-    self,
-    measurements,
-    module,
-    object_name=cellprofiler.measurement.IMAGE,
-    pipeline=None,
+    measurements, module, object_name=cellprofiler.measurement.IMAGE, pipeline=None
 ):
     assert object_name in measurements.get_object_names()
     features = measurements.get_feature_names(object_name)
@@ -123,8 +119,8 @@ def features_and_columns_match(
         )
 
 
-def test_zeros_and_mask(self):
-    workspace = self.make_workspace(np.zeros((100, 100)), np.zeros((100, 100), bool))
+def test_zeros_and_mask():
+    workspace = make_workspace(np.zeros((100, 100)), np.zeros((100, 100), bool))
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = True
@@ -161,7 +157,7 @@ def test_zeros_and_mask(self):
         )
 
 
-def test_image_blur(self):
+def test_image_blur():
     """Test the focus scores of a random image
 
     The expected variance of a uniform distribution is 1/12 of the
@@ -172,7 +168,7 @@ def test_image_blur(self):
     divided by the median focus score. This should be low.
     """
     np.random.seed(0)
-    workspace = self.make_workspace(np.random.uniform(size=(100, 100)))
+    workspace = make_workspace(np.random.uniform(size=(100, 100)))
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = False
@@ -203,10 +199,10 @@ def test_image_blur(self):
                 "Measured value, %f, for feature %s was not %f"
                 % (m_value, feature_name, value)
             )
-    self.features_and_columns_match(m, q)
+    features_and_columns_match(m, q)
 
 
-def test_local_focus_score(self):
+def test_local_focus_score():
     """Test the local focus score by creating one deviant grid block
 
     Create one grid block out of four that has a uniform value. That one
@@ -218,7 +214,7 @@ def test_local_focus_score(self):
     np.random.seed(0)
     image = np.random.uniform(size=(1000, 1000))
     image[:500, :500] = 0.5
-    workspace = self.make_workspace(image)
+    workspace = make_workspace(image)
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = False
@@ -233,7 +229,7 @@ def test_local_focus_score(self):
     assert round(abs(value - expected_value), 3) == 0
 
 
-def test_focus_score_with_mask(self):
+def test_focus_score_with_mask():
     """Test focus score with a mask to block out an aberrant part of the image"""
     np.random.seed(0)
     expected_value = 1.0 / 6.0
@@ -241,7 +237,7 @@ def test_focus_score_with_mask(self):
     mask = np.ones(image.shape, bool)
     mask[400:600, 400:600] = False
     image[mask == False] = 0.5
-    workspace = self.make_workspace(image, mask)
+    workspace = make_workspace(image, mask)
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = False
@@ -256,7 +252,7 @@ def test_focus_score_with_mask(self):
     assert round(abs(value - expected_value), 3) == 0
 
 
-def test_local_focus_score_with_mask(self):
+def test_local_focus_score_with_mask():
     """Test local focus score and mask"""
     np.random.seed(0)
     expected_value = np.var([1.0 / 6.0] * 3 + [0]) * 6.0
@@ -265,7 +261,7 @@ def test_local_focus_score_with_mask(self):
     mask = np.ones(image.shape, bool)
     mask[400:600, 400:600] = False
     image[mask == False] = 0.5
-    workspace = self.make_workspace(image, mask)
+    workspace = make_workspace(image, mask)
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = False
@@ -280,11 +276,11 @@ def test_local_focus_score_with_mask(self):
     assert round(abs(value - expected_value), 3) == 0
 
 
-def test_saturation(self):
+def test_saturation():
     """Test percent saturation"""
     image = np.zeros((10, 10))
     image[:5, :5] = 1
-    workspace = self.make_workspace(image)
+    workspace = make_workspace(image)
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = True
@@ -317,15 +313,15 @@ def test_saturation(self):
             )
             == 0
         )
-    self.features_and_columns_match(m, q)
+    features_and_columns_match(m, q)
 
 
-def test_maximal(self):
+def test_maximal():
     """Test percent maximal"""
     image = np.zeros((10, 10))
     image[:5, :5] = 0.5
     expected_value = 100.0 / 4.0
-    workspace = self.make_workspace(image)
+    workspace = make_workspace(image)
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = True
@@ -348,7 +344,7 @@ def test_maximal(self):
     )
 
 
-def test_saturation_mask(self):
+def test_saturation_mask():
     """Test percent saturation with mask"""
     image = np.zeros((10, 10))
     # 1/2 of image is saturated
@@ -356,7 +352,7 @@ def test_saturation_mask(self):
     image[:5, :] = 1
     mask = np.ones((10, 10), bool)
     mask[:5, 5:] = False
-    workspace = self.make_workspace(image, mask)
+    workspace = make_workspace(image, mask)
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = True
@@ -399,14 +395,14 @@ def test_saturation_mask(self):
         )
 
 
-def test_maximal_mask(self):
+def test_maximal_mask():
     """Test percent maximal with mask"""
     image = np.zeros((10, 10))
     image[:5, :5] = 0.5
     mask = np.ones((10, 10), bool)
     mask[:5, 5:] = False
     expected_value = 100.0 / 3.0
-    workspace = self.make_workspace(image, mask)
+    workspace = make_workspace(image, mask)
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = True
@@ -429,7 +425,7 @@ def test_maximal_mask(self):
     )
 
 
-def test_threshold(self):
+def test_threshold():
     """Test all thresholding methods
 
     Use an image that has 1/5 of "foreground" pixels to make MOG
@@ -446,7 +442,7 @@ def test_threshold(self):
     #
     image = np.around(image, 2)
 
-    workspace = self.make_workspace(image)
+    workspace = make_workspace(image)
     q = workspace.module
 
     for tm, idx in zip(
@@ -492,13 +488,13 @@ def test_threshold(self):
         else:
             feature_name = "ImageQuality_Threshold%s_my_image" % tm.split(" ")[0]
         assert m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
-    self.features_and_columns_match(m, q)
+    features_and_columns_match(m, q)
 
 
-def test_experiment_threshold(self):
+def test_experiment_threshold():
     """Test experiment-wide thresholds"""
     np.random.seed(32)
-    workspace = self.make_workspace(np.zeros((10, 10)))
+    workspace = make_workspace(np.zeros((10, 10)))
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     module = workspace.module
     assert isinstance(module, M.MeasureImageQuality)
@@ -530,11 +526,11 @@ def test_experiment_threshold(self):
         assert round(abs(value - expected_value), 7) == 0
 
 
-def test_experiment_threshold_cycle_skipping(self):
+def test_experiment_threshold_cycle_skipping():
     """Regression test of IMG-970: can you handle nulls in measurements?"""
 
     np.random.seed(33)
-    workspace = self.make_workspace(np.zeros((10, 10)))
+    workspace = make_workspace(np.zeros((10, 10)))
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     module = workspace.module
     assert isinstance(module, M.MeasureImageQuality)
@@ -557,7 +553,7 @@ def test_experiment_threshold_cycle_skipping(self):
 
     m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, dlist)
     module.post_run(workspace)
-    self.features_and_columns_match(
+    features_and_columns_match(
         m, module, cellprofiler.measurement.EXPERIMENT, pipeline=workspace.pipeline
     )
 
@@ -580,8 +576,8 @@ def test_experiment_threshold_cycle_skipping(self):
         assert round(abs(value - expected_value), 7) == 0
 
 
-def test_use_all_thresholding_methods(self):
-    workspace = self.make_workspace(np.zeros((100, 100)))
+def test_use_all_thresholding_methods():
+    workspace = make_workspace(np.zeros((100, 100)))
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = False
@@ -607,14 +603,14 @@ def test_use_all_thresholding_methods(self):
         "ImageQuality_ThresholdRidlerCalvard_my_image",
     ]:
         assert m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
-    self.features_and_columns_match(m, q)
+    features_and_columns_match(m, q)
 
 
-def check_error(self, caller, event):
+def check_error(caller, event):
     assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9207
@@ -684,7 +680,7 @@ Assign pixels in the middle intensity class to the foreground or the background?
     assert thr.assign_middle_to_foreground == cellprofiler.modules.identify.O_BACKGROUND
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10908
@@ -872,12 +868,12 @@ Assign pixels in the middle intensity class to the foreground or the background?
     assert thr.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND
 
 
-def test_intensity_image(self):
+def test_intensity_image():
     """Test operation on a single unmasked image"""
     np.random.seed(0)
     pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * 0.99
     pixels[0:2, 0:2] = 1
-    workspace = self.make_workspace(pixels, None)
+    workspace = make_workspace(pixels, None)
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = False
@@ -902,8 +898,8 @@ def test_intensity_image(self):
     ) == np.max(pixels)
 
 
-def test_check_image_groups(self):
-    workspace = self.make_workspace(np.zeros((100, 100)))
+def test_check_image_groups():
+    workspace = make_workspace(np.zeros((100, 100)))
     image_set_list = workspace.image_set_list
     image_set = image_set_list.get_image_set(0)
     for i in range(1, 5):
@@ -965,7 +961,7 @@ def test_check_image_groups(self):
             ), ("Erroneously present feature %s" % feature_name)
 
 
-def test_images_to_process(self):
+def test_images_to_process():
     #
     # Test MeasureImageQuality.images_to_process on a pipeline with a
     # variety of image providers.
@@ -1014,13 +1010,13 @@ def test_images_to_process(self):
         assert image_name in expected_names
 
 
-def test_volumetric_measurements(self):
+def test_volumetric_measurements():
     # Test that a volumetric pipeline returns volumetric measurements
     labels = np.zeros((10, 20, 40), dtype=np.uint8)
     labels[:, 5:15, 25:35] = 1
     labels[:, 7, 27] = 2
 
-    workspace = self.make_workspace(labels, dimensions=3)
+    workspace = make_workspace(labels, dimensions=3)
     workspace.pipeline.set_volumetric(True)
     module = workspace.module
     module.run(workspace)

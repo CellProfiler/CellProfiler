@@ -21,7 +21,7 @@ GRID_NAME = "mygrid"
 GUIDING_OBJECTS_NAME = "inputobjects"
 
 
-def make_workspace(self, gridding, labels=None):
+def make_workspace(gridding, labels=None):
     module = I.IdentifyObjectsInGrid()
     module.set_module_num(1)
     module.grid_name.value = GRID_NAME
@@ -52,7 +52,7 @@ def make_workspace(self, gridding, labels=None):
     return workspace, module
 
 
-def make_rectangular_grid(self, gridding):
+def make_rectangular_grid(gridding):
     assert isinstance(gridding, cpg.Grid)
     i0 = gridding.y_location_of_lowest_y_spot
     j0 = gridding.x_location_of_lowest_x_spot
@@ -70,7 +70,7 @@ def make_rectangular_grid(self, gridding):
     return grid
 
 
-def test_forced_location(self):
+def test_forced_location():
     d = D.DefineGrid()
     d.ordering.value = D.NUM_BY_COLUMNS
     #
@@ -78,7 +78,7 @@ def test_forced_location(self):
     #
     diameter = 6
     gridding = d.build_grid_info(15, 25, 1, 1, 25, 45, 2, 2)
-    expected = self.make_rectangular_grid(gridding)
+    expected = make_rectangular_grid(gridding)
     i, j = np.mgrid[0 : expected.shape[0], 0 : expected.shape[1]]
     ispot, jspot = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
     y_locations = np.zeros(np.max(gridding.spot_table) + 1, int)
@@ -88,7 +88,7 @@ def test_forced_location(self):
     idist = i - y_locations[expected]
     jdist = j - x_locations[expected]
     expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
-    workspace, module = self.make_workspace(gridding)
+    workspace, module = make_workspace(gridding)
     assert isinstance(module, I.IdentifyObjectsInGrid)
     module.diameter_choice.value = I.AM_MANUAL
     module.diameter.value = diameter
@@ -154,7 +154,7 @@ def test_forced_location(self):
     assert measurements[0] == "Object_Number"
 
 
-def test_forced_location_auto(self):
+def test_forced_location_auto():
     #
     # Automatic diameter
     #
@@ -162,7 +162,7 @@ def test_forced_location_auto(self):
     d.ordering.value = D.NUM_BY_COLUMNS
     diameter = 7
     gridding = d.build_grid_info(15, 25, 1, 1, 25, 45, 2, 2)
-    expected = self.make_rectangular_grid(gridding)
+    expected = make_rectangular_grid(gridding)
     i, j = np.mgrid[0 : expected.shape[0], 0 : expected.shape[1]]
     ispot, jspot = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
     y_locations = np.zeros(np.max(gridding.spot_table) + 1, int)
@@ -189,7 +189,7 @@ def test_forced_location_auto(self):
     p[p == 0] = p[0]
     p[0] = 0
     guide_labels = p[guide_labels]
-    workspace, module = self.make_workspace(gridding, guide_labels)
+    workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(module, I.IdentifyObjectsInGrid)
     module.diameter_choice.value = I.AM_AUTOMATIC
     module.shape_choice.value = I.SHAPE_CIRCLE_FORCED
@@ -200,7 +200,7 @@ def test_forced_location_auto(self):
     )
 
 
-def test_natural_circle(self):
+def test_natural_circle():
     d = D.DefineGrid()
     d.ordering.value = D.NUM_BY_COLUMNS
     #
@@ -208,7 +208,7 @@ def test_natural_circle(self):
     #
     diameter = 6
     gridding = d.build_grid_info(15, 25, 1, 1, 32, 45, 2, 2)
-    expected = self.make_rectangular_grid(gridding)
+    expected = make_rectangular_grid(gridding)
     i, j = np.mgrid[0 : expected.shape[0], 0 : expected.shape[1]]
     ispot, jspot = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
     y_locations = np.zeros(np.max(gridding.spot_table) + 1, int)
@@ -229,7 +229,7 @@ def test_natural_circle(self):
     guide_labels[
         idist ** 2 + jdist ** 2 > ((random_diameters[guide_labels] + 1) / 2) ** 2
     ] = 0
-    workspace, module = self.make_workspace(gridding, guide_labels)
+    workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(module, I.IdentifyObjectsInGrid)
     module.diameter_choice.value = I.AM_MANUAL
     module.diameter.value = diameter
@@ -247,7 +247,7 @@ def test_natural_circle(self):
     assert count == gridding.rows * gridding.columns
 
 
-def test_natural_circle_edges(self):
+def test_natural_circle_edges():
     #
     # Put objects near the edges of the circle and make sure
     # they are filtered out
@@ -259,7 +259,7 @@ def test_natural_circle_edges(self):
     #
     diameter = 6
     gridding = d.build_grid_info(15, 25, 1, 1, 32, 45, 2, 2)
-    expected = self.make_rectangular_grid(gridding)
+    expected = make_rectangular_grid(gridding)
     i, j = np.mgrid[0 : expected.shape[0], 0 : expected.shape[1]]
     ispot, jspot = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
     y_locations = np.zeros(np.max(gridding.spot_table) + 1, int)
@@ -296,7 +296,7 @@ def test_natural_circle_edges(self):
     #
     # run the module
     #
-    workspace, module = self.make_workspace(gridding, guide_labels)
+    workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(module, I.IdentifyObjectsInGrid)
     module.diameter_choice.value = I.AM_MANUAL
     module.diameter.value = diameter
@@ -314,7 +314,7 @@ def test_natural_circle_edges(self):
     assert count == gridding.rows * gridding.columns
 
 
-def test_img_891(self):
+def test_img_891():
     """Regression test of img-891, last spot filtered out"""
     d = D.DefineGrid()
     d.ordering.value = D.NUM_BY_COLUMNS
@@ -323,7 +323,7 @@ def test_img_891(self):
     #
     diameter = 6
     gridding = d.build_grid_info(15, 25, 1, 1, 32, 45, 2, 2)
-    expected = self.make_rectangular_grid(gridding)
+    expected = make_rectangular_grid(gridding)
     i, j = np.mgrid[0 : expected.shape[0], 0 : expected.shape[1]]
     ispot, jspot = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
     y_locations = np.zeros(np.max(gridding.spot_table) + 1, int)
@@ -349,7 +349,7 @@ def test_img_891(self):
     #
     expected[expected == np.max(guide_labels)] = 0
     guide_labels[guide_labels == np.max(guide_labels)] = 0
-    workspace, module = self.make_workspace(gridding, guide_labels)
+    workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(module, I.IdentifyObjectsInGrid)
     module.diameter_choice.value = I.AM_MANUAL
     module.diameter.value = diameter
@@ -369,7 +369,7 @@ def test_img_891(self):
     assert count == gridding.rows * gridding.columns
 
 
-def test_natural(self):
+def test_natural():
     # Use natural objects.
     #
     # Put objects near the edges of the circle and make sure
@@ -385,7 +385,7 @@ def test_natural(self):
     #
     diameter = 6
     gridding = d.build_grid_info(15, 25, 1, 1, 32, 45, 2, 2)
-    guide_labels = self.make_rectangular_grid(gridding)
+    guide_labels = make_rectangular_grid(gridding)
     i, j = np.mgrid[0 : guide_labels.shape[0], 0 : guide_labels.shape[1]]
     ispot, jspot = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
     y_locations = np.zeros(np.max(gridding.spot_table) + 1, int)
@@ -439,7 +439,7 @@ def test_natural(self):
     #
     # run the module
     #
-    workspace, module = self.make_workspace(gridding, guide_labels)
+    workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(module, I.IdentifyObjectsInGrid)
     module.diameter_choice.value = I.AM_MANUAL
     module.diameter.value = diameter

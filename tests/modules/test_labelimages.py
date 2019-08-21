@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.labelimages as L
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9973
@@ -56,7 +56,7 @@ Order\x3A:Row
     assert module.order == L.O_ROW
 
 
-def make_workspace(self, image_set_count):
+def make_workspace(image_set_count):
     image_set_list = cpi.ImageSetList()
     for i in range(image_set_count):
         image_set = image_set_list.get_image_set(i)
@@ -81,11 +81,11 @@ def make_workspace(self, image_set_count):
     return workspace, module
 
 
-def test_label_plate_by_row(self):
+def test_label_plate_by_row():
     """Label one complete plate"""
     nsites = 6
     nimagesets = 96 * nsites
-    workspace, module = self.make_workspace(nimagesets)
+    workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cpmeas.Measurements)
     assert isinstance(module, L.LabelImages)
@@ -112,11 +112,11 @@ def test_label_plate_by_row(self):
         assert plates[i] == 1
 
 
-def test_label_plate_by_column(self):
+def test_label_plate_by_column():
     """Label one complete plate"""
     nsites = 6
     nimagesets = 96 * nsites
-    workspace, module = self.make_workspace(nimagesets)
+    workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cpmeas.Measurements)
     assert isinstance(module, L.LabelImages)
@@ -143,11 +143,11 @@ def test_label_plate_by_column(self):
         assert plates[i] == 1
 
 
-def test_label_many_plates(self):
+def test_label_many_plates():
     nsites = 1
     nplates = 6
     nimagesets = 96 * nsites * nplates
-    workspace, module = self.make_workspace(nimagesets)
+    workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cpmeas.Measurements)
     assert isinstance(module, L.LabelImages)
@@ -174,9 +174,9 @@ def test_label_many_plates(self):
         assert plates[i] == int(i / 8 / 12) + 1
 
 
-def test_multichar_row_names(self):
+def test_multichar_row_names():
     nimagesets = 1000
-    workspace, module = self.make_workspace(nimagesets)
+    workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cpmeas.Measurements)
     assert isinstance(module, L.LabelImages)

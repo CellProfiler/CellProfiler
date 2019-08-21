@@ -80,13 +80,13 @@ def feature_radial_cv(bin, bin_count, image_name=IMAGE_NAME):
 
 
 class TestMeasureObjectIntensityDistribution:
-    def test_please_implement_a_test_of_the_new_version(self):
+    def test_please_implement_a_test_of_the_new_version():
         assert (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution.variable_revision_number
             == 5
         )
 
-    def test_load_v2(self):
+    def test_load_v2():
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120126174947
@@ -146,7 +146,7 @@ MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variabl
         assert module.bin_counts[1].wants_scaled
         assert module.bin_counts[1].maximum_radius == 50
 
-    def test_load_v3(self):
+    def test_load_v3():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120126174947
@@ -215,7 +215,7 @@ MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variabl
         assert module.bin_counts[1].maximum_radius == 50
         assert len(module.heatmaps) == 0
 
-    def test_load_v4(self):
+    def test_load_v4():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150603122126
@@ -362,7 +362,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             assert group.wants_to_save_display == wants_to_save
             assert group.display_name == output_image_name
 
-    def test_load_v5(self):
+    def test_load_v5():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20160301131517
@@ -534,7 +534,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE
         )
 
-    def test_01_get_measurement_columns(self):
+    def test_01_get_measurement_columns():
         module = (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution()
         )
@@ -594,7 +594,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                             del column_dictionary[key]
         assert len(column_dictionary) == 0
 
-    def test_02_get_zernike_columns(self):
+    def test_02_get_zernike_columns():
         module = (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution()
         )
@@ -648,7 +648,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                             )
                             assert col in columns
 
-    def test_01_get_measurements(self):
+    def test_01_get_measurements():
         module = (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution()
         )
@@ -722,7 +722,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                 image_name,
                             )
 
-    def test_02_get_zernike_measurements(self):
+    def test_02_get_zernike_measurements():
         module = (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution()
         )
@@ -796,7 +796,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                         for n, m in ((0, 0), (1, 1), (2, 0), (2, 2)):
                             assert "%d_%d" % (n, m) in sresult
 
-    def test_default_heatmap_values(self):
+    def test_default_heatmap_values():
         module = (
             cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution()
         )
@@ -822,7 +822,6 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         assert module.heatmaps[0].get_number_of_bins() == 10
 
     def run_module(
-        self,
         image,
         labels,
         center_labels=None,
@@ -909,9 +908,9 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             return measurements, workspace
         return measurements
 
-    def test_zeros_self(self):
+    def test_zeros_self():
         """Test the module on an empty labels matrix, self-labeled"""
-        m = self.run_module(
+        m = run_module(
             numpy.zeros((10, 10)),
             numpy.zeros((10, 10), int),
             wants_zernikes=cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
@@ -943,11 +942,11 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 assert feature in m.get_feature_names(OBJECT_NAME)
                 assert len(m[OBJECT_NAME, feature]) == 0
 
-    def test_circle(self):
+    def test_circle():
         """Test the module on a uniform circle"""
         i, j = numpy.mgrid[-50:51, -50:51]
         labels = (numpy.sqrt(i * i + j * j) <= 40).astype(int)
-        m, workspace = self.run_module(
+        m, workspace = run_module(
             numpy.ones(labels.shape),
             labels,
             wants_workspace=True,
@@ -998,7 +997,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = m[OBJECT_NAME, module.get_zernike_magnitude_name(IMAGE_NAME, n_, m_)]
             assert abs(data[0] - 0) < 0.001
 
-    def test_01_half_circle(self):
+    def test_01_half_circle():
         """Test the module on a circle and an image that's 1/2 zeros
 
         The measurements here are somewhat considerably off because
@@ -1016,7 +1015,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         # should be all one
         x = [0, 0, 0, 0, 1, 1, 1, 1]
         expected_cv = numpy.std(x) / numpy.mean(x)
-        m = self.run_module(image, labels)
+        m = run_module(image, labels)
         bin_labels = (numpy.sqrt(i * i + j * j) * 4 / 40.001).astype(int)
         mask = i * i + j * j <= 40 * 40
         total_intensity = numpy.sum(image[mask])
@@ -1036,13 +1035,13 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             assert len(data) == 1
             assert numpy.abs(data[0] - expected_cv) < 0.2 * expected_cv
 
-    def test_02_half_circle_zernike(self):
+    def test_02_half_circle_zernike():
         i, j = numpy.mgrid[-50:50, -50:50]
         ii, jj = [_.astype(float) + 0.5 for _ in (i, j)]
         labels = (numpy.sqrt(ii * ii + jj * jj) <= 40).astype(int)
         image = numpy.zeros(labels.shape)
         image[ii > 0] = 1
-        m = self.run_module(
+        m = run_module(
             image,
             labels,
             wants_zernikes=cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
@@ -1076,7 +1075,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         phase_i_1_1 = m[OBJECT_NAME, ftr][0]
         image = numpy.zeros(labels.shape)
         image[jj > 0] = 1
-        m = self.run_module(
+        m = run_module(
             image,
             labels,
             wants_zernikes=cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
@@ -1085,7 +1084,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         phase_j_1_1 = m[OBJECT_NAME, ftr][0]
         assert round(abs(abs(phase_i_1_1 - phase_j_1_1) - numpy.pi / 2), 0.1) == 0
 
-    def test_line(self):
+    def test_line():
         """Test the alternate centers with a line"""
         labels = numpy.array(
             [
@@ -1118,7 +1117,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         )
         numpy.random.seed(0)
         image = numpy.random.uniform(size=labels.shape)
-        m = self.run_module(image, labels, centers)
+        m = run_module(image, labels, centers)
         total_intensity = numpy.sum(image[labels == 1])
         normalized_distance = distance_to_center / (
             distance_to_center + distance_to_edge + 0.001
@@ -1140,7 +1139,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
             assert len(data) == 1
 
-    def test_no_scaling(self):
+    def test_no_scaling():
         i, j = numpy.mgrid[-40:40, -40:40]
         #
         # I'll try to calculate the distance the same way as propagate
@@ -1156,7 +1155,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         total_intensity = numpy.sum(image[labels == 1])
         bin_labels = (distance / 5).astype(int)
         bin_labels[bin_labels > 4] = 4
-        m = self.run_module(
+        m = run_module(
             image, labels, bin_count=4, maximum_radius=20, wants_scaled=False
         )
         for bin in range(1, 6):
@@ -1175,7 +1174,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
             assert len(data) == 1
 
-    def test_edges_of_objects(self):
+    def test_edges_of_objects():
         r = numpy.random.RandomState()
         r.seed(36)
         i, j = numpy.mgrid[-20:21, -20:21]
@@ -1183,7 +1182,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         centers = numpy.zeros(labels.shape, int)
         centers[(i > -5) * (i < 5) & (j > -5) & (j < 5)] = 1
         image = r.uniform(size=labels.shape)
-        m = self.run_module(
+        m = run_module(
             image,
             labels,
             center_labels=centers,
@@ -1208,7 +1207,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             assert len(data) == 1
             assert round(abs(data[0] - frac_at_d[i - 1]), 7) == 0
 
-    def test_two_circles(self):
+    def test_two_circles():
         i, j = numpy.mgrid[-50:51, -50:51]
         i, j = [numpy.hstack((x, x)) for x in (i, j)]
         d = numpy.sqrt(i * i + j * j)
@@ -1217,7 +1216,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         img = numpy.zeros(labels.shape)
         img[labels == 1] = 1
         img[labels == 2] = d[labels == 2] / 40
-        m, workspace = self.run_module(img, labels, wants_workspace=True)
+        m, workspace = run_module(img, labels, wants_workspace=True)
         assert isinstance(workspace, cellprofiler.workspace.Workspace)
         bins = (labels != 0) * (1 + (numpy.sqrt(i * i + j * j) / 10).astype(int))
         for bin in range(1, 5):
@@ -1258,7 +1257,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 mask = (bins == bin) & (labels == label)
                 assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
 
-    def test_img_607(self):
+    def test_img_607():
         """Regression test of bug IMG-607
 
         MeasureObjectIntensityDistribution fails if there are no pixels for
@@ -1277,13 +1276,13 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
 
         image = numpy.random.uniform(size=labels.shape)
         for center_labels in (labels, None):
-            m = self.run_module(image, labels, center_labels=center_labels, bin_count=4)
+            m = run_module(image, labels, center_labels=center_labels, bin_count=4)
             for bin in range(1, 5):
                 data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
                 assert len(data) == 3
                 assert numpy.isnan(data[1])
 
-    def test_center_outside_of_object(self):
+    def test_center_outside_of_object():
         """Make sure MeasureObjectIntensityDistribution can handle oddly shaped objects"""
         numpy.random.seed(42)
         labels = numpy.array(
@@ -1309,7 +1308,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER,
             cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER,
         ):
-            m = self.run_module(
+            m = run_module(
                 image,
                 labels,
                 center_labels=center_labels,
@@ -1320,12 +1319,12 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
                 assert len(data) == 1
 
-        m = self.run_module(image, labels, bin_count=4)
+        m = run_module(image, labels, bin_count=4)
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
             assert len(data) == 1
 
-    def test_wrong_size(self):
+    def test_wrong_size():
         """Regression test for IMG-961: objects & image of different sizes
 
         Make sure that the module executes without exception with and
@@ -1334,15 +1333,15 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         numpy.random.seed(43)
         labels = numpy.ones((30, 40), int)
         image = numpy.random.uniform(size=(20, 50))
-        m = self.run_module(image, labels)
+        m = run_module(image, labels)
         centers = numpy.zeros(labels.shape)
         centers[15, 20] = 1
-        m = self.run_module(image, labels, centers)
+        m = run_module(image, labels, centers)
         centers = numpy.zeros((35, 35), int)
         centers[15, 20] = 1
-        m = self.run_module(image, labels, centers)
+        m = run_module(image, labels, centers)
 
-    def test_more_labels_than_centers(self):
+    def test_more_labels_than_centers():
         """Regression test of img-1463"""
         numpy.random.seed(51)
         i, j = numpy.mgrid[0:100, 0:100]
@@ -1369,9 +1368,9 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         #
         # Crash here prior to fix
         #
-        m = self.run_module(image, labels, center_labels)
+        m = run_module(image, labels, center_labels)
 
-    def test_more_centers_than_labels(self):
+    def test_more_centers_than_labels():
         """Regression test of img-1463"""
         numpy.random.seed(51)
         i, j = numpy.mgrid[0:100, 0:100]
@@ -1398,4 +1397,4 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         #
         # Crash here prior to fix
         #
-        m = self.run_module(image, labels, center_labels)
+        m = run_module(image, labels, center_labels)

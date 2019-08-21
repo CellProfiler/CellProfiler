@@ -40,7 +40,7 @@ MEASUREMENT_FEATURE = "MyFeature"
 MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9889
@@ -139,7 +139,7 @@ Maximum value:.8
                 assert round(abs(measurement.maximum_value.value - max_value), 7) == 0
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120306205005
@@ -248,7 +248,7 @@ Rules file name:dunno.txt
             assert measurement.rules_class == "1"
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120306205005
@@ -362,7 +362,7 @@ Rules class:3
             assert measurement.rules_class == rules_class
 
 
-def make_workspace(self, image_measurements, object_measurements):
+def make_workspace(image_measurements, object_measurements):
     """Make a workspace with a FlagImage module and the given measurements
 
     image_measurements - a sequence of single image measurements. Use
@@ -407,7 +407,6 @@ def make_workspace(self, image_measurements, object_measurements):
 
 @contextlib.contextmanager
 def make_classifier(
-    self,
     module,
     answer,
     classes=None,
@@ -442,8 +441,8 @@ def make_classifier(
         pass
 
 
-def test_positive_image_measurement(self):
-    module, workspace = self.make_workspace([1], [])
+def test_positive_image_measurement():
+    module, workspace = make_workspace([1], [])
     flag = module.flags[0]
     assert isinstance(flag, cps.SettingsGroup)
     measurement = flag.measurement_settings[0]
@@ -460,8 +459,8 @@ def test_positive_image_measurement(self):
     assert workspace.disposition == cpw.DISPOSITION_CONTINUE
 
 
-def test_negative_image_measurement(self):
-    module, workspace = self.make_workspace([1], [])
+def test_negative_image_measurement():
+    module, workspace = make_workspace([1], [])
     flag = module.flags[0]
     assert isinstance(flag, cps.SettingsGroup)
     measurement = flag.measurement_settings[0]
@@ -477,9 +476,9 @@ def test_negative_image_measurement(self):
     assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
-def test_no_ave_object_measurement(self):
+def test_no_ave_object_measurement():
     for case in ("minimum", "maximum"):
-        module, workspace = self.make_workspace([], [[]])
+        module, workspace = make_workspace([], [[]])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
@@ -502,9 +501,9 @@ def test_no_ave_object_measurement(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
-def test_positive_ave_object_measurement(self):
+def test_positive_ave_object_measurement():
     for case in ("minimum", "maximum"):
-        module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
+        module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
@@ -527,9 +526,9 @@ def test_positive_ave_object_measurement(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
-def test_negative_ave_object_measurement(self):
+def test_negative_ave_object_measurement():
     for case in ("minimum", "maximum"):
-        module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
+        module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
@@ -552,9 +551,9 @@ def test_negative_ave_object_measurement(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
-def test_no_object_measurements(self):
+def test_no_object_measurements():
     for case in ("minimum", "maximum"):
-        module, workspace = self.make_workspace([], [[]])
+        module, workspace = make_workspace([], [[]])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
@@ -577,9 +576,9 @@ def test_no_object_measurements(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
-def test_positive_object_measurement(self):
+def test_positive_object_measurement():
     for case in ("minimum", "maximum"):
-        module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
+        module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
@@ -602,9 +601,9 @@ def test_positive_object_measurement(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
-def test_negative_object_measurement(self):
+def test_negative_object_measurement():
     for case in ("minimum", "maximum"):
-        module, workspace = self.make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
+        module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         measurement = flag.measurement_settings[0]
@@ -627,9 +626,9 @@ def test_negative_object_measurement(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
-def test_two_measurements_any(self):
+def test_two_measurements_any():
     for measurements, expected in (((0, 0), 0), ((0, 1), 1), ((1, 0), 1), ((1, 1), 1)):
-        module, workspace = self.make_workspace(measurements, [])
+        module, workspace = make_workspace(measurements, [])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         flag.combination_choice.value = F.C_ANY
@@ -648,9 +647,9 @@ def test_two_measurements_any(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
 
-def test_two_measurements_all(self):
+def test_two_measurements_all():
     for measurements, expected in (((0, 0), 0), ((0, 1), 0), ((1, 0), 0), ((1, 1), 1)):
-        module, workspace = self.make_workspace(measurements, [])
+        module, workspace = make_workspace(measurements, [])
         flag = module.flags[0]
         assert isinstance(flag, cps.SettingsGroup)
         flag.combination_choice.value = F.C_ALL
@@ -669,7 +668,7 @@ def test_two_measurements_all(self):
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
 
-def test_get_measurement_columns(self):
+def test_get_measurement_columns():
     module = F.FlagImage()
     module.add_flag()
     module.flags[0].category.value = "Foo"
@@ -700,8 +699,8 @@ def test_get_measurement_columns(self):
         assert features[0] == feature
 
 
-def test_skip(self):
-    module, workspace = self.make_workspace([1], [])
+def test_skip():
+    module, workspace = make_workspace([1], [])
     flag = module.flags[0]
     assert isinstance(flag, cps.SettingsGroup)
     flag.wants_skip.value = True
@@ -719,8 +718,8 @@ def test_skip(self):
     assert workspace.disposition == cpw.DISPOSITION_SKIP
 
 
-def test_dont_skip(self):
-    module, workspace = self.make_workspace([1], [])
+def test_dont_skip():
+    module, workspace = make_workspace([1], [])
     flag = module.flags[0]
     assert isinstance(flag, cps.SettingsGroup)
     flag.wants_skip.value = True
@@ -738,7 +737,7 @@ def test_dont_skip(self):
     assert workspace.disposition == cpw.DISPOSITION_CONTINUE
 
 
-def test_filter_by_rule(self):
+def test_filter_by_rule():
     rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n" % (
         "_".join((cpmeas.IMAGE, image_measurement_name(0)))
     )
@@ -754,7 +753,7 @@ def test_filter_by_rule(self):
             (1.0, 2, 1),
             (3.0, 2, 0),
         ):
-            module, workspace = self.make_workspace([value], [])
+            module, workspace = make_workspace([value], [])
             flag = module.flags[0]
             assert isinstance(flag, cps.SettingsGroup)
             flag.wants_skip.value = False
@@ -774,7 +773,7 @@ def test_filter_by_rule(self):
         os.remove(rules_path)
 
 
-def test_filter_by_3class_rule(self):
+def test_filter_by_3class_rule():
     f = "_".join((cpmeas.IMAGE, image_measurement_name(0)))
     rules_file_contents = (
         "IF (%(f)s > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
@@ -792,7 +791,7 @@ def test_filter_by_3class_rule(self):
             for expected_class, measurement_value in zip(
                 expected_classes, measurement_values
             ):
-                module, workspace = self.make_workspace([measurement_value], [])
+                module, workspace = make_workspace([measurement_value], [])
                 flag = module.flags[0]
                 assert isinstance(flag, cps.SettingsGroup)
                 flag.wants_skip.value = False
@@ -815,25 +814,25 @@ def test_filter_by_3class_rule(self):
         os.remove(rules_path)
 
 
-def test_classify_true(self):
-    module, workspace = self.make_workspace([1], [])
-    with self.make_classifier(module, 1):
+def test_classify_true():
+    module, workspace = make_workspace([1], [])
+    with make_classifier(module, 1):
         module.run(workspace)
         m = workspace.measurements
         assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
 
 
-def test_classify_false(self):
-    module, workspace = self.make_workspace([1], [])
-    with self.make_classifier(module, 2):
+def test_classify_false():
+    module, workspace = make_workspace([1], [])
+    with make_classifier(module, 2):
         module.run(workspace)
         m = workspace.measurements
         assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
 
 
-def test_classify_multiple_select_true(self):
-    module, workspace = self.make_workspace([1], [])
-    with self.make_classifier(
+def test_classify_multiple_select_true():
+    module, workspace = make_workspace([1], [])
+    with make_classifier(
         module,
         2,
         classes=[1, 2, 3],
@@ -845,9 +844,9 @@ def test_classify_multiple_select_true(self):
         assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
 
 
-def test_classify_multiple_select_false(self):
-    module, workspace = self.make_workspace([1], [])
-    with self.make_classifier(
+def test_classify_multiple_select_false():
+    module, workspace = make_workspace([1], [])
+    with make_classifier(
         module,
         2,
         classes=[1, 2, 3],
@@ -859,7 +858,7 @@ def test_classify_multiple_select_false(self):
         assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
 
 
-def test_batch(self):
+def test_batch():
     orig_path = "/foo/bar"
 
     def fn_alter_path(path, **varargs):

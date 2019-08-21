@@ -23,7 +23,7 @@ OUTLINE_NAME = "outlineimage"
 OBJECTS_NAME = "objectsname"
 
 
-def make_workspace(self, image, labels=None, dimensions=2):
+def make_workspace(image, labels=None, dimensions=2):
     """Make a workspace for testing Threshold"""
     m = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
@@ -51,7 +51,7 @@ def make_workspace(self, image, labels=None, dimensions=2):
     return workspace, module
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9063
@@ -87,7 +87,7 @@ Select outline color\x3A:Green
         assert outline.color == color
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140505183007
@@ -144,7 +144,7 @@ Select objects to display:Cells
         assert outline.objects_name == objects_name
 
 
-def test_gray_to_color_outlines(self):
+def test_gray_to_color_outlines():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32)
     image[0, 0] = 1
@@ -155,7 +155,7 @@ def test_gray_to_color_outlines(self):
     expected[:, :, 0][outline.astype(bool)] = 1
     expected[:, :, 1][outline.astype(bool)] = 0
     expected[:, :, 2][outline.astype(bool)] = 0
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
     module.outlines[0].color.value = "Red"
     module.line_mode.value = "Inner"
@@ -164,7 +164,7 @@ def test_gray_to_color_outlines(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_color_to_color_outlines(self):
+def test_color_to_color_outlines():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50, 3)).astype(numpy.float32)
     image[0, 0] = 1
@@ -175,7 +175,7 @@ def test_color_to_color_outlines(self):
     expected[:, :, 0][outline.astype(bool)] = 1
     expected[:, :, 1][outline.astype(bool)] = 0
     expected[:, :, 2][outline.astype(bool)] = 0
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
     module.outlines[0].color.value = "Red"
     module.line_mode.value = "Inner"
@@ -184,7 +184,7 @@ def test_color_to_color_outlines(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_blank_to_color_outlines(self):
+def test_blank_to_color_outlines():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50, 3))
     image[0, 0] = 1
@@ -195,7 +195,7 @@ def test_blank_to_color_outlines(self):
     expected[:, :, 0][outline.astype(bool)] = 1
     expected[:, :, 1][outline.astype(bool)] = 0
     expected[:, :, 2][outline.astype(bool)] = 0
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = True
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
     module.outlines[0].color.value = "Red"
@@ -205,7 +205,7 @@ def test_blank_to_color_outlines(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_wrong_size_gray_to_color(self):
+def test_wrong_size_gray_to_color():
     """Regression test of img-961"""
     numpy.random.seed(24)
     image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32)
@@ -218,7 +218,7 @@ def test_wrong_size_gray_to_color(self):
     sub_expected[:, :, 0][outline[:50, :40].astype(bool)] = 1
     sub_expected[:, :, 1][outline[:50, :40].astype(bool)] = 0
     sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
     module.outlines[0].color.value = "Red"
     module.line_mode.value = "Inner"
@@ -227,7 +227,7 @@ def test_wrong_size_gray_to_color(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_wrong_size_color_to_color(self):
+def test_wrong_size_color_to_color():
     numpy.random.seed(25)
     image = numpy.random.uniform(size=(50, 50, 3)).astype(numpy.float32)
     image[0, 0] = 1
@@ -239,7 +239,7 @@ def test_wrong_size_color_to_color(self):
     sub_expected[:, :, 0][outline[:50, :40].astype(bool)] = 1
     sub_expected[:, :, 1][outline[:50, :40].astype(bool)] = 0
     sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
     module.outlines[0].color.value = "Red"
     module.line_mode.value = "Inner"
@@ -248,7 +248,7 @@ def test_wrong_size_color_to_color(self):
     assert numpy.all(output_image.pixel_data == expected)
 
 
-def test_blank_to_gray(self):
+def test_blank_to_gray():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50))
     outline = numpy.zeros((50, 50), bool)
@@ -256,7 +256,7 @@ def test_blank_to_gray(self):
     outline[21:30, 21:30] = 0
     expected = numpy.zeros_like(image)
     expected[outline.astype(bool)] = 1
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = True
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
     module.line_mode.value = "Inner"
@@ -265,7 +265,7 @@ def test_blank_to_gray(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_gray_max_image(self):
+def test_gray_max_image():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
     outline = numpy.zeros((50, 50), bool)
@@ -273,7 +273,7 @@ def test_gray_max_image(self):
     outline[21:30, 21:30] = 0
     expected = image.copy()
     expected[outline.astype(bool)] = numpy.max(image)
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = False
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
     module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_IMAGE
@@ -283,7 +283,7 @@ def test_gray_max_image(self):
     numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
 
-def test_gray_max_possible(self):
+def test_gray_max_possible():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
     outline = numpy.zeros((50, 50), bool)
@@ -291,7 +291,7 @@ def test_gray_max_possible(self):
     outline[21:30, 21:30] = 0
     expected = image.copy()
     expected[outline.astype(bool)] = 1
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = False
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
     module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
@@ -301,7 +301,7 @@ def test_gray_max_possible(self):
     numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
 
-def test_wrong_size_gray(self):
+def test_wrong_size_gray():
     """Regression test of IMG-961 - image and outline size differ"""
     numpy.random.seed(41)
     image = numpy.random.uniform(size=(50, 50)).astype(numpy.float32) * 0.5
@@ -310,7 +310,7 @@ def test_wrong_size_gray(self):
     outline[21:30, 21:30] = False
     expected = image.copy()
     expected[:50, :40][outline[:50, :40]] = 1
-    workspace, module = self.make_workspace(image, labels=[outline.astype(int)])
+    workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = False
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
     module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
@@ -320,7 +320,7 @@ def test_wrong_size_gray(self):
     numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
 
 
-def test_ijv(self):
+def test_ijv():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(50, 50, 3)).astype(numpy.float32)
     image[0, 0] = 1
@@ -341,7 +341,7 @@ def test_ijv(self):
     mask[34, 25:35] = True
     expected[mask, 0] = 1
     expected[mask, 1:] = 0
-    workspace, module = self.make_workspace(image, labels=labels)
+    workspace, module = make_workspace(image, labels=labels)
     module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
     module.outlines[0].color.value = "Red"
     module.line_mode.value = "Inner"
@@ -350,7 +350,7 @@ def test_ijv(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_color_outlines_on_blank_volume(self):
+def test_color_outlines_on_blank_volume():
     image = numpy.zeros((9, 9, 9))
 
     labels = numpy.zeros_like(image)
@@ -359,9 +359,7 @@ def test_color_outlines_on_blank_volume(self):
 
     labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-    workspace, module = self.make_workspace(
-        image, labels=[labels.astype(int)], dimensions=3
-    )
+    workspace, module = make_workspace(image, labels=[labels.astype(int)], dimensions=3)
 
     module.blank_image.value = True
 
@@ -383,7 +381,7 @@ def test_color_outlines_on_blank_volume(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_color_outlines_on_gray_volume(self):
+def test_color_outlines_on_gray_volume():
     numpy.random.seed(0)
 
     image = numpy.random.uniform(size=(9, 9, 9)).astype(numpy.float32)
@@ -394,9 +392,7 @@ def test_color_outlines_on_gray_volume(self):
 
     labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-    workspace, module = self.make_workspace(
-        image, labels=[labels.astype(int)], dimensions=3
-    )
+    workspace, module = make_workspace(image, labels=[labels.astype(int)], dimensions=3)
 
     module.blank_image.value = False
 
@@ -418,7 +414,7 @@ def test_color_outlines_on_gray_volume(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_color_outlines_on_color_volume(self):
+def test_color_outlines_on_color_volume():
     numpy.random.seed(0)
 
     image = numpy.random.uniform(size=(9, 9, 9, 3)).astype(numpy.float32)
@@ -429,9 +425,7 @@ def test_color_outlines_on_color_volume(self):
 
     labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-    workspace, module = self.make_workspace(
-        image, labels=[labels.astype(int)], dimensions=3
-    )
+    workspace, module = make_workspace(image, labels=[labels.astype(int)], dimensions=3)
 
     module.blank_image.value = False
 
@@ -453,7 +447,7 @@ def test_color_outlines_on_color_volume(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_gray_outlines_on_blank_volume(self):
+def test_gray_outlines_on_blank_volume():
     image = numpy.zeros((9, 9, 9))
 
     labels = numpy.zeros_like(image)
@@ -462,9 +456,7 @@ def test_gray_outlines_on_blank_volume(self):
 
     labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-    workspace, module = self.make_workspace(
-        image, labels=[labels.astype(int)], dimensions=3
-    )
+    workspace, module = make_workspace(image, labels=[labels.astype(int)], dimensions=3)
 
     module.blank_image.value = True
 
@@ -486,7 +478,7 @@ def test_gray_outlines_on_blank_volume(self):
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
 
 
-def test_gray_outlines_max_possible_on_volume(self):
+def test_gray_outlines_max_possible_on_volume():
     numpy.random.seed(0)
 
     image = numpy.random.uniform(size=(9, 9, 9)).astype(numpy.float32)
@@ -497,9 +489,7 @@ def test_gray_outlines_max_possible_on_volume(self):
 
     labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-    workspace, module = self.make_workspace(
-        image, labels=[labels.astype(int)], dimensions=3
-    )
+    workspace, module = make_workspace(image, labels=[labels.astype(int)], dimensions=3)
 
     module.blank_image.value = False
 
@@ -523,7 +513,7 @@ def test_gray_outlines_max_possible_on_volume(self):
     numpy.testing.assert_array_almost_equal(output_image.pixel_data, expected)
 
 
-def test_gray_outlines_image_max_on_volume(self):
+def test_gray_outlines_image_max_on_volume():
     numpy.random.seed(0)
 
     image = numpy.random.uniform(size=(9, 9, 9)).astype(numpy.float32)
@@ -536,9 +526,7 @@ def test_gray_outlines_image_max_on_volume(self):
 
     labels[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
 
-    workspace, module = self.make_workspace(
-        image, labels=[labels.astype(int)], dimensions=3
-    )
+    workspace, module = make_workspace(image, labels=[labels.astype(int)], dimensions=3)
 
     module.blank_image.value = False
 

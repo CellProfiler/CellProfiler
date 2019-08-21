@@ -20,7 +20,7 @@ MEASUREMENT_NAME_2 = "Measurement2"
 IMAGE_NAME = "image"
 
 
-def make_workspace(self, labels, contrast_choice, measurement1=None, measurement2=None):
+def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None):
     object_set = cpo.ObjectSet()
     objects = cpo.Objects()
     objects.segmented = labels
@@ -65,9 +65,9 @@ def make_workspace(self, labels, contrast_choice, measurement1=None, measurement
     return workspace, module
 
 
-def test_classify_single_none(self):
+def test_classify_single_none():
     """Make sure the single measurement mode can handle no objects"""
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         np.zeros((10, 10), int), C.BY_SINGLE_MEASUREMENT, np.zeros((0,), float)
     )
     module.run(workspace)
@@ -80,14 +80,14 @@ def test_classify_single_none(self):
         assert len(m) == 0
 
 
-def test_classify_single_even(self):
+def test_classify_single_even():
     m = np.array((0.5, 0, 1, 0.1))
     labels = np.zeros((20, 10), int)
     labels[2:5, 3:7] = 1
     labels[12:15, 1:4] = 2
     labels[6:11, 5:9] = 3
     labels[16:19, 5:9] = 4
-    workspace, module = self.make_workspace(labels, C.BY_SINGLE_MEASUREMENT, m)
+    workspace, module = make_workspace(labels, C.BY_SINGLE_MEASUREMENT, m)
     module.single_measurements[0].bin_choice.value = C.BC_EVEN
     module.single_measurements[0].low_threshold.value = 0.2
     module.single_measurements[0].high_threshold.value = 0.7
@@ -172,14 +172,14 @@ def test_classify_single_even(self):
     )
 
 
-def test_classify_single_custom(self):
+def test_classify_single_custom():
     m = np.array((0.5, 0, 1, 0.1))
     labels = np.zeros((20, 10), int)
     labels[2:5, 3:7] = 1
     labels[12:15, 1:4] = 2
     labels[6:11, 5:9] = 3
     labels[16:19, 5:9] = 4
-    workspace, module = self.make_workspace(labels, C.BY_SINGLE_MEASUREMENT, m)
+    workspace, module = make_workspace(labels, C.BY_SINGLE_MEASUREMENT, m)
     module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
     module.single_measurements[0].custom_thresholds.value = ".2,.7"
     module.single_measurements[0].bin_count.value = 14  # should ignore
@@ -261,7 +261,7 @@ def test_classify_single_custom(self):
     )
 
 
-def test_last_is_nan(self):
+def test_last_is_nan():
     # regression test for issue #1553
     #
     # Test that classify objects classifies an object whose measurement
@@ -277,7 +277,7 @@ def test_last_is_nan(self):
         labels[12:15, 1:4] = 2
         labels[6:11, 5:9] = 3
         labels[16:19, 5:9] = 4
-        workspace, module = self.make_workspace(labels, C.BY_SINGLE_MEASUREMENT, m)
+        workspace, module = make_workspace(labels, C.BY_SINGLE_MEASUREMENT, m)
         module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
         module.single_measurements[0].custom_thresholds.value = ".2,.7"
         module.single_measurements[0].bin_count.value = 14  # should ignore
@@ -320,8 +320,8 @@ def test_last_is_nan(self):
             assert np.all(pixel_data[labels == i + 1, :] == color)
 
 
-def test_two_none(self):
-    workspace, module = self.make_workspace(
+def test_two_none():
+    workspace, module = make_workspace(
         np.zeros((10, 10), int),
         C.BY_TWO_MEASUREMENTS,
         np.zeros((0,), float),
@@ -335,7 +335,7 @@ def test_two_none(self):
             assert len(m) == 0
 
 
-def test_two(self):
+def test_two():
     np.random.seed(0)
     labels = np.zeros((10, 20), int)
     index = 1
@@ -350,7 +350,7 @@ def test_two(self):
     for wants_custom_names in (False, True):
         for tm1 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
             for tm2 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
-                workspace, module = self.make_workspace(
+                workspace, module = make_workspace(
                     labels, C.BY_TWO_MEASUREMENTS, m1, m2
                 )
                 assert isinstance(module, C.ClassifyObjects)
@@ -449,7 +449,7 @@ def test_two(self):
                     assert all([np.all(colors[:, i] == colors[0, i]) for i in range(3)])
 
 
-def test_nans(self):
+def test_nans():
     # Test for NaN values in two measurements.
     #
     labels = np.zeros((10, 15), int)
@@ -463,7 +463,7 @@ def test_nans(self):
     m2 = np.array((1, 2, 1, np.NaN, np.NaN))
     for leave_last_out in (False, True):
         end = np.max(labels) - 1 if leave_last_out else np.max(labels)
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             labels, C.BY_TWO_MEASUREMENTS, m1[:end], m2[:end]
         )
         assert isinstance(module, C.ClassifyObjects)
@@ -495,7 +495,7 @@ def test_nans(self):
             np.testing.assert_array_equal(values, expected)
 
 
-def test_nan_offset_by_1(self):
+def test_nan_offset_by_1():
     # Regression test of 1636
     labels = np.zeros((10, 15), int)
     labels[3:5, 3:5] = 1
@@ -503,7 +503,7 @@ def test_nan_offset_by_1(self):
 
     m1 = np.array((4, np.NaN))
     m2 = np.array((4, 4))
-    workspace, module = self.make_workspace(labels, C.BY_TWO_MEASUREMENTS, m1, m2)
+    workspace, module = make_workspace(labels, C.BY_TWO_MEASUREMENTS, m1, m2)
     assert isinstance(module, C.ClassifyObjects)
     module.first_threshold_method.value = C.TM_MEAN
     module.first_threshold.value = 2

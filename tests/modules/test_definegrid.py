@@ -22,7 +22,7 @@ OUTPUT_IMAGE_NAME = "outputimage"
 OBJECTS_NAME = "objects"
 
 
-def make_workspace(self, image, labels):
+def make_workspace(image, labels):
     module = D.DefineGrid()
     module.set_module_num(1)
     module.grid_image.value = GRID_NAME
@@ -52,7 +52,7 @@ def make_workspace(self, image, labels):
     return workspace, module
 
 
-def test_grid_automatic(self):
+def test_grid_automatic():
     image = np.zeros((50, 100))
     labels = np.zeros((50, 100), int)
     ii, jj = np.mgrid[0:50, 0:100]
@@ -72,7 +72,7 @@ def test_grid_automatic(self):
             labels[(ii - center_i) ** 2 + (jj - center_j) ** 2 <= 9] = (
                 i * columns + j + 1
             )
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     assert isinstance(module, D.DefineGrid)
     assert isinstance(workspace, cpw.Workspace)
     module.grid_rows.value = rows
@@ -113,11 +113,11 @@ def test_grid_automatic(self):
     assert image is not None
 
 
-def test_fail(self):
+def test_fail():
     image = np.zeros((50, 100))
     labels = np.zeros((50, 100), int)
     labels[20:40, 51:62] = 1
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     assert isinstance(module, D.DefineGrid)
     assert isinstance(workspace, cpw.Workspace)
     module.ordering.value = D.NUM_BY_COLUMNS
@@ -127,7 +127,7 @@ def test_fail(self):
         module.run(workspace)
 
 
-def test_coordinates_plus_savedimagesize(self):
+def test_coordinates_plus_savedimagesize():
     image = np.zeros((50, 100))
     labels = np.zeros((50, 100), int)
     first_x, first_y = (11, 10)
@@ -136,7 +136,7 @@ def test_coordinates_plus_savedimagesize(self):
     columns = 10
     spacing_y = 10
     spacing_x = 9
-    workspace, module = self.make_workspace(image, labels)
+    workspace, module = make_workspace(image, labels)
     assert isinstance(module, D.DefineGrid)
     assert isinstance(workspace, cpw.Workspace)
     module.grid_rows.value = rows

@@ -109,10 +109,10 @@ MYSQL_USER = os.environ.get("CP_MYSQL_TEST_USER", "cpuser")
 
 
 class TestExportToDatabase:
-    def setUp(self):
-        self.__cursor = None
-        self.__connection = None
-        self.__has_median = None
+    def setUp():
+        __cursor = None
+        __connection = None
+        __has_median = None
         try:
             if MYSQL_HOST.endswith("broadinstitute.org"):
                 fqdn = socket.getfqdn().lower()
@@ -121,67 +121,67 @@ class TestExportToDatabase:
                     or fqdn.endswith("broad.mit.edu")
                     or fqdn.endswith("broad")
                 ):
-                    self.__test_mysql = True
+                    __test_mysql = True
                 elif socket.gethostbyaddr(socket.gethostname())[-1][0].startswith(
                     "69.173"
                 ):
-                    self.__test_mysql = True
+                    __test_mysql = True
                 else:
-                    self.__test_mysql = False
-            self.__test_mysql = True
+                    __test_mysql = False
+            __test_mysql = True
         except:
-            self.__test_mysql = False
+            __test_mysql = False
 
     @property
-    def connection(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, no DB configured.")
-        if self.__connection is None:
+    def connection():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, no DB configured.")
+        if __connection is None:
             import MySQLdb
 
-            self.__connection = MySQLdb.connect(
+            __connection = MySQLdb.connect(
                 host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD, local_infile=1
             )
-        return self.__connection
+        return __connection
 
-    def close_connection(self):
-        if self.__test_mysql and self.__connection is not None:
-            if self.__cursor is not None:
-                self.__cursor.close()
-            self.__connection.close()
-            self.__connection = None
-            self.__cursor = None
+    def close_connection():
+        if __test_mysql and __connection is not None:
+            if __cursor is not None:
+                __cursor.close()
+            __connection.close()
+            __connection = None
+            __cursor = None
 
     @property
-    def cursor(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, database not configured.")
-        if self.__cursor is None:
+    def cursor():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, database not configured.")
+        if __cursor is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
 
-            self.__cursor = SSCursor(self.connection)
+            __cursor = SSCursor(connection)
             try:
-                self.__cursor.execute("use " + MYSQL_DATABASE)
+                __cursor.execute("use " + MYSQL_DATABASE)
             except:
-                self.__cursor.execute("create database " + MYSQL_DATABASE)
-                self.__cursor.execute("use " + MYSQL_DATABASE)
-        return self.__cursor
+                __cursor.execute("create database " + MYSQL_DATABASE)
+                __cursor.execute("use " + MYSQL_DATABASE)
+        return __cursor
 
     @property
-    def mysql_has_median(self):
+    def mysql_has_median():
         """True if MySQL database has a median function"""
-        if self.__has_median is None:
+        if __has_median is None:
             try:
-                cursor = self.connection.cursor()
+                cursor = connection.cursor()
                 cursor.execute("select median(1)")
                 cursor.close()
-                self.__has_median = True
+                __has_median = True
             except:
-                self.__has_median = False
-        return self.__has_median
+                __has_median = False
+        return __has_median
 
-    def get_sqlite_cursor(self, module):
+    def get_sqlite_cursor(module):
         import sqlite3
 
         assert isinstance(module, E.ExportToDatabase)
@@ -192,14 +192,14 @@ class TestExportToDatabase:
         cursor = connection.cursor()
         return cursor, connection
 
-    def test_00_write_load_test(self):
+    def test_00_write_load_test():
         #
         # If this fails, you need to write a test for your variable revision
         # number change.
         #
         assert E.ExportToDatabase.variable_revision_number == 27
 
-    def test_load_v11(self):
+    def test_load_v11():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8952
@@ -255,7 +255,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|
         assert module.sql_file_prefix == "SQL_"
         assert module.db_name == "DefaultDB"
 
-    def test_load_v12(self):
+    def test_load_v12():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8952
@@ -311,7 +311,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|
         assert module.db_name == "DefaultDB"
         assert module.max_column_size == 64
 
-    def test_load_v13(self):
+    def test_load_v13():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8952
@@ -368,7 +368,7 @@ ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:13|
         assert module.db_name == "DefaultDB"
         assert module.max_column_size == 61
 
-    def test_load_v15(self):
+    def test_load_v15():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9503
@@ -429,7 +429,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         assert module.separate_object_tables == E.OT_PER_OBJECT
         assert not module.wants_properties_image_url_prepend
 
-    def test_load_v22(self):
+    def test_load_v22():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -601,7 +601,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
 
-    def test_load_v23(self):
+    def test_load_v23():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -776,7 +776,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:23
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
 
-    def test_load_v24(self):
+    def test_load_v24():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -953,7 +953,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:24
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
         assert module.allow_overwrite == E.OVERWRITE_DATA
 
-    def test_load_v25(self):
+    def test_load_v25():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 SVNRevision:11412
@@ -1132,7 +1132,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
         assert module.allow_overwrite == E.OVERWRITE_NEVER
 
-    def test_load_v26(self):
+    def test_load_v26():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140130135727
@@ -1317,7 +1317,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         assert g.filter_statement == "Image_Metadata_Plate = '1'"
         assert module.allow_overwrite == E.OVERWRITE_NEVER
 
-    def test_load_v27(self):
+    def test_load_v27():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20160129211738
@@ -1400,7 +1400,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     RTEST_DUPLICATE = 2
 
     def make_workspace(
-        self,
         wants_files,
         alt_object=False,
         long_measurement=False,
@@ -1419,15 +1418,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module_num = 1
             variable_revision_number = 1
 
-            def create_settings(self):
-                self.image_name = cps.ImageNameProvider("Foo", IMAGE_NAME)
-                self.objects_name = cps.ObjectNameProvider("Bar", OBJECT_NAME)
+            def create_settings():
+                image_name = cps.ImageNameProvider("Foo", IMAGE_NAME)
+                objects_name = cps.ObjectNameProvider("Bar", OBJECT_NAME)
                 if alt_object:
-                    self.altobjects_name = cps.ObjectNameProvider("Baz", ALTOBJECT_NAME)
+                    altobjects_name = cps.ObjectNameProvider("Baz", ALTOBJECT_NAME)
 
-            def settings(self):
-                return [self.image_name, self.objects_name] + (
-                    [self.altobjects_name] if alt_object else []
+            def settings():
+                return [image_name, objects_name] + (
+                    [altobjects_name] if alt_object else []
                 )
 
             @staticmethod
@@ -1439,7 +1438,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             def in_measurements(flag):
                 return flag and flag != MISSING_FROM_MEASUREMENTS
 
-            def get_measurement_columns(self, pipeline):
+            def get_measurement_columns(pipeline):
                 columns = [
                     (cpmeas.IMAGE, INT_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
                     (cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
@@ -1456,7 +1455,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ),
                     (OBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                 ]
-                if self.in_module(alt_object):
+                if in_module(alt_object):
                     columns += [
                         (
                             cpmeas.IMAGE,
@@ -1470,17 +1469,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                         ),
                         (ALTOBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                     ]
-                if self.in_module(long_measurement):
+                if in_module(long_measurement):
                     columns += [
                         (cpmeas.IMAGE, LONG_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
                         (OBJECT_NAME, LONG_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                     ]
-                if self.in_module(wierd_measurement):
+                if in_module(wierd_measurement):
                     columns += [
                         (cpmeas.IMAGE, WIERD_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
                         (OBJECT_NAME, WIERD_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                     ]
-                if self.in_module(well_metadata):
+                if in_module(well_metadata):
                     columns += [
                         (
                             cpmeas.IMAGE,
@@ -1493,7 +1492,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                             cpmeas.COLTYPE_VARCHAR_FORMAT % 3,
                         ),
                     ]
-                if self.in_module(group_measurement):
+                if in_module(group_measurement):
                     d = {cpmeas.MCA_AVAILABLE_POST_GROUP: True}
                     columns += [
                         (
@@ -1515,7 +1514,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ]
                 return columns
 
-            def get_object_relationships(self, pipeline):
+            def get_object_relationships(pipeline):
                 if relationship_type is not None:
                     return [
                         (
@@ -1533,37 +1532,34 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     ]
                 return []
 
-            def get_categories(self, pipeline, object_name):
+            def get_categories(pipeline, object_name):
                 return (
                     [M_CATEGORY, cellprofiler.measurement.C_NUMBER]
                     if (
                         object_name == OBJECT_NAME
-                        or (
-                            (object_name == ALTOBJECT_NAME)
-                            and self.in_module(alt_object)
-                        )
+                        or ((object_name == ALTOBJECT_NAME) and in_module(alt_object))
                     )
                     else [M_CATEGORY, "Count", "Metadata"]
                     if object_name == cpmeas.IMAGE
                     else []
                 )
 
-            def get_measurements(self, pipeline, object_name, category):
+            def get_measurements(pipeline, object_name, category):
                 if category == M_CATEGORY:
                     if object_name == OBJECT_NAME:
-                        if self.in_module(long_measurement):
+                        if in_module(long_measurement):
                             return [OBJ_FEATURE, LONG_OBJ_FEATURE]
                         else:
                             return [OBJ_FEATURE]
-                    elif (object_name == ALTOBJECT_NAME) and self.in_module(alt_object):
+                    elif (object_name == ALTOBJECT_NAME) and in_module(alt_object):
                         return [OBJ_FEATURE]
                     else:
                         return (
                             [INT_IMG_FEATURE, FLOAT_IMG_FEATURE, STRING_IMG_FEATURE]
                             + [LONG_IMG_FEATURE]
-                            if self.in_module(long_measurement)
+                            if in_module(long_measurement)
                             else [WIERD_IMG_FEATURE]
-                            if self.in_module(wierd_measurement)
+                            if in_module(wierd_measurement)
                             else []
                         )
                 elif category == cellprofiler.measurement.C_NUMBER and object_name in (
@@ -1573,7 +1569,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     return cellprofiler.measurement.FTR_OBJECT_NUMBER
                 elif category == "Count" and object_name == cpmeas.IMAGE:
                     result = [OBJECT_NAME]
-                    if self.in_module(alt_object):
+                    if in_module(alt_object):
                         result += [ALTOBJECT_NAME]
                     return result
                 elif category == "Metadata" and object_name == cpmeas.IMAGE:
@@ -1618,7 +1614,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 m.add_measurement(OBJECT_NAME, GROUP_OBJ_MEASUREMENT, OBJ_VALUE.copy())
         r = np.random.RandomState()
         r.seed(image_set_count)
-        if relationship_test_type == self.RTEST_SOME:
+        if relationship_test_type == RTEST_SOME:
             n = 10
             i1, o1 = [
                 x.flatten() for x in np.mgrid[1 : (image_set_count + 1), 1 : (n + 1)]
@@ -1687,7 +1683,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         else:
             return workspace, module
 
-    def load_database(self, output_dir, module, image_set_count=1):
+    def load_database(output_dir, module, image_set_count=1):
         """Load a database written by DB_MYSQL_CSV"""
         assert isinstance(module, E.ExportToDatabase)
         curdir = os.path.abspath(os.curdir)
@@ -1713,18 +1709,18 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
         finally:
-            self.connection.commit()
+            connection.commit()
             os.chdir(curdir)
 
-    def tteesstt_no_relationships(self, module, cursor):
+    def tteesstt_no_relationships(module, cursor):
         for t in (E.T_RELATIONSHIPS, E.V_RELATIONSHIPS):
             statement = "select count('x') from %s" % module.get_table_name(t)
             cursor.execute(statement)
             assert cursor.fetchall()[0][0] == 0
 
-    def tteesstt_relate(self, measurements, module, cursor):
+    def tteesstt_relate(measurements, module, cursor):
         v_name = module.get_table_name(E.V_RELATIONSHIPS)
         statement = (
             "select count('x') from %s "
@@ -1754,9 +1750,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 cursor.execute(statement % (object_name1, object_name2, i1, o1, i2, o2))
                 assert cursor.fetchall()[0][0] == 1
 
-    def drop_tables(self, module, table_suffixes=None):
+    def drop_tables(module, table_suffixes=None):
         """Drop all tables and views  that match the prefix"""
-        cursor = self.connection.cursor()
+        cursor = connection.cursor()
         try:
             for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
                 statement = (
@@ -1787,11 +1783,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             except:
                 pass
 
-    def drop_views(self, module, table_suffixes=None):
-        self.drop_tables(module)
+    def drop_views(module, table_suffixes=None):
+        drop_tables(module)
 
-    def test_write_mysql_db(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_write_mysql_db():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
@@ -1803,7 +1799,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            self.load_database(output_dir, module)
+            load_database(output_dir, module)
             #
             # Now read the image file from the database
             #
@@ -1819,8 +1815,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1828,21 +1824,21 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Make sure no relationships tables were created.
             #
@@ -1850,17 +1846,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for t in (E.T_RELATIONSHIPS, E.T_RELATIONSHIP_TYPES):
                 statement = "select count('x') from INFORMATION_SCHEMA.TABLES "
                 statement += "where table_schema=%s and table_name=%s"
-                self.cursor.execute(
+                cursor.execute(
                     statement, (module.db_name.value, module.get_table_name(t))
                 )
-                assert self.cursor.fetchall()[0][0] == 0
+                assert cursor.fetchall()[0][0] == 0
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_write_mysql_db_filter_objs(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
+    def test_write_mysql_db_filter_objs():
+        workspace, module, output_dir, finally_fn = make_workspace(True, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
@@ -1890,7 +1886,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -1906,8 +1902,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1915,7 +1911,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -1927,23 +1923,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert row[3] == i + 1
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_write_mysql_db_dont_filter_objs(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
+    def test_write_mysql_db_dont_filter_objs():
+        workspace, module, output_dir, finally_fn = make_workspace(True, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
@@ -1971,7 +1967,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -1989,8 +1985,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1999,7 +1995,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == len(ALTOBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
                 "%s_%s, %s_%s "
@@ -2016,9 +2012,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 6
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -2027,22 +2023,22 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 assert round(abs(row[4] - ALTOBJ_VALUE[i]), 4) == 0
                 assert row[5] == i + 1
             for i in range(len(OBJ_VALUE), len(ALTOBJ_VALUE)):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 6
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[4] - ALTOBJ_VALUE[i]), 4) == 0
                 assert row[5] == i + 1
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_mysql_direct(self):
+    def test_mysql_direct():
         """Write directly to the mysql DB, not to a file"""
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -2051,8 +2047,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            if not self.__test_mysql:
-                self.skipTest("Skipping actual DB work, not at the Broad.")
+            if not __test_mysql:
+                skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -2071,8 +2067,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 7
             assert row[0] == 1
             assert row[1] == 1
@@ -2082,27 +2078,27 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[5] == STRING_VALUE
             assert row[6] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_00_write_direct_long_colname(self):
+    def test_00_write_direct_long_colname():
         """Write to MySQL, ensuring some columns have long names"""
-        workspace, module = self.make_workspace(False, long_measurement=True)
+        workspace, module = make_workspace(False, long_measurement=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -2141,8 +2137,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 7
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2152,7 +2148,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[5] == 100
             assert round(abs(row[6] - np.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2163,25 +2159,25 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_01_write_csv_long_colname(self):
+    def test_01_write_csv_long_colname():
         """Write to MySQL, ensuring some columns have long names
 
         This is a regression test of IMG-786
         """
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, long_measurement=True
         )
         try:
@@ -2197,7 +2193,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.post_run(workspace)
-            self.load_database(output_dir, module)
+            load_database(output_dir, module)
             mappings = module.get_column_name_mappings(
                 workspace.pipeline, workspace.image_set_list
             )
@@ -2225,8 +2221,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 7
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2236,7 +2232,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[5] == 100
             assert round(abs(row[6] - np.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2247,23 +2243,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_01_write_nulls(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_01_write_nulls():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         #
         # Insert a NaN into the float image measurement and one of the
         # object measurements
@@ -2300,7 +2296,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -2319,8 +2315,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2329,15 +2325,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert round(abs(row[5] - np.mean(om[~np.isnan(om)])), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -2346,15 +2342,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 else:
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_02_write_inf(self):
+    def test_02_write_inf():
         """regression test of img-1149"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         #
         # Insert inf into the float image measurement and one of the
         # object measurements
@@ -2391,7 +2387,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -2410,8 +2406,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2421,15 +2417,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             mask = ~(np.isnan(om) | np.isinf(om))
             assert round(abs(row[5] - np.mean(om[mask])), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -2438,15 +2434,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 else:
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_mysql_direct_null(self):
+    def test_mysql_direct_null():
         """Write directly to the mysql DB, not to a file and write nulls"""
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         #
         # Insert a NaN into the float image measurement and one of the
         # object measurements
@@ -2485,8 +2481,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2495,27 +2491,27 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert round(abs(row[5] - np.mean(om[np.isfinite(om)])), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert row[2] is None or i != 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_write_direct_wierd_colname(self):
+    def test_write_direct_wierd_colname():
         """Write to MySQL, even if illegal characters are in the column name"""
-        workspace, module = self.make_workspace(False, wierd_measurement=True)
+        workspace, module = make_workspace(False, wierd_measurement=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -2550,8 +2546,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2560,7 +2556,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2571,22 +2567,22 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_write_direct_50_char_colname(self):
+    def test_write_direct_50_char_colname():
         """Write to MySQL, ensuring some columns have long names"""
-        workspace, module = self.make_workspace(False, long_measurement=True)
+        workspace, module = make_workspace(False, long_measurement=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -2623,8 +2619,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2633,7 +2629,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2644,27 +2640,27 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
-    def test_write_direct_backslash(self):
+    def test_write_direct_backslash():
         """Regression test for IMG-898
 
         Make sure CP can write string data containing a backslash character
         to the database in direct-mode.
         """
         backslash_string = "\\Why worry?"
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         assert isinstance(module, E.ExportToDatabase)
         module.objects_choice.value = E.O_NONE
         m = workspace.measurements
@@ -2678,18 +2674,18 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 STRING_IMG_MEASUREMENT,
                 module.table_prefix.value,
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 1
             assert row[0] == backslash_string
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Experiment"))
+            drop_tables(module, ("Per_Image", "Per_Experiment"))
 
-    def test_mysql_as_data_tool(self):
+    def test_mysql_as_data_tool():
         """Write directly to the mysql DB, not to a file"""
-        workspace, module = self.make_workspace(False, image_set_count=2)
+        workspace, module = make_workspace(False, image_set_count=2)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -2717,9 +2713,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(2):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 7
                 assert row[0] == i + 1
                 assert row[1] == 1
@@ -2729,26 +2725,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 assert row[5] == STRING_VALUE
                 assert row[6] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def get_interaction_handler(self, ran_interaction_handler):
+    def get_interaction_handler(ran_interaction_handler):
         """Return an interaction handler for testing
 
         return an interaction handler function that sets
@@ -2763,13 +2759,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
         return interaction_handler
 
-    def test_write_sqlite_direct(self):
+    def test_write_sqlite_direct():
         """Write directly to a SQLite database"""
         for with_interaction_handler in (False, True):
-            workspace, module, output_dir, finally_fn = self.make_workspace(True)
+            workspace, module, output_dir, finally_fn = make_workspace(True)
             ran_interaction_handler = [False]
             if with_interaction_handler:
-                workspace.interaction_handler = self.get_interaction_handler(
+                workspace.interaction_handler = get_interaction_handler(
                     ran_interaction_handler
                 )
             cursor = None
@@ -2788,8 +2784,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.prepare_group(workspace, {}, [1])
                 module.run(workspace)
                 assert with_interaction_handler == ran_interaction_handler[0]
-                cursor, connection = self.get_sqlite_cursor(module)
-                self.check_experiment_table(cursor, module, workspace.measurements)
+                cursor, connection = get_sqlite_cursor(module)
+                check_experiment_table(cursor, module, workspace.measurements)
                 #
                 # Now read the image file from the database
                 #
@@ -2840,9 +2836,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.connection.close()
                 finally_fn()
 
-    def test_write_sqlite_backslash(self):
+    def test_write_sqlite_backslash():
         """Regression test of IMG-898 sqlite with backslash in string"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         backslash_string = "\\Why doesn't he worry?"
         m = workspace.measurements
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
@@ -2860,7 +2856,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
+            cursor, connection = get_sqlite_cursor(module)
             #
             # Now read the image file from the database
             #
@@ -2886,13 +2882,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_numpy_float32(self):
+    def test_numpy_float32():
         """Regression test of img-915
 
         This error occurred when the sqlite3 driver was unable to convert
         a numpy.float32 to a float.
         """
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         fim = workspace.measurements.get_all_measurements(
             cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT
         )
@@ -2918,7 +2914,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
+            cursor, connection = get_sqlite_cursor(module)
             #
             # Now read the image file from the database
             #
@@ -2969,8 +2965,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_sqlite_data_tool(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+    def test_sqlite_data_tool():
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, image_set_count=2
         )
         cursor = None
@@ -2989,7 +2985,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run_as_data_tool(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
+            cursor, connection = get_sqlite_cursor(module)
             #
             # Now read the image file from the database
             #
@@ -3042,7 +3038,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_stable_column_mapper(self):
+    def test_stable_column_mapper():
         """Make sure the column mapper always yields the same output"""
         mapping = E.ColumnNameMapping()
         k1 = (
@@ -3063,7 +3059,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             == "ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC"
         )
 
-    def test_leave_start_intact(self):
+    def test_leave_start_intact():
         """The column mapper should leave stuff before the first _ alone"""
         mapping = E.ColumnNameMapping(25)
         k1 = "leaveme_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS"
@@ -3074,7 +3070,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         assert mapping[k1].startswith("leaveme_")
         assert mapping[k2].startswith("keepmee_")
 
-    def per_object_statement(self, module, object_name, fields):
+    def per_object_statement(module, object_name, fields):
         """Return a statement that will select the given fields from the table"""
         field_string = ", ".join(
             [
@@ -3099,7 +3095,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         )
         return statement
 
-    def check_experiment_table(self, cursor, module, m):
+    def check_experiment_table(cursor, module, m):
         """Check the per_experiment table values against measurements"""
         statement = "select %s, %s, %s from %s" % (
             cpp.M_PIPELINE,
@@ -3119,9 +3115,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 value, m.get_experiment_measurement(feature)
             )
 
-    def test_write_mysql_db(self):
+    def test_write_mysql_db():
         """Multiple objects / write - per-object tables"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
@@ -3133,8 +3129,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
-            self.load_database(output_dir, module)
-            self.check_experiment_table(self.cursor, module, workspace.measurements)
+            load_database(output_dir, module)
+            check_experiment_table(cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
             #
@@ -3150,8 +3146,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3159,26 +3155,24 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_write_mysql_db_filter_objs(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
+    def test_write_mysql_db_filter_objs():
+        workspace, module, output_dir, finally_fn = make_workspace(True, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL_CSV
@@ -3209,7 +3203,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -3225,8 +3219,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3234,27 +3228,25 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_mysql_direct(self):
+    def test_mysql_direct():
         """Write directly to the mysql DB, not to a file"""
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -3266,7 +3258,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.check_experiment_table(self.cursor, module, workspace.measurements)
+            check_experiment_table(cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
             #
@@ -3282,8 +3274,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3291,25 +3283,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_write_direct_long_colname(self):
+    def test_write_direct_long_colname():
         """Write to MySQL, ensuring some columns have long names"""
-        workspace, module = self.make_workspace(False, long_measurement=True)
+        workspace, module = make_workspace(False, long_measurement=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -3344,8 +3334,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3354,25 +3344,25 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
+                cursor.__next__()
+            statement = per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, long_obj_column]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_write_nulls(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_write_nulls():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         #
         # Insert a NaN into the float image measurement and one of the
         # object measurements
@@ -3410,7 +3400,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                self.cursor.execute(statement)
+                cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -3429,8 +3419,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3439,13 +3429,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert round(abs(row[5] - np.mean(om[~np.isnan(om)])), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -3454,15 +3442,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 else:
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_01_mysql_direct_null(self):
+    def test_01_mysql_direct_null():
         """Write directly to the mysql DB, not to a file and write nulls"""
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         #
         # Insert a NaN into the float image measurement and one of the
         # object measurements
@@ -3501,8 +3489,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3511,25 +3499,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_02_mysql_direct_inf(self):
+    def test_02_mysql_direct_inf():
         """regression test of img-1149: infinite values"""
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         #
         # Insert a NaN into the float image measurement and one of the
         # object measurements
@@ -3568,8 +3554,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3578,25 +3564,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_write_direct_wierd_colname(self):
+    def test_write_direct_wierd_colname():
         """Write to MySQL, even if illegal characters are in the column name"""
-        workspace, module = self.make_workspace(False, wierd_measurement=True)
+        workspace, module = make_workspace(False, wierd_measurement=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -3631,8 +3615,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3641,26 +3625,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
+                cursor.__next__()
+            statement = per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, wierd_obj_column]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_write_direct_50_char_colname(self):
+    def test_write_direct_50_char_colname():
         """Write to MySQL, ensuring some columns have long names"""
-        workspace, module = self.make_workspace(False, long_measurement=True)
+        workspace, module = make_workspace(False, long_measurement=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -3697,8 +3681,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
-            row = self.cursor.fetchone()
+            cursor.execute(statement)
+            row = cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3707,26 +3691,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
+                cursor.__next__()
+            statement = per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, long_obj_column]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_01_write_two_object_tables_direct(self):
+    def test_01_write_two_object_tables_direct():
         """Write two object tables using OT_PER_OBJECT"""
-        workspace, module = self.make_workspace(False, alt_object=True)
+        workspace, module = make_workspace(False, alt_object=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -3742,41 +3726,37 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read from one object table
             #
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read from the other table
             #
-            statement = self.per_object_statement(
-                module, ALTOBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+            statement = per_object_statement(module, ALTOBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - ALTOBJ_VALUE[i]), 4) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(
+            drop_tables(
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
-    def test_02_write_two_object_tables_csv(self):
+    def test_02_write_two_object_tables_csv():
         """Write two object tables using OT_PER_OBJECT"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, alt_object=True
         )
         try:
@@ -3794,48 +3774,44 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
-            self.load_database(output_dir, module)
+            load_database(output_dir, module)
             #
             # Read from one object table
             #
 
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read from the other table
             #
-            statement = self.per_object_statement(
-                module, ALTOBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+            statement = per_object_statement(module, ALTOBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - ALTOBJ_VALUE[i]), 4) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(
+            drop_tables(
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
-    def test_write_mysql_db_as_data_tool(self):
+    def test_write_mysql_db_as_data_tool():
         """Multiple objects / write - per-object tables"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, image_set_count=2
         )
         try:
@@ -3849,7 +3825,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.run_as_data_tool(workspace)
-            self.load_database(output_dir, module, image_set_count=2)
+            load_database(output_dir, module, image_set_count=2)
             #
             # Now read the image file from the database
             #
@@ -3865,9 +3841,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     image_table,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for j in range(2):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 5
                 assert row[0] == j + 1
                 assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3875,32 +3851,30 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 assert row[3] == STRING_VALUE
                 assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
-            self.cursor.execute(statement)
+                cursor.__next__()
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_data_tool_and_get_measurement_columns(self):
+    def test_data_tool_and_get_measurement_columns():
         # Regression test of issue #444
         #
         # Old measurements might not conform to get_measurement_columns
         # if a new measurement has been added.
         #
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=2, long_measurement=MISSING_FROM_MEASUREMENTS
         )
         try:
@@ -3925,9 +3899,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 OBJECT_NAME,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(2):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 7
                 assert row[0] == i + 1
                 assert row[1] == 1
@@ -3937,32 +3911,32 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 assert row[5] == STRING_VALUE
                 assert row[6] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_data_tool_and_get_measurement_columns(self):
+    def test_data_tool_and_get_measurement_columns():
         # Regression test of issue #444
         #
         # Old measurements might not conform to get_measurement_columns
         # if an old measurement has been removed
         #
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=2, long_measurement=MISSING_FROM_MODULE
         )
         try:
@@ -3993,9 +3967,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 long_mean_col,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(2):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 8
                 assert row[0] == i + 1
                 assert row[1] == 1
@@ -4006,7 +3980,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 assert row[6] == len(OBJ_VALUE)
                 assert abs(row[7] - np.mean(OBJ_VALUE)) < 0.0001
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -4017,23 +3991,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.table_prefix.value,
                 )
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 4
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
                     assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_write_sqlite_direct(self):
+    def test_write_sqlite_direct():
         """Write directly to a SQLite database"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         cursor = None
         connection = None
         try:
@@ -4049,7 +4023,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
+            cursor, connection = get_sqlite_cursor(module)
             #
             # Now read the image file from the database
             #
@@ -4075,9 +4049,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(
-                module, OBJECT_NAME, [OBJ_MEASUREMENT]
-            )
+            statement = per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -4098,7 +4070,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def execute_well_sql(self, output_dir, module):
+    def execute_well_sql(output_dir, module):
         file_name = "SQL__Per_Well_SETUP.SQL"
         sql_file = os.path.join(output_dir, file_name)
         fd = open(sql_file, "rt")
@@ -4108,9 +4080,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         for statement in sql_text.split(";"):
             if len(statement.strip()) == 0:
                 continue
-            self.cursor.execute(statement)
+            cursor.execute(statement)
 
-    def select_well_agg(self, module, aggname, fields):
+    def select_well_agg(module, aggname, fields):
         field_string = ", ".join(["%s_%s" % (aggname, field) for field in fields])
         statement = (
             "select Image_Metadata_Plate, Image_Metadata_Well, %s "
@@ -4118,12 +4090,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         )
         return statement
 
-    def test_well_single_objtable(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+    def test_well_single_objtable():
+        workspace, module, output_dir, finally_fn = make_workspace(
             False, well_metadata=True, image_set_count=3
         )
         aggs = [("avg", np.mean), ("std", np.std)]
-        if self.mysql_has_median:
+        if mysql_has_median:
             aggs.append(("median", np.median))
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -4135,13 +4107,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_COMBINE
             module.wants_agg_mean_well.value = True
-            module.wants_agg_median_well.value = self.mysql_has_median
+            module.wants_agg_median_well.value = mysql_has_median
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
-            self.execute_well_sql(output_dir, module)
+            execute_well_sql(output_dir, module)
             meas = (
                 (cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT),
                 (cpmeas.IMAGE, INT_IMG_MEASUREMENT),
@@ -4154,9 +4126,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 fields = [
                     "%s_%s" % (object_name, feature) for object_name, feature in meas
                 ]
-                statement = self.select_well_agg(module, aggname, fields)
-                self.cursor.execute(statement)
-                rows = self.cursor.fetchall()
+                statement = select_well_agg(module, aggname, fields)
+                cursor.execute(statement)
+                rows = cursor.fetchall()
                 assert len(rows) == 1
                 row = rows[0]
                 assert row[0] == PLATE
@@ -4170,17 +4142,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     else:
                         assert round(abs(float(value) - expected), 7) == 0
         finally:
-            self.drop_tables(
+            drop_tables(
                 module, ["Per_Image", "Per_Object"] + ["Per_Well_" + x for x, _ in aggs]
             )
             finally_fn()
 
-    def test_well_two_objtables(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+    def test_well_two_objtables():
+        workspace, module, output_dir, finally_fn = make_workspace(
             False, well_metadata=True, alt_object=True, image_set_count=3
         )
         aggs = [("avg", np.mean), ("std", np.std)]
-        if self.mysql_has_median:
+        if mysql_has_median:
             aggs.append(("median", np.median))
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -4192,13 +4164,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.wants_agg_mean_well.value = True
-            module.wants_agg_median_well.value = self.mysql_has_median
+            module.wants_agg_median_well.value = mysql_has_median
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1, 2, 3])
             module.run(workspace)
             module.post_run(workspace)
-            self.execute_well_sql(output_dir, module)
+            execute_well_sql(output_dir, module)
             meas = (
                 (cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT),
                 (cpmeas.IMAGE, INT_IMG_MEASUREMENT),
@@ -4211,9 +4183,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 fields = [
                     "%s_%s" % (object_name, feature) for object_name, feature in meas
                 ]
-                statement = self.select_well_agg(module, aggname, fields)
-                self.cursor.execute(statement)
-                rows = self.cursor.fetchall()
+                statement = select_well_agg(module, aggname, fields)
+                cursor.execute(statement)
+                rows = cursor.fetchall()
                 assert len(rows) == 1
                 row = rows[0]
                 assert row[0] == PLATE
@@ -4227,15 +4199,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     else:
                         assert round(abs(float(value) - expected), 7) == 0
         finally:
-            self.drop_tables(
+            drop_tables(
                 module,
                 ["Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME]
                 + ["Per_Well_" + x for x, _ in aggs],
             )
             finally_fn()
 
-    def test_image_thumbnails(self):
-        workspace, module = self.make_workspace(False)
+    def test_image_thumbnails():
+        workspace, module = make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -4261,16 +4233,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.post_run(workspace)
             image_table = module.table_prefix.value + "Per_Image"
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
-            self.cursor.execute(stmt)
-            result = self.cursor.fetchall()
+            cursor.execute(stmt)
+            result = cursor.fetchall()
             im = PILImage.open(StringIO(result[0][0].decode("base64")))
             assert tuple(im.size) == (200, 200)
 
         finally:
-            self.drop_tables(module, ["Per_Image"])
+            drop_tables(module, ["Per_Image"])
 
-    def test_image_thumbnails_sqlite(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_image_thumbnails_sqlite():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         cursor = None
         connection = None
         try:
@@ -4296,7 +4268,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.post_run(workspace)
             image_table = module.table_prefix.value + "Per_Image"
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
-            cursor, connection = self.get_sqlite_cursor(module)
+            cursor, connection = get_sqlite_cursor(module)
             cursor.execute(stmt)
             result = cursor.fetchall()
             im = PILImage.open(io.BytesIO(base64.b64decode(result[0][0])))
@@ -4312,10 +4284,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_post_group_single_object_table(self):
+    def test_post_group_single_object_table():
         """Write out measurements that are only available post-group"""
         count = 5
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=count, group_measurement=True
         )
         assert isinstance(module, E.ExportToDatabase)
@@ -4342,14 +4314,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data too
             #
@@ -4359,17 +4331,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            self.close_connection()
+                cursor.__next__()
+            close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4379,14 +4351,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data
             #
@@ -4396,23 +4368,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_post_group_single_object_table_agg(self):
+    def test_post_group_single_object_table_agg():
         """Test single object table, post_group aggregation"""
         count = 5
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=count, group_measurement=True
         )
         assert isinstance(module, E.ExportToDatabase)
@@ -4439,15 +4411,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] is None
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data too
             #
@@ -4457,17 +4429,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            self.close_connection()
+                cursor.__next__()
+            close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4477,15 +4449,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
                 assert round(abs(row[2] - np.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data
             #
@@ -4495,23 +4467,23 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_post_group_separate_object_tables(self):
+    def test_post_group_separate_object_tables():
         """Write out measurements post_group to separate object tables"""
         count = 5
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=count, group_measurement=True
         )
         assert isinstance(module, E.ExportToDatabase)
@@ -4538,31 +4510,31 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data too
             #
-            statement = self.per_object_statement(
+            statement = per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            self.close_connection()
+                cursor.__next__()
+            close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4572,37 +4544,37 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data
             #
-            statement = self.per_object_statement(
+            statement = per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
+            drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_post_group_separate_table_agg(self):
+    def test_post_group_separate_table_agg():
         """Test single object table, post_group aggregation"""
         count = 5
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=count, group_measurement=True
         )
         assert isinstance(module, E.ExportToDatabase)
@@ -4629,32 +4601,32 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] is None
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data too
             #
-            statement = self.per_object_statement(
+            statement = per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            self.close_connection()
+                cursor.__next__()
+            close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4664,43 +4636,43 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
                 assert round(abs(row[2] - np.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data
             #
-            statement = self.per_object_statement(
+            statement = per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_post_group_sqlite(self):
+    def test_post_group_sqlite():
         for with_interaction_handler in (False, True):
             count = 5
-            workspace, module, output_dir, finally_fn = self.make_workspace(
+            workspace, module, output_dir, finally_fn = make_workspace(
                 True, image_set_count=count, group_measurement=True
             )
             ran_interaction_handler = [False]
             if with_interaction_handler:
-                workspace.interaction_handler = self.get_interaction_handler(
+                workspace.interaction_handler = get_interaction_handler(
                     ran_interaction_handler
                 )
             assert isinstance(module, E.ExportToDatabase)
@@ -4713,7 +4685,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
-            cursor, connection = self.get_sqlite_cursor(module)
+            cursor, connection = get_sqlite_cursor(module)
             try:
                 module.separate_object_tables.value = E.OT_COMBINE
                 module.prepare_run(workspace)
@@ -4802,10 +4774,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 connection.close()
                 finally_fn()
 
-    def test_post_group_object_view(self):
+    def test_post_group_object_view():
         """Write out measurements post_group to single object view"""
         count = 5
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, image_set_count=count, group_measurement=True
         )
         assert isinstance(module, E.ExportToDatabase)
@@ -4832,14 +4804,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data too
             #
@@ -4849,17 +4821,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            self.close_connection()
+                cursor.__next__()
+            close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4869,14 +4841,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
-                row = self.cursor.fetchone()
+                row = cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Read the object data
             #
@@ -4886,16 +4858,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            self.cursor.execute(statement)
+            cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = self.cursor.fetchone()
+                    row = cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             #
             # Finally, confirm that the Per_Object item is a view
             #
@@ -4903,26 +4875,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "SELECT * FROM information_schema.views WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
                 % (module.db_name.value, object_table)
             )
-            self.cursor.execute(statement)
-            assert len(self.cursor.fetchall()) != 0
+            cursor.execute(statement)
+            assert len(cursor.fetchall()) != 0
         finally:
-            self.drop_tables(module, ["Per_Image"])
-            self.drop_views(module, ["Per_Object"])
+            drop_tables(module, ["Per_Image"])
+            drop_views(module, ["Per_Object"])
 
-    def test_properties_file(self):
+    def test_properties_file():
         old_get_measurement_columns = E.ExportToDatabase.get_measurement_columns
 
         def get_measurement_columns(
-            self, pipeline, old_get_measurement_columns=old_get_measurement_columns
+            pipeline, old_get_measurement_columns=old_get_measurement_columns
         ):
             result = [
                 (cpmeas.IMAGE, C_FILE_NAME + "_" + IMAGE_NAME, cpmeas.COLTYPE_VARCHAR),
                 (cpmeas.IMAGE, C_PATH_NAME + "_" + IMAGE_NAME, cpmeas.COLTYPE_VARCHAR),
-            ] + old_get_measurement_columns(self, pipeline)
+            ] + old_get_measurement_columns(pipeline)
             return result
 
         E.ExportToDatabase.get_measurement_columns = get_measurement_columns
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, alt_object=True
         )
         assert isinstance(module, E.ExportToDatabase)
@@ -5006,8 +4978,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 os.unlink(path)
             finally_fn()
 
-    def test_experiment_table_combine(self):
-        workspace, module = self.make_workspace(False, True)
+    def test_experiment_table_combine():
+        workspace, module = make_workspace(False, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -5017,8 +4989,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.location_object.value = OBJECT_NAME
-            if not self.__test_mysql:
-                self.skipTest("Skipping actual DB work, not at the Broad.")
+            if not __test_mysql:
+                skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -5033,10 +5005,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 where field = 'image_table' and value = '%s'"""
                 % image_table
             )
-            self.cursor.execute(statement)
-            experiment_id = int(self.cursor.fetchone()[0])
+            cursor.execute(statement)
+            experiment_id = int(cursor.fetchone()[0])
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             properties = module.get_property_file_text(workspace)
             assert len(properties) == 1
             for k, v in list(properties[0].properties.items()):
@@ -5048,16 +5020,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     experiment_id,
                     properties[0].object_name,
                 )
-                self.cursor.execute(statement)
-                dbvalue = self.cursor.fetchone()[0]
+                cursor.execute(statement)
+                dbvalue = cursor.fetchone()[0]
                 with pytest.raises(StopIteration):
-                    self.cursor.__next__()
+                    cursor.__next__()
                 assert dbvalue == v
         finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object"))
+            drop_tables(module, ("Per_Image", "Per_Object"))
 
-    def test_experiment_table_separate(self):
-        workspace, module = self.make_workspace(False, True)
+    def test_experiment_table_separate():
+        workspace, module = make_workspace(False, True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -5066,8 +5038,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            if not self.__test_mysql:
-                self.skipTest("Skipping actual DB work, not at the Broad.")
+            if not __test_mysql:
+                skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -5082,10 +5054,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 where field = 'image_table' and value = '%s'"""
                 % image_table
             )
-            self.cursor.execute(statement)
-            experiment_id = int(self.cursor.fetchone()[0])
+            cursor.execute(statement)
+            experiment_id = int(cursor.fetchone()[0])
             with pytest.raises(StopIteration):
-                self.cursor.__next__()
+                cursor.__next__()
             properties = module.get_property_file_text(workspace)
             assert len(properties) == 2
             for k, v in list(properties[0].properties.items()):
@@ -5097,20 +5069,20 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     experiment_id,
                     properties[0].object_name,
                 )
-                self.cursor.execute(statement)
-                dbvalue = self.cursor.fetchone()[0]
+                cursor.execute(statement)
+                dbvalue = cursor.fetchone()[0]
                 with pytest.raises(StopIteration):
-                    self.cursor.__next__()
+                    cursor.__next__()
                 assert dbvalue == v
         finally:
-            self.drop_tables(
+            drop_tables(
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
-    def test_write_no_mysql_relationships(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+    def test_write_no_mysql_relationships():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         try:
@@ -5124,18 +5096,18 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            self.load_database(output_dir, module)
-            self.tteesstt_no_relationships(module, self.cursor)
+            load_database(output_dir, module)
+            tteesstt_no_relationships(module, cursor)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
             os.chdir(output_dir)
             finally_fn()
 
-    def test_write_no_mysql_direct_relationships(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_write_no_mysql_direct_relationships():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         try:
@@ -5149,16 +5121,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.tteesstt_no_relationships(module, self.cursor)
+            tteesstt_no_relationships(module, cursor)
 
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_write_sqlite_no_relationships(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_write_sqlite_no_relationships():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+        workspace, module, output_dir, finally_fn = make_workspace(
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         cursor = None
@@ -5175,8 +5147,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
-            self.tteesstt_no_relationships(module, cursor)
+            cursor, connection = get_sqlite_cursor(module)
+            tteesstt_no_relationships(module, cursor)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -5188,13 +5160,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_write_mysql_relationships(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+    def test_write_mysql_relationships():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
+        workspace, module, output_dir, finally_fn = make_workspace(
             True,
             relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-            relationship_test_type=self.RTEST_SOME,
+            relationship_test_type=RTEST_SOME,
         )
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5207,21 +5179,21 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.post_run(workspace)
-            self.load_database(output_dir, module)
-            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+            load_database(output_dir, module)
+            tteesstt_relate(workspace.measurements, module, cursor)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
             os.chdir(output_dir)
             finally_fn()
 
-    def test_write_mysql_direct_relationships(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_write_mysql_direct_relationships():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False,
             relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-            relationship_test_type=self.RTEST_SOME,
+            relationship_test_type=RTEST_SOME,
         )
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5234,20 +5206,20 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+            tteesstt_relate(workspace.measurements, module, cursor)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_write_sqlite_relationships(self):
+    def test_write_sqlite_relationships():
         for with_interaction_handler in (False, True):
-            workspace, module, output_dir, finally_fn = self.make_workspace(
+            workspace, module, output_dir, finally_fn = make_workspace(
                 True,
                 relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-                relationship_test_type=self.RTEST_SOME,
+                relationship_test_type=RTEST_SOME,
             )
             ran_interaction_handler = [False]
             if with_interaction_handler:
-                workspace.interaction_handler = self.get_interaction_handler(
+                workspace.interaction_handler = get_interaction_handler(
                     ran_interaction_handler
                 )
             try:
@@ -5263,8 +5235,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.prepare_run(workspace)
                 module.prepare_group(workspace, {}, [1])
                 module.run(workspace)
-                cursor, connection = self.get_sqlite_cursor(module)
-                self.tteesstt_relate(workspace.measurements, module, cursor)
+                cursor, connection = get_sqlite_cursor(module)
+                tteesstt_relate(workspace.measurements, module, cursor)
             finally:
                 if cursor is not None:
                     cursor.close()
@@ -5276,14 +5248,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.connection.close()
                 finally_fn()
 
-    def test_write_sqlite_duplicates(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_write_sqlite_duplicates():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module, output_dir, finally_fn = self.make_workspace(
+        workspace, module, output_dir, finally_fn = make_workspace(
             True,
             relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-            relationship_test_type=self.RTEST_DUPLICATE,
+            relationship_test_type=RTEST_DUPLICATE,
         )
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5298,8 +5270,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            cursor, connection = get_sqlite_cursor(module)
+            tteesstt_relate(workspace.measurements, module, cursor)
         finally:
             if cursor is not None:
                 cursor.close()
@@ -5311,17 +5283,17 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.connection.close()
             finally_fn()
 
-    def test_add_relationship_id_mysql(self):
+    def test_add_relationship_id_mysql():
         #
         # Add a missing relationship ID
         #
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False,
             relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-            relationship_test_type=self.RTEST_SOME,
+            relationship_test_type=RTEST_SOME,
         )
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5337,26 +5309,26 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # Get rid of the module dictionary entry and the table row
             #
             module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
-            self.cursor.execute(
+            cursor.execute(
                 "delete from %s" % module.get_table_name(E.T_RELATIONSHIP_TYPES)
             )
-            self.close_connection()
+            close_connection()
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+            tteesstt_relate(workspace.measurements, module, cursor)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_get_relationship_id_mysql(self):
+    def test_get_relationship_id_mysql():
         #
         # Get a missing relationship ID (e.g., worker # 2 gets worker # 1's row)
         #
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False,
             relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-            relationship_test_type=self.RTEST_SOME,
+            relationship_test_type=RTEST_SOME,
         )
         try:
             assert isinstance(module, E.ExportToDatabase)
@@ -5373,20 +5345,20 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+            tteesstt_relate(workspace.measurements, module, cursor)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_add_relationship_id_sqlite(self):
+    def test_add_relationship_id_sqlite():
         for with_interaction_handler in (False, True):
-            workspace, module, output_dir, finally_fn = self.make_workspace(
+            workspace, module, output_dir, finally_fn = make_workspace(
                 True,
                 relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-                relationship_test_type=self.RTEST_SOME,
+                relationship_test_type=RTEST_SOME,
             )
             if with_interaction_handler:
                 ran_interaction_handler = [False]
-                workspace.interaction_handler = self.get_interaction_handler(
+                workspace.interaction_handler = get_interaction_handler(
                     ran_interaction_handler
                 )
             try:
@@ -5408,20 +5380,20 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
                 module.run(workspace)
                 with E.DBContext(module) as (connection, cursor):
-                    self.tteesstt_relate(workspace.measurements, module, cursor)
+                    tteesstt_relate(workspace.measurements, module, cursor)
             finally:
                 finally_fn()
 
-    def test_get_relationship_id_sqlite(self):
+    def test_get_relationship_id_sqlite():
         for with_interaction_handler in (False, True):
-            workspace, module, output_dir, finally_fn = self.make_workspace(
+            workspace, module, output_dir, finally_fn = make_workspace(
                 True,
                 relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-                relationship_test_type=self.RTEST_SOME,
+                relationship_test_type=RTEST_SOME,
             )
             if with_interaction_handler:
                 ran_interaction_handler = [False]
-                workspace.interaction_handler = self.get_interaction_handler(
+                workspace.interaction_handler = get_interaction_handler(
                     ran_interaction_handler
                 )
             cursor = None
@@ -5440,8 +5412,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.prepare_group(workspace, {}, [1])
                 module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
                 module.run(workspace)
-                cursor, connection = self.get_sqlite_cursor(module)
-                self.tteesstt_relate(workspace.measurements, module, cursor)
+                cursor, connection = get_sqlite_cursor(module)
+                tteesstt_relate(workspace.measurements, module, cursor)
             finally:
                 if cursor is not None:
                     cursor.close()
@@ -5453,16 +5425,16 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     module.connection.close()
                 finally_fn()
 
-    def test_write_mysql_direct_relationships(self):
+    def test_write_mysql_direct_relationships():
         # Regression test of #1757
         #
         # No relationships in relationships table and ExportToDatabase
         # is configured to display its window
         #
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, no database configured.")
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, no database configured.")
 
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE
         )
         try:
@@ -5477,15 +5449,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+            tteesstt_relate(workspace.measurements, module, cursor)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_mysql_no_overwrite(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_mysql_no_overwrite():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -5498,13 +5470,13 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert module.prepare_run(workspace)
             assert not module.prepare_run(workspace)
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_mysql_keep_schema(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_mysql_keep_schema():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -5519,30 +5491,30 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # There should be no rows in the image table after prepare_run
             #
             how_many = "select count('x') from %s" % module.get_table_name(cpmeas.IMAGE)
-            self.cursor.execute(how_many)
-            assert self.cursor.fetchall()[0][0] == 0
-            self.close_connection()
+            cursor.execute(how_many)
+            assert cursor.fetchall()[0][0] == 0
+            close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # There should be one row after "run"
             #
-            self.cursor.execute(how_many)
-            assert self.cursor.fetchall()[0][0] == 1
+            cursor.execute(how_many)
+            assert cursor.fetchall()[0][0] == 1
             assert module.prepare_run(workspace)
             #
             # The row should still be there after the second prepare_run
             #
-            self.cursor.execute(how_many)
-            assert self.cursor.fetchall()[0][0] == 1
+            cursor.execute(how_many)
+            assert cursor.fetchall()[0][0] == 1
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_mysql_drop_schema(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_mysql_drop_schema():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
 
-        workspace, module = self.make_workspace(False)
+        workspace, module = make_workspace(False)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -5557,28 +5529,28 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # There should be no rows in the image table after prepare_run
             #
             how_many = "select count('x') from %s" % module.get_table_name(cpmeas.IMAGE)
-            self.cursor.execute(how_many)
-            assert self.cursor.fetchall()[0][0] == 0
-            self.close_connection()
+            cursor.execute(how_many)
+            assert cursor.fetchall()[0][0] == 0
+            close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # There should be one row after "run"
             #
-            self.cursor.execute(how_many)
-            assert self.cursor.fetchall()[0][0] == 1
-            self.close_connection()
+            cursor.execute(how_many)
+            assert cursor.fetchall()[0][0] == 1
+            close_connection()
             assert module.prepare_run(workspace)
             #
             # The row should not be there after the second prepare_run
             #
-            self.cursor.execute(how_many)
-            assert self.cursor.fetchall()[0][0] == 0
+            cursor.execute(how_many)
+            assert cursor.fetchall()[0][0] == 0
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_sqlite_no_overwrite(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_sqlite_no_overwrite():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
         module.directory.dir_choice = ABSOLUTE_FOLDER_NAME
@@ -5595,8 +5567,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             finally_fn()
 
-    def test_sqlite_keep_schema(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_sqlite_keep_schema():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
         module.allow_overwrite.value = E.OVERWRITE_DATA
@@ -5607,7 +5579,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module.wants_agg_std_dev.value = False
         module.objects_choice.value = E.O_ALL
         module.separate_object_tables.value = E.OT_COMBINE
-        cursor, connection = self.get_sqlite_cursor(module)
+        cursor, connection = get_sqlite_cursor(module)
         try:
             assert module.prepare_run(workspace)
             #
@@ -5634,8 +5606,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             connection.close()
             finally_fn()
 
-    def test_sqlite_drop_schema(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
+    def test_sqlite_drop_schema():
+        workspace, module, output_dir, finally_fn = make_workspace(True)
         assert isinstance(module, E.ExportToDatabase)
         module.db_type.value = E.DB_SQLITE
         module.allow_overwrite.value = E.OVERWRITE_ALL
@@ -5646,7 +5618,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module.wants_agg_std_dev.value = False
         module.objects_choice.value = E.O_ALL
         module.separate_object_tables.value = E.OT_COMBINE
-        cursor, connection = self.get_sqlite_cursor(module)
+        cursor, connection = get_sqlite_cursor(module)
         try:
             assert module.prepare_run(workspace)
             #
@@ -5669,11 +5641,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             cursor.execute(how_many)
             assert cursor.fetchall()[0][0] == 0
         finally:
-            self.drop_tables(module)
+            drop_tables(module)
 
-    def test_dbcontext_mysql(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+    def test_dbcontext_mysql():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
         module = E.ExportToDatabase()
         module.db_type.value = E.DB_MYSQL
         module.db_host.value = MYSQL_HOST
@@ -5686,7 +5658,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             assert len(result) == 1
             assert result[0][0] == 1
 
-    def test_dbcontext_sqlite(self):
+    def test_dbcontext_sqlite():
         output_dir = tempfile.mkdtemp()
         try:
             module = E.ExportToDatabase()
@@ -5706,10 +5678,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             except:
                 print(("Failed to remove %s" % output_dir))
 
-    def test_post_run_experiment_measurement_mysql(self):
-        if not self.__test_mysql:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
-        workspace, module = self.make_workspace(False, post_run_test=True)
+    def test_post_run_experiment_measurement_mysql():
+        if not __test_mysql:
+            skipTest("Skipping actual DB work, not at the Broad.")
+        workspace, module = make_workspace(False, post_run_test=True)
         try:
             assert isinstance(module, E.ExportToDatabase)
             module.db_type.value = E.DB_MYSQL
@@ -5723,18 +5695,18 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 cpmeas.EXPERIMENT, STRING_IMG_MEASUREMENT
             ] = STRING_VALUE
             assert module.prepare_run(workspace)
-            self.cursor.execute(
+            cursor.execute(
                 "select %s from %s"
                 % (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT))
             )
-            result = self.cursor.fetchall()[0][0]
+            result = cursor.fetchall()[0][0]
             assert result is None
-            self.close_connection()
+            close_connection()
             module.post_run(workspace)
-            self.cursor.execute(
+            cursor.execute(
                 "select %s from %s"
                 % (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT))
             )
-            assert self.cursor.fetchall()[0][0] == STRING_VALUE
+            assert cursor.fetchall()[0][0] == STRING_VALUE
         finally:
-            self.drop_tables(module)
+            drop_tables(module)

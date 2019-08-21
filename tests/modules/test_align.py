@@ -13,7 +13,7 @@ import tests.modules
 cellprofiler.preferences.set_headless()
 
 
-def make_workspace(self, images, masks):
+def make_workspace(images, masks):
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler.image.ImageSetList()
@@ -49,7 +49,7 @@ def make_workspace(self, images, masks):
     return workspace, module
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8945
@@ -80,7 +80,7 @@ Name the second output image:AlignedImage2
     assert module.second_output_image, "AlignedImage2"
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8945
@@ -136,7 +136,7 @@ Name the second output image:AlignedImage2
         assert module.second_output_image, "AlignedImage2"
 
 
-def test_crop(self):
+def test_crop():
     """Align two images and crop the result"""
     numpy.random.seed(0)
     shape = (50, 45)
@@ -164,8 +164,8 @@ def test_crop(self):
                         numpy.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2))
                         < 20
                     ] = 0.5
-                    si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-                    sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
+                    si1, si2 = slice_helper(offset[0], image1.shape[0])
+                    sj1, sj2 = slice_helper(offset[1], image1.shape[1])
                     image2 = numpy.zeros(image1.shape)
                     if method == cellprofiler.modules.align.M_MUTUAL_INFORMATION:
                         image2[si2, sj2] = 1 - image1[si1, sj1]
@@ -183,9 +183,7 @@ def test_crop(self):
                         image1[~mask1] = numpy.random.uniform(size=numpy.sum(~mask1))
                     if mask2 is not None:
                         image2[~mask2] = numpy.random.uniform(size=numpy.sum(~mask2))
-                    workspace, module = self.make_workspace(
-                        (image1, image2), (mask1, mask2)
-                    )
+                    workspace, module = make_workspace((image1, image2), (mask1, mask2))
                     assert isinstance(module, cellprofiler.modules.align.Align)
                     module.alignment_method.value = method
                     module.crop_mode.value = cellprofiler.modules.align.C_CROP
@@ -203,8 +201,8 @@ def test_crop(self):
                     out_shape = output.pixel_data.shape
                     assert out_shape[0] == shape[0] - abs(offset[0])
                     assert out_shape[1] == shape[1] - abs(offset[1])
-                    i_slice = self.single_slice_helper(-off_i0, out_shape[0])
-                    j_slice = self.single_slice_helper(-off_j0, out_shape[1])
+                    i_slice = single_slice_helper(-off_i0, out_shape[0])
+                    j_slice = single_slice_helper(-off_j0, out_shape[1])
                     numpy.testing.assert_almost_equal(
                         image1[i_slice, j_slice], output.pixel_data
                     )
@@ -221,8 +219,8 @@ def test_crop(self):
                         assert numpy.all(~temp)
 
                     output = workspace.image_set.get_image("Aligned1")
-                    i_slice = self.single_slice_helper(-off_i1, out_shape[0])
-                    j_slice = self.single_slice_helper(-off_j1, out_shape[1])
+                    i_slice = single_slice_helper(-off_i1, out_shape[0])
+                    j_slice = single_slice_helper(-off_j1, out_shape[1])
 
                     numpy.testing.assert_almost_equal(
                         image2[i_slice, j_slice], output.pixel_data
@@ -239,14 +237,14 @@ def test_crop(self):
                         assert numpy.all(~temp)
 
 
-def single_slice_helper(self, offset, size):
+def single_slice_helper(offset, size):
     """Return a single slice starting at the offset (or zero)"""
     if offset < 0:
         offset = 0
     return slice(offset, offset + size)
 
 
-def slice_helper(self, offset, size):
+def slice_helper(offset, size):
     """Return slices for the first and second images for copying
 
     offset - amount to offset the second image relative to the first
@@ -260,7 +258,7 @@ def slice_helper(self, offset, size):
         return slice(0, size - offset), slice(offset, size)
 
 
-def test_pad(self):
+def test_pad():
     """Align two images with padded output"""
     numpy.random.seed(0)
     shape = (50, 45)
@@ -294,8 +292,8 @@ def test_pad(self):
                         numpy.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2))
                         < 20
                     ] = 0.5
-                    si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-                    sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
+                    si1, si2 = slice_helper(offset[0], image1.shape[0])
+                    sj1, sj2 = slice_helper(offset[1], image1.shape[1])
                     image2 = numpy.zeros(image1.shape)
                     if method == cellprofiler.modules.align.M_MUTUAL_INFORMATION:
                         image2[si2, sj2] = 1 - image1[si1, sj1]
@@ -313,9 +311,7 @@ def test_pad(self):
                         image1[~mask1] = numpy.random.uniform(size=numpy.sum(~mask1))
                     if mask2 is not None:
                         image2[~mask2] = numpy.random.uniform(size=numpy.sum(~mask2))
-                    workspace, module = self.make_workspace(
-                        (image1, image2), (mask1, mask2)
-                    )
+                    workspace, module = make_workspace((image1, image2), (mask1, mask2))
                     assert isinstance(module, cellprofiler.modules.align.Align)
                     module.alignment_method.value = method
                     module.crop_mode.value = cellprofiler.modules.align.C_PAD
@@ -356,7 +352,7 @@ def test_pad(self):
                     assert numpy.all(~temp)
 
 
-def test_same_size(self):
+def test_same_size():
     """Align two images keeping sizes the same"""
     numpy.random.seed(0)
     shape = (50, 45)
@@ -390,8 +386,8 @@ def test_same_size(self):
                         numpy.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2))
                         < 20
                     ] = 0.5
-                    si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-                    sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
+                    si1, si2 = slice_helper(offset[0], image1.shape[0])
+                    sj1, sj2 = slice_helper(offset[1], image1.shape[1])
                     image2 = numpy.zeros(image1.shape)
                     if method == cellprofiler.modules.align.M_MUTUAL_INFORMATION:
                         image2[si2, sj2] = 1 - image1[si1, sj1]
@@ -409,9 +405,7 @@ def test_same_size(self):
                         image1[~mask1] = numpy.random.uniform(size=numpy.sum(~mask1))
                     if mask2 is not None:
                         image2[~mask2] = numpy.random.uniform(size=numpy.sum(~mask2))
-                    workspace, module = self.make_workspace(
-                        (image1, image2), (mask1, mask2)
-                    )
+                    workspace, module = make_workspace((image1, image2), (mask1, mask2))
                     assert isinstance(module, cellprofiler.modules.align.Align)
                     module.alignment_method.value = method
                     module.crop_mode.value = cellprofiler.modules.align.C_SAME_SIZE
@@ -427,8 +421,8 @@ def test_same_size(self):
                     assert off_i0 - off_i1 == offset[0]
                     assert off_j0 - off_j1 == offset[1]
 
-                    si_in, si_out = self.slice_same(off_i0, shape[0])
-                    sj_in, sj_out = self.slice_same(off_j0, shape[1])
+                    si_in, si_out = slice_same(off_i0, shape[0])
+                    sj_in, sj_out = slice_same(off_j0, shape[1])
                     numpy.testing.assert_almost_equal(
                         image1[si_in, sj_in], output.pixel_data[si_out, sj_out]
                     )
@@ -442,8 +436,8 @@ def test_same_size(self):
                     assert numpy.all(~temp)
 
                     output = workspace.image_set.get_image("Aligned1")
-                    si_in, si_out = self.slice_same(off_i1, shape[0])
-                    sj_in, sj_out = self.slice_same(off_j1, shape[1])
+                    si_in, si_out = slice_same(off_i1, shape[0])
+                    sj_in, sj_out = slice_same(off_j1, shape[1])
                     numpy.testing.assert_almost_equal(
                         image2[si_in, sj_in], output.pixel_data[si_out, sj_out]
                     )
@@ -456,14 +450,14 @@ def test_same_size(self):
                     assert numpy.all(~temp)
 
 
-def slice_same(self, offset, orig_size):
+def slice_same(offset, orig_size):
     if offset < 0:
         return slice(-offset, orig_size), slice(0, orig_size + offset)
     else:
         return slice(0, orig_size - offset), slice(offset, orig_size)
 
 
-def test_align_similarly(self):
+def test_align_similarly():
     """Align a third image similarly to the other two"""
     numpy.random.seed(0)
     shape = (53, 62)
@@ -473,17 +467,15 @@ def test_align_similarly(self):
         image1[
             numpy.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20
         ] = 0.5
-        si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-        sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
+        si1, si2 = slice_helper(offset[0], image1.shape[0])
+        sj1, sj2 = slice_helper(offset[1], image1.shape[1])
         image2 = numpy.zeros(image1.shape)
         image2 = image1[
             (i + shape[0] - offset[0]) % shape[0], (j + shape[1] - offset[1]) % shape[1]
         ]
         image2 += (numpy.random.uniform(size=shape) - 0.5) * 0.1 * numpy.std(image2)
         image3 = (i * 100 + j).astype(numpy.float32) / 10000
-        workspace, module = self.make_workspace(
-            (image1, image2, image3), (None, None, None)
-        )
+        workspace, module = make_workspace((image1, image2, image3), (None, None, None))
         assert isinstance(module, cellprofiler.modules.align.Align)
         module.alignment_method.value = cellprofiler.modules.align.M_CROSS_CORRELATION
         module.crop_mode.value = cellprofiler.modules.align.C_PAD
@@ -513,12 +505,12 @@ def test_align_similarly(self):
         assert off_i0 - off_i2 == offset[0]
         assert off_j0 - off_j2 == offset[1]
 
-        i_slice = self.single_slice_helper(off_i2, shape[0])
-        j_slice = self.single_slice_helper(off_j2, shape[1])
+        i_slice = single_slice_helper(off_i2, shape[0])
+        j_slice = single_slice_helper(off_j2, shape[1])
         numpy.testing.assert_almost_equal(output.pixel_data[i_slice, j_slice], image3)
 
 
-def test_align_separately(self):
+def test_align_separately():
     """Align a third image to the first image"""
     numpy.random.seed(0)
     shape = (47, 53)
@@ -532,9 +524,7 @@ def test_align_separately(self):
         image3 = image1[
             (i + shape[0] - offset[0]) % shape[0], (j + shape[1] - offset[1]) % shape[1]
         ]
-        workspace, module = self.make_workspace(
-            (image1, image2, image3), (None, None, None)
-        )
+        workspace, module = make_workspace((image1, image2, image3), (None, None, None))
         assert isinstance(module, cellprofiler.modules.align.Align)
         module.alignment_method.value = cellprofiler.modules.align.M_CROSS_CORRELATION
         module.crop_mode.value = cellprofiler.modules.align.C_PAD
@@ -555,12 +545,12 @@ def test_align_separately(self):
         assert off_i0 - off_i2 == offset[0]
         assert off_j0 - off_j2 == offset[1]
         output = workspace.image_set.get_image("Aligned2")
-        i_slice = self.single_slice_helper(off_i2, shape[0])
-        j_slice = self.single_slice_helper(off_j2, shape[1])
+        i_slice = single_slice_helper(off_i2, shape[0])
+        j_slice = single_slice_helper(off_j2, shape[1])
         numpy.testing.assert_almost_equal(output.pixel_data[i_slice, j_slice], image3)
 
 
-def test_align_color(self):
+def test_align_color():
     numpy.random.seed(0)
     shape = (50, 45, 3)
     i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]]
@@ -598,8 +588,8 @@ def test_align_color(self):
                         < 20,
                         :,
                     ] = 0.5
-                    si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-                    sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
+                    si1, si2 = slice_helper(offset[0], image1.shape[0])
+                    sj1, sj2 = slice_helper(offset[1], image1.shape[1])
                     image2 = numpy.zeros(image1.shape)
                     if method == cellprofiler.modules.align.M_MUTUAL_INFORMATION:
                         image2[si2, sj2, :] = 1 - image1[si1, sj1, :]
@@ -622,9 +612,7 @@ def test_align_color(self):
                         image2[~mask2, :] = numpy.random.uniform(
                             size=(numpy.sum(~mask2), shape[2])
                         )
-                    workspace, module = self.make_workspace(
-                        (image1, image2), (mask1, mask2)
-                    )
+                    workspace, module = make_workspace((image1, image2), (mask1, mask2))
                     assert isinstance(module, cellprofiler.modules.align.Align)
                     module.alignment_method.value = method
                     module.crop_mode.value = cellprofiler.modules.align.C_SAME_SIZE
@@ -640,8 +628,8 @@ def test_align_color(self):
                     assert off_i0 - off_i1 == offset[0]
                     assert off_j0 - off_j1 == offset[1]
 
-                    si_in, si_out = self.slice_same(off_i0, shape[0])
-                    sj_in, sj_out = self.slice_same(off_j0, shape[1])
+                    si_in, si_out = slice_same(off_i0, shape[0])
+                    sj_in, sj_out = slice_same(off_j0, shape[1])
                     numpy.testing.assert_almost_equal(
                         image1[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :]
                     )
@@ -655,8 +643,8 @@ def test_align_color(self):
                     assert numpy.all(~temp)
 
                     output = workspace.image_set.get_image("Aligned1")
-                    si_in, si_out = self.slice_same(off_i1, shape[0])
-                    sj_in, sj_out = self.slice_same(off_j1, shape[1])
+                    si_in, si_out = slice_same(off_i1, shape[0])
+                    sj_in, sj_out = slice_same(off_j1, shape[1])
                     numpy.testing.assert_almost_equal(
                         image2[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :]
                     )
@@ -669,7 +657,7 @@ def test_align_color(self):
                     assert numpy.all(~temp)
 
 
-def test_align_binary(self):
+def test_align_binary():
     numpy.random.seed(0)
     shape = (50, 45)
     i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]]
@@ -700,8 +688,8 @@ def test_align_binary(self):
                         numpy.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2))
                         < 10
                     ] = True
-                    si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-                    sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
+                    si1, si2 = slice_helper(offset[0], image1.shape[0])
+                    sj1, sj2 = slice_helper(offset[1], image1.shape[1])
                     image2 = numpy.zeros(image1.shape, bool)
                     if method == cellprofiler.modules.align.M_MUTUAL_INFORMATION:
                         image2[si2, sj2] = 1 - image1[si1, sj1]
@@ -714,9 +702,7 @@ def test_align_binary(self):
                         image1[~mask1] = numpy.random.uniform(size=numpy.sum(~mask1))
                     if mask2 is not None:
                         image2[~mask2] = numpy.random.uniform(size=numpy.sum(~mask2))
-                    workspace, module = self.make_workspace(
-                        (image1, image2), (mask1, mask2)
-                    )
+                    workspace, module = make_workspace((image1, image2), (mask1, mask2))
                     assert isinstance(module, cellprofiler.modules.align.Align)
                     module.alignment_method.value = method
                     module.crop_mode.value = cellprofiler.modules.align.C_SAME_SIZE
@@ -732,8 +718,8 @@ def test_align_binary(self):
                     assert off_i0 - off_i1 == offset[0]
                     assert off_j0 - off_j1 == offset[1]
 
-                    si_in, si_out = self.slice_same(off_i0, shape[0])
-                    sj_in, sj_out = self.slice_same(off_j0, shape[1])
+                    si_in, si_out = slice_same(off_i0, shape[0])
+                    sj_in, sj_out = slice_same(off_j0, shape[1])
                     assert output.pixel_data.dtype.kind == "b"
                     numpy.testing.assert_equal(
                         image1[si_in, sj_in], output.pixel_data[si_out, sj_out]
@@ -748,8 +734,8 @@ def test_align_binary(self):
                     assert numpy.all(~temp)
 
                     output = workspace.image_set.get_image("Aligned1")
-                    si_in, si_out = self.slice_same(off_i1, shape[0])
-                    sj_in, sj_out = self.slice_same(off_j1, shape[1])
+                    si_in, si_out = slice_same(off_i1, shape[0])
+                    sj_in, sj_out = slice_same(off_j1, shape[1])
                     numpy.testing.assert_equal(
                         image2[si_in, sj_in], output.pixel_data[si_out, sj_out]
                     )
@@ -762,8 +748,8 @@ def test_align_binary(self):
                     assert numpy.all(~temp)
 
 
-def test_measurement_columns(self):
-    workspace, module = self.make_workspace(
+def test_measurement_columns():
+    workspace, module = make_workspace(
         (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
         (None, None, None),
     )
@@ -781,8 +767,8 @@ def test_measurement_columns(self):
     assert all([c[2] == cellprofiler.measurement.COLTYPE_INTEGER for c in columns])
 
 
-def test_categories(self):
-    workspace, module = self.make_workspace(
+def test_categories():
+    workspace, module = make_workspace(
         (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
         (None, None, None),
     )
@@ -795,8 +781,8 @@ def test_categories(self):
     assert len(c) == 0
 
 
-def test_measurements(self):
-    workspace, module = self.make_workspace(
+def test_measurements():
+    workspace, module = make_workspace(
         (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
         (None, None, None),
     )
@@ -811,8 +797,8 @@ def test_measurements(self):
     assert "Yshift" in m
 
 
-def test_measurement_images(self):
-    workspace, module = self.make_workspace(
+def test_measurement_images():
+    workspace, module = make_workspace(
         (numpy.zeros((10, 10)), numpy.zeros((10, 10)), numpy.zeros((10, 10))),
         (None, None, None),
     )
@@ -829,14 +815,14 @@ def test_measurement_images(self):
             assert "Aligned%d" % i in image_names
 
 
-def test_align_self(self):
-    """Align an image from the fly screen against itself.
+def test_align_self():
+    """Align an image from the fly screen against it
 
     This is a regression test for the bug, IMG-284
     """
     image = tests.modules.read_example_image("ExampleFlyImages", "01_POS002_D.TIF")
     image = image[0:300, 0:300]  # make smaller so as to be faster
-    workspace, module = self.make_workspace((image, image), (None, None))
+    workspace, module = make_workspace((image, image), (None, None))
     module.alignment_method.value = cellprofiler.modules.align.M_MUTUAL_INFORMATION
     module.crop_mode.value = cellprofiler.modules.align.C_PAD
     module.run(workspace)
@@ -845,7 +831,7 @@ def test_align_self(self):
     assert m.get_current_image_measurement("Align_Yshift_Aligned1") == 0
 
 
-def test_different_sizes_crop(self):
+def test_different_sizes_crop():
     """Test align with images of different sizes
 
     regression test of img-1300
@@ -866,7 +852,7 @@ def test_different_sizes_crop(self):
             ((image1, image2), "Aligned0", "Aligned1"),
             ((image2, image1), "Aligned1", "Aligned0"),
         ):
-            workspace, module = self.make_workspace(order, (None, None))
+            workspace, module = make_workspace(order, (None, None))
             assert isinstance(module, cellprofiler.modules.align.Align)
             module.alignment_method.value = method
             module.crop_mode.value = cellprofiler.modules.align.C_CROP
@@ -885,7 +871,7 @@ def test_different_sizes_crop(self):
             assert not i2.has_crop_mask
 
 
-def test_different_sizes_pad(self):
+def test_different_sizes_pad():
     """Test align with images of different sizes
 
     regression test of img-1300
@@ -896,7 +882,7 @@ def test_different_sizes_pad(self):
     image1 = numpy.random.randint(0, 10, size=shape).astype(float) / 10.0
     image1[numpy.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = 0.5
     image2 = image1[2:-2, 2:-2]
-    workspace, module = self.make_workspace((image1, image2), (None, None))
+    workspace, module = make_workspace((image1, image2), (None, None))
     assert isinstance(module, cellprofiler.modules.align.Align)
     module.crop_mode.value = cellprofiler.modules.align.C_PAD
     module.run(workspace)

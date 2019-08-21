@@ -19,7 +19,7 @@ OBJECTS_NAME = "objectsname"
 NEIGHBORS_NAME = "neighborsname"
 
 
-def make_workspace(self, labels, mode, distance=0, neighbors_labels=None):
+def make_workspace(labels, mode, distance=0, neighbors_labels=None):
     """Make a workspace for testing MeasureObjectNeighbors"""
     module = M.MeasureObjectNeighbors()
     module.set_module_num(1)
@@ -50,7 +50,7 @@ def make_workspace(self, labels, mode, distance=0, neighbors_labels=None):
     return workspace, module
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:11016
@@ -89,9 +89,9 @@ Select a colormap:purple
     assert module.touching_colormap == "purple"
 
 
-def test_empty(self):
+def test_empty():
     """Test a labels matrix with no objects"""
-    workspace, module = self.make_workspace(np.zeros((10, 10), int), M.D_EXPAND, 5)
+    workspace, module = make_workspace(np.zeros((10, 10), int), M.D_EXPAND, 5)
     module.run(workspace)
     m = workspace.measurements
     neighbors = m.get_current_measurement(
@@ -111,11 +111,11 @@ def test_empty(self):
         )
 
 
-def test_one(self):
+def test_one():
     """Test a labels matrix with a single object"""
     labels = np.zeros((10, 10), int)
     labels[3:5, 4:6] = 1
-    workspace, module = self.make_workspace(labels, M.D_EXPAND, 5)
+    workspace, module = make_workspace(labels, M.D_EXPAND, 5)
     module.run(workspace)
     m = workspace.measurements
     neighbors = m.get_current_measurement(
@@ -128,12 +128,12 @@ def test_one(self):
     assert pct[0] == 0
 
 
-def test_two_expand(self):
+def test_two_expand():
     """Test a labels matrix with two objects"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1
     labels[8, 7] = 2
-    workspace, module = self.make_workspace(labels, M.D_EXPAND, 5)
+    workspace, module = make_workspace(labels, M.D_EXPAND, 5)
     module.run(workspace)
     assert tuple(module.get_categories(None, OBJECTS_NAME)) == ("Neighbors",)
     assert tuple(module.get_measurements(None, OBJECTS_NAME, "Neighbors")) == tuple(
@@ -188,12 +188,12 @@ def test_two_expand(self):
     assert round(abs(x[1] - np.sqrt(61)), 7) == 0
 
 
-def test_two_not_adjacent(self):
+def test_two_not_adjacent():
     """Test a labels matrix with two objects, not adjacent"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1
     labels[8, 7] = 2
-    workspace, module = self.make_workspace(labels, M.D_ADJACENT, 5)
+    workspace, module = make_workspace(labels, M.D_ADJACENT, 5)
     module.run(workspace)
     assert tuple(
         module.get_measurement_scales(
@@ -211,12 +211,12 @@ def test_two_not_adjacent(self):
     assert np.all(pct == 0)
 
 
-def test_adjacent(self):
+def test_adjacent():
     """Test a labels matrix with two objects, adjacent"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1
     labels[2, 3] = 2
-    workspace, module = self.make_workspace(labels, M.D_ADJACENT, 5)
+    workspace, module = make_workspace(labels, M.D_ADJACENT, 5)
     module.run(workspace)
     m = workspace.measurements
     neighbors = m.get_current_measurement(
@@ -235,12 +235,12 @@ def test_adjacent(self):
     assert fo[1] == 1
 
 
-def test_manual_not_touching(self):
+def test_manual_not_touching():
     """Test a labels matrix with two objects not touching"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1  # Pythagoras triangle 3-4-5
     labels[5, 6] = 2
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 4)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 4)
     module.run(workspace)
     assert tuple(
         module.get_measurement_scales(
@@ -256,12 +256,12 @@ def test_manual_not_touching(self):
     assert round(abs(pct[0] - 0), 7) == 0
 
 
-def test_manual_touching(self):
+def test_manual_touching():
     """Test a labels matrix with two objects touching"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1  # Pythagoras triangle 3-4-5
     labels[5, 6] = 2
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 5)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 5)
     module.run(workspace)
     m = workspace.measurements
     neighbors = m.get_current_measurement(OBJECTS_NAME, "Neighbors_NumberOfNeighbors_5")
@@ -277,13 +277,13 @@ def test_manual_touching(self):
     assert fo[1] == 1
 
 
-def test_three(self):
+def test_three():
     """Test the angles between three objects"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1  # x=3,y=4,5 triangle
     labels[2, 5] = 2
     labels[6, 2] = 3
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 5)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 5)
     module.run(workspace)
     m = workspace.measurements
     fo = m.get_current_measurement(OBJECTS_NAME, "Neighbors_FirstClosestObjectNumber_5")
@@ -311,14 +311,14 @@ def test_three(self):
     assert round(abs(angle[2] - np.arccos(4.0 / 5.0) * 180.0 / np.pi), 7) == 0
 
 
-def test_touching_discarded(self):
+def test_touching_discarded():
     """Make sure that we count edge-touching discarded objects
 
     Regression test of IMG-1012.
     """
     labels = np.zeros((10, 10), int)
     labels[2, 3] = 1
-    workspace, module = self.make_workspace(labels, M.D_ADJACENT, 5)
+    workspace, module = make_workspace(labels, M.D_ADJACENT, 5)
     object_set = workspace.object_set
     assert isinstance(object_set, cpo.ObjectSet)
     objects = object_set.get_objects(OBJECTS_NAME)
@@ -351,13 +351,13 @@ def test_touching_discarded(self):
     assert not np.isnan(angle)[0]
 
 
-def test_all_discarded(self):
+def test_all_discarded():
     """Test the case where all objects touch the edge
 
     Regression test of a follow-on bug to IMG-1012
     """
     labels = np.zeros((10, 10), int)
-    workspace, module = self.make_workspace(labels, M.D_ADJACENT, 5)
+    workspace, module = make_workspace(labels, M.D_ADJACENT, 5)
     object_set = workspace.object_set
     assert isinstance(object_set, cpo.ObjectSet)
     objects = object_set.get_objects(OBJECTS_NAME)
@@ -382,13 +382,13 @@ def test_all_discarded(self):
     assert len(fo) == 0
 
 
-def test_NeighborCountImage(self):
+def test_NeighborCountImage():
     """Test production of a neighbor-count image"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1  # x=3,y=4,5 triangle
     labels[2, 5] = 2
     labels[6, 2] = 3
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 4)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 4)
     module.wants_count_image.value = True
     module.count_image_name.value = "my_image"
     module.count_colormap.value = "jet"
@@ -403,14 +403,14 @@ def test_NeighborCountImage(self):
     assert not np.all(image[2, 2, :] == image[2, 5, :])
 
 
-def test_PercentTouchingImage(self):
+def test_PercentTouchingImage():
     """Test production of a percent touching image"""
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1
     labels[2, 5] = 2
     labels[6, 2] = 3
     labels[7, 2] = 3
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 4)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 4)
     module.wants_percent_touching_image.value = True
     module.touching_image_name.value = "my_image"
     module.touching_colormap.value = "jet"
@@ -425,7 +425,7 @@ def test_PercentTouchingImage(self):
     assert not np.all(image[2, 2, :] == image[6, 2, :])
 
 
-def test_get_measurement_columns(self):
+def test_get_measurement_columns():
     """Test the get_measurement_columns method"""
     module = M.MeasureObjectNeighbors()
     module.object_name.value = OBJECTS_NAME
@@ -444,7 +444,7 @@ def test_get_measurement_columns(self):
             assert column[1] in features, "Unexpected column name: %s" % column[1]
 
 
-def test_get_measurement_columns_neighbors(self):
+def test_get_measurement_columns_neighbors():
     module = M.MeasureObjectNeighbors()
     module.object_name.value = OBJECTS_NAME
     module.neighbors_name.value = NEIGHBORS_NAME
@@ -466,7 +466,7 @@ def test_get_measurement_columns_neighbors(self):
             assert column[1] in features, "Unexpected column name: %s" % column[1]
 
 
-def test_neighbors_zeros(self):
+def test_neighbors_zeros():
     blank_labels = np.zeros((20, 10), int)
     one_object = np.zeros((20, 10), int)
     one_object[2:-2, 2:-2] = 1
@@ -478,9 +478,7 @@ def test_neighbors_zeros(self):
     )
     for olabels, nlabels, ocount, ncount in cases:
         for mode in M.D_ALL:
-            workspace, module = self.make_workspace(
-                olabels, mode, neighbors_labels=nlabels
-            )
+            workspace, module = make_workspace(olabels, mode, neighbors_labels=nlabels)
             assert isinstance(module, M.MeasureObjectNeighbors)
             module.run(workspace)
             m = workspace.measurements
@@ -492,13 +490,13 @@ def test_neighbors_zeros(self):
                 assert len(v) == ocount
 
 
-def test_one_neighbor(self):
+def test_one_neighbor():
     olabels = np.zeros((20, 10), int)
     olabels[2, 2] = 1
     nlabels = np.zeros((20, 10), int)
     nlabels[-2, -2] = 1
     for mode in M.D_ALL:
-        workspace, module = self.make_workspace(
+        workspace, module = make_workspace(
             olabels, mode, distance=20, neighbors_labels=nlabels
         )
         assert isinstance(module, M.MeasureObjectNeighbors)
@@ -527,13 +525,13 @@ def test_one_neighbor(self):
         assert v[0] == (0 if mode == M.D_ADJACENT else 1)
 
 
-def test_two_neighbors(self):
+def test_two_neighbors():
     olabels = np.zeros((20, 10), int)
     olabels[2, 2] = 1
     nlabels = np.zeros((20, 10), int)
     nlabels[5, 2] = 2
     nlabels[2, 6] = 1
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         olabels, M.D_EXPAND, distance=20, neighbors_labels=nlabels
     )
     assert isinstance(module, M.MeasureObjectNeighbors)
@@ -567,7 +565,7 @@ def test_two_neighbors(self):
     assert round(abs(v[0] - 90), 7) == 0
 
 
-def test_relationships(self):
+def test_relationships():
     labels = np.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -584,7 +582,7 @@ def test_relationships(self):
         ]
     )
 
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 2)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 2)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -606,7 +604,7 @@ def test_relationships(self):
     np.testing.assert_array_equal(np.unique(ro2[ro1 == 3]), np.array([1, 2, 4, 5]))
 
 
-def test_neighbors(self):
+def test_neighbors():
     labels = np.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -639,7 +637,7 @@ def test_neighbors(self):
         ]
     )
 
-    workspace, module = self.make_workspace(labels, M.D_WITHIN, 2, nlabels)
+    workspace, module = make_workspace(labels, M.D_WITHIN, 2, nlabels)
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cpmeas.Measurements)
@@ -661,7 +659,7 @@ def test_neighbors(self):
     np.testing.assert_array_equal(np.unique(ro1), np.array([1, 3, 4]))
 
 
-def test_missing_object(self):
+def test_missing_object():
     # Regression test of issue 434
     #
     # Catch case of no pixels for an object
@@ -669,7 +667,7 @@ def test_missing_object(self):
     labels = np.zeros((10, 10), int)
     labels[2, 2] = 1
     labels[2, 3] = 3
-    workspace, module = self.make_workspace(labels, M.D_ADJACENT, 5)
+    workspace, module = make_workspace(labels, M.D_ADJACENT, 5)
     module.run(workspace)
     m = workspace.measurements
     neighbors = m.get_current_measurement(
@@ -684,7 +682,7 @@ def test_missing_object(self):
     np.testing.assert_array_equal(fo, [3, 0, 1])
 
 
-def test_small_removed(self):
+def test_small_removed():
     # Regression test of issue #1179
     #
     # neighbor_objects.small_removed_segmented + objects touching border
@@ -699,9 +697,7 @@ def test_small_removed(self):
     objects = np.zeros((11, 13), int)
     objects[1:6, 5:7] = 1
 
-    workspace, module = self.make_workspace(
-        objects, M.D_WITHIN, neighbors_labels=neighbors
-    )
+    workspace, module = make_workspace(objects, M.D_WITHIN, neighbors_labels=neighbors)
     no = workspace.object_set.get_objects(NEIGHBORS_NAME)
     no.unedited_segmented = neighbors_unedited
     no.small_removed_segmented = neighbors
@@ -712,7 +708,7 @@ def test_small_removed(self):
     assert v[0] == 2
 
 
-def test_object_is_missing(self):
+def test_object_is_missing():
     # regression test of #1639
     #
     # Object # 2 should match neighbor # 1, but because of
@@ -723,7 +719,7 @@ def test_object_is_missing(self):
     nlabels = np.zeros((20, 10), int)
     nlabels[2, 3] = 1
     nlabels[5, 2] = 2
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         olabels, M.D_EXPAND, distance=20, neighbors_labels=nlabels
     )
     assert isinstance(module, M.MeasureObjectNeighbors)
@@ -735,7 +731,7 @@ def test_object_is_missing(self):
     assert values[1] == 1
 
 
-def test_small_removed_same(self):
+def test_small_removed_same():
     # Regression test of issue #1672
     #
     # Objects with small removed failed.
@@ -746,7 +742,7 @@ def test_small_removed_same(self):
     objects_unedited = objects.copy()
     objects_unedited[0:2, 0:2] = 3
 
-    workspace, module = self.make_workspace(objects, M.D_EXPAND, distance=1)
+    workspace, module = make_workspace(objects, M.D_EXPAND, distance=1)
     no = workspace.object_set.get_objects(OBJECTS_NAME)
     no.unedited_segmented = objects_unedited
     no.small_removed_segmented = objects

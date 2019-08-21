@@ -22,7 +22,7 @@ OBJECTS_NAME = "objects"
 MEASUREMENT_NAME = "measurement"
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130719180707
@@ -68,7 +68,7 @@ Color map:jet
     assert module.wants_image
 
 
-def test_load_v5(self):
+def test_load_v5():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130719180707
@@ -118,7 +118,7 @@ Display background image:No
     assert module.color_map_scale.max == 1
 
 
-def test_load_v6(self):
+def test_load_v6():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20141125133416
@@ -189,7 +189,7 @@ Color map range:0.05,1.5
     assert module.color_map_scale_choice == D.CMS_USE_MEASUREMENT_RANGE
 
 
-def make_workspace(self, measurement, labels=None, image=None):
+def make_workspace(measurement, labels=None, image=None):
     object_set = cpo.ObjectSet()
     module = D.DisplayDataOnImage()
     module.set_module_num(1)
@@ -233,69 +233,69 @@ def make_workspace(self, measurement, labels=None, image=None):
     return workspace, module
 
 
-def test_display_image(self):
+def test_display_image():
     for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
-        workspace, module = self.make_workspace(0)
+        workspace, module = make_workspace(0)
         module.saved_image_contents.value = display
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_objects(self):
+def test_display_objects():
     labels = np.zeros((50, 120), int)
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
     for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
-        workspace, module = self.make_workspace([0, 1, 2], labels)
+        workspace, module = make_workspace([0, 1, 2], labels)
         module.saved_image_contents.value = display
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_no_objects(self):
-    workspace, module = self.make_workspace([], np.zeros((50, 120)))
+def test_display_no_objects():
+    workspace, module = make_workspace([], np.zeros((50, 120)))
     module.run(workspace)
     image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_nan_objects(self):
+def test_display_nan_objects():
     labels = np.zeros((50, 120), int)
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
     for measurements in (np.array([1.0, np.nan, 5.0]), np.array([np.nan] * 3)):
-        workspace, module = self.make_workspace(measurements, labels)
+        workspace, module = make_workspace(measurements, labels)
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_objects_wrong_size(self):
+def test_display_objects_wrong_size():
     labels = np.zeros((50, 120), int)
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
     input_image = np.random.uniform(size=(60, 110))
     for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
-        workspace, module = self.make_workspace([0, 1, 2], labels, input_image)
+        workspace, module = make_workspace([0, 1, 2], labels, input_image)
         module.saved_image_contents.value = display
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_colors(self):
+def test_display_colors():
     labels = np.zeros((50, 120), int)
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
-    workspace, module = self.make_workspace([1.1, 2.2, 3.3], labels)
+    workspace, module = make_workspace([1.1, 2.2, 3.3], labels)
     assert isinstance(module, D.DisplayDataOnImage)
     module.color_or_text.value = D.CT_COLOR
     module.run(workspace)
     image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_colors_missing_measurement(self):
+def test_display_colors_missing_measurement():
     #
     # Regression test of issue 1084
     #
@@ -303,14 +303,14 @@ def test_display_colors_missing_measurement(self):
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
-    workspace, module = self.make_workspace([1.1, 2.2], labels)
+    workspace, module = make_workspace([1.1, 2.2], labels)
     assert isinstance(module, D.DisplayDataOnImage)
     module.color_or_text.value = D.CT_COLOR
     module.run(workspace)
     image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_colors_nan_measurement(self):
+def test_display_colors_nan_measurement():
     #
     # Regression test of issue 1084
     #
@@ -318,14 +318,14 @@ def test_display_colors_nan_measurement(self):
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
-    workspace, module = self.make_workspace([1.1, np.nan, 2.2], labels)
+    workspace, module = make_workspace([1.1, np.nan, 2.2], labels)
     assert isinstance(module, D.DisplayDataOnImage)
     module.color_or_text.value = D.CT_COLOR
     module.run(workspace)
     image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
-def test_display_colors_manual(self):
+def test_display_colors_manual():
     #
     # Just run the code path for manual color map scale
     #
@@ -333,7 +333,7 @@ def test_display_colors_manual(self):
     labels[10:20, 20:27] = 1
     labels[30:35, 35:50] = 2
     labels[5:18, 44:100] = 3
-    workspace, module = self.make_workspace([1.1, 2.2, 3.3], labels)
+    workspace, module = make_workspace([1.1, 2.2, 3.3], labels)
     assert isinstance(module, D.DisplayDataOnImage)
     module.color_or_text.value = D.CT_COLOR
     module.color_map_scale_choice.value = D.CMS_MANUAL

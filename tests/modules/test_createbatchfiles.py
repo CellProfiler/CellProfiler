@@ -17,11 +17,11 @@ import cellprofiler.modules.createbatchfiles as C
 import pytest
 
 
-def test_test_load_version_9_please(self):
+def test_test_load_version_9_please():
     assert C.CreateBatchFiles.variable_revision_number == 8
 
 
-def test_load_v7(self):
+def test_load_v7():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150713184605
@@ -60,7 +60,7 @@ Cluster root path:/imaging/docs
     assert mapping.remote_directory == r"/imaging/docs"
 
 
-def test_load_v8(self):
+def test_load_v8():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20150713184605
@@ -91,7 +91,7 @@ Cluster root path:/Remote/cellprofiler/Pictures
     assert module.mappings[0].remote_directory.value == "/Remote/cellprofiler/Pictures"
 
 
-def test_module_must_be_last(self):
+def test_module_must_be_last():
     """Make sure that the pipeline is invalid if CreateBatchFiles is not last"""
     #
     # First, make sure that a naked CPModule tests valid
@@ -117,7 +117,7 @@ def test_module_must_be_last(self):
         pipeline.test_valid()
 
 
-def test_alter_path(self):
+def test_alter_path():
     module = C.CreateBatchFiles()
     module.mappings[0].local_directory.value = "foo"
     module.mappings[0].remote_directory.value = "bar"
@@ -126,7 +126,7 @@ def test_alter_path(self):
     assert module.alter_path("baz/bar") == "baz/bar"
 
 
-def test_alter_path_regexp(self):
+def test_alter_path_regexp():
     module = C.CreateBatchFiles()
     module.mappings[0].local_directory.value = "foo"
     module.mappings[0].remote_directory.value = "bar"
@@ -143,7 +143,7 @@ def test_alter_path_regexp(self):
 
 if sys.platform == "win32":
 
-    def test_alter_path_windows(self):
+    def test_alter_path_windows():
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "\\foo"
         module.mappings[0].remote_directory.value = "\\bar"
@@ -152,7 +152,7 @@ if sys.platform == "win32":
         assert module.alter_path("\\FOO\\bar") == "/bar/bar"
         assert module.alter_path("\\baz\\bar") == "/baz/bar"
 
-    def test_alter_path_windows_regexp(self):
+    def test_alter_path_windows_regexp():
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"

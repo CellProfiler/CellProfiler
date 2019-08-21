@@ -11,7 +11,7 @@ import cellprofiler.pipeline as cpp
 from cellprofiler.modules.loadimages import LoadImages
 
 
-def execute_merge_files(self, mm):
+def execute_merge_files(mm):
     input_files = []
     output_fd, output_file = tempfile.mkstemp(".mat")
     pipeline = cpp.Pipeline()
@@ -34,7 +34,7 @@ def execute_merge_files(self, mm):
     return m
 
 
-def write_image_measurements(self, m, feature, image_count):
+def write_image_measurements(m, feature, image_count):
     assert isinstance(m, cpmeas.Measurements)
     for i in range(image_count):
         if i > 0:
@@ -42,7 +42,7 @@ def write_image_measurements(self, m, feature, image_count):
         m.add_image_measurement(feature, np.random.uniform())
 
 
-def write_object_measurements(self, m, object_name, feature, object_counts):
+def write_object_measurements(m, object_name, feature, object_counts):
     assert isinstance(m, cpmeas.Measurements)
     for i, count in enumerate(object_counts):
         object_measurements = np.random.uniform(size=i)
@@ -51,24 +51,24 @@ def write_object_measurements(self, m, object_name, feature, object_counts):
         )
 
 
-def write_experiment_measurement(self, m, feature):
+def write_experiment_measurement(m, feature):
     assert isinstance(m, cpmeas.Measurements)
     m.add_experiment_measurement(feature, np.random.uniform())
 
 
-def test_nothing(self):
+def test_nothing():
     """Make sure merge_files doesn't crash if no inputs"""
     M.MergeOutputFiles.merge_files("nope", [])
 
 
-def test_one(self):
+def test_one():
     """Test "merging" one file"""
     np.random.seed(11)
     m = cpmeas.Measurements()
-    self.write_image_measurements(m, "foo", 5)
-    self.write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
-    self.write_experiment_measurement(m, "baz")
-    result = self.execute_merge_files([m])
+    write_image_measurements(m, "foo", 5)
+    write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
+    write_experiment_measurement(m, "baz")
+    result = execute_merge_files([m])
     assert (
         round(
             abs(
@@ -96,16 +96,16 @@ def test_one(self):
         np.testing.assert_almost_equal(ro[i], mo[i])
 
 
-def test_two(self):
+def test_two():
     np.random.seed(12)
     mm = []
     for i in range(2):
         m = cpmeas.Measurements()
-        self.write_image_measurements(m, "foo", 5)
-        self.write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
-        self.write_experiment_measurement(m, "baz")
+        write_image_measurements(m, "foo", 5)
+        write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
+        write_experiment_measurement(m, "baz")
         mm.append(m)
-    result = self.execute_merge_files(mm)
+    result = execute_merge_files(mm)
     assert (
         round(
             abs(
@@ -125,16 +125,16 @@ def test_two(self):
         np.testing.assert_almost_equal(ro[i + j * 5], moo[j][i])
 
 
-def test_different_measurements(self):
+def test_different_measurements():
     np.random.seed(13)
     mm = []
     for i in range(2):
         m = cpmeas.Measurements()
-        self.write_image_measurements(m, "foo", 5)
-        self.write_object_measurements(m, "myobjects", "bar%d" % i, [3, 6, 2, 9, 16])
-        self.write_experiment_measurement(m, "baz")
+        write_image_measurements(m, "foo", 5)
+        write_object_measurements(m, "myobjects", "bar%d" % i, [3, 6, 2, 9, 16])
+        write_experiment_measurement(m, "baz")
         mm.append(m)
-    result = self.execute_merge_files(mm)
+    result = execute_merge_files(mm)
     assert (
         round(
             abs(
@@ -159,16 +159,16 @@ def test_different_measurements(self):
             assert len(result.get_measurement("myobjects", "bar0", imgnum)) == 0
 
 
-def test_different_objects(self):
+def test_different_objects():
     np.random.seed(13)
     mm = []
     for i in range(2):
         m = cpmeas.Measurements()
-        self.write_image_measurements(m, "foo", 5)
-        self.write_object_measurements(m, "myobjects%d" % i, "bar", [3, 6, 2, 9, 16])
-        self.write_experiment_measurement(m, "baz")
+        write_image_measurements(m, "foo", 5)
+        write_object_measurements(m, "myobjects%d" % i, "bar", [3, 6, 2, 9, 16])
+        write_experiment_measurement(m, "baz")
         mm.append(m)
-    result = self.execute_merge_files(mm)
+    result = execute_merge_files(mm)
     assert (
         round(
             abs(

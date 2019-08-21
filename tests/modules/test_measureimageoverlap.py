@@ -26,7 +26,7 @@ GROUND_TRUTH_OBJ = "Nuclei"
 ID_OBJ = "Protein"
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9169
@@ -51,7 +51,7 @@ Which image do you want to compare for overlap?:Segmentation
     assert module.test_img == "Segmentation"
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20131210175632
@@ -80,12 +80,12 @@ Select the objects to be tested for overlap against the ground truth:Cell2_1
     )
     assert module.ground_truth == "Foo"
     assert module.test_img == "Bar"
-    # self.assertEqual(module.object_name_GT, "Cell2_0")
-    # self.assertEqual(module.object_name_ID, "Cell2_1")
+    # assertEqual(module.object_name_GT, "Cell2_0")
+    # assertEqual(module.object_name_ID, "Cell2_1")
     assert not module.wants_emd
 
 
-def test_load_v4(self):
+def test_load_v4():
     data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20141015195823
@@ -119,16 +119,16 @@ Penalize missing pixels:Yes
     )
     assert module.ground_truth == "Foo"
     assert module.test_img == "Bar"
-    # self.assertEqual(module.object_name_GT, "Cell2_0")
-    # self.assertEqual(module.object_name_ID, "Cell2_1")
-    # self.assertTrue(module.wants_emd)
-    # self.assertEqual(module.decimation_method, cellprofiler.modules.measureimageoverlap.DM_SKEL)
-    # self.assertEqual(module.max_distance, 102)
-    # self.assertEqual(module.max_points, 101)
-    # self.assertTrue(module.penalize_missing)
+    # assertEqual(module.object_name_GT, "Cell2_0")
+    # assertEqual(module.object_name_ID, "Cell2_1")
+    # assertTrue(module.wants_emd)
+    # assertEqual(module.decimation_method, cellprofiler.modules.measureimageoverlap.DM_SKEL)
+    # assertEqual(module.max_distance, 102)
+    # assertEqual(module.max_points, 101)
+    # assertTrue(module.penalize_missing)
 
 
-def make_workspace(self, ground_truth, test, dimensions=2):
+def make_workspace(ground_truth, test, dimensions=2):
     """Make a workspace with a ground-truth image and a test image
 
     ground_truth and test are dictionaries with the following keys:
@@ -175,10 +175,10 @@ def make_workspace(self, ground_truth, test, dimensions=2):
     return workspace, module
 
 
-def test_zeros(self):
+def test_zeros():
     """Test ground-truth of zeros and image of zeros"""
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=numpy.ones((20, 10), bool)), dict(image=numpy.ones((20, 10), bool))
     )
 
@@ -207,10 +207,10 @@ def test_zeros(self):
     assert measurements[cellprofiler.measurement.IMAGE, ftr_emd] == 0
 
 
-def test_ones(self):
+def test_ones():
     """Test ground-truth of ones and image of ones"""
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)), dict(image=numpy.zeros((20, 10), bool))
     )
 
@@ -250,10 +250,10 @@ def test_ones(self):
     assert numpy.isnan(measurements.get_current_image_measurement(mname))
 
 
-def test_masked(self):
+def test_masked():
     """Test ground-truth of a masked image"""
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)),
         dict(image=numpy.zeros((20, 10), bool), mask=numpy.zeros((20, 10), bool)),
     )
@@ -298,10 +298,10 @@ def test_masked(self):
         assert numpy.isnan(value)
 
 
-def test_all_right(self):
+def test_all_right():
     numpy.random.seed(34)
     image = numpy.random.uniform(size=(10, 20)) > 0.5
-    workspace, module = self.make_workspace(dict(image=image), dict(image=image))
+    workspace, module = make_workspace(dict(image=image), dict(image=image))
     module.run(workspace)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler.measurement.Measurements)
@@ -328,12 +328,12 @@ def test_all_right(self):
         assert expected == value
 
 
-def test_one_false_positive(self):
+def test_one_false_positive():
     i, j = numpy.mgrid[0:10, 0:20]
     ground_truth = ((i + j) % 2) == 0
     test = ground_truth.copy()
     test[0, 1] = True
-    workspace, module = self.make_workspace(dict(image=ground_truth), dict(image=test))
+    workspace, module = make_workspace(dict(image=ground_truth), dict(image=test))
     module.run(workspace)
     measurements = workspace.measurements
     precision = 100.0 / 101.0
@@ -359,12 +359,12 @@ def test_one_false_positive(self):
         assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
 
-def test_one_false_negative(self):
+def test_one_false_negative():
     i, j = numpy.mgrid[0:10, 0:20]
     ground_truth = ((i + j) % 2) == 0
     test = ground_truth.copy()
     test[0, 0] = False
-    workspace, module = self.make_workspace(dict(image=ground_truth), dict(image=test))
+    workspace, module = make_workspace(dict(image=ground_truth), dict(image=test))
     module.run(workspace)
     measurements = workspace.measurements
     recall = 0.99
@@ -390,13 +390,13 @@ def test_one_false_negative(self):
         assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
 
-def test_one_false_positive_and_mask(self):
+def test_one_false_positive_and_mask():
     i, j = numpy.mgrid[0:10, 0:20]
     ground_truth = ((i + j) % 2) == 0
     test = ground_truth.copy()
     test[0, 1] = True
     mask = j < 10
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=ground_truth), dict(image=test, mask=mask)
     )
     module.run(workspace)
@@ -423,13 +423,13 @@ def test_one_false_positive_and_mask(self):
         assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
 
-def test_one_false_negative_and_mask(self):
+def test_one_false_negative_and_mask():
     i, j = numpy.mgrid[0:10, 0:20]
     ground_truth = ((i + j) % 2) == 0
     test = ground_truth.copy()
     test[0, 0] = False
     mask = j < 10
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=ground_truth), dict(image=test, mask=mask)
     )
     module.run(workspace)
@@ -456,13 +456,13 @@ def test_one_false_negative_and_mask(self):
         assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
 
-def test_masked_errors(self):
+def test_masked_errors():
     numpy.random.seed(38)
     ground_truth = numpy.random.uniform(size=(20, 10)) > 0.5
     test = ground_truth.copy()
     mask = numpy.random.uniform(size=(20, 10)) > 0.5
     test[~mask] = numpy.random.uniform(size=numpy.sum(~mask)) > 0.5
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=ground_truth), dict(image=test, mask=mask)
     )
     module.run(workspace)
@@ -487,7 +487,7 @@ def test_masked_errors(self):
         assert round(abs(expected - value), 7) == 0, "%s is wrong" % feature
 
 
-def test_cropped(self):
+def test_cropped():
     numpy.random.seed(39)
     i, j = numpy.mgrid[0:10, 0:20]
     ground_truth = ((i + j) % 2) == 0
@@ -497,7 +497,7 @@ def test_cropped(self):
     cropping[10:20, 10:30] = True
     big_ground_truth = numpy.random.uniform(size=(20, 40)) > 0.5
     big_ground_truth[10:20, 10:30] = ground_truth
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=big_ground_truth), dict(image=test, crop_mask=cropping)
     )
     module.run(workspace)
@@ -526,7 +526,7 @@ def test_cropped(self):
         ), "%s is wrong. Expected %f, got %f" % (feature, expected, value)
 
 
-def test_rand_index(self):
+def test_rand_index():
     numpy.random.seed(310)
     i, j = numpy.mgrid[0:10, 0:20]
     #
@@ -551,7 +551,7 @@ def test_rand_index(self):
     #
     expected_rand_index = 0.9469347
     expected_adj_rand_index = 0.8830027
-    workspace, module = self.make_workspace(dict(image=ground_truth), dict(image=test))
+    workspace, module = make_workspace(dict(image=ground_truth), dict(image=test))
     module.run(workspace)
     measurements = workspace.measurements
     mname = "_".join(
@@ -589,7 +589,7 @@ def test_rand_index(self):
     )
 
 
-def test_masked_rand_index(self):
+def test_masked_rand_index():
     numpy.random.seed(310)
     i, j = numpy.mgrid[0:10, 0:20]
     #
@@ -613,7 +613,7 @@ def test_masked_rand_index(self):
     #
     expected_rand_index = 0.9503666
     expected_adj_rand_index = 0.8907784
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         dict(image=ground_truth, mask=mask), dict(image=test, mask=mask)
     )
     module.run(workspace)
@@ -654,8 +654,8 @@ def test_masked_rand_index(self):
     )
 
 
-def test_get_measurement_columns(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_columns():
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)), dict(image=numpy.zeros((20, 10), bool))
     )
 
@@ -678,8 +678,8 @@ def test_get_measurement_columns(self):
         assert field in [x[1] for x in columns]
 
 
-def test_get_categories(self):
-    workspace, module = self.make_workspace(
+def test_get_categories():
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)), dict(image=numpy.zeros((20, 10), bool))
     )
     categories = module.get_categories(workspace.pipeline, "Foo")
@@ -691,8 +691,8 @@ def test_get_categories(self):
     assert categories[0] == cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP
 
 
-def test_get_measurements(self):
-    workspace, module = self.make_workspace(
+def test_get_measurements():
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)), dict(image=numpy.zeros((20, 10), bool))
     )
     for wants_emd, features in (
@@ -724,8 +724,8 @@ def test_get_measurements(self):
         assert len(mnames) == 0
 
 
-def test_get_measurement_images(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_images():
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)), dict(image=numpy.zeros((20, 10), bool))
     )
 
@@ -761,8 +761,8 @@ def test_get_measurement_images(self):
     assert len(imnames) == 0
 
 
-def test_get_measurement_scales(self):
-    workspace, module = self.make_workspace(
+def test_get_measurement_scales():
+    workspace, module = make_workspace(
         dict(image=numpy.zeros((20, 10), bool)), dict(image=numpy.zeros((20, 10), bool))
     )
     scales = module.get_measurement_scales(
@@ -775,7 +775,7 @@ def test_get_measurement_scales(self):
     assert len(scales) == 0
 
 
-def test_test_objects_rand_index(self):
+def test_test_objects_rand_index():
     r = numpy.random.RandomState()
     r.seed(52)
     base = numpy.zeros((100, 100), bool)
@@ -786,7 +786,7 @@ def test_test_objects_rand_index(self):
     test[r.randint(0, 100, size=5), r.randint(0, 100, size=5)] = True
     gt = scipy.ndimage.binary_dilation(gt, numpy.ones((5, 5), bool))
     test = scipy.ndimage.binary_dilation(test, numpy.ones((5, 5), bool))
-    workspace, module = self.make_workspace(dict(image=gt), dict(image=test))
+    workspace, module = make_workspace(dict(image=gt), dict(image=test))
     module.wants_emd.value = False
     module.run(workspace)
 
@@ -809,8 +809,8 @@ def test_test_objects_rand_index(self):
     expected_adjusted_rand_index = measurements.get_current_image_measurement(mname)
 
 
-def test_no_emd(self):
-    workspace, module = self.make_workspace(
+def test_no_emd():
+    workspace, module = make_workspace(
         dict(image=numpy.ones((20, 10), bool)), dict(image=numpy.ones((20, 10), bool))
     )
     module.wants_emd.value = False
@@ -823,7 +823,7 @@ def test_no_emd(self):
     )
 
 
-def test_one_pixel(self):
+def test_one_pixel():
     #
     # The earth movers distance should be sqrt((8-5)**2 + (7 - 3) ** 2) = 5
     #
@@ -831,7 +831,7 @@ def test_one_pixel(self):
     dest = numpy.zeros((20, 10), bool)
     src[5, 3] = True
     dest[8, 7] = True
-    workspace, module = self.make_workspace(dict(image=src), dict(image=dest))
+    workspace, module = make_workspace(dict(image=src), dict(image=dest))
     module.run(workspace)
     assert (
         workspace.measurements[
@@ -844,7 +844,7 @@ def test_one_pixel(self):
     )
 
 
-def test_missing_penalty(self):
+def test_missing_penalty():
     #
     # Test that the missing penalty works
     #
@@ -854,7 +854,7 @@ def test_missing_penalty(self):
     dest[2, 2] = True
     dest[8, 7] = True
     dest[2, 6] = True
-    workspace, module = self.make_workspace(dict(image=src), dict(image=dest))
+    workspace, module = make_workspace(dict(image=src), dict(image=dest))
     module.penalize_missing.value = True
     module.max_distance.value = 8
     module.run(workspace)
@@ -869,14 +869,14 @@ def test_missing_penalty(self):
     )
 
 
-def test_max_distance(self):
+def test_max_distance():
     src = numpy.zeros((20, 10), bool)
     dest = numpy.zeros((20, 10), bool)
     src[5, 3] = True
     dest[8, 7] = True
     src[19, 9] = True
     dest[11, 9] = True
-    workspace, module = self.make_workspace(dict(image=src), dict(image=dest))
+    workspace, module = make_workspace(dict(image=src), dict(image=dest))
     module.max_distance.value = 6
     module.run(workspace)
     assert (
@@ -890,13 +890,11 @@ def test_max_distance(self):
     )
 
 
-def test_decimate_k_means(self):
+def test_decimate_k_means():
     r = numpy.random.RandomState()
     r.seed(64)
     img = r.uniform(size=(10, 10)) > 0.5
-    workspace, module = self.make_workspace(
-        dict(image=img), dict(image=img.transpose())
-    )
+    workspace, module = make_workspace(dict(image=img), dict(image=img.transpose()))
     #
     # Pick a single point for decimation - the emd should be zero
     #
@@ -915,9 +913,7 @@ def test_decimate_k_means(self):
     #
     # Pick a large number of points to get the real EMD
     #
-    workspace, module = self.make_workspace(
-        dict(image=img), dict(image=img.transpose())
-    )
+    workspace, module = make_workspace(dict(image=img), dict(image=img.transpose()))
     module.max_points._Number__minval = 1
     module.max_points.value = 100
     module.run(workspace)
@@ -931,9 +927,7 @@ def test_decimate_k_means(self):
     # The EMD after decimation is going to be randomly different,
     # but not by much.
     #
-    workspace, module = self.make_workspace(
-        dict(image=img), dict(image=img.transpose())
-    )
+    workspace, module = make_workspace(dict(image=img), dict(image=img.transpose()))
     module.max_points._Number__minval = 1
     module.max_points.value = numpy.sum(img | img.transpose()) / 2
     module.run(workspace)
@@ -947,14 +941,14 @@ def test_decimate_k_means(self):
     assert decimated_emd > emd / 2
 
 
-def test_decimate_skel(self):
+def test_decimate_skel():
     #
     # Mostly, this is to check that the skeleton method doesn't crash
     #
     i, j = numpy.mgrid[0:10, 0:20]
     image1 = ((i - 4) ** 2) * 4 + (j - 8) ** 2 < 32
     image2 = ((i - 6) ** 2) * 4 + (j - 12) ** 2 < 32
-    workspace, module = self.make_workspace(dict(image=image1), dict(image=image2))
+    workspace, module = make_workspace(dict(image=image1), dict(image=image2))
     module.max_points._Number__minval = 1
     module.max_points.value = 5
     module.decimation_method.value = cellprofiler.modules.measureimageoverlap.DM_SKEL
@@ -969,10 +963,10 @@ def test_decimate_skel(self):
     assert emd < numpy.sum(image1) * 6
 
 
-def test_3D_perfect_overlap(self):
+def test_3D_perfect_overlap():
     image_data = numpy.random.rand(10, 100, 100) >= 0.5
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         ground_truth={"image": image_data}, test={"image": image_data}, dimensions=3
     )
 
@@ -1059,7 +1053,7 @@ def test_3D_perfect_overlap(self):
     assert round(abs(ftr_adj_rand_index_measurement - 1), 7) == 0
 
 
-def test_3D_no_overlap(self):
+def test_3D_no_overlap():
     ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
     ground_truth_image_data[4:6, 30:40, 30:40] = True
     ground_truth_image_data[7:10, 50:60, 50:60] = True
@@ -1068,7 +1062,7 @@ def test_3D_no_overlap(self):
     test_image_data[7:9, 30:40, 30:40] = True
     test_image_data[7:10, 70:80, 70:80] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         ground_truth={"image": ground_truth_image_data},
         test={"image": test_image_data},
         dimensions=3,
@@ -1155,7 +1149,7 @@ def test_3D_no_overlap(self):
     numpy.testing.assert_almost_equal(ftr_adj_rand_index_measurement, 0, 2)
 
 
-def test_3D_half_overlap(self):
+def test_3D_half_overlap():
     ground_truth_image_data = numpy.zeros((10, 100, 100), dtype=numpy.bool_)
     ground_truth_image_data[2:7, 30:40, 30:40] = True
     ground_truth_image_data[8, 10:20, 10:20] = True
@@ -1166,7 +1160,7 @@ def test_3D_half_overlap(self):
     test_image_data[8, 10:20, 15:25] = True
     test_image_data[3:7, 50:60, 50:60] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         ground_truth={"image": ground_truth_image_data},
         test={"image": test_image_data},
         dimensions=3,

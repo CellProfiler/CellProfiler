@@ -22,7 +22,7 @@ import centrosome.cpmorphology as cpmorph
 import centrosome.filter as cpfilter
 
 
-def test_load_v2(self):
+def test_load_v2():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10016
@@ -134,7 +134,7 @@ Scale\x3A:3
 
 
 # https://github.com/CellProfiler/CellProfiler/issues/3349
-def test_load_with_extracted_operations(self):
+def test_load_with_extracted_operations():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20160418141927
@@ -311,9 +311,7 @@ Rescale values from 0 to 1?:Yes
         module.test_valid(pipeline)
 
 
-def execute(
-    self, image, function, mask=None, custom_repeats=None, scale=None, module=None
-):
+def execute(image, function, mask=None, custom_repeats=None, scale=None, module=None):
     """Run the morph module on an input and return the resulting image"""
     INPUT_IMAGE_NAME = "input"
     OUTPUT_IMAGE_NAME = "output"
@@ -345,13 +343,11 @@ def execute(
 
 
 def binary_tteesstt(
-    self, function_name, function, gray_out=False, scale=None, custom_repeats=None
+    function_name, function, gray_out=False, scale=None, custom_repeats=None
 ):
     np.random.seed(list(map(ord, function_name)))
     input = np.random.uniform(size=(20, 20)) > 0.7
-    output = self.execute(
-        input, function_name, scale=scale, custom_repeats=custom_repeats
-    )
+    output = execute(input, function_name, scale=scale, custom_repeats=custom_repeats)
     if scale is None:
         expected = function(input)
     else:
@@ -364,63 +360,63 @@ def binary_tteesstt(
         assert np.all(np.abs(output - expected) < np.finfo(np.float32).eps)
 
 
-def test_binary_branchpoints(self):
-    self.binary_tteesstt("branchpoints", cpmorph.branchpoints)
+def test_binary_branchpoints():
+    binary_tteesstt("branchpoints", cpmorph.branchpoints)
 
 
-def test_binary_bridge(self):
-    self.binary_tteesstt("bridge", cpmorph.bridge)
+def test_binary_bridge():
+    binary_tteesstt("bridge", cpmorph.bridge)
 
 
-def test_binary_clean(self):
-    self.binary_tteesstt("clean", cpmorph.clean)
+def test_binary_clean():
+    binary_tteesstt("clean", cpmorph.clean)
 
 
-def test_binary_diag(self):
-    self.binary_tteesstt("diag", cpmorph.diag)
+def test_binary_diag():
+    binary_tteesstt("diag", cpmorph.diag)
 
 
-def test_binary_endpoints(self):
-    self.binary_tteesstt("endpoints", cpmorph.endpoints)
+def test_binary_endpoints():
+    binary_tteesstt("endpoints", cpmorph.endpoints)
 
 
-def test_binary_fill(self):
-    self.binary_tteesstt("fill", cpmorph.fill)
+def test_binary_fill():
+    binary_tteesstt("fill", cpmorph.fill)
 
 
-def test_binary_hbreak(self):
-    self.binary_tteesstt("hbreak", cpmorph.hbreak)
+def test_binary_hbreak():
+    binary_tteesstt("hbreak", cpmorph.hbreak)
 
 
-def test_binary_majority(self):
-    self.binary_tteesstt("majority", cpmorph.majority)
+def test_binary_majority():
+    binary_tteesstt("majority", cpmorph.majority)
 
 
-def test_binary_remove(self):
-    self.binary_tteesstt("remove", cpmorph.remove)
+def test_binary_remove():
+    binary_tteesstt("remove", cpmorph.remove)
 
 
-def test_binary_shrink(self):
-    self.binary_tteesstt("shrink", lambda x: cpmorph.binary_shrink(x, 1))
+def test_binary_shrink():
+    binary_tteesstt("shrink", lambda x: cpmorph.binary_shrink(x, 1))
 
 
-def test_binary_spur(self):
-    self.binary_tteesstt("spur", cpmorph.spur)
+def test_binary_spur():
+    binary_tteesstt("spur", cpmorph.spur)
 
 
-def test_binary_thicken(self):
-    self.binary_tteesstt("thicken", cpmorph.thicken)
+def test_binary_thicken():
+    binary_tteesstt("thicken", cpmorph.thicken)
 
 
-def test_binary_thin(self):
-    self.binary_tteesstt("thin", cpmorph.thin)
+def test_binary_thin():
+    binary_tteesstt("thin", cpmorph.thin)
 
 
-def test_binary_vbreak(self):
-    self.binary_tteesstt("vbreak", cpmorph.vbreak)
+def test_binary_vbreak():
+    binary_tteesstt("vbreak", cpmorph.vbreak)
 
 
-def test_binary_distance(self):
+def test_binary_distance():
     def distance(x):
         y = scind.distance_transform_edt(x)
         if np.max(y) == 0:
@@ -428,10 +424,10 @@ def test_binary_distance(self):
         else:
             return y / np.max(y)
 
-    self.binary_tteesstt("distance", distance, True)
+    binary_tteesstt("distance", distance, True)
 
 
-def test_binary_convex_hull(self):
+def test_binary_convex_hull():
     #
     # Set the four points of a square to True
     #
@@ -442,14 +438,14 @@ def test_binary_convex_hull(self):
     image[17, 12] = True
     expected = np.zeros((20, 15), bool)
     expected[2:18, 3:13] = True
-    result = self.execute(image, "convex hull")
+    result = execute(image, "convex hull")
     assert np.all(result == expected)
 
 
-def test_binary_skelpe(self):
+def test_binary_skelpe():
     def fn(x):
         d = scind.distance_transform_edt(x)
         pe = cpfilter.poisson_equation(x)
         return cpmorph.skeletonize(x, ordering=pe * d)
 
-    self.binary_tteesstt("skelpe", fn)
+    binary_tteesstt("skelpe", fn)

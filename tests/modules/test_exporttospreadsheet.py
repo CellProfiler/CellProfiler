@@ -33,22 +33,22 @@ OBJ_MEAS = "my_object_measurement"
 
 
 class TestExportToSpreadsheet:
-    def setUp(self):
-        self.output_dir = tempfile.mkdtemp()
+    def setUp():
+        output_dir = tempfile.mkdtemp()
 
-    def tearDown(self):
-        for file_name in os.listdir(self.output_dir):
-            path = os.path.join(self.output_dir, file_name)
+    def tearDown():
+        for file_name in os.listdir(output_dir):
+            path = os.path.join(output_dir, file_name)
             if os.path.isdir(path):
                 for ffiillee_nnaammee in os.listdir(path):
                     os.remove(os.path.join(path, ffiillee_nnaammee))
                 os.rmdir(path)
             else:
                 os.remove(path)
-        os.rmdir(self.output_dir)
-        self.output_dir = None
+        os.rmdir(output_dir)
+        output_dir = None
 
-    def test_load_v3(self):
+    def test_load_v3():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:8948
@@ -98,7 +98,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
             assert group.file_name == file_name
             assert not group.wants_automatic_file_name
 
-    def test_load_v4(self):
+    def test_load_v4():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9152
@@ -175,7 +175,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
             assert not group.previous_file
             assert group.wants_automatic_file_name
 
-    def test_load_v5(self):
+    def test_load_v5():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9434
@@ -273,7 +273,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
             assert group.name == object_name
             assert group.file_name == file_name
 
-    def test_load_v6(self):
+    def test_load_v6():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9434
@@ -464,7 +464,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             assert module.directory.dir_choice == dir_choice
         assert module.nan_representation == E.NANS_AS_NANS
 
-    def test_load_v8(self):
+    def test_load_v8():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130503182624
@@ -521,7 +521,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert module.object_groups[0].file_name == "Output.csv"
         assert module.object_groups[0].wants_automatic_file_name
 
-    def test_load_v9(self):
+    def test_load_v9():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130503182624
@@ -579,7 +579,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert not module.wants_prefix
         assert module.prefix == "MyExpt_"
 
-    def test_load_v10(self):
+    def test_load_v10():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130503182624
@@ -640,7 +640,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert module.prefix == "Fred"
         assert module.wants_overwrite_without_warning
 
-    def test_load_v11(self):
+    def test_load_v11():
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130503182624
@@ -702,9 +702,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         assert module.prefix == "Fred"
         assert not module.wants_overwrite_without_warning
 
-    def test_no_measurements(self):
+    def test_no_measurements():
         """Test an image set with objects but no measurements"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -720,7 +720,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_object")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -740,9 +740,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
             del m
 
-    def test_experiment_measurement(self):
+    def test_experiment_measurement():
         """Test writing one experiment measurement"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -756,7 +756,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -781,13 +781,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             del m
             fd.close()
 
-    def test_two_experiment_measurements(self):
+    def test_two_experiment_measurements():
         """Test writing two experiment measurements"""
-        path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
+        path = os.path.join(output_dir, "%s.csv" % cpmeas.EXPERIMENT)
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
@@ -800,7 +800,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -825,7 +825,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_img_887_no_experiment_file(self):
+    def test_img_887_no_experiment_file():
         """Regression test of IMG-887: spirious experiment file
 
         ExportToSpreadsheet shouldn't generate an experiment file if
@@ -837,7 +837,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         module.wants_everything.value = True
         m = cpmeas.Measurements()
         m.add_experiment_measurement("Exit_Status", "Complete")
@@ -847,7 +847,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -855,12 +855,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             image_set_list,
         )
         module.post_run(workspace)
-        path = os.path.join(self.output_dir, "Experiment.csv")
+        path = os.path.join(output_dir, "Experiment.csv")
         assert not os.path.exists(path)
-        path = os.path.join(self.output_dir, "Image.csv")
+        path = os.path.join(output_dir, "Image.csv")
         assert os.path.exists(path)
 
-    def test_prefix(self):
+    def test_prefix():
         # Use a prefix, check that file name exists
         prefix = "Foo_"
         np.random.seed(14887)
@@ -870,7 +870,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_prefix.value = True
         module.prefix.value = prefix
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         module.wants_everything.value = True
         m = cpmeas.Measurements()
         image_measurements = np.random.uniform(size=4)
@@ -879,7 +879,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -887,12 +887,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             image_set_list,
         )
         module.post_run(workspace)
-        path = os.path.join(self.output_dir, prefix + "Image.csv")
+        path = os.path.join(output_dir, prefix + "Image.csv")
         assert os.path.exists(path)
 
-    def test_image_measurement(self):
+    def test_image_measurement():
         """Test writing an image measurement"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -906,7 +906,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -929,9 +929,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_three_by_two_image_measurements(self):
+    def test_three_by_two_image_measurements():
         """Test writing three image measurements over two image sets"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -949,7 +949,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 m.add_image_measurement("measurement_%d" % j, "%d:%d" % (i, j))
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_sets[i],
             object_set,
@@ -975,9 +975,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_object_measurement(self):
+    def test_object_measurement():
         """Test getting a single object measurement"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -995,7 +995,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1019,9 +1019,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_three_by_two_object_measurements(self):
+    def test_three_by_two_object_measurements():
         """Test getting three measurements from two objects"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1040,7 +1040,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1069,9 +1069,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_get_measurements_from_two_objects(self):
+    def test_get_measurements_from_two_objects():
         """Get three measurements from four cells and two objects"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1100,7 +1100,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set.add_objects(cpo.Objects(), "object_0")
         object_set.add_objects(cpo.Objects(), "object_1")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1140,8 +1140,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_nan_measurements(self):
-        path = os.path.join(self.output_dir, "my_file.csv")
+    def test_nan_measurements():
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1161,7 +1161,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1188,8 +1188,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_null_measurements(self):
-        path = os.path.join(self.output_dir, "my_file.csv")
+    def test_null_measurements():
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1209,7 +1209,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1236,8 +1236,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_nan_image_measurements(self):
-        path = os.path.join(self.output_dir, "my_file.csv")
+    def test_nan_image_measurements():
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1273,7 +1273,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1305,8 +1305,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             with pytest.raises(StopIteration):
                 reader.__next__()
 
-    def test_null_image_measurements(self):
-        path = os.path.join(self.output_dir, "my_file.csv")
+    def test_null_image_measurements():
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1342,7 +1342,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1374,8 +1374,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             with pytest.raises(StopIteration):
                 reader.__next__()
 
-    def test_blob_image_measurements(self):
-        path = os.path.join(self.output_dir, "my_file.csv")
+    def test_blob_image_measurements():
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1395,7 +1395,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1413,8 +1413,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = np.frombuffer(data, np.uint8)
             np.testing.assert_array_equal(value, my_blob)
 
-    def test_blob_experiment_measurements(self):
-        path = os.path.join(self.output_dir, "my_file.csv")
+    def test_blob_experiment_measurements():
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1434,7 +1434,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1452,13 +1452,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     np.testing.assert_array_equal(value, my_blob)
                     break
             else:
-                self.fail("Could not find %s in experiment CSV" % IMG_MEAS)
+                fail("Could not find %s in experiment CSV" % IMG_MEAS)
 
-    def test_01_object_with_metadata(self):
+    def test_01_object_with_metadata():
         """Test writing objects with 2 pairs of 2 image sets w same metadata"""
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
-        path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
+        path = os.path.join(output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
@@ -1484,7 +1484,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1494,7 +1494,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         for i in range(4):
             module.post_run(workspace)
         for file_name, value_indexes in (("foo.csv", (0, 3)), ("bar.csv", (1, 2))):
-            path = os.path.join(self.output_dir, file_name)
+            path = os.path.join(output_dir, file_name)
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1514,13 +1514,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             finally:
                 fd.close()
 
-    def test_02_object_with_path_metadata(self):
+    def test_02_object_with_path_metadata():
         #
         # Regression test of issue #1142
         #
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
-        path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
+        path = os.path.join(output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
@@ -1545,7 +1545,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1554,7 +1554,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         module.post_run(workspace)
         for dir_name, value_indexes in (("foo", (0, 3)), ("bar", (1, 2))):
-            path = os.path.join(self.output_dir, dir_name, "my_object.csv")
+            path = os.path.join(output_dir, dir_name, "my_object.csv")
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1574,9 +1574,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             finally:
                 fd.close()
 
-    def test_image_with_metadata(self):
+    def test_image_with_metadata():
         """Test writing image data with 2 pairs of 2 image sets w same metadata"""
-        path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
+        path = os.path.join(output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
@@ -1601,7 +1601,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1611,7 +1611,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         for i in range(4):
             module.post_run(workspace)
         for file_name, value_indexes in (("foo.csv", (0, 3)), ("bar.csv", (1, 2))):
-            path = os.path.join(self.output_dir, file_name)
+            path = os.path.join(output_dir, file_name)
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1638,9 +1638,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             finally:
                 fd.close()
 
-    def test_image_with_path_metadata(self):
+    def test_image_with_path_metadata():
         """Test writing image data with 2 pairs of 2 image sets w same metadata"""
-        path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
+        path = os.path.join(output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
@@ -1666,7 +1666,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1675,7 +1675,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         )
         module.post_run(workspace)
         for path_name, value_indexes in (("foo", (0, 3)), ("bar", (1, 2))):
-            path = os.path.join(self.output_dir, path_name, "output.csv")
+            path = os.path.join(output_dir, path_name, "output.csv")
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1702,11 +1702,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             finally:
                 fd.close()
 
-    def test_image_measurement_custom_directory(self):
+    def test_image_measurement_custom_directory():
         """Test writing an image measurement"""
-        path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
+        path = os.path.join(output_dir, "my_dir", "my_file.csv")
         cpprefs.set_headless()
-        cpprefs.set_default_output_directory(self.output_dir)
+        cpprefs.set_default_output_directory(output_dir)
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1722,7 +1722,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1745,11 +1745,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_unicode_image_metadata(self):
+    def test_unicode_image_metadata():
         """Write image measurements containing unicode characters"""
-        path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
+        path = os.path.join(output_dir, "my_dir", "my_file.csv")
         cpprefs.set_headless()
-        cpprefs.set_default_output_directory(self.output_dir)
+        cpprefs.set_default_output_directory(output_dir)
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1766,7 +1766,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1789,9 +1789,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_overwrite_files_everything(self):
-        m = self.make_measurements()
-        pipeline = self.make_measurements_pipeline(m)
+    def test_overwrite_files_everything():
+        m = make_measurements()
+        pipeline = make_measurements_pipeline(m)
         #
         # This will give ExportToSpreadsheet some objects to deal with
         #
@@ -1803,7 +1803,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.wants_everything.value = True
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         module.set_module_num(2)
         pipeline.add_module(module)
 
@@ -1819,9 +1819,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(file_name)
             assert module.prepare_run(workspace)
 
-    def test_overwrite_files_group(self):
-        m = self.make_measurements(dict(Metadata_tag=["foo", "bar"]))
-        pipeline = self.make_measurements_pipeline(m)
+    def test_overwrite_files_group():
+        m = make_measurements(dict(Metadata_tag=["foo", "bar"]))
+        pipeline = make_measurements_pipeline(m)
         #
         # This will give ExportToSpreadsheet some objects to deal with
         #
@@ -1833,7 +1833,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.wants_everything.value = False
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         g = module.object_groups[0]
         g.name.value = OBJECTS_NAME
         g.wants_automatic_file_name.value = False
@@ -1856,9 +1856,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(file_name)
             assert module.prepare_run(workspace)
 
-    def test_aggregate_image_columns(self):
+    def test_aggregate_image_columns():
         """Test output of aggregate object data for images"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1879,7 +1879,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1922,9 +1922,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_no_aggregate_image_columns(self):
+    def test_no_aggregate_image_columns():
         """Test output of aggregate object data for images"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -1945,7 +1945,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -1969,15 +1969,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             del m
             fd.close()
 
-    def test_aggregate_and_filtered(self):
+    def test_aggregate_and_filtered():
         """Regression test of IMG-987
 
         A bug in ExportToSpreadsheet caused it to fail to write any
         aggregate object measurements if measurements were filtered by
         pick_columns.
         """
-        image_path = os.path.join(self.output_dir, "my_image_file.csv")
-        object_path = os.path.join(self.output_dir, "my_object_file.csv")
+        image_path = os.path.join(output_dir, "my_image_file.csv")
+        object_path = os.path.join(output_dir, "my_object_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2022,7 +2022,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -2086,11 +2086,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_image_number(self):
+    def test_image_number():
         # Regression test of issue #1139
         # Always output the ImageNumber column in Image.csv
 
-        image_path = os.path.join(self.output_dir, "my_image_file.csv")
+        image_path = os.path.join(output_dir, "my_image_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2116,7 +2116,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -2137,9 +2137,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_image_index_columns(self):
+    def test_image_index_columns():
         """Test presence of index column"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2161,7 +2161,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 m.next_image_set()
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -2185,9 +2185,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_object_index_columns(self):
+    def test_object_index_columns():
         """Test presence of image and object index columns"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2209,7 +2209,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -2240,9 +2240,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_object_metadata_columns(self):
+    def test_object_metadata_columns():
         """Test addition of image metadata columns to an object metadata file"""
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2267,7 +2267,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -2307,14 +2307,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_missing_measurements(self):
+    def test_missing_measurements():
         """Make sure ExportToSpreadsheet can continue when measurements are missing
 
         Regression test of IMG-361
         Take measurements for 3 image sets, some measurements missing
         from the middle one.
         """
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2339,7 +2339,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
         workspace = cpw.Workspace(
-            self.make_measurements_pipeline(m),
+            make_measurements_pipeline(m),
             module,
             image_set,
             object_set,
@@ -2378,14 +2378,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def test_missing_column_measurements(self):
+    def test_missing_column_measurements():
         # Regression test of issue 1293:
         # pipeline.get_column_measurements reports a measurement
         # The measurement isn't made (e.g., FlagImages)
         # ExportToSpreadsheet should put a column of all NaNs, even if
         # no image set makes the measurement
         #
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         pipeline = cpp.Pipeline()
         module = identifyprimaryobjects.IdentifyPrimaryObjects()
         module.set_module_num(1)
@@ -2435,7 +2435,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
 
-    def make_pipeline(self, csv_text):
+    def make_pipeline(csv_text):
         import cellprofiler.modules.loaddata as L
 
         handle, name = tempfile.mkstemp("csv")
@@ -2457,7 +2457,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         pipeline.add_listener(error_callback)
         return pipeline, module, name
 
-    def make_measurements_pipeline(self, m):
+    def make_measurements_pipeline(m):
         """Pipeline reports measurements via get_measurement_columns"""
         assert isinstance(m, cpmeas.Measurements)
         columns = []
@@ -2477,12 +2477,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                         columns.append((object_name, feature, cpmeas.COLTYPE_FLOAT))
 
         class MPipeline(cpp.Pipeline):
-            def get_measurement_columns(self, terminating_module=None):
+            def get_measurement_columns(terminating_module=None):
                 return columns
 
         return MPipeline()
 
-    def make_measurements(self, d=None):
+    def make_measurements(d=None):
         """Make a measurements object
 
         d - a dictionary whose keywords are the measurement names and whose
@@ -2504,7 +2504,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             )
         return m
 
-    def add_gct_settings(self, output_csv_filename):
+    def add_gct_settings(output_csv_filename):
         module = E.ExportToSpreadsheet()
         module.set_module_num(2)
         module.wants_everything.value = False
@@ -2518,7 +2518,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_genepattern_file.value = True
         return module
 
-    def test_basic_gct_check(self):
+    def test_basic_gct_check():
         # LoadData with data
         maybe_download_sbs()
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
@@ -2537,12 +2537,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     """
             % info
         )
-        pipeline, module, input_filename = self.make_pipeline(csv_text)
+        pipeline, module, input_filename = make_pipeline(csv_text)
 
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
 
         # ExportToSpreadsheet
-        module = self.add_gct_settings(output_csv_filename)
+        module = add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Image filename"
         module.use_which_image_for_gene_name.value = "Foo"
         pipeline.add_module(module)
@@ -2575,7 +2575,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             except:
                 print("Failed to clean up files")
 
-    def test_make_gct_file_with_filename(self):
+    def test_make_gct_file_with_filename():
         maybe_download_sbs()
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
@@ -2594,12 +2594,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     """
             % info
         )
-        pipeline, module, input_filename = self.make_pipeline(csv_text)
+        pipeline, module, input_filename = make_pipeline(csv_text)
 
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
 
         # ExportToSpreadsheet
-        module = self.add_gct_settings(output_csv_filename)
+        module = add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Image filename"
         module.use_which_image_for_gene_name.value = "Foo"
         pipeline.add_module(module)
@@ -2623,7 +2623,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(input_filename)
             os.remove(output_csv_filename)
 
-    def test_make_gct_file_with_metadata(self):
+    def test_make_gct_file_with_metadata():
         maybe_download_sbs()
 
         # LoadData with data
@@ -2643,12 +2643,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     """
             % info
         )
-        pipeline, module, input_filename = self.make_pipeline(csv_text)
+        pipeline, module, input_filename = make_pipeline(csv_text)
 
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
 
         # ExportToSpreadsheet
-        module = self.add_gct_settings(output_csv_filename)
+        module = add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Metadata"
         module.gene_name_column.value = "Metadata_Bar"
         pipeline.add_module(module)
@@ -2672,14 +2672,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(input_filename)
             os.remove(output_csv_filename)
 
-    def test_test_overwrite_gct_file(self):
-        output_csv_filename = os.path.join(self.output_dir, "%s.gct" % cpmeas.IMAGE)
-        m = self.make_measurements()
-        pipeline = self.make_measurements_pipeline(m)
+    def test_test_overwrite_gct_file():
+        output_csv_filename = os.path.join(output_dir, "%s.gct" % cpmeas.IMAGE)
+        m = make_measurements()
+        pipeline = make_measurements_pipeline(m)
         module = E.ExportToSpreadsheet()
         module.wants_genepattern_file.value = True
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         module.wants_prefix.value = False
         module.set_module_num(1)
         pipeline.add_module(module)
@@ -2692,10 +2692,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_overwrite_without_warning.value = False
         assert not module.prepare_run(workspace)
 
-    def test_relationships_file(self):
+    def test_relationships_file():
         r = np.random.RandomState()
         r.seed(91)
-        path = os.path.join(self.output_dir, "my_file.csv")
+        path = os.path.join(output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.set_module_num(1)
         module.wants_everything.value = False
@@ -2729,7 +2729,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             my_image_numbers2,
             my_object_numbers2,
         )
-        pipeline = self.make_measurements_pipeline(m)
+        pipeline = make_measurements_pipeline(m)
         pipeline.add_module(module)
         workspace = cpw.Workspace(
             pipeline, module, image_set, cpo.ObjectSet(), m, image_set_list
@@ -2784,13 +2784,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             except:
                 pass
 
-    def test_test_overwrite_relationships_file(self):
-        output_csv_filename = os.path.join(self.output_dir, "my_file.csv")
-        m = self.make_measurements()
-        pipeline = self.make_measurements_pipeline(m)
+    def test_test_overwrite_relationships_file():
+        output_csv_filename = os.path.join(output_dir, "my_file.csv")
+        m = make_measurements()
+        pipeline = make_measurements_pipeline(m)
         module = E.ExportToSpreadsheet()
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
-        module.directory.custom_path = self.output_dir
+        module.directory.custom_path = output_dir
         module.wants_prefix.value = False
         module.wants_everything.value = False
         g = module.object_groups[0]

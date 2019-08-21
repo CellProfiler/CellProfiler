@@ -15,7 +15,7 @@ cellprofiler.preferences.set_headless()
 OBJECTS_NAME = "MyObjects"
 
 
-def make_workspace(self, labels, parent_image=None):
+def make_workspace(labels, parent_image=None):
     object_set = cellprofiler.object.ObjectSet()
     objects = cellprofiler.object.Objects()
     objects.segmented = labels
@@ -39,8 +39,8 @@ def make_workspace(self, labels, parent_image=None):
     return workspace
 
 
-def test_zeros(self):
-    workspace = self.make_workspace(numpy.zeros((10, 10), int))
+def test_zeros():
+    workspace = make_workspace(numpy.zeros((10, 10), int))
     module = workspace.module
     module.operands[0].operand_choice.value = "Objects"
     module.run(workspace)
@@ -59,11 +59,11 @@ def test_zeros(self):
         assert column[1] in features
 
 
-def test_one_object(self):
+def test_one_object():
     labels = numpy.zeros((10, 10), int)
     labels[2:7, 3:8] = 1
     area_occupied = numpy.sum(labels)
-    workspace = self.make_workspace(labels)
+    workspace = make_workspace(labels)
     module = workspace.module
     module.operands[0].operand_choice.value = "Objects"
     module.run(workspace)
@@ -76,7 +76,7 @@ def test_one_object(self):
     assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
 
-def test_object_with_cropping(self):
+def test_object_with_cropping():
     labels = numpy.zeros((10, 10), int)
     labels[0:7, 3:8] = 1
     mask = numpy.zeros((10, 10), bool)
@@ -85,7 +85,7 @@ def test_object_with_cropping(self):
     area_occupied = [30]
     perimeter = [18]
     total_area = 64
-    workspace = self.make_workspace(labels, image)
+    workspace = make_workspace(labels, image)
     module = workspace.module
     module.operands[0].operand_choice.value = "Objects"
     module.run(workspace)
@@ -99,7 +99,7 @@ def test_object_with_cropping(self):
     assert m.get_current_measurement("Image", mn("TotalArea")) == total_area
 
 
-def test_get_measurement_columns(self):
+def test_get_measurement_columns():
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.operands[0].operand_objects.value = OBJECTS_NAME
     module.operands[0].operand_choice.value = "Objects"
@@ -126,7 +126,7 @@ def test_get_measurement_columns(self):
         assert any([all([cf == ef for cf, ef in zip(column, ex)]) for ex in expected])
 
 
-def test_objects_volume(self):
+def test_objects_volume():
     labels = numpy.zeros((5, 10, 10), dtype=numpy.uint8)
     labels[:2, :2, :2] = 1
     labels[3:, 8:, 8:] = 2
@@ -135,7 +135,7 @@ def test_objects_volume(self):
     expected_perimeter = 16
     expected_total_area = 500
 
-    workspace = self.make_workspace(labels)
+    workspace = make_workspace(labels)
     workspace.pipeline.set_volumetric(True)
 
     module = workspace.module
@@ -163,7 +163,7 @@ def test_objects_volume(self):
     )
 
 
-def test_image_volume(self):
+def test_image_volume():
     pixel_data = numpy.zeros((5, 10, 10), dtype=numpy.bool)
     pixel_data[:2, :2, :2] = True
     pixel_data[3:, 8:, 8:] = True
@@ -174,7 +174,7 @@ def test_image_volume(self):
     expected_perimeter = [16]
     expected_total_area = 500
 
-    workspace = self.make_workspace(numpy.zeros_like(pixel_data), parent_image=image)
+    workspace = make_workspace(numpy.zeros_like(pixel_data), parent_image=image)
     workspace.pipeline.set_volumetric(True)
     workspace.image_set.add("MyBinaryImage", image)
 
@@ -204,7 +204,7 @@ def test_image_volume(self):
     )
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300

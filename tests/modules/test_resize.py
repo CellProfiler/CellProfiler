@@ -22,7 +22,7 @@ INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"
 
 
-def test_load_v1(self):
+def test_load_v1():
     data = (
         "eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS"
         "EleJM1bQJB75WHykfQTsLmkSE5a03RBITRWld7nf/e7OzsVOrdzcL7+CG4oK"
@@ -59,7 +59,7 @@ def test_load_v1(self):
     assert module.interpolation == cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
 
 
-def test_load_v3(self):
+def test_load_v3():
     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10104
@@ -114,7 +114,7 @@ Additional image count:0
 
 
 def make_workspace(
-    self, image, size_method, interpolation, mask=None, cropping=None, dimensions=2
+    image, size_method, interpolation, mask=None, cropping=None, dimensions=2
 ):
     module = cellprofiler.modules.resize.Resize()
     module.x_name.value = INPUT_IMAGE_NAME
@@ -139,7 +139,7 @@ def make_workspace(
     return workspace, module
 
 
-def test_rescale_triple_color(self):
+def test_rescale_triple_color():
     i, j = numpy.mgrid[0:10, 0:10]
     image = numpy.zeros((10, 10, 3))
     image[:, :, 0] = i
@@ -150,7 +150,7 @@ def test_rescale_triple_color(self):
     expected[:, :, 0] = i
     expected[:, :, 1] = j
     expected = skimage.exposure.rescale_intensity(1.0 * expected)
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -163,12 +163,12 @@ def test_rescale_triple_color(self):
     assert result_image.parent_image is workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
 
-def test_rescale_triple_bw(self):
+def test_rescale_triple_bw():
     i, j = numpy.mgrid[0:10, 0:10].astype(float)
     image = skimage.exposure.rescale_intensity(1.0 * i)
     i, j = (numpy.mgrid[0:30, 0:30].astype(float) * 1.0 / 3.0).astype(int)
     expected = skimage.exposure.rescale_intensity(1.0 * i)
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -179,11 +179,11 @@ def test_rescale_triple_bw(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_third(self):
+def test_third():
     i, j = numpy.mgrid[0:30, 0:30]
     image = skimage.exposure.rescale_intensity(1.0 * i)
     expected = skimage.transform.resize(image, (10, 10), order=0, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -194,11 +194,11 @@ def test_third(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_bilinear(self):
+def test_bilinear():
     i, j = numpy.mgrid[0:10, 0:10]
     image = skimage.exposure.rescale_intensity(1.0 * i)
     expected = skimage.transform.resize(image, (30, 30), order=1, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -209,11 +209,11 @@ def test_bilinear(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_bicubic(self):
+def test_bicubic():
     i, j = numpy.mgrid[0:10, 0:10]
     image = skimage.exposure.rescale_intensity(1.0 * i)
     expected = skimage.transform.resize(image, (30, 30), order=3, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BICUBIC,
@@ -224,12 +224,12 @@ def test_bicubic(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_reshape_double(self):
+def test_reshape_double():
     """Make an image twice as large by changing the shape"""
     i, j = numpy.mgrid[0:10, 0:10].astype(float)
     image = skimage.exposure.rescale_intensity(i + j * 10.0)
     expected = skimage.transform.resize(image, (19, 19), order=1, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -241,12 +241,12 @@ def test_reshape_double(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_reshape_half(self):
+def test_reshape_half():
     """Make an image half as large by changing the shape"""
     i, j = numpy.mgrid[0:19, 0:19].astype(float) / 2.0
     image = skimage.exposure.rescale_intensity(i + j * 10)
     expected = skimage.transform.resize(image, (10, 10), order=1, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -258,12 +258,12 @@ def test_reshape_half(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_reshape_half_and_double(self):
+def test_reshape_half_and_double():
     """Make an image twice as large in one dimension and half in other"""
     i, j = numpy.mgrid[0:10, 0:19].astype(float)
     image = skimage.exposure.rescale_intensity(i + j * 5.0)
     expected = skimage.transform.resize(image, (19, 10), order=1, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -275,12 +275,12 @@ def test_reshape_half_and_double(self):
     numpy.testing.assert_array_almost_equal(result, expected)
 
 
-def test_reshape_using_another_images_dimensions(self):
+def test_reshape_using_another_images_dimensions():
     """'Resize to another image's dimensions"""
     i, j = numpy.mgrid[0:10, 0:19].astype(float)
     image = skimage.exposure.rescale_intensity(1.0 * i + j)
     expected = skimage.transform.resize(image, (19, 10), order=1, mode="symmetric")
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -295,7 +295,7 @@ def test_reshape_using_another_images_dimensions(self):
     assert expected.shape == result.shape
 
 
-def test_resize_with_cropping(self):
+def test_resize_with_cropping():
     # This is a regression test for issue # 967
     r = numpy.random.RandomState()
     r.seed(501)
@@ -305,7 +305,7 @@ def test_resize_with_cropping(self):
     imask = mask.astype(int)
     cropping = numpy.zeros((30, 40), bool)
     cropping[10:20, 10:30] = True
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -321,7 +321,7 @@ def test_resize_with_cropping(self):
     assert tuple(x.shape) == (5, 10)
 
 
-def test_resize_with_cropping_bigger(self):
+def test_resize_with_cropping_bigger():
     # This is a regression test for issue # 967
     r = numpy.random.RandomState()
     r.seed(501)
@@ -331,7 +331,7 @@ def test_resize_with_cropping_bigger(self):
     imask = mask.astype(int)
     cropping = numpy.zeros((30, 40), bool)
     cropping[10:20, 10:30] = True
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -347,10 +347,10 @@ def test_resize_with_cropping_bigger(self):
     assert tuple(x.shape) == (20, 40)
 
 
-def test_resize_color(self):
+def test_resize_color():
     # Regression test of issue #1416
     image = numpy.zeros((20, 22, 3))
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -361,11 +361,11 @@ def test_resize_color(self):
     assert tuple(result.pixel_data.shape) == (10, 11, 3)
 
 
-def test_resize_color_bw(self):
+def test_resize_color_bw():
     # Regression test of issue #1416
     image = numpy.zeros((20, 22, 3))
     tgt_image = numpy.zeros((5, 11))
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -380,11 +380,11 @@ def test_resize_color_bw(self):
     assert tuple(result.pixel_data.shape) == (5, 11, 3)
 
 
-def test_resize_color_color(self):
+def test_resize_color_color():
     # Regression test of issue #1416
     image = numpy.zeros((20, 22, 3))
     tgt_image = numpy.zeros((10, 11, 3))
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         image,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_BILINEAR,
@@ -399,7 +399,7 @@ def test_resize_color_color(self):
     assert tuple(result.pixel_data.shape) == (10, 11, 3)
 
 
-def test_resize_volume_factor_grayscale(self):
+def test_resize_volume_factor_grayscale():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
@@ -410,7 +410,7 @@ def test_resize_volume_factor_grayscale(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -446,7 +446,7 @@ def test_resize_volume_factor_grayscale(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_factor_color(self):
+def test_resize_volume_factor_color():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10, 3)
@@ -457,7 +457,7 @@ def test_resize_volume_factor_color(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -496,7 +496,7 @@ def test_resize_volume_factor_color(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_manual_grayscale(self):
+def test_resize_volume_manual_grayscale():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
@@ -507,7 +507,7 @@ def test_resize_volume_manual_grayscale(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -547,7 +547,7 @@ def test_resize_volume_manual_grayscale(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_manual_color(self):
+def test_resize_volume_manual_color():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10, 3)
@@ -558,7 +558,7 @@ def test_resize_volume_manual_color(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -601,7 +601,7 @@ def test_resize_volume_manual_color(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_grayscale_other_volume_grayscale(self):
+def test_resize_volume_grayscale_other_volume_grayscale():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
@@ -612,7 +612,7 @@ def test_resize_volume_grayscale_other_volume_grayscale(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -656,7 +656,7 @@ def test_resize_volume_grayscale_other_volume_grayscale(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_grayscale_other_volume_color(self):
+def test_resize_volume_grayscale_other_volume_color():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10)
@@ -667,7 +667,7 @@ def test_resize_volume_grayscale_other_volume_color(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -714,7 +714,7 @@ def test_resize_volume_grayscale_other_volume_color(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_color_other_volume_grayscale(self):
+def test_resize_volume_color_other_volume_grayscale():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10, 3)
@@ -725,7 +725,7 @@ def test_resize_volume_color_other_volume_grayscale(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -772,7 +772,7 @@ def test_resize_volume_color_other_volume_grayscale(self):
     numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
 
 
-def test_resize_volume_color_other_volume_color(self):
+def test_resize_volume_color_other_volume_color():
     numpy.random.seed(73)
 
     data = numpy.random.rand(10, 10, 10, 3)
@@ -783,7 +783,7 @@ def test_resize_volume_color_other_volume_color(self):
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_TO_SIZE,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -834,10 +834,10 @@ def test_resize_volume_color_other_volume_color(self):
 
 
 # https://github.com/CellProfiler/CellProfiler/issues/3080
-def test_resize_factor_rounding(self):
+def test_resize_factor_rounding():
     data = numpy.zeros((99, 99))
 
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
@@ -851,10 +851,10 @@ def test_resize_factor_rounding(self):
 
 
 # https://github.com/CellProfiler/CellProfiler/issues/3531
-def test_resize_float(self):
+def test_resize_float():
     data = numpy.ones((10, 10), dtype=numpy.float32) * 2
     expected = numpy.ones((5, 5), dtype=numpy.float32) * 2
-    workspace, module = self.make_workspace(
+    workspace, module = make_workspace(
         data,
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,

@@ -22,8 +22,6 @@ OUTPUT_IMAGE_NAME = "outputimage"
 def input_image_name(index):
     return INPUT_IMAGE_NAME + str(index + 1)
 
-
-class TestTile:
     def test_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

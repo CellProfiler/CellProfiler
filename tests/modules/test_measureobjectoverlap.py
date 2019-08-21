@@ -21,202 +21,204 @@ GROUND_TRUTH_OBJ = "Nuclei"
 ID_OBJ = "Protein"
 
 
-class TestMeasureObjectOverlap:
-    def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
-        """make a workspace to test comparing objects"""
-        """ ground truth object and ID object  are dictionaires w/ the following keys"""
-        """i - i component of pixel coordinates
-        j - j component of pixel coordinates
-        l - label """
+def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
+    """make a workspace to test comparing objects"""
+    """ ground truth object and ID object  are dictionaires w/ the following keys"""
+    """i - i component of pixel coordinates
+    j - j component of pixel coordinates
+    l - label """
 
-        module = cellprofiler.modules.measureobjectoverlap.MeasureObjectOverlap()
-        module.set_module_num(1)
-        module.object_name_GT.value = GROUND_TRUTH_OBJ
-        module.object_name_ID.value = ID_OBJ
-        module.wants_emd.value = True
-        pipeline = cellprofiler.pipeline.Pipeline()
+    module = cellprofiler.modules.measureobjectoverlap.MeasureObjectOverlap()
+    module.set_module_num(1)
+    module.object_name_GT.value = GROUND_TRUTH_OBJ
+    module.object_name_ID.value = ID_OBJ
+    module.wants_emd.value = True
+    pipeline = cellprofiler.pipeline.Pipeline()
 
-        def callback(caller, event):
-            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
-        pipeline.add_listener(callback)
-        pipeline.add_module(module)
-        image_set_list = cellprofiler.image.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
+    pipeline.add_listener(callback)
+    pipeline.add_module(module)
+    image_set_list = cellprofiler.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
 
-        for name, d in (
-            (GROUND_TRUTH_OBJ_IMAGE_NAME, ground_truth),
-            (ID_OBJ_IMAGE_NAME, id),
-        ):
-            image = cellprofiler.image.Image(
-                d["image"], mask=d.get("mask"), crop_mask=d.get("crop_mask")
+    for name, d in (
+        (GROUND_TRUTH_OBJ_IMAGE_NAME, ground_truth),
+        (ID_OBJ_IMAGE_NAME, id),
+    ):
+        image = cellprofiler.image.Image(
+            d["image"], mask=d.get("mask"), crop_mask=d.get("crop_mask")
+        )
+        image_set.add(name, image)
+    object_set = cellprofiler.object.ObjectSet()
+    for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj), (ID_OBJ, id_obj)):
+        object = cellprofiler.object.Objects()
+        if d.shape[1] == 3:
+            object.ijv = d
+        else:
+            object.segmented = d
+        object_set.add_objects(object, name)
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        object_set,
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
+    )
+    return workspace, module
+
+
+def test_get_measurement_columns(self):
+    workspace, module = self.make_obj_workspace(
+        numpy.zeros((0, 3), int),
+        numpy.zeros((0, 3), int),
+        dict(image=numpy.zeros((20, 10), bool)),
+        dict(image=numpy.zeros((20, 10), bool)),
+    )
+
+    columns = module.get_measurement_columns(workspace.pipeline)
+    # All columns should be unique
+    assert len(columns) == len(set([x[1] for x in columns]))
+    # All columns should be floats and done on images
+    x = columns[-1]
+    assert all([x[0] == cellprofiler.measurement.IMAGE])
+    assert all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT])
+    for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
+        field = "_".join(
+            (
+                cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
+                feature,
+                GROUND_TRUTH_OBJ,
+                ID_OBJ,
             )
-            image_set.add(name, image)
-        object_set = cellprofiler.object.ObjectSet()
-        for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj), (ID_OBJ, id_obj)):
-            object = cellprofiler.object.Objects()
-            if d.shape[1] == 3:
-                object.ijv = d
-            else:
-                object.segmented = d
-            object_set.add_objects(object, name)
-        workspace = cellprofiler.workspace.Workspace(
-            pipeline,
-            module,
-            image_set,
-            object_set,
-            cellprofiler.measurement.Measurements(),
-            image_set_list,
         )
-        return workspace, module
+        assert field in [x[1] for x in columns]
 
-    def test_get_measurement_columns(self):
-        workspace, module = self.make_obj_workspace(
-            numpy.zeros((0, 3), int),
-            numpy.zeros((0, 3), int),
-            dict(image=numpy.zeros((20, 10), bool)),
-            dict(image=numpy.zeros((20, 10), bool)),
-        )
 
-        columns = module.get_measurement_columns(workspace.pipeline)
-        # All columns should be unique
-        assert len(columns) == len(set([x[1] for x in columns]))
-        # All columns should be floats and done on images
-        x = columns[-1]
-        assert all([x[0] == cellprofiler.measurement.IMAGE])
-        assert all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT])
-        for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
-            field = "_".join(
-                (
-                    cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-                    feature,
-                    GROUND_TRUTH_OBJ,
-                    ID_OBJ,
-                )
-            )
-            assert field in [x[1] for x in columns]
+def test_get_measurement_scales(self):
+    workspace, module = self.make_obj_workspace(
+        numpy.zeros((0, 3), int),
+        numpy.zeros((0, 3), int),
+        dict(image=numpy.zeros((20, 10), bool)),
+        dict(image=numpy.zeros((20, 10), bool)),
+    )
 
-    def test_get_measurement_scales(self):
-        workspace, module = self.make_obj_workspace(
-            numpy.zeros((0, 3), int),
-            numpy.zeros((0, 3), int),
-            dict(image=numpy.zeros((20, 10), bool)),
-            dict(image=numpy.zeros((20, 10), bool)),
-        )
+    scales = module.get_measurement_scales(
+        workspace.pipeline,
+        cellprofiler.measurement.IMAGE,
+        cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
+        cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
+        None,
+    )
 
-        scales = module.get_measurement_scales(
-            workspace.pipeline,
-            cellprofiler.measurement.IMAGE,
+    assert len(scales) == 1
+    assert scales[0] == "_".join((GROUND_TRUTH_OBJ, ID_OBJ))
+
+
+def test_test_measure_overlap_no_objects(self):
+    # Regression test of issue #934 - no objects
+    workspace, module = self.make_obj_workspace(
+        numpy.zeros((0, 3), int),
+        numpy.zeros((0, 3), int),
+        dict(image=numpy.zeros((20, 10), bool)),
+        dict(image=numpy.zeros((20, 10), bool)),
+    )
+    module.run(workspace)
+    m = workspace.measurements
+    for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
+        mname = module.measurement_name(feature)
+        value = m[cellprofiler.measurement.IMAGE, mname, 1]
+        if feature == cellprofiler.modules.measureobjectoverlap.FTR_TRUE_NEG_RATE:
+            assert value == 1
+        elif feature == cellprofiler.modules.measureobjectoverlap.FTR_FALSE_POS_RATE:
+            assert value == 0
+        else:
+            assert numpy.isnan(value), "%s was %f. not nan" % (mname, value)
+    #
+    # Make sure they don't crash
+    #
+    workspace, module = self.make_obj_workspace(
+        numpy.zeros((0, 3), int),
+        numpy.ones((1, 3), int),
+        dict(image=numpy.zeros((20, 10), bool)),
+        dict(image=numpy.zeros((20, 10), bool)),
+    )
+    module.run(workspace)
+    workspace, module = self.make_obj_workspace(
+        numpy.ones((1, 3), int),
+        numpy.zeros((0, 3), int),
+        dict(image=numpy.zeros((20, 10), bool)),
+        dict(image=numpy.zeros((20, 10), bool)),
+    )
+    module.run(workspace)
+
+
+def test_test_measure_overlap_objects(self):
+    r = numpy.random.RandomState()
+    r.seed(51)
+
+    workspace, module = self.make_obj_workspace(
+        numpy.column_stack(
+            [r.randint(0, 20, 150), r.randint(0, 10, 150), r.randint(1, 5, 150)]
+        ),
+        numpy.column_stack(
+            [r.randint(0, 20, 175), r.randint(0, 10, 175), r.randint(1, 5, 175)]
+        ),
+        dict(image=numpy.zeros((20, 10), bool)),
+        dict(image=numpy.zeros((20, 10), bool)),
+    )
+    module.wants_emd.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+
+
+def test_test_objects_rand_index(self):
+    r = numpy.random.RandomState()
+    r.seed(52)
+    base = numpy.zeros((100, 100), bool)
+    base[r.randint(0, 100, size=10), r.randint(0, 100, size=10)] = True
+    gt = base.copy()
+    gt[r.randint(0, 100, size=5), r.randint(0, 100, size=5)] = True
+    test = base.copy()
+    test[r.randint(0, 100, size=5), r.randint(0, 100, size=5)] = True
+    gt = scipy.ndimage.binary_dilation(gt, numpy.ones((5, 5), bool))
+    test = scipy.ndimage.binary_dilation(test, numpy.ones((5, 5), bool))
+
+    gt_labels, _ = scipy.ndimage.label(gt, numpy.ones((3, 3), bool))
+    test_labels, _ = scipy.ndimage.label(test, numpy.ones((3, 3), bool))
+
+    workspace, module = self.make_obj_workspace(
+        gt_labels,
+        test_labels,
+        dict(image=numpy.ones(gt_labels.shape)),
+        dict(image=numpy.ones(test_labels.shape)),
+    )
+    module.run(workspace)
+
+    measurements = workspace.measurements
+    mname = "_".join(
+        (
             cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
             cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
-            None,
+            GROUND_TRUTH_OBJ,
+            ID_OBJ,
         )
-
-        assert len(scales) == 1
-        assert scales[0] == "_".join((GROUND_TRUTH_OBJ, ID_OBJ))
-
-    def test_test_measure_overlap_no_objects(self):
-        # Regression test of issue #934 - no objects
-        workspace, module = self.make_obj_workspace(
-            numpy.zeros((0, 3), int),
-            numpy.zeros((0, 3), int),
-            dict(image=numpy.zeros((20, 10), bool)),
-            dict(image=numpy.zeros((20, 10), bool)),
+    )
+    expected_rand_index = measurements.get_current_image_measurement(mname)
+    rand_index = measurements.get_current_image_measurement(mname)
+    assert round(abs(rand_index - expected_rand_index), 7) == 0
+    mname = "_".join(
+        (
+            cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
+            cellprofiler.modules.measureobjectoverlap.FTR_ADJUSTED_RAND_INDEX,
+            GROUND_TRUTH_OBJ,
+            ID_OBJ,
         )
-        module.run(workspace)
-        m = workspace.measurements
-        for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
-            mname = module.measurement_name(feature)
-            value = m[cellprofiler.measurement.IMAGE, mname, 1]
-            if feature == cellprofiler.modules.measureobjectoverlap.FTR_TRUE_NEG_RATE:
-                assert value == 1
-            elif (
-                feature == cellprofiler.modules.measureobjectoverlap.FTR_FALSE_POS_RATE
-            ):
-                assert value == 0
-            else:
-                assert numpy.isnan(value), "%s was %f. not nan" % (mname, value)
-        #
-        # Make sure they don't crash
-        #
-        workspace, module = self.make_obj_workspace(
-            numpy.zeros((0, 3), int),
-            numpy.ones((1, 3), int),
-            dict(image=numpy.zeros((20, 10), bool)),
-            dict(image=numpy.zeros((20, 10), bool)),
-        )
-        module.run(workspace)
-        workspace, module = self.make_obj_workspace(
-            numpy.ones((1, 3), int),
-            numpy.zeros((0, 3), int),
-            dict(image=numpy.zeros((20, 10), bool)),
-            dict(image=numpy.zeros((20, 10), bool)),
-        )
-        module.run(workspace)
-
-    def test_test_measure_overlap_objects(self):
-        r = numpy.random.RandomState()
-        r.seed(51)
-
-        workspace, module = self.make_obj_workspace(
-            numpy.column_stack(
-                [r.randint(0, 20, 150), r.randint(0, 10, 150), r.randint(1, 5, 150)]
-            ),
-            numpy.column_stack(
-                [r.randint(0, 20, 175), r.randint(0, 10, 175), r.randint(1, 5, 175)]
-            ),
-            dict(image=numpy.zeros((20, 10), bool)),
-            dict(image=numpy.zeros((20, 10), bool)),
-        )
-        module.wants_emd.value = False
-        module.run(workspace)
-        measurements = workspace.measurements
-        assert isinstance(measurements, cellprofiler.measurement.Measurements)
-
-    def test_test_objects_rand_index(self):
-        r = numpy.random.RandomState()
-        r.seed(52)
-        base = numpy.zeros((100, 100), bool)
-        base[r.randint(0, 100, size=10), r.randint(0, 100, size=10)] = True
-        gt = base.copy()
-        gt[r.randint(0, 100, size=5), r.randint(0, 100, size=5)] = True
-        test = base.copy()
-        test[r.randint(0, 100, size=5), r.randint(0, 100, size=5)] = True
-        gt = scipy.ndimage.binary_dilation(gt, numpy.ones((5, 5), bool))
-        test = scipy.ndimage.binary_dilation(test, numpy.ones((5, 5), bool))
-
-        gt_labels, _ = scipy.ndimage.label(gt, numpy.ones((3, 3), bool))
-        test_labels, _ = scipy.ndimage.label(test, numpy.ones((3, 3), bool))
-
-        workspace, module = self.make_obj_workspace(
-            gt_labels,
-            test_labels,
-            dict(image=numpy.ones(gt_labels.shape)),
-            dict(image=numpy.ones(test_labels.shape)),
-        )
-        module.run(workspace)
-
-        measurements = workspace.measurements
-        mname = "_".join(
-            (
-                cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-                cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
-                GROUND_TRUTH_OBJ,
-                ID_OBJ,
-            )
-        )
-        expected_rand_index = measurements.get_current_image_measurement(mname)
-        rand_index = measurements.get_current_image_measurement(mname)
-        assert round(abs(rand_index - expected_rand_index), 7) == 0
-        mname = "_".join(
-            (
-                cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-                cellprofiler.modules.measureobjectoverlap.FTR_ADJUSTED_RAND_INDEX,
-                GROUND_TRUTH_OBJ,
-                ID_OBJ,
-            )
-        )
-        adjusted_rand_index = measurements.get_current_image_measurement(mname)
+    )
+    adjusted_rand_index = measurements.get_current_image_measurement(mname)
 
 
 #        self.assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)

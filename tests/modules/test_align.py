@@ -50,18 +50,9 @@ def make_workspace(images, masks):
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8945
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Align:[module_num:1|svn_version:'8942'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the alignment method:Mutual Information
-Crop output images to retain just the aligned regions?:Yes
-Select the first input image:Image1
-Name the first output image:AlignedImage1
-Select the second input image:Image2
-Name the second output image:AlignedImage2
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -81,34 +72,9 @@ Name the second output image:AlignedImage2
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8945
+    with open("./tests/resources/modules/align/load_v3.pipeline", "r") as fd:
+        data = fd.read()
 
-Align:[module_num:1|svn_version:'8942'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the alignment method:Mutual Information
-Crop mode:Keep size
-Select the first input image:Image1
-Name the first output image:AlignedImage1
-Select the second input image:Image2
-Name the second output image:AlignedImage2
-
-Align:[module_num:1|svn_version:'8942'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the alignment method:Mutual Information
-Crop mode:Crop to aligned region
-Select the first input image:Image1
-Name the first output image:AlignedImage1
-Select the second input image:Image2
-Name the second output image:AlignedImage2
-
-Align:[module_num:1|svn_version:'8942'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the alignment method:Mutual Information
-Crop mode:Pad images
-Select the first input image:Image1
-Name the first output image:AlignedImage1
-Select the second input image:Image2
-Name the second output image:AlignedImage2
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

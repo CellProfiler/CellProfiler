@@ -18,18 +18,11 @@ FIGURE_NAME = "figname"
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9525
+    with open(
+        "./tests/resources/modules/calculatestatistics/load_v2.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Where is information about the positive and negative control status of each image?:Metadata_Controls
-Where is information about the treatment dose for each image?:Metadata_SBS_Doses
-Log-transform dose values?:No
-Create dose/response plots?:Yes
-Figure prefix:DoseResponsePlot
-File output location:Default Output Folder\x7CTest
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

@@ -1,0 +1,1411 @@
+<?xml version="1.0" ?>
+<training-data xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd">
+<version>
+10680
+</version>
+<min-area>
+596.898
+</min-area>
+<max-area>
+1183.0
+</max-area>
+<cost-threshold>
+100
+</cost-threshold>
+<num-control-points>
+21
+</num-control-points>
+<max-skel-length>
+158.038188951
+</max-skel-length>
+<min-path-length>
+76.7075694196
+</min-path-length>
+<max-path-length>
+173.842007846
+</max-path-length>
+<median-worm-area>
+1006.0
+</median-worm-area>
+<max-radius>
+5.07108224265
+</max-radius>
+<overlap-weight>
+5.0
+</overlap-weight>
+<leftover-weight>
+10.0
+</leftover-weight>
+<training-set-size>
+200
+</training-set-size>
+<mean-angles>
+<value>
+  -0.010999071156
+</value>
+<value>
+  -0.011369928253
+</value>
+<value>
+  -0.0063572663907
+</value>
+<value>
+  -0.00537369691481
+</value>
+<value>
+  -0.00491960423727
+</value>
+<value>
+  -0.00888319810452
+</value>
+<value>
+  0.000958176954014
+</value>
+<value>
+  -0.00329354759164
+</value>
+<value>
+  -0.00182154382306
+</value>
+<value>
+  -0.00252850541515
+</value>
+<value>
+  0.00583731052007
+</value>
+<value>
+  -0.00629326705054
+</value>
+<value>
+  -0.000221502806058
+</value>
+<value>
+  0.000541997532415
+</value>
+<value>
+  7.10858314614e-05
+</value>
+<value>
+  -0.000536334650268
+</value>
+<value>
+  0.00846699296415
+</value>
+<value>
+  0.00229934152116
+</value>
+<value>
+  0.013315157629
+</value>
+<value>
+  127.475166584
+</value>
+</mean-angles>
+<radii-from-training>
+<value>
+  1.42515381896
+</value>
+<value>
+  2.85816813675
+</value>
+<value>
+  3.625274645
+</value>
+<value>
+  4.0753094944
+</value>
+<value>
+  4.35612078737
+</value>
+<value>
+  4.52117778419
+</value>
+<value>
+  4.63350649815
+</value>
+<value>
+  4.68616131779
+</value>
+<value>
+  4.72754363339
+</value>
+<value>
+  4.7538931664
+</value>
+<value>
+  4.74523602328
+</value>
+<value>
+  4.73738576257
+</value>
+<value>
+  4.71422245337
+</value>
+<value>
+  4.67997686977
+</value>
+<value>
+  4.63299502256
+</value>
+<value>
+  4.54769060478
+</value>
+<value>
+  4.37493539203
+</value>
+<value>
+  4.10516708918
+</value>
+<value>
+  3.6478380576
+</value>
+<value>
+  2.87519387935
+</value>
+<value>
+  1.41510654664
+</value>
+</radii-from-training>
+<inv-angles-covariance-matrix>
+<values>
+  <value>
+    14.4160767437
+  </value>
+  <value>
+    -3.62948521476
+  </value>
+  <value>
+    -5.54563467306
+  </value>
+  <value>
+    -2.03727846881
+  </value>
+  <value>
+    1.28497735663
+  </value>
+  <value>
+    1.69152924813
+  </value>
+  <value>
+    0.155723103489
+  </value>
+  <value>
+    0.0968570278119
+  </value>
+  <value>
+    -0.830941512378
+  </value>
+  <value>
+    -0.212837030458
+  </value>
+  <value>
+    0.343854099462
+  </value>
+  <value>
+    0.541856348331
+  </value>
+  <value>
+    0.0113083798588
+  </value>
+  <value>
+    -0.526926108341
+  </value>
+  <value>
+    0.499035732802
+  </value>
+  <value>
+    -0.714281934407
+  </value>
+  <value>
+    0.407365302927
+  </value>
+  <value>
+    0.0412386837587
+  </value>
+  <value>
+    0.399436023924
+  </value>
+  <value>
+    0.0100796538444
+  </value>
+</values>
+<values>
+  <value>
+    -3.62948521476
+  </value>
+  <value>
+    28.3822272923
+  </value>
+  <value>
+    -5.69796350599
+  </value>
+  <value>
+    -12.8940771298
+  </value>
+  <value>
+    -3.24074903822
+  </value>
+  <value>
+    6.60066559736
+  </value>
+  <value>
+    4.7027587735
+  </value>
+  <value>
+    -0.228375351756
+  </value>
+  <value>
+    -0.93975886278
+  </value>
+  <value>
+    -0.404133419773
+  </value>
+  <value>
+    0.461061138309
+  </value>
+  <value>
+    -0.620175812393
+  </value>
+  <value>
+    0.426458145116
+  </value>
+  <value>
+    0.242860102398
+  </value>
+  <value>
+    -1.395472436
+  </value>
+  <value>
+    -0.416345646399
+  </value>
+  <value>
+    -0.744042489471
+  </value>
+  <value>
+    1.2607667493
+  </value>
+  <value>
+    0.0266160618793
+  </value>
+  <value>
+    0.0125632227269
+  </value>
+</values>
+<values>
+  <value>
+    -5.54563467306
+  </value>
+  <value>
+    -5.69796350599
+  </value>
+  <value>
+    33.965523631
+  </value>
+  <value>
+    -2.5184071008
+  </value>
+  <value>
+    -11.9739358904
+  </value>
+  <value>
+    -5.55211501206
+  </value>
+  <value>
+    1.54963332447
+  </value>
+  <value>
+    1.51853522595
+  </value>
+  <value>
+    2.94238214784
+  </value>
+  <value>
+    1.58963458609
+  </value>
+  <value>
+    -1.09690230963
+  </value>
+  <value>
+    -3.03348214943
+  </value>
+  <value>
+    -0.499685304962
+  </value>
+  <value>
+    0.0832942797245
+  </value>
+  <value>
+    2.64055890507
+  </value>
+  <value>
+    1.47285696771
+  </value>
+  <value>
+    -0.837591498704
+  </value>
+  <value>
+    -1.32897383529
+  </value>
+  <value>
+    -0.0909573472139
+  </value>
+  <value>
+    -0.00747385975607
+  </value>
+</values>
+<values>
+  <value>
+    -2.03727846881
+  </value>
+  <value>
+    -12.8940771298
+  </value>
+  <value>
+    -2.5184071008
+  </value>
+  <value>
+    38.910896265
+  </value>
+  <value>
+    -0.501289252952
+  </value>
+  <value>
+    -16.9651461757
+  </value>
+  <value>
+    -8.5206491768
+  </value>
+  <value>
+    0.599043361039
+  </value>
+  <value>
+    4.0425703374
+  </value>
+  <value>
+    3.46803482473
+  </value>
+  <value>
+    1.5750544267
+  </value>
+  <value>
+    0.828548143764
+  </value>
+  <value>
+    -0.468487536336
+  </value>
+  <value>
+    1.18597661827
+  </value>
+  <value>
+    0.798189409259
+  </value>
+  <value>
+    0.862661371456
+  </value>
+  <value>
+    -0.14246505168
+  </value>
+  <value>
+    -1.3841655628
+  </value>
+  <value>
+    0.236725547536
+  </value>
+  <value>
+    -0.0163619841363
+  </value>
+</values>
+<values>
+  <value>
+    1.28497735663
+  </value>
+  <value>
+    -3.24074903822
+  </value>
+  <value>
+    -11.9739358904
+  </value>
+  <value>
+    -0.501289252952
+  </value>
+  <value>
+    50.690805239
+  </value>
+  <value>
+    -2.50730714299
+  </value>
+  <value>
+    -19.7892493084
+  </value>
+  <value>
+    -8.70870454399
+  </value>
+  <value>
+    0.544130042179
+  </value>
+  <value>
+    3.96597772445
+  </value>
+  <value>
+    4.72570280412
+  </value>
+  <value>
+    2.85472249374
+  </value>
+  <value>
+    -2.84084610444
+  </value>
+  <value>
+    -4.25238476559
+  </value>
+  <value>
+    -1.41656624794
+  </value>
+  <value>
+    2.35443215524
+  </value>
+  <value>
+    1.26857012684
+  </value>
+  <value>
+    -0.0117059492945
+  </value>
+  <value>
+    0.193085174503
+  </value>
+  <value>
+    -0.0128948234117
+  </value>
+</values>
+<values>
+  <value>
+    1.69152924813
+  </value>
+  <value>
+    6.60066559736
+  </value>
+  <value>
+    -5.55211501206
+  </value>
+  <value>
+    -16.9651461757
+  </value>
+  <value>
+    -2.50730714299
+  </value>
+  <value>
+    49.7744788862
+  </value>
+  <value>
+    2.21292071874
+  </value>
+  <value>
+    -18.9379120677
+  </value>
+  <value>
+    -11.6040186403
+  </value>
+  <value>
+    -0.650553765753
+  </value>
+  <value>
+    3.61258885051
+  </value>
+  <value>
+    2.19212295163
+  </value>
+  <value>
+    -0.250008762357
+  </value>
+  <value>
+    -2.6870585839
+  </value>
+  <value>
+    -1.82043770689
+  </value>
+  <value>
+    0.109737469347
+  </value>
+  <value>
+    0.560938864345
+  </value>
+  <value>
+    0.219973313189
+  </value>
+  <value>
+    -0.590133590346
+  </value>
+  <value>
+    -0.00967309489576
+  </value>
+</values>
+<values>
+  <value>
+    0.155723103489
+  </value>
+  <value>
+    4.7027587735
+  </value>
+  <value>
+    1.54963332447
+  </value>
+  <value>
+    -8.5206491768
+  </value>
+  <value>
+    -19.7892493084
+  </value>
+  <value>
+    2.21292071874
+  </value>
+  <value>
+    51.0843827257
+  </value>
+  <value>
+    0.934339159637
+  </value>
+  <value>
+    -16.1389407803
+  </value>
+  <value>
+    -13.597573567
+  </value>
+  <value>
+    -1.54861446638
+  </value>
+  <value>
+    3.38169064096
+  </value>
+  <value>
+    4.06874131702
+  </value>
+  <value>
+    -0.827598209967
+  </value>
+  <value>
+    0.403883540178
+  </value>
+  <value>
+    -2.06739129329
+  </value>
+  <value>
+    -2.88536104019
+  </value>
+  <value>
+    1.06444751058
+  </value>
+  <value>
+    0.425819183522
+  </value>
+  <value>
+    0.0218279774716
+  </value>
+</values>
+<values>
+  <value>
+    0.0968570278119
+  </value>
+  <value>
+    -0.228375351756
+  </value>
+  <value>
+    1.51853522595
+  </value>
+  <value>
+    0.599043361039
+  </value>
+  <value>
+    -8.70870454399
+  </value>
+  <value>
+    -18.9379120677
+  </value>
+  <value>
+    0.934339159637
+  </value>
+  <value>
+    53.1553410056
+  </value>
+  <value>
+    3.83284330941
+  </value>
+  <value>
+    -21.8128767252
+  </value>
+  <value>
+    -12.4239738428
+  </value>
+  <value>
+    -0.689818407647
+  </value>
+  <value>
+    4.93635164952
+  </value>
+  <value>
+    4.04304737017
+  </value>
+  <value>
+    1.11729234765
+  </value>
+  <value>
+    -0.61148362918
+  </value>
+  <value>
+    -1.50162558801
+  </value>
+  <value>
+    -1.61722109339
+  </value>
+  <value>
+    0.491305564623
+  </value>
+  <value>
+    0.00813673085389
+  </value>
+</values>
+<values>
+  <value>
+    -0.830941512378
+  </value>
+  <value>
+    -0.93975886278
+  </value>
+  <value>
+    2.94238214784
+  </value>
+  <value>
+    4.0425703374
+  </value>
+  <value>
+    0.544130042179
+  </value>
+  <value>
+    -11.6040186403
+  </value>
+  <value>
+    -16.1389407803
+  </value>
+  <value>
+    3.83284330941
+  </value>
+  <value>
+    47.6933352778
+  </value>
+  <value>
+    1.02465850736
+  </value>
+  <value>
+    -18.704856196
+  </value>
+  <value>
+    -9.30970873094
+  </value>
+  <value>
+    1.7845053387
+  </value>
+  <value>
+    2.83710840227
+  </value>
+  <value>
+    3.85412837972
+  </value>
+  <value>
+    -0.420823216821
+  </value>
+  <value>
+    1.56974432254
+  </value>
+  <value>
+    -0.212411753395
+  </value>
+  <value>
+    -0.638990283092
+  </value>
+  <value>
+    -0.00117994378546
+  </value>
+</values>
+<values>
+  <value>
+    -0.212837030458
+  </value>
+  <value>
+    -0.404133419773
+  </value>
+  <value>
+    1.58963458609
+  </value>
+  <value>
+    3.46803482473
+  </value>
+  <value>
+    3.96597772445
+  </value>
+  <value>
+    -0.650553765753
+  </value>
+  <value>
+    -13.597573567
+  </value>
+  <value>
+    -21.8128767252
+  </value>
+  <value>
+    1.02465850736
+  </value>
+  <value>
+    55.2260388503
+  </value>
+  <value>
+    4.35803059752
+  </value>
+  <value>
+    -17.4350070993
+  </value>
+  <value>
+    -9.9394563068
+  </value>
+  <value>
+    0.592362874638
+  </value>
+  <value>
+    4.03037893175
+  </value>
+  <value>
+    0.749631051365
+  </value>
+  <value>
+    0.179619159884
+  </value>
+  <value>
+    1.09520337409
+  </value>
+  <value>
+    0.198303530561
+  </value>
+  <value>
+    -0.0128674812863
+  </value>
+</values>
+<values>
+  <value>
+    0.343854099462
+  </value>
+  <value>
+    0.461061138309
+  </value>
+  <value>
+    -1.09690230963
+  </value>
+  <value>
+    1.5750544267
+  </value>
+  <value>
+    4.72570280412
+  </value>
+  <value>
+    3.61258885051
+  </value>
+  <value>
+    -1.54861446638
+  </value>
+  <value>
+    -12.4239738428
+  </value>
+  <value>
+    -18.704856196
+  </value>
+  <value>
+    4.35803059752
+  </value>
+  <value>
+    51.04055356
+  </value>
+  <value>
+    3.08936728044
+  </value>
+  <value>
+    -17.5902587966
+  </value>
+  <value>
+    -10.8714973146
+  </value>
+  <value>
+    -0.045009571053
+  </value>
+  <value>
+    4.87264332876
+  </value>
+  <value>
+    1.30470158026
+  </value>
+  <value>
+    -0.320349338202
+  </value>
+  <value>
+    0.55323063623
+  </value>
+  <value>
+    -0.00361862544014
+  </value>
+</values>
+<values>
+  <value>
+    0.541856348331
+  </value>
+  <value>
+    -0.620175812393
+  </value>
+  <value>
+    -3.03348214943
+  </value>
+  <value>
+    0.828548143764
+  </value>
+  <value>
+    2.85472249374
+  </value>
+  <value>
+    2.19212295163
+  </value>
+  <value>
+    3.38169064096
+  </value>
+  <value>
+    -0.689818407647
+  </value>
+  <value>
+    -9.30970873094
+  </value>
+  <value>
+    -17.4350070993
+  </value>
+  <value>
+    3.08936728044
+  </value>
+  <value>
+    47.4661853593
+  </value>
+  <value>
+    -1.87723439855
+  </value>
+  <value>
+    -15.2700084763
+  </value>
+  <value>
+    -7.6273108814
+  </value>
+  <value>
+    4.14811581054
+  </value>
+  <value>
+    1.42240471385
+  </value>
+  <value>
+    0.0505728359147
+  </value>
+  <value>
+    -0.0106613679324
+  </value>
+  <value>
+    -0.000211505765068
+  </value>
+</values>
+<values>
+  <value>
+    0.0113083798588
+  </value>
+  <value>
+    0.426458145116
+  </value>
+  <value>
+    -0.499685304962
+  </value>
+  <value>
+    -0.468487536336
+  </value>
+  <value>
+    -2.84084610444
+  </value>
+  <value>
+    -0.250008762357
+  </value>
+  <value>
+    4.06874131702
+  </value>
+  <value>
+    4.93635164952
+  </value>
+  <value>
+    1.7845053387
+  </value>
+  <value>
+    -9.9394563068
+  </value>
+  <value>
+    -17.5902587966
+  </value>
+  <value>
+    -1.87723439855
+  </value>
+  <value>
+    47.8240218251
+  </value>
+  <value>
+    2.57791664619
+  </value>
+  <value>
+    -14.5709240372
+  </value>
+  <value>
+    -4.78007676552
+  </value>
+  <value>
+    1.87167780269
+  </value>
+  <value>
+    0.359928009336
+  </value>
+  <value>
+    -1.18561757081
+  </value>
+  <value>
+    0.014074799611
+  </value>
+</values>
+<values>
+  <value>
+    -0.526926108341
+  </value>
+  <value>
+    0.242860102398
+  </value>
+  <value>
+    0.0832942797245
+  </value>
+  <value>
+    1.18597661827
+  </value>
+  <value>
+    -4.25238476559
+  </value>
+  <value>
+    -2.6870585839
+  </value>
+  <value>
+    -0.827598209967
+  </value>
+  <value>
+    4.04304737017
+  </value>
+  <value>
+    2.83710840227
+  </value>
+  <value>
+    0.592362874638
+  </value>
+  <value>
+    -10.8714973146
+  </value>
+  <value>
+    -15.2700084763
+  </value>
+  <value>
+    2.57791664619
+  </value>
+  <value>
+    46.696159054
+  </value>
+  <value>
+    -4.74906899066
+  </value>
+  <value>
+    -15.6278488145
+  </value>
+  <value>
+    -4.24795289841
+  </value>
+  <value>
+    2.87455853452
+  </value>
+  <value>
+    3.07635737509
+  </value>
+  <value>
+    0.00532906905096
+  </value>
+</values>
+<values>
+  <value>
+    0.499035732802
+  </value>
+  <value>
+    -1.395472436
+  </value>
+  <value>
+    2.64055890507
+  </value>
+  <value>
+    0.798189409259
+  </value>
+  <value>
+    -1.41656624794
+  </value>
+  <value>
+    -1.82043770689
+  </value>
+  <value>
+    0.403883540178
+  </value>
+  <value>
+    1.11729234765
+  </value>
+  <value>
+    3.85412837972
+  </value>
+  <value>
+    4.03037893175
+  </value>
+  <value>
+    -0.045009571053
+  </value>
+  <value>
+    -7.6273108814
+  </value>
+  <value>
+    -14.5709240372
+  </value>
+  <value>
+    -4.74906899066
+  </value>
+  <value>
+    40.1689374127
+  </value>
+  <value>
+    -3.67980915371
+  </value>
+  <value>
+    -10.3797521361
+  </value>
+  <value>
+    -0.841069955948
+  </value>
+  <value>
+    3.27779133415
+  </value>
+  <value>
+    0.0045492369767
+  </value>
+</values>
+<values>
+  <value>
+    -0.714281934407
+  </value>
+  <value>
+    -0.416345646399
+  </value>
+  <value>
+    1.47285696771
+  </value>
+  <value>
+    0.862661371456
+  </value>
+  <value>
+    2.35443215524
+  </value>
+  <value>
+    0.109737469347
+  </value>
+  <value>
+    -2.06739129329
+  </value>
+  <value>
+    -0.61148362918
+  </value>
+  <value>
+    -0.420823216821
+  </value>
+  <value>
+    0.749631051365
+  </value>
+  <value>
+    4.87264332876
+  </value>
+  <value>
+    4.14811581054
+  </value>
+  <value>
+    -4.78007676552
+  </value>
+  <value>
+    -15.6278488145
+  </value>
+  <value>
+    -3.67980915371
+  </value>
+  <value>
+    37.0559195085
+  </value>
+  <value>
+    -1.42897044519
+  </value>
+  <value>
+    -7.88598395567
+  </value>
+  <value>
+    -1.9964210551
+  </value>
+  <value>
+    -0.0047454750271
+  </value>
+</values>
+<values>
+  <value>
+    0.407365302927
+  </value>
+  <value>
+    -0.744042489471
+  </value>
+  <value>
+    -0.837591498704
+  </value>
+  <value>
+    -0.14246505168
+  </value>
+  <value>
+    1.26857012684
+  </value>
+  <value>
+    0.560938864345
+  </value>
+  <value>
+    -2.88536104019
+  </value>
+  <value>
+    -1.50162558801
+  </value>
+  <value>
+    1.56974432254
+  </value>
+  <value>
+    0.179619159884
+  </value>
+  <value>
+    1.30470158026
+  </value>
+  <value>
+    1.42240471385
+  </value>
+  <value>
+    1.87167780269
+  </value>
+  <value>
+    -4.24795289841
+  </value>
+  <value>
+    -10.3797521361
+  </value>
+  <value>
+    -1.42897044519
+  </value>
+  <value>
+    31.0878364175
+  </value>
+  <value>
+    -3.67706594057
+  </value>
+  <value>
+    -7.74307062767
+  </value>
+  <value>
+    -0.0186367239616
+  </value>
+</values>
+<values>
+  <value>
+    0.0412386837587
+  </value>
+  <value>
+    1.2607667493
+  </value>
+  <value>
+    -1.32897383529
+  </value>
+  <value>
+    -1.3841655628
+  </value>
+  <value>
+    -0.0117059492945
+  </value>
+  <value>
+    0.219973313189
+  </value>
+  <value>
+    1.06444751058
+  </value>
+  <value>
+    -1.61722109339
+  </value>
+  <value>
+    -0.212411753395
+  </value>
+  <value>
+    1.09520337409
+  </value>
+  <value>
+    -0.320349338202
+  </value>
+  <value>
+    0.0505728359147
+  </value>
+  <value>
+    0.359928009336
+  </value>
+  <value>
+    2.87455853452
+  </value>
+  <value>
+    -0.841069955948
+  </value>
+  <value>
+    -7.88598395567
+  </value>
+  <value>
+    -3.67706594057
+  </value>
+  <value>
+    17.6561215842
+  </value>
+  <value>
+    -0.53359878584
+  </value>
+  <value>
+    0.00910717515256
+  </value>
+</values>
+<values>
+  <value>
+    0.399436023924
+  </value>
+  <value>
+    0.0266160618793
+  </value>
+  <value>
+    -0.0909573472139
+  </value>
+  <value>
+    0.236725547536
+  </value>
+  <value>
+    0.193085174503
+  </value>
+  <value>
+    -0.590133590346
+  </value>
+  <value>
+    0.425819183522
+  </value>
+  <value>
+    0.491305564623
+  </value>
+  <value>
+    -0.638990283092
+  </value>
+  <value>
+    0.198303530561
+  </value>
+  <value>
+    0.55323063623
+  </value>
+  <value>
+    -0.0106613679324
+  </value>
+  <value>
+    -1.18561757081
+  </value>
+  <value>
+    3.07635737509
+  </value>
+  <value>
+    3.27779133415
+  </value>
+  <value>
+    -1.9964210551
+  </value>
+  <value>
+    -7.74307062767
+  </value>
+  <value>
+    -0.53359878584
+  </value>
+  <value>
+    13.2416621872
+  </value>
+  <value>
+    0.00936896857131
+  </value>
+</values>
+<values>
+  <value>
+    0.0100796538444
+  </value>
+  <value>
+    0.0125632227269
+  </value>
+  <value>
+    -0.00747385975607
+  </value>
+  <value>
+    -0.0163619841363
+  </value>
+  <value>
+    -0.0128948234117
+  </value>
+  <value>
+    -0.00967309489576
+  </value>
+  <value>
+    0.0218279774715
+  </value>
+  <value>
+    0.00813673085389
+  </value>
+  <value>
+    -0.00117994378545
+  </value>
+  <value>
+    -0.0128674812862
+  </value>
+  <value>
+    -0.00361862544014
+  </value>
+  <value>
+    -0.000211505765068
+  </value>
+  <value>
+    0.014074799611
+  </value>
+  <value>
+    0.00532906905096
+  </value>
+  <value>
+    0.0045492369767
+  </value>
+  <value>
+    -0.0047454750271
+  </value>
+  <value>
+    -0.0186367239616
+  </value>
+  <value>
+    0.00910717515256
+  </value>
+  <value>
+    0.00936896857131
+  </value>
+  <value>
+    0.00505367806039
+  </value>
+</values>
+</inv-angles-covariance-matrix>
+</training-data>

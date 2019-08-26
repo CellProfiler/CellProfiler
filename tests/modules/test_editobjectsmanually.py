@@ -13,17 +13,9 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9120
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Select the input objects:Nuclei
-Name the objects left after editing:EditedNuclei
-Do you want to save outlines of the edited objects?:Yes
-What do you want to call the outlines?:EditedNucleiOutlines
-Do you want to renumber the objects created by this module or retain the original numbering?:Renumber
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -41,19 +33,9 @@ Do you want to renumber the objects created by this module or retain the origina
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9120
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the objects to be edited:Nuclei
-Name the edited objects:EditedNuclei
-Retain outlines of the edited objects?:No
-Name the outline image:EditedObjectOutlines
-Numbering of the edited objects:Retain
-Display a guiding image?:Yes
-Image name\x3A:DNA
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -73,20 +55,9 @@ Image name\x3A:DNA
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9120
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the objects to be edited:Nuclei
-Name the edited objects:EditedNuclei
-Retain outlines of the edited objects?:No
-Name the outline image:EditedObjectOutlines
-Numbering of the edited objects:Retain
-Display a guiding image?:Yes
-Image name\x3A:DNA
-Allow overlapping objects:Yes
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -106,21 +77,9 @@ Allow overlapping objects:Yes
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150319195827
-GitHash:d8289bf
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-EditObjectsManually:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the objects to be edited:IdentifyPrimaryObjects
-Name the edited objects:EditedObjects
-Numbering of the edited objects:Renumber
-Display a guiding image?:Yes
-Select the guiding image:DNA
-Allow overlapping objects?:No
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

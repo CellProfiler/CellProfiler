@@ -38,19 +38,9 @@ def make_workspace(image1, image2, objects=None):
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8905
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Hidden:2
-Hidden:2
-Select an image to measure:DNA
-Select an image to measure:Cytoplasm
-Select where to measure correlation:Both
-Select an object to measure:Nuclei
-Select an object to measure:Cells
-"""
     fd = StringIO(data)
     pipeline = cpp.Pipeline()
 
@@ -73,23 +63,9 @@ Select an object to measure:Cells
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20160216135025
-GitHash:e55aeba
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Hidden:2
-Hidden:2
-Select an image to measure:DNA
-Select an image to measure:Cytoplasm
-Set threshold as percentage of maximum intensity for the images:25.0
-Select where to measure correlation:Both
-Select an object to measure:Nuclei
-Select an object to measure:Cells
-"""
     fd = StringIO(data)
     pipeline = cpp.Pipeline()
 

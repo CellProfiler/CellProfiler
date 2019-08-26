@@ -72,20 +72,9 @@ def test_revision():
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9722
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Input data file location:Default Input Folder\x7C.
-Name of the file:1049_Metadata.csv
-Load images based on this data?:Yes
-Base image location:Default Input Folder\x7C.
-Process just a range of rows?:No
-Rows to process:10,36
-Group images by metadata?:No
-Select metadata fields for grouping:Well
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -112,20 +101,9 @@ Select metadata fields for grouping:Well
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10534
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
-Input data file location:Elsewhere...\x7Cx\x3A\\projects\\NightlyBuild\\trunk\\ExampleImages\\ExampleSBSImages
-Name of the file:1049_Metadata.csv
-Load images based on this data?:Yes
-Base image location:Default Input Folder\x7C.
-Process just a range of rows?:No
-Rows to process:1,100000
-Group images by metadata?:Yes
-Select metadata fields for grouping:Column,Row
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -158,21 +136,9 @@ Select metadata fields for grouping:Column,Row
 
 
 def test_load_v6():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10536
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
-Input data file location:Elsewhere...\x7Cx\x3A\\projects\\NightlyBuild\\trunk\\ExampleImages\\ExampleSBSImages
-Name of the file:1049_Metadata.csv
-Load images based on this data?:Yes
-Base image location:Default Input Folder\x7C.
-Process just a range of rows?:No
-Rows to process:1,100000
-Group images by metadata?:Yes
-Select metadata fields for grouping:Column,Row
-Rescale intensities?:Yes
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

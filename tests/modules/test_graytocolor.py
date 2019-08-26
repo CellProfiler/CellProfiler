@@ -132,38 +132,9 @@ def test_load_v2():
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20151029194828
-GitHash:8379488
-ModuleCount:5
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select a color scheme:Composite
-Select the image to be colored red:1
-Select the image to be colored green:2
-Select the image to be colored blue:3
-Name the output image:myimage
-Relative weight for the red image:2.1
-Relative weight for the green image:2.2
-Relative weight for the blue image:2.3
-Select the image to be colored cyan:4
-Select the image to be colored magenta:5
-Select the image to be colored yellow:6
-Select the image that determines brightness:7
-Relative weight for the cyan image:1.1
-Relative weight for the magenta image:1.2
-Relative weight for the yellow image:1.3
-Relative weight for the brightness image:1.4
-Hidden:2
-Select the input image to add to the stacked image:DNA
-Color:#7F00FF
-Weight:2.0
-Select the input image to add to the stacked image:GFP
-Color:#7FFF00
-Weight:3.0
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

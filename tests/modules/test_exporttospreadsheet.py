@@ -42,29 +42,9 @@ OBJ_MEAS = "my_object_measurement"
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8948
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select or enter the column delimiter:Tab
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:No
-Add image/object numbers to output?:Yes
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:Yes
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:Yes
-Calculate the per-image standard deviation values for object measurements?:No
-Where do you want to save the files?:Custom folder with metadata
-Folder name\x3A:./\\<?Plate>
-Data to export:Image
-Combine these object measurements with those of the previous object?:No
-Name the data file (not including the output filename, if prepending was requested above):PFX_Image.csv
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-Name the data file (not including the output filename, if prepending was requested above):Nuclei.csv
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -93,48 +73,9 @@ Name the data file (not including the output filename, if prepending was request
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9152
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Select or enter the column delimiter:Comma (",")
-Prepend the output file name to the data file names?:No
-Add image metadata columns to your object data file?:No
-No longer used, always saved:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:No
-Where do you want to save the files?:Default output folder
-Folder name\x3A:.
-Export all measurements?:No
-Data to export:Image
-Combine these object measurements with those of the previous object?:No
-File name\x3A:Image.csv
-Use the object name for the file name?:Yes
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name\x3A:Nuclei.csv
-Use the object name for the file name?:Yes
-Data to export:PropCells
-Combine these object measurements with those of the previous object?:No
-File name\x3A:PropCells.csv
-Use the object name for the file name?:Yes
-Data to export:DistanceCells
-Combine these object measurements with those of the previous object?:No
-File name\x3A:DistanceCells.csv
-Use the object name for the file name?:Yes
-Data to export:DistCytoplasm
-Combine these object measurements with those of the previous object?:No
-File name\x3A:DistCytoplasm.csv
-Use the object name for the file name?:Yes
-Data to export:PropCytoplasm
-Combine these object measurements with those of the previous object?:No
-File name\x3A:PropCytoplasm.csv
-Use the object name for the file name?:Yes
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -171,45 +112,9 @@ Use the object name for the file name?:Yes
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9434
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:5|show_window:False|notes:\x5B\x5D]
-Select or enter the column delimiter:Tab
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:No
-No longer used, always saved:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:Yes
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:Yes
-Calculate the per-image standard deviation values for object measurements?:No
-Output file location:Default Output Folder
-Folder name://iodine/imaging_analysis/People/Lee
-Export all measurements?:No
-Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
-Data to export:Image
-Combine these object measurements with those of the previous object?:No
-File name:Image.csv
-Use the object name for the file name?:No
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name:Nuclei.csv
-Use the object name for the file name?:No
-Data to export:PropCells
-Combine these object measurements with those of the previous object?:No
-File name:PropCells.csv
-Use the object name for the file name?:No
-Data to export:DistanceCells
-Combine these object measurements with those of the previous object?:No
-File name:DistanceCells.csv
-Use the object name for the file name?:No
-Data to export:DistCytoplasm
-Combine these object measurements with those of the previous object?:No
-File name:DistCytoplasm.csv
-Use the object name for the file name?:No
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -267,111 +172,9 @@ Use the object name for the file name?:No
 
 
 def test_load_v6():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9434
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
-Select or enter the column delimiter:Tab
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:Yes
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:Yes
-Calculate the per-image standard deviation values for object measurements?:No
-Output file location:Default Output Folder\x7C//iodine/imaging_analysis/People/Lee
-Export all measurements?:No
-Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
-Data to export:Image
-Combine these object measurements with those of the previous object?:No
-File name:Image.csv
-Use the object name for the file name?:No
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name:Nuclei.csv
-Use the object name for the file name?:No
-Data to export:PropCells
-Combine these object measurements with those of the previous object?:No
-File name:PropCells.csv
-Use the object name for the file name?:No
-Data to export:DistanceCells
-Combine these object measurements with those of the previous object?:No
-File name:DistanceCells.csv
-Use the object name for the file name?:No
-Data to export:DistCytoplasm
-Combine these object measurements with those of the previous object?:No
-File name:DistCytoplasm.csv
-Use the object name for the file name?:No
-
-ExportToSpreadsheet:[module_num:2|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
-Select or enter the column delimiter:Comma (",")
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:Yes
-Limit output to a size that is allowed in Excel?:Yes
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:Yes
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:Yes
-Output file location:Default Input Folder\x7C//iodine/imaging_analysis/People/Lee
-Export all measurements?:Yes
-Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
-Data to export:Image
-Combine these object measurements with those of the previous object?:Yes
-File name:Image.csv
-Use the object name for the file name?:Yes
-
-ExportToSpreadsheet:[module_num:3|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
-Select or enter the column delimiter:Comma (",")
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:Yes
-Limit output to a size that is allowed in Excel?:Yes
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:Yes
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:Yes
-Output file location:Default Input Folder sub-folder\x7C//iodine/imaging_analysis/People/Lee
-Export all measurements?:Yes
-Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
-Data to export:Image
-Combine these object measurements with those of the previous object?:Yes
-File name:Image.csv
-Use the object name for the file name?:Yes
-
-ExportToSpreadsheet:[module_num:4|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
-Select or enter the column delimiter:Comma (",")
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:Yes
-Limit output to a size that is allowed in Excel?:Yes
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:Yes
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:Yes
-Output file location:Default Output Folder sub-folder\x7C//iodine/imaging_analysis/People/Lee
-Export all measurements?:Yes
-Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
-Data to export:Image
-Combine these object measurements with those of the previous object?:Yes
-File name:Image.csv
-Use the object name for the file name?:Yes
-
-ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:6|show_window:False|notes:\x5B\x5D]
-Select or enter the column delimiter:Comma (",")
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:Yes
-Limit output to a size that is allowed in Excel?:Yes
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:Yes
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:Yes
-Output file location:Elsewhere...\x7C//iodine/imaging_analysis/People/Lee
-Export all measurements?:Yes
-Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
-Data to export:Image
-Combine these object measurements with those of the previous object?:Yes
-File name:Image.csv
-Use the object name for the file name?:Yes
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -456,35 +259,9 @@ Use the object name for the file name?:Yes
 
 
 def test_load_v8():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130503182624
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:8|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Select or enter the column delimiter:Comma (",")
-Prepend the output file name to the data file names?:Yes
-Add image metadata columns to your object data file?:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:No
-Output file location:Elsewhere...\x7C/imaging/analysis/2005Projects
-Create a GenePattern GCT file?:No
-Select source of sample row name:Image filename
-Select the image to use as the identifier:GFP
-Select the metadata to use as the identifier:Metadata_GeneName
-Export all measurements, using default file names?:Yes
-Press button to select measurements to export:
-Representation of Nan/Inf:Null
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name:Output.csv
-Use the object name for the file name?:Yes
-
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -514,34 +291,9 @@ Use the object name for the file name?:Yes
 
 
 def test_load_v9():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130503182624
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:9|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Select or enter the column delimiter:Comma (",")
-Add image metadata columns to your object data file?:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:No
-Output file location:Elsewhere...\x7C/imaging/analysis/2005Projects
-Create a GenePattern GCT file?:No
-Select source of sample row name:Image filename
-Select the image to use as the identifier:GFP
-Select the metadata to use as the identifier:Metadata_GeneName
-Export all measurements, using default file names?:Yes
-Press button to select measurements to export:
-Representation of Nan/Inf:Null
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name:Output.csv
-Use the object name for the file name?:Yes
-
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -573,36 +325,9 @@ Use the object name for the file name?:Yes
 
 
 def test_load_v10():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130503182624
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Select or enter the column delimiter:Comma (",")
-Add image metadata columns to your object data file?:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:No
-Output file location:Elsewhere...\x7C/imaging/analysis/2005Projects
-Create a GenePattern GCT file?:No
-Select source of sample row name:Image filename
-Select the image to use as the identifier:GFP
-Select the metadata to use as the identifier:Metadata_GeneName
-Export all measurements, using default file names?:Yes
-Press button to select measurements to export:
-Representation of Nan/Inf:Null
-Add a prefix to file names?:Yes
-Filename prefix\x7c:Fred
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name:Output.csv
-Use the object name for the file name?:Yes
-
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -635,37 +360,9 @@ Use the object name for the file name?:Yes
 
 
 def test_load_v11():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130503182624
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Select or enter the column delimiter:Comma (",")
-Add image metadata columns to your object data file?:No
-Limit output to a size that is allowed in Excel?:No
-Select the columns of measurements to export?:No
-Calculate the per-image mean values for object measurements?:No
-Calculate the per-image median values for object measurements?:No
-Calculate the per-image standard deviation values for object measurements?:No
-Output file location:Elsewhere...\x7C/imaging/analysis/2005Projects
-Create a GenePattern GCT file?:No
-Select source of sample row name:Image filename
-Select the image to use as the identifier:GFP
-Select the metadata to use as the identifier:Metadata_GeneName
-Export all measurements, using default file names?:Yes
-Press button to select measurements to export:
-Representation of Nan/Inf:Null
-Add a prefix to file names?:Yes
-Filename prefix\x7c:Fred
-Overwrite existing files?:No
-Data to export:Nuclei
-Combine these object measurements with those of the previous object?:No
-File name:Output.csv
-Use the object name for the file name?:Yes
-
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

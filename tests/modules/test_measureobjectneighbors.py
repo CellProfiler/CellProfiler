@@ -44,22 +44,9 @@ def make_workspace(labels, mode, distance=0, neighbors_labels=None):
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:11016
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select objects to measure:glia
-Select neighboring objects to measure:neurites
-Method to determine neighbors:Expand until adjacent
-Neighbor distance:2
-Retain the image of objects colored by numbers of neighbors for use later in the pipeline (for example, in SaveImages)?:No
-Name the output image:countimage
-Select colormap:pink
-Retain the image of objects colored by percent of touching pixels for use later in the pipeline (for example, in SaveImages)?:No
-Name the output image:touchingimage
-Select a colormap:purple
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

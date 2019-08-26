@@ -432,19 +432,9 @@ def test_relationships():
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150319195827
-GitHash:d8289bf
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-IdentifyTertiaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the larger identified objects:IdentifySecondaryObjects
-Select the smaller identified objects:IdentifyPrimaryObjects
-Name the tertiary objects to be identified:IdentifyTertiaryObjects
-Shrink smaller object prior to subtraction?:Yes
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

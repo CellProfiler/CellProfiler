@@ -38,16 +38,9 @@ def tearDown():
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8977
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureObjectSkeleton:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Seed objects name\x3A:Nucs
-Skeletonized image name\x3A:DNA
-Do you want to save the branchpoint image?:Yes
-Branchpoint image name\x3A:BPImg
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

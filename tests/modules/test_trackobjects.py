@@ -15,29 +15,9 @@ OBJECT_NAME = "objects"
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9227
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-TrackObjects:[module_num:1|svn_version:\'9227\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
-Choose a tracking method:LAP
-Select the objects to track:Nuclei
-Select measurement to use:AreaShape_Area
-Select pixel distance:80
-Select display option:Color and Number
-Save color-coded image?:No
-Name the output image:TrackedCells
-Cost of being born:100
-Cost of dying:100
-Do you want to run the second phase of the LAP algorithm?:Yes
-Gap cost\x3A:40
-Split alternative cost\x3A:41
-Merge alternative cost\x3A:42
-Maximum gap displacement\x3A:53
-Maximum split score\x3A:54
-Maximum merge score\x3A:55
-Maximum gap:6
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -64,70 +44,9 @@ Maximum gap:6
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10400
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
-Choose a tracking method:Measurements
-Select the objects to track:Objs
-Select object measurement to use for tracking:Slothfulness
-Maximum pixel distance to consider matches:50
-Select display option:Color and Number
-Save color-coded image?:Yes
-Name the output image:TrackByLAP
-Motion model(s)\x3A:Both
-# standard deviations for radius:3
-Radius limit:3.0,10.0
-Run the second phase of the LAP algorithm?:Yes
-Gap cost:40
-Split alternative cost:1
-Merge alternative cost:1
-Maximum gap displacement:51
-Maximum split score:52
-Maximum merge score:53
-Maximum gap:4
-
-TrackObjects:[module_num:2|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
-Choose a tracking method:Overlap
-Select the objects to track:Objs
-Select object measurement to use for tracking:Prescience
-Maximum pixel distance to consider matches:50
-Select display option:Color Only
-Save color-coded image?:No
-Name the output image:TrackByLAP
-Motion model(s)\x3A:Random
-# standard deviations for radius:3
-Radius limit:3.0,10.0
-Run the second phase of the LAP algorithm?:No
-Gap cost:40
-Split alternative cost:1
-Merge alternative cost:1
-Maximum gap displacement:51
-Maximum split score:52
-Maximum merge score:53
-Maximum gap:4
-
-TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
-Choose a tracking method:Distance
-Select the objects to track:Objs
-Select object measurement to use for tracking:Trepidation
-Maximum pixel distance to consider matches:50
-Select display option:Color and Number
-Save color-coded image?:Yes
-Name the output image:TrackByLAP
-Motion model(s)\x3A:Velocity
-# standard deviations for radius:3
-Radius limit:3.0,10.0
-Run the second phase of the LAP algorithm?:Yes
-Gap cost:40
-Split alternative cost:1
-Merge alternative cost:1
-Maximum gap displacement:51
-Maximum split score:52
-Maximum merge score:53
-Maximum gap:4
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -167,38 +86,9 @@ Maximum gap:4
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20140723174500
-GitHash:6c2d896
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Choose a tracking method:LAP
-Select the objects to track:Turtles
-Select object measurement to use for tracking:Steadiness
-Maximum pixel distance to consider matches:44
-Select display option:Color and Number
-Save color-coded image?:No
-Name the output image:TrackedTurtles
-Select the motion model:Both
-Number of standard deviations for search radius:3.0
-Search radius limit, in pixel units (Min,Max):3.0,11.0
-Run the second phase of the LAP algorithm?:Yes
-Gap cost:39
-Split alternative cost:41
-Merge alternative cost:42
-Maximum gap displacement, in frames:6
-Maximum split score:51
-Maximum merge score:52
-Maximum gap:8
-Filter objects by lifetime?:No
-Filter using a minimum lifetime?:Yes
-Minimum lifetime:2
-Filter using a maximum lifetime?:No
-Maximum lifetime:1000
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -232,40 +122,9 @@ Maximum lifetime:1000
 
 
 def test_load_v6():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20140723174500
-GitHash:6c2d896
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Choose a tracking method:LAP
-Select the objects to track:Turtles
-Select object measurement to use for tracking:Steadiness
-Maximum pixel distance to consider matches:44
-Select display option:Color and Number
-Save color-coded image?:No
-Name the output image:TrackedTurtles
-Select the motion model:Both
-Number of standard deviations for search radius:3.0
-Search radius limit, in pixel units (Min,Max):3.0,11.0
-Run the second phase of the LAP algorithm?:Yes
-Gap cost:39
-Split alternative cost:41
-Merge alternative cost:42
-Maximum gap displacement, in frames:6
-Maximum split score:51
-Maximum merge score:52
-Maximum gap:8
-Filter objects by lifetime?:No
-Filter using a minimum lifetime?:Yes
-Minimum lifetime:2
-Filter using a maximum lifetime?:No
-Maximum lifetime:1000
-Mitosis alternative cost:79
-Mitosis max distance:41
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

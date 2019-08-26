@@ -13,52 +13,9 @@ PROJECTED_IMAGE_NAME = "projectedimage"
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10000
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MakeProjection:[module_num:1|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Average
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-
-MakeProjection:[module_num:2|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Maximum
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-
-MakeProjection:[module_num:3|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Minimum
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-
-MakeProjection:[module_num:4|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Sum
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-
-MakeProjection:[module_num:5|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Variance
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-
-MakeProjection:[module_num:6|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Power
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-
-MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D]
-Select the input image:ch02
-Type of projection:Brightfield
-Name the output image:ProjectionCh00Scale6
-Frequency\x3A:6
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

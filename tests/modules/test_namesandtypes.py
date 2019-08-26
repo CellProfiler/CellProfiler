@@ -48,65 +48,9 @@ def md(keys_and_counts):
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20120213205828
-ModuleCount:3
-HasImagePlaneDetails:True
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-:{"ShowFiltered"\x3A false}
-Filter based on rules:Yes
-Filter:or (extension does istif)
-
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:1
-Extraction method:Manual
-Source:From file name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Assignment method:Assign images matching rules
-Load as:Color image
-Image name:PI
-:\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
-Match channels by:Order
-Assignments count:5
-Match this rule:or (metadata does ChannelNumber "0")
-Image name:DNA
-Objects name:Nuclei
-Load as:Grayscale image
-Match this rule:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
-Image name:Actin
-Objects name:Cells
-Load as:Color image
-Match this rule:or (metadata does ChannelNumber "2")
-Image name:GFP
-Objects name:Cells
-Load as:Mask
-Match this rule:or (metadata does ChannelNumber "2")
-Image name:Foo
-Objects name:Cells
-Load as:Objects
-Match this rule:or (metadata does ChannelNumber "2")
-Image name:Illum
-Objects name:Cells
-Load as:Illumination function
-
-"Version":"1","PlaneCount":"5"
-"URL","Series","Index","Channel","ColorFormat","SizeC","SizeT","SizeZ"
-"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d0.tif",,,,"monochrome","1","1","1"
-"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d1.tif",,,,"monochrome","1","1","1"
-"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d2.tif",,,,"monochrome","1","1","1"
-"file:///C:/trunk/ExampleImages/ExampleHT29/ExampleHT29.cp",,,,,,,
-"file:///C:/trunk/ExampleImages/ExampleHT29/k27IllumCorrControlv1.mat",,,,,,,
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -170,65 +114,9 @@ Load as:Illumination function
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130730112304
-ModuleCount:3
-HasImagePlaneDetails:True
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-:{"ShowFiltered"\x3A false}
-Filter based on rules:Yes
-Filter:or (extension does istif)
-
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:1
-Extraction method:Manual
-Source:From file name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Assign a name to:Images matching rules
-Select the image type:Color image
-Name to assign these images:PI
-:\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
-Channel matching method:Order
-Assignments count:5
-Select the rule criteria:or (metadata does ChannelNumber "0")
-Name to assign these images:DNA
-Name to assign these objects:Nuclei
-Select the image type:Grayscale image
-Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
-Name to assign these images:Actin
-Name to assign these objects:Cells
-Select the image type:Color image
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:GFP
-Name to assign these objects:Cells
-Select the image type:Mask
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:Foo
-Name to assign these objects:Cells
-Select the image type:Objects
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:Illum
-Name to assign these objects:Cells
-Select the image type:Illumination function
-
-"Version":"1","PlaneCount":"5"
-"URL","Series","Index","Channel","ColorFormat","SizeC","SizeT","SizeZ"
-"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d0.tif",,,,"monochrome","1","1","1"
-"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d1.tif",,,,"monochrome","1","1","1"
-"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d2.tif",,,,"monochrome","1","1","1"
-"file:///C:/trunk/ExampleImages/ExampleHT29/ExampleHT29.cp",,,,,,,
-"file:///C:/trunk/ExampleImages/ExampleHT29/k27IllumCorrControlv1.mat",,,,,,,
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -292,63 +180,9 @@ Select the image type:Illumination function
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130730112304
-ModuleCount:3
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-:{"ShowFiltered"\x3A false}
-Filter based on rules:Yes
-Filter:or (extension does istif)
-
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:1
-Extraction method:Manual
-Source:From file name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Assign a name to:Images matching rules
-Select the image type:Color image
-Name to assign these images:PI
-:\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
-Channel matching method:Order
-Set intensity range from:Image bit-depth
-Assignments count:5
-Select the rule criteria:or (metadata does ChannelNumber "0")
-Name to assign these images:DNA
-Name to assign these objects:Nuclei
-Select the image type:Grayscale image
-Set intensity range from:Image metadata
-Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
-Name to assign these images:Actin
-Name to assign these objects:Cells
-Select the image type:Color image
-Set intensity range from:Image bit-depth
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:GFP
-Name to assign these objects:Cells
-Select the image type:Mask
-Set intensity range from:Image metadata
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:Foo
-Name to assign these objects:Cells
-Select the image type:Objects
-Set intensity range from:Image bit-depth
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:Illum
-Name to assign these objects:Cells
-Select the image type:Illumination function
-Set intensity range from:Image metadata
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -421,73 +255,9 @@ Set intensity range from:Image metadata
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130730112304
-ModuleCount:3
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-:{"ShowFiltered"\x3A false}
-Filter based on rules:Yes
-Filter:or (extension does istif)
-
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:1
-Extraction method:Manual
-Source:From file name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Assign a name to:Images matching rules
-Select the image type:Color image
-Name to assign these images:PI
-:\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
-Channel matching method:Order
-Set intensity range from:Image bit-depth
-Assignments count:5
-Select the rule criteria:or (metadata does ChannelNumber "0")
-Name to assign these images:DNA
-Name to assign these objects:Nuclei
-Select the image type:Grayscale image
-Set intensity range from:Image metadata
-Retain object outlines?:No
-Name the outline image:LoadedOutlines
-Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
-Name to assign these images:Actin
-Name to assign these objects:Cells
-Select the image type:Color image
-Set intensity range from:Image bit-depth
-Retain object outlines?:No
-Name the outline image:LoadedOutlines
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:GFP
-Name to assign these objects:Cells
-Select the image type:Mask
-Set intensity range from:Image metadata
-Retain object outlines?:No
-Name the outline image:LoadedOutlines
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:Foo
-Name to assign these objects:Cells
-Select the image type:Objects
-Set intensity range from:Image bit-depth
-Retain object outlines?:Yes
-Name the outline image:MyCellOutlines
-Select the rule criteria:or (metadata does ChannelNumber "2")
-Name to assign these images:Illum
-Name to assign these objects:Cells
-Select the image type:Illumination function
-Set intensity range from:Image metadata
-Retain object outlines?:No
-Name the outline image:LoadedOutlines
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -566,7 +336,10 @@ Name the outline image:LoadedOutlines
 
 
 #     def test_load_v5():
-#             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+#             with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+# data = fd.read()
+
+# foo = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 # Version:3
 # DateRevision:20130730112304
 # ModuleCount:3
@@ -692,7 +465,10 @@ Name the outline image:LoadedOutlines
 #                 first = False
 #
 #     def test_load_v6():
-#         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+#         with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+# data = fd.read()
+
+# foo = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 # Version:3
 # DateRevision:20141031194728
 # GitHash:49bd1a0

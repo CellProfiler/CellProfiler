@@ -16,79 +16,9 @@ def output_image_name(idx):
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10268
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Stain count:13
-Color image\x3A:Color
-Image name\x3A:Hematoxylin
-Stain:Hematoxylin
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:Eosin
-Stain:Eosin
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:DAB
-Stain:DAB
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:FastRed
-Stain:Fast red
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:FastBlue
-Stain:Fast blue
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:MethylGreen
-Stain:Methyl green
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:AEC
-Stain:AEC
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name:AnilineBlue
-Stain:Aniline blue
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:Azocarmine
-Stain:Azocarmine
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:AlicanBlue
-Stain:Alican blue
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:PAS
-Stain:PAS
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:HematoxylinAndPAS
-Stain:Hematoxylin and PAS
-Red absorbance\x3A:0.5
-Green absorbance\x3A:0.5
-Blue absorbance\x3A:0.5
-Image name\x3A:RedWine
-Stain:Custom
-Red absorbance\x3A:0.1
-Green absorbance\x3A:0.2
-Blue absorbance\x3A:0.3
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

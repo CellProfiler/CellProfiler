@@ -195,45 +195,9 @@ def test_00_write_load_test():
 
 
 def test_load_v11():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8952
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
-CSV file location:Default Input Folder
-Path to the CSV file:.
-Name of the CSV file:1049.csv
-Load images from CSV data?:Yes
-Image folder location:Default Input Folder
-Path to the images:.
-Process just a range of rows?:No
-Rows to process:1,100000
-Group images by metadata?:No
-Select metadata fields for grouping:
-
-ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:11|show_window:False|notes:\x5B\x5D]
-Database type:MySQL
-Database name:DefaultDB
-Add a prefix to table names?:No
-Table prefix:Expt_
-SQL file prefix:SQL_
-Where do you want to save files?:Custom folder with metadata
-Enter the output folder:./\\g<Plate>
-Create a CellProfiler Analyst properties file?:No
-Store the database in CSV files? :Yes
-Database host:
-Username:
-Password:
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -252,44 +216,9 @@ Select the objects:
 
 
 def test_load_v12():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8952
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
-CSV file location:Default Input Folder
-Path to the CSV file:.
-Name of the CSV file:1049.csv
-Load images from CSV data?:Yes
-Image folder location:Default Input Folder
-Path to the images:.
-Process just a range of rows?:No
-Rows to process:1,100000
-Group images by metadata?:No
-Select metadata fields for grouping:
-
-ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:12|show_window:False|notes:\x5B\x5D]
-Database type:MySQL
-Database name:DefaultDB
-Add a prefix to table names?:No
-Table prefix:Expt_
-SQL file prefix:SQL_
-Where do you want to save files?:Custom folder with metadata
-Enter the output folder:./\\g<Plate>
-Create a CellProfiler Analyst properties file?:No
-Database host:
-Username:
-Password:
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -309,45 +238,9 @@ Select the objects:
 
 
 def test_load_v13():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8952
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
-CSV file location:Default Input Folder
-Path to the CSV file:.
-Name of the CSV file:1049.csv
-Load images from CSV data?:Yes
-Image folder location:Default Input Folder
-Path to the images:.
-Process just a range of rows?:No
-Rows to process:1,100000
-Group images by metadata?:No
-Select metadata fields for grouping:
-
-ExportToDatabase:[module_num:2|svn_version:\'8947\'|variable_revision_number:13|show_window:False|notes:\x5B\x5D]
-Database type:MySQL
-Database name:DefaultDB
-Add a prefix to table names?:No
-Table prefix:Expt_
-SQL file prefix:SQL_
-Where do you want to save files?:Custom folder with metadata
-Enter the output folder:./\\g<Plate>
-Create a CellProfiler Analyst properties file?:No
-Database host:
-Username:
-Password:
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:61
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -367,33 +260,9 @@ Maximum # of characters in a column name:61
 
 
 def test_load_v15():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9503
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|show_window:True|notes:\x5B\x5D]
-Database type:MySQL / CSV
-Database name:Heel
-Add a prefix to table names?:No
-Table prefix:Ouch
-SQL file prefix:LQS_
-Output file location:Elsewhere...\x7C//achilles/red/shoes
-Create a CellProfiler Analyst properties file?:No
-Database host:Zeus
-Username:Hera
-Password:Athena
-Name the SQLite database file:Poseidon
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:Yes
-Calculate the per-well median values of object measurements?:Yes
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:62
-Create one table per object or a single object table?:One table per object type
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -429,81 +298,9 @@ Create one table per object or a single object table?:One table per object type
 
 
 def test_load_v22():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-SVNRevision:11412
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Database type:MySQL
-Database name:Gamma
-Add a prefix to table names?:Yes
-Table prefix:Delta_
-SQL file prefix:Iota_
-Output file location:Default Output Folder\x7CNone
-Create a CellProfiler Analyst properties file?:Yes
-Database host:Alpha
-Username:Beta
-Password:Gamma
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:64
-Create one table per object or a single object table?:Single object table
-Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
-Write image thumbnails directly to the database?:Yes
-Select the images you want to save thumbnails of:Actin,DNA
-Auto-scale thumbnail pixel intensities?:Yes
-Select the plate type:384
-Select the plate metadata:Plate
-Select the well metadata:Well
-Include information for all images, using default values?:No
-Properties image group count:2
-Properties group field count:1
-Properties filter field count:1
-Workspace measurement count:2
-Experiment name:Sigma
-Which objects should be used for locations?:Cells
-Select an image to include:DNA
-Use the image name for the display?:No
-Image name:NucleicAcid
-Channel color:green
-Select an image to include:Actin
-Use the image name for the display?:No
-Image name:Protein
-Channel color:blue
-Do you want to add group fields?:Yes
-Enter the name of the group:WellGroup
-Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
-Do you want to add filter fields?:Yes
-Automatically create a filter for each plate?:Yes
-Enter the name of the filter:Site1Filter
-Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
-Create a CellProfiler Analyst workspace file?:Yes
-Select the measurement display tool:ScatterPlot
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Mitochondria
-Select the x-axis measurement:Width_DNA
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Nuclei
-Select the y-axis measurement:Height_DNA
-Select the x-axis index:ImageNumber
-Select the measurement display tool:PlateViewer
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Cells
-Select the x-axis measurement:Height_Actin
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Speckles
-Select the y-axis measurement:Width_Actin
-Select the x-axis index:ImageNumber
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -602,82 +399,9 @@ Select the x-axis index:ImageNumber
 
 
 def test_load_v23():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-SVNRevision:11412
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:23|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Database type:MySQL
-Database name:Gamma
-Add a prefix to table names?:Yes
-Table prefix:Delta_
-SQL file prefix:Iota_
-Output file location:Default Output Folder\x7CNone
-Create a CellProfiler Analyst properties file?:Yes
-Database host:Alpha
-Username:Beta
-Password:Gamma
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:64
-Create one table per object or a single object table?:Single object table
-Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
-Write image thumbnails directly to the database?:Yes
-Select the images you want to save thumbnails of:Actin,DNA
-Auto-scale thumbnail pixel intensities?:Yes
-Select the plate type:384
-Select the plate metadata:Plate
-Select the well metadata:Well
-Include information for all images, using default values?:No
-Properties image group count:2
-Properties group field count:1
-Properties filter field count:1
-Workspace measurement count:2
-Experiment name:Sigma
-Which objects should be used for locations?:Cells
-Enter a phenotype class table name if using the classifier tool:Hoopla
-Select an image to include:DNA
-Use the image name for the display?:No
-Image name:NucleicAcid
-Channel color:green
-Select an image to include:Actin
-Use the image name for the display?:No
-Image name:Protein
-Channel color:blue
-Do you want to add group fields?:Yes
-Enter the name of the group:WellGroup
-Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
-Do you want to add filter fields?:Yes
-Automatically create a filter for each plate?:Yes
-Enter the name of the filter:Site1Filter
-Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
-Create a CellProfiler Analyst workspace file?:Yes
-Select the measurement display tool:ScatterPlot
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Mitochondria
-Select the x-axis measurement:Width_DNA
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Nuclei
-Select the y-axis measurement:Height_DNA
-Select the x-axis index:ImageNumber
-Select the measurement display tool:PlateViewer
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Cells
-Select the x-axis measurement:Height_Actin
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Speckles
-Select the y-axis measurement:Width_Actin
-Select the x-axis index:ImageNumber
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -778,83 +502,9 @@ Select the x-axis index:ImageNumber
 
 
 def test_load_v24():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-SVNRevision:11412
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:24|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Database type:MySQL
-Database name:Gamma
-Add a prefix to table names?:Yes
-Table prefix:Delta_
-SQL file prefix:Iota_
-Output file location:Default Output Folder\x7CNone
-Create a CellProfiler Analyst properties file?:Yes
-Database host:Alpha
-Username:Beta
-Password:Gamma
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:64
-Create one table per object or a single object table?:Single object table
-Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
-Write image thumbnails directly to the database?:Yes
-Select the images you want to save thumbnails of:Actin,DNA
-Auto-scale thumbnail pixel intensities?:Yes
-Select the plate type:384
-Select the plate metadata:Plate
-Select the well metadata:Well
-Include information for all images, using default values?:No
-Properties image group count:2
-Properties group field count:1
-Properties filter field count:1
-Workspace measurement count:2
-Experiment name:Sigma
-Which objects should be used for locations?:Cells
-Enter a phenotype class table name if using the classifier tool:Hoopla
-Export object relationships?:Yes
-Select an image to include:DNA
-Use the image name for the display?:No
-Image name:NucleicAcid
-Channel color:green
-Select an image to include:Actin
-Use the image name for the display?:No
-Image name:Protein
-Channel color:blue
-Do you want to add group fields?:Yes
-Enter the name of the group:WellGroup
-Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
-Do you want to add filter fields?:Yes
-Automatically create a filter for each plate?:Yes
-Enter the name of the filter:Site1Filter
-Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
-Create a CellProfiler Analyst workspace file?:Yes
-Select the measurement display tool:ScatterPlot
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Mitochondria
-Select the x-axis measurement:Width_DNA
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Nuclei
-Select the y-axis measurement:Height_DNA
-Select the x-axis index:ImageNumber
-Select the measurement display tool:PlateViewer
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Cells
-Select the x-axis measurement:Height_Actin
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Speckles
-Select the y-axis measurement:Width_Actin
-Select the x-axis index:ImageNumber
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -956,84 +606,9 @@ Select the x-axis index:ImageNumber
 
 
 def test_load_v25():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-SVNRevision:11412
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Database type:MySQL
-Database name:Gamma
-Add a prefix to table names?:Yes
-Table prefix:Delta_
-SQL file prefix:Iota_
-Output file location:Default Output Folder\x7CNone
-Create a CellProfiler Analyst properties file?:Yes
-Database host:Alpha
-Username:Beta
-Password:Gamma
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:64
-Create one table per object or a single object table?:Single object table
-Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
-Write image thumbnails directly to the database?:Yes
-Select the images you want to save thumbnails of:Actin,DNA
-Auto-scale thumbnail pixel intensities?:Yes
-Select the plate type:384
-Select the plate metadata:Plate
-Select the well metadata:Well
-Include information for all images, using default values?:No
-Properties image group count:2
-Properties group field count:1
-Properties filter field count:1
-Workspace measurement count:2
-Experiment name:Sigma
-Which objects should be used for locations?:Cells
-Enter a phenotype class table name if using the classifier tool:Hoopla
-Export object relationships?:Yes
-Allow overwrite?:Never
-Select an image to include:DNA
-Use the image name for the display?:No
-Image name:NucleicAcid
-Channel color:green
-Select an image to include:Actin
-Use the image name for the display?:No
-Image name:Protein
-Channel color:blue
-Do you want to add group fields?:Yes
-Enter the name of the group:WellGroup
-Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
-Do you want to add filter fields?:Yes
-Automatically create a filter for each plate?:Yes
-Enter the name of the filter:Site1Filter
-Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
-Create a CellProfiler Analyst workspace file?:Yes
-Select the measurement display tool:ScatterPlot
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Mitochondria
-Select the x-axis measurement:Width_DNA
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Nuclei
-Select the y-axis measurement:Height_DNA
-Select the x-axis index:ImageNumber
-Select the measurement display tool:PlateViewer
-Type of measurement to plot on the x-axis:Image
-Enter the object name:Cells
-Select the x-axis measurement:Height_Actin
-Select the x-axis index:ImageNumber
-Type of measurement to plot on the y-axis:Image
-Enter the object name:Speckles
-Select the y-axis measurement:Width_Actin
-Select the x-axis index:ImageNumber
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -1136,89 +711,9 @@ Select the x-axis index:ImageNumber
 
 
 def test_load_v26():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20140130135727
-GitHash:d666db0
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:26|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Database type:MySQL
-Database name:Gamma
-Add a prefix to table names?:Yes
-Table prefix:Delta_
-SQL file prefix:Iota_
-Output file location:Default Output Folder\x7CNone
-Create a CellProfiler Analyst properties file?:Yes
-Database host:Alpha
-Username:Beta
-Password:Gamma
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:64
-Create one table per object, a single object table or a single object view?:Single object table
-Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
-Write image thumbnails directly to the database?:Yes
-Select the images for which you want to save thumbnails:Actin,DNA
-Auto-scale thumbnail pixel intensities?:Yes
-Select the plate type:384
-Select the plate metadata:Plate
-Select the well metadata:Well
-Include information for all images, using default values?:No
-Properties image group count:2
-Properties group field count:1
-Properties filter field count:1
-Workspace measurement count:2
-Experiment name:Sigma
-Which objects should be used for locations?:Cells
-Enter a phenotype class table name if using the classifier tool:Hoopla
-Export object relationships?:Yes
-Overwrite without warning?:Never
-Access CPA images via URL?:No
-Select an image to include:DNA
-Use the image name for the display?:No
-Image name:NucleicAcid
-Channel color:green
-Select an image to include:Actin
-Use the image name for the display?:No
-Image name:Protein
-Channel color:blue
-Do you want to add group fields?:Yes
-Enter the name of the group:WellGroup
-Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
-Do you want to add filter fields?:Yes
-Automatically create a filter for each plate?:Yes
-Enter the name of the filter:Site1Filter
-Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
-Create a CellProfiler Analyst workspace file?:Yes
-Select the measurement display tool:ScatterPlot
-Type of measurement to plot on the X-axis:Image
-Enter the object name:Mitochondria
-Select the X-axis measurement:Width_DNA
-Select the X-axis index:ImageNumber
-Type of measurement to plot on the Y-axis:Image
-Enter the object name:Nuclei
-Select the Y-axis measurement:Height_DNA
-Select the Y-axis index:ImageNumber
-Select the measurement display tool:PlateViewer
-Type of measurement to plot on the X-axis:Image
-Enter the object name:Cells
-Select the X-axis measurement:Height_Actin
-Select the X-axis index:ImageNumber
-Type of measurement to plot on the Y-axis:Image
-Enter the object name:Speckles
-Select the Y-axis measurement:Width_Actin
-Select the Y-axis index:ImageNumber
-
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -1322,74 +817,9 @@ Select the Y-axis index:ImageNumber
 
 
 def test_load_v27():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20160129211738
-GitHash:cd1cb4e
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:27|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Database type:MySQL
-Database name:DefaultDB
-Add a prefix to table names?:Yes
-Table prefix:MyExpt_
-SQL file prefix:SQL_
-Output file location:Default Output Folder\x7C
-Create a CellProfiler Analyst properties file?:No
-Database host:
-Username:
-Password:
-Name the SQLite database file:DefaultDB.db
-Calculate the per-image mean values of object measurements?:Yes
-Calculate the per-image median values of object measurements?:No
-Calculate the per-image standard deviation values of object measurements?:No
-Calculate the per-well mean values of object measurements?:No
-Calculate the per-well median values of object measurements?:No
-Calculate the per-well standard deviation values of object measurements?:No
-Export measurements for all objects to the database?:All
-Select the objects:
-Maximum # of characters in a column name:64
-Create one table per object, a single object table or a single object view?:Single object table
-Enter an image url prepend if you plan to access your files via http:
-Write image thumbnails directly to the database?:No
-Select the images for which you want to save thumbnails:
-Auto-scale thumbnail pixel intensities?:Yes
-Select the plate type:None
-Select the plate metadata:None
-Select the well metadata:None
-Include information for all images, using default values?:Yes
-Properties image group count:1
-Properties group field count:1
-Properties filter field count:0
-Workspace measurement count:1
-Experiment name:MyExpt
-Which objects should be used for locations?:None
-Enter a phenotype class table name if using the classifier tool:
-Export object relationships?:Yes
-Overwrite without warning?:Never
-Access CPA images via URL?:No
-Select the classification type:Image
-Select an image to include:None
-Use the image name for the display?:Yes
-Image name:Channel1
-Channel color:red
-Do you want to add group fields?:No
-Enter the name of the group:
-Enter the per-image columns which define the group, separated by commas:ImageNumber, Image_Metadata_Plate, Image_Metadata_Well
-Do you want to add filter fields?:No
-Automatically create a filter for each plate?:No
-Create a CellProfiler Analyst workspace file?:No
-Select the measurement display tool:ScatterPlot
-Type of measurement to plot on the X-axis:Image
-Enter the object name:None
-Select the X-axis measurement:None
-Select the X-axis index:ImageNumber
-Type of measurement to plot on the Y-axis:Image
-Enter the object name:MyObjects
-Select the Y-axis measurement:None
-Select the Y-axis index:ImageNumber
-"""
     pipeline = cpp.Pipeline()
     pipeline.load(StringIO(data))
     module = pipeline.modules()[0]

@@ -469,27 +469,9 @@ def test_renumber_other():
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8973
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Name the output objects:FilteredThings
-Select the object to filter:Things
-Select the measurement to filter by:Intensity_MeanIntensity_DNA
-Select the filtering method:Minimal
-What did you call the objects that contain the filtered objects?:Nuclei
-Filter using a minimum measurement value?:No
-Minimum value:0
-Filter using a maximum measurement value?:No
-Maximum value:1
-Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
-Name the outline image:None
-Filter using classifier rules or measurements?:Measurements
-Rules file location:Default output folder
-Rules folder name:.
-Rules file name:myrules.txt
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -513,42 +495,9 @@ Rules file name:myrules.txt
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9025
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Name the output objects:MyFilteredObjects
-Select the object to filter:MyObjects
-Filter using classifier rules or measurements?:Measurements
-Select the filtering method:Limits
-What did you call the objects that contain the filtered objects?:None
-Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
-Name the outline image:FilteredObjects
-Rules file location:Default input folder
-Rules folder name:./rules
-Rules file name:myrules.txt
-Hidden:2
-Hidden:2
-Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
-Filter using a minimum measurement value?:Yes
-Minimum value:0.2
-Filter using a maximum measurement value?:No
-Maximum value:1.5
-Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
-Filter using a minimum measurement value?:No
-Minimum value:0.9
-Filter using a maximum measurement value?:Yes
-Maximum value:1.8
-Select additional object to relabel:Cells
-Name the relabeled objects:FilteredCells
-Save outlines of relabeled objects?:No
-Name the outline image:OutlinesFilteredCells
-Select additional object to relabel:Cytoplasm
-Name the relabeled objects:FilteredCytoplasm
-Save outlines of relabeled objects?:No
-Name the outline image:OutlinesFilteredCytoplasm
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -587,41 +536,9 @@ Name the outline image:OutlinesFilteredCytoplasm
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9025
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
-Name the output objects:MyFilteredObjects
-Select the object to filter:MyObjects
-Filter using classifier rules or measurements?:Measurements
-Select the filtering method:Limits
-What did you call the objects that contain the filtered objects?:None
-Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
-Name the outline image:FilteredObjects
-Rules file location:Default input folder\x7C./rules
-Rules file name:myrules.txt
-Hidden:2
-Hidden:2
-Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
-Filter using a minimum measurement value?:Yes
-Minimum value:0.2
-Filter using a maximum measurement value?:No
-Maximum value:1.5
-Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
-Filter using a minimum measurement value?:No
-Minimum value:0.9
-Filter using a maximum measurement value?:Yes
-Maximum value:1.8
-Select additional object to relabel:Cells
-Name the relabeled objects:FilteredCells
-Save outlines of relabeled objects?:No
-Name the outline image:OutlinesFilteredCells
-Select additional object to relabel:Cytoplasm
-Name the relabeled objects:FilteredCytoplasm
-Save outlines of relabeled objects?:No
-Name the outline image:OutlinesFilteredCytoplasm
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -661,42 +578,9 @@ Name the outline image:OutlinesFilteredCytoplasm
 
 
 def test_load_v6():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9025
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
-    Name the output objects:MyFilteredObjects
-    Select the object to filter:MyObjects
-    Filter using classifier rules or measurements?:Measurements
-    Select the filtering method:Limits
-    What did you call the objects that contain the filtered objects?:None
-    Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
-    Name the outline image:FilteredObjects
-    Rules file location:Default input folder\x7C./rules
-    Rules file name:myrules.txt
-    Rules class:1
-    Hidden:2
-    Hidden:2
-    Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
-    Filter using a minimum measurement value?:Yes
-    Minimum value:0.2
-    Filter using a maximum measurement value?:No
-    Maximum value:1.5
-    Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
-    Filter using a minimum measurement value?:No
-    Minimum value:0.9
-    Filter using a maximum measurement value?:Yes
-    Maximum value:1.8
-    Select additional object to relabel:Cells
-    Name the relabeled objects:FilteredCells
-    Save outlines of relabeled objects?:No
-    Name the outline image:OutlinesFilteredCells
-    Select additional object to relabel:Cytoplasm
-    Name the relabeled objects:FilteredCytoplasm
-    Save outlines of relabeled objects?:No
-    Name the outline image:OutlinesFilteredCytoplasm
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -737,43 +621,9 @@ FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:6|show
 
 
 def test_load_v7():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9025
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
-    Name the output objects:MyFilteredObjects
-    Select the object to filter:MyObjects
-    Filter using classifier rules or measurements?:Measurements
-    Select the filtering method:Limits
-    What did you call the objects that contain the filtered objects?:None
-    Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
-    Name the outline image:FilteredObjects
-    Rules file location:Default input folder\x7C./rules
-    Rules file name:myrules.txt
-    Rules class:1
-    Hidden:2
-    Hidden:2
-    Assign overlapping child to:Parent with most overlap
-    Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
-    Filter using a minimum measurement value?:Yes
-    Minimum value:0.2
-    Filter using a maximum measurement value?:No
-    Maximum value:1.5
-    Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
-    Filter using a minimum measurement value?:No
-    Minimum value:0.9
-    Filter using a maximum measurement value?:Yes
-    Maximum value:1.8
-    Select additional object to relabel:Cells
-    Name the relabeled objects:FilteredCells
-    Save outlines of relabeled objects?:No
-    Name the outline image:OutlinesFilteredCells
-    Select additional object to relabel:Cytoplasm
-    Name the relabeled objects:FilteredCytoplasm
-    Save outlines of relabeled objects?:No
-    Name the outline image:OutlinesFilteredCytoplasm
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

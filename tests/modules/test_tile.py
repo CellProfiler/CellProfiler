@@ -17,25 +17,9 @@ def input_image_name(index):
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9098
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Select the input image:ResizedColorImage
-Name the output image:TiledImage
-Tile within cycles or across cycles?:Across cycles
-Number of rows in final tiled image\x3A:2
-Number of columns in final tiled image\x3A:12
-Begin tiling in this corner of the final image\x3A:top left
-Begin tiling across a row, or down a column?:row
-Tile in meander mode?:No
-Automatically calculate # of rows?:Yes
-Automatically calculate # of columns?:No
-Select an additional image\x3A:Cytoplasm
-Select an additional image\x3A:ColorImage
-Select an additional image\x3A:DNA
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

@@ -23,80 +23,9 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 def test_load_v9():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130226215424
-ModuleCount:5
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-:
-Filter based on rules:No
-Filter:or (file does contain "")
-
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Extract metadata?:No
-Extraction method count:1
-Extraction method:Automatic
-Source:From file name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-Case insensitive matching:No
-
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Assignment method:Assign all images
-Load as:Grayscale image
-Image name:DNA
-:\x5B\x5D
-Assign channels by:Order
-Assignments count:1
-Match this rule:or (file does contain "")
-Image name:DNA
-Objects name:Cell
-Load as:Grayscale image
-
-Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Do you want to group your images?:No
-grouping metadata count:1
-Metadata category:None
-
-IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Select the input objects:ChocolateChips
-Name the objects to be identified:Cookies
-Select the method to identify the secondary objects:Propagation
-Select the input image:BakingSheet
-Number of pixels by which to expand the primary objects:11
-Regularization factor:0.125
-Name the outline image:CookieEdges
-Retain outlines of the identified secondary objects?:No
-Discard secondary objects touching the border of the image?:Yes
-Discard the associated primary objects?:No
-Name the new primary objects:FilteredChocolateChips
-Retain outlines of the new primary objects?:No
-Name the new primary object outlines:FilteredChocolateChipOutlines
-Fill holes in identified objects?:Yes
-Threshold setting version:1
-Threshold strategy:Automatic
-Threshold method:Otsu
-Smoothing for threshold:Automatic
-Threshold smoothing scale:1.5
-Threshold correction factor:.95
-Lower and upper bounds on threshold:0.01,.95
-Approximate fraction of image covered by objects?:0.02
-Manual threshold:0.3
-Select the measurement to threshold with:Count_Cookies
-Select binary image:CookieMask
-Masking objects:CookieMonsters
-Two-class or three-class thresholding?:Two classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-Method to calculate adaptive window size:Image size
-Size of adaptive window:9
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -137,42 +66,9 @@ Size of adaptive window:9
 
 
 def test_load_v10():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150319195827
-GitHash:d8289bf
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-IdentifySecondaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input objects:IdentifyPrimaryObjects
-Name the objects to be identified:IdentifySecondaryObjects
-Select the method to identify the secondary objects:Propagation
-Select the input image:DNA
-Number of pixels by which to expand the primary objects:10
-Regularization factor:0.05
-Discard secondary objects touching the border of the image?:No
-Discard the associated primary objects?:No
-Name the new primary objects:FilteredNuclei
-Fill holes in identified objects?:Yes
-Threshold setting version:10
-Threshold strategy:Global
-Thresholding method:Minimum cross entropy
-Threshold smoothing scale:0.0
-Threshold correction factor:1.0
-Lower and upper bounds on threshold:0.0,1.0
-Manual threshold:0.0
-Select the measurement to threshold with:None
-Two-class or three-class thresholding?:Two classes
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-Size of adaptive window:50
-Lower outlier fraction:0.05
-Upper outlier fraction:0.05
-Averaging method:Mean
-Variance method:Standard deviation
-# of deviations:2.0
-Thresholding method:Otsu
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

@@ -15,32 +15,9 @@ OME_XML = open(
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20120112154631
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:2
-Extraction method:Manual
-Source:From file name
-Regular expression:^Channel(?P<ChannelNumber>\x5B12\x5D)-(?P<Index>\x5B0-9\x5D+)-(?P<WellRow>\x5BA-H\x5D)-(?P<WellColumn>\x5B0-9\x5D{2}).tif$
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "Channel2")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-Extraction method:Import metadata
-Source:From folder name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:Example(?P<Project>\x5B^\\\\\\\\\x5D+)Images
-Filter images:Images selected using a filter
-:or (file does contain "")
-Metadata file location\x3A:/imaging/analysis/metadata.csv
-Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'ChannelNumber\', \'CSV Metadata\'\x3A u\'Wavelength\'}\x5D
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -81,34 +58,9 @@ Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'ChannelNumber\', \'
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20120112154631
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:2
-Extraction method:Manual
-Source:From file name
-Regular expression:^Channel(?P<ChannelNumber>\x5B12\x5D)-(?P<Index>\x5B0-9\x5D+)-(?P<WellRow>\x5BA-H\x5D)-(?P<WellColumn>\x5B0-9\x5D{2}).tif$
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Filter images:All images
-:or (file does contain "Channel2")
-Metadata file location\x3A:
-Match file and image metadata:\x5B\x5D
-Case insensitive matching:No
-Extraction method:Import metadata
-Source:From folder name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:Example(?P<Project>\x5B^\\\\\\\\\x5D+)Images
-Filter images:Images selected using a filter
-:or (file does contain "")
-Metadata file location\x3A:/imaging/analysis/metadata.csv
-Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'ChannelNumber\', \'CSV Metadata\'\x3A u\'Wavelength\'}\x5D
-Case insensitive matching:Yes
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -149,34 +101,9 @@ Case insensitive matching:Yes
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20120112154631
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Extraction method count:2
-Metadata extraction method:Extract from file/folder names
-Metadata source:File name
-Regular expression:^Channel(?P<ChannelNumber>\x5B12\x5D)-(?P<Index>\x5B0-9\x5D+)-(?P<WellRow>\x5BA-H\x5D)-(?P<WellColumn>\x5B0-9\x5D{2}).tif$
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Extract metadata from:All images
-Select the filtering criteria:or (file does contain "Channel2")
-Metadata file location:
-Match file and image metadata:\x5B\x5D
-Case insensitive matching:No
-Metadata extraction method:Import from file
-Metadata source:Folder name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:Example(?P<Project>\x5B^\\\\\\\\\x5D+)Images
-Extract metadata from:Images matching a rule
-Select the filtering criteria:or (file does contain "")
-Metadata file location\x3A:/imaging/analysis/metadata.csv
-Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'ChannelNumber\', \'CSV Metadata\'\x3A u\'Wavelength\'}\x5D
-Case insensitive matching:Yes
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -218,36 +145,9 @@ Case insensitive matching:Yes
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20120112154631
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Extract metadata?:Yes
-Metadata data type:Choose for each
-Metadata types:{"Index"\x3A "none", "WellRow"\x3A "text", "WellColumn"\x3A "float", "ChannelNumber"\x3A "integer"}
-Extraction method count:2
-Metadata extraction method:Extract from file/folder names
-Metadata source:File name
-Regular expression:^Channel(?P<ChannelNumber>\x5B12\x5D)-(?P<Index>\x5B0-9\x5D+)-(?P<WellRow>\x5BA-H\x5D)-(?P<WellColumn>\x5B0-9\x5D{2}).tif$
-Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Extract metadata from:All images
-Select the filtering criteria:or (file does contain "Channel2")
-Metadata file location:
-Match file and image metadata:\x5B\x5D
-Case insensitive matching:No
-Metadata extraction method:Import from file
-Metadata source:Folder name
-Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression:Example(?P<Project>\x5B^\\\\\\\\\x5D+)Images
-Extract metadata from:Images matching a rule
-Select the filtering criteria:or (file does contain "")
-Metadata file location\x3A:/imaging/analysis/metadata.csv
-Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'ChannelNumber\', \'CSV Metadata\'\x3A u\'Wavelength\'}\x5D
-Case insensitive matching:Yes
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -298,37 +198,9 @@ Case insensitive matching:Yes
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:300
-GitHash:
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Extract metadata?:Yes
-Metadata data type:Text
-Metadata types:{}
-Extraction method count:2
-Metadata extraction method:Import from file
-Metadata source:File name
-Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression to extract from folder name:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Extract metadata from:All images
-Select the filtering criteria:and (file does contain "")
-Metadata file location:/imaging/analysis/metadata.csv
-Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'FileLocation\', \'CSV Metadata\'\x3A u\'None\'}\x5D
-Use case insensitive matching?:No
-Metadata extraction method:Import from file
-Metadata source:File name
-Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-Regular expression to extract from folder name:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-Extract metadata from:All images
-Select the filtering criteria:and (file does contain "")
-Metadata file location:https\x3A//cellprofiler.org/metadata.csv
-Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'FileLocation\', \'CSV Metadata\'\x3A u\'None\'}\x5D
-Use case insensitive matching?:No
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

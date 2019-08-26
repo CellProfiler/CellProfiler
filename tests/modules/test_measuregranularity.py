@@ -17,30 +17,9 @@ OBJECTS_NAME = "myobjects"
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10252
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Image count:2
-Object count:2
-Select an image to measure:DNA
-Subsampling factor for granularity measurements:0.25
-Subsampling factor for background reduction:0.25
-Radius of structuring element:10
-Range of the granular spectrum:16
-Object name:Nuclei
-Object name:Cells
-Object count:3
-Select an image to measure:Actin
-Subsampling factor for granularity measurements:0.33
-Subsampling factor for background reduction:0.5
-Radius of structuring element:12
-Range of the granular spectrum:20
-Object name:Nuclei
-Object name:Cells
-Object name:Cytoplasm
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

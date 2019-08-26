@@ -51,22 +51,9 @@ def make_workspace(image, labels=None, dimensions=2):
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9063
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Display outlines on a blank image?:No
-Select image on which to display outlines:DNA
-Name the output image\x3A:PrimaryOverlay
-Select outline display mode\x3A:Color
-Select method to determine brightness of outlines\x3A:Max of image
-Line width\x3A:1.5
-Select outlines to display\x3A:PrimaryOutlines
-Select outline color\x3A:Red
-Select outlines to display\x3A:SecondaryOutlines
-Select outline color\x3A:Green
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
@@ -87,30 +74,9 @@ Select outline color\x3A:Green
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20140505183007
-GitHash:c675ec6
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Display outlines on a blank image?:No
-Select image on which to display outlines:DNA
-Name the output image:PrimaryOverlay
-Outline display mode:Color
-Select method to determine brightness of outlines:Max of image
-Width of outlines:1.5
-Select outlines to display:PrimaryOutlines
-Select outline color:Red
-Load outlines from an image or objects?:Image
-Select objects to display:Nuclei
-Select outlines to display\x3A:SecondaryOutlines
-Select outline color\x3A:Green
-Load outlines from an image or objects?:Objects
-Select objects to display:Cells
-
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1

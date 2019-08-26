@@ -148,32 +148,9 @@ Maximum radius:50
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-DateRevision:20120126174947
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureObjectIntensityDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Hidden:2
-Hidden:3
-Hidden:2
-Select an image to measure:EnhancedGreen
-Select an image to measure:OrigBlue
-Select objects to measure:Nuclei
-Object to use as center?:These objects
-Select objects to use as centers:Cells
-Select objects to measure:Nuclei
-Object to use as center?:Centers of other objects
-Select objects to use as centers:Cells
-Select objects to measure:Nuclei
-Object to use as center?:Edges of other objects
-Select objects to use as centers:Cells
-Scale bins?:No
-Number of bins:4
-Maximum radius:200
-Scale bins?:Yes
-Number of bins:5
-Maximum radius:50
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -218,54 +195,9 @@ Maximum radius:50
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150603122126
-GitHash:200cfc0
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Hidden:2
-Hidden:2
-Hidden:2
-Hidden:3
-Select an image to measure:CropGreen
-Select an image to measure:CropRed
-Select objects to measure:Nuclei
-Object to use as center?:These objects
-Select objects to use as centers:Ichthyosaurs
-Select objects to measure:Cells
-Object to use as center?:Edges of other objects
-Select objects to use as centers:Nuclei
-Scale the bins?:Yes
-Number of bins:5
-Maximum radius:100
-Scale the bins?:No
-Number of bins:4
-Maximum radius:100
-Image:CropRed
-Objects to display:Cells
-Number of bins:5
-Measurement:Fraction at Distance
-Color map:Default
-Save display as image?:Yes
-Output image name:Heat
-Image:CropGreen
-Objects to display:Nuclei
-Number of bins:4
-Measurement:Mean Fraction
-Color map:Spectral
-Save display as image?:No
-Output image name:A
-Image:CropRed
-Objects to display:Nuclei
-Number of bins:5
-Measurement:Radial CV
-Color map:Default
-Save display as image?:No
-Output image name:B
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -366,73 +298,9 @@ Output image name:B
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20160301131517
-GitHash:bd768bc
-ModuleCount:2
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Hidden:2
-Hidden:2
-Hidden:2
-Hidden:3
-Calculate intensity Zernikes?:Magnitudes only
-Maximum zernike moment:7
-Select an image to measure:CropGreen
-Select an image to measure:CropRed
-Select objects to measure:Nuclei
-Object to use as center?:These objects
-Select objects to use as centers:Ichthyosaurs
-Select objects to measure:Cells
-Object to use as center?:Edges of other objects
-Select objects to use as centers:Nuclei
-Scale the bins?:Yes
-Number of bins:5
-Maximum radius:100
-Scale the bins?:No
-Number of bins:4
-Maximum radius:100
-Image:CropRed
-Objects to display:Cells
-Number of bins:5
-Measurement:Fraction at Distance
-Color map:Default
-Save display as image?:Yes
-Output image name:Heat
-Image:CropGreen
-Objects to display:Nuclei
-Number of bins:4
-Measurement:Mean Fraction
-Color map:Spectral
-Save display as image?:No
-Output image name:A
-Image:CropRed
-Objects to display:Nuclei
-Number of bins:5
-Measurement:Radial CV
-Color map:Default
-Save display as image?:No
-Output image name:B
-
-MeasureObjectIntensityDistribution:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Hidden:2
-    Hidden:1
-    Hidden:1
-    Hidden:0
-    Calculate intensity Zernikes?:Magnitudes and phase
-    Maximum zernike moment:9
-    Select an image to measure:CorrBlue
-    Select an image to measure:CorrGreen
-    Select objects to measure:PropCells
-    Object to use as center?:These objects
-    Select objects to use as centers:None
-    Scale the bins?:Yes
-    Number of bins:4
-    Maximum radius:100
-
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

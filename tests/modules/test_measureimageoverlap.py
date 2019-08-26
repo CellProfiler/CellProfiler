@@ -27,14 +27,9 @@ ID_OBJ = "Protein"
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9169
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Which image do you want to use as the basis for calculating the amount of overlap? :GroundTruth
-Which image do you want to compare for overlap?:Segmentation
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -52,20 +47,9 @@ Which image do you want to compare for overlap?:Segmentation
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20131210175632
-GitHash:63ec479
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Compare segmented objects, or foreground/background?:Foreground/background segmentation
-Select the image to be used as the ground truth basis for calculating the amount of overlap:Foo
-Select the image to be used to test for overlap:Bar
-Select the objects to be used as the ground truth basis for calculating the amount of overlap:Cell2_0
-Select the objects to be tested for overlap against the ground truth:Cell2_1
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

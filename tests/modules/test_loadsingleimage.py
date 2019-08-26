@@ -41,36 +41,9 @@ class TestLoadSingleImage(
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
     def test_load_v1():
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9524
+        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+            data = fd.read()
 
-LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Input Folder
-    Name of the folder containing the image file:path1
-    Filename of the image to load (Include the extension, e.g., .tif):foo.tif
-    Name the image that will be loaded:DNA
-    Filename of the image to load (Include the extension, e.g., .tif):bar.tif
-    Name the image that will be loaded:Cytoplasm
-
-LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Output Folder
-    Name of the folder containing the image file:path2
-    Filename of the image to load (Include the extension, e.g., .tif):baz.tif
-    Name the image that will be loaded:GFP
-
-LoadSingleImage:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Custom folder
-    Name of the folder containing the image file:path3
-    Filename of the image to load (Include the extension, e.g., .tif):baz.tif
-    Name the image that will be loaded:GFP
-
-LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Custom with metadata
-    Name of the folder containing the image file:path4
-    Filename of the image to load (Include the extension, e.g., .tif):baz.tif
-    Name the image that will be loaded:GFP
-"""
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
@@ -103,32 +76,9 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
         assert fs.image_name == "Cytoplasm"
 
     def test_load_v2():
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9524
+        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+            data = fd.read()
 
-LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Input Folder\x7CNone
-    Filename of the image to load (Include the extension, e.g., .tif):foo.tif
-    Name the image that will be loaded:DNA
-    Filename of the image to load (Include the extension, e.g., .tif):bar.tif
-    Name the image that will be loaded:Cytoplasm
-
-LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Output Folder\x7CNone
-    Filename of the image to load (Include the extension, e.g., .tif):baz.tif
-    Name the image that will be loaded:GFP
-
-LoadSingleImage:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Elsewhere...\x7CNone
-    Filename of the image to load (Include the extension, e.g., .tif):baz.tif
-    Name the image that will be loaded:GFP
-
-LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:URL\x7Chttps\x3A//svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages
-    Filename of the image to load (Include the extension, e.g., .tif):Channel1-01-A-01.tif
-    Name the image that will be loaded:DNA1
-"""
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
@@ -168,17 +118,9 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
             assert module.directory.dir_choice == dir_choice[i]
 
     def test_load_v3():
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9524
+        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+            data = fd.read()
 
-LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Input Folder\x7CNone
-    Filename of the image to load (Include the extension, e.g., .tif):foo.tif
-    Name the image that will be loaded:DNA
-    Filename of the image to load (Include the extension, e.g., .tif):bar.tif
-    Name the image that will be loaded:Cytoplasm
-"""
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
@@ -200,19 +142,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         assert fs.rescale
 
     def test_load_v4():
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9524
+        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+            data = fd.read()
 
-LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Input Folder\x7CNone
-    Filename of the image to load (Include the extension, e.g., .tif):foo.tif
-    Name the image that will be loaded:DNA
-    Rescale image?:No
-    Filename of the image to load (Include the extension, e.g., .tif):bar.tif
-    Name the image that will be loaded:Cytoplasm
-    Rescale image?:Yes
-"""
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
@@ -236,27 +168,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4
         assert fs.rescale
 
     def test_load_v5():
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9524
+        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+            data = fd.read()
 
-LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
-    Folder containing the image file:Default Input Folder\x7CNone
-    Filename of the image to load (Include the extension, e.g., .tif):foo.tif
-    Load as images or objects?:Images
-    Name the image that will be loaded:DNA
-    Name the objects that will be loaded:MyObjects
-    Do you want to save outlines?:Yes
-    Name the outlines:MyOutlines
-    Rescale image?:No
-    Filename of the image to load (Include the extension, e.g., .tif):bar.tif
-    Load as images or objects?:Objects
-    Name the image that will be loaded:Cytoplasm
-    Name the objects that will be loaded:Cells
-    Do you want to save outlines?:No
-    Name the outlines:MyOutlines
-    Rescale image?:Yes
-"""
         pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):

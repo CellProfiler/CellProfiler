@@ -14,26 +14,9 @@ def test_test_load_version_9_please():
 
 
 def test_load_v7():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150713184605
-GitHash:2f7b3b9
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number:7|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Store batch files in default output folder?:Yes
-Output folder path:C\x3A\\\\foo\\\\bar
-Are the cluster computers running Windows?:No
-Hidden\x3A in batch mode:No
-Hidden\x3A in distributed mode:No
-Hidden\x3A default input folder at time of save:C\x3A\\\\bar\\\\baz
-Hidden\x3A revision number:0
-Hidden\x3A from old matlab:No
-Launch BatchProfiler:Yes
-Local root path:\\\\\\\\argon-cifs\\\\imaging_docs
-Cluster root path:/imaging/docs
-"""
     pipeline = cpp.Pipeline()
     pipeline.loadtxt(StringIO(data))
     assert len(pipeline.modules()) == 1
@@ -53,25 +36,9 @@ Cluster root path:/imaging/docs
 
 
 def test_load_v8():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150713184605
-GitHash:2f7b3b9
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-CreateBatchFiles:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:8|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Store batch files in default output folder?:Yes
-Output folder path:/Users/cellprofiler
-Are the cluster computers running Windows?:No
-Hidden\x3A in batch mode:No
-Hidden\x3A in distributed mode:No
-Hidden\x3A default input folder at time of save:/Users/mcquin/Pictures
-Hidden\x3A revision number:0
-Hidden\x3A from old matlab:No
-Local root path:/Users/cellprofiler/Pictures
-Cluster root path:/Remote/cellprofiler/Pictures
-"""
     pipeline = cpp.Pipeline()
     pipeline.loadtxt(StringIO(data))
     assert len(pipeline.modules()) == 1

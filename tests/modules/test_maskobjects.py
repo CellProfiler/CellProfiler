@@ -17,58 +17,9 @@ OUTPUT_OUTLINES = "outputoutlines"
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9193
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Objects to be masked\x3A:Nuclei
-Name the masked objects\x3A:MaskedNuclei
-Mask using other objects or binary image?:Objects
-Masking objects\x3A:Wells
-Masking image\x3A:None
-How do you want to handle objects that are partially masked?:Keep overlapping region
-How much of the object must overlap?:0.5
-Retain original numbering or renumber objects?:Renumber
-Save outlines for the resulting objects?:No
-Outlines name\x3A:MaskedOutlines
-
-MaskObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Objects to be masked\x3A:Cells
-Name the masked objects\x3A:MaskedCells
-Mask using other objects or binary image?:Image
-Masking objects\x3A:None
-Masking image\x3A:WellBoundary
-How do you want to handle objects that are partially masked?:Keep
-How much of the object must overlap?:0.5
-Retain original numbering or renumber objects?:Retain
-Save outlines for the resulting objects?:Yes
-Outlines name\x3A:MaskedCellOutlines
-
-MaskObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Objects to be masked\x3A:Cytoplasm
-Name the masked objects\x3A:MaskedCytoplasm
-Mask using other objects or binary image?:Objects
-Masking objects\x3A:Cells
-Masking image\x3A:None
-How do you want to handle objects that are partially masked?:Remove
-How much of the object must overlap?:0.5
-Retain original numbering or renumber objects?:Renumber
-Save outlines for the resulting objects?:No
-Outlines name\x3A:MaskedOutlines
-
-MaskObjects:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Objects to be masked\x3A:Speckles
-Name the masked objects\x3A:MaskedSpeckles
-Mask using other objects or binary image?:Objects
-Masking objects\x3A:Cells
-Masking image\x3A:None
-How do you want to handle objects that are partially masked?:Remove depending on overlap
-How much of the object must overlap?:0.3
-Retain original numbering or renumber objects?:Renumber
-Save outlines for the resulting objects?:No
-Outlines name\x3A:MaskedOutlines
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -121,23 +72,9 @@ Outlines name\x3A:MaskedOutlines
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9193
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Objects to be masked\x3A:Nuclei
-Name the masked objects\x3A:MaskedNuclei
-Mask using other objects or binary image?:Objects
-Masking objects\x3A:Wells
-Masking image\x3A:None
-How do you want to handle objects that are partially masked?:Keep overlapping region
-How much of the object must overlap?:0.5
-Retain original numbering or renumber objects?:Renumber
-Save outlines for the resulting objects?:No
-Outlines name\x3A:MaskedOutlines
-Invert the mask?:Yes
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -159,24 +96,9 @@ Invert the mask?:Yes
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150319195827
-GitHash:d8289bf
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select objects to be masked:IdentifyPrimaryObjects
-Name the masked objects:MaskObjects
-Mask using a region defined by other objects or by binary image?:Objects
-Select the masking object:FilterObjects
-Select the masking image:None
-Handling of objects that are partially masked:Keep overlapping region
-Fraction of object that must overlap:0.5
-Numbering of resulting objects:Renumber
-Invert the mask?:No
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

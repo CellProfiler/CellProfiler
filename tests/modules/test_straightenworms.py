@@ -20,22 +20,9 @@ AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10732
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-StraightenWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Untangled worms name?:OverlappingWorms
-Straightened worms name?:StraightenedWorms
-Worm width\x3A:20
-Training set file location:Default Output Folder\x7CNone
-Training set file name:TrainingSet.xml
-Image count:2
-Image name:Brightfield
-Straightened image name:StraightenedBrightfield
-Image name:Fluorescence
-Straightened image name:StraightenedFluorescence
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -61,52 +48,9 @@ Straightened image name:StraightenedFluorescence
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10891
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-StraightenWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input untangled worm objects:OverlappingWorms
-Name the output straightened worm objects:StraightenedWorms
-Worm width:20
-Training set file location:Default Input Folder\x7CNone
-Training set file name:TrainingSet.mat
-Image count:1
-Measure intensity distribution?:Yes
-Number of segments:4
-Align worms?:Top brightest
-Alignment image:Brightfield
-Select an input image to straighten:Brightfield
-Name the output straightened image:StraightenedImage
-
-StraightenWorms:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input untangled worm objects:OverlappingWorms
-Name the output straightened worm objects:StraightenedWorms
-Worm width:20
-Training set file location:Default Input Folder\x7CNone
-Training set file name:TrainingSet.mat
-Image count:1
-Measure intensity distribution?:Yes
-Number of segments:4
-Align worms?:Bottom brightest
-Alignment image:Brightfield
-Select an input image to straighten:Brightfield
-Name the output straightened image:StraightenedImage
-
-StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input untangled worm objects:OverlappingWorms
-Name the output straightened worm objects:StraightenedWorms
-Worm width:20
-Training set file location:Default Input Folder\x7CNone
-Training set file name:TrainingSet.mat
-Image count:1
-Measure intensity distribution?:Yes
-Number of segments:4
-Align worms?:Do not align
-Alignment image:Brightfield
-Select an input image to straighten:Brightfield
-Name the output straightened image:StraightenedImage
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

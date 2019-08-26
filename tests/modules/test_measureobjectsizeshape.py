@@ -43,15 +43,9 @@ def make_workspace(labels):
 
 
 def test_01_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:8957
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-Select objects to measure:Nuclei
-Select objects to measure:Cells
-Calculate the Zernike features?:Yes
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

@@ -16,26 +16,9 @@ MEASUREMENT_NAME = "measurement"
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130719180707
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Display object or image measurements?:Object
-Select the input objects:Nuclei
-Measurement to display:AreaShape_Zernike_0_0
-Select the image on which to display the measurements:DNA
-Text color:green
-Name the output image that has the measurements displayed:Zernike
-Font size (points):10
-Number of decimals:2
-Image elements to save:Axes
-Annotation offset (in pixels):5
-Display mode:Color
-Color map:jet
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -62,27 +45,9 @@ Color map:jet
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20130719180707
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-Display object or image measurements?:Object
-Select the input objects:Nuclei
-Measurement to display:AreaShape_Zernike_0_0
-Select the image on which to display the measurements:DNA
-Text color:green
-Name the output image that has the measurements displayed:Zernike
-Font size (points):10
-Number of decimals:2
-Image elements to save:Axes
-Annotation offset (in pixels):5
-Display mode:Color
-Color map:jet
-Display background image:No
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -112,47 +77,9 @@ Display background image:No
 
 
 def test_load_v6():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20141125133416
-GitHash:389a5b5
-ModuleCount:2
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Display object or image measurements?:Object
-Select the input objects:Nuclei
-Measurement to display:Texture_AngularSecondMoment_CropBlue_3_0
-Select the image on which to display the measurements:RGBImage
-Text color:red
-Name the output image that has the measurements displayed:Whatever
-Font size (points):11
-Number of decimals:3
-Image elements to save:Image
-Annotation offset (in pixels):1
-Display mode:Color
-Color map:jet
-Display background image?:Yes
-Color map scale:Manual
-Color map range:0.05,1.5
-
-DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Display object or image measurements?:Object
-Select the input objects:Nuclei
-Measurement to display:Texture_AngularSecondMoment_CropBlue_3_0
-Select the image on which to display the measurements:RGBImage
-Text color:red
-Name the output image that has the measurements displayed:DisplayImage
-Font size (points):12
-Number of decimals:4
-Image elements to save:Image
-Annotation offset (in pixels):1
-Display mode:Color
-Color map:Default
-Display background image?:Yes
-Color map scale:Use this image\'s measurement range
-Color map range:0.05,1.5
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

@@ -33,51 +33,9 @@ MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9889
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Hidden:2
-Hidden:3
-Name the flag\'s category:Metadata
-Name the flag:QCFlag
-Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-Skip image set if flagged?:No
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MaxIntensity_DNA
-Flag images based on low values?:No
-Minimum value:0.0
-Flag images based on high values?:Yes
-Maximum value:0.95
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MinIntensity_Cytoplasm
-Flag images based on low values?:Yes
-Minimum value:0.05
-Flag images based on high values?:No
-Maximum value:1.0
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MeanIntensity_DNA
-Flag images based on low values?:Yes
-Minimum value:0.1
-Flag images based on high values?:Yes
-Maximum value:0.9
-Hidden:1
-Name the flag\'s category:Metadata
-Name the flag:HighCytoplasmIntensity
-Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-Skip image set if flagged?:Yes
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MeanIntensity_Cytoplasm
-Flag images based on low values?:No
-Minimum value:0.0
-Flag images based on high values?:Yes
-Maximum value:.8
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -132,59 +90,9 @@ Maximum value:.8
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-DateRevision:20120306205005
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Hidden:2
-Hidden:3
-Name the flag\'s category:Metadata
-Name the flag:QCFlag
-Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-Skip image set if flagged?:No
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MaxIntensity_DNA
-Flag images based on low values?:No
-Minimum value:0.0
-Flag images based on high values?:Yes
-Maximum value:0.95
-Rules file location:Default Input Folder\x7CNone
-Rules file name:foo.txt
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MinIntensity_Cytoplasm
-Flag images based on low values?:Yes
-Minimum value:0.05
-Flag images based on high values?:No
-Maximum value:1.0
-Rules file location:Default Input Folder\x7CNone
-Rules file name:bar.txt
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MeanIntensity_DNA
-Flag images based on low values?:Yes
-Minimum value:0.1
-Flag images based on high values?:Yes
-Maximum value:0.9
-Rules file location:Default Input Folder\x7CNone
-Rules file name:baz.txt
-Hidden:1
-Name the flag\'s category:Metadata
-Name the flag:HighCytoplasmIntensity
-Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-Skip image set if flagged?:Yes
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MeanIntensity_Cytoplasm
-Flag images based on low values?:No
-Minimum value:0.0
-Flag images based on high values?:Yes
-Maximum value:.8
-Rules file location:Default Input Folder\x7CNone
-Rules file name:dunno.txt
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -241,63 +149,9 @@ Rules file name:dunno.txt
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-DateRevision:20120306205005
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Hidden:2
-Hidden:3
-Name the flag\'s category:Metadata
-Name the flag:QCFlag
-Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-Skip image set if flagged?:No
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MaxIntensity_DNA
-Flag images based on low values?:No
-Minimum value:0.0
-Flag images based on high values?:Yes
-Maximum value:0.95
-Rules file location:Default Input Folder\x7CNone
-Rules file name:foo.txt
-Rules class:4
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MinIntensity_Cytoplasm
-Flag images based on low values?:Yes
-Minimum value:0.05
-Flag images based on high values?:No
-Maximum value:1.0
-Rules file location:Default Input Folder\x7CNone
-Rules file name:bar.txt
-Rules class:2
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MeanIntensity_DNA
-Flag images based on low values?:Yes
-Minimum value:0.1
-Flag images based on high values?:Yes
-Maximum value:0.9
-Rules file location:Default Input Folder\x7CNone
-Rules file name:baz.txt
-Rules class:1
-Hidden:1
-Name the flag\'s category:Metadata
-Name the flag:HighCytoplasmIntensity
-Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-Skip image set if flagged?:Yes
-Flag is based on:Whole-image measurement
-Select the object whose measurements will be used to flag:None
-Which measurement?:Intensity_MeanIntensity_Cytoplasm
-Flag images based on low values?:No
-Minimum value:0.0
-Flag images based on high values?:Yes
-Maximum value:.8
-Rules file location:Default Input Folder\x7CNone
-Rules file name:dunno.txt
-Rules class:3
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

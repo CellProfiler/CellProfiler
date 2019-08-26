@@ -16,26 +16,9 @@ OUTLINE_NAME = "outlines"
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150319195827
-GitHash:d8289bf
-ModuleCount:1
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-SplitOrMergeObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input objects:IdentifyPrimaryObjects
-Name the new objects:SplitOrMergeObjects
-Operation:Unify
-Maximum distance within which to unify objects:0
-Unify using a grayscale image?:No
-Select the grayscale image to guide unification:None
-Minimum intensity fraction:0.9
-Method to find object intensity:Closest point
-Unification method:Distance
-Select the parent object:None
-Output object type:Disconnected
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):
@@ -59,43 +42,9 @@ Output object type:Disconnected
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150319195827
-GitHash:d8289bf
-ModuleCount:2
-HasImagePlaneDetails:False
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-SplitOrMergeObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input objects:blobs
-Name the new objects:RelabeledBlobs
-Operation:Unify
-Maximum distance within which to unify objects:2
-Unify using a grayscale image?:No
-Select the grayscale image to guide unification:Guide
-Minimum intensity fraction:0.8
-Method to find object intensity:Closest point
-Retain outlines of the relabeled objects?:No
-Name the outlines:RelabeledNucleiOutlines
-Unification method:Per-parent
-Select the parent object:Nuclei
-Output object type:Convex hull
-
-SplitOrMergeObjects:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input objects:blobs
-Name the new objects:RelabeledNuclei
-Operation:Split
-Maximum distance within which to unify objects:1
-Unify using a grayscale image?:Yes
-Select the grayscale image to guide unification:Guide
-Minimum intensity fraction:0.9
-Method to find object intensity:Centroids
-Retain outlines of the relabeled objects?:Yes
-Name the outlines:RelabeledNucleiOutlines
-Unification method:Distance
-Select the parent object:Nuclei
-Output object type:Disconnected
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

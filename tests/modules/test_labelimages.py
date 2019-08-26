@@ -9,22 +9,9 @@ import cellprofiler.workspace as cpw
 
 
 def test_load_v1():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9973
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-LabelImages:[module_num:1|svn_version:\'9970\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-# sites / well\x3A:3
-# of columns\x3A:48
-# of rows\x3A:32
-Order\x3A:Column
-
-LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-# sites / well\x3A:1
-# of columns\x3A:12
-# of rows\x3A:8
-Order\x3A:Row
-"""
     pipeline = cpp.Pipeline()
 
     def callback(caller, event):

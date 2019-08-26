@@ -603,34 +603,9 @@ def check_error(caller, event):
 
 
 def test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9207
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select an image to measure:Alpha
-Check for blur?:Yes
-Window size for blur measurements:25
-Check for saturation?:Yes
-Calculate threshold?:Yes
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.2
-Calculate quartiles and sum of radial power spectrum?:Yes
-Two-class or three-class thresholding?:Three classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-Select an image to measure:Beta
-Check for blur?:No
-Window size for blur measurements:15
-Check for saturation?:No
-Calculate threshold?:No
-Select a thresholding method:MoG Global
-Typical fraction of the image covered by objects:0.3
-Calculate quartiles and sum of radial power spectrum?:No
-Two-class or three-class thresholding?:Two classes
-Minimize the weighted variance or the entropy?:Entropy
-Assign pixels in the middle intensity class to the foreground or the background?:Background
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -673,121 +648,9 @@ Assign pixels in the middle intensity class to the foreground or the background?
 
 
 def test_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10908
+    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        data = fd.read()
 
-MeasureImageQuality:[module_num:1|svn_version:\'10368\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Calculate metrics for which images?:All loaded images
-Image count:1
-Scale count:1
-Threshold count:0
-Select the images to measure:Alpha
-Include the image rescaling value?:Yes
-Calculate blur metrics?:Yes
-Window size for blur measurements:20
-Calculate saturation metrics?:Yes
-Calculate intensity metrics?:Yes
-Calculate thresholds?:Yes
-Use all thresholding methods?:Yes
-
-MeasureImageQuality:[module_num:2|svn_version:\'10368\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Calculate metrics for which images?:Select...
-Image count:1
-Scale count:1
-Threshold count:1
-Select the images to measure:Alpha
-Include the image rescaling value?:Yes
-Calculate blur metrics?:Yes
-Window size for blur measurements:20
-Calculate saturation metrics?:Yes
-Calculate intensity metrics?:Yes
-Calculate thresholds?:Yes
-Use all thresholding methods?:Yes
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.1
-Two-class or three-class thresholding?:Two classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-
-MeasureImageQuality:[module_num:3|svn_version:\'10368\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Calculate metrics for which images?:Select...
-Image count:1
-Scale count:1
-Threshold count:1
-Select the images to measure:Delta,Beta
-Include the image rescaling value?:Yes
-Calculate blur metrics?:Yes
-Window size for blur measurements:20
-Calculate saturation metrics?:Yes
-Calculate intensity metrics?:Yes
-Calculate thresholds?:Yes
-Use all thresholding methods?:Yes
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.1
-Two-class or three-class thresholding?:Three classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-
-MeasureImageQuality:[module_num:4|svn_version:\'10368\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Calculate metrics for which images?:Select...
-Image count:2
-Scale count:1
-Scale count:1
-Threshold count:1
-Threshold count:1
-Select the images to measure:Delta
-Include the image rescaling value?:Yes
-Calculate blur metrics?:Yes
-Window size for blur measurements:20
-Calculate saturation metrics?:Yes
-Calculate intensity metrics?:Yes
-Calculate thresholds?:Yes
-Use all thresholding methods?:No
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.1
-Two-class or three-class thresholding?:Two classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-Select the images to measure:Epsilon
-Include the image rescaling value?:Yes
-Calculate blur metrics?:Yes
-Window size for blur measurements:20
-Calculate saturation metrics?:Yes
-Calculate intensity metrics?:Yes
-Calculate thresholds?:Yes
-Use all thresholding methods?:Yes
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.1
-Two-class or three-class thresholding?:Two classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-
-MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
-Calculate metrics for which images?:Select...
-Image count:1
-Scale count:2
-Threshold count:2
-Select the images to measure:Zeta
-Include the image rescaling value?:Yes
-Calculate blur metrics?:Yes
-Window size for blur measurements:20
-Window size for blur measurements:30
-Calculate saturation metrics?:Yes
-Calculate intensity metrics?:Yes
-Calculate thresholds?:Yes
-Use all thresholding methods?:No
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.1
-Two-class or three-class thresholding?:Two classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-Select a thresholding method:Otsu Global
-Typical fraction of the image covered by objects:0.1
-Two-class or three-class thresholding?:Three classes
-Minimize the weighted variance or the entropy?:Weighted variance
-Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

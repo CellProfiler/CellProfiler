@@ -1,0 +1,13 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10534
+
+LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D]
+Input data file location:Elsewhere...\x7Cx\x3A\\projects\\NightlyBuild\\trunk\\ExampleImages\\ExampleSBSImages
+Name of the file:1049_Metadata.csv
+Load images based on this data?:Yes
+Base image location:Default Input Folder\x7C.
+Process just a range of rows?:No
+Rows to process:1,100000
+Group images by metadata?:Yes
+Select metadata fields for grouping:Column,Row

@@ -1,0 +1,25 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10104
+
+Resize:[module_num:1|svn_version:\'10104\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the input image:DNA
+Name the output image:ResizedDNA
+Select resizing method:Resize by specifying desired final dimensions
+Resizing factor:0.25
+Width of the final image, in pixels:141
+Height of the final image, in pixels:169
+Interpolation method:Bilinear
+Additional image count:1
+Select the additional image?:Actin
+Name the output image:ResizedActin
+
+Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the input image:DNA
+Name the output image:ResizedDNA
+Select resizing method:Resize by specifying desired final dimensions
+Resizing factor:0.25
+Width of the final image, in pixels:100
+Height of the final image, in pixels:100
+Interpolation method:Bicubic
+Additional image count:0

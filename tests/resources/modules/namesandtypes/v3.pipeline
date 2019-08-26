@@ -1,0 +1,56 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130730112304
+ModuleCount:3
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+:{"ShowFiltered"\x3A false}
+Filter based on rules:Yes
+Filter:or (extension does istif)
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+Extract metadata?:Yes
+Extraction method count:1
+Extraction method:Manual
+Source:From file name
+Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
+Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+Filter images:All images
+:or (file does contain "")
+Metadata file location\x3A:
+Match file and image metadata:\x5B\x5D
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+Assign a name to:Images matching rules
+Select the image type:Color image
+Name to assign these images:PI
+:\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
+Channel matching method:Order
+Set intensity range from:Image bit-depth
+Assignments count:5
+Select the rule criteria:or (metadata does ChannelNumber "0")
+Name to assign these images:DNA
+Name to assign these objects:Nuclei
+Select the image type:Grayscale image
+Set intensity range from:Image metadata
+Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
+Name to assign these images:Actin
+Name to assign these objects:Cells
+Select the image type:Color image
+Set intensity range from:Image bit-depth
+Select the rule criteria:or (metadata does ChannelNumber "2")
+Name to assign these images:GFP
+Name to assign these objects:Cells
+Select the image type:Mask
+Set intensity range from:Image metadata
+Select the rule criteria:or (metadata does ChannelNumber "2")
+Name to assign these images:Foo
+Name to assign these objects:Cells
+Select the image type:Objects
+Set intensity range from:Image bit-depth
+Select the rule criteria:or (metadata does ChannelNumber "2")
+Name to assign these images:Illum
+Name to assign these objects:Cells
+Select the image type:Illumination function
+Set intensity range from:Image metadata

@@ -1,0 +1,32 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150414135713
+GitHash:3bad577
+ModuleCount:2
+HasImagePlaneDetails:False
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Select the input image:Dendrite
+Name the output image:EnhancedDendrite
+Select the operation:Enhance
+Feature size:10
+Feature type:Neurites
+Range of hole sizes:1,10
+Smoothing scale:2.0
+Shear angle:0
+Decay:0.95
+Enhancement method:Tubeness
+Speed and accuracy:Slow / circular
+
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Select the input image:Axon
+Name the output image:EnhancedAxon
+Select the operation:Enhance
+Feature size:10
+Feature type:Neurites
+Range of hole sizes:1,10
+Smoothing scale:2.0
+Shear angle:0
+Decay:0.95
+Enhancement method:Line structures
+Speed and accuracy:Fast / hexagonal

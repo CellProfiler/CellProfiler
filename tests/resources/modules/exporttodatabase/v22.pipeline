@@ -1,0 +1,74 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+SVNRevision:11412
+
+ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+Database type:MySQL
+Database name:Gamma
+Add a prefix to table names?:Yes
+Table prefix:Delta_
+SQL file prefix:Iota_
+Output file location:Default Output Folder\x7CNone
+Create a CellProfiler Analyst properties file?:Yes
+Database host:Alpha
+Username:Beta
+Password:Gamma
+Name the SQLite database file:DefaultDB.db
+Calculate the per-image mean values of object measurements?:Yes
+Calculate the per-image median values of object measurements?:No
+Calculate the per-image standard deviation values of object measurements?:No
+Calculate the per-well mean values of object measurements?:No
+Calculate the per-well median values of object measurements?:No
+Calculate the per-well standard deviation values of object measurements?:No
+Export measurements for all objects to the database?:All
+Select the objects:
+Maximum # of characters in a column name:64
+Create one table per object or a single object table?:Single object table
+Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
+Write image thumbnails directly to the database?:Yes
+Select the images you want to save thumbnails of:Actin,DNA
+Auto-scale thumbnail pixel intensities?:Yes
+Select the plate type:384
+Select the plate metadata:Plate
+Select the well metadata:Well
+Include information for all images, using default values?:No
+Properties image group count:2
+Properties group field count:1
+Properties filter field count:1
+Workspace measurement count:2
+Experiment name:Sigma
+Which objects should be used for locations?:Cells
+Select an image to include:DNA
+Use the image name for the display?:No
+Image name:NucleicAcid
+Channel color:green
+Select an image to include:Actin
+Use the image name for the display?:No
+Image name:Protein
+Channel color:blue
+Do you want to add group fields?:Yes
+Enter the name of the group:WellGroup
+Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
+Do you want to add filter fields?:Yes
+Automatically create a filter for each plate?:Yes
+Enter the name of the filter:Site1Filter
+Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
+Create a CellProfiler Analyst workspace file?:Yes
+Select the measurement display tool:ScatterPlot
+Type of measurement to plot on the x-axis:Image
+Enter the object name:Mitochondria
+Select the x-axis measurement:Width_DNA
+Select the x-axis index:ImageNumber
+Type of measurement to plot on the y-axis:Image
+Enter the object name:Nuclei
+Select the y-axis measurement:Height_DNA
+Select the x-axis index:ImageNumber
+Select the measurement display tool:PlateViewer
+Type of measurement to plot on the x-axis:Image
+Enter the object name:Cells
+Select the x-axis measurement:Height_Actin
+Select the x-axis index:ImageNumber
+Type of measurement to plot on the y-axis:Image
+Enter the object name:Speckles
+Select the y-axis measurement:Width_Actin
+Select the x-axis index:ImageNumber

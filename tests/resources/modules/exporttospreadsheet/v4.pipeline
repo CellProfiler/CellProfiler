@@ -1,0 +1,41 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9152
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+Select or enter the column delimiter:Comma (",")
+Prepend the output file name to the data file names?:No
+Add image metadata columns to your object data file?:No
+No longer used, always saved:No
+Limit output to a size that is allowed in Excel?:No
+Select the columns of measurements to export?:No
+Calculate the per-image mean values for object measurements?:No
+Calculate the per-image median values for object measurements?:No
+Calculate the per-image standard deviation values for object measurements?:No
+Where do you want to save the files?:Default output folder
+Folder name\x3A:.
+Export all measurements?:No
+Data to export:Image
+Combine these object measurements with those of the previous object?:No
+File name\x3A:Image.csv
+Use the object name for the file name?:Yes
+Data to export:Nuclei
+Combine these object measurements with those of the previous object?:No
+File name\x3A:Nuclei.csv
+Use the object name for the file name?:Yes
+Data to export:PropCells
+Combine these object measurements with those of the previous object?:No
+File name\x3A:PropCells.csv
+Use the object name for the file name?:Yes
+Data to export:DistanceCells
+Combine these object measurements with those of the previous object?:No
+File name\x3A:DistanceCells.csv
+Use the object name for the file name?:Yes
+Data to export:DistCytoplasm
+Combine these object measurements with those of the previous object?:No
+File name\x3A:DistCytoplasm.csv
+Use the object name for the file name?:Yes
+Data to export:PropCytoplasm
+Combine these object measurements with those of the previous object?:No
+File name\x3A:PropCytoplasm.csv
+Use the object name for the file name?:Yes

@@ -1,0 +1,25 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10999
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the input image:DNA
+Name the output image:EnhancedTexture
+Select the operation:Enhance
+Feature size:10
+Feature type:Texture
+Range of hole sizes:1,10
+Smoothing scale:3.5
+Shear angle:45
+Decay:0.90
+
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select the input image:EnhancedTexture
+Name the output image:EnhancedDIC
+Select the operation:Enhance
+Feature size:10
+Feature type:DIC
+Range of hole sizes:1,10
+Smoothing scale:1.5
+Shear angle:135
+Decay:0.99

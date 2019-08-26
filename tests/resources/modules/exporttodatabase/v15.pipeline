@@ -1,0 +1,26 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9503
+
+ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|show_window:True|notes:\x5B\x5D]
+Database type:MySQL / CSV
+Database name:Heel
+Add a prefix to table names?:No
+Table prefix:Ouch
+SQL file prefix:LQS_
+Output file location:Elsewhere...\x7C//achilles/red/shoes
+Create a CellProfiler Analyst properties file?:No
+Database host:Zeus
+Username:Hera
+Password:Athena
+Name the SQLite database file:Poseidon
+Calculate the per-image mean values of object measurements?:Yes
+Calculate the per-image median values of object measurements?:No
+Calculate the per-image standard deviation values of object measurements?:No
+Calculate the per-well mean values of object measurements?:Yes
+Calculate the per-well median values of object measurements?:Yes
+Calculate the per-well standard deviation values of object measurements?:No
+Export measurements for all objects to the database?:All
+Select the objects:
+Maximum # of characters in a column name:62
+Create one table per object or a single object table?:One table per object type

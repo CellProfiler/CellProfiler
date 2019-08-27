@@ -1,15 +1,15 @@
-import numpy as np
-from centrosome.cpmorphology import get_line_pts
-from scipy.ndimage import binary_fill_holes
-from six.moves import StringIO
+import centrosome.cpmorphology
+import numpy
+import scipy.ndimage
+import six.moves
 
-import cellprofiler.image as cpi
+import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.identifydeadworms as ID
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.measurement
+import cellprofiler.modules.identifydeadworms
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
@@ -27,15 +27,15 @@ Worm width:6
 Worm length:114
 Number of angles:180
 """
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
     assert module.image_name == "BinaryWorms"
     assert module.object_name == "DeadWorms"
     assert module.worm_width == 6
@@ -59,15 +59,15 @@ Automatically calculate distance parameters?:No
 Spatial distance:6
 Angular distance:45
 """
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
     assert module.image_name == "BinaryWorms"
     assert module.object_name == "DeadWorms"
     assert module.worm_width == 6
@@ -79,32 +79,32 @@ Angular distance:45
 
 
 def make_workspace(pixel_data, mask=None):
-    image = cpi.Image(pixel_data, mask)
-    image_set_list = cpi.ImageSetList()
+    image = cellprofiler.image.Image(pixel_data, mask)
+    image_set_list = cellprofiler.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, image)
 
-    module = ID.IdentifyDeadWorms()
+    module = cellprofiler.modules.identifydeadworms.IdentifyDeadWorms()
     module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
     module.object_name.value = OBJECTS_NAME
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    workspace = cpw.Workspace(
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cpo.ObjectSet(),
-        cpmeas.Measurements(),
+        cellprofiler.object.ObjectSet(),
+        cellprofiler.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -112,7 +112,7 @@ def make_workspace(pixel_data, mask=None):
 
 def test_zeros():
     """Run the module with an image of all zeros"""
-    workspace, module = make_workspace(np.zeros((20, 10), bool))
+    workspace, module = make_workspace(numpy.zeros((20, 10), bool))
     module.run(workspace)
     count = workspace.measurements.get_current_image_measurement(
         "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
@@ -122,22 +122,22 @@ def test_zeros():
 
 def test_one_worm():
     """Find a single worm"""
-    image = np.zeros((20, 20), bool)
-    index, count, i, j = get_line_pts(
-        np.array([1, 6, 19, 14]),
-        np.array([5, 0, 13, 18]),
-        np.array([6, 19, 14, 1]),
-        np.array([0, 13, 18, 5]),
+    image = numpy.zeros((20, 20), bool)
+    index, count, i, j = centrosome.cpmorphology.get_line_pts(
+        numpy.array([1, 6, 19, 14]),
+        numpy.array([5, 0, 13, 18]),
+        numpy.array([6, 19, 14, 1]),
+        numpy.array([0, 13, 18, 5]),
     )
     image[i, j] = True
-    image = binary_fill_holes(image)
+    image = scipy.ndimage.binary_fill_holes(image)
     workspace, module = make_workspace(image)
     module.worm_length.value = 12
     module.worm_width.value = 5
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     count = m.get_current_image_measurement(
         "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
     )
@@ -152,46 +152,50 @@ def test_one_worm():
     )
     assert len(y) == 1
     assert round(abs(y[0] - 10.0), 1) == 0
-    a = m.get_current_measurement(OBJECTS_NAME, ID.M_ANGLE)
+    a = m.get_current_measurement(
+        OBJECTS_NAME, cellprofiler.modules.identifydeadworms.M_ANGLE
+    )
     assert len(a) == 1
     assert round(abs(a[0] - 135), 0) == 0
 
 
 def test_crossing_worms():
     """Find two worms that cross"""
-    image = np.zeros((20, 20), bool)
-    index, count, i, j = get_line_pts(
-        np.array([1, 4, 19, 16]),
-        np.array([3, 0, 15, 18]),
-        np.array([4, 19, 16, 1]),
-        np.array([0, 15, 18, 3]),
+    image = numpy.zeros((20, 20), bool)
+    index, count, i, j = centrosome.cpmorphology.get_line_pts(
+        numpy.array([1, 4, 19, 16]),
+        numpy.array([3, 0, 15, 18]),
+        numpy.array([4, 19, 16, 1]),
+        numpy.array([0, 15, 18, 3]),
     )
     image[i, j] = True
-    index, count, i, j = get_line_pts(
-        np.array([0, 3, 18, 15]),
-        np.array([16, 19, 4, 1]),
-        np.array([3, 18, 15, 0]),
-        np.array([19, 4, 1, 16]),
+    index, count, i, j = centrosome.cpmorphology.get_line_pts(
+        numpy.array([0, 3, 18, 15]),
+        numpy.array([16, 19, 4, 1]),
+        numpy.array([3, 18, 15, 0]),
+        numpy.array([19, 4, 1, 16]),
     )
     image[i, j] = True
-    image = binary_fill_holes(image)
+    image = scipy.ndimage.binary_fill_holes(image)
     workspace, module = make_workspace(image)
     module.worm_length.value = 17
     module.worm_width.value = 5
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     count = m.get_current_image_measurement(
         "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
     )
     assert count == 2
-    a = m.get_current_measurement(OBJECTS_NAME, ID.M_ANGLE)
+    a = m.get_current_measurement(
+        OBJECTS_NAME, cellprofiler.modules.identifydeadworms.M_ANGLE
+    )
     assert len(a) == 2
     if a[0] > 90:
-        order = np.array([0, 1])
+        order = numpy.array([0, 1])
     else:
-        order = np.array([1, 0])
+        order = numpy.array([1, 0])
     assert round(abs(a[order[0]] - 135), 0) == 0
     assert round(abs(a[order[1]] - 45), 0) == 0
     x = m.get_current_measurement(
@@ -210,30 +214,34 @@ def test_crossing_worms():
 
 def test_measurement_columns():
     """Test get_measurement_columns"""
-    workspace, module = make_workspace(np.zeros((20, 10), bool))
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    workspace, module = make_workspace(numpy.zeros((20, 10), bool))
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
     columns = module.get_measurement_columns(workspace.pipeline)
     expected = (
         (
             OBJECTS_NAME,
             cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             OBJECTS_NAME,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
-        (OBJECTS_NAME, ID.M_ANGLE, cpmeas.COLTYPE_FLOAT),
+        (
+            OBJECTS_NAME,
+            cellprofiler.modules.identifydeadworms.M_ANGLE,
+            cellprofiler.measurement.COLTYPE_FLOAT,
+        ),
         (
             OBJECTS_NAME,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
-            cpmeas.IMAGE,
+            cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
     )
     assert len(columns) == len(expected)
@@ -244,22 +252,22 @@ def test_measurement_columns():
 
 
 def test_find_adjacent_by_distance_empty():
-    workspace, module = make_workspace(np.zeros((20, 10), bool))
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    workspace, module = make_workspace(numpy.zeros((20, 10), bool))
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
 
     first, second = module.find_adjacent_by_distance(
-        np.zeros(0), np.zeros(0), np.zeros(0)
+        numpy.zeros(0), numpy.zeros(0), numpy.zeros(0)
     )
     assert len(first) == 0
     assert len(second) == 0
 
 
 def test_find_adjacent_by_distance_one():
-    workspace, module = make_workspace(np.zeros((20, 10), bool))
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    workspace, module = make_workspace(numpy.zeros((20, 10), bool))
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
 
     first, second = module.find_adjacent_by_distance(
-        np.zeros(1), np.zeros(1), np.zeros(1)
+        numpy.zeros(1), numpy.zeros(1), numpy.zeros(1)
     )
     assert len(first) == 1
     assert first[0] == 0
@@ -272,19 +280,19 @@ def test_find_adjacent_by_distance_easy():
     # Feed "find_adjacent_by_distance" points whose "i" are all
     # within the space_distance
     #
-    workspace, module = make_workspace(np.zeros((20, 10), bool))
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    workspace, module = make_workspace(numpy.zeros((20, 10), bool))
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
     module.space_distance.value = 10
     # Take find_adjacent_by_distance internals into account: consecutive i
     # will create a single cross-product
     #
-    i = np.arange(10)
-    j = np.arange(10)
+    i = numpy.arange(10)
+    j = numpy.arange(10)
     # Break into two groups: 0-4 (5x5) and 5-9 (5x5)
     j[5:] += 10
-    a = np.zeros(10)
+    a = numpy.zeros(10)
     first, second = module.find_adjacent_by_distance(i, j, a)
-    order = np.lexsort((second, first))
+    order = numpy.lexsort((second, first))
     first = first[order]
     second = second[order]
     assert len(first) == 50
@@ -301,18 +309,18 @@ def test_find_adjacent_by_distance_hard():
     # Feed "find_adjacent_by_distance" points whose "i" are not all
     # within the space_distance
     #
-    workspace, module = make_workspace(np.zeros((20, 10), bool))
-    assert isinstance(module, ID.IdentifyDeadWorms)
+    workspace, module = make_workspace(numpy.zeros((20, 10), bool))
+    assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
     module.space_distance.value = 10
-    r = np.random.RandomState(44)
+    r = numpy.random.RandomState(44)
     for idx, scramble in enumerate(
-        [np.arange(13)] + [r.permutation(np.arange(13)) for ii in range(10)]
+        [numpy.arange(13)] + [r.permutation(numpy.arange(13)) for ii in range(10)]
     ):
         # Take find_adjacent_by_distance internals into account: non consecutive i
         # will create two cross-products
         #
-        i = np.arange(13)
-        j = np.arange(13)
+        i = numpy.arange(13)
+        j = numpy.arange(13)
         # Break into three groups: 0-2 (3x3), 3-6 (4x4) and 7-11 (5x5)
         # with one loner at end
         i[3:] += 10
@@ -322,7 +330,7 @@ def test_find_adjacent_by_distance_hard():
         #
         i[-1] += 7
         j[-1] += 8
-        a = np.zeros(13)
+        a = numpy.zeros(13)
         #
         # Scramble i, j and a
         #
@@ -333,8 +341,8 @@ def test_find_adjacent_by_distance_hard():
         # a reported value of "n" corresponds to whatever index in scramble
         # that contains "n"
         #
-        unscramble = np.zeros(13, int)
-        unscramble[scramble] = np.arange(13)
+        unscramble = numpy.zeros(13, int)
+        unscramble[scramble] = numpy.arange(13)
         first, second = module.find_adjacent_by_distance(i, j, a)
         assert len(first) == 9 + 16 + 25 + 1
         assert len(second) == 9 + 16 + 25 + 1

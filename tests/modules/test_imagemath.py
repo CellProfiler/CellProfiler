@@ -1,4 +1,4 @@
-from functools import reduce
+import functools
 
 import numpy
 import numpy.testing
@@ -485,7 +485,7 @@ def test_add():
             {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
             for i in range(n)
         ]
-        expected = reduce(numpy.add, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.add, [x["pixel_data"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 
@@ -507,8 +507,8 @@ def test_add_mask():
             }
             for i in range(n)
         ]
-        expected = reduce(numpy.add, [x["pixel_data"] for x in images])
-        mask = reduce(numpy.logical_and, [x["mask"] for x in images])
+        expected = functools.reduce(numpy.add, [x["pixel_data"] for x in images])
+        mask = functools.reduce(numpy.logical_and, [x["mask"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected, mask)
 
@@ -527,9 +527,9 @@ def test_add_mask_truncate():
             }
             for i in range(n)
         ]
-        expected = reduce(numpy.add, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.add, [x["pixel_data"] for x in images])
         expected[expected > 1] = 1
-        mask = reduce(numpy.logical_and, [x["mask"] for x in images])
+        mask = functools.reduce(numpy.logical_and, [x["mask"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected, mask)
 
@@ -559,7 +559,7 @@ def test_add_crop():
                 if m == i:
                     img["pixel_data"] = img["cropped_data"]
                     img["cropping"] = crop_mask
-            expected = reduce(numpy.add, [x["cropped_data"] for x in images])
+            expected = functools.reduce(numpy.add, [x["cropped_data"] for x in images])
             output = run_imagemath(images, fn)
             check_expected(output, expected)
 
@@ -573,7 +573,7 @@ def test_add_factors():
             for i in range(n)
         ]
         factors = numpy.random.uniform(size=n)
-        expected = reduce(
+        expected = functools.reduce(
             numpy.add, [x["pixel_data"] * factor for x, factor in zip(images, factors)]
         )
 
@@ -604,8 +604,8 @@ def test_ignore_mask():
             }
             for i in range(n)
         ]
-        expected = reduce(numpy.add, [x["pixel_data"] for x in images])
-        mask = reduce(numpy.logical_and, [x["mask"] for x in images])
+        expected = functools.reduce(numpy.add, [x["pixel_data"] for x in images])
+        mask = functools.reduce(numpy.logical_and, [x["mask"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected, mask, True)
 
@@ -623,7 +623,7 @@ def test_subtract():
             {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
             for i in range(n)
         ]
-        expected = reduce(numpy.subtract, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.subtract, [x["pixel_data"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 
@@ -641,7 +641,7 @@ def test_subtract_truncate():
             {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
             for i in range(n)
         ]
-        expected = reduce(numpy.subtract, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.subtract, [x["pixel_data"] for x in images])
         expected[expected < 0] = 0
         output = run_imagemath(images, fn)
         check_expected(output, expected)
@@ -658,7 +658,7 @@ def test_multiply():
             {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
             for i in range(n)
         ]
-        expected = reduce(numpy.multiply, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.multiply, [x["pixel_data"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 
@@ -692,7 +692,7 @@ def test_divide():
             {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
             for i in range(n)
         ]
-        expected = reduce(numpy.divide, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.divide, [x["pixel_data"] for x in images])
         expected[expected < 0] = 0
         expected[expected > 1] = 1
 
@@ -711,7 +711,7 @@ def test_average():
             {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
             for i in range(n)
         ]
-        expected = reduce(numpy.add, [x["pixel_data"] for x in images]) / n
+        expected = functools.reduce(numpy.add, [x["pixel_data"] for x in images]) / n
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 
@@ -725,7 +725,7 @@ def test_average_factors():
             for i in range(n)
         ]
         factors = numpy.random.uniform(size=n)
-        expected = reduce(
+        expected = functools.reduce(
             numpy.add, [x["pixel_data"] * factor for x, factor in zip(images, factors)]
         )
         expected /= numpy.sum(factors)
@@ -886,7 +886,7 @@ def test_or_binary():
         images = [
             {"pixel_data": numpy.random.uniform(size=(10, 10)) > 0.5} for i in range(n)
         ]
-        expected = reduce(numpy.logical_or, [x["pixel_data"] for x in images])
+        expected = functools.reduce(numpy.logical_or, [x["pixel_data"] for x in images])
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 
@@ -901,7 +901,7 @@ def test_or_numeric():
         pixel_data = numpy.random.uniform(size=(10, 10))
         pixel_data[pixel_data < 0.5] = 0
         images.append({"pixel_data": pixel_data})
-    expected = reduce(numpy.logical_or, [x["pixel_data"] for x in images])
+    expected = functools.reduce(numpy.logical_or, [x["pixel_data"] for x in images])
     output = run_imagemath(images, fn)
     check_expected(output, expected)
 
@@ -915,7 +915,9 @@ def test_and_binary():
         images = [
             {"pixel_data": numpy.random.uniform(size=(10, 10)) > 0.5} for i in range(n)
         ]
-        expected = reduce(numpy.logical_and, [x["pixel_data"] for x in images])
+        expected = functools.reduce(
+            numpy.logical_and, [x["pixel_data"] for x in images]
+        )
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 

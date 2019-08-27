@@ -5,7 +5,7 @@ import unittest
 
 import PIL.Image
 import numpy
-from six.moves import StringIO
+import six.moves
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -50,7 +50,7 @@ class TestLoadSingleImage(
             assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 4
 
         dir_choice = [
@@ -85,7 +85,7 @@ class TestLoadSingleImage(
             assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 4
 
         module = pipeline.modules()[0]
@@ -127,7 +127,7 @@ class TestLoadSingleImage(
             assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
@@ -151,7 +151,7 @@ class TestLoadSingleImage(
             assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
@@ -177,7 +177,7 @@ class TestLoadSingleImage(
             assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]

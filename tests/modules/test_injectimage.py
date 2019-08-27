@@ -1,23 +1,23 @@
 import numpy
 
 import cellprofiler.image
-import cellprofiler.measurement as cpmeas
+import cellprofiler.measurement
+import cellprofiler.modules.injectimage
 import cellprofiler.pipeline
-import cellprofiler.workspace as cpw
-from cellprofiler.modules.injectimage import InjectImage
+import cellprofiler.workspace
 
 
 def test_init():
     image = numpy.zeros((10, 10), dtype=float)
-    x = InjectImage("my_image", image)
+    x = cellprofiler.modules.injectimage.InjectImage("my_image", image)
 
 
 def test_get_from_image_set():
     image = numpy.zeros((10, 10), dtype=float)
-    ii = InjectImage("my_image", image)
+    ii = cellprofiler.modules.injectimage.InjectImage("my_image", image)
     pipeline = cellprofiler.pipeline.Pipeline()
-    measurements = cpmeas.Measurements()
-    workspace = cpw.Workspace(
+    measurements = cellprofiler.measurement.Measurements()
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         ii,
         measurements,

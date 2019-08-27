@@ -6,18 +6,19 @@ import cellprofiler.pipeline
 import cellprofiler.workspace
 
 
-# def setUp():
-#     # The Images module needs a workspace and the workspace needs
-#     # an HDF5 file.
-#     #
-#     temp_fd, temp_filename = tempfile.mkstemp(".h5")
-#     measurements = cellprofiler.measurement.Measurements(filename=temp_filename)
-#     os.close(temp_fd)
-#
-# def tearDown():
-#     measurements.close()
-#     os.unlink(temp_filename)
-#     assert not os.path.exists(temp_filename)
+def setUp():
+    # The Images module needs a workspace and the workspace needs
+    # an HDF5 file.
+    #
+    temp_fd, temp_filename = tempfile.mkstemp(".h5")
+    measurements = cellprofiler.measurement.Measurements(filename=temp_filename)
+    os.close(temp_fd)
+
+
+def tearDown():
+    measurements.close()
+    os.unlink(temp_filename)
+    assert not os.path.exists(temp_filename)
 
 
 def test_load_v1():

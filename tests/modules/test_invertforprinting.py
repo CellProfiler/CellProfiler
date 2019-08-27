@@ -1,11 +1,11 @@
-import numpy as np
+import numpy
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpm
-import cellprofiler.modules.invertforprinting as I
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.invertforprinting
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 I_RED_IN = "RedInput"
 I_GREEN_IN = "GreenInput"
@@ -28,9 +28,9 @@ def run_module(
 
     Returns a dictionary of the pixel data of the images in the image set
     """
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    module = I.InvertForPrinting()
+    module = cellprofiler.modules.invertforprinting.InvertForPrinting()
     module.set_module_num(1)
     for image, name, setting, check in (
         (color_image, I_COLOR_IN, module.color_input_image, None),
@@ -39,7 +39,7 @@ def run_module(
         (blue_image, I_BLUE_IN, module.blue_input_image, module.wants_blue_input),
     ):
         if image is not None:
-            img = cpi.Image(image)
+            img = cellprofiler.image.Image(image)
             image_set.add(name, img)
             setting.value = name
             if check is not None:
@@ -55,15 +55,20 @@ def run_module(
         setting.value = name
     if fn is not None:
         fn(module)
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
-    workspace = cpw.Workspace(
-        pipeline, module, image_set, cpo.ObjectSet(), cpm.Measurements(), image_set_list
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        cellprofiler.object.ObjectSet(),
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
     )
     module.run(workspace)
     result = {}
@@ -73,13 +78,19 @@ def run_module(
 
 
 def test_color_to_color():
-    np.random.seed(0)
-    color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+    numpy.random.seed(0)
+    color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
     def fn(module):
-        assert isinstance(module, I.InvertForPrinting)
-        module.input_color_choice.value = I.CC_COLOR
-        module.output_color_choice.value = I.CC_COLOR
+        assert isinstance(
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
+        )
+        module.input_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_COLOR
+        )
+        module.output_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_COLOR
+        )
 
     d = run_module(color_image=color_image, fn=fn)
     assert len(d) == 2
@@ -89,17 +100,23 @@ def test_color_to_color():
         diff = result[:, :, o] - (
             (1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2])
         )
-        assert np.all(np.abs(diff) <= np.finfo(float).eps)
+        assert numpy.all(numpy.abs(diff) <= numpy.finfo(float).eps)
 
 
 def test_color_to_bw():
-    np.random.seed(0)
-    color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+    numpy.random.seed(0)
+    color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
     def fn(module):
-        assert isinstance(module, I.InvertForPrinting)
-        module.input_color_choice.value = I.CC_COLOR
-        module.output_color_choice.value = I.CC_GRAYSCALE
+        assert isinstance(
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
+        )
+        module.input_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_COLOR
+        )
+        module.output_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+        )
 
     d = run_module(color_image=color_image, fn=fn)
     assert len(d) == 4
@@ -109,17 +126,23 @@ def test_color_to_bw():
     result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
     for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
         diff = result[o] - ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2]))
-        assert np.all(np.abs(diff) <= np.finfo(float).eps)
+        assert numpy.all(numpy.abs(diff) <= numpy.finfo(float).eps)
 
 
 def test_bw_to_color():
-    np.random.seed(0)
-    color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+    numpy.random.seed(0)
+    color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
     def fn(module):
-        assert isinstance(module, I.InvertForPrinting)
-        module.input_color_choice.value = I.CC_GRAYSCALE
-        module.output_color_choice.value = I.CC_COLOR
+        assert isinstance(
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
+        )
+        module.input_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+        )
+        module.output_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_COLOR
+        )
 
     d = run_module(
         red_image=color_image[:, :, 0],
@@ -131,19 +154,25 @@ def test_bw_to_color():
     assert I_COLOR_OUT in list(d.keys())
     result = d[I_COLOR_OUT]
     for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
-        np.testing.assert_almost_equal(
+        numpy.testing.assert_almost_equal(
             result[:, :, o], ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2]))
         )
 
 
 def test_bw_to_bw():
-    np.random.seed(0)
-    color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+    numpy.random.seed(0)
+    color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
     def fn(module):
-        assert isinstance(module, I.InvertForPrinting)
-        module.input_color_choice.value = I.CC_GRAYSCALE
-        module.output_color_choice.value = I.CC_GRAYSCALE
+        assert isinstance(
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
+        )
+        module.input_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+        )
+        module.output_color_choice.value = (
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+        )
 
     d = run_module(
         red_image=color_image[:, :, 0],
@@ -157,14 +186,14 @@ def test_bw_to_bw():
     )
     result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
     for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
-        np.testing.assert_almost_equal(
+        numpy.testing.assert_almost_equal(
             result[o], ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2]))
         )
 
 
 def test_missing_image():
-    np.random.seed(0)
-    color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+    numpy.random.seed(0)
+    color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
     for present in (
         (True, True, False),
         (True, False, True),
@@ -175,9 +204,15 @@ def test_missing_image():
     ):
 
         def fn(module):
-            assert isinstance(module, I.InvertForPrinting)
-            module.input_color_choice.value = I.CC_GRAYSCALE
-            module.output_color_choice.value = I.CC_GRAYSCALE
+            assert isinstance(
+                module, cellprofiler.modules.invertforprinting.InvertForPrinting
+            )
+            module.input_color_choice.value = (
+                cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+            )
+            module.output_color_choice.value = (
+                cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+            )
 
         d = run_module(
             red_image=color_image[:, :, 0] if present[0] else None,
@@ -185,13 +220,13 @@ def test_missing_image():
             blue_image=color_image[:, :, 2] if present[2] else None,
             fn=fn,
         )
-        assert len(d) == 3 + np.sum(present)
+        assert len(d) == 3 + numpy.sum(present)
         assert all(
             [color in list(d.keys()) for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]
         )
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                 result[o],
                 (
                     (1 - color_image[:, :, i1] if present[i1] else 1)

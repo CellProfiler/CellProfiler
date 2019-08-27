@@ -1,13 +1,13 @@
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
+import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
+import cellprofiler.measurement
 import cellprofiler.modules.splitormergeobjects
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
@@ -19,13 +19,13 @@ def test_load_v5():
     with open("./tests/resources/modules/splitormergeobjects/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.loadtxt(StringIO(data))
+    pipeline.loadtxt(six.moves.StringIO(data))
     module = pipeline.modules()[0]
 
     assert module.objects_name.value == "IdentifyPrimaryObjects"
@@ -45,13 +45,13 @@ def test_load_v4():
     with open("./tests/resources/modules/splitormergeobjects/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.loadtxt(StringIO(data))
+    pipeline.loadtxt(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(
@@ -122,28 +122,33 @@ def rruunn(
     module.wants_image.value = image is not None
     module.where_algorithm.value = where_algorithm
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     if image is not None:
-        img = cpi.Image(image)
+        img = cellprofiler.image.Image(image)
         image_set.add(IMAGE_NAME, img)
         module.image_name.value = IMAGE_NAME
 
-    object_set = cpo.ObjectSet()
-    o = cpo.Objects()
+    object_set = cellprofiler.object.ObjectSet()
+    o = cellprofiler.object.Objects()
     o.segmented = input_labels
     object_set.add_objects(o, INPUT_OBJECTS_NAME)
 
-    workspace = cpw.Workspace(
-        pipeline, module, image_set, object_set, cpmeas.Measurements(), image_set_list
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        object_set,
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
     )
     if parents_of is not None:
         m = workspace.measurements
@@ -156,15 +161,16 @@ def rruunn(
 
 def test_split_zero():
     labels, workspace = rruunn(
-        np.zeros((10, 20), int), cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
+        numpy.zeros((10, 20), int),
+        cellprofiler.modules.splitormergeobjects.OPTION_SPLIT,
     )
-    assert np.all(labels == 0)
+    assert numpy.all(labels == 0)
     assert labels.shape[0] == 10
     assert labels.shape[1] == 20
 
-    assert isinstance(workspace, cpw.Workspace)
+    assert isinstance(workspace, cellprofiler.workspace.Workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     count = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
     )
@@ -186,32 +192,32 @@ def test_split_zero():
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cpmeas.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cpmeas.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS_NAME,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
-            cpmeas.IMAGE,
+            cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
     ):
         assert any(
@@ -220,7 +226,9 @@ def test_split_zero():
                 for c in columns
             ]
         )
-    categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
+    categories = module.get_categories(
+        workspace.pipeline, cellprofiler.measurement.IMAGE
+    )
     assert len(categories) == 1
     assert categories[0] == "Count"
     categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS_NAME)
@@ -231,7 +239,9 @@ def test_split_zero():
     categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
     assert len(categories) == 1
     assert categories[0] == "Children"
-    f = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, "Count")
+    f = module.get_measurements(
+        workspace.pipeline, cellprofiler.measurement.IMAGE, "Count"
+    )
     assert len(f) == 1
     assert f[0] == OUTPUT_OBJECTS_NAME
     f = module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME, "Location")
@@ -251,16 +261,16 @@ def test_split_zero():
 
 
 def test_split_one():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels_out, workspace = rruunn(
         labels, cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
     )
-    assert np.all(labels == labels_out)
+    assert numpy.all(labels == labels_out)
 
-    assert isinstance(workspace, cpw.Workspace)
+    assert isinstance(workspace, cellprofiler.workspace.Workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     count = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
     )
@@ -283,25 +293,25 @@ def test_split_one():
 
 
 def test_split_one_into_two():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 1
     labels_out, workspace = rruunn(
         labels, cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
     )
-    index = np.array([labels_out[3, 5], labels_out[3, 15]])
+    index = numpy.array([labels_out[3, 5], labels_out[3, 15]])
     assert index[0] != index[1]
     assert all([x in index for x in (1, 2)])
-    expected = np.zeros((10, 20), int)
+    expected = numpy.zeros((10, 20), int)
     expected[2:5, 3:8] = index[0]
     expected[2:5, 13:18] = index[1]
-    assert np.all(labels_out == expected)
+    assert numpy.all(labels_out == expected)
     m = workspace.measurements
     values = m.get_current_measurement(
         OUTPUT_OBJECTS_NAME, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME
     )
     assert len(values) == 2
-    assert np.all(values == 1)
+    assert numpy.all(values == 1)
     values = m.get_current_measurement(
         INPUT_OBJECTS_NAME,
         cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
@@ -312,24 +322,25 @@ def test_split_one_into_two():
 
 def test_unify_zero():
     labels, workspace = rruunn(
-        np.zeros((10, 20), int), cellprofiler.modules.splitormergeobjects.OPTION_MERGE
+        numpy.zeros((10, 20), int),
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
     )
-    assert np.all(labels == 0)
+    assert numpy.all(labels == 0)
     assert labels.shape[0] == 10
     assert labels.shape[1] == 20
 
 
 def test_unify_one():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels_out, workspace = rruunn(
         labels, cellprofiler.modules.splitormergeobjects.OPTION_MERGE
     )
-    assert np.all(labels == labels_out)
+    assert numpy.all(labels == labels_out)
 
 
 def test_unify_two_to_one():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
     labels_out, workspace = rruunn(
@@ -337,12 +348,12 @@ def test_unify_two_to_one():
         cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=6,
     )
-    assert np.all(labels_out[labels != 0] == 1)
-    assert np.all(labels_out[labels == 0] == 0)
+    assert numpy.all(labels_out[labels != 0] == 1)
+    assert numpy.all(labels_out[labels == 0] == 0)
 
 
 def test_unify_two_stays_two():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
     labels_out, workspace = rruunn(
@@ -350,14 +361,14 @@ def test_unify_two_stays_two():
         cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=4,
     )
-    assert np.all(labels_out == labels)
+    assert numpy.all(labels_out == labels)
 
 
 def test_unify_image_centroids():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
-    image = np.ones((10, 20)) * (labels > 0) * 0.5
+    image = numpy.ones((10, 20)) * (labels > 0) * 0.5
     image[3, 8:13] = 0.41
     image[3, 5] = 0.6
     labels_out, workspace = rruunn(
@@ -368,15 +379,15 @@ def test_unify_image_centroids():
         minimum_intensity_fraction=0.8,
         where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CENTROIDS,
     )
-    assert np.all(labels_out[labels != 0] == 1)
-    assert np.all(labels_out[labels == 0] == 0)
+    assert numpy.all(labels_out[labels != 0] == 1)
+    assert numpy.all(labels_out[labels == 0] == 0)
 
 
 def test_dont_unify_image_centroids():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
-    image = np.ones((10, 20)) * labels * 0.5
+    image = numpy.ones((10, 20)) * labels * 0.5
     image[3, 8:12] = 0.41
     image[3, 5] = 0.6
     image[3, 15] = 0.6
@@ -388,14 +399,14 @@ def test_dont_unify_image_centroids():
         minimum_intensity_fraction=0.8,
         where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CENTROIDS,
     )
-    assert np.all(labels_out == labels)
+    assert numpy.all(labels_out == labels)
 
 
 def test_unify_image_closest_point():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
-    image = np.ones((10, 20)) * (labels > 0) * 0.6
+    image = numpy.ones((10, 20)) * (labels > 0) * 0.6
     image[2, 8:13] = 0.41
     image[2, 7] = 0.5
     image[2, 13] = 0.5
@@ -407,15 +418,15 @@ def test_unify_image_closest_point():
         minimum_intensity_fraction=0.8,
         where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT,
     )
-    assert np.all(labels_out[labels != 0] == 1)
-    assert np.all(labels_out[labels == 0] == 0)
+    assert numpy.all(labels_out[labels != 0] == 1)
+    assert numpy.all(labels_out[labels == 0] == 0)
 
 
 def test_dont_unify_image_closest_point():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
-    image = np.ones((10, 20)) * labels * 0.6
+    image = numpy.ones((10, 20)) * labels * 0.6
     image[3, 8:12] = 0.41
     image[2, 7] = 0.5
     labels_out, workspace = rruunn(
@@ -426,11 +437,11 @@ def test_dont_unify_image_closest_point():
         minimum_intensity_fraction=0.8,
         where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT,
     )
-    assert np.all(labels_out == labels)
+    assert numpy.all(labels_out == labels)
 
 
 def test_unify_per_parent():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
 
@@ -439,16 +450,16 @@ def test_unify_per_parent():
         cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
         parent_object="Parent_object",
-        parents_of=np.array([1, 1]),
+        parents_of=numpy.array([1, 1]),
     )
-    assert np.all(labels_out[labels != 0] == 1)
+    assert numpy.all(labels_out[labels != 0] == 1)
 
 
 def test_unify_convex_hull():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 2
-    expected = np.zeros(labels.shape, int)
+    expected = numpy.zeros(labels.shape, int)
     expected[2:5, 3:18] = 1
 
     labels_out, workspace = rruunn(
@@ -457,13 +468,13 @@ def test_unify_convex_hull():
         merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
         unify_method=cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL,
         parent_object="Parent_object",
-        parents_of=np.array([1, 1]),
+        parents_of=numpy.array([1, 1]),
     )
-    assert np.all(labels_out == expected)
+    assert numpy.all(labels_out == expected)
 
 
 def test_unify_nothing():
-    labels = np.zeros((10, 20), int)
+    labels = numpy.zeros((10, 20), int)
     for um in (
         cellprofiler.modules.splitormergeobjects.UM_DISCONNECTED,
         cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL,
@@ -474,6 +485,6 @@ def test_unify_nothing():
             merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
             unify_method=cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL,
             parent_object="Parent_object",
-            parents_of=np.zeros(0, int),
+            parents_of=numpy.zeros(0, int),
         )
-        assert np.all(labels_out == 0)
+        assert numpy.all(labels_out == 0)

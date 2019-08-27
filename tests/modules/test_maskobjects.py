@@ -1,13 +1,13 @@
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
+import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.maskobjects as M
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.measurement
+import cellprofiler.modules.maskobjects
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 INPUT_OBJECTS = "inputobjects"
 OUTPUT_OBJECTS = "outputobjects"
@@ -20,53 +20,62 @@ def test_load_v1():
     with open("./tests/resources/modules/maskobjects/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 4
 
     module = pipeline.modules()[0]
-    assert isinstance(module, M.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
     assert module.object_name.value == "Nuclei"
-    assert module.mask_choice.value == M.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Wells"
     assert module.remaining_objects.value == "MaskedNuclei"
-    assert module.retain_or_renumber.value == M.R_RENUMBER
-    assert module.overlap_choice.value == M.P_MASK
+    assert (
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+    )
+    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_MASK
     assert not module.wants_inverted_mask
 
     module = pipeline.modules()[1]
-    assert isinstance(module, M.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
     assert module.object_name.value == "Cells"
-    assert module.mask_choice.value == M.MC_IMAGE
+    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_IMAGE
     assert module.masking_image.value == "WellBoundary"
     assert module.remaining_objects.value == "MaskedCells"
-    assert module.retain_or_renumber.value == M.R_RETAIN
-    assert module.overlap_choice.value == M.P_KEEP
+    assert module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RETAIN
+    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_KEEP
     assert not module.wants_inverted_mask
 
     module = pipeline.modules()[2]
-    assert isinstance(module, M.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
     assert module.object_name.value == "Cytoplasm"
-    assert module.mask_choice.value == M.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Cells"
     assert module.remaining_objects.value == "MaskedCytoplasm"
-    assert module.retain_or_renumber.value == M.R_RENUMBER
-    assert module.overlap_choice.value == M.P_REMOVE
+    assert (
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+    )
+    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_REMOVE
     assert not module.wants_inverted_mask
 
     module = pipeline.modules()[3]
-    assert isinstance(module, M.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
     assert module.object_name.value == "Speckles"
-    assert module.mask_choice.value == M.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Cells"
     assert module.remaining_objects.value == "MaskedSpeckles"
-    assert module.retain_or_renumber.value == M.R_RENUMBER
-    assert module.overlap_choice.value == M.P_REMOVE_PERCENTAGE
+    assert (
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+    )
+    assert (
+        module.overlap_choice.value
+        == cellprofiler.modules.maskobjects.P_REMOVE_PERCENTAGE
+    )
     assert round(abs(module.overlap_fraction.value - 0.3), 7) == 0
     assert not module.wants_inverted_mask
 
@@ -75,23 +84,25 @@ def test_load_v2():
     with open("./tests/resources/modules/maskobjects/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
 
     module = pipeline.modules()[0]
-    assert isinstance(module, M.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
     assert module.object_name.value == "Nuclei"
-    assert module.mask_choice.value == M.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Wells"
     assert module.remaining_objects.value == "MaskedNuclei"
-    assert module.retain_or_renumber.value == M.R_RENUMBER
-    assert module.overlap_choice.value == M.P_MASK
+    assert (
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+    )
+    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_MASK
     assert module.wants_inverted_mask
 
 
@@ -99,13 +110,13 @@ def test_load_v3():
     with open("./tests/resources/modules/maskobjects/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.loadtxt(StringIO(data))
+    pipeline.loadtxt(six.moves.StringIO(data))
     module = pipeline.modules()[0]
 
     assert module.object_name.value == "IdentifyPrimaryObjects"
@@ -122,44 +133,55 @@ def test_load_v3():
 def make_workspace(
     labels, overlap_choice, masking_objects=None, masking_image=None, renumber=True
 ):
-    module = M.MaskObjects()
+    module = cellprofiler.modules.maskobjects.MaskObjects()
     module.set_module_num(1)
     module.object_name.value = INPUT_OBJECTS
     module.remaining_objects.value = OUTPUT_OBJECTS
     module.mask_choice.value = (
-        M.MC_OBJECTS if masking_objects is not None else M.MC_IMAGE
+        cellprofiler.modules.maskobjects.MC_OBJECTS
+        if masking_objects is not None
+        else cellprofiler.modules.maskobjects.MC_IMAGE
     )
     module.masking_image.value = MASKING_IMAGE
     module.masking_objects.value = MASKING_OBJECTS
-    module.retain_or_renumber.value = M.R_RENUMBER if renumber else M.R_RETAIN
+    module.retain_or_renumber.value = (
+        cellprofiler.modules.maskobjects.R_RENUMBER
+        if renumber
+        else cellprofiler.modules.maskobjects.R_RETAIN
+    )
     module.overlap_choice.value = overlap_choice
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    object_set = cpo.ObjectSet()
-    io = cpo.Objects()
+    object_set = cellprofiler.object.ObjectSet()
+    io = cellprofiler.object.Objects()
     io.segmented = labels
     object_set.add_objects(io, INPUT_OBJECTS)
 
     if masking_objects is not None:
-        oo = cpo.Objects()
+        oo = cellprofiler.object.Objects()
         oo.segmented = masking_objects
         object_set.add_objects(oo, MASKING_OBJECTS)
 
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     if masking_image is not None:
-        mi = cpi.Image(masking_image)
+        mi = cellprofiler.image.Image(masking_image)
         image_set.add(MASKING_IMAGE, mi)
 
-    workspace = cpw.Workspace(
-        pipeline, module, image_set, object_set, cpmeas.Measurements(), image_set_list
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        object_set,
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
     )
     return workspace, module
 
@@ -167,40 +189,42 @@ def make_workspace(
 def test_measurement_columns():
     """Test get_measurement_columns"""
     workspace, module = make_workspace(
-        np.zeros((20, 10), int), M.P_MASK, np.zeros((20, 10), int)
+        numpy.zeros((20, 10), int),
+        cellprofiler.modules.maskobjects.P_MASK,
+        numpy.zeros((20, 10), int),
     )
     columns = module.get_measurement_columns(workspace.pipeline)
     assert len(columns) == 6
     for expected in (
         (
-            cpmeas.IMAGE,
+            cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cpmeas.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cpmeas.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
     ):
         assert any(
@@ -210,12 +234,16 @@ def test_measurement_columns():
 
 def test_measurement_categories():
     workspace, module = make_workspace(
-        np.zeros((20, 10), int), M.MC_OBJECTS, np.zeros((20, 10), int)
+        numpy.zeros((20, 10), int),
+        cellprofiler.modules.maskobjects.MC_OBJECTS,
+        numpy.zeros((20, 10), int),
     )
     categories = module.get_categories(workspace.pipeline, "Foo")
     assert len(categories) == 0
 
-    categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
+    categories = module.get_categories(
+        workspace.pipeline, cellprofiler.measurement.IMAGE
+    )
     assert len(categories) == 1
     assert categories[0] == cellprofiler.measurement.C_COUNT
 
@@ -238,14 +266,19 @@ def test_measurement_categories():
 
 def test_measurements():
     workspace, module = make_workspace(
-        np.zeros((20, 10), int), M.P_MASK, np.zeros((20, 10), int)
+        numpy.zeros((20, 10), int),
+        cellprofiler.modules.maskobjects.P_MASK,
+        numpy.zeros((20, 10), int),
     )
     ftr_count = (cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split(
         "_", 1
     )[1]
     d = {
         "Foo": {},
-        cpmeas.IMAGE: {"Foo": [], cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS]},
+        cellprofiler.measurement.IMAGE: {
+            "Foo": [],
+            cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS],
+        },
         OUTPUT_OBJECTS: {
             "Foo": [],
             cellprofiler.measurement.C_LOCATION: [
@@ -273,11 +306,13 @@ def test_measurements():
 
 def test_mask_nothing():
     workspace, module = make_workspace(
-        np.zeros((20, 10), int), M.MC_OBJECTS, np.zeros((20, 10), int)
+        numpy.zeros((20, 10), int),
+        cellprofiler.modules.maskobjects.MC_OBJECTS,
+        numpy.zeros((20, 10), int),
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     value = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
     )
@@ -292,26 +327,28 @@ def test_mask_nothing():
         data = m.get_current_measurement(object_name, feature)
         assert len(data) == 0
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == 0)
+    assert numpy.all(objects.segmented == 0)
 
 
 def test_mask_with_objects():
-    labels = np.zeros((20, 10), int)
+    labels = numpy.zeros((20, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 2
-    mask = np.zeros((20, 10), int)
+    mask = numpy.zeros((20, 10), int)
     mask[3:17, 2:6] = 1
     expected = labels.copy()
     expected[mask == 0] = 0
-    workspace, module = make_workspace(labels, M.P_MASK, mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_MASK, mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
-    expected_x = np.array([4, 4])
-    expected_y = np.array([5, 14])
+    expected_x = numpy.array([4, 4])
+    expected_y = numpy.array([5, 14])
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     value = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
     )
@@ -323,17 +360,17 @@ def test_mask_with_objects():
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            np.array([1, 2]),
+            numpy.array([1, 2]),
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
-            np.array([1, 2]),
+            numpy.array([1, 2]),
         ),
         (
             INPUT_OBJECTS,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
-            np.array([1, 1]),
+            numpy.array([1, 1]),
         ),
     ):
         data = m.get_current_measurement(object_name, feature)
@@ -343,22 +380,24 @@ def test_mask_with_objects():
 
 
 def test_mask_with_image():
-    labels = np.zeros((20, 10), int)
+    labels = numpy.zeros((20, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 2
-    mask = np.zeros((20, 10), bool)
+    mask = numpy.zeros((20, 10), bool)
     mask[3:17, 2:6] = True
     expected = labels.copy()
     expected[~mask] = 0
-    workspace, module = make_workspace(labels, M.P_MASK, masking_image=mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
-    expected_x = np.array([4, 4])
-    expected_y = np.array([5, 14])
+    expected_x = numpy.array([4, 4])
+    expected_y = numpy.array([5, 14])
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     value = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
     )
@@ -370,17 +409,17 @@ def test_mask_with_image():
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            np.array([1, 2]),
+            numpy.array([1, 2]),
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
-            np.array([1, 2]),
+            numpy.array([1, 2]),
         ),
         (
             INPUT_OBJECTS,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
-            np.array([1, 1]),
+            numpy.array([1, 1]),
         ),
     ):
         data = m.get_current_measurement(object_name, feature)
@@ -390,24 +429,26 @@ def test_mask_with_image():
 
 
 def test_mask_renumber():
-    labels = np.zeros((30, 10), int)
+    labels = numpy.zeros((30, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 3
     labels[22:28, 3:7] = 2
-    mask = np.zeros((30, 10), bool)
+    mask = numpy.zeros((30, 10), bool)
     mask[3:17, 2:6] = True
     expected = labels.copy()
     expected[~mask] = 0
     expected[expected == 3] = 2
-    workspace, module = make_workspace(labels, M.P_MASK, masking_image=mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
-    expected_x = np.array([4, 4])
-    expected_y = np.array([5, 14])
+    expected_x = numpy.array([4, 4])
+    expected_y = numpy.array([5, 14])
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     value = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
     )
@@ -419,17 +460,17 @@ def test_mask_renumber():
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            np.array([1, 2]),
+            numpy.array([1, 2]),
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
-            np.array([1, 3]),
+            numpy.array([1, 3]),
         ),
         (
             INPUT_OBJECTS,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
-            np.array([1, 0, 1]),
+            numpy.array([1, 0, 1]),
         ),
     ):
         data = m.get_current_measurement(object_name, feature)
@@ -439,25 +480,28 @@ def test_mask_renumber():
 
 
 def test_mask_retain():
-    labels = np.zeros((30, 10), int)
+    labels = numpy.zeros((30, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 3
     labels[22:28, 3:7] = 2
-    mask = np.zeros((30, 10), bool)
+    mask = numpy.zeros((30, 10), bool)
     mask[3:17, 2:6] = True
     expected = labels.copy()
     expected[~mask] = 0
     workspace, module = make_workspace(
-        labels, M.P_MASK, masking_image=mask, renumber=False
+        labels,
+        cellprofiler.modules.maskobjects.P_MASK,
+        masking_image=mask,
+        renumber=False,
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
-    expected_x = np.array([4, None, 4])
-    expected_y = np.array([5, None, 14])
+    expected_x = numpy.array([4, None, 4])
+    expected_y = numpy.array([5, None, 14])
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     value = m.get_current_image_measurement(
         cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
     )
@@ -469,30 +513,30 @@ def test_mask_retain():
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            np.array([1, 2, 3]),
+            numpy.array([1, 2, 3]),
         ),
         (
             OUTPUT_OBJECTS,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS,
-            np.array([1, 2, 3]),
+            numpy.array([1, 2, 3]),
         ),
         (
             INPUT_OBJECTS,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
-            np.array([1, 0, 1]),
+            numpy.array([1, 0, 1]),
         ),
     ):
         data = m.get_current_measurement(object_name, feature)
         assert len(data) == len(expected)
         for value, e in zip(data, expected):
             if e is None:
-                assert np.isnan(value)
+                assert numpy.isnan(value)
             else:
                 assert value == e
 
 
 def test_mask_invert():
-    labels = np.zeros((20, 10), int)
+    labels = numpy.zeros((20, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 2
     #
@@ -505,86 +549,96 @@ def test_mask_invert():
     expected = labels
     expected[labels != 1] = 0
     expected[2, 3] = 0
-    workspace, module = make_workspace(labels, M.P_MASK, masking_image=mask)
-    assert isinstance(module, M.MaskObjects)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+    )
+    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
     module.wants_inverted_mask.value = True
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
 
 def test_keep():
-    labels = np.zeros((30, 10), int)
+    labels = numpy.zeros((30, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 3
     labels[22:28, 3:7] = 2
-    mask = np.zeros((30, 10), bool)
+    mask = numpy.zeros((30, 10), bool)
     mask[3:17, 2:6] = True
     expected = labels.copy()
     expected[expected == 2] = 0
     expected[expected == 3] = 2
-    workspace, module = make_workspace(labels, M.P_KEEP, masking_image=mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_KEEP, masking_image=mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
 
 def test_remove():
-    labels = np.zeros((20, 10), int)
+    labels = numpy.zeros((20, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 2
-    mask = np.zeros((20, 10), bool)
+    mask = numpy.zeros((20, 10), bool)
     mask[2:17, 2:7] = True
     expected = labels.copy()
     expected[labels == 2] = 0
-    workspace, module = make_workspace(labels, M.P_REMOVE, masking_image=mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_REMOVE, masking_image=mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
 
 def test_remove_percent():
-    labels = np.zeros((20, 10), int)
+    labels = numpy.zeros((20, 10), int)
     labels[2:8, 3:6] = 1
     labels[12:18, 3:7] = 2
-    mask = np.zeros((20, 10), bool)
+    mask = numpy.zeros((20, 10), bool)
     mask[3:17, 2:6] = True
     # loses 3 of 18 from object 1 = .1666
     # loses 9 of 24 from object 2 = .375
     expected = labels.copy()
     expected[labels == 2] = 0
     workspace, module = make_workspace(
-        labels, M.P_REMOVE_PERCENTAGE, masking_image=mask
+        labels, cellprofiler.modules.maskobjects.P_REMOVE_PERCENTAGE, masking_image=mask
     )
     module.overlap_fraction.value = 0.75
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
 
 def test_different_object_sizes():
-    labels = np.zeros((30, 10), int)
+    labels = numpy.zeros((30, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 2
-    mask = np.zeros((20, 20), int)
+    mask = numpy.zeros((20, 20), int)
     mask[3:17, 2:6] = 1
     expected = labels.copy()
     expected[:20, :][mask[:, :10] == 0] = 0
-    workspace, module = make_workspace(labels, M.P_MASK, mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_MASK, mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)
 
 
 def test_different_image_sizes():
-    labels = np.zeros((30, 10), int)
+    labels = numpy.zeros((30, 10), int)
     labels[2:8, 3:7] = 1
     labels[12:18, 3:7] = 2
-    mask = np.zeros((20, 20), bool)
+    mask = numpy.zeros((20, 20), bool)
     mask[3:17, 2:6] = 1
     expected = labels.copy()
     expected[:20, :][mask[:, :10] == 0] = 0
-    workspace, module = make_workspace(labels, M.P_MASK, masking_image=mask)
+    workspace, module = make_workspace(
+        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+    )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
-    assert np.all(objects.segmented == expected)
+    assert numpy.all(objects.segmented == expected)

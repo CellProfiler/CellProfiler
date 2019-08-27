@@ -3,9 +3,9 @@ import os.path
 
 import numpy.testing
 import pytest
+import skimage
 import skimage.measure
 import skimage.morphology
-from skimage import img_as_ubyte
 
 import cellprofiler.image
 import cellprofiler.modules.savecroppedobjects
@@ -59,7 +59,7 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
         ]
 
         numpy.testing.assert_array_equal(
-            skimage.io.imread(filename), img_as_ubyte(mask)
+            skimage.io.imread(filename), skimage.img_as_ubyte(mask)
         )
 
 

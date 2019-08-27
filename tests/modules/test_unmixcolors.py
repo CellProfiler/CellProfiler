@@ -1,5 +1,5 @@
 import numpy
-from six.moves import StringIO
+import six.moves
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -25,7 +25,7 @@ def test_load_v1():
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.unmixcolors.UnmixColors)

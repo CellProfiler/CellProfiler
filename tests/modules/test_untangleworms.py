@@ -5,9 +5,9 @@ import tempfile
 import zlib
 
 import bioformats
+import centrosome.outline
 import numpy
-from centrosome.outline import outline
-from scipy.ndimage import binary_dilation
+import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -1875,7 +1875,7 @@ def test_worm_descriptor_building_one():
     expected = numpy.zeros((40, 50), bool)
     expected[numpy.arange(10, 21), numpy.arange(15, 26)] = True
     ii, jj = numpy.mgrid[-5:6, -5:6]
-    expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
     expected = numpy.argwhere(expected)
     eorder = numpy.lexsort((expected[:, 0], expected[:, 1]))
     rorder = numpy.lexsort((result[:, 0], result[:, 1]))
@@ -1896,7 +1896,7 @@ def test_worm_descriptor_building_oob():
     expected = numpy.zeros((40, 27), bool)
     expected[numpy.arange(1, 12), numpy.arange(15, 26)] = True
     ii, jj = numpy.mgrid[-5:6, -5:6]
-    expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
     expected = numpy.argwhere(expected)
     eorder = numpy.lexsort((expected[:, 0], expected[:, 1]))
     rorder = numpy.lexsort((result[:, 0], result[:, 1]))
@@ -1920,13 +1920,13 @@ def test_worm_descriptor_building_two():
     expected = numpy.zeros((40, 50), bool)
     expected[numpy.arange(10, 21), numpy.arange(15, 26)] = True
     ii, jj = numpy.mgrid[-5:6, -5:6]
-    expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
     epoints = numpy.argwhere(expected)
     elabels = numpy.ones(len(epoints), int)
 
     expected = numpy.zeros((40, 50), bool)
     expected[numpy.arange(10, 21), numpy.arange(25, 14, -1)] = True
-    expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
     epoints = numpy.vstack((epoints, numpy.argwhere(expected)))
     elabels = numpy.hstack((elabels, numpy.ones(numpy.sum(expected), int) * 2))
 
@@ -2047,7 +2047,7 @@ def test_nonoverlapping_outlines():
     assert isinstance(object_set, cellprofiler.object.ObjectSet)
     worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
     outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
-    expected = outline(worms) > 0
+    expected = centrosome.outline.outline(worms) > 0
     assert numpy.all(outlines == expected)
 
 

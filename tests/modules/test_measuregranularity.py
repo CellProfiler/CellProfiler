@@ -1,14 +1,14 @@
 import sys
 
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.measuregranularity as M
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.measuregranularity
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 print((sys.path))
 
@@ -20,16 +20,18 @@ def test_load_v3():
     with open("./tests/resources/modules/measuregranularity/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     assert len(module.images) == 2
     for image_setting, image_name, subsample_size, bsize, elsize, glen, objs in (
         (module.images[0], "DNA", 0.25, 0.25, 10, 16, ("Nuclei", "Cells")),
@@ -70,7 +72,7 @@ def make_pipeline(
     subsample_size, etc. - values for corresponding settings in the module
     returns tuple of module & workspace
     """
-    module = M.MeasureGranularity()
+    module = cellprofiler.modules.measuregranularity.MeasureGranularity()
     module.set_module_num(1)
     image_setting = module.images[0]
     # assert isinstance(image_setting, M.MeasureGranularity)
@@ -79,26 +81,31 @@ def make_pipeline(
     image_setting.image_sample_size.value = image_sample_size
     image_setting.element_size.value = element_size
     image_setting.granular_spectrum_length.value = granular_spectrum_length
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    img = cpi.Image(image, mask)
+    img = cellprofiler.image.Image(image, mask)
     image_set.add(IMAGE_NAME, img)
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def error_callback(event, caller):
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(error_callback)
     pipeline.add_module(module)
-    object_set = cpo.ObjectSet()
+    object_set = cellprofiler.object.ObjectSet()
     if labels is not None:
-        objects = cpo.Objects()
+        objects = cellprofiler.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         image_setting.add_objects()
         image_setting.objects[0].objects_name.value = OBJECTS_NAME
-    workspace = cpw.Workspace(
-        pipeline, module, image_set, object_set, cpmeas.Measurements(), image_set_list
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        object_set,
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
     )
     return module, workspace
 
@@ -106,29 +113,33 @@ def make_pipeline(
 def test_all_masked():
     """Run on a totally masked image"""
     module, workspace = make_pipeline(
-        np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16
+        numpy.zeros((40, 40)), numpy.zeros((40, 40), bool), 0.25, 0.25, 10, 16
     )
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
-        assert np.isnan(value)
+        assert numpy.isnan(value)
 
 
 def test_zeros():
     """Run on an image of all zeros"""
-    module, workspace = make_pipeline(np.zeros((40, 40)), None, 0.25, 0.25, 10, 16)
-    assert isinstance(module, M.MeasureGranularity)
+    module, workspace = make_pipeline(numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - 0), 7) == 0
 
@@ -138,17 +149,19 @@ def test_no_scaling():
     #
     # Make an image with granularity at scale 1
     #
-    i, j = np.mgrid[0:10, 0:10]
+    i, j = numpy.mgrid[0:10, 0:10]
     image = (i % 2 == j % 2).astype(float)
     expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 1, 1, 10, 16)
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -158,7 +171,7 @@ def test_subsampling():
     #
     # Make an image with granularity at scale 2
     #
-    i, j = np.mgrid[0:80, 0:80]
+    i, j = numpy.mgrid[0:80, 0:80]
     image = ((i / 8).astype(int) % 2 == (j / 8).astype(int) % 2).astype(float)
     #
     # The 4x4 blocks need two erosions before disappearing. The corners
@@ -166,13 +179,15 @@ def test_subsampling():
     #
     expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 0.5, 1, 10, 16)
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -182,7 +197,7 @@ def test_background_sampling():
     #
     # Make an image with granularity at scale 2
     #
-    i, j = np.mgrid[0:80, 0:80]
+    i, j = numpy.mgrid[0:80, 0:80]
     image = ((i / 4).astype(int) % 2 == (j / 4).astype(int) % 2).astype(float)
     #
     # Add in a background offset
@@ -194,13 +209,15 @@ def test_background_sampling():
     #
     expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 1, 0.5, 10, 16)
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -214,7 +231,7 @@ def test_filter_background():
     #
     # Make an image with granularity at scale 2
     #
-    i, j = np.mgrid[0:80, 0:80]
+    i, j = numpy.mgrid[0:80, 0:80]
     image = ((i / 4).astype(int) % 2 == (j / 4).astype(int) % 2).astype(float)
     #
     # Scale the pixels down so we have some dynamic range and offset
@@ -239,50 +256,56 @@ def test_filter_background():
     #
     expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 1, 1, 5, 16)
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
 
 def test_all_masked():
     """Run on objects and a totally masked image"""
-    labels = np.ones((40, 40), int)
+    labels = numpy.ones((40, 40), int)
     labels[20:, :] = 2
     module, workspace = make_pipeline(
-        np.zeros((40, 40)), np.zeros((40, 40), bool), 0.25, 0.25, 10, 16, labels
+        numpy.zeros((40, 40)), numpy.zeros((40, 40), bool), 0.25, 0.25, 10, 16, labels
     )
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
-        assert np.isnan(value)
+        assert numpy.isnan(value)
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 2
-        assert np.all(np.isnan(values)) or np.all(values == 0)
+        assert numpy.all(numpy.isnan(values)) or numpy.all(values == 0)
 
 
 def test_no_objects():
     """Run on a labels matrix with no objects"""
     module, workspace = make_pipeline(
-        np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, np.zeros((40, 40), int)
+        numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16, numpy.zeros((40, 40), int)
     )
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - 0), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
@@ -291,23 +314,25 @@ def test_no_objects():
 
 def test_zeros():
     """Run on an image of all zeros"""
-    labels = np.ones((40, 40), int)
+    labels = numpy.ones((40, 40), int)
     labels[20:, :] = 2
     module, workspace = make_pipeline(
-        np.zeros((40, 40)), None, 0.25, 0.25, 10, 16, labels
+        numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16, labels
     )
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - 0), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 2
-        np.testing.assert_almost_equal(values, 0)
+        numpy.testing.assert_almost_equal(values, 0)
 
 
 def test_no_scaling():
@@ -315,24 +340,26 @@ def test_no_scaling():
     #
     # Make an image with granularity at scale 1
     #
-    i, j = np.mgrid[0:40, 0:30]
+    i, j = numpy.mgrid[0:40, 0:30]
     image = (i % 2 == j % 2).astype(float)
     expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    labels = np.ones((40, 30), int)
+    labels = numpy.ones((40, 30), int)
     labels[20:, :] = 2
     module, workspace = make_pipeline(image, None, 1, 1, 10, 16, labels)
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 2
-        np.testing.assert_almost_equal(values, expected[i - 1])
+        numpy.testing.assert_almost_equal(values, expected[i - 1])
 
 
 def test_subsampling():
@@ -340,23 +367,25 @@ def test_subsampling():
     #
     # Make an image with granularity at scale 2
     #
-    i, j = np.mgrid[0:80, 0:80]
+    i, j = numpy.mgrid[0:80, 0:80]
     image = ((i / 8).astype(int) % 2 == (j / 8).astype(int) % 2).astype(float)
     #
     # The 4x4 blocks need two erosions before disappearing. The corners
     # need an additional two erosions before disappearing
     #
     expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    labels = np.ones((80, 80), int)
+    labels = numpy.ones((80, 80), int)
     labels[40:, :] = 2
     module, workspace = make_pipeline(image, None, 0.5, 1, 10, 16, labels)
-    assert isinstance(module, M.MeasureGranularity)
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for i in range(1, 16):
         feature = module.images[0].granularity_feature(i)
-        assert feature in m.get_feature_names(cpmeas.IMAGE)
+        assert feature in m.get_feature_names(cellprofiler.measurement.IMAGE)
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
@@ -365,4 +394,4 @@ def test_subsampling():
         # We rescale the downscaled image to the size of the labels
         # and this throws the images off during interpolation
         #
-        np.testing.assert_almost_equal(values, expected[i - 1], 0)
+        numpy.testing.assert_almost_equal(values, expected[i - 1], 0)

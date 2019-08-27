@@ -1,13 +1,13 @@
 import io
 
 import centrosome.threshold
-import numpy as np
+import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadsingleimage
-import cellprofiler.modules.measureimagequality as M
+import cellprofiler.modules.measureimagequality
 import cellprofiler.modules.namesandtypes
 import cellprofiler.modules.smooth
 import cellprofiler.object
@@ -30,8 +30,8 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
         o = cellprofiler.object.Objects()
         o.segmented = objects
         object_set.add_objects(o, OBJECTS_NAME)
-    module = M.MeasureImageQuality()
-    module.images_choice.value = M.O_SELECT
+    module = cellprofiler.modules.measureimagequality.MeasureImageQuality()
+    module.images_choice.value = cellprofiler.modules.measureimagequality.O_SELECT
     module.image_groups[0].include_image_scalings.value = False
     module.image_groups[0].image_names.value = IMAGES_NAME
     module.image_groups[0].use_all_threshold_methods.value = False
@@ -50,7 +50,7 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
 
 
 def test_zeros():
-    workspace = make_workspace(np.zeros((100, 100)))
+    workspace = make_workspace(numpy.zeros((100, 100)))
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = True
@@ -112,7 +112,7 @@ def features_and_columns_match(
 
 
 def test_zeros_and_mask():
-    workspace = make_workspace(np.zeros((100, 100)), np.zeros((100, 100), bool))
+    workspace = make_workspace(numpy.zeros((100, 100)), numpy.zeros((100, 100), bool))
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = True
@@ -159,8 +159,8 @@ def test_image_blur():
     The local focus score is the variance among the 25 focus scores
     divided by the median focus score. This should be low.
     """
-    np.random.seed(0)
-    workspace = make_workspace(np.random.uniform(size=(100, 100)))
+    numpy.random.seed(0)
+    workspace = make_workspace(numpy.random.uniform(size=(100, 100)))
     q = workspace.module
     q.image_groups[0].check_blur.value = True
     q.image_groups[0].check_saturation.value = False
@@ -202,9 +202,9 @@ def test_local_focus_score():
     1/6, so the local focus score should be the variance of (1/6,1/6,1/6,0)
     divided by the median local norm variance (=1/6)
     """
-    expected_value = np.var([1.0 / 6.0] * 3 + [0]) * 6.0
-    np.random.seed(0)
-    image = np.random.uniform(size=(1000, 1000))
+    expected_value = numpy.var([1.0 / 6.0] * 3 + [0]) * 6.0
+    numpy.random.seed(0)
+    image = numpy.random.uniform(size=(1000, 1000))
     image[:500, :500] = 0.5
     workspace = make_workspace(image)
     q = workspace.module
@@ -223,10 +223,10 @@ def test_local_focus_score():
 
 def test_focus_score_with_mask():
     """Test focus score with a mask to block out an aberrant part of the image"""
-    np.random.seed(0)
+    numpy.random.seed(0)
     expected_value = 1.0 / 6.0
-    image = np.random.uniform(size=(1000, 1000))
-    mask = np.ones(image.shape, bool)
+    image = numpy.random.uniform(size=(1000, 1000))
+    mask = numpy.ones(image.shape, bool)
     mask[400:600, 400:600] = False
     image[mask == False] = 0.5
     workspace = make_workspace(image, mask)
@@ -246,11 +246,11 @@ def test_focus_score_with_mask():
 
 def test_local_focus_score_with_mask():
     """Test local focus score and mask"""
-    np.random.seed(0)
-    expected_value = np.var([1.0 / 6.0] * 3 + [0]) * 6.0
-    image = np.random.uniform(size=(1000, 1000))
+    numpy.random.seed(0)
+    expected_value = numpy.var([1.0 / 6.0] * 3 + [0]) * 6.0
+    image = numpy.random.uniform(size=(1000, 1000))
     image[:500, :500] = 0.5
-    mask = np.ones(image.shape, bool)
+    mask = numpy.ones(image.shape, bool)
     mask[400:600, 400:600] = False
     image[mask == False] = 0.5
     workspace = make_workspace(image, mask)
@@ -270,7 +270,7 @@ def test_local_focus_score_with_mask():
 
 def test_saturation():
     """Test percent saturation"""
-    image = np.zeros((10, 10))
+    image = numpy.zeros((10, 10))
     image[:5, :5] = 1
     workspace = make_workspace(image)
     q = workspace.module
@@ -310,7 +310,7 @@ def test_saturation():
 
 def test_maximal():
     """Test percent maximal"""
-    image = np.zeros((10, 10))
+    image = numpy.zeros((10, 10))
     image[:5, :5] = 0.5
     expected_value = 100.0 / 4.0
     workspace = make_workspace(image)
@@ -338,11 +338,11 @@ def test_maximal():
 
 def test_saturation_mask():
     """Test percent saturation with mask"""
-    image = np.zeros((10, 10))
+    image = numpy.zeros((10, 10))
     # 1/2 of image is saturated
     # 1/4 of image is saturated but masked
     image[:5, :] = 1
-    mask = np.ones((10, 10), bool)
+    mask = numpy.ones((10, 10), bool)
     mask[:5, 5:] = False
     workspace = make_workspace(image, mask)
     q = workspace.module
@@ -389,9 +389,9 @@ def test_saturation_mask():
 
 def test_maximal_mask():
     """Test percent maximal with mask"""
-    image = np.zeros((10, 10))
+    image = numpy.zeros((10, 10))
     image[:5, :5] = 0.5
-    mask = np.ones((10, 10), bool)
+    mask = numpy.ones((10, 10), bool)
     mask[:5, 5:] = False
     expected_value = 100.0 / 3.0
     workspace = make_workspace(image, mask)
@@ -423,16 +423,16 @@ def test_threshold():
     Use an image that has 1/5 of "foreground" pixels to make MOG
     happy and set the object fraction to 1/5 to test this.
     """
-    np.random.seed(0)
-    image = np.random.beta(2, 5, size=(100, 100))
+    numpy.random.seed(0)
+    image = numpy.random.beta(2, 5, size=(100, 100))
     object_fraction = 0.2
-    mask = np.random.binomial(1, object_fraction, size=(100, 100))
-    count = np.sum(mask)
-    image[mask == 1] = 1.0 - np.random.beta(2, 20, size=count)
+    mask = numpy.random.binomial(1, object_fraction, size=(100, 100))
+    count = numpy.sum(mask)
+    image[mask == 1] = 1.0 - numpy.random.beta(2, 20, size=count)
     #
     # Kapur needs to be quantized
     #
-    image = np.around(image, 2)
+    image = numpy.around(image, 2)
 
     workspace = make_workspace(image)
     q = workspace.module
@@ -485,18 +485,20 @@ def test_threshold():
 
 def test_experiment_threshold():
     """Test experiment-wide thresholds"""
-    np.random.seed(32)
-    workspace = make_workspace(np.zeros((10, 10)))
+    numpy.random.seed(32)
+    workspace = make_workspace(numpy.zeros((10, 10)))
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     module = workspace.module
-    assert isinstance(module, M.MeasureImageQuality)
+    assert isinstance(
+        module, cellprofiler.modules.measureimagequality.MeasureImageQuality
+    )
     m = workspace.measurements
     assert isinstance(m, cellprofiler.measurement.Measurements)
     image_name = module.image_groups[0].image_names.get_selections()[0]
     feature = (
         module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
     )
-    data = np.random.uniform(size=100)
+    data = numpy.random.uniform(size=100)
     m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, data.tolist())
     module.post_run(workspace)
 
@@ -505,13 +507,17 @@ def test_experiment_threshold():
     threshold_algorithm = threshold_group.threshold_algorithm
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
-        for agg in (M.AGG_MEAN, M.AGG_MEDIAN, M.AGG_STD)
+        for agg in (
+            cellprofiler.modules.measureimagequality.AGG_MEAN,
+            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
+            cellprofiler.modules.measureimagequality.AGG_STD,
+        )
     ]
 
     expected = (
-        (f_mean, np.mean(data)),
-        (f_median, np.median(data)),
-        (f_std, np.std(data)),
+        (f_mean, numpy.mean(data)),
+        (f_median, numpy.median(data)),
+        (f_std, numpy.std(data)),
     )
     for feature, expected_value in expected:
         value = m.get_experiment_measurement(feature)
@@ -521,24 +527,26 @@ def test_experiment_threshold():
 def test_experiment_threshold_cycle_skipping():
     """Regression test of IMG-970: can you handle nulls in measurements?"""
 
-    np.random.seed(33)
-    workspace = make_workspace(np.zeros((10, 10)))
+    numpy.random.seed(33)
+    workspace = make_workspace(numpy.zeros((10, 10)))
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     module = workspace.module
-    assert isinstance(module, M.MeasureImageQuality)
+    assert isinstance(
+        module, cellprofiler.modules.measureimagequality.MeasureImageQuality
+    )
     m = workspace.measurements
     assert isinstance(m, cellprofiler.measurement.Measurements)
     image_name = module.image_groups[0].image_names.get_selections()[0]
     feature = (
         module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
     )
-    data = np.random.uniform(size=100)
+    data = numpy.random.uniform(size=100)
     dlist = data.tolist()
     #
     # Erase 10 randomly
     #
-    eraser = np.lexsort([np.random.uniform(size=100)])[:10]
-    mask = np.ones(data.shape, bool)
+    eraser = numpy.lexsort([numpy.random.uniform(size=100)])[:10]
+    mask = numpy.ones(data.shape, bool)
     mask[eraser] = False
     for e in eraser:
         dlist[e] = None
@@ -555,13 +563,17 @@ def test_experiment_threshold_cycle_skipping():
     image_name = module.image_groups[0].image_names.value
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
-        for agg in (M.AGG_MEAN, M.AGG_MEDIAN, M.AGG_STD)
+        for agg in (
+            cellprofiler.modules.measureimagequality.AGG_MEAN,
+            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
+            cellprofiler.modules.measureimagequality.AGG_STD,
+        )
     ]
 
     expected = (
-        (f_mean, np.mean(data[mask])),
-        (f_median, np.median(data[mask])),
-        (f_std, np.std(data[mask])),
+        (f_mean, numpy.mean(data[mask])),
+        (f_median, numpy.median(data[mask])),
+        (f_std, numpy.std(data[mask])),
     )
     for feature, expected_value in expected:
         value = m.get_experiment_measurement(feature)
@@ -569,7 +581,7 @@ def test_experiment_threshold_cycle_skipping():
 
 
 def test_use_all_thresholding_methods():
-    workspace = make_workspace(np.zeros((100, 100)))
+    workspace = make_workspace(numpy.zeros((100, 100)))
     q = workspace.module
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = False
@@ -615,7 +627,9 @@ def test_load_v3():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, M.MeasureImageQuality)
+    assert isinstance(
+        module, cellprofiler.modules.measureimagequality.MeasureImageQuality
+    )
     assert len(module.image_groups) == 2
 
     group = module.image_groups[0]
@@ -660,13 +674,15 @@ def test_load_v4():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 5
     for module in pipeline.modules():
-        assert isinstance(module, M.MeasureImageQuality)
+        assert isinstance(
+            module, cellprofiler.modules.measureimagequality.MeasureImageQuality
+        )
 
     module = pipeline.modules()[0]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
     assert group.threshold_groups == []
-    assert module.images_choice == M.O_ALL_LOADED
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_ALL_LOADED
     assert group.check_blur
     assert group.scale_groups[0].scale == 20
     assert group.check_saturation
@@ -677,19 +693,19 @@ def test_load_v4():
     module = pipeline.modules()[1]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
-    assert module.images_choice == M.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Alpha"
 
     module = pipeline.modules()[2]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
-    assert module.images_choice == M.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Delta,Beta"
 
     module = pipeline.modules()[3]
     assert len(module.image_groups) == 2
     group = module.image_groups[0]
-    assert module.images_choice == M.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Delta"
     assert group.check_intensity
     assert not group.use_all_threshold_methods
@@ -705,7 +721,7 @@ def test_load_v4():
     module = pipeline.modules()[4]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
-    assert module.images_choice == M.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Zeta"
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
@@ -725,8 +741,8 @@ def test_load_v4():
 
 def test_intensity_image():
     """Test operation on a single unmasked image"""
-    np.random.seed(0)
-    pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * 0.99
+    numpy.random.seed(0)
+    pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * 0.99
     pixels[0:2, 0:2] = 1
     workspace = make_workspace(pixels, None)
     q = workspace.module
@@ -738,27 +754,29 @@ def test_intensity_image():
     m = workspace.measurements
     assert m.get_current_measurement(
         cellprofiler.measurement.IMAGE, "ImageQuality_TotalIntensity_my_image"
-    ) == np.sum(pixels)
+    ) == numpy.sum(pixels)
     assert (
         m.get_current_measurement(
             cellprofiler.measurement.IMAGE, "ImageQuality_MeanIntensity_my_image"
         )
-        == np.sum(pixels) / 100.0
+        == numpy.sum(pixels) / 100.0
     )
     assert m.get_current_image_measurement(
         "ImageQuality_MinIntensity_my_image"
-    ) == np.min(pixels)
+    ) == numpy.min(pixels)
     assert m.get_current_image_measurement(
         "ImageQuality_MaxIntensity_my_image"
-    ) == np.max(pixels)
+    ) == numpy.max(pixels)
 
 
 def test_check_image_groups():
-    workspace = make_workspace(np.zeros((100, 100)))
+    workspace = make_workspace(numpy.zeros((100, 100)))
     image_set_list = workspace.image_set_list
     image_set = image_set_list.get_image_set(0)
     for i in range(1, 5):
-        image_set.add("my_image%s" % i, cellprofiler.image.Image(np.zeros((100, 100))))
+        image_set.add(
+            "my_image%s" % i, cellprofiler.image.Image(numpy.zeros((100, 100)))
+        )
 
     q = workspace.module
     # Set my_image1 and my_image2 settings: Saturation only
@@ -854,9 +872,11 @@ def test_images_to_process():
     module2.filtered_image_name.value = "henry"
     pipeline.add_module(module2)
 
-    miq_module = M.MeasureImageQuality()
+    miq_module = cellprofiler.modules.measureimagequality.MeasureImageQuality()
     miq_module.set_module_num(3)
-    miq_module.images_choice.value = M.O_ALL_LOADED
+    miq_module.images_choice.value = (
+        cellprofiler.modules.measureimagequality.O_ALL_LOADED
+    )
     image_names = miq_module.images_to_process(
         miq_module.image_groups[0], None, pipeline
     )
@@ -867,7 +887,7 @@ def test_images_to_process():
 
 def test_volumetric_measurements():
     # Test that a volumetric pipeline returns volumetric measurements
-    labels = np.zeros((10, 20, 40), dtype=np.uint8)
+    labels = numpy.zeros((10, 20, 40), dtype=numpy.uint8)
     labels[:, 5:15, 25:35] = 1
     labels[:, 7, 27] = 2
 
@@ -878,16 +898,22 @@ def test_volumetric_measurements():
 
     # Names and values will be associated directly
     names = [
-        "_".join([M.C_IMAGE_QUALITY, feature, IMAGES_NAME])
+        "_".join(
+            [
+                cellprofiler.modules.measureimagequality.C_IMAGE_QUALITY,
+                feature,
+                IMAGES_NAME,
+            ]
+        )
         for feature in [
-            M.F_TOTAL_VOLUME,
-            M.F_TOTAL_INTENSITY,
-            M.F_MEAN_INTENSITY,
-            M.F_MEDIAN_INTENSITY,
-            M.F_STD_INTENSITY,
-            M.F_MAD_INTENSITY,
-            M.F_MAX_INTENSITY,
-            M.F_MIN_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_TOTAL_VOLUME,
+            cellprofiler.modules.measureimagequality.F_TOTAL_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MEAN_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MEDIAN_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_STD_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MAD_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MAX_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MIN_INTENSITY,
         ]
     ]
     values = [
@@ -911,5 +937,5 @@ def test_volumetric_measurements():
             cellprofiler.measurement.IMAGE, feature
         )
 
-        np.testing.assert_almost_equal(actual, value, decimal=5)
+        numpy.testing.assert_almost_equal(actual, value, decimal=5)
         print(("{} expected {}, got {}".format(feature, value, actual)))

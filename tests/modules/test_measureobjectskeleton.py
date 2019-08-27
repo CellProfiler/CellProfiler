@@ -2,16 +2,16 @@ import os
 import tempfile
 import traceback
 
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.measureobjectskeleton as M
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.measureobjectskeleton
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.workspace
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"
@@ -41,16 +41,18 @@ def test_load_v1():
     with open("./tests/resources/modules/measureobjectskeleton/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, M.MeasureObjectSkeleton)
+    assert isinstance(
+        module, cellprofiler.modules.measureobjectskeleton.MeasureObjectSkeleton
+    )
     assert module.image_name == "DNA"
     assert module.seed_objects_name == "Nucs"
     assert module.wants_branchpoint_image
@@ -58,43 +60,47 @@ def test_load_v1():
 
 
 def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=False):
-    m = cpmeas.Measurements()
-    image_set_list = cpi.ImageSetList()
-    m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
-    m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
+    m = cellprofiler.measurement.Measurements()
+    image_set_list = cellprofiler.image.ImageSetList()
+    m.add_measurement(
+        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1
+    )
+    m.add_measurement(
+        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1
+    )
     image_set = m
-    img = cpi.Image(image, mask)
+    img = cellprofiler.image.Image(image, mask)
     image_set.add(IMAGE_NAME, img)
 
-    object_set = cpo.ObjectSet()
-    o = cpo.Objects()
+    object_set = cellprofiler.object.ObjectSet()
+    o = cellprofiler.object.Objects()
     o.segmented = labels
     object_set.add_objects(o, OBJECT_NAME)
 
-    module = M.MeasureObjectSkeleton()
+    module = cellprofiler.modules.measureobjectskeleton.MeasureObjectSkeleton()
     module.image_name.value = IMAGE_NAME
     module.seed_objects_name.value = OBJECT_NAME
     if intensity_image is not None:
-        img = cpi.Image(intensity_image)
+        img = cellprofiler.image.Image(intensity_image)
         image_set.add(INTENSITY_IMAGE_NAME, img)
         module.intensity_image_name.value = INTENSITY_IMAGE_NAME
     if wants_graph:
         module.wants_objskeleton_graph.value = True
-        module.directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = temp_dir
         module.edge_file_name.value = EDGE_FILE
         module.vertex_file_name.value = VERTEX_FILE
     module.set_module_num(1)
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cpw.Workspace(
+    workspace = cellprofiler.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     return workspace, module
@@ -102,7 +108,7 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
 
 def test_empty():
     workspace, module = make_workspace(
-        np.zeros((20, 10), int), np.zeros((20, 10), bool)
+        numpy.zeros((20, 10), int), numpy.zeros((20, 10), bool)
     )
     #
     # Make sure module tells us about the measurements
@@ -110,64 +116,97 @@ def test_empty():
     columns = module.get_measurement_columns(None)
     features = [c[1] for c in columns]
     features.sort()
-    expected = M.F_ALL
+    expected = cellprofiler.modules.measureobjectskeleton.F_ALL
     expected.sort()
     coltypes = {}
     for feature, expected in zip(features, expected):
-        expected_feature = "_".join((M.C_OBJSKELETON, expected, IMAGE_NAME))
+        expected_feature = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                expected,
+                IMAGE_NAME,
+            )
+        )
         assert feature == expected_feature
         coltypes[expected_feature] = (
-            cpmeas.COLTYPE_FLOAT
-            if expected == M.F_TOTAL_OBJSKELETON_LENGTH
-            else cpmeas.COLTYPE_INTEGER
+            cellprofiler.measurement.COLTYPE_FLOAT
+            if expected
+            == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
+            else cellprofiler.measurement.COLTYPE_INTEGER
         )
     assert all([c[0] == OBJECT_NAME for c in columns])
     assert all([c[2] == coltypes[c[1]] for c in columns])
 
     categories = module.get_categories(None, OBJECT_NAME)
     assert len(categories) == 1
-    assert categories[0] == M.C_OBJSKELETON
+    assert categories[0] == cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON
     assert len(module.get_categories(None, "Foo")) == 0
 
-    measurements = module.get_measurements(None, OBJECT_NAME, M.C_OBJSKELETON)
-    assert len(measurements) == len(M.F_ALL)
+    measurements = module.get_measurements(
+        None, OBJECT_NAME, cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON
+    )
+    assert len(measurements) == len(cellprofiler.modules.measureobjectskeleton.F_ALL)
     assert measurements[0] != measurements[1]
-    assert all([m in M.F_ALL for m in measurements])
+    assert all(
+        [m in cellprofiler.modules.measureobjectskeleton.F_ALL for m in measurements]
+    )
 
-    assert len(module.get_measurements(None, "Foo", M.C_OBJSKELETON)) == 0
+    assert (
+        len(
+            module.get_measurements(
+                None, "Foo", cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON
+            )
+        )
+        == 0
+    )
     assert len(module.get_measurements(None, OBJECT_NAME, "Foo")) == 0
 
-    for feature in M.F_ALL:
+    for feature in cellprofiler.modules.measureobjectskeleton.F_ALL:
         images = module.get_measurement_images(
-            None, OBJECT_NAME, M.C_OBJSKELETON, feature
+            None,
+            OBJECT_NAME,
+            cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+            feature,
         )
         assert len(images) == 1
         assert images[0] == IMAGE_NAME
 
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
-    for feature in M.F_ALL:
-        mname = "_".join((M.C_OBJSKELETON, expected, IMAGE_NAME))
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    for feature in cellprofiler.modules.measureobjectskeleton.F_ALL:
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                expected,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 0
 
 
 def test_trunk():
     """Create an image with one soma with one neurite"""
-    image = np.zeros((20, 15), bool)
+    image = numpy.zeros((20, 15), bool)
     image[9, 5:] = True
-    labels = np.zeros((20, 15), int)
+    labels = numpy.zeros((20, 15), int)
     labels[6:12, 2:8] = 1
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for feature, expected in (
-        (M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
-        (M.F_NUMBER_TRUNKS, 1),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
     ):
-        mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                feature,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 1
         assert data[0] == expected
@@ -175,20 +214,29 @@ def test_trunk():
 
 def test_trunks():
     """Create an image with two soma and a neurite that goes through both"""
-    image = np.zeros((30, 15), bool)
+    image = numpy.zeros((30, 15), bool)
     image[1:25, 7] = True
-    labels = np.zeros((30, 15), int)
+    labels = numpy.zeros((30, 15), int)
     labels[6:13, 3:10] = 1
     labels[18:26, 3:10] = 2
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for feature, expected in (
-        (M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
-        (M.F_NUMBER_TRUNKS, [2, 1]),
+        (
+            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+            [0, 0],
+        ),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
     ):
-        mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                feature,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 2
         for i in range(2):
@@ -197,21 +245,27 @@ def test_trunks():
 
 def test_branch():
     """Create an image with one soma and a neurite with a branch"""
-    image = np.zeros((30, 15), bool)
+    image = numpy.zeros((30, 15), bool)
     image[6:15, 7] = True
-    image[15 + np.arange(3), 7 + np.arange(3)] = True
-    image[15 + np.arange(3), 7 - np.arange(3)] = True
-    labels = np.zeros((30, 15), int)
+    image[15 + numpy.arange(3), 7 + numpy.arange(3)] = True
+    image[15 + numpy.arange(3), 7 - numpy.arange(3)] = True
+    labels = numpy.zeros((30, 15), int)
     labels[1:8, 3:10] = 1
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for feature, expected in (
-        (M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-        (M.F_NUMBER_TRUNKS, 1),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
     ):
-        mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                feature,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 1
         assert data[0] == expected
@@ -222,21 +276,27 @@ def test_img_667():
 
     Regression test of IMG-667
     """
-    image = np.zeros((30, 15), bool)
+    image = numpy.zeros((30, 15), bool)
     image[6:15, 7] = True
-    image[15 + np.arange(3), 7 + np.arange(3)] = True
-    image[15 + np.arange(3), 7 - np.arange(3)] = True
-    labels = np.zeros((30, 15), int)
+    image[15 + numpy.arange(3), 7 + numpy.arange(3)] = True
+    image[15 + numpy.arange(3), 7 - numpy.arange(3)] = True
+    labels = numpy.zeros((30, 15), int)
     labels[10, 7] = 1
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for feature, expected in (
-        (M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-        (M.F_NUMBER_TRUNKS, 2),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 2),
     ):
-        mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                feature,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 1
         assert data[0] == expected, "%s: expected %d, got %d" % (
@@ -260,21 +320,27 @@ def test_quadrabranch():
 
         And there should be 3 trunks (or possibly two trunks and a branch)
     """
-    image = np.zeros((30, 15), bool)
+    image = numpy.zeros((30, 15), bool)
     image[6:15, 7] = True
-    image[15 + np.arange(3), 7 + np.arange(3)] = True
-    image[15 + np.arange(3), 7 - np.arange(3)] = True
-    labels = np.zeros((30, 15), int)
+    image[15 + numpy.arange(3), 7 + numpy.arange(3)] = True
+    image[15 + numpy.arange(3), 7 - numpy.arange(3)] = True
+    labels = numpy.zeros((30, 15), int)
     labels[13, 7] = 1
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for feature, expected in (
-        (M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
-        (M.F_NUMBER_TRUNKS, 3),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 3),
     ):
-        mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                feature,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 1
         assert data[0] == expected, "%s: expected %d, got %d" % (
@@ -290,20 +356,29 @@ def test_wrong_size():
     Assume that image is primary, labels outside of image are ignored
     and image outside of labels is unlabeled.
     """
-    image = np.zeros((40, 15), bool)
+    image = numpy.zeros((40, 15), bool)
     image[1:25, 7] = True
-    labels = np.zeros((30, 20), int)
+    labels = numpy.zeros((30, 20), int)
     labels[6:13, 3:10] = 1
     labels[18:26, 3:10] = 2
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for feature, expected in (
-        (M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
-        (M.F_NUMBER_TRUNKS, [2, 1]),
+        (
+            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+            [0, 0],
+        ),
+        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
     ):
-        mname = "_".join((M.C_OBJSKELETON, feature, IMAGE_NAME))
+        mname = "_".join(
+            (
+                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                feature,
+                IMAGE_NAME,
+            )
+        )
         data = m.get_current_measurement(OBJECT_NAME, mname)
         assert len(data) == 2
         for i in range(2):
@@ -314,17 +389,23 @@ def test_skeleton_length():
     #
     # Soma ends at x=8, neurite ends at x=15. Length should be 7
     #
-    image = np.zeros((20, 20), bool)
+    image = numpy.zeros((20, 20), bool)
     image[9, 5:15] = True
-    labels = np.zeros((20, 20), int)
+    labels = numpy.zeros((20, 20), int)
     labels[6:12, 2:8] = 1
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    ftr = "_".join((M.C_OBJSKELETON, M.F_TOTAL_OBJSKELETON_LENGTH, IMAGE_NAME))
+    ftr = "_".join(
+        (
+            cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+            cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH,
+            IMAGE_NAME,
+        )
+    )
     result = m[OBJECT_NAME, ftr]
     assert len(result) == 1
-    assert abs(result[0] - 5) < np.sqrt(np.finfo(np.float32).eps)
+    assert abs(result[0] - 5) < numpy.sqrt(numpy.finfo(numpy.float32).eps)
 
 
 def read_graph_file(file_name):
@@ -344,20 +425,20 @@ def read_graph_file(file_name):
     path = os.path.join(temp_dir, file_name)
     fd = open(path, "r")
     fields = fd.readline().strip().split(",")
-    dt = np.dtype(dict(names=fields, formats=[type_dict[x] for x in fields]))
+    dt = numpy.dtype(dict(names=fields, formats=[type_dict[x] for x in fields]))
     pos = fd.tell()
     if len(fd.readline()) == 0:
-        return np.recarray(0, dt)
+        return numpy.recarray(0, dt)
     fd.seek(pos)
-    return np.loadtxt(fd, dt, delimiter=",")
+    return numpy.loadtxt(fd, dt, delimiter=",")
 
 
 def test_graph():
     """Does graph neurons work on an empty image?"""
     workspace, module = make_workspace(
-        np.zeros((20, 10), int),
-        np.zeros((20, 10), bool),
-        intensity_image=np.zeros((20, 10)),
+        numpy.zeros((20, 10), int),
+        numpy.zeros((20, 10), bool),
+        intensity_image=numpy.zeros((20, 10)),
         wants_graph=True,
     )
     module.prepare_run(workspace)
@@ -377,16 +458,16 @@ def test_graph():
     #    . .
     #     .
     #     .
-    i, j = np.mgrid[-10:11, -10:11]
-    skel = (i < 0) & (np.abs(i) == np.abs(j))
+    i, j = numpy.mgrid[-10:11, -10:11]
+    skel = (i < 0) & (numpy.abs(i) == numpy.abs(j))
     skel[(i >= 0) & (j == 0)] = True
     #
     # Put a single label at the bottom
     #
-    labels = np.zeros(skel.shape, int)
-    labels[(i > 8) & (np.abs(j) < 2)] = 1
-    np.random.seed(31)
-    intensity = np.random.uniform(size=skel.shape)
+    labels = numpy.zeros(skel.shape, int)
+    labels[(i > 8) & (numpy.abs(j) < 2)] = 1
+    numpy.random.seed(31)
+    intensity = numpy.random.uniform(size=skel.shape)
     workspace, module = make_workspace(
         labels, skel, intensity_image=intensity, wants_graph=True
     )
@@ -394,7 +475,7 @@ def test_graph():
     module.run(workspace)
     edge_graph = read_graph_file(EDGE_FILE)
     vertex_graph = read_graph_file(VERTEX_FILE)
-    vidx = np.lexsort((vertex_graph["j"], vertex_graph["i"]))
+    vidx = numpy.lexsort((vertex_graph["j"], vertex_graph["i"]))
     #
     # There should be two vertices at the bottom of the array - these
     # are bogus artifacts of the object hitting the edge of the image
@@ -416,7 +497,7 @@ def test_graph():
     for v in ("v1", "v2"):
         edge_graph = edge_graph[vertex_graph["i"][edge_graph[v] - 1] != 20]
 
-    eidx = np.lexsort(
+    eidx = numpy.lexsort(
         (
             vertex_graph["j"][edge_graph["v1"] - 1],
             vertex_graph["i"][edge_graph["v1"] - 1],
@@ -425,9 +506,9 @@ def test_graph():
         )
     )
     expected_edges = (
-        ((0, 0), (10, 10), 11, np.sum(intensity[(i <= 0) & (j <= 0) & skel])),
-        ((0, 20), (10, 10), 11, np.sum(intensity[(i <= 0) & (j >= 0) & skel])),
-        ((10, 10), (17, 10), 8, np.sum(intensity[(i >= 0) & (i <= 7) & skel])),
+        ((0, 0), (10, 10), 11, numpy.sum(intensity[(i <= 0) & (j <= 0) & skel])),
+        ((0, 20), (10, 10), 11, numpy.sum(intensity[(i <= 0) & (j >= 0) & skel])),
+        ((10, 10), (17, 10), 8, numpy.sum(intensity[(i >= 0) & (i <= 7) & skel])),
     )
     for i, (v1, v2, length, total_intensity) in enumerate(expected_edges):
         ee = edge_graph[eidx[i]]
@@ -445,7 +526,7 @@ def test_four_branches():
     code kicks in when more than one branchpoint touches an edge's end.
     The "best edge wins" code kicks in when a branch touches another branch.
     """
-    skel = np.array(
+    skel = numpy.array(
         (
             (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             (0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0),
@@ -459,7 +540,7 @@ def test_four_branches():
         bool,
     )
 
-    poi = np.array(
+    poi = numpy.array(
         (
             (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             (0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0),
@@ -473,9 +554,9 @@ def test_four_branches():
         int,
     )
 
-    np.random.seed(32)
-    image = np.random.uniform(size=skel.shape)
-    labels = np.zeros(skel.shape, int)
+    numpy.random.seed(32)
+    image = numpy.random.uniform(size=skel.shape)
+    labels = numpy.zeros(skel.shape, int)
     labels[-2:, -2:] = 1  # attach the object to the lower left corner
 
     expected_edges = (
@@ -499,16 +580,16 @@ def test_four_branches():
     vertex_graph = read_graph_file(VERTEX_FILE)
     edge_graph = read_graph_file(EDGE_FILE)
 
-    vertex_number = np.zeros(len(np.unique(poi[poi >= 1])), int)
+    vertex_number = numpy.zeros(len(numpy.unique(poi[poi >= 1])), int)
     for v in vertex_graph:
         p = poi[v["i"], v["j"]]
         if p > 1:
             vertex_number[p - 2] = v["vertex_number"]
-    poi_number = np.zeros(len(vertex_graph) + 1, int)
-    poi_number[vertex_number] = np.arange(2, len(vertex_number) + 2)
+    poi_number = numpy.zeros(len(vertex_graph) + 1, int)
+    poi_number[vertex_number] = numpy.arange(2, len(vertex_number) + 2)
 
     found_edges = [False] * len(expected_edges)
-    off = -np.min([x[3] for x in expected_edges])
+    off = -numpy.min([x[3] for x in expected_edges])
     for e in edge_graph:
         v1 = e["v1"]
         v2 = e["v2"]
@@ -528,9 +609,9 @@ def test_four_branches():
         assert len(ee) == 1
         i, p1, p2, l, mid = ee[0]
         assert l == length
-        active_poi = np.zeros(np.max(poi) + off + 1, bool)
-        active_poi[np.array([poi1, poi2, mid]) + off] = True
-        expected_intensity = np.sum(image[active_poi[poi + off]])
+        active_poi = numpy.zeros(numpy.max(poi) + off + 1, bool)
+        active_poi[numpy.array([poi1, poi2, mid]) + off] = True
+        expected_intensity = numpy.sum(image[active_poi[poi + off]])
         assert round(abs(expected_intensity - total_intensity), 4) == 0
         found_edges[i] = True
     assert all(found_edges)

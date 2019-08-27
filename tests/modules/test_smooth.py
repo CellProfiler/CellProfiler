@@ -40,35 +40,6 @@ def make_workspace(image, mask):
     return workspace, module
 
 
-def test_load_v01():
-    data = base64.b64decode(
-        "eJztWN1u0zAUdrqsbCDt5wourV0hxKJ0iGr0hnUrE5GWrqLVBHd4rdtZcuLKcaaWJ"
-        "+CSR+JxuNwjEJekSUxo0mxMqlRXlnvs853P57MT17WbvYvmKXxrmNBu9g6HhGLYoU"
-        "gMGXca0BWv4RnHSOABZG4DnnMCbTSF5jGs1RtmvVE7gkem+Q6UK5pl7wTNj30AqkG"
-        "7FdRKOLQZ2lqiSruLhSDuyNsEOngR9v8M6hXiBF1TfIWoj72YIuq33CHrTcfzIZsN"
-        "fIrbyEk6B6XtO9eYe5fDCBgOd8gE0y75hpUUIrdP+JZ4hLkhPoyv9s55mVB4pQ7mk"
-        "1gHTdFB6rKb6Jf+H0Hsr2fotp/w3wtt4g7ILRn4iELioNF8FjLecU68LSWetC85GZ"
-        "0Gkkv8SQ5+T8HL2sMTcfhhgvoCOkj0b8rO44xxHs3DzMFrKbwG3oT5581/R+GV9jk"
-        "RsMPo1GUOQbRYnKdKHGm3GHSZgL6H4/XIy2MjFWcDfAlWswiuksJVQJsV49NTOB3U"
-        "6oZZZB8+V/KVdgsPkU8FtOQmhC3CcV8wPi2Vt2nUCuHUdTcydK4quKhEuO2wfSidV"
-        "5lP3Q+tZse6D9993z+rkueyfG3mPmp+q8b3q7rcuVmW5yQnr6z3+uyQHXHmj/8/f9"
-        "b5GvPD4OjH44da1zVujVvj1s/xGvf4uLsETj3v1N+B0v8rWLzfXoH0fpN2H1M65kz"
-        "+H8ANZ3Zp9QzK0ODPrdG4CL5aiQuk5Pmcw3Og8Bz8i8dzGBM3RnfWZOu1nRE/mXcl"
-        "+OxWF+us6hvrfve+DF9F+5vvWQ5OD5WSuO9guXV9ucA/yq2s/29KodH7"
-    )
-    data = zlib.decompress(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
-    pipeline.load(io.StringIO(data))
-    assert len(pipeline.modules()) == 2
-    smooth = pipeline.modules()[1]
-    assert smooth.module_name == "Smooth"
-    assert smooth.image_name.value == "OrigBlue"
-    assert smooth.filtered_image_name.value == "CorrBlue"
-    assert smooth.smoothing_method.value == cellprofiler.modules.smooth.FIT_POLYNOMIAL
-    assert smooth.wants_automatic_object_size
-    assert smooth.clip
-
-
 def test_load_v02():
     with open("./tests/resources/modules/smooth/v2.pipeline", "r") as fd:
         data = fd.read()

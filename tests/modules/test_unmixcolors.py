@@ -95,7 +95,6 @@ def make_workspace(pixels, choices):
     return workspace, module
 
 
-@staticmethod
 def make_image(expected, absorbances):
     eps = 1.0 / 256.0 / 2.0
     absorbance = 1 - expected

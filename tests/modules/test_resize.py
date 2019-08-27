@@ -1,6 +1,4 @@
-import base64
 import io
-import zlib
 
 import numpy
 import numpy.testing
@@ -19,43 +17,6 @@ cellprofiler.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"
-
-
-def test_load_v1():
-    data = (
-        "eJztWF9v0zAQd7vuH0ioiAd4tPayFdYo7TZpq9C2siJRWEu1VWPTNMBdndZS"
-        "EleJM1bQJB75WHykfQTsLmkSE5a03RBITRWld7nf/e7OzsVOrdzcL7+CG4oK"
-        "a+VmXiM6hg0dMY1aRgmabBXuWRgx3IbULMFm14FvHR0W12Bho1TcLBXWYVFV"
-        "t8B4R6pae8Qv8AkAc/y6wM+0e2vWlVOBU8iHmDFiduxZkAHPXP1Pfh4hi6CW"
-        "jo+Q7mDbp/D0VVOjzX5veKtG246O68gIGvOj7hgtbNnvNQ/o3m6QS6wfkq9Y"
-        "SsEzO8AXxCbUdPGuf1k75KVM4hV1aCz4dUhJdRB1yQb0wv4N8O0zEXV7HLDP"
-        "ujIx2+SCtB2kQ2KgzjAK4U+N8TcT8jcDKvXyALcbg8uCcBzibOJLln99ic4Z"
-        "NBA77ybx80DyI+QDbPNBaYtQEueRCvlJgTUXdxyDW5b4l4f8sNWHCGo8G2pB"
-        "qkHWxZBapENMXmdhkKhOUflVKDQpg46Nk+eXCfnJAFUpbiTBpUO4NKjT8eZF"
-        "QVUTzc+nUr5CrmANOTqDVTE5YYVYWNS0P1EcQdychPMOD7cI/DrvxvBFzes6"
-        "Rha2Gaxj0um2qDVO3Cf8qZwk7n+NL8m8GoVvM4ZvDoTHRch7OjVFs/ubdfX6"
-        "433xyX2sEIG7Sz65r9R5SSfh+x7D9w6Ex1HIH1d2Gi/FAgVvKy9yn4T0Aev6"
-        "Af2yfVrON85ynmaP6o5hbp+q+a2zb4XV4tWN8SHhyIEyF5n3KPF3Y+LflOIX"
-        "sojhhPcIN7D1q1xeqGrUZF1XV3R1FdT3NZPEeTw/2rrivvpl1PttsAjpWNTp"
-        "3T9/VL/2+SFfGuHeXT0/U9wUN8X9H7jdAG7aN6a4UXHXAZz8fpXXv8L+M7h9"
-        "vj0H4fkm5HO+pOlZVHyfsRRj8BHBVnSK2je7eGWf/60GNvRJ9rNLEs/Sn3is"
-        "wSZXudnrRtdrMcJ/MO80/2Xnb6+zXF+/7tc74/DNpH7nexiDy7iVErgfYLRx"
-        "XbnF3sttXPtf+3UFIg=="
-    )
-    pipeline = cellprofiler.pipeline.Pipeline()
-
-    def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-
-    pipeline.add_listener(callback)
-    pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
-    assert len(pipeline.modules()) == 2
-    module = pipeline.modules()[1]
-    assert module.x_name == "DNA"
-    assert module.y_name == "ResizedDNA"
-    assert module.size_method == cellprofiler.modules.resize.R_BY_FACTOR
-    assert round(abs(module.resizing_factor.value - 0.25), 7) == 0
-    assert module.interpolation == cellprofiler.modules.resize.I_NEAREST_NEIGHBOR
 
 
 def test_load_v3():

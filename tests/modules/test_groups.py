@@ -1,28 +1,28 @@
+import io
 import os
-from io import StringIO
 
-import numpy as np
+import numpy
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.groups as G
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.measurement
+import cellprofiler.modules.groups
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 
 def test_load_v1():
     with open("./tests/resources/modules/groups/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, G.Groups)
+    assert isinstance(module, cellprofiler.modules.groups.Groups)
     assert module.wants_groups
     assert module.grouping_metadata_count.value == 1
     g0 = module.grouping_metadata[0]
@@ -33,16 +33,16 @@ def test_load_v2():
     with open("./tests/resources/modules/groups/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, G.Groups)
+    assert isinstance(module, cellprofiler.modules.groups.Groups)
     assert module.wants_groups
     assert module.grouping_metadata_count.value == 1
     g0 = module.grouping_metadata[0]
@@ -62,14 +62,16 @@ def make_image_sets(key_metadata, channel_metadata):
     returns a Groups module and a workspace with the image sets in its measurements
     """
     iscds = [
-        cpp.Pipeline.ImageSetChannelDescriptor(channel_name, image_type)
+        cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor(
+            channel_name, image_type
+        )
         for channel_name, metadata_key, metadata_value, image_type in channel_metadata
     ]
     image_set_key_names = [key for key, values in key_metadata]
 
     slices = tuple([slice(0, len(values)) for key, values in key_metadata])
-    ijkl = np.mgrid[slices]
-    ijkl = ijkl.reshape(ijkl.shape[0], np.prod(ijkl.shape[1:]))
+    ijkl = numpy.mgrid[slices]
+    ijkl = ijkl.reshape(ijkl.shape[0], numpy.prod(ijkl.shape[1:]))
     image_set_values = [values for key, values in key_metadata]
     image_set_keys = [
         tuple([image_set_values[i][ijkl[i, j]] for i in range(ijkl.shape[0])])
@@ -103,33 +105,44 @@ def make_image_sets(key_metadata, channel_metadata):
     #
     # Scramble the image sets
     #
-    r = np.random.RandomState()
+    r = numpy.random.RandomState()
     r.seed(
-        np.frombuffer("".join(["%s=%s" % kv for kv in key_metadata]).encode(), np.uint8)
+        numpy.frombuffer(
+            "".join(["%s=%s" % kv for kv in key_metadata]).encode(), numpy.uint8
+        )
     )
     image_sets = [image_sets[i] for i in r.permutation(len(image_sets))]
 
-    m = cpmeas.Measurements()
-    m.set_metadata_tags(["_".join((cpmeas.C_METADATA, k)) for k in image_set_key_names])
+    m = cellprofiler.measurement.Measurements()
+    m.set_metadata_tags(
+        [
+            "_".join((cellprofiler.measurement.C_METADATA, k))
+            for k in image_set_key_names
+        ]
+    )
     m.set_channel_descriptors(iscds)
     for i, ipds in enumerate(image_sets):
         image_number = i + 1
         for (file_name, metadata), iscd in zip(ipds, iscds):
             for feature, value in (
-                (cpmeas.C_FILE_NAME, file_name),
-                (cpmeas.C_PATH_NAME, os.pathsep + "images"),
-                (cpmeas.C_URL, "file://images/" + file_name),
+                (cellprofiler.measurement.C_FILE_NAME, file_name),
+                (cellprofiler.measurement.C_PATH_NAME, os.pathsep + "images"),
+                (cellprofiler.measurement.C_URL, "file://images/" + file_name),
             ):
-                m[cpmeas.IMAGE, feature + "_" + iscd.name, image_number] = value
+                m[
+                    cellprofiler.measurement.IMAGE,
+                    feature + "_" + iscd.name,
+                    image_number,
+                ] = value
             for key, value in list(metadata.items()):
-                feature = "_".join((cpmeas.C_METADATA, key))
-                m[cpmeas.IMAGE, feature, image_number] = value
+                feature = "_".join((cellprofiler.measurement.C_METADATA, key))
+                m[cellprofiler.measurement.IMAGE, feature, image_number] = value
 
-    pipeline = cpp.Pipeline()
-    module = G.Groups()
+    pipeline = cellprofiler.pipeline.Pipeline()
+    module = cellprofiler.modules.groups.Groups()
     module.set_module_num(1)
     pipeline.add_module(module)
-    workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
     return module, workspace
 
 
@@ -145,32 +158,38 @@ def test_compute_no_groups():
                 "DNA",
                 "Wavelength",
                 "1",
-                cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
             ),
             (
                 "GFP",
                 "Wavelength",
                 "1",
-                cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
             ),
         ),
     )
-    groups = G.Groups()
+    groups = cellprofiler.modules.groups.Groups()
     groups.wants_groups.value = False
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     image_numbers = m.get_image_numbers()
     expected_file_names = m[
-        cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + "DNA", image_numbers
+        cellprofiler.measurement.IMAGE,
+        cellprofiler.measurement.C_FILE_NAME + "_" + "DNA",
+        image_numbers,
     ]
     assert groups.prepare_run(workspace)
     assert len(image_numbers) == 2 * 3 * 4
-    output_file_names = m[cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + "DNA", image_numbers]
+    output_file_names = m[
+        cellprofiler.measurement.IMAGE,
+        cellprofiler.measurement.C_FILE_NAME + "_" + "DNA",
+        image_numbers,
+    ]
     assert list(expected_file_names) == list(output_file_names)
 
 
 def test_group_on_one():
-    groups = G.Groups()
+    groups = cellprofiler.modules.groups.Groups()
     groups, workspace = make_image_sets(
         (
             ("Plate", ("P-12345", "P-23456")),
@@ -182,13 +201,13 @@ def test_group_on_one():
                 "DNA",
                 "Wavelength",
                 "1",
-                cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
             ),
             (
                 "GFP",
                 "Wavelength",
                 "1",
-                cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
             ),
         ),
     )
@@ -196,20 +215,28 @@ def test_group_on_one():
     groups.grouping_metadata[0].metadata_choice.value = "Plate"
     groups.prepare_run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     image_numbers = m.get_image_numbers()
     assert len(image_numbers) == 24
-    np.testing.assert_array_equal(
-        np.hstack([np.ones(12, int), np.ones(12, int) * 2]),
-        m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers],
+    numpy.testing.assert_array_equal(
+        numpy.hstack([numpy.ones(12, int), numpy.ones(12, int) * 2]),
+        m[
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.GROUP_NUMBER,
+            image_numbers,
+        ],
     )
-    np.testing.assert_array_equal(
-        np.hstack([np.arange(1, 13)] * 2),
-        m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers],
+    numpy.testing.assert_array_equal(
+        numpy.hstack([numpy.arange(1, 13)] * 2),
+        m[
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.GROUP_INDEX,
+            image_numbers,
+        ],
     )
 
     pipeline = workspace.pipeline
-    assert isinstance(pipeline, cpp.Pipeline)
+    assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
     key_list, groupings = pipeline.get_groupings(workspace)
     assert len(key_list) == 1
     assert key_list[0] == "Metadata_Plate"
@@ -225,8 +252,10 @@ def test_group_on_one():
         )
         for image_number in range(1 + (group_number - 1) * 12, 1 + group_number * 12):
             for image_name in ("DNA", "GFP"):
-                ftr = "_".join((cpmeas.C_FILE_NAME, image_name))
-                assert m[cpmeas.IMAGE, ftr, image_number].startswith(plate)
+                ftr = "_".join((cellprofiler.measurement.C_FILE_NAME, image_name))
+                assert m[cellprofiler.measurement.IMAGE, ftr, image_number].startswith(
+                    plate
+                )
 
 
 def test_group_on_two():
@@ -241,13 +270,13 @@ def test_group_on_two():
                 "DNA",
                 "Wavelength",
                 "1",
-                cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
             ),
             (
                 "GFP",
                 "Wavelength",
                 "1",
-                cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
             ),
         ),
     )
@@ -257,11 +286,11 @@ def test_group_on_two():
     groups.grouping_metadata[1].metadata_choice.value = "Site"
     assert groups.prepare_run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     image_numbers = m.get_image_numbers()
 
     pipeline = workspace.pipeline
-    assert isinstance(pipeline, cpp.Pipeline)
+    assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
     key_list, groupings = pipeline.get_groupings(workspace)
     assert len(key_list) == 2
     assert key_list[0] == "Metadata_Plate"
@@ -276,9 +305,9 @@ def test_group_on_two():
             assert grouping["Metadata_Plate"] == plate
             assert grouping["Metadata_Site"] == site
             assert len(image_set_list) == 3
-            ftr = "_".join((cpmeas.C_FILE_NAME, "DNA"))
+            ftr = "_".join((cellprofiler.measurement.C_FILE_NAME, "DNA"))
             for image_number in image_set_list:
-                file_name = m[cpmeas.IMAGE, ftr, image_number]
+                file_name = m[cellprofiler.measurement.IMAGE, ftr, image_number]
                 p, w, s, rest = file_name.split("_")
                 assert p == plate
                 assert s == site
@@ -288,7 +317,7 @@ def test_get_measurement_columns_nogroups():
     #
     # Don't return the metadata grouping tags measurement if no groups
     #
-    groups = G.Groups()
+    groups = cellprofiler.modules.groups.Groups()
     groups.wants_groups.value = False
     columns = groups.get_measurement_columns(None)
     assert len(columns) == 0
@@ -298,7 +327,7 @@ def test_get_measurement_columns_groups():
     #
     # Return the metadata grouping tags measurement if groups
     #
-    groups = G.Groups()
+    groups = cellprofiler.modules.groups.Groups()
     groups.wants_groups.value = True
     choices = ["Plate", "Well", "Site"]
     for i, choice in enumerate(choices):
@@ -310,13 +339,13 @@ def test_get_measurement_columns_groups():
     columns = groups.get_measurement_columns(None)
     assert len(columns) == 4
     column = columns[0]
-    assert column[0] == cpmeas.EXPERIMENT
-    assert column[1] == cpmeas.M_GROUPING_TAGS
-    assert column[2].startswith(cpmeas.COLTYPE_VARCHAR)
+    assert column[0] == cellprofiler.measurement.EXPERIMENT
+    assert column[1] == cellprofiler.measurement.M_GROUPING_TAGS
+    assert column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR)
     column_metadata = []
     for column in columns[1:]:
-        assert column[0] == cpmeas.IMAGE
-        assert column[2] == cpmeas.COLTYPE_VARCHAR
+        assert column[0] == cellprofiler.measurement.IMAGE
+        assert column[2] == cellprofiler.measurement.COLTYPE_VARCHAR
         column_metadata.append(column[1])
     for choice in choices:
-        assert cpmeas.C_METADATA + "_" + choice in column_metadata
+        assert cellprofiler.measurement.C_METADATA + "_" + choice in column_metadata

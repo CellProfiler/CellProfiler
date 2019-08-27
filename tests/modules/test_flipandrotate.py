@@ -16,53 +16,6 @@ IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"
 
 
-def test_load_v2():
-    """Load a v2 pipeline"""
-    data = (
-        "eJztWFtPGkEUXhCtl6bVpEn7OI/SAlmstkoaFaWmpIJEaBtjbDuyA0wyO0N2"
-        "Z1VsTPrYn9af4M/oYx87gwu7TFeXi6QPZc0Gz9nzfecyZ5bDFLKV/ewOWEvp"
-        "oJCtJGuYIFAikNeYZWYA5QmwayHIkQEYzYACo+CgyoG+BtJ6Jv06s/oKrOj6"
-        "hjbcFckXHomP5hNNmxGfs+KOuo+mXTniu6VcRpxjWrentZj2zNVfi/sjtDA8"
-        "JegjJA6yPRcdfZ7WWKXV7D4qMMMhqAhNv7G4io55iiz7oNYBuo9L+AKRMr5E"
-        "Sgods0N0hm3MqIt3+VVt1y/jit9yg53vWSIchV/W53rWq09EqY+s15JPL+3f"
-        "aZ59LKCefvtFV8bUwGfYcCAB2IT1bnSSTw/hm+rhm9JyxWwbtx2CW1TikHcF"
-        "XfDk2wsomsyEvNroh+exwiPlPYKbTWQcWLi+IzqirzwiPTwR7aWbf5j/BcW/"
-        "lHMMUMZBTYTRrWMYz7zCM+/xODbS+uaZU3ik/MFGwGRdmr7qEe3hiWpFNhou"
-        "rC+fKnFLOYdq0CEc5GVTghy2UJUzq9VXHR4qfFLOd/uctILqMKPwdK4Oz9wA"
-        "9VP3hZ7Qh8Idid0oceshuGklXynribSu9xnvbes2TJ0bzMKXjPLb6nyf/abu"
-        "26B8h13XQXBhdQral7sNSCki6eQ9+B/2PT0uf+q6pMecX6zHX0z0D0Wj+Pse"
-        "4u+91rueUv68vFV6IwcotJl6Ef8ipU+IkEN2vnmcTZZO4h3NLiOOSTeP9eTG"
-        "ybd0YuXqxriMBbKtjAfmPUj8jZD415X4pSxjOELQcgNbvYonpUoMfrzh6lZc"
-        "XQ62PM0ocf58MNh8M679GfT92x6G6hZzmuP3HzQPef6BGNFQ81+81ya4CW6C"
-        "+39w2z7c5D01wQ2K++3Dqd/n6pwv7b9qd/fbc62336RcFSNU02LyvMpKme1D"
-        "FTtFGDRuTi9S++LfvO8gox8/uuJHv82P/FUPqWExLua8lDxqyFLjsC2pdZsL"
-        "8OPPPyr+lubvrrdaZ6/+v7aG8ReL/u1vIQQXcysmcT+0wdZ3+Q77Tm6j2A+a"
-        "f0QIfwBNmhIA"
-    )
-    pipeline = cellprofiler.pipeline.Pipeline()
-
-    def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-
-    pipeline.add_listener(callback)
-    pipeline.load(six.moves.StringIO(zlib.decompress(base64.b64decode(data))))
-    assert len(pipeline.modules()) == 2
-    module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-    assert module.image_name == "DNA"
-    assert module.output_name == "FlippedOrigBlue"
-    assert module.flip_choice == cellprofiler.modules.flipandrotate.FLIP_NONE
-    assert module.rotate_choice == cellprofiler.modules.flipandrotate.ROTATE_MOUSE
-    assert not module.wants_crop.value
-    assert module.how_often == cellprofiler.modules.flipandrotate.IO_INDIVIDUALLY
-    assert module.angle == 0
-    assert module.first_pixel.x == 0
-    assert module.first_pixel.y == 0
-    assert module.second_pixel.x == 0
-    assert module.second_pixel.y == 100
-    assert module.horiz_or_vert == cellprofiler.modules.flipandrotate.C_HORIZONTALLY
-
-
 def run_module(image, mask=None, fn=None):
     """Run the FlipAndRotate module
 

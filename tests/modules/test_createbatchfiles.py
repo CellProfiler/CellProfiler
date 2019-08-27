@@ -14,7 +14,7 @@ def test_test_load_version_9_please():
 
 
 def test_load_v7():
-    with open("./tests/resources/modules/createbatchfiles/v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/createbatchfiles/v7.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

@@ -1266,7 +1266,7 @@ def test_rescale_outlier():
 
 def test_load_v1():
     with open(
-        "./tests/resources/modules/correctilluminationcalculate/load_v1.pipeline", "r"
+        "./tests/resources/modules/correctilluminationcalculate/v1.pipeline", "r"
     ) as fd:
         data = fd.read()
 
@@ -1417,7 +1417,7 @@ def test_load_v1():
 
 def test_load_v2():
     with open(
-        "./tests/resources/modules/correctilluminationcalculate/load_v2.pipeline", "r"
+        "./tests/resources/modules/correctilluminationcalculate/v2.pipeline", "r"
     ) as fd:
         data = fd.read()
 

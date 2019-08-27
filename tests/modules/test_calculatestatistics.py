@@ -18,9 +18,7 @@ FIGURE_NAME = "figname"
 
 
 def test_load_v2():
-    with open(
-        "./tests/resources/modules/calculatestatistics/load_v2.pipeline", "r"
-    ) as fd:
+    with open("./tests/resources/modules/calculatestatistics/v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

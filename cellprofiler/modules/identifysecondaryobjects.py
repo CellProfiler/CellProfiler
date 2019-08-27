@@ -1,4 +1,4 @@
-# coding=utf-8
+﻿# coding=utf-8
 
 import centrosome.cpmorphology
 import centrosome.propagate
@@ -570,7 +570,11 @@ segmentation.""")
                 labels_out[distances > self.distance_to_dilate.value] = 0
                 labels_out[labels_in > 0] = labels_in[labels_in > 0]
             if self.fill_holes:
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
+                label_mask = labels_out == 0
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+                    labels_out,
+                    mask=label_mask
+                )
             else:
                 small_removed_segmented_out = labels_out
             #
@@ -585,7 +589,11 @@ segmentation.""")
                                                                   thresholded_image,
                                                                   self.regularization_factor.value)
             if self.fill_holes:
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
+                label_mask = labels_out == 0
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+                    labels_out,
+                    mask=label_mask
+                )
             else:
                 small_removed_segmented_out = labels_out.copy()
             segmented_out = self.filter_labels(small_removed_segmented_out,
@@ -614,7 +622,11 @@ segmentation.""")
             )
 
             if self.fill_holes:
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
+                label_mask = labels_out == 0
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+                    labels_out,
+                    mask=label_mask
+                )
             else:
                 small_removed_segmented_out = labels_out.copy()
             segmented_out = self.filter_labels(small_removed_segmented_out,
@@ -642,7 +654,11 @@ segmentation.""")
             )
 
             if self.fill_holes:
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
+                label_mask = labels_out == 0
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+                    labels_out,
+                    mask=label_mask
+                )
             else:
                 small_removed_segmented_out = labels_out
             segmented_out = self.filter_labels(small_removed_segmented_out,

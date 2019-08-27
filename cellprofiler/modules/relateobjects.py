@@ -190,14 +190,17 @@ of the children objects.""".format(**{
             False,
             doc="""\
 Select "*{YES}*" to save the children objects that do have parents as new
-object set. Objects with no parents will be discarded""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+object set. Objects with no parents will be discarded""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.output_child_objects_name = cellprofiler.setting.ObjectNameProvider(
-            "Name the output object", "RelateObjects", doc="""\
-Enter the name you want to call the object produced by this module. """)
+            "Name the output object",
+            "RelateObjects",
+            doc="""\
+Enter the name you want to call the object produced by this module. """,
+        )
 
     def add_step_parent(self, can_delete=True):
         group = cellprofiler.setting.SettingsGroup()
@@ -284,7 +287,7 @@ parents or children of the parent object."""
             self.wants_per_parent_means,
             self.wants_step_parent_distances,
             self.wants_child_objects_saved,
-            self.output_child_objects_name
+            self.output_child_objects_name,
         ]
 
         settings += [group.step_parent_name for group in self.step_parent_names]
@@ -297,13 +300,13 @@ parents or children of the parent object."""
         visible_settings += [
             self.wants_per_parent_means,
             self.find_parent_child_distances,
-            self.wants_child_objects_saved
+            self.wants_child_objects_saved,
         ]
 
         if self.wants_child_objects_saved:
             visible_settings += [self.output_child_objects_name]
 
-        if (self.find_parent_child_distances != D_NONE and self.has_step_parents):
+        if self.find_parent_child_distances != D_NONE and self.has_step_parents:
             visible_settings += [self.wants_step_parent_distances]
 
             if self.wants_step_parent_distances:
@@ -332,7 +335,7 @@ parents or children of the parent object."""
         m.add_measurement(
             self.x_name.value,
             cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-            child_count
+            child_count,
         )
 
         good_parents = parents_of[parents_of != 0]
@@ -396,12 +399,12 @@ parents or children of the parent object."""
                 m.add_measurement(self.x_name.value, mean_feature_name, means)
 
         if self.wants_child_objects_saved.value:
-            #most of this is lifted wholesale from FilterObjects
+            # most of this is lifted wholesale from FilterObjects
             parent_labels = parents.segmented
 
             child_labels = children.segmented
 
-            children_with_parents = numpy.where(parent_labels>0, child_labels, 0)
+            children_with_parents = numpy.where(parent_labels > 0, child_labels, 0)
 
             indexes = numpy.unique(children_with_parents)[1:]
 
@@ -433,13 +436,16 @@ parents or children of the parent object."""
             # "filtered_removed_segmented".
             #
             small_removed = children.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) &
-                          (children.segmented != 0)] = 0
+            small_removed[(target_labels == 0) & (children.segmented != 0)] = 0
             target_objects.small_removed_segmented = small_removed
             if children.has_parent_image:
                 target_objects.parent_image = children.parent_image
-            workspace.object_set.add_objects(target_objects, self.output_child_objects_name.value)
-            self.add_measurements(workspace, self.y_name.value, self.output_child_objects_name.value)
+            workspace.object_set.add_objects(
+                target_objects, self.output_child_objects_name.value
+            )
+            self.add_measurements(
+                workspace, self.y_name.value, self.output_child_objects_name.value
+            )
 
         if self.show_window:
             workspace.display_data.parent_labels = parents.segmented
@@ -480,9 +486,7 @@ parents or children of the parent object."""
         parent_labeled_children[mask] = mapping[parents_of[child_labels[mask] - 1]]
 
         max_label = max(
-            parent_labels.max(),
-            child_labels.max(),
-            parent_labeled_children.max()
+            parent_labels.max(), child_labels.max(), parent_labeled_children.max()
         )
 
         seed = numpy.random.randint(256)
@@ -496,7 +500,7 @@ parents or children of the parent object."""
             title=self.x_name.value,
             max_label=max_label,
             seed=seed,
-            colormap=cmap
+            colormap=cmap,
         )
 
         figure.subplot_imshow_labels(
@@ -507,7 +511,7 @@ parents or children of the parent object."""
             sharexy=figure.subplot(0, 0),
             max_label=max_label,
             seed=seed,
-            colormap=cmap
+            colormap=cmap,
         )
 
         figure.subplot_imshow_labels(
@@ -518,7 +522,7 @@ parents or children of the parent object."""
             sharexy=figure.subplot(0, 0),
             max_label=max_label,
             seed=seed,
-            colormap=cmap
+            colormap=cmap,
         )
 
     def get_parent_names(self):
@@ -737,14 +741,14 @@ parents or children of the parent object."""
             if module == self:
                 break
 
-            parent_features = module.get_measurements(pipeline, self.y_name.value, "Parent")
+            parent_features = module.get_measurements(
+                pipeline, self.y_name.value, "Parent"
+            )
 
             if self.x_name.value in parent_features:
                 raise cellprofiler.setting.ValidationError(
                     "{} and {} were related by the {} module".format(
-                        self.y_name.value,
-                        self.x_name.value,
-                        module.module_name
+                        self.y_name.value, self.x_name.value, module.module_name
                     ),
                     self.x_name
                 )
@@ -763,11 +767,13 @@ parents or children of the parent object."""
                 step_parents.add(group.step_parent_name.value)
 
     def get_child_columns(self, pipeline):
-        child_columns = list(filter(
-            lambda column: column[0] == self.y_name.value and self.should_aggregate_feature(column[1]),
-            pipeline.get_measurement_columns(self)
-
-        ))
+        child_columns = list(
+            filter(
+                lambda column: column[0] == self.y_name.value
+                and self.should_aggregate_feature(column[1]),
+                pipeline.get_measurement_columns(self),
+            )
+        )
 
         child_columns += self.get_child_measurement_columns(pipeline)
 
@@ -778,23 +784,34 @@ parents or children of the parent object."""
         if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
             for parent_name in self.get_parent_names():
                 columns += [
-                    (self.y_name.value, FF_CENTROID % parent_name, cellprofiler.measurement.COLTYPE_INTEGER)
+                    (
+                        self.y_name.value,
+                        FF_CENTROID % parent_name,
+                        cellprofiler.measurement.COLTYPE_INTEGER,
+                    )
                 ]
 
         if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
             for parent_name in self.get_parent_names():
                 columns += [
-                    (self.y_name.value, FF_MINIMUM % parent_name, cellprofiler.measurement.COLTYPE_INTEGER)
+                    (
+                        self.y_name.value,
+                        FF_MINIMUM % parent_name,
+                        cellprofiler.measurement.COLTYPE_INTEGER,
+                    )
                 ]
 
         return columns
 
-
     def get_measurement_columns(self, pipeline):
-        '''Return the column definitions for this module's measurements'''
+        """Return the column definitions for this module's measurements"""
         if self.wants_child_objects_saved:
             columns = super(RelateObjects, self).get_measurement_columns(
-                pipeline,additional_objects=[(self.y_name.value, self.output_child_objects_name.value)])
+                pipeline,
+                additional_objects=[
+                    (self.y_name.value, self.output_child_objects_name.value)
+                ],
+            )
         else:
             columns = super(RelateObjects, self).get_measurement_columns(pipeline)
 
@@ -805,8 +822,9 @@ parents or children of the parent object."""
                 (
                     self.x_name.value,
                     FF_MEAN % (self.y_name.value, column[1]),
-                    cellprofiler.measurement.COLTYPE_FLOAT
-                ) for column in child_columns
+                    cellprofiler.measurement.COLTYPE_FLOAT,
+                )
+                for column in child_columns
             ]
 
         columns += self.get_child_measurement_columns(pipeline)
@@ -838,10 +856,7 @@ parents or children of the parent object."""
         result = []
         if object_name == self.x_name.value:
             if self.wants_per_parent_means:
-                result += [
-                    "Mean_{}".format(self.y_name),
-                    "Children"
-                ]
+                result += ["Mean_{}".format(self.y_name), "Children"]
             else:
                 result += ["Children"]
         elif object_name == self.y_name.value:
@@ -854,13 +869,13 @@ parents or children of the parent object."""
         elif object_name == self.output_child_objects_name.value:
             result += [
                 cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER
+                cellprofiler.measurement.C_NUMBER,
             ]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.x_name.value:
-            if category == u"Mean_{}".format(self.y_name.value):
+            if category == "Mean_{}".format(self.y_name.value):
                 measurements = []
 
                 child_columns = self.get_child_columns(pipeline)
@@ -869,10 +884,10 @@ parents or children of the parent object."""
 
                 return measurements
             elif category == "Children":
-                return [u"{}_Count".format(self.y_name.value)]
+                return ["{}_Count".format(self.y_name.value)]
         elif object_name == self.y_name.value and category == "Parent":
             return [self.x_name.value]
-        elif (object_name == self.y_name.value and category == C_DISTANCE):
+        elif object_name == self.y_name.value and category == C_DISTANCE:
             result = []
 
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
@@ -887,14 +902,17 @@ parents or children of the parent object."""
                 return [
                     cellprofiler.measurement.FTR_CENTER_X,
                     cellprofiler.measurement.FTR_CENTER_Y,
-                    cellprofiler.measurement.FTR_CENTER_Z
+                    cellprofiler.measurement.FTR_CENTER_Z,
                 ]
 
             if category == cellprofiler.measurement.C_NUMBER:
                 return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
 
-        elif object_name == cellprofiler.measurement.IMAGE and self.wants_child_objects_saved.value \
-                and category == cellprofiler.measurement.C_COUNT:
+        elif (
+            object_name == cellprofiler.measurement.IMAGE
+            and self.wants_child_objects_saved.value
+            and category == cellprofiler.measurement.C_COUNT
+        ):
             return [self.output_child_objects_name.value]
 
         return []
@@ -938,19 +956,27 @@ parents or children of the parent object."""
         if variable_revision_number == 2:
             setting_values = [setting_values[1], setting_values[0]] + setting_values[2:]
 
-            variable_revision_number = 3    
-        
+            variable_revision_number = 3
+
         if variable_revision_number == 3:
-            setting_values = setting_values[:5] + [cellprofiler.setting.NO] + setting_values[5:]
+            setting_values = (
+                setting_values[:5] + [cellprofiler.setting.NO] + setting_values[5:]
+            )
 
             variable_revision_number = 5
 
         if variable_revision_number == 4:
-            setting_values = setting_values[0:2] + setting_values[3:6] + \
-                             [cellprofiler.setting.YES] + [setting_values[2]] + setting_values[6:]
+            setting_values = (
+                setting_values[0:2]
+                + setting_values[3:6]
+                + [cellprofiler.setting.YES]
+                + [setting_values[2]]
+                + setting_values[6:]
+            )
 
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
+
 
 Relate = RelateObjects

@@ -1577,19 +1577,19 @@ class Figure(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_labels(
-            self,
-            x,
-            y,
-            image,
-            title=None,
-            clear=True,
-            sharex=None,
-            sharey=None,
-            use_imshow=False,
-            background_image=None,
-            max_label=None,
-            seed=None,
-            colormap=None
+        self,
+        x,
+        y,
+        image,
+        title=None,
+        clear=True,
+        sharex=None,
+        sharey=None,
+        use_imshow=False,
+        background_image=None,
+        max_label=None,
+        seed=None,
+        colormap=None,
     ):
         """
         Show a labels matrix using a custom colormap which better showcases the individual label values
@@ -1646,7 +1646,9 @@ class Figure(wx.Frame):
 
     def return_cmap(self):
         # Get the colormap from the user preferences
-        colormap = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        colormap = matplotlib.cm.get_cmap(
+            cellprofiler.preferences.get_default_colormap()
+        )
         # Initialize the colormap so we have access to the LUT
         colormap._init()
         # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
@@ -1660,7 +1662,7 @@ class Figure(wx.Frame):
         # Set the LUT
         colormap._lut[:n] = lut
         # Make sure the background is black
-        colormap.set_bad(color='black')
+        colormap.set_bad(color="black")
         return colormap
 
     @allow_sharexy
@@ -1814,7 +1816,7 @@ class Figure(wx.Frame):
                                       numpy.zeros(image.shape[:2], image.dtype)])
         if not is_color_image(image):
             if not normalize:
-                norm = matplotlib.colors.Normalize(vmin=0,vmax=255)
+                norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
             else:
                 norm = None
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)

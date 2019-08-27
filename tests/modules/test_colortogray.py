@@ -1,5 +1,5 @@
 import numpy
-from six.moves import StringIO
+import six.moves
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -7,8 +7,8 @@ import cellprofiler.modules.colortogray
 import cellprofiler.modules.injectimage
 import cellprofiler.object
 import cellprofiler.pipeline
+import cellprofiler.workspace
 import tests.modules
-from cellprofiler.workspace import Workspace
 
 IMAGE_NAME = "image"
 OUTPUT_IMAGE_F = "outputimage%d"
@@ -47,12 +47,22 @@ def test_combine():
     measurements = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler.image.ImageSetList()
-    workspace = Workspace(pipeline, inj, None, None, measurements, image_set_list, None)
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline, inj, None, None, measurements, image_set_list, None
+    )
     inj.prepare_run(workspace)
     inj.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
-    ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
+    inj.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, inj, image_set, object_set, measurements, None
+        )
+    )
+    ctg.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, ctg, image_set, object_set, measurements, None
+        )
+    )
     grayscale = image_set.get_image("my_grayscale")
     assert grayscale
     img = grayscale.image
@@ -84,12 +94,22 @@ def test_split_all():
     measurements = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler.image.ImageSetList()
-    workspace = Workspace(pipeline, inj, None, None, measurements, image_set_list, None)
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline, inj, None, None, measurements, image_set_list, None
+    )
     inj.prepare_run(workspace)
     inj.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
-    ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
+    inj.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, inj, image_set, object_set, measurements, None
+        )
+    )
+    ctg.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, ctg, image_set, object_set, measurements, None
+        )
+    )
     red = image_set.get_image("my_red")
     assert red
     img = red.image
@@ -145,7 +165,7 @@ def test_combine_channels():
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = Workspace(
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -189,7 +209,7 @@ def test_split_channels():
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = Workspace(
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -242,7 +262,7 @@ def test_load_v2():
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
@@ -290,7 +310,7 @@ def test_load_v3():
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)

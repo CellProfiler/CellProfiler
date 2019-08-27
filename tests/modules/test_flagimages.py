@@ -2,18 +2,18 @@ import contextlib
 import os
 import tempfile
 
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.flagimage as F
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
-from .test_filterobjects import make_classifier_pickle
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.flagimage
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.workspace
+from . import test_filterobjects
 
 
 def image_measurement_name(index):
@@ -36,20 +36,20 @@ def test_load_v2():
     with open("./tests/resources/modules/flagimages/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, F.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     expected = (
         (
             "QCFlag",
-            F.C_ANY,
+            cellprofiler.modules.flagimage.C_ANY,
             False,
             (
                 ("Intensity_MaxIntensity_DNA", None, 0.95),
@@ -68,7 +68,7 @@ def test_load_v2():
     for flag, (feature_name, combine, skip, measurements) in zip(
         module.flags, expected
     ):
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         assert flag.category == "Metadata"
         assert flag.feature_name == feature_name
         assert flag.wants_skip == skip
@@ -78,8 +78,8 @@ def test_load_v2():
         for measurement, (measurement_name, min_value, max_value) in zip(
             flag.measurement_settings, measurements
         ):
-            assert isinstance(measurement, cps.SettingsGroup)
-            assert measurement.source_choice == F.S_IMAGE
+            assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+            assert measurement.source_choice == cellprofiler.modules.flagimage.S_IMAGE
             assert measurement.measurement == measurement_name
             assert measurement.wants_minimum.value == (min_value is not None)
             if measurement.wants_minimum.value:
@@ -93,20 +93,20 @@ def test_load_v3():
     with open("./tests/resources/modules/flagimages/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, F.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     expected = (
         (
             "QCFlag",
-            F.C_ANY,
+            cellprofiler.modules.flagimage.C_ANY,
             False,
             (
                 ("Intensity_MaxIntensity_DNA", None, 0.95, "foo.txt"),
@@ -125,7 +125,7 @@ def test_load_v3():
     for flag, (feature_name, combine, skip, measurements) in zip(
         module.flags, expected
     ):
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         assert flag.category == "Metadata"
         assert flag.feature_name == feature_name
         assert flag.wants_skip == skip
@@ -135,8 +135,8 @@ def test_load_v3():
         for (measurement, (measurement_name, min_value, max_value, rules_file)) in zip(
             flag.measurement_settings, measurements
         ):
-            assert isinstance(measurement, cps.SettingsGroup)
-            assert measurement.source_choice == F.S_IMAGE
+            assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+            assert measurement.source_choice == cellprofiler.modules.flagimage.S_IMAGE
             assert measurement.measurement == measurement_name
             assert measurement.wants_minimum.value == (min_value is not None)
             if measurement.wants_minimum.value:
@@ -152,20 +152,20 @@ def test_load_v4():
     with open("./tests/resources/modules/flagimages/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, F.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     expected = (
         (
             "QCFlag",
-            F.C_ANY,
+            cellprofiler.modules.flagimage.C_ANY,
             False,
             (
                 ("Intensity_MaxIntensity_DNA", None, 0.95, "foo.txt", "4"),
@@ -184,7 +184,7 @@ def test_load_v4():
     for flag, (feature_name, combine, skip, measurements) in zip(
         module.flags, expected
     ):
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         assert flag.category == "Metadata"
         assert flag.feature_name == feature_name
         assert flag.wants_skip == skip
@@ -195,8 +195,8 @@ def test_load_v4():
             measurement,
             (measurement_name, min_value, max_value, rules_file, rules_class),
         ) in zip(flag.measurement_settings, measurements):
-            assert isinstance(measurement, cps.SettingsGroup)
-            assert measurement.source_choice == F.S_IMAGE
+            assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+            assert measurement.source_choice == cellprofiler.modules.flagimage.S_IMAGE
             assert measurement.measurement == measurement_name
             assert measurement.wants_minimum.value == (min_value is not None)
             if measurement.wants_minimum.value:
@@ -221,32 +221,37 @@ def make_workspace(image_measurements, object_measurements):
 
     returns module, workspace
     """
-    module = F.FlagImage()
-    measurements = cpmeas.Measurements()
+    module = cellprofiler.modules.flagimage.FlagImage()
+    measurements = cellprofiler.measurement.Measurements()
     for i in range(len(image_measurements)):
         measurements.add_image_measurement(
             image_measurement_name(i), image_measurements[i]
         )
     for i in range(len(object_measurements)):
         measurements.add_measurement(
-            OBJECT_NAME, object_measurement_name(i), np.array(object_measurements[i])
+            OBJECT_NAME, object_measurement_name(i), numpy.array(object_measurements[i])
         )
     flag = module.flags[0]
-    assert isinstance(flag, cps.SettingsGroup)
+    assert isinstance(flag, cellprofiler.setting.SettingsGroup)
     flag.category.value = MEASUREMENT_CATEGORY
     flag.feature_name.value = MEASUREMENT_FEATURE
     module.set_module_num(1)
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cpw.Workspace(
-        pipeline, module, image_set, cpo.ObjectSet(), measurements, image_set_list
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        cellprofiler.object.ObjectSet(),
+        measurements,
+        image_set_list,
     )
     return module, workspace
 
@@ -261,22 +266,22 @@ def make_classifier(
     name="Classifier",
     n_features=1,
 ):
-    assert isinstance(module, F.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     feature_names = [image_measurement_name(i) for i in range(n_features)]
     if classes is None:
-        classes = np.arange(1, max(3, answer + 1))
+        classes = numpy.arange(1, max(3, answer + 1))
     if class_names is None:
         class_names = ["Class%d" for _ in classes]
     if rules_classes is None:
         rules_classes = [class_names[0]]
-    s = make_classifier_pickle(
-        np.array([answer]), classes, class_names, name, feature_names
+    s = test_filterobjects.make_classifier_pickle(
+        numpy.array([answer]), classes, class_names, name, feature_names
     )
     fd, filename = tempfile.mkstemp(".model")
     os.write(fd, s)
     os.close(fd)
     measurement = module.flags[0].measurement_settings[0]
-    measurement.source_choice.value = F.S_CLASSIFIER
+    measurement.source_choice.value = cellprofiler.modules.flagimage.S_CLASSIFIER
     measurement.rules_directory.set_custom_path(os.path.dirname(filename))
     measurement.rules_file_name.value = os.path.split(filename)[1]
     measurement.rules_class.value = rules_classes
@@ -290,35 +295,35 @@ def make_classifier(
 def test_positive_image_measurement():
     module, workspace = make_workspace([1], [])
     flag = module.flags[0]
-    assert isinstance(flag, cps.SettingsGroup)
+    assert isinstance(flag, cellprofiler.setting.SettingsGroup)
     measurement = flag.measurement_settings[0]
-    assert isinstance(measurement, cps.SettingsGroup)
+    assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
     measurement.measurement.value = image_measurement_name(0)
     measurement.wants_minimum.value = False
     measurement.wants_maximum.value = True
     measurement.maximum_value.value = 0.95
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
-    assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
     assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
-    assert workspace.disposition == cpw.DISPOSITION_CONTINUE
+    assert workspace.disposition == cellprofiler.workspace.DISPOSITION_CONTINUE
 
 
 def test_negative_image_measurement():
     module, workspace = make_workspace([1], [])
     flag = module.flags[0]
-    assert isinstance(flag, cps.SettingsGroup)
+    assert isinstance(flag, cellprofiler.setting.SettingsGroup)
     measurement = flag.measurement_settings[0]
-    assert isinstance(measurement, cps.SettingsGroup)
+    assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
     measurement.measurement.value = image_measurement_name(0)
     measurement.wants_minimum.value = True
     measurement.minimum_value.value = 0.1
     measurement.wants_maximum.value = False
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
-    assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
     assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
@@ -326,10 +331,12 @@ def test_no_ave_object_measurement():
     for case in ("minimum", "maximum"):
         module, workspace = make_workspace([], [[]])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        assert isinstance(measurement, cps.SettingsGroup)
-        measurement.source_choice.value = F.S_AVERAGE_OBJECT
+        assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+        measurement.source_choice.value = (
+            cellprofiler.modules.flagimage.S_AVERAGE_OBJECT
+        )
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "minimum":
@@ -342,8 +349,8 @@ def test_no_ave_object_measurement():
             measurement.maximum_value.value = 0.2
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -351,10 +358,12 @@ def test_positive_ave_object_measurement():
     for case in ("minimum", "maximum"):
         module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        assert isinstance(measurement, cps.SettingsGroup)
-        measurement.source_choice.value = F.S_AVERAGE_OBJECT
+        assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+        measurement.source_choice.value = (
+            cellprofiler.modules.flagimage.S_AVERAGE_OBJECT
+        )
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "minimum":
@@ -367,8 +376,8 @@ def test_positive_ave_object_measurement():
             measurement.maximum_value.value = 0.2
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -376,10 +385,12 @@ def test_negative_ave_object_measurement():
     for case in ("minimum", "maximum"):
         module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        assert isinstance(measurement, cps.SettingsGroup)
-        measurement.source_choice.value = F.S_AVERAGE_OBJECT
+        assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+        measurement.source_choice.value = (
+            cellprofiler.modules.flagimage.S_AVERAGE_OBJECT
+        )
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "minimum":
@@ -392,8 +403,8 @@ def test_negative_ave_object_measurement():
             measurement.maximum_value.value = 0.3
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
@@ -401,10 +412,10 @@ def test_no_object_measurements():
     for case in ("minimum", "maximum"):
         module, workspace = make_workspace([], [[]])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        assert isinstance(measurement, cps.SettingsGroup)
-        measurement.source_choice.value = F.S_ALL_OBJECTS
+        assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+        measurement.source_choice.value = cellprofiler.modules.flagimage.S_ALL_OBJECTS
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "maximum":
@@ -417,8 +428,8 @@ def test_no_object_measurements():
             measurement.minimum_value.value = 0.15
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -426,10 +437,10 @@ def test_positive_object_measurement():
     for case in ("minimum", "maximum"):
         module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        assert isinstance(measurement, cps.SettingsGroup)
-        measurement.source_choice.value = F.S_ALL_OBJECTS
+        assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+        measurement.source_choice.value = cellprofiler.modules.flagimage.S_ALL_OBJECTS
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "maximum":
@@ -442,8 +453,8 @@ def test_positive_object_measurement():
             measurement.minimum_value.value = 0.15
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -451,10 +462,10 @@ def test_negative_object_measurement():
     for case in ("minimum", "maximum"):
         module, workspace = make_workspace([], [[0.1, 0.2, 0.3, 0.4]])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
-        assert isinstance(measurement, cps.SettingsGroup)
-        measurement.source_choice.value = F.S_ALL_OBJECTS
+        assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+        measurement.source_choice.value = cellprofiler.modules.flagimage.S_ALL_OBJECTS
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "maximum":
@@ -467,8 +478,8 @@ def test_negative_object_measurement():
             measurement.minimum_value.value = 0.05
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
@@ -476,20 +487,20 @@ def test_two_measurements_any():
     for measurements, expected in (((0, 0), 0), ((0, 1), 1), ((1, 0), 1), ((1, 1), 1)):
         module, workspace = make_workspace(measurements, [])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
-        flag.combination_choice.value = F.C_ANY
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
+        flag.combination_choice.value = cellprofiler.modules.flagimage.C_ANY
         module.add_measurement(flag)
         for i in range(2):
             measurement = flag.measurement_settings[i]
-            assert isinstance(measurement, cps.SettingsGroup)
+            assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
             measurement.measurement.value = image_measurement_name(i)
             measurement.wants_minimum.value = False
             measurement.wants_maximum.value = True
             measurement.maximum_value.value = 0.5
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
 
@@ -497,25 +508,25 @@ def test_two_measurements_all():
     for measurements, expected in (((0, 0), 0), ((0, 1), 0), ((1, 0), 0), ((1, 1), 1)):
         module, workspace = make_workspace(measurements, [])
         flag = module.flags[0]
-        assert isinstance(flag, cps.SettingsGroup)
-        flag.combination_choice.value = F.C_ALL
+        assert isinstance(flag, cellprofiler.setting.SettingsGroup)
+        flag.combination_choice.value = cellprofiler.modules.flagimage.C_ALL
         module.add_measurement(flag)
         for i in range(2):
             measurement = flag.measurement_settings[i]
-            assert isinstance(measurement, cps.SettingsGroup)
+            assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
             measurement.measurement.value = image_measurement_name(i)
             measurement.wants_minimum.value = False
             measurement.wants_maximum.value = True
             measurement.maximum_value.value = 0.5
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
 
 def test_get_measurement_columns():
-    module = F.FlagImage()
+    module = cellprofiler.modules.flagimage.FlagImage()
     module.add_flag()
     module.flags[0].category.value = "Foo"
     module.flags[0].feature_name.value = "Bar"
@@ -525,22 +536,27 @@ def test_get_measurement_columns():
     assert len(columns) == 2
     assert all(
         [
-            column[0] == cpmeas.IMAGE
+            column[0] == cellprofiler.measurement.IMAGE
             and column[1] in ("Foo_Bar", "Hello_World")
-            and column[2] == cpmeas.COLTYPE_INTEGER
+            and column[2] == cellprofiler.measurement.COLTYPE_INTEGER
             for column in columns
         ]
     )
     assert columns[0][1] != columns[1][1]
     categories = module.get_categories(None, "foo")
     assert len(categories) == 0
-    categories = module.get_categories(None, cpmeas.IMAGE)
+    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
     assert len(categories) == 2
     assert "Foo" in categories
     assert "Hello" in categories
-    assert len(module.get_measurements(None, cpmeas.IMAGE, "Whatever")) == 0
+    assert (
+        len(module.get_measurements(None, cellprofiler.measurement.IMAGE, "Whatever"))
+        == 0
+    )
     for category, feature in (("Foo", "Bar"), ("Hello", "World")):
-        features = module.get_measurements(None, cpmeas.IMAGE, category)
+        features = module.get_measurements(
+            None, cellprofiler.measurement.IMAGE, category
+        )
         assert len(features) == 1
         assert features[0] == feature
 
@@ -548,44 +564,44 @@ def test_get_measurement_columns():
 def test_skip():
     module, workspace = make_workspace([1], [])
     flag = module.flags[0]
-    assert isinstance(flag, cps.SettingsGroup)
+    assert isinstance(flag, cellprofiler.setting.SettingsGroup)
     flag.wants_skip.value = True
     measurement = flag.measurement_settings[0]
-    assert isinstance(measurement, cps.SettingsGroup)
+    assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
     measurement.measurement.value = image_measurement_name(0)
     measurement.wants_minimum.value = False
     measurement.wants_maximum.value = True
     measurement.maximum_value.value = 0.95
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
-    assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
     assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
-    assert workspace.disposition == cpw.DISPOSITION_SKIP
+    assert workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP
 
 
 def test_dont_skip():
     module, workspace = make_workspace([1], [])
     flag = module.flags[0]
-    assert isinstance(flag, cps.SettingsGroup)
+    assert isinstance(flag, cellprofiler.setting.SettingsGroup)
     flag.wants_skip.value = True
     measurement = flag.measurement_settings[0]
-    assert isinstance(measurement, cps.SettingsGroup)
+    assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
     measurement.measurement.value = image_measurement_name(0)
     measurement.wants_minimum.value = True
     measurement.minimum_value.value = 0.1
     measurement.wants_maximum.value = False
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
-    assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler.measurement.IMAGE)
     assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
-    assert workspace.disposition == cpw.DISPOSITION_CONTINUE
+    assert workspace.disposition == cellprofiler.workspace.DISPOSITION_CONTINUE
 
 
 def test_filter_by_rule():
     rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n" % (
-        "_".join((cpmeas.IMAGE, image_measurement_name(0)))
+        "_".join((cellprofiler.measurement.IMAGE, image_measurement_name(0)))
     )
     rules_path = tempfile.mktemp()
     rules_dir, rules_file = os.path.split(rules_path)
@@ -601,26 +617,30 @@ def test_filter_by_rule():
         ):
             module, workspace = make_workspace([value], [])
             flag = module.flags[0]
-            assert isinstance(flag, cps.SettingsGroup)
+            assert isinstance(flag, cellprofiler.setting.SettingsGroup)
             flag.wants_skip.value = False
             measurement = flag.measurement_settings[0]
-            assert isinstance(measurement, cps.SettingsGroup)
-            measurement.source_choice.value = F.S_RULES
+            assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+            measurement.source_choice.value = cellprofiler.modules.flagimage.S_RULES
             measurement.rules_file_name.value = rules_file
-            measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+            measurement.rules_directory.dir_choice = (
+                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+            )
             measurement.rules_directory.custom_path = rules_dir
             measurement.rules_class.set_value([str(choice)])
             module.run(workspace)
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
-            assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+            assert isinstance(m, cellprofiler.measurement.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(
+                cellprofiler.measurement.IMAGE
+            )
             assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
     finally:
         os.remove(rules_path)
 
 
 def test_filter_by_3class_rule():
-    f = "_".join((cpmeas.IMAGE, image_measurement_name(0)))
+    f = "_".join((cellprofiler.measurement.IMAGE, image_measurement_name(0)))
     rules_file_contents = (
         "IF (%(f)s > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
         "IF (%(f)s > 1.6, [0.5,0.5,-0.5], [-1.0,-1.0,1.0])\n"
@@ -639,20 +659,24 @@ def test_filter_by_3class_rule():
             ):
                 module, workspace = make_workspace([measurement_value], [])
                 flag = module.flags[0]
-                assert isinstance(flag, cps.SettingsGroup)
+                assert isinstance(flag, cellprofiler.setting.SettingsGroup)
                 flag.wants_skip.value = False
                 measurement = flag.measurement_settings[0]
-                assert isinstance(measurement, cps.SettingsGroup)
-                measurement.source_choice.value = F.S_RULES
+                assert isinstance(measurement, cellprofiler.setting.SettingsGroup)
+                measurement.source_choice.value = cellprofiler.modules.flagimage.S_RULES
                 measurement.rules_file_name.value = rules_file
-                measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                measurement.rules_directory.dir_choice = (
+                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                )
                 measurement.rules_directory.custom_path = rules_dir
                 measurement.rules_class.set_value(rules_classes)
 
                 m = workspace.measurements
-                assert isinstance(m, cpmeas.Measurements)
+                assert isinstance(m, cellprofiler.measurement.Measurements)
                 module.run(workspace)
-                assert MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE)
+                assert MEASUREMENT_NAME in m.get_feature_names(
+                    cellprofiler.measurement.IMAGE
+                )
                 value = m.get_current_image_measurement(MEASUREMENT_NAME)
                 expected_value = 1 if expected_class in rules_classes else 0
                 assert value == expected_value
@@ -665,7 +689,7 @@ def test_classify_true():
     with make_classifier(module, 1):
         module.run(workspace)
         m = workspace.measurements
-        assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
+        assert m[cellprofiler.measurement.IMAGE, MEASUREMENT_NAME] == 1
 
 
 def test_classify_false():
@@ -673,7 +697,7 @@ def test_classify_false():
     with make_classifier(module, 2):
         module.run(workspace)
         m = workspace.measurements
-        assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
+        assert m[cellprofiler.measurement.IMAGE, MEASUREMENT_NAME] == 0
 
 
 def test_classify_multiple_select_true():
@@ -687,7 +711,7 @@ def test_classify_multiple_select_true():
     ):
         module.run(workspace)
         m = workspace.measurements
-        assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 1
+        assert m[cellprofiler.measurement.IMAGE, MEASUREMENT_NAME] == 1
 
 
 def test_classify_multiple_select_false():
@@ -701,7 +725,7 @@ def test_classify_multiple_select_false():
     ):
         module.run(workspace)
         m = workspace.measurements
-        assert m[cpmeas.IMAGE, MEASUREMENT_NAME] == 0
+        assert m[cellprofiler.measurement.IMAGE, MEASUREMENT_NAME] == 0
 
 
 def test_batch():
@@ -711,9 +735,9 @@ def test_batch():
         assert path == orig_path
         return "/imaging/analysis"
 
-    module = F.FlagImage()
+    module = cellprofiler.modules.flagimage.FlagImage()
     rd = module.flags[0].measurement_settings[0].rules_directory
-    rd.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+    rd.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
     rd.custom_path = orig_path
     module.prepare_to_create_batch(None, fn_alter_path)
     assert rd.custom_path == "/imaging/analysis"

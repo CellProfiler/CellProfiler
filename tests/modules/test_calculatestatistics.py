@@ -1,16 +1,16 @@
 import os
 import tempfile
 
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.calculatestatistics as C
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.calculatestatistics
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.workspace
 
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"
@@ -21,16 +21,18 @@ def test_load_v2():
     with open("./tests/resources/modules/calculatestatistics/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, C.CalculateStatistics)
+    assert isinstance(
+        module, cellprofiler.modules.calculatestatistics.CalculateStatistics
+    )
     assert module.grouping_values == "Metadata_Controls"
     assert len(module.dose_values) == 1
     dv = module.dose_values[0]
@@ -38,7 +40,7 @@ def test_load_v2():
     assert not dv.log_transform
     assert dv.wants_save_figure
     assert dv.figure_name == "DoseResponsePlot"
-    assert dv.pathname.dir_choice == cps.DEFAULT_OUTPUT_FOLDER_NAME
+    assert dv.pathname.dir_choice == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
     assert dv.pathname.custom_path == "Test"
 
 
@@ -383,14 +385,14 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
             for the measurement M1 with values for 3 image sets
     controls_measurement - the name of the controls measurement
     """
-    module = C.CalculateStatistics()
+    module = cellprofiler.modules.calculatestatistics.CalculateStatistics()
     module.set_module_num(1)
     module.grouping_values.value = controls_measurement
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
 
-    m = cpmeas.Measurements()
+    m = cellprofiler.measurement.Measurements()
     nimages = None
     for object_name in list(mdict.keys()):
         odict = mdict[object_name]
@@ -400,17 +402,20 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
                 nimages = len(odict[feature])
             else:
                 assert nimages == len(odict[feature])
-            if object_name == cpmeas.IMAGE and feature in dose_measurements:
+            if (
+                object_name == cellprofiler.measurement.IMAGE
+                and feature in dose_measurements
+            ):
                 if len(module.dose_values) > 1:
                     module.add_dose_value()
                 dv = module.dose_values[-1]
                 dv.measurement.value = feature
     m.image_set_number = nimages
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = cpw.Workspace(
-        pipeline, module, image_set, cpo.ObjectSet(), m, image_set_list
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline, module, image_set, cellprofiler.object.ObjectSet(), m, image_set_list
     )
     return workspace, module
 
@@ -422,23 +427,26 @@ def test_NAN():
     z-factors are NAN too.
     """
     mdict = {
-        cpmeas.IMAGE: {"Metadata_Controls": [1, 0, -1], "Metadata_Doses": [0, 0.5, 1]},
+        cellprofiler.measurement.IMAGE: {
+            "Metadata_Controls": [1, 0, -1],
+            "Metadata_Doses": [0, 0.5, 1],
+        },
         INPUT_OBJECTS: {
             TEST_FTR: [
-                np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
-                np.array([5.3, 2.4, np.NaN, 3.2]),
-                np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1]),
+                numpy.array([1.0, numpy.NaN, 2.3, 3.4, 2.9]),
+                numpy.array([5.3, 2.4, numpy.NaN, 3.2]),
+                numpy.array([numpy.NaN, 3.1, 4.3, 2.2, 1.1, 0.1]),
             ]
         },
     }
     workspace, module = make_workspace(mdict, "Metadata_Controls", ["Metadata_Doses"])
     module.post_run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cpmeas.Measurements)
+    assert isinstance(m, cellprofiler.measurement.Measurements)
     for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
         feature = "_".join((category, INPUT_OBJECTS, TEST_FTR))
         value = m.get_experiment_measurement(feature)
-        assert not np.isnan(value)
+        assert not numpy.isnan(value)
 
 
 def test_make_path():
@@ -446,17 +454,22 @@ def test_make_path():
     # If the figure directory doesn't exist, it should be created
     #
     mdict = {
-        cpmeas.IMAGE: {"Metadata_Controls": [1, 0, -1], "Metadata_Doses": [0, 0.5, 1]},
+        cellprofiler.measurement.IMAGE: {
+            "Metadata_Controls": [1, 0, -1],
+            "Metadata_Doses": [0, 0.5, 1],
+        },
         INPUT_OBJECTS: {
             TEST_FTR: [
-                np.array([1.0, 2.3, 3.4, 2.9]),
-                np.array([5.3, 2.4, 3.2]),
-                np.array([3.1, 4.3, 2.2, 1.1, 0.1]),
+                numpy.array([1.0, 2.3, 3.4, 2.9]),
+                numpy.array([5.3, 2.4, 3.2]),
+                numpy.array([3.1, 4.3, 2.2, 1.1, 0.1]),
             ]
         },
     }
     workspace, module = make_workspace(mdict, "Metadata_Controls", ["Metadata_Doses"])
-    assert isinstance(module, C.CalculateStatistics)
+    assert isinstance(
+        module, cellprofiler.modules.calculatestatistics.CalculateStatistics
+    )
     my_dir = tempfile.mkdtemp()
     my_subdir = os.path.join(my_dir, "foo")
     fnfilename = FIGURE_NAME + INPUT_OBJECTS + "_" + TEST_FTR + ".pdf"
@@ -464,7 +477,7 @@ def test_make_path():
     try:
         dose_group = module.dose_values[0]
         dose_group.wants_save_figure.value = True
-        dose_group.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        dose_group.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         dose_group.pathname.custom_path = my_subdir
         dose_group.figure_name.value = FIGURE_NAME
         module.post_run(workspace)

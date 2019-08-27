@@ -1284,15 +1284,17 @@ desired.
             ofeatures = [(object_name, feature_name) for feature_name in ofeatures]
             ofeatures.sort()
             features += ofeatures
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w")
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
+
             #
             # We write the object names in the first row of headers if there are
             # multiple objects. Otherwise, we just write the feature names
             #
             for i in (0, 1) if len(object_names) > 1 else (1,):
                 writer.writerow([x[i] for x in features])
+
             for img_number in image_set_numbers:
                 object_count = np.max(
                     [
@@ -1344,7 +1346,7 @@ desired.
         )
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w")
         module_map = {}
         for module in workspace.pipeline.modules():
             module_map[module.module_num] = module.module_name

@@ -1,12 +1,8 @@
-"""test_editobjectsmanually - test the EditObjectsManually module
-"""
-
-from six.moves import StringIO
+import six.moves
 
 import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.editobjectsmanually as E
-import cellprofiler.pipeline as cpp
+import cellprofiler.modules.editobjectsmanually
+import cellprofiler.pipeline
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
@@ -16,19 +12,21 @@ def test_load_v1():
     with open("./tests/resources/modules/editobjectsmanually/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, E.EditObjectsManually)
+    assert isinstance(
+        module, cellprofiler.modules.editobjectsmanually.EditObjectsManually
+    )
     assert module.object_name == "Nuclei"
     assert module.filtered_objects == "EditedNuclei"
-    assert module.renumber_choice == E.R_RENUMBER
+    assert module.renumber_choice == cellprofiler.modules.editobjectsmanually.R_RENUMBER
     assert not module.wants_image_display
 
 
@@ -36,19 +34,21 @@ def test_load_v2():
     with open("./tests/resources/modules/editobjectsmanually/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, E.EditObjectsManually)
+    assert isinstance(
+        module, cellprofiler.modules.editobjectsmanually.EditObjectsManually
+    )
     assert module.object_name == "Nuclei"
     assert module.filtered_objects == "EditedNuclei"
-    assert module.renumber_choice == E.R_RETAIN
+    assert module.renumber_choice == cellprofiler.modules.editobjectsmanually.R_RETAIN
     assert module.wants_image_display
     assert module.image_name == "DNA"
     assert not module.allow_overlap
@@ -58,19 +58,21 @@ def test_load_v3():
     with open("./tests/resources/modules/editobjectsmanually/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, E.EditObjectsManually)
+    assert isinstance(
+        module, cellprofiler.modules.editobjectsmanually.EditObjectsManually
+    )
     assert module.object_name == "Nuclei"
     assert module.filtered_objects == "EditedNuclei"
-    assert module.renumber_choice == E.R_RETAIN
+    assert module.renumber_choice == cellprofiler.modules.editobjectsmanually.R_RETAIN
     assert module.wants_image_display
     assert module.image_name == "DNA"
     assert module.allow_overlap
@@ -80,13 +82,13 @@ def test_load_v4():
     with open("./tests/resources/modules/editobjectsmanually/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.loadtxt(StringIO(data))
+    pipeline.loadtxt(six.moves.StringIO(data))
     module = pipeline.modules()[0]
 
     assert module.object_name.value == "IdentifyPrimaryObjects"
@@ -98,41 +100,41 @@ def test_load_v4():
 
 
 def test_measurements():
-    module = E.EditObjectsManually()
+    module = cellprofiler.modules.editobjectsmanually.EditObjectsManually()
     module.object_name.value = INPUT_OBJECTS_NAME
     module.filtered_objects.value = OUTPUT_OBJECTS_NAME
 
     columns = module.get_measurement_columns(None)
     expected_columns = [
         (
-            cpmeas.IMAGE,
+            cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cpmeas.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cpmeas.COLTYPE_FLOAT,
+            cellprofiler.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS_NAME,
             cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-            cpmeas.COLTYPE_INTEGER,
+            cellprofiler.measurement.COLTYPE_INTEGER,
         ),
     ]
 
@@ -157,7 +159,7 @@ def test_measurements():
     # Check the measurement features
     #
     d = {
-        cpmeas.IMAGE: {
+        cellprofiler.measurement.IMAGE: {
             cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS_NAME],
             "Foo": [],
         },

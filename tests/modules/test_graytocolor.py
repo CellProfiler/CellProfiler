@@ -1,25 +1,30 @@
 import base64
 import zlib
 
-import numpy as np
-from six.moves import StringIO
+import numpy
+import six.moves
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.graytocolor as G
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.graytocolor
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 OUTPUT_IMAGE_NAME = "outputimage"
 
 
 def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
-    module = G.GrayToColor()
+    module = cellprofiler.modules.graytocolor.GrayToColor()
     module.scheme_choice.value = scheme
-    if scheme not in (G.SCHEME_COMPOSITE, G.SCHEME_STACK):
+    if scheme not in (
+        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        cellprofiler.modules.graytocolor.SCHEME_STACK,
+    ):
         image_names = [
-            "image%d" % i if images[i] is not None else G.LEAVE_THIS_BLACK
+            "image%d" % i
+            if images[i] is not None
+            else cellprofiler.modules.graytocolor.LEAVE_THIS_BLACK
             for i in range(7)
         ]
         for image_name_setting, image_name, adjustment_setting, adjustment in zip(
@@ -54,7 +59,10 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
             weights = [1.0] * len(images)
         if colors is None:
             colors = [
-                G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)] for i in range(len(images))
+                cellprofiler.modules.graytocolor.DEFAULT_COLORS[
+                    i % len(cellprofiler.modules.graytocolor.DEFAULT_COLORS)
+                ]
+                for i in range(len(images))
             ]
         for i, (image, color, weight) in enumerate(zip(images, colors, weights)):
             image_name = "image%d" % (i + 1)
@@ -65,24 +73,24 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
 
     module.rgb_image_name.value = OUTPUT_IMAGE_NAME
     module.set_module_num(1)
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    image_set_list = cpi.ImageSetList()
+    image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     for image, image_name in zip(images, image_names):
         if image is not None:
-            image_set.add(image_name, cpi.Image(image))
-    workspace = cpw.Workspace(
+            image_set.add(image_name, cellprofiler.image.Image(image))
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cpo.ObjectSet(),
-        cpmeas.Measurements(),
+        cellprofiler.object.ObjectSet(),
+        cellprofiler.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -108,17 +116,17 @@ def test_load_v2():
         "n93C7HrLdY7rf/dZhU/P/c/3IgWnhxUL1ttgsfl9P8M/ym0Z/0Xz17Tl84h5"
         "9NGYAIj31Rf1/wuo8TuS"
     )
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+    pipeline.load(six.moves.StringIO(zlib.decompress(base64.b64decode(data))))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[1]
-    assert isinstance(module, G.GrayToColor)
-    assert module.scheme_choice == G.SCHEME_RGB
+    assert isinstance(module, cellprofiler.modules.graytocolor.GrayToColor)
+    assert module.scheme_choice == cellprofiler.modules.graytocolor.SCHEME_RGB
     assert module.red_image_name == "Origd0"
     assert module.green_image_name == "Origd2"
     assert module.blue_image_name == "Origd1"
@@ -135,17 +143,17 @@ def test_load_v3():
     with open("./tests/resources/modules/graytocolor/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cpp.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, G.GrayToColor)
-    assert module.scheme_choice == G.SCHEME_COMPOSITE
+    assert isinstance(module, cellprofiler.modules.graytocolor.GrayToColor)
+    assert module.scheme_choice == cellprofiler.modules.graytocolor.SCHEME_COMPOSITE
     assert module.rgb_image_name == "myimage"
     assert module.red_image_name == "1"
     assert module.green_image_name == "2"
@@ -169,7 +177,7 @@ def test_load_v3():
 
 
 def test_rgb():
-    np.random.seed(0)
+    numpy.random.seed(0)
     for combination in (
         (True, True, True),
         (True, True, False),
@@ -179,47 +187,54 @@ def test_rgb():
         (False, True, False),
         (False, False, True),
     ):
-        adjustments = np.random.uniform(size=7)
+        adjustments = numpy.random.uniform(size=7)
         images = [
-            np.random.uniform(size=(10, 15)) if combination[i] else None
+            numpy.random.uniform(size=(10, 15)) if combination[i] else None
             for i in range(3)
         ]
         images += [None] * 4
-        workspace, module = make_workspace(G.SCHEME_RGB, images, adjustments)
+        workspace, module = make_workspace(
+            cellprofiler.modules.graytocolor.SCHEME_RGB, images, adjustments
+        )
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
 
-        expected = np.dstack(
-            [image if image is not None else np.zeros((10, 15)) for image in images[:3]]
+        expected = numpy.dstack(
+            [
+                image if image is not None else numpy.zeros((10, 15))
+                for image in images[:3]
+            ]
         )
         for i in range(3):
             expected[:, :, i] *= adjustments[i]
-        assert np.all(np.abs(expected - pixel_data) <= 0.00001)
+        assert numpy.all(numpy.abs(expected - pixel_data) <= 0.00001)
 
 
 def test_cmyk():
-    np.random.seed(0)
+    numpy.random.seed(0)
     for combination in [[(i & 2 ^ j) != 0 for j in range(4)] for i in range(1, 16)]:
-        adjustments = np.random.uniform(size=7)
+        adjustments = numpy.random.uniform(size=7)
         images = [
-            np.random.uniform(size=(10, 15)) if combination[i] else None
+            numpy.random.uniform(size=(10, 15)) if combination[i] else None
             for i in range(4)
         ]
         images = [None] * 3 + images
-        workspace, module = make_workspace(G.SCHEME_CMYK, images, adjustments)
+        workspace, module = make_workspace(
+            cellprofiler.modules.graytocolor.SCHEME_CMYK, images, adjustments
+        )
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
 
-        expected = np.array(
+        expected = numpy.array(
             [
-                np.dstack(
-                    [image * adjustment if image is not None else np.zeros((10, 15))]
+                numpy.dstack(
+                    [image * adjustment if image is not None else numpy.zeros((10, 15))]
                     * 3
                 )
-                * np.array(multiplier)
-                / np.sum(multiplier)
+                * numpy.array(multiplier)
+                / numpy.sum(multiplier)
                 for image, multiplier, adjustment in (
                     (images[3], (0, 1, 1), adjustments[3]),
                     (images[4], (1, 1, 0), adjustments[4]),
@@ -228,32 +243,37 @@ def test_cmyk():
                 )
             ]
         )
-        expected = np.sum(expected, 0)
-        assert np.all(np.abs(expected - pixel_data) <= 0.00001)
+        expected = numpy.sum(expected, 0)
+        assert numpy.all(numpy.abs(expected - pixel_data) <= 0.00001)
 
 
 def test_stack():
-    r = np.random.RandomState()
+    r = numpy.random.RandomState()
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
-    workspace, module = make_workspace(G.SCHEME_STACK, images)
+    workspace, module = make_workspace(
+        cellprofiler.modules.graytocolor.SCHEME_STACK, images
+    )
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
     assert output.shape[:2] == images[0].shape
     assert output.shape[2] == len(images)
     for i, image in enumerate(images):
-        np.testing.assert_array_almost_equal(output[:, :, i], image)
+        numpy.testing.assert_array_almost_equal(output[:, :, i], image)
 
 
 def test_composite():
-    r = np.random.RandomState()
+    r = numpy.random.RandomState()
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
     colors = [r.randint(0, 255, size=3) for _ in range(5)]
     weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
     color_names = ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
     workspace, module = make_workspace(
-        G.SCHEME_COMPOSITE, images, colors=color_names, weights=weights
+        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        images,
+        colors=color_names,
+        weights=weights,
     )
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
@@ -266,4 +286,4 @@ def test_composite():
                 for image, color, weight in zip(images, colors, weights)
             ]
         )
-        np.testing.assert_array_almost_equal(output[:, :, i], channel)
+        numpy.testing.assert_array_almost_equal(output[:, :, i], channel)

@@ -2096,9 +2096,9 @@ def test_basic_gct_check():
     )
     csv_text = (
         """"%s","%s","%s"
-            "Channel1-01-A-01.tif","%s","Hi"
-            "Channel1-02-A-02.tif","%s","Hello"
-            """
+                "Channel1-01-A-01.tif","%s","Hi"
+                "Channel1-02-A-02.tif","%s","Hello"
+                """
         % info
     )
     pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2154,9 +2154,9 @@ def test_make_gct_file_with_filename():
     )
     csv_text = (
         """"%s","%s","%s"
-            "Channel1-01-A-01.tif","%s","Hi"
-            "Channel1-02-A-02.tif","%s","Hello"
-            """
+                "Channel1-01-A-01.tif","%s","Hi"
+                "Channel1-02-A-02.tif","%s","Hello"
+                """
         % info
     )
     pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2204,9 +2204,9 @@ def test_make_gct_file_with_metadata():
     )
     csv_text = (
         """"%s","%s","%s"
-            "Channel1-01-A-01.tif","%s","Hi"
-            "Channel1-02-A-02.tif","%s","Hello"
-            """
+                "Channel1-01-A-01.tif","%s","Hi"
+                "Channel1-02-A-02.tif","%s","Hello"
+                """
         % info
     )
     pipeline, module, input_filename = make_pipeline(csv_text)

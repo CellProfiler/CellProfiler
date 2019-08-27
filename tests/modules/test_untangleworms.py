@@ -3,10 +3,12 @@ import io
 import os
 import tempfile
 import zlib
+
 import bioformats
 import numpy
 from centrosome.outline import outline
 from scipy.ndimage import binary_dilation
+
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.untangleworms
@@ -256,14 +258,12 @@ PARAMS = (
     "HXiW/wDc+AeK"
 )
 
+handle, path = tempfile.mkstemp(suffix=".png")
+fd = os.fdopen(handle, "wb")
+fd.write(zlib.decompress(base64.b64decode(A02_binary)))
+fd.close()
 
-def setUpClass(cls):
-    handle, path = tempfile.mkstemp(suffix=".png")
-    fd = os.fdopen(handle, "wb")
-    fd.write(zlib.decompress(base64.b64decode(A02_binary)))
-    fd.close()
-
-    cls.A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
+A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
 
 
 def test_load_v1():

@@ -25,21 +25,22 @@ cellprofiler.preferences.set_headless()
 
 OBJECTS_NAME = "objects"
 
+tests.modules.maybe_download_sbs()
 
-# @classmethod
-# def setUpClass(cls):
-#     tests.modules.maybe_download_sbs()
-#     cls.test_folder = "loaddata"
-#     cls.test_path = os.path.join(
-#         tests.modules.example_images_directory(), cls.test_folder
-#     )
-#     cls.test_filename = "image.tif"
-#     cls.test_shape = (13, 15)
-#     path = tests.modules.maybe_download_example_image(
-#         [cls.test_folder], cls.test_filename, shape=cls.test_shape
-#     )
-#     with open(path, "rb") as fd:
-#         cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
+test_folder = "loaddata"
+
+test_path = os.path.join(tests.modules.example_images_directory(), test_folder)
+
+test_filename = "image.tif"
+
+test_shape = (13, 15)
+
+path = tests.modules.maybe_download_example_image(
+    [test_folder], test_filename, shape=test_shape
+)
+
+with open(path, "rb") as fd:
+    test_md5 = hashlib.md5(fd.read()).hexdigest()
 
 
 def make_pipeline(csv_text, name=None):
@@ -510,15 +511,15 @@ def test_get_measurement_columns():
     ]
     csv_text = (
         """"%s","%s","%s"
-            1,1,1
-            2,1.5,"Hi"
-            3,1,"Hello"
-            4,1.7,"Hola"
-            5,1.2,"Bonjour"
-            6,1.5,"Gutentag"
-            7,1.1,"Hej"
-            8,2.3,"Bevakasha"
-            """
+                1,1,1
+                2,1.5,"Hi"
+                3,1,"Hello"
+                4,1.7,"Hola"
+                5,1.2,"Bonjour"
+                6,1.5,"Gutentag"
+                7,1.1,"Hej"
+                8,2.3,"Bevakasha"
+                """
         % colnames
     )
     pipeline, module, filename = make_pipeline(csv_text)
@@ -546,9 +547,9 @@ def test_file_name_measurement_columns():
     colnames = ("Image_FileName_Foo", "Image_PathName_Foo")
     csv_text = (
         """"%s","%s"
-            "Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
-            "Channel1-02.tif","/imaging/analysis/2500_01_01_Jones"
-            """
+                "Channel1-01.tif","/imaging/analysis/2500_01_01_Jones"
+                "Channel1-02.tif","/imaging/analysis/2500_01_01_Jones"
+                """
         % colnames
     )
     pipeline, module, filename = make_pipeline(csv_text)
@@ -570,15 +571,15 @@ def test_long_integer_column():
     ]
     csv_text = (
         """"%s","%s","%s"
-            1,1,1
-            2,1.5,"Hi"
-            3,1,"Hello"
-            4,1.7,"Hola"
-            5,1.2,"Bonjour"
-            6,1.5,"Gutentag"
-            7,1.1,"Hej"
-            1234567890123,2.3,"Bevakasha"
-            """
+                1,1,1
+                2,1.5,"Hi"
+                3,1,"Hello"
+                4,1.7,"Hola"
+                5,1.2,"Bonjour"
+                6,1.5,"Gutentag"
+                7,1.1,"Hej"
+                1234567890123,2.3,"Bevakasha"
+                """
         % colnames
     )
     pipeline, module, filename = make_pipeline(csv_text)
@@ -918,8 +919,8 @@ def test_load_filename():
     #
     csv_text = (
         """"Image_FileName_DNA"
-            "%s"
-            """
+                "%s"
+                """
         % test_filename
     )
     pipeline, module, filename = make_pipeline(csv_text)

@@ -7,6 +7,7 @@ import urllib.request
 import bioformats
 import javabridge
 import numpy
+import pytest
 import six
 
 import cellprofiler.measurement
@@ -666,7 +667,7 @@ def do_teest(module, channels, expected_tags, expected_metadata, additional=None
             if ftr == tag:
                 break
         else:
-            fail("%s not in %s" % (tag, ",".join(expected_tag)))
+            pytest.fail("%s not in %s" % (tag, ",".join(expected_tag)))
     iscds = m.get_channel_descriptors()
     assert len(iscds) == len(channels)
     for channel_name in list(channels.keys()):
@@ -1472,16 +1473,16 @@ def run_workspace(
 
     script = (
         """
-                importPackage(Packages.org.cellprofiler.imageset);
-                var ls = new java.util.ArrayList();
-                for (var ipd in Iterator(ipds)) {
-                    ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
-                }
-                var kwlist = new java.util.ArrayList();
-                kwlist.add("ImageNumber");
-                var imageSet = new ImageSet(ls, kwlist);
-                imageSet.compress(names, null);
-                """
+                    importPackage(Packages.org.cellprofiler.imageset);
+                    var ls = new java.util.ArrayList();
+                    for (var ipd in Iterator(ipds)) {
+                        ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
+                    }
+                    var kwlist = new java.util.ArrayList();
+                    kwlist.add("ImageNumber");
+                    var imageSet = new ImageSet(ls, kwlist);
+                    imageSet.compress(names, null);
+                    """
         % stack
     )
     blob = javabridge.run_script(script, dict(ipds=ipds.o, names=names.o))

@@ -711,7 +711,7 @@ def test_load_v25():
 
 
 def test_load_v26():
-    with open("./tests/resources/modules/exporttodatabase/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v26.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -817,7 +817,7 @@ def test_load_v26():
 
 
 def test_load_v27():
-    with open("./tests/resources/modules/exporttodatabase/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v27.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -4381,8 +4381,8 @@ def test_experiment_table_combine():
         image_table = module.table_prefix.value + "Per_Image"
         statement = (
             """
-                        select max(experiment_id) from Experiment_Properties
-                        where field = 'image_table' and value = '%s'"""
+                            select max(experiment_id) from Experiment_Properties
+                            where field = 'image_table' and value = '%s'"""
             % image_table
         )
         cursor.execute(statement)
@@ -4431,8 +4431,8 @@ def test_experiment_table_separate():
         image_table = module.table_prefix.value + "Per_Image"
         statement = (
             """
-                        select max(experiment_id) from Experiment_Properties
-                        where field = 'image_table' and value = '%s'"""
+                            select max(experiment_id) from Experiment_Properties
+                            where field = 'image_table' and value = '%s'"""
             % image_table
         )
         cursor.execute(statement)

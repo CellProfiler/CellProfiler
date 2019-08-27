@@ -3,6 +3,7 @@ import os
 
 import centrosome.threshold
 import numpy
+import pytest
 import scipy.ndimage
 
 import cellprofiler.image
@@ -23,7 +24,7 @@ MEASUREMENT_NAME = "my_measurement"
 
 def load_error_handler(caller, event):
     if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
-        fail(event.error.message)
+        pytest.fail(event.error.message)
 
 
 def make_workspace(image, mask=None, labels=None):

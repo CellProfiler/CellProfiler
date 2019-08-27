@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpm
@@ -12,7 +13,7 @@ import cellprofiler.workspace as cpw
 
 def error_callback(calller, event):
     if isinstance(event, cpp.RunExceptionEvent):
-        fail(event.error.message)
+        pytest.fail(event.error.message)
 
 
 def test_divide():

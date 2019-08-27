@@ -990,7 +990,9 @@ def test_propagate():
 
 def test_fly():
     """Run identify on the fly image"""
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/identifyprimaryobjects/fly.pipeline", "r"
+    ) as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -1109,7 +1111,9 @@ def test_maxima_suppression_zero():
 def test_load_v10():
     # Sorry about this overly-long pipeline, it seemed like we need to
     # revisit many of the choices.
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/identifyprimaryobjects/v10.pipeline", "r"
+    ) as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -1278,7 +1282,10 @@ def test_01_load_new_robust_background():
     #
     # Test custom robust background parameters.
     #
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/identifyprimaryobjects/robust_background.pipeline",
+        "r",
+    ) as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()

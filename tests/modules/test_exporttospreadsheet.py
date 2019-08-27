@@ -42,7 +42,7 @@ OBJ_MEAS = "my_object_measurement"
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v3.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -73,7 +73,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v4.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -112,7 +112,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v5.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -172,7 +172,7 @@ def test_load_v5():
 
 
 def test_load_v6():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v6.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -259,7 +259,7 @@ def test_load_v6():
 
 
 def test_load_v8():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v8.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -291,7 +291,7 @@ def test_load_v8():
 
 
 def test_load_v9():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v9.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -325,7 +325,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v10.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -360,7 +360,7 @@ def test_load_v10():
 
 
 def test_load_v11():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttospreadsheet/v11.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

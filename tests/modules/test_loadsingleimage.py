@@ -41,7 +41,7 @@ class TestLoadSingleImage(
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
     def test_load_v1():
-        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        with open("./tests/resources/modules/loadsingleimage/v1.pipeline", "r") as fd:
             data = fd.read()
 
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -76,7 +76,7 @@ class TestLoadSingleImage(
         assert fs.image_name == "Cytoplasm"
 
     def test_load_v2():
-        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        with open("./tests/resources/modules/loadsingleimage/v2.pipeline", "r") as fd:
             data = fd.read()
 
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -118,7 +118,7 @@ class TestLoadSingleImage(
             assert module.directory.dir_choice == dir_choice[i]
 
     def test_load_v3():
-        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        with open("./tests/resources/modules/loadsingleimage/v3.pipeline", "r") as fd:
             data = fd.read()
 
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -142,7 +142,7 @@ class TestLoadSingleImage(
         assert fs.rescale
 
     def test_load_v4():
-        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        with open("./tests/resources/modules/loadsingleimage/v4.pipeline", "r") as fd:
             data = fd.read()
 
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -168,7 +168,7 @@ class TestLoadSingleImage(
         assert fs.rescale
 
     def test_load_v5():
-        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        with open("./tests/resources/modules/loadsingleimage/v5.pipeline", "r") as fd:
             data = fd.read()
 
         pipeline = cellprofiler.pipeline.Pipeline()

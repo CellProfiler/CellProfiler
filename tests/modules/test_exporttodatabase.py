@@ -195,7 +195,7 @@ def test_00_write_load_test():
 
 
 def test_load_v11():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v11.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -216,7 +216,7 @@ def test_load_v11():
 
 
 def test_load_v12():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v12.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -238,7 +238,7 @@ def test_load_v12():
 
 
 def test_load_v13():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v13.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -260,7 +260,7 @@ def test_load_v13():
 
 
 def test_load_v15():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v15.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -298,7 +298,7 @@ def test_load_v15():
 
 
 def test_load_v22():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v22.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -399,7 +399,7 @@ def test_load_v22():
 
 
 def test_load_v23():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v23.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -502,7 +502,7 @@ def test_load_v23():
 
 
 def test_load_v24():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v24.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -606,7 +606,7 @@ def test_load_v24():
 
 
 def test_load_v25():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/v25.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -711,7 +711,7 @@ def test_load_v25():
 
 
 def test_load_v26():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/load_v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -817,7 +817,7 @@ def test_load_v26():
 
 
 def test_load_v27():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/exporttodatabase/load_v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

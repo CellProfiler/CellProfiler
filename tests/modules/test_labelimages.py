@@ -9,7 +9,7 @@ import cellprofiler.workspace as cpw
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/labelimages/v1.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

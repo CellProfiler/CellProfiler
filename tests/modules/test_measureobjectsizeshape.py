@@ -43,7 +43,9 @@ def make_workspace(labels):
 
 
 def test_01_load_v1():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/measureobjectsizeshape/v1.pipeline", "r"
+    ) as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()

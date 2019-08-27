@@ -233,7 +233,7 @@ def test_load_split():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/colortogray/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/colortogray/v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -281,7 +281,7 @@ def test_load_v3():
     Thus it can be easily checked via the new image name, if the channel
     number is correctly parsed.
     """
-    with open("./tests/resources/modules/colortogray/load_v3.pipeline", "r") as fd:
+    with open("./tests/resources/modules/colortogray/v3.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()

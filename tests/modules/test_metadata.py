@@ -15,7 +15,7 @@ OME_XML = open(
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/metadata/v1.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -58,7 +58,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/metadata/v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -101,7 +101,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/metadata/v3.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -145,7 +145,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/metadata/v4.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -198,7 +198,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/metadata/v5.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()

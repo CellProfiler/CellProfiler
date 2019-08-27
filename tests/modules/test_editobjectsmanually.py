@@ -13,7 +13,7 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/editobjectsmanually/v1.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -33,7 +33,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/editobjectsmanually/v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -55,7 +55,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/editobjectsmanually/v3.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -77,7 +77,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/editobjectsmanually/v4.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

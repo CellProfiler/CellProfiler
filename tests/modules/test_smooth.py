@@ -65,7 +65,7 @@ def test_load_v01():
 
 
 def test_load_v02():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/smooth/v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

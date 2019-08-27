@@ -603,7 +603,7 @@ def check_error(caller, event):
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/measureimagequality/v3.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -648,7 +648,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/measureimagequality/v4.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()

@@ -16,7 +16,7 @@ OUTLINE_NAME = "outlines"
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/splitormergeobjects/v5.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -42,7 +42,7 @@ def test_load_v5():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/splitormergeobjects/v4.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

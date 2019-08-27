@@ -204,7 +204,9 @@ def test_image_volume():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/measureimageareaoccupied/v3.pipeline", "r"
+    ) as fd:
         data = fd.read()
 
     def callback(caller, event):

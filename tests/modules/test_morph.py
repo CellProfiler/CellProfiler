@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/morph/v2.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()
@@ -55,7 +55,9 @@ def test_load_v2():
 
 # https://github.com/CellProfiler/CellProfiler/issues/3349
 def test_load_with_extracted_operations():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/morph/extracted_operations.pipeline", "r"
+    ) as fd:
         data = fd.read()
 
     def callback(caller, event):

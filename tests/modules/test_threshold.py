@@ -55,7 +55,7 @@ def test_write_a_test_for_the_new_variable_revision_please():
 
 
 def test_load_v7():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/threshold/v7.pipeline", "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)
@@ -82,7 +82,7 @@ def test_load_v7():
 
 
 def test_load_v8():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/threshold/v8.pipeline", "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)
@@ -109,7 +109,7 @@ def test_load_v8():
 
 
 def test_load_v9():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/threshold/v9.pipeline", "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)
@@ -148,7 +148,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/threshold/v10.pipeline", "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)

@@ -44,7 +44,9 @@ def make_workspace(labels, mode, distance=0, neighbors_labels=None):
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open(
+        "./tests/resources/modules/measureobjectneighbors/v2.pipeline", "r"
+    ) as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

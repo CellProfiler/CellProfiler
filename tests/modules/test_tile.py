@@ -17,7 +17,7 @@ def input_image_name(index):
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/tile/v1.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cpp.Pipeline()

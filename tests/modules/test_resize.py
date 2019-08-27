@@ -59,7 +59,7 @@ def test_load_v1():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+    with open("./tests/resources/modules/resize/v3.pipeline", "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler.pipeline.Pipeline()

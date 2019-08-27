@@ -951,7 +951,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     traceback.print_exc()
 
     def get_example_pipeline_data():
-        with open("./tests/resources/modules/align/load_v2.pipeline", "r") as fd:
+        with open("./tests/resources/modules/loadimages/example.pipeline", "r") as fd:
             data = fd.read()
 
         return data

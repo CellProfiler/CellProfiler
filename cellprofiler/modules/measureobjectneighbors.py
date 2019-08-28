@@ -437,45 +437,39 @@ available colormaps can be seen `here`_.
             # away
             if dimensions == 2:
                 i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-                (min_i, max_i), (min_i_pos, max_i_pos) = scind.extrema(
-                    i, labels, object_indexes
-                )
-                (min_j, max_j), (min_j_pos, max_j_pos) = scind.extrema(
-                    j, labels, object_indexes
-                )
-                min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
-                max_i = np.minimum(fix(max_i) + distance + 1, labels.shape[0]).astype(
-                    int
-                )
-                min_j = np.maximum(fix(min_j) - distance, 0).astype(int)
-                max_j = np.minimum(fix(max_j) + distance + 1, labels.shape[1]).astype(
-                    int
-                )
+
+                minimums_i, maximums_i, _, _ = scind.extrema(i, labels, object_indexes)
+                minimums_j, maximums_j, _, _ = scind.extrema(j, labels, object_indexes)
+
+                minimums_i = np.maximum(fix(minimums_i) - distance, 0).astype(int)
+                maximums_i = np.minimum(
+                    fix(maximums_i) + distance + 1, labels.shape[0]
+                ).astype(int)
+                minimums_j = np.maximum(fix(minimums_j) - distance, 0).astype(int)
+                maximums_j = np.minimum(
+                    fix(maximums_j) + distance + 1, labels.shape[1]
+                ).astype(int)
             else:
                 k, i, j = np.mgrid[
                     0 : labels.shape[0], 0 : labels.shape[1], 0 : labels.shape[2]
                 ]
-                (min_k, max_k), (min_k_pos, max_k_pos) = scind.extrema(
-                    k, labels, object_indexes
-                )
-                (min_i, max_i), (min_i_pos, max_i_pos) = scind.extrema(
-                    i, labels, object_indexes
-                )
-                (min_j, max_j), (min_j_pos, max_j_pos) = scind.extrema(
-                    j, labels, object_indexes
-                )
-                min_k = np.maximum(fix(min_k) - distance, 0).astype(int)
-                max_k = np.minimum(fix(max_k) + distance + 1, labels.shape[0]).astype(
-                    int
-                )
-                min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
-                max_i = np.minimum(fix(max_i) + distance + 1, labels.shape[1]).astype(
-                    int
-                )
-                min_j = np.maximum(fix(min_j) - distance, 0).astype(int)
-                max_j = np.minimum(fix(max_j) + distance + 1, labels.shape[2]).astype(
-                    int
-                )
+
+                minimums_k, maximums_k, _, _ = scind.extrema(k, labels, object_indexes)
+                minimums_i, maximums_i, _, _ = scind.extrema(i, labels, object_indexes)
+                minimums_j, maximums_j, _, _ = scind.extrema(j, labels, object_indexes)
+
+                minimums_k = np.maximum(fix(minimums_k) - distance, 0).astype(int)
+                maximums_k = np.minimum(
+                    fix(maximums_k) + distance + 1, labels.shape[0]
+                ).astype(int)
+                minimums_i = np.maximum(fix(minimums_i) - distance, 0).astype(int)
+                maximums_i = np.minimum(
+                    fix(maximums_i) + distance + 1, labels.shape[1]
+                ).astype(int)
+                minimums_j = np.maximum(fix(minimums_j) - distance, 0).astype(int)
+                maximums_j = np.minimum(
+                    fix(maximums_j) + distance + 1, labels.shape[2]
+                ).astype(int)
             #
             # Loop over all objects
             # Calculate which ones overlap "index"
@@ -491,21 +485,23 @@ available colormaps can be seen `here`_.
                 index = object_number - 1
                 if dimensions == 2:
                     patch = labels[
-                        min_i[index] : max_i[index], min_j[index] : max_j[index]
+                        minimums_i[index] : maximums_i[index],
+                        minimums_j[index] : maximums_j[index],
                     ]
                     npatch = neighbor_labels[
-                        min_i[index] : max_i[index], min_j[index] : max_j[index]
+                        minimums_i[index] : maximums_i[index],
+                        minimums_j[index] : maximums_j[index],
                     ]
                 else:
                     patch = labels[
-                        min_k[index] : max_k[index],
-                        min_i[index] : max_i[index],
-                        min_j[index] : max_j[index],
+                        minimums_k[index] : maximums_k[index],
+                        minimums_i[index] : maximums_i[index],
+                        minimums_j[index] : maximums_j[index],
                     ]
                     npatch = neighbor_labels[
-                        min_k[index] : max_k[index],
-                        min_i[index] : max_i[index],
-                        min_j[index] : max_j[index],
+                        minimums_k[index] : maximums_k[index],
+                        minimums_i[index] : maximums_i[index],
+                        minimums_j[index] : maximums_j[index],
                     ]
 
                 #
@@ -532,16 +528,17 @@ available colormaps can be seen `here`_.
                     if dimensions == 2:
                         outline_patch = (
                             perimeter_outlines[
-                                min_i[index] : max_i[index], min_j[index] : max_j[index]
+                                minimums_i[index] : maximums_i[index],
+                                minimums_j[index] : maximums_j[index],
                             ]
                             == object_number
                         )
                     else:
                         outline_patch = (
                             perimeter_outlines[
-                                min_k[index] : max_k[index],
-                                min_i[index] : max_i[index],
-                                min_j[index] : max_j[index],
+                                minimums_k[index] : maximums_k[index],
+                                minimums_i[index] : maximums_i[index],
+                                minimums_j[index] : maximums_j[index],
                             ]
                             == object_number
                         )

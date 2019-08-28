@@ -10,8 +10,10 @@ import cellprofiler.measurement
 import cellprofiler.modules.measureobjectskeleton
 import cellprofiler.object
 import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
+
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"
@@ -20,8 +22,7 @@ EDGE_FILE = "my_edges.csv"
 VERTEX_FILE = "my_vertices.csv"
 
 
-def setUp():
-    temp_dir = tempfile.mkdtemp()
+temp_dir = tempfile.mkdtemp()
 
 
 def tearDown():
@@ -517,101 +518,3 @@ def test_graph():
             assert ve[1] == vertex_graph["j"][v - 1]
         assert length == ee["length"]
         assert round(abs(total_intensity - ee["total_intensity"]), 4) == 0
-
-
-def test_four_branches():
-    """Test four branchpoints touching the same edge
-
-    This exercises quite a bit of corner-case code. The permutation
-    code kicks in when more than one branchpoint touches an edge's end.
-    The "best edge wins" code kicks in when a branch touches another branch.
-    """
-    skel = numpy.array(
-        (
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-            (0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0),
-            (0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
-            (0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0),
-            (0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
-            (0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0),
-            (0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0),
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-        ),
-        bool,
-    )
-
-    poi = numpy.array(
-        (
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-            (0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0),
-            (0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0),
-            (0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0),
-            (0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0),
-            (0, 0, -3, 0, -4, 0, 0, 0, 0, -5, 0, -6, 0, 0),
-            (0, 8, 0, 0, 0, 9, 0, 0, 10, 0, 0, 0, 11, 0),
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-        ),
-        int,
-    )
-
-    numpy.random.seed(32)
-    image = numpy.random.uniform(size=skel.shape)
-    labels = numpy.zeros(skel.shape, int)
-    labels[-2:, -2:] = 1  # attach the object to the lower left corner
-
-    expected_edges = (
-        (2, 3, 2, -10),
-        (2, 4, 8, 1),
-        (2, 5, 8, 1),
-        (2, 6, 3, -1),
-        (3, 4, 8, 1),
-        (3, 5, 8, 1),
-        (3, 8, 3, -3),
-        (3, 9, 3, -4),
-        (4, 5, 2, -10),
-        (4, 7, 3, -2),
-        (5, 10, 3, -5),
-    )
-    workspace, module = make_workspace(
-        labels, skel, intensity_image=image, wants_graph=True
-    )
-    module.prepare_run(workspace)
-    module.run(workspace)
-    vertex_graph = read_graph_file(VERTEX_FILE)
-    edge_graph = read_graph_file(EDGE_FILE)
-
-    vertex_number = numpy.zeros(len(numpy.unique(poi[poi >= 1])), int)
-    for v in vertex_graph:
-        p = poi[v["i"], v["j"]]
-        if p > 1:
-            vertex_number[p - 2] = v["vertex_number"]
-    poi_number = numpy.zeros(len(vertex_graph) + 1, int)
-    poi_number[vertex_number] = numpy.arange(2, len(vertex_number) + 2)
-
-    found_edges = [False] * len(expected_edges)
-    off = -numpy.min([x[3] for x in expected_edges])
-    for e in edge_graph:
-        v1 = e["v1"]
-        v2 = e["v2"]
-        length = e["length"]
-        total_intensity = e["total_intensity"]
-        poi1 = poi_number[v1]
-        poi2 = poi_number[v2]
-        if poi1 == 0 or poi2 == 0:
-            continue
-        if poi1 > poi2:
-            poi2, poi1 = (poi1, poi2)
-        ee = [
-            (i, p1, p2, l, mid)
-            for i, (p1, p2, l, mid) in enumerate(expected_edges)
-            if p1 == poi1 and p2 == poi2
-        ]
-        assert len(ee) == 1
-        i, p1, p2, l, mid = ee[0]
-        assert l == length
-        active_poi = numpy.zeros(numpy.max(poi) + off + 1, bool)
-        active_poi[numpy.array([poi1, poi2, mid]) + off] = True
-        expected_intensity = numpy.sum(image[active_poi[poi + off]])
-        assert round(abs(expected_intensity - total_intensity), 4) == 0
-        found_edges[i] = True
-    assert all(found_edges)

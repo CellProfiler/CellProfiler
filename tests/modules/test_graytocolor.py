@@ -96,49 +96,6 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
     return workspace, module
 
 
-def test_load_v2():
-    data = (
-        "eJztWUFv2jAUdmiK1k2b2Gm7VPNxmtoooZrUcRlQtg6p0KqgnucSQy2FGBmn"
-        "a/cL9hP2M3vccXGWkOABAVPaghJkJc953/v8nr8EjBuV9kmlCj8aJmxU2vtd"
-        "4mB45iDepaxfgi7fg0cMI45tSN0SbHsY1nAHmha0zFLxoGQdwqJpfgJqh1Zv"
-        "vPJPv98BkPfPz/yWC29th7aWaMJuYc6J2xtuAx28Dfvv/HaBGEGXDr5AjoeH"
-        "MUXUX3e7tH07GN1qUNtzcBP1k87+0fT6l5gNT7sRMLx9Rm6w0yI/sZRC5HaO"
-        "r8mQUDfEh/Hl3hEv5RJv64r++Mr84Ujxq4h3rlrcn4Hx/qBuL+O6aVLdRB13"
-        "E/3C/xuI/fUJdX6d8C+ENnFtck1sDzmQ9FFvNGoRz0yJtzUWbwucH1cDXDkF"
-        "V5DGIVob3/D9Lzeow2FflETEOUyJk5fiCPuUkZ5tzjd+bQyvgYMwb2XeIpgr"
-        "/+cSXtg1Cl3KoTfEcf2Vx2HNl39uDJ8DTao+/iPqUFYXCorHn6bHN1IcYddw"
-        "F3kOh0EoWCMMdzhlt0rzaQE1HRiKuHn5ptX9qfHpYzjdx7n4sfnyEi46ItxO"
-        "eF6GT+W5s02Dk+7D8y7zvov0s+p8VXWrqr9N4ltE70rzaE2ex1XzTvueWod8"
-        "1+U9ti58SvNYfETdFh9Bt/eQ76br6KH5fi24PruPvB4CVwaz6zjp93+weOwx"
-        "6g0y/lXzT1o/x/zQX9LjwTrpbdNxZfC09ZTxz8efFid7LjPcU8KVQabXDLc+"
-        "uDLI9Jrh1HF/Ejh5PSbs5P/Swv87mK23D2Bcb8LuYMcZMCr2UZnRDzb7hoZD"
-        "kf1v98w48S/riY20eXj2JJ69aTw9hm457YitFuPYv27TYNtlUt12JvAk88/5"
-        "n93C7HrLdY7rf/dZhU/P/c/3IgWnhxUL1ttgsfl9P8M/ym0Z/0Xz17Tl84h5"
-        "9NGYAIj31Rf1/wuo8TuS"
-    )
-    pipeline = cellprofiler.pipeline.Pipeline()
-
-    def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-
-    pipeline.add_listener(callback)
-    pipeline.load(six.moves.StringIO(zlib.decompress(base64.b64decode(data))))
-    assert len(pipeline.modules()) == 2
-    module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.graytocolor.GrayToColor)
-    assert module.scheme_choice == cellprofiler.modules.graytocolor.SCHEME_RGB
-    assert module.red_image_name == "Origd0"
-    assert module.green_image_name == "Origd2"
-    assert module.blue_image_name == "Origd1"
-    assert module.rgb_image_name == "ColorImage"
-    for adjustment_factor in (
-        module.red_adjustment_factor,
-        module.green_adjustment_factor,
-        module.blue_adjustment_factor,
-    ):
-        assert adjustment_factor.value == 1
-
-
 def test_load_v3():
     with open("./tests/resources/modules/graytocolor/v3.pipeline", "r") as fd:
         data = fd.read()
@@ -162,13 +119,13 @@ def test_load_v3():
     assert module.magenta_image_name == "5"
     assert module.yellow_image_name == "6"
     assert module.gray_image_name == "7"
-    assert round(abs(module.red_adjustment_factor - 2.1), 7) == 0
-    assert round(abs(module.green_adjustment_factor - 2.2), 7) == 0
-    assert round(abs(module.blue_adjustment_factor - 2.3), 7) == 0
-    assert round(abs(module.cyan_adjustment_factor - 1.1), 7) == 0
-    assert round(abs(module.magenta_adjustment_factor - 1.2), 7) == 0
-    assert round(abs(module.yellow_adjustment_factor - 1.3), 7) == 0
-    assert round(abs(module.gray_adjustment_factor - 1.4), 7) == 0
+    assert numpy.round(numpy.abs(module.red_adjustment_factor.value - 2.1), 7) == 0
+    assert numpy.round(numpy.abs(module.green_adjustment_factor.value - 2.2), 7) == 0
+    assert numpy.round(numpy.abs(module.blue_adjustment_factor.value - 2.3), 7) == 0
+    assert numpy.round(numpy.abs(module.cyan_adjustment_factor.value - 1.1), 7) == 0
+    assert numpy.round(numpy.abs(module.magenta_adjustment_factor.value - 1.2), 7) == 0
+    assert numpy.round(numpy.abs(module.yellow_adjustment_factor.value - 1.3), 7) == 0
+    assert numpy.round(numpy.abs(module.gray_adjustment_factor.value - 1.4), 7) == 0
     assert len(module.stack_channels) == 2
     assert module.stack_channels[0].image_name == "DNA"
     assert module.stack_channels[1].image_name == "GFP"

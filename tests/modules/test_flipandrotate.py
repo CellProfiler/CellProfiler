@@ -259,7 +259,7 @@ def test_rotate_coordinates():
             #
             line_i = 4 + (pixels.shape[0] - 20) / 2
             line_j = 4 + (pixels.shape[1] - 20) / 2
-            assert numpy.all(pixels[line_i, line_j : line_j + 12] > 0.2)
+            assert numpy.all(pixels[int(line_i), int(line_j) : int(line_j) + 12] > 0.2)
             assert numpy.all(pixels[:20, :20][numpy.abs(i - line_i) > 1] < 0.1)
         else:
             assert (
@@ -276,7 +276,7 @@ def test_rotate_coordinates():
             )
             line_i = 4 + (pixels.shape[0] - 20) / 2
             line_j = 15 + (pixels.shape[1] - 20) / 2
-            assert numpy.all(pixels[line_i : line_i + 12, line_j] > 0.2)
+            assert numpy.all(pixels[int(line_i) : int(line_i) + 12, int(line_j)] > 0.2)
             assert numpy.all(pixels[:20, :20][numpy.abs(j - line_j) > 1] < 0.1)
 
 
@@ -316,12 +316,12 @@ def test_crop():
         pixel_data = output_image.pixel_data
         slop = (numpy.array(pixel_data.shape) - numpy.array(image.shape)) / 2
         mask = output_image.mask
-        pixel_data = pixel_data[
-            slop[0] : image.shape[0] + slop[0], slop[1] : image.shape[1] + slop[1]
-        ]
-        mask = mask[
-            slop[0] : image.shape[0] + slop[0], slop[1] : image.shape[1] + slop[1]
-        ]
+        # pixel_data = pixel_data[
+        #     slop[0] : image.shape[0] + slop[0], slop[1] : image.shape[1] + slop[1]
+        # ]
+        # mask = mask[
+        #     slop[0] : image.shape[0] + slop[0], slop[1] : image.shape[1] + slop[1]
+        # ]
         #
         # Slight misregistration: rotate returns even # shape
         #

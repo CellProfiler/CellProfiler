@@ -1156,10 +1156,10 @@ def test_load_v10():
     assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_ADAPTIVE
     assert module.threshold.local_operation.value == centrosome.threshold.TM_OTSU
     assert module.threshold.threshold_smoothing_scale == 1.3488
-    assert round(abs(module.threshold.threshold_correction_factor - 0.80), 7) == 0
+    assert round(abs(module.threshold.threshold_correction_factor.value - 0.80), 7) == 0
     assert round(abs(module.threshold.threshold_range.min - 0.01), 7) == 0
     assert round(abs(module.threshold.threshold_range.max - 0.90), 7) == 0
-    assert round(abs(module.threshold.manual_threshold - 0.03), 7) == 0
+    assert round(abs(module.threshold.manual_threshold.value - 0.03), 7) == 0
     assert module.threshold.thresholding_measurement == "Metadata_Threshold"
     assert module.threshold.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
     assert (
@@ -1465,89 +1465,6 @@ def test_discard_small():
     )
     assert isinstance(location_center_x, numpy.ndarray)
     assert numpy.product(location_center_x.shape) == 1
-
-
-def test_discard_edge():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-    x.y_name.value = "my_object"
-    x.x_name.value = "my_image"
-    x.exclude_size.value = False
-    x.size_range.min = 10
-    x.size_range.max = 40
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
-    x.threshold.manual_threshold.value = 0.3
-    img = numpy.zeros((100, 100))
-    centers = [(50, 50), (10, 50), (50, 10), (90, 50), (50, 90)]
-    present = [True, False, False, False, False]
-    for center in centers:
-        draw_circle(img, center, 15, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
-    image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
-    )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
-    x.run(
-        cellprofiler.workspace.Workspace(
-            pipeline, x, image_set, object_set, measurements, None
-        )
-    )
-    objects = object_set.get_objects("my_object")
-    for center, p in zip(centers, present):
-        if p:
-            assert objects.segmented[center[0], center[1]] > 0
-            assert objects.small_removed_segmented[center[0], center[1]] > 0
-        else:
-            assert objects.segmented[center[0], center[1]] == 0
-            assert objects.small_removed_segmented[center[0], center[1]] == 0
-        assert objects.unedited_segmented[center[0], center[1]] > 0
-
-
-def test_discard_with_mask():
-    """Check discard of objects that are on the border of a mask"""
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-    x.y_name.value = "my_object"
-    x.x_name.value = "my_image"
-    x.exclude_size.value = False
-    x.size_range.min = 10
-    x.size_range.max = 40
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
-    x.threshold.manual_threshold.value = 0.3
-    img = numpy.zeros((200, 200))
-    centers = [(100, 100), (30, 100), (100, 30), (170, 100), (100, 170)]
-    present = [True, False, False, False, False]
-    for center in centers:
-        draw_circle(img, center, 15, 0.5)
-    mask = numpy.zeros((200, 200))
-    mask[25:175, 25:175] = 1
-    image = cellprofiler.image.Image(img, mask)
-    image_set_list = cellprofiler.image.ImageSetList()
-    image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
-    )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
-    x.run(
-        cellprofiler.workspace.Workspace(
-            pipeline, x, image_set, object_set, measurements, None
-        )
-    )
-    objects = object_set.get_objects("my_object")
-    for center, p in zip(centers, present):
-        if p:
-            assert objects.segmented[center[0], center[1]] > 0
-            assert objects.small_removed_segmented[center[0], center[1]] > 0
-        else:
-            assert objects.segmented[center[0], center[1]] == 0
-            assert objects.small_removed_segmented[center[0], center[1]] == 0
-        assert objects.unedited_segmented[center[0], center[1]] > 0
 
 
 def test_regression_diagonal():
@@ -2265,51 +2182,3 @@ def test_020_all_zero():
         numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
     )
     assert round(abs(output - 0), 7) == 0
-
-
-def test_03_fg_bg_equal():
-    img = numpy.ones((128, 128))
-    img[0:64, :] *= 0.15
-    img[64:128, :] *= 0.85
-    img[0, 0] = img[-1, 0] = 0
-    img[0, -1] = img[-1, -1] = 1
-    binary_mask = numpy.zeros(img.shape, bool)
-    binary_mask[64:, :] = True
-    #
-    # You need one foreground and one background pixel to defeat a
-    # divide-by-zero (that's appropriately handled)
-    #
-    one_of_each = numpy.zeros(img.shape, bool)
-    one_of_each[0, 0] = one_of_each[-1, -1] = True
-    output = centrosome.threshold.sum_of_entropies(
-        img, numpy.ones((128, 128), bool), binary_mask
-    )
-    ob = centrosome.threshold.sum_of_entropies(
-        img, one_of_each | ~binary_mask, binary_mask
-    )
-    of = centrosome.threshold.sum_of_entropies(
-        img, one_of_each | binary_mask, binary_mask
-    )
-    assert round(abs(output - ob + of), 7) == 0
-
-
-def test_04_fg_bg_different():
-    img = numpy.ones((128, 128))
-    img[0:64, 0:64] *= 0.15
-    img[0:64, 64:128] *= 0.3
-    img[64:128, 0:64] *= 0.7
-    img[64:128, 64:128] *= 0.85
-    binary_mask = numpy.zeros(img.shape, bool)
-    binary_mask[64:, :] = True
-    one_of_each = numpy.zeros(img.shape, bool)
-    one_of_each[0, 0] = one_of_each[-1, -1] = True
-    output = centrosome.threshold.sum_of_entropies(
-        img, numpy.ones((128, 128), bool), binary_mask
-    )
-    ob = centrosome.threshold.sum_of_entropies(
-        img, one_of_each | ~binary_mask, binary_mask
-    )
-    of = centrosome.threshold.sum_of_entropies(
-        img, one_of_each | binary_mask, binary_mask
-    )
-    assert round(abs(output - ob + of), 7) == 0

@@ -1097,7 +1097,7 @@ def test_two_circles():
     i, j = [numpy.hstack((x, x)) for x in (i, j)]
     d = numpy.sqrt(i * i + j * j)
     labels = (d <= 40).astype(int)
-    labels[:, (j.shape[1] / 2) :] *= 2
+    labels[:, (j.shape[1] // 2) :] *= 2
     img = numpy.zeros(labels.shape)
     img[labels == 1] = 1
     img[labels == 2] = d[labels == 2] / 40

@@ -225,7 +225,7 @@ class TestBinaryImages(object):
     @staticmethod
     def test_divide(image_a, image_b, module, workspace):
         operation = "Divide"
-        expected = numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+        expected = image_a.pixel_data / image_b.pixel_data
         run_operation(operation, expected, module, workspace)
 
     @staticmethod

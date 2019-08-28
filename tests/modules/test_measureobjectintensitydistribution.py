@@ -965,7 +965,7 @@ def test_02_half_circle_zernike():
         zernike_degree=1,
     )
     phase_j_1_1 = m[OBJECT_NAME, ftr][0]
-    assert round(abs(abs(phase_i_1_1 - phase_j_1_1) - numpy.pi / 2), 0.1) == 0
+    assert numpy.abs(numpy.abs(phase_i_1_1 - phase_j_1_1) - numpy.pi / 2) == 0
 
 
 def test_line():

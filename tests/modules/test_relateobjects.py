@@ -35,8 +35,11 @@ class TestRelateObjects(unittest.TestCase):
             pipeline.add_module(module)
         module = cellprofiler.modules.relateobjects.Relate()
         module.x_name.value = PARENT_OBJECTS
-        module.x_child_name.value = CHILD_OBJECTS
-        module.find_parent_child_distances.value = cellprofiler.modules.relateobjects.D_NONE
+        module.y_name.value = CHILD_OBJECTS
+        module.find_parent_child_distances.value = (
+            cellprofiler.modules.relateobjects.D_NONE
+        )
+        module.wants_child_objects_saved.value = False
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)
         object_set = cellprofiler.object.ObjectSet()
@@ -70,13 +73,24 @@ class TestRelateObjects(unittest.TestCase):
         module = workspace.module
         pipeline = workspace.pipeline
         measurements = workspace.measurements
-        object_names = [x for x in measurements.get_object_names()
-                        if x != cellprofiler.measurement.IMAGE]
-        features = [[feature
-                     for feature in measurements.get_feature_names(object_name)
-                     if feature not in (MEASUREMENT, IGNORED_MEASUREMENT)]
-                    for object_name in object_names]
-        columns = module.get_measurement_columns(pipeline)
+        object_names = [
+            x
+            for x in measurements.get_object_names()
+            if x != cellprofiler.measurement.IMAGE
+        ]
+        features = [
+            [
+                feature
+                for feature in measurements.get_feature_names(object_name)
+                if feature not in (MEASUREMENT, IGNORED_MEASUREMENT)
+            ]
+            for object_name in object_names
+        ]
+        columns = [
+            x 
+            for x in module.get_measurement_columns(pipeline)
+            if x[0] != cellprofiler.measurement.IMAGE
+        ]
         self.assertEqual(sum([len(f) for f in features]), len(columns))
         for column in columns:
             index = object_names.index(column[0])
@@ -432,3 +446,25 @@ class TestRelateObjects(unittest.TestCase):
         )
 
         numpy.testing.assert_array_equal(actual, expected)
+
+     def test_relate_and_make_new_objects(self):
+        '''Relate one parent to one child, but save children as a new set'''
+        parent_labels = numpy.ones((10, 10), int)
+        child_labels = numpy.zeros((10, 10), int)
+        child_labels[3:5, 4:7] = 1
+        workspace, module = self.make_workspace(parent_labels, child_labels)
+        module.wants_child_objects_saved.value = True
+        module.output_child_objects_name.value = 'outputobjects'
+        module.wants_per_parent_means.value = False
+        module.run(workspace)
+        m = workspace.measurements
+        parents_of = m.get_current_measurement(CHILD_OBJECTS,
+                                               "Parent_%s" % PARENT_OBJECTS)
+        self.assertEqual(numpy.product(parents_of.shape), 1)
+        self.assertEqual(parents_of[0], 1)
+        child_count = m.get_current_measurement(PARENT_OBJECTS,
+                                                "Children_%s_Count" %
+                                                CHILD_OBJECTS)
+        self.assertEqual(numpy.product(child_count.shape), 1)
+        self.assertEqual(child_count[0], 1)
+        self.features_and_columns_match(workspace)

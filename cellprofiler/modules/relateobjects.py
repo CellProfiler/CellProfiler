@@ -830,19 +830,16 @@ parents or children of the parent object.""",
 
     def get_saved_child_measurement_columns(self, pipeline):
         """Return measurements for saved child objects"""
+        columns_to_return = []
         if self.wants_child_objects_saved:
             columns = super(RelateObjects, self).get_measurement_columns(
-                pipeline,additional_objects=[(self.y_name.value, self.output_child_objects_name.value)])
+                pipeline,
+                additional_objects=[(self.y_name.value, self.output_child_objects_name.value)])
             columns_to_return = []
-            for eachcolumn in columns:
-                if eachcolumn[0] == self.output_child_objects_name.value:
-                    columns_to_return.append(eachcolumn)
-                elif self.output_child_objects_name.value in eachcolumn[1]:
-                    columns_to_return.append(eachcolumn)
-            return columns_to_return
-        else:
-            return []
-   
+            for column in columns:
+                if column[0] == self.output_child_objects_name.value or self.output_child_objects_name.value in column[1]:
+                    columns_to_return.append(column)
+        return columns_to_return
    
     def get_measurement_columns(self, pipeline):
         """Return the column definitions for this module's measurements"""

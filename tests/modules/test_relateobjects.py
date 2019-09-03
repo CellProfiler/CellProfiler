@@ -447,7 +447,7 @@ class TestRelateObjects(unittest.TestCase):
 
         numpy.testing.assert_array_equal(actual, expected)
 
-     def test_relate_and_make_new_objects(self):
+    def test_relate_and_make_new_objects(self):
         '''Relate one parent to one child, but save children as a new set'''
         parent_labels = numpy.ones((10, 10), int)
         child_labels = numpy.zeros((10, 10), int)

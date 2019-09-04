@@ -3,8 +3,8 @@ jobs:
   ubuntu-build-and-test:
     docker:
       - image: circleci/python:2.7
-      - image: circleci/mysql:5.6
       - image: circleci/openjdk:8
+      - image: circleci/mysql:5.6
         command: [--default-authentication-plugin=mysql_native_password]
         environment:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes

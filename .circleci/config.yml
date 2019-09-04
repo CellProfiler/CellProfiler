@@ -3,7 +3,7 @@ jobs:
   ubuntu-build-and-test:
     docker:
       - image: circleci/python:2.7
-      - image: circleci/openjdk:8
+      - image: circleci/openjdk:8u181-jdk
       - image: circleci/mysql:5.6
         command: [--default-authentication-plugin=mysql_native_password]
         environment:

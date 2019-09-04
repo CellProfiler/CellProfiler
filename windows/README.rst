@@ -1,6 +1,7 @@
 Make sure build machine has pywin32 and InnoSetup installed
 
 To Run:
+
 * clone CellProfiler at correct version into the `windows` directory
 * run `pyinstaller CellProfiler.spec` 
 

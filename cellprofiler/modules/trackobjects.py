@@ -2085,7 +2085,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         merge_off = gap_end
         if len(P1) > 0:
             # Do the initial winnowing in chunks of 10m pairs
-            lchunk_size = 10000000 / len(P1)
+            lchunk_size = 10000000 // len(P1)
             chunks = []
             for lstart in range(0, len(L), lchunk_size):
                 lend = min(len(L), lstart + lchunk_size)
@@ -2153,7 +2153,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         split_off = merge_end
         if len(P2) > 0:
-            lchunk_size = 10000000 / len(P2)
+            lchunk_size = 10000000 // len(P2)
             chunks = []
             for fstart in range(0, len(L), lchunk_size):
                 fend = min(len(L), fstart + lchunk_size)

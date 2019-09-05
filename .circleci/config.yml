@@ -20,6 +20,7 @@ jobs:
       - run: sudo -H pip install --progress-bar off cython numpy
       - run: git clone https://github.com/LeeKamentsky/python-javabridge.git && cd python-javabridge && sudo pip install -e .
       - run: sudo -H pip install --progress-bar off .[test]
+      - run: pip freeze
       - run: py.test
 workflows:
   version: 2

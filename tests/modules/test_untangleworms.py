@@ -1,26 +1,23 @@
-"""test_untangleworms.py - test the UntangleWorms module"""
-
-import io
 import base64
-import bioformats
+import io
 import os
 import tempfile
-import unittest
 import zlib
-import PIL.Image
-import numpy as np
-from centrosome.outline import outline
-from matplotlib.image import pil_to_array
-from scipy.ndimage import binary_dilation
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.untangleworms as U
-import cellprofiler.object as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
 
-U.CAROLINAS_HACK = False
+import bioformats
+import centrosome.outline
+import numpy
+import scipy.ndimage
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.untangleworms
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.workspace
+
+cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
 IMAGE_NAME = "myimage"
 OVERLAP_OBJECTS_NAME = "overlapobjects"
@@ -261,3543 +258,1905 @@ PARAMS = (
     "HXiW/wDc+AeK"
 )
 
+handle, path = tempfile.mkstemp(suffix=".png")
+fd = os.fdopen(handle, "wb")
+fd.write(zlib.decompress(base64.b64decode(A02_binary)))
+fd.close()
 
-class TestUntangleWorms(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        handle, path = tempfile.mkstemp(suffix=".png")
-        fd = os.fdopen(handle, "wb")
-        fd.write(zlib.decompress(base64.b64decode(A02_binary)))
-        fd.close()
+A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
 
-        cls.A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
 
-    def setUp(self):
-        self.filename = tempfile.mktemp(".mat")
+def test_load_v1():
+    with open("./tests/resources/modules/untangleworms/v1.pipeline", "r") as fd:
+        data = fd.read()
 
-    def tearDown(self):
-        if os.path.exists(self.filename):
-            os.remove(self.filename)
+    pipeline = cellprofiler.pipeline.Pipeline()
 
-    def test_01_01_load_v1(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10652
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
-UntangleWorms:[module_num:1|svn_version:\'10598\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Both
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:No
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Train
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
+    pipeline.add_listener(callback)
+    pipeline.load(io.StringIO(data))
+    assert len(pipeline.modules()) == 3
+    module = pipeline.modules()[0]
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    assert module.image_name == "BinaryWorms"
+    assert module.overlap == cellprofiler.modules.untangleworms.OO_BOTH
+    assert module.overlap_objects == "OverlappingWorms"
+    assert module.nonoverlapping_objects == "NonOverlappingWorms"
+    assert not module.wants_training_set_weights
+    assert module.override_overlap_weight.value == 3
+    assert module.override_leftover_weight.value == 5
+    assert module.mode == cellprofiler.modules.untangleworms.MODE_TRAIN
+    module = pipeline.modules()[1]
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    assert module.overlap == cellprofiler.modules.untangleworms.OO_WITH_OVERLAP
+    assert module.wants_training_set_weights
+    assert module.mode == cellprofiler.modules.untangleworms.MODE_UNTANGLE
+    module = pipeline.modules()[2]
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    assert module.overlap == cellprofiler.modules.untangleworms.OO_WITHOUT_OVERLAP
+    assert module.mode == cellprofiler.modules.untangleworms.MODE_UNTANGLE
+    assert module.complexity == cellprofiler.modules.untangleworms.C_ALL
+    assert module.custom_complexity == 400
 
-UntangleWorms:[module_num:2|svn_version:\'10598\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:With overlap
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:Yes
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
 
-UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Without overlap
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:Yes
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
-"""
-        pipeline = cpp.Pipeline()
+def test_load_v2():
+    with open("./tests/resources/modules/untangleworms/v2.pipeline", "r") as fd:
+        data = fd.read()
 
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+    pipeline = cellprofiler.pipeline.Pipeline()
 
-        pipeline.add_listener(callback)
-        pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.overlap, U.OO_BOTH)
-        self.assertEqual(module.overlap_objects, "OverlappingWorms")
-        self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
-        self.assertFalse(module.wants_training_set_weights)
-        self.assertEqual(module.override_overlap_weight.value, 3)
-        self.assertEqual(module.override_leftover_weight.value, 5)
-        self.assertEqual(module.mode, U.MODE_TRAIN)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        self.assertEqual(module.overlap, U.OO_WITH_OVERLAP)
-        self.assertTrue(module.wants_training_set_weights)
-        self.assertEqual(module.mode, U.MODE_UNTANGLE)
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        self.assertEqual(module.overlap, U.OO_WITHOUT_OVERLAP)
-        self.assertEqual(module.mode, U.MODE_UNTANGLE)
-        self.assertEqual(module.complexity, U.C_ALL)
-        self.assertEqual(module.custom_complexity, 400)
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
-    def test_01_01_load_v2(self):
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10652
+    pipeline.add_listener(callback)
+    pipeline.load(io.StringIO(data))
+    assert len(pipeline.modules()) == 5
+    module = pipeline.modules()[0]
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    assert module.image_name == "BinaryWorms"
+    assert module.overlap == cellprofiler.modules.untangleworms.OO_BOTH
+    assert module.overlap_objects == "OverlappingWorms"
+    assert module.nonoverlapping_objects == "NonOverlappingWorms"
+    assert not module.wants_training_set_weights
+    assert module.override_overlap_weight.value == 3
+    assert module.override_leftover_weight.value == 5
+    assert module.custom_complexity == 399
 
-UntangleWorms:[module_num:1|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Both
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:No
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
-    Maximum complexity:Process all clusters
-    Custom complexity:399
-
-UntangleWorms:[module_num:2|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Both
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:No
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
-    Maximum complexity:Medium
-    Custom complexity:399
-
-UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Both
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:No
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
-    Maximum complexity:High
-    Custom complexity:399
-
-UntangleWorms:[module_num:4|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Both
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:No
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
-    Maximum complexity:Very high
-    Custom complexity:399
-
-UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-    Binary image:BinaryWorms
-    Overlap style\x3A:Both
-    Overlapping worms object name\x3A:OverlappingWorms
-    Non-overlapping worms object name\x3A:NonOverlappingWorms
-    Training set file location:Elsewhere...\x7CC\x3A\\\\trunk\\\\imaging\\\\worm_identification\\\\streamlined_cluster_resolving
-    Training set file name:params_from_training_data_101020.mat
-    Use training set weights?:No
-    Overlap weight:3
-    Leftover weight:5
-    Retain outlines of the overlapping objects?:No
-    Outline colormap?:Default
-    Name the overlapped outline image:OverlappedWormOutlines
-    Retain outlines of the non-overlapping worms?:No
-    Name the non-overlapped outlines image:NonoverlappedWormOutlines
-    Train or untangle worms?:Untangle
-    Minimum area percentile:1
-    Minimum area factor:0.85
-    Maximum area percentile:90
-    Maximum area factor:1.0
-    Minimum length percentile:1
-    Minimum length factor:0.9
-    Maximum length percentile:99
-    Maximum length factor:1.1
-    Maximum cost percentile:90
-    Maximum cost factor:1.9
-    Number of control points:21
-    Maximum radius percentile:90
-    Maximum radius factor:1
-    Maximum complexity:Custom
-    Custom complexity:399
-"""
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(io.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 5)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.overlap, U.OO_BOTH)
-        self.assertEqual(module.overlap_objects, "OverlappingWorms")
-        self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
-        self.assertFalse(module.wants_training_set_weights)
-        self.assertEqual(module.override_overlap_weight.value, 3)
-        self.assertEqual(module.override_leftover_weight.value, 5)
-        self.assertEqual(module.custom_complexity, 399)
-
-        for module, complexity in zip(
-            pipeline.modules(),
-            (U.C_ALL, U.C_MEDIUM, U.C_HIGH, U.C_VERY_HIGH, U.C_CUSTOM),
-        ):
-            self.assertEqual(module.complexity, complexity)
-
-    def make_workspace(self, image, data=None, write_mode="wb"):
-        """Make a workspace to run the given image and params file
-
-        image - a binary image
-        data - the binary of the params file to run
-        """
-        if data is not None:
-            with open(self.filename, "wb") as fd:
-                fd.write(data)
-
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, (cpp.RunExceptionEvent, cpp.LoadExceptionEvent))
-            )
-
-        pipeline.add_listener(callback)
-        module = U.UntangleWorms()
-        module.image_name.value = IMAGE_NAME
-        module.nonoverlapping_objects.value = NON_OVERLAPPING_OBJECTS_NAME
-        module.overlap_objects.value = OVERLAP_OBJECTS_NAME
-        module.module_num = 1
-        pipeline.add_module(module)
-        img = cpi.Image(image)
-        image_set_list = cpi.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        image_set.add(IMAGE_NAME, img)
-        module.training_set_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+    for module, complexity in zip(
+        pipeline.modules(),
         (
-            module.training_set_directory.custom_path,
-            module.training_set_file_name.value,
-        ) = os.path.split(self.filename)
-
-        workspace = cpw.Workspace(
-            pipeline,
-            module,
-            image_set,
-            cpo.ObjectSet(),
-            cpmeas.Measurements(),
-            image_set_list,
-        )
-        return workspace, module
-
-    def make_params(self, d):
-        """Make a fake params structure from a dictionary
-
-        e.g., x = dict(foo=dict(bar=5)) -> x.foo.bar = 5
-        """
-
-        class X(object):
-            def __init__(self, d):
-                for key in list(d.keys()):
-                    value = d[key]
-                    if isinstance(value, dict):
-                        value = X(value)
-                    setattr(self, key, value)
-
-        return X(d)
-
-    def test_02_01_load_params(self):
-        data = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(np.zeros((10, 10), bool), data)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace, None, None)
-        params = module.read_params()
-        self.assertAlmostEqual(params.min_worm_area, 601.2, 0)
-        self.assertAlmostEqual(params.max_area, 1188.5, 0)
-        self.assertAlmostEqual(params.cost_threshold, 200.8174, 3)
-        self.assertEqual(params.num_control_points, 21)
-        np.testing.assert_almost_equal(
-            params.mean_angles,
-            np.array(
-                [
-                    -0.00527796256445404,
-                    -0.0315202989978013,
-                    -0.00811839821858939,
-                    -0.0268318268190547,
-                    -0.0120476701544335,
-                    -0.0202651421433172,
-                    -0.0182919505672029,
-                    -0.00990476055380843,
-                    -0.0184558846126189,
-                    -0.0100827620455749,
-                    -0.0121729201775023,
-                    -0.0129790204861452,
-                    0.0170195137830520,
-                    0.00185471766328753,
-                    0.00913261528049730,
-                    -0.0106805477987750,
-                    0.00473369321673608,
-                    -0.00835547063778011,
-                    -0.00382606935405797,
-                    127.129708001680,
-                ]
-            ),
-        )
-        np.testing.assert_almost_equal(
-            params.inv_angles_covariance_matrix,
-            np.array(
-                [
-                    [
-                        16.1831499639022,
-                        -5.06131059821028,
-                        -7.03307454602146,
-                        -2.88853420387429,
-                        3.34017866010302,
-                        3.45512576204933,
-                        -1.09841786238497,
-                        -2.79348760430306,
-                        -1.85931734891389,
-                        -0.652858408126458,
-                        -1.22752367898365,
-                        4.15573185568687,
-                        1.99443112453893,
-                        -2.26823701209981,
-                        -1.25144655688072,
-                        0.321931535265876,
-                        0.230928100005575,
-                        1.47235070063732,
-                        0.487902558505382,
-                        -0.0240787101275336,
-                    ],
-                    [
-                        -5.06131059821028,
-                        25.7442868663138,
-                        -7.04197641326958,
-                        -13.5057449289369,
-                        -2.23928687231578,
-                        4.31232681113232,
-                        6.56454500463435,
-                        0.336556097291049,
-                        0.175759837346977,
-                        -2.77098858956934,
-                        0.307050758321026,
-                        -2.12899901988826,
-                        1.32985035426604,
-                        2.77299577778623,
-                        6.03717697873141,
-                        -2.84152938638523,
-                        -2.50027246248360,
-                        2.88188404703382,
-                        -2.94724985136021,
-                        -0.00349792622125952,
-                    ],
-                    [
-                        -7.03307454602146,
-                        -7.04197641326958,
-                        34.8868022738369,
-                        -2.41698367836302,
-                        -11.9074612429652,
-                        -5.03219465159153,
-                        0.566581294377262,
-                        4.65965515408864,
-                        4.40918302814844,
-                        2.12317351869194,
-                        -1.29767770791342,
-                        -4.66814018817306,
-                        -1.18082874743096,
-                        3.51827877502392,
-                        2.85186107108145,
-                        -1.26716616779540,
-                        -1.09593786866014,
-                        -2.32869644778286,
-                        3.48194316456812,
-                        0.0623642923643842,
-                    ],
-                    [
-                        -2.88853420387429,
-                        -13.5057449289369,
-                        -2.41698367836302,
-                        44.6605979566156,
-                        0.348020753098590,
-                        -17.3115366179766,
-                        -12.7256060767026,
-                        5.70440571321352,
-                        6.41590904344264,
-                        -0.304578996360776,
-                        1.47801450095277,
-                        -0.908814536484512,
-                        -1.48164287245030,
-                        -2.34708447702134,
-                        -2.23115474987353,
-                        2.88954249368066,
-                        2.74733203099146,
-                        -3.04745351430166,
-                        2.86603729585242,
-                        0.00665888346219492,
-                    ],
-                    [
-                        3.34017866010302,
-                        -2.23928687231578,
-                        -11.9074612429652,
-                        0.348020753098590,
-                        46.4099158672193,
-                        -3.25559842794185,
-                        -21.3692910255085,
-                        -10.0863357869636,
-                        -1.88512464797353,
-                        -5.09750253669453,
-                        1.04201155533543,
-                        9.59270554140012,
-                        0.145271525356847,
-                        -5.72994886885862,
-                        -6.15723880027164,
-                        1.88718468304502,
-                        0.283089642962522,
-                        1.66577561191334,
-                        -3.04240109786268,
-                        0.0462492758625229,
-                    ],
-                    [
-                        3.45512576204933,
-                        4.31232681113232,
-                        -5.03219465159153,
-                        -17.3115366179766,
-                        -3.25559842794185,
-                        57.1526341670534,
-                        7.57995189380428,
-                        -30.3232000529691,
-                        -13.9152901068606,
-                        1.20521891799049,
-                        9.87949588048337,
-                        10.3794242331984,
-                        -4.19429285108215,
-                        -9.73213279908661,
-                        0.320110631214874,
-                        4.02636261974896,
-                        -1.45438578469807,
-                        -2.11793646742091,
-                        -1.21519495438964,
-                        -0.00660397622823739,
-                    ],
-                    [
-                        -1.09841786238497,
-                        6.56454500463435,
-                        0.566581294377262,
-                        -12.7256060767026,
-                        -21.3692910255085,
-                        7.57995189380428,
-                        55.2613391936066,
-                        -6.13432369324871,
-                        -20.0367084309419,
-                        -4.90180311830919,
-                        5.26313027293073,
-                        1.43916280645744,
-                        -0.336838408057983,
-                        2.29636776603810,
-                        5.18308930951763,
-                        -1.98288423853561,
-                        -2.53995069544169,
-                        -1.21462394180208,
-                        1.97319648119690,
-                        -0.0627444956856546,
-                    ],
-                    [
-                        -2.79348760430306,
-                        0.336556097291049,
-                        4.65965515408864,
-                        5.70440571321352,
-                        -10.0863357869636,
-                        -30.3232000529691,
-                        -6.13432369324871,
-                        79.4076938002120,
-                        11.3722618218994,
-                        -26.1279088515910,
-                        -18.2231695390128,
-                        -2.67921008934274,
-                        8.52472948160932,
-                        3.40897885951299,
-                        -0.0156673992253622,
-                        0.391511866283792,
-                        2.43961939136012,
-                        -4.02463696447393,
-                        1.21200189852376,
-                        -0.0276025739334060,
-                    ],
-                    [
-                        -1.85931734891389,
-                        0.175759837346977,
-                        4.40918302814844,
-                        6.41590904344264,
-                        -1.88512464797353,
-                        -13.9152901068606,
-                        -20.0367084309419,
-                        11.3722618218994,
-                        62.2896410297082,
-                        -4.73903263913512,
-                        -17.7829659347680,
-                        -17.3704452255960,
-                        -1.11146124458858,
-                        2.69303406406718,
-                        5.35251557583661,
-                        7.57574529347207,
-                        -2.24432157539803,
-                        -1.01589845612927,
-                        2.74166325038759,
-                        0.00616263316699783,
-                    ],
-                    [
-                        -0.652858408126458,
-                        -2.77098858956934,
-                        2.12317351869194,
-                        -0.304578996360776,
-                        -5.09750253669453,
-                        1.20521891799049,
-                        -4.90180311830919,
-                        -26.1279088515910,
-                        -4.73903263913512,
-                        53.6045562587984,
-                        1.49208866907909,
-                        -18.7976123565674,
-                        -15.3160914187456,
-                        4.62369094805509,
-                        6.25594149186720,
-                        -1.86433478999824,
-                        2.40465791383637,
-                        0.860045694295453,
-                        -5.03379983998103,
-                        -0.00250271852621389,
-                    ],
-                    [
-                        -1.22752367898365,
-                        0.307050758321026,
-                        -1.29767770791342,
-                        1.47801450095277,
-                        1.04201155533543,
-                        9.87949588048337,
-                        5.26313027293073,
-                        -18.2231695390128,
-                        -17.7829659347680,
-                        1.49208866907909,
-                        52.6257209831917,
-                        4.12959322744854,
-                        -12.4142184568466,
-                        -9.82200985900629,
-                        -3.97638811187418,
-                        1.15423868070705,
-                        6.11175904439983,
-                        2.88103313127626,
-                        -0.0202321884301434,
-                        -0.0770486841949908,
-                    ],
-                    [
-                        4.15573185568687,
-                        -2.12899901988826,
-                        -4.66814018817306,
-                        -0.908814536484512,
-                        9.59270554140012,
-                        10.3794242331984,
-                        1.43916280645744,
-                        -2.67921008934274,
-                        -17.3704452255960,
-                        -18.7976123565674,
-                        4.12959322744854,
-                        59.4024702854915,
-                        -0.643591318201096,
-                        -17.8872119905991,
-                        -14.6283664729331,
-                        0.921599492881119,
-                        0.898368585097109,
-                        2.02174339844234,
-                        1.40192545975918,
-                        0.0866552397218132,
-                    ],
-                    [
-                        1.99443112453893,
-                        1.32985035426604,
-                        -1.18082874743096,
-                        -1.48164287245030,
-                        0.145271525356847,
-                        -4.19429285108215,
-                        -0.336838408057983,
-                        8.52472948160932,
-                        -1.11146124458858,
-                        -15.3160914187456,
-                        -12.4142184568466,
-                        -0.643591318201096,
-                        51.7737313171135,
-                        -2.98701120529969,
-                        -20.1761854847240,
-                        -5.56229914135487,
-                        2.56729654359925,
-                        1.84129317709747,
-                        2.90488161640993,
-                        -0.0294908776237644,
-                    ],
-                    [
-                        -2.26823701209981,
-                        2.77299577778623,
-                        3.51827877502392,
-                        -2.34708447702134,
-                        -5.72994886885862,
-                        -9.73213279908661,
-                        2.29636776603810,
-                        3.40897885951299,
-                        2.69303406406718,
-                        4.62369094805509,
-                        -9.82200985900629,
-                        -17.8872119905991,
-                        -2.98701120529969,
-                        38.7045301665171,
-                        0.0132666292353374,
-                        -12.2104685640281,
-                        -4.94147299831573,
-                        3.32199768047190,
-                        -0.225506641087443,
-                        0.0431435753786928,
-                    ],
-                    [
-                        -1.25144655688072,
-                        6.03717697873141,
-                        2.85186107108145,
-                        -2.23115474987353,
-                        -6.15723880027164,
-                        0.320110631214874,
-                        5.18308930951763,
-                        -0.0156673992253622,
-                        5.35251557583661,
-                        6.25594149186720,
-                        -3.97638811187418,
-                        -14.6283664729331,
-                        -20.1761854847240,
-                        0.0132666292353374,
-                        50.0037711812637,
-                        1.51067910097860,
-                        -12.7274402250448,
-                        -7.12911129084980,
-                        2.74828112041922,
-                        0.0251424008457656,
-                    ],
-                    [
-                        0.321931535265876,
-                        -2.84152938638523,
-                        -1.26716616779540,
-                        2.88954249368066,
-                        1.88718468304502,
-                        4.02636261974896,
-                        -1.98288423853561,
-                        0.391511866283792,
-                        7.57574529347207,
-                        -1.86433478999824,
-                        1.15423868070705,
-                        0.921599492881119,
-                        -5.56229914135487,
-                        -12.2104685640281,
-                        1.51067910097860,
-                        46.6921496750757,
-                        -8.43566372164764,
-                        -15.0997112563034,
-                        3.65384550078426,
-                        -0.00453606919854300,
-                    ],
-                    [
-                        0.230928100005575,
-                        -2.50027246248360,
-                        -1.09593786866014,
-                        2.74733203099146,
-                        0.283089642962522,
-                        -1.45438578469807,
-                        -2.53995069544169,
-                        2.43961939136012,
-                        -2.24432157539803,
-                        2.40465791383637,
-                        6.11175904439983,
-                        0.898368585097109,
-                        2.56729654359925,
-                        -4.94147299831573,
-                        -12.7274402250448,
-                        -8.43566372164764,
-                        32.8028397335256,
-                        -3.87691864187466,
-                        -6.41814264219731,
-                        -0.0905326089208310,
-                    ],
-                    [
-                        1.47235070063732,
-                        2.88188404703382,
-                        -2.32869644778286,
-                        -3.04745351430166,
-                        1.66577561191334,
-                        -2.11793646742091,
-                        -1.21462394180208,
-                        -4.02463696447393,
-                        -1.01589845612927,
-                        0.860045694295453,
-                        2.88103313127626,
-                        2.02174339844234,
-                        1.84129317709747,
-                        3.32199768047190,
-                        -7.12911129084980,
-                        -15.0997112563034,
-                        -3.87691864187466,
-                        28.0765623007788,
-                        -8.07326731403660,
-                        0.0228470307583052,
-                    ],
-                    [
-                        0.487902558505382,
-                        -2.94724985136021,
-                        3.48194316456812,
-                        2.86603729585242,
-                        -3.04240109786268,
-                        -1.21519495438964,
-                        1.97319648119690,
-                        1.21200189852376,
-                        2.74166325038759,
-                        -5.03379983998103,
-                        -0.0202321884301434,
-                        1.40192545975918,
-                        2.90488161640993,
-                        -0.225506641087443,
-                        2.74828112041922,
-                        3.65384550078426,
-                        -6.41814264219731,
-                        -8.07326731403660,
-                        18.1513394317232,
-                        0.0139561765245330,
-                    ],
-                    [
-                        -0.0240787101275336,
-                        -0.00349792622125952,
-                        0.0623642923643842,
-                        0.00665888346219492,
-                        0.0462492758625229,
-                        -0.00660397622823739,
-                        -0.0627444956856546,
-                        -0.0276025739334060,
-                        0.00616263316699783,
-                        -0.00250271852621389,
-                        -0.0770486841949908,
-                        0.0866552397218132,
-                        -0.0294908776237644,
-                        0.0431435753786928,
-                        0.0251424008457656,
-                        -0.00453606919854300,
-                        -0.0905326089208310,
-                        0.0228470307583052,
-                        0.0139561765245330,
-                        0.00759059668024605,
-                    ],
-                ]
-            ),
-        )
-        self.assertAlmostEqual(params.max_radius, 5.0990, 3)
-        self.assertAlmostEqual(params.max_skel_length, 155.4545, 3)
-        self.assertAlmostEqual(params.min_path_length, 84.401680541266530)
-        self.assertAlmostEqual(params.max_path_length, 171.8155554421827)
-        self.assertAlmostEqual(params.median_worm_area, 1007.5)
-        self.assertAlmostEqual(params.worm_radius, 5.099019527435303)
-        self.assertEqual(params.overlap_weight, 5)
-        self.assertEqual(params.leftover_weight, 10)
-        np.testing.assert_almost_equal(
-            params.radii_from_training,
-            np.array(
-                [
-                    1.19132055711746,
-                    2.75003945541382,
-                    3.56039281511307,
-                    4.05681743049622,
-                    4.39353294944763,
-                    4.52820824432373,
-                    4.66245639991760,
-                    4.75254730796814,
-                    4.76993056106567,
-                    4.78852712249756,
-                    4.73509162521362,
-                    4.76029792976379,
-                    4.75030451583862,
-                    4.69090248298645,
-                    4.59827183151245,
-                    4.55065062236786,
-                    4.35989559841156,
-                    4.10916972160339,
-                    3.58363935613632,
-                    2.83766316795349,
-                    1.15910302543640,
-                ]
-            ),
-        )
-
-    def test_02_02_load_xml_params(self):
-        data = r"""<?xml version="1.0" ?>
-<training-data xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd">
-  <version>
-    10680
-  </version>
-  <min-area>
-    596.898
-  </min-area>
-  <max-area>
-    1183.0
-  </max-area>
-  <cost-threshold>
-    100
-  </cost-threshold>
-  <num-control-points>
-    21
-  </num-control-points>
-  <max-skel-length>
-    158.038188951
-  </max-skel-length>
-  <min-path-length>
-    76.7075694196
-  </min-path-length>
-  <max-path-length>
-    173.842007846
-  </max-path-length>
-  <median-worm-area>
-    1006.0
-  </median-worm-area>
-  <max-radius>
-    5.07108224265
-  </max-radius>
-  <overlap-weight>
-    5.0
-  </overlap-weight>
-  <leftover-weight>
-    10.0
-  </leftover-weight>
-  <training-set-size>
-  200
-  </training-set-size>
-  <mean-angles>
-    <value>
-      -0.010999071156
-    </value>
-    <value>
-      -0.011369928253
-    </value>
-    <value>
-      -0.0063572663907
-    </value>
-    <value>
-      -0.00537369691481
-    </value>
-    <value>
-      -0.00491960423727
-    </value>
-    <value>
-      -0.00888319810452
-    </value>
-    <value>
-      0.000958176954014
-    </value>
-    <value>
-      -0.00329354759164
-    </value>
-    <value>
-      -0.00182154382306
-    </value>
-    <value>
-      -0.00252850541515
-    </value>
-    <value>
-      0.00583731052007
-    </value>
-    <value>
-      -0.00629326705054
-    </value>
-    <value>
-      -0.000221502806058
-    </value>
-    <value>
-      0.000541997532415
-    </value>
-    <value>
-      7.10858314614e-05
-    </value>
-    <value>
-      -0.000536334650268
-    </value>
-    <value>
-      0.00846699296415
-    </value>
-    <value>
-      0.00229934152116
-    </value>
-    <value>
-      0.013315157629
-    </value>
-    <value>
-      127.475166584
-    </value>
-  </mean-angles>
-  <radii-from-training>
-    <value>
-      1.42515381896
-    </value>
-    <value>
-      2.85816813675
-    </value>
-    <value>
-      3.625274645
-    </value>
-    <value>
-      4.0753094944
-    </value>
-    <value>
-      4.35612078737
-    </value>
-    <value>
-      4.52117778419
-    </value>
-    <value>
-      4.63350649815
-    </value>
-    <value>
-      4.68616131779
-    </value>
-    <value>
-      4.72754363339
-    </value>
-    <value>
-      4.7538931664
-    </value>
-    <value>
-      4.74523602328
-    </value>
-    <value>
-      4.73738576257
-    </value>
-    <value>
-      4.71422245337
-    </value>
-    <value>
-      4.67997686977
-    </value>
-    <value>
-      4.63299502256
-    </value>
-    <value>
-      4.54769060478
-    </value>
-    <value>
-      4.37493539203
-    </value>
-    <value>
-      4.10516708918
-    </value>
-    <value>
-      3.6478380576
-    </value>
-    <value>
-      2.87519387935
-    </value>
-    <value>
-      1.41510654664
-    </value>
-  </radii-from-training>
-  <inv-angles-covariance-matrix>
-    <values>
-      <value>
-        14.4160767437
-      </value>
-      <value>
-        -3.62948521476
-      </value>
-      <value>
-        -5.54563467306
-      </value>
-      <value>
-        -2.03727846881
-      </value>
-      <value>
-        1.28497735663
-      </value>
-      <value>
-        1.69152924813
-      </value>
-      <value>
-        0.155723103489
-      </value>
-      <value>
-        0.0968570278119
-      </value>
-      <value>
-        -0.830941512378
-      </value>
-      <value>
-        -0.212837030458
-      </value>
-      <value>
-        0.343854099462
-      </value>
-      <value>
-        0.541856348331
-      </value>
-      <value>
-        0.0113083798588
-      </value>
-      <value>
-        -0.526926108341
-      </value>
-      <value>
-        0.499035732802
-      </value>
-      <value>
-        -0.714281934407
-      </value>
-      <value>
-        0.407365302927
-      </value>
-      <value>
-        0.0412386837587
-      </value>
-      <value>
-        0.399436023924
-      </value>
-      <value>
-        0.0100796538444
-      </value>
-    </values>
-    <values>
-      <value>
-        -3.62948521476
-      </value>
-      <value>
-        28.3822272923
-      </value>
-      <value>
-        -5.69796350599
-      </value>
-      <value>
-        -12.8940771298
-      </value>
-      <value>
-        -3.24074903822
-      </value>
-      <value>
-        6.60066559736
-      </value>
-      <value>
-        4.7027587735
-      </value>
-      <value>
-        -0.228375351756
-      </value>
-      <value>
-        -0.93975886278
-      </value>
-      <value>
-        -0.404133419773
-      </value>
-      <value>
-        0.461061138309
-      </value>
-      <value>
-        -0.620175812393
-      </value>
-      <value>
-        0.426458145116
-      </value>
-      <value>
-        0.242860102398
-      </value>
-      <value>
-        -1.395472436
-      </value>
-      <value>
-        -0.416345646399
-      </value>
-      <value>
-        -0.744042489471
-      </value>
-      <value>
-        1.2607667493
-      </value>
-      <value>
-        0.0266160618793
-      </value>
-      <value>
-        0.0125632227269
-      </value>
-    </values>
-    <values>
-      <value>
-        -5.54563467306
-      </value>
-      <value>
-        -5.69796350599
-      </value>
-      <value>
-        33.965523631
-      </value>
-      <value>
-        -2.5184071008
-      </value>
-      <value>
-        -11.9739358904
-      </value>
-      <value>
-        -5.55211501206
-      </value>
-      <value>
-        1.54963332447
-      </value>
-      <value>
-        1.51853522595
-      </value>
-      <value>
-        2.94238214784
-      </value>
-      <value>
-        1.58963458609
-      </value>
-      <value>
-        -1.09690230963
-      </value>
-      <value>
-        -3.03348214943
-      </value>
-      <value>
-        -0.499685304962
-      </value>
-      <value>
-        0.0832942797245
-      </value>
-      <value>
-        2.64055890507
-      </value>
-      <value>
-        1.47285696771
-      </value>
-      <value>
-        -0.837591498704
-      </value>
-      <value>
-        -1.32897383529
-      </value>
-      <value>
-        -0.0909573472139
-      </value>
-      <value>
-        -0.00747385975607
-      </value>
-    </values>
-    <values>
-      <value>
-        -2.03727846881
-      </value>
-      <value>
-        -12.8940771298
-      </value>
-      <value>
-        -2.5184071008
-      </value>
-      <value>
-        38.910896265
-      </value>
-      <value>
-        -0.501289252952
-      </value>
-      <value>
-        -16.9651461757
-      </value>
-      <value>
-        -8.5206491768
-      </value>
-      <value>
-        0.599043361039
-      </value>
-      <value>
-        4.0425703374
-      </value>
-      <value>
-        3.46803482473
-      </value>
-      <value>
-        1.5750544267
-      </value>
-      <value>
-        0.828548143764
-      </value>
-      <value>
-        -0.468487536336
-      </value>
-      <value>
-        1.18597661827
-      </value>
-      <value>
-        0.798189409259
-      </value>
-      <value>
-        0.862661371456
-      </value>
-      <value>
-        -0.14246505168
-      </value>
-      <value>
-        -1.3841655628
-      </value>
-      <value>
-        0.236725547536
-      </value>
-      <value>
-        -0.0163619841363
-      </value>
-    </values>
-    <values>
-      <value>
-        1.28497735663
-      </value>
-      <value>
-        -3.24074903822
-      </value>
-      <value>
-        -11.9739358904
-      </value>
-      <value>
-        -0.501289252952
-      </value>
-      <value>
-        50.690805239
-      </value>
-      <value>
-        -2.50730714299
-      </value>
-      <value>
-        -19.7892493084
-      </value>
-      <value>
-        -8.70870454399
-      </value>
-      <value>
-        0.544130042179
-      </value>
-      <value>
-        3.96597772445
-      </value>
-      <value>
-        4.72570280412
-      </value>
-      <value>
-        2.85472249374
-      </value>
-      <value>
-        -2.84084610444
-      </value>
-      <value>
-        -4.25238476559
-      </value>
-      <value>
-        -1.41656624794
-      </value>
-      <value>
-        2.35443215524
-      </value>
-      <value>
-        1.26857012684
-      </value>
-      <value>
-        -0.0117059492945
-      </value>
-      <value>
-        0.193085174503
-      </value>
-      <value>
-        -0.0128948234117
-      </value>
-    </values>
-    <values>
-      <value>
-        1.69152924813
-      </value>
-      <value>
-        6.60066559736
-      </value>
-      <value>
-        -5.55211501206
-      </value>
-      <value>
-        -16.9651461757
-      </value>
-      <value>
-        -2.50730714299
-      </value>
-      <value>
-        49.7744788862
-      </value>
-      <value>
-        2.21292071874
-      </value>
-      <value>
-        -18.9379120677
-      </value>
-      <value>
-        -11.6040186403
-      </value>
-      <value>
-        -0.650553765753
-      </value>
-      <value>
-        3.61258885051
-      </value>
-      <value>
-        2.19212295163
-      </value>
-      <value>
-        -0.250008762357
-      </value>
-      <value>
-        -2.6870585839
-      </value>
-      <value>
-        -1.82043770689
-      </value>
-      <value>
-        0.109737469347
-      </value>
-      <value>
-        0.560938864345
-      </value>
-      <value>
-        0.219973313189
-      </value>
-      <value>
-        -0.590133590346
-      </value>
-      <value>
-        -0.00967309489576
-      </value>
-    </values>
-    <values>
-      <value>
-        0.155723103489
-      </value>
-      <value>
-        4.7027587735
-      </value>
-      <value>
-        1.54963332447
-      </value>
-      <value>
-        -8.5206491768
-      </value>
-      <value>
-        -19.7892493084
-      </value>
-      <value>
-        2.21292071874
-      </value>
-      <value>
-        51.0843827257
-      </value>
-      <value>
-        0.934339159637
-      </value>
-      <value>
-        -16.1389407803
-      </value>
-      <value>
-        -13.597573567
-      </value>
-      <value>
-        -1.54861446638
-      </value>
-      <value>
-        3.38169064096
-      </value>
-      <value>
-        4.06874131702
-      </value>
-      <value>
-        -0.827598209967
-      </value>
-      <value>
-        0.403883540178
-      </value>
-      <value>
-        -2.06739129329
-      </value>
-      <value>
-        -2.88536104019
-      </value>
-      <value>
-        1.06444751058
-      </value>
-      <value>
-        0.425819183522
-      </value>
-      <value>
-        0.0218279774716
-      </value>
-    </values>
-    <values>
-      <value>
-        0.0968570278119
-      </value>
-      <value>
-        -0.228375351756
-      </value>
-      <value>
-        1.51853522595
-      </value>
-      <value>
-        0.599043361039
-      </value>
-      <value>
-        -8.70870454399
-      </value>
-      <value>
-        -18.9379120677
-      </value>
-      <value>
-        0.934339159637
-      </value>
-      <value>
-        53.1553410056
-      </value>
-      <value>
-        3.83284330941
-      </value>
-      <value>
-        -21.8128767252
-      </value>
-      <value>
-        -12.4239738428
-      </value>
-      <value>
-        -0.689818407647
-      </value>
-      <value>
-        4.93635164952
-      </value>
-      <value>
-        4.04304737017
-      </value>
-      <value>
-        1.11729234765
-      </value>
-      <value>
-        -0.61148362918
-      </value>
-      <value>
-        -1.50162558801
-      </value>
-      <value>
-        -1.61722109339
-      </value>
-      <value>
-        0.491305564623
-      </value>
-      <value>
-        0.00813673085389
-      </value>
-    </values>
-    <values>
-      <value>
-        -0.830941512378
-      </value>
-      <value>
-        -0.93975886278
-      </value>
-      <value>
-        2.94238214784
-      </value>
-      <value>
-        4.0425703374
-      </value>
-      <value>
-        0.544130042179
-      </value>
-      <value>
-        -11.6040186403
-      </value>
-      <value>
-        -16.1389407803
-      </value>
-      <value>
-        3.83284330941
-      </value>
-      <value>
-        47.6933352778
-      </value>
-      <value>
-        1.02465850736
-      </value>
-      <value>
-        -18.704856196
-      </value>
-      <value>
-        -9.30970873094
-      </value>
-      <value>
-        1.7845053387
-      </value>
-      <value>
-        2.83710840227
-      </value>
-      <value>
-        3.85412837972
-      </value>
-      <value>
-        -0.420823216821
-      </value>
-      <value>
-        1.56974432254
-      </value>
-      <value>
-        -0.212411753395
-      </value>
-      <value>
-        -0.638990283092
-      </value>
-      <value>
-        -0.00117994378546
-      </value>
-    </values>
-    <values>
-      <value>
-        -0.212837030458
-      </value>
-      <value>
-        -0.404133419773
-      </value>
-      <value>
-        1.58963458609
-      </value>
-      <value>
-        3.46803482473
-      </value>
-      <value>
-        3.96597772445
-      </value>
-      <value>
-        -0.650553765753
-      </value>
-      <value>
-        -13.597573567
-      </value>
-      <value>
-        -21.8128767252
-      </value>
-      <value>
-        1.02465850736
-      </value>
-      <value>
-        55.2260388503
-      </value>
-      <value>
-        4.35803059752
-      </value>
-      <value>
-        -17.4350070993
-      </value>
-      <value>
-        -9.9394563068
-      </value>
-      <value>
-        0.592362874638
-      </value>
-      <value>
-        4.03037893175
-      </value>
-      <value>
-        0.749631051365
-      </value>
-      <value>
-        0.179619159884
-      </value>
-      <value>
-        1.09520337409
-      </value>
-      <value>
-        0.198303530561
-      </value>
-      <value>
-        -0.0128674812863
-      </value>
-    </values>
-    <values>
-      <value>
-        0.343854099462
-      </value>
-      <value>
-        0.461061138309
-      </value>
-      <value>
-        -1.09690230963
-      </value>
-      <value>
-        1.5750544267
-      </value>
-      <value>
-        4.72570280412
-      </value>
-      <value>
-        3.61258885051
-      </value>
-      <value>
-        -1.54861446638
-      </value>
-      <value>
-        -12.4239738428
-      </value>
-      <value>
-        -18.704856196
-      </value>
-      <value>
-        4.35803059752
-      </value>
-      <value>
-        51.04055356
-      </value>
-      <value>
-        3.08936728044
-      </value>
-      <value>
-        -17.5902587966
-      </value>
-      <value>
-        -10.8714973146
-      </value>
-      <value>
-        -0.045009571053
-      </value>
-      <value>
-        4.87264332876
-      </value>
-      <value>
-        1.30470158026
-      </value>
-      <value>
-        -0.320349338202
-      </value>
-      <value>
-        0.55323063623
-      </value>
-      <value>
-        -0.00361862544014
-      </value>
-    </values>
-    <values>
-      <value>
-        0.541856348331
-      </value>
-      <value>
-        -0.620175812393
-      </value>
-      <value>
-        -3.03348214943
-      </value>
-      <value>
-        0.828548143764
-      </value>
-      <value>
-        2.85472249374
-      </value>
-      <value>
-        2.19212295163
-      </value>
-      <value>
-        3.38169064096
-      </value>
-      <value>
-        -0.689818407647
-      </value>
-      <value>
-        -9.30970873094
-      </value>
-      <value>
-        -17.4350070993
-      </value>
-      <value>
-        3.08936728044
-      </value>
-      <value>
-        47.4661853593
-      </value>
-      <value>
-        -1.87723439855
-      </value>
-      <value>
-        -15.2700084763
-      </value>
-      <value>
-        -7.6273108814
-      </value>
-      <value>
-        4.14811581054
-      </value>
-      <value>
-        1.42240471385
-      </value>
-      <value>
-        0.0505728359147
-      </value>
-      <value>
-        -0.0106613679324
-      </value>
-      <value>
-        -0.000211505765068
-      </value>
-    </values>
-    <values>
-      <value>
-        0.0113083798588
-      </value>
-      <value>
-        0.426458145116
-      </value>
-      <value>
-        -0.499685304962
-      </value>
-      <value>
-        -0.468487536336
-      </value>
-      <value>
-        -2.84084610444
-      </value>
-      <value>
-        -0.250008762357
-      </value>
-      <value>
-        4.06874131702
-      </value>
-      <value>
-        4.93635164952
-      </value>
-      <value>
-        1.7845053387
-      </value>
-      <value>
-        -9.9394563068
-      </value>
-      <value>
-        -17.5902587966
-      </value>
-      <value>
-        -1.87723439855
-      </value>
-      <value>
-        47.8240218251
-      </value>
-      <value>
-        2.57791664619
-      </value>
-      <value>
-        -14.5709240372
-      </value>
-      <value>
-        -4.78007676552
-      </value>
-      <value>
-        1.87167780269
-      </value>
-      <value>
-        0.359928009336
-      </value>
-      <value>
-        -1.18561757081
-      </value>
-      <value>
-        0.014074799611
-      </value>
-    </values>
-    <values>
-      <value>
-        -0.526926108341
-      </value>
-      <value>
-        0.242860102398
-      </value>
-      <value>
-        0.0832942797245
-      </value>
-      <value>
-        1.18597661827
-      </value>
-      <value>
-        -4.25238476559
-      </value>
-      <value>
-        -2.6870585839
-      </value>
-      <value>
-        -0.827598209967
-      </value>
-      <value>
-        4.04304737017
-      </value>
-      <value>
-        2.83710840227
-      </value>
-      <value>
-        0.592362874638
-      </value>
-      <value>
-        -10.8714973146
-      </value>
-      <value>
-        -15.2700084763
-      </value>
-      <value>
-        2.57791664619
-      </value>
-      <value>
-        46.696159054
-      </value>
-      <value>
-        -4.74906899066
-      </value>
-      <value>
-        -15.6278488145
-      </value>
-      <value>
-        -4.24795289841
-      </value>
-      <value>
-        2.87455853452
-      </value>
-      <value>
-        3.07635737509
-      </value>
-      <value>
-        0.00532906905096
-      </value>
-    </values>
-    <values>
-      <value>
-        0.499035732802
-      </value>
-      <value>
-        -1.395472436
-      </value>
-      <value>
-        2.64055890507
-      </value>
-      <value>
-        0.798189409259
-      </value>
-      <value>
-        -1.41656624794
-      </value>
-      <value>
-        -1.82043770689
-      </value>
-      <value>
-        0.403883540178
-      </value>
-      <value>
-        1.11729234765
-      </value>
-      <value>
-        3.85412837972
-      </value>
-      <value>
-        4.03037893175
-      </value>
-      <value>
-        -0.045009571053
-      </value>
-      <value>
-        -7.6273108814
-      </value>
-      <value>
-        -14.5709240372
-      </value>
-      <value>
-        -4.74906899066
-      </value>
-      <value>
-        40.1689374127
-      </value>
-      <value>
-        -3.67980915371
-      </value>
-      <value>
-        -10.3797521361
-      </value>
-      <value>
-        -0.841069955948
-      </value>
-      <value>
-        3.27779133415
-      </value>
-      <value>
-        0.0045492369767
-      </value>
-    </values>
-    <values>
-      <value>
-        -0.714281934407
-      </value>
-      <value>
-        -0.416345646399
-      </value>
-      <value>
-        1.47285696771
-      </value>
-      <value>
-        0.862661371456
-      </value>
-      <value>
-        2.35443215524
-      </value>
-      <value>
-        0.109737469347
-      </value>
-      <value>
-        -2.06739129329
-      </value>
-      <value>
-        -0.61148362918
-      </value>
-      <value>
-        -0.420823216821
-      </value>
-      <value>
-        0.749631051365
-      </value>
-      <value>
-        4.87264332876
-      </value>
-      <value>
-        4.14811581054
-      </value>
-      <value>
-        -4.78007676552
-      </value>
-      <value>
-        -15.6278488145
-      </value>
-      <value>
-        -3.67980915371
-      </value>
-      <value>
-        37.0559195085
-      </value>
-      <value>
-        -1.42897044519
-      </value>
-      <value>
-        -7.88598395567
-      </value>
-      <value>
-        -1.9964210551
-      </value>
-      <value>
-        -0.0047454750271
-      </value>
-    </values>
-    <values>
-      <value>
-        0.407365302927
-      </value>
-      <value>
-        -0.744042489471
-      </value>
-      <value>
-        -0.837591498704
-      </value>
-      <value>
-        -0.14246505168
-      </value>
-      <value>
-        1.26857012684
-      </value>
-      <value>
-        0.560938864345
-      </value>
-      <value>
-        -2.88536104019
-      </value>
-      <value>
-        -1.50162558801
-      </value>
-      <value>
-        1.56974432254
-      </value>
-      <value>
-        0.179619159884
-      </value>
-      <value>
-        1.30470158026
-      </value>
-      <value>
-        1.42240471385
-      </value>
-      <value>
-        1.87167780269
-      </value>
-      <value>
-        -4.24795289841
-      </value>
-      <value>
-        -10.3797521361
-      </value>
-      <value>
-        -1.42897044519
-      </value>
-      <value>
-        31.0878364175
-      </value>
-      <value>
-        -3.67706594057
-      </value>
-      <value>
-        -7.74307062767
-      </value>
-      <value>
-        -0.0186367239616
-      </value>
-    </values>
-    <values>
-      <value>
-        0.0412386837587
-      </value>
-      <value>
-        1.2607667493
-      </value>
-      <value>
-        -1.32897383529
-      </value>
-      <value>
-        -1.3841655628
-      </value>
-      <value>
-        -0.0117059492945
-      </value>
-      <value>
-        0.219973313189
-      </value>
-      <value>
-        1.06444751058
-      </value>
-      <value>
-        -1.61722109339
-      </value>
-      <value>
-        -0.212411753395
-      </value>
-      <value>
-        1.09520337409
-      </value>
-      <value>
-        -0.320349338202
-      </value>
-      <value>
-        0.0505728359147
-      </value>
-      <value>
-        0.359928009336
-      </value>
-      <value>
-        2.87455853452
-      </value>
-      <value>
-        -0.841069955948
-      </value>
-      <value>
-        -7.88598395567
-      </value>
-      <value>
-        -3.67706594057
-      </value>
-      <value>
-        17.6561215842
-      </value>
-      <value>
-        -0.53359878584
-      </value>
-      <value>
-        0.00910717515256
-      </value>
-    </values>
-    <values>
-      <value>
-        0.399436023924
-      </value>
-      <value>
-        0.0266160618793
-      </value>
-      <value>
-        -0.0909573472139
-      </value>
-      <value>
-        0.236725547536
-      </value>
-      <value>
-        0.193085174503
-      </value>
-      <value>
-        -0.590133590346
-      </value>
-      <value>
-        0.425819183522
-      </value>
-      <value>
-        0.491305564623
-      </value>
-      <value>
-        -0.638990283092
-      </value>
-      <value>
-        0.198303530561
-      </value>
-      <value>
-        0.55323063623
-      </value>
-      <value>
-        -0.0106613679324
-      </value>
-      <value>
-        -1.18561757081
-      </value>
-      <value>
-        3.07635737509
-      </value>
-      <value>
-        3.27779133415
-      </value>
-      <value>
-        -1.9964210551
-      </value>
-      <value>
-        -7.74307062767
-      </value>
-      <value>
-        -0.53359878584
-      </value>
-      <value>
-        13.2416621872
-      </value>
-      <value>
-        0.00936896857131
-      </value>
-    </values>
-    <values>
-      <value>
-        0.0100796538444
-      </value>
-      <value>
-        0.0125632227269
-      </value>
-      <value>
-        -0.00747385975607
-      </value>
-      <value>
-        -0.0163619841363
-      </value>
-      <value>
-        -0.0128948234117
-      </value>
-      <value>
-        -0.00967309489576
-      </value>
-      <value>
-        0.0218279774715
-      </value>
-      <value>
-        0.00813673085389
-      </value>
-      <value>
-        -0.00117994378545
-      </value>
-      <value>
-        -0.0128674812862
-      </value>
-      <value>
-        -0.00361862544014
-      </value>
-      <value>
-        -0.000211505765068
-      </value>
-      <value>
-        0.014074799611
-      </value>
-      <value>
-        0.00532906905096
-      </value>
-      <value>
-        0.0045492369767
-      </value>
-      <value>
-        -0.0047454750271
-      </value>
-      <value>
-        -0.0186367239616
-      </value>
-      <value>
-        0.00910717515256
-      </value>
-      <value>
-        0.00936896857131
-      </value>
-      <value>
-        0.00505367806039
-      </value>
-    </values>
-  </inv-angles-covariance-matrix>
-</training-data>
-"""
-        workspace, module = self.make_workspace(
-            np.zeros((10, 10), bool), data, write_mode="w"
-        )
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace, None, None)
-        params = module.read_params()
-        self.assertEqual(params.version, 10680)
-        self.assertAlmostEqual(params.min_worm_area, 596.898)
-        self.assertAlmostEqual(params.max_area, 1183)
-        self.assertAlmostEqual(params.cost_threshold, 100)
-        self.assertEqual(params.num_control_points, 21)
-        self.assertAlmostEqual(params.max_skel_length, 158.038188951)
-        self.assertAlmostEqual(params.min_path_length, 76.7075694196)
-        self.assertAlmostEqual(params.max_path_length, 173.842007846)
-        self.assertAlmostEqual(params.median_worm_area, 1006.0)
-        self.assertAlmostEqual(params.max_radius, 5.07108224265)
-        self.assertEqual(params.overlap_weight, 5)
-        self.assertEqual(params.leftover_weight, 10)
-        expected = np.array(
-            [
-                -0.010999071156,
-                -0.011369928253,
-                -0.0063572663907,
-                -0.00537369691481,
-                -0.00491960423727,
-                -0.00888319810452,
-                0.000958176954014,
-                -0.00329354759164,
-                -0.00182154382306,
-                -0.00252850541515,
-                0.00583731052007,
-                -0.00629326705054,
-                -0.000221502806058,
-                0.000541997532415,
-                7.10858314614e-05,
-                -0.000536334650268,
-                0.00846699296415,
-                0.00229934152116,
-                0.013315157629,
-                127.475166584,
-            ]
-        )
-        np.testing.assert_almost_equal(expected, params.mean_angles)
-        expected = np.array(
-            [
-                1.42515381896,
-                2.85816813675,
-                3.625274645,
-                4.0753094944,
-                4.35612078737,
-                4.52117778419,
-                4.63350649815,
-                4.68616131779,
-                4.72754363339,
-                4.7538931664,
-                4.74523602328,
-                4.73738576257,
-                4.71422245337,
-                4.67997686977,
-                4.63299502256,
-                4.54769060478,
-                4.37493539203,
-                4.10516708918,
-                3.6478380576,
-                2.87519387935,
-                1.41510654664,
-            ]
-        )
-        np.testing.assert_almost_equal(expected, params.radii_from_training)
-        expected = np.array(
-            [
-                [
-                    14.4160767437,
-                    -3.62948521476,
-                    -5.54563467306,
-                    -2.03727846881,
-                    1.28497735663,
-                    1.69152924813,
-                    0.155723103489,
-                    0.0968570278119,
-                    -0.830941512378,
-                    -0.212837030458,
-                    0.343854099462,
-                    0.541856348331,
-                    0.0113083798588,
-                    -0.526926108341,
-                    0.499035732802,
-                    -0.714281934407,
-                    0.407365302927,
-                    0.0412386837587,
-                    0.399436023924,
-                    0.0100796538444,
-                ],
-                [
-                    -3.62948521476,
-                    28.3822272923,
-                    -5.69796350599,
-                    -12.8940771298,
-                    -3.24074903822,
-                    6.60066559736,
-                    4.7027587735,
-                    -0.228375351756,
-                    -0.93975886278,
-                    -0.404133419773,
-                    0.461061138309,
-                    -0.620175812393,
-                    0.426458145116,
-                    0.242860102398,
-                    -1.395472436,
-                    -0.416345646399,
-                    -0.744042489471,
-                    1.2607667493,
-                    0.0266160618793,
-                    0.0125632227269,
-                ],
-                [
-                    -5.54563467306,
-                    -5.69796350599,
-                    33.965523631,
-                    -2.5184071008,
-                    -11.9739358904,
-                    -5.55211501206,
-                    1.54963332447,
-                    1.51853522595,
-                    2.94238214784,
-                    1.58963458609,
-                    -1.09690230963,
-                    -3.03348214943,
-                    -0.499685304962,
-                    0.0832942797245,
-                    2.64055890507,
-                    1.47285696771,
-                    -0.837591498704,
-                    -1.32897383529,
-                    -0.0909573472139,
-                    -0.00747385975607,
-                ],
-                [
-                    -2.03727846881,
-                    -12.8940771298,
-                    -2.5184071008,
-                    38.910896265,
-                    -0.501289252952,
-                    -16.9651461757,
-                    -8.5206491768,
-                    0.599043361039,
-                    4.0425703374,
-                    3.46803482473,
-                    1.5750544267,
-                    0.828548143764,
-                    -0.468487536336,
-                    1.18597661827,
-                    0.798189409259,
-                    0.862661371456,
-                    -0.14246505168,
-                    -1.3841655628,
-                    0.236725547536,
-                    -0.0163619841363,
-                ],
-                [
-                    1.28497735663,
-                    -3.24074903822,
-                    -11.9739358904,
-                    -0.501289252952,
-                    50.690805239,
-                    -2.50730714299,
-                    -19.7892493084,
-                    -8.70870454399,
-                    0.544130042179,
-                    3.96597772445,
-                    4.72570280412,
-                    2.85472249374,
-                    -2.84084610444,
-                    -4.25238476559,
-                    -1.41656624794,
-                    2.35443215524,
-                    1.26857012684,
-                    -0.0117059492945,
-                    0.193085174503,
-                    -0.0128948234117,
-                ],
-                [
-                    1.69152924813,
-                    6.60066559736,
-                    -5.55211501206,
-                    -16.9651461757,
-                    -2.50730714299,
-                    49.7744788862,
-                    2.21292071874,
-                    -18.9379120677,
-                    -11.6040186403,
-                    -0.650553765753,
-                    3.61258885051,
-                    2.19212295163,
-                    -0.250008762357,
-                    -2.6870585839,
-                    -1.82043770689,
-                    0.109737469347,
-                    0.560938864345,
-                    0.219973313189,
-                    -0.590133590346,
-                    -0.00967309489576,
-                ],
-                [
-                    0.155723103489,
-                    4.7027587735,
-                    1.54963332447,
-                    -8.5206491768,
-                    -19.7892493084,
-                    2.21292071874,
-                    51.0843827257,
-                    0.934339159637,
-                    -16.1389407803,
-                    -13.597573567,
-                    -1.54861446638,
-                    3.38169064096,
-                    4.06874131702,
-                    -0.827598209967,
-                    0.403883540178,
-                    -2.06739129329,
-                    -2.88536104019,
-                    1.06444751058,
-                    0.425819183522,
-                    0.0218279774716,
-                ],
-                [
-                    0.0968570278119,
-                    -0.228375351756,
-                    1.51853522595,
-                    0.599043361039,
-                    -8.70870454399,
-                    -18.9379120677,
-                    0.934339159637,
-                    53.1553410056,
-                    3.83284330941,
-                    -21.8128767252,
-                    -12.4239738428,
-                    -0.689818407647,
-                    4.93635164952,
-                    4.04304737017,
-                    1.11729234765,
-                    -0.61148362918,
-                    -1.50162558801,
-                    -1.61722109339,
-                    0.491305564623,
-                    0.00813673085389,
-                ],
-                [
-                    -0.830941512378,
-                    -0.93975886278,
-                    2.94238214784,
-                    4.0425703374,
-                    0.544130042179,
-                    -11.6040186403,
-                    -16.1389407803,
-                    3.83284330941,
-                    47.6933352778,
-                    1.02465850736,
-                    -18.704856196,
-                    -9.30970873094,
-                    1.7845053387,
-                    2.83710840227,
-                    3.85412837972,
-                    -0.420823216821,
-                    1.56974432254,
-                    -0.212411753395,
-                    -0.638990283092,
-                    -0.00117994378546,
-                ],
-                [
-                    -0.212837030458,
-                    -0.404133419773,
-                    1.58963458609,
-                    3.46803482473,
-                    3.96597772445,
-                    -0.650553765753,
-                    -13.597573567,
-                    -21.8128767252,
-                    1.02465850736,
-                    55.2260388503,
-                    4.35803059752,
-                    -17.4350070993,
-                    -9.9394563068,
-                    0.592362874638,
-                    4.03037893175,
-                    0.749631051365,
-                    0.179619159884,
-                    1.09520337409,
-                    0.198303530561,
-                    -0.0128674812863,
-                ],
-                [
-                    0.343854099462,
-                    0.461061138309,
-                    -1.09690230963,
-                    1.5750544267,
-                    4.72570280412,
-                    3.61258885051,
-                    -1.54861446638,
-                    -12.4239738428,
-                    -18.704856196,
-                    4.35803059752,
-                    51.04055356,
-                    3.08936728044,
-                    -17.5902587966,
-                    -10.8714973146,
-                    -0.045009571053,
-                    4.87264332876,
-                    1.30470158026,
-                    -0.320349338202,
-                    0.55323063623,
-                    -0.00361862544014,
-                ],
-                [
-                    0.541856348331,
-                    -0.620175812393,
-                    -3.03348214943,
-                    0.828548143764,
-                    2.85472249374,
-                    2.19212295163,
-                    3.38169064096,
-                    -0.689818407647,
-                    -9.30970873094,
-                    -17.4350070993,
-                    3.08936728044,
-                    47.4661853593,
-                    -1.87723439855,
-                    -15.2700084763,
-                    -7.6273108814,
-                    4.14811581054,
-                    1.42240471385,
-                    0.0505728359147,
-                    -0.0106613679324,
-                    -0.000211505765068,
-                ],
-                [
-                    0.0113083798588,
-                    0.426458145116,
-                    -0.499685304962,
-                    -0.468487536336,
-                    -2.84084610444,
-                    -0.250008762357,
-                    4.06874131702,
-                    4.93635164952,
-                    1.7845053387,
-                    -9.9394563068,
-                    -17.5902587966,
-                    -1.87723439855,
-                    47.8240218251,
-                    2.57791664619,
-                    -14.5709240372,
-                    -4.78007676552,
-                    1.87167780269,
-                    0.359928009336,
-                    -1.18561757081,
-                    0.014074799611,
-                ],
-                [
-                    -0.526926108341,
-                    0.242860102398,
-                    0.0832942797245,
-                    1.18597661827,
-                    -4.25238476559,
-                    -2.6870585839,
-                    -0.827598209967,
-                    4.04304737017,
-                    2.83710840227,
-                    0.592362874638,
-                    -10.8714973146,
-                    -15.2700084763,
-                    2.57791664619,
-                    46.696159054,
-                    -4.74906899066,
-                    -15.6278488145,
-                    -4.24795289841,
-                    2.87455853452,
-                    3.07635737509,
-                    0.00532906905096,
-                ],
-                [
-                    0.499035732802,
-                    -1.395472436,
-                    2.64055890507,
-                    0.798189409259,
-                    -1.41656624794,
-                    -1.82043770689,
-                    0.403883540178,
-                    1.11729234765,
-                    3.85412837972,
-                    4.03037893175,
-                    -0.045009571053,
-                    -7.6273108814,
-                    -14.5709240372,
-                    -4.74906899066,
-                    40.1689374127,
-                    -3.67980915371,
-                    -10.3797521361,
-                    -0.841069955948,
-                    3.27779133415,
-                    0.0045492369767,
-                ],
-                [
-                    -0.714281934407,
-                    -0.416345646399,
-                    1.47285696771,
-                    0.862661371456,
-                    2.35443215524,
-                    0.109737469347,
-                    -2.06739129329,
-                    -0.61148362918,
-                    -0.420823216821,
-                    0.749631051365,
-                    4.87264332876,
-                    4.14811581054,
-                    -4.78007676552,
-                    -15.6278488145,
-                    -3.67980915371,
-                    37.0559195085,
-                    -1.42897044519,
-                    -7.88598395567,
-                    -1.9964210551,
-                    -0.0047454750271,
-                ],
-                [
-                    0.407365302927,
-                    -0.744042489471,
-                    -0.837591498704,
-                    -0.14246505168,
-                    1.26857012684,
-                    0.560938864345,
-                    -2.88536104019,
-                    -1.50162558801,
-                    1.56974432254,
-                    0.179619159884,
-                    1.30470158026,
-                    1.42240471385,
-                    1.87167780269,
-                    -4.24795289841,
-                    -10.3797521361,
-                    -1.42897044519,
-                    31.0878364175,
-                    -3.67706594057,
-                    -7.74307062767,
-                    -0.0186367239616,
-                ],
-                [
-                    0.0412386837587,
-                    1.2607667493,
-                    -1.32897383529,
-                    -1.3841655628,
-                    -0.0117059492945,
-                    0.219973313189,
-                    1.06444751058,
-                    -1.61722109339,
-                    -0.212411753395,
-                    1.09520337409,
-                    -0.320349338202,
-                    0.0505728359147,
-                    0.359928009336,
-                    2.87455853452,
-                    -0.841069955948,
-                    -7.88598395567,
-                    -3.67706594057,
-                    17.6561215842,
-                    -0.53359878584,
-                    0.00910717515256,
-                ],
-                [
-                    0.399436023924,
-                    0.0266160618793,
-                    -0.0909573472139,
-                    0.236725547536,
-                    0.193085174503,
-                    -0.590133590346,
-                    0.425819183522,
-                    0.491305564623,
-                    -0.638990283092,
-                    0.198303530561,
-                    0.55323063623,
-                    -0.0106613679324,
-                    -1.18561757081,
-                    3.07635737509,
-                    3.27779133415,
-                    -1.9964210551,
-                    -7.74307062767,
-                    -0.53359878584,
-                    13.2416621872,
-                    0.00936896857131,
-                ],
-                [
-                    0.0100796538444,
-                    0.0125632227269,
-                    -0.00747385975607,
-                    -0.0163619841363,
-                    -0.0128948234117,
-                    -0.00967309489576,
-                    0.0218279774715,
-                    0.00813673085389,
-                    -0.00117994378545,
-                    -0.0128674812862,
-                    -0.00361862544014,
-                    -0.000211505765068,
-                    0.014074799611,
-                    0.00532906905096,
-                    0.0045492369767,
-                    -0.0047454750271,
-                    -0.0186367239616,
-                    0.00910717515256,
-                    0.00936896857131,
-                    0.00505367806039,
-                ],
-            ]
-        )
-        np.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
-
-    def test_03_00_trace_segments_none(self):
-        """Test the trace_segments function on a blank image"""
-        image = np.zeros((10, 20), bool)
-        module = U.UntangleWorms()
-        i, j, label, order, distance, count = module.trace_segments(image)
-        self.assertEqual(count, 0)
-        for x in (i, j, label, order, distance):
-            self.assertEqual(len(x), 0)
-
-    def test_03_01_trace_one_segment(self):
-        """Trace a single segment"""
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
-        image[5, 1:18] = True
-        expected_order = np.zeros(image.shape, int)
-        expected_order[image] = np.arange(np.sum(image))
-        i, j, label, order, distance, count = module.trace_segments(image)
-        self.assertEqual(count, 1)
-        self.assertTrue(np.all(label == 1))
-        for x in (i, j, order, distance):
-            self.assertEqual(len(x), np.sum(image))
-
-        result_order = np.zeros(image.shape, int)
-        result_order[i, j] = order
-        self.assertTrue(np.all(image[i, j]))
-        self.assertTrue(np.all(expected_order == result_order))
-
-    def test_03_02_trace_short_segment(self):
-        """Trace a segment of a single point"""
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
-        for i in range(1, 3):
-            image[5, 10 : (10 + i)] = True
-            expected_order = np.zeros(image.shape, int)
-            expected_order[image] = np.arange(np.sum(image))
-            i, j, label, order, distance, count = module.trace_segments(image)
-            self.assertEqual(count, 1)
-            self.assertTrue(np.all(label == 1))
-            for x in (i, j, order, distance):
-                self.assertEqual(len(x), np.sum(image))
-
-            result_order = np.zeros(image.shape, int)
-            result_order[i, j] = order
-            self.assertTrue(np.all(image[i, j]))
-            self.assertTrue(np.all(expected_order == result_order))
-
-    def test_03_03_trace_loop(self):
-        """Trace an object that loops on itself"""
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
-        image[1:-1, 1:-1] = True
-        image[2:-2, 2:-2] = False
-        # Lop off the corners as would happen if skeletonized
-        image[1, 1] = image[1, -2] = image[-2, 1] = image[-2, -2] = False
-        #
-        # It should go clockwise, starting from 1,2
-        #
-        expected_order = np.zeros(image.shape, int)
-        i, j = np.mgrid[0 : image.shape[0], 0 : image.shape[1]]
-        slices = (
-            (1, slice(2, -2)),
-            (slice(2, -2), -2),
-            (-2, slice(-3, 1, -1)),
-            (slice(-3, 1, -1), 1),
-        )
-        ii, jj = np.array((2, 0), int)
-        ii = np.hstack([i[islice, jslice].flatten() for islice, jslice in slices])
-        jj = np.hstack([j[islice, jslice].flatten() for islice, jslice in slices])
-        expected_order[ii, jj] = np.arange(len(ii))
-        i, j, label, order, distance, count = module.trace_segments(image)
-        result_order = np.zeros(image.shape, int)
-        result_order[i, j] = order
-        self.assertTrue(np.all(expected_order == result_order))
-
-    def test_03_04_trace_two(self):
-        """Trace two objects"""
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
-        image[1:-1, 5] = True
-        image[1:-1, 15] = True
-        i, j, label, order, distance, count = module.trace_segments(image)
-        self.assertEqual(count, 2)
-        result_order = np.zeros(image.shape, int)
-        result_order[i, j] = order
-        for j in (5, 15):
-            self.assertTrue(
-                np.all(result_order[1:-1, j] == np.arange(image.shape[0] - 2))
-            )
-
-    def test_04_00_make_incidence_matrix_of_nothing(self):
-        """Make incidence matrix with two empty labels matrices"""
-
-        module = U.UntangleWorms()
-        result = module.make_incidence_matrix(
-            np.zeros((10, 20), int), 0, np.zeros((10, 20), int), 0
-        )
-        self.assertEqual(tuple(result.shape), (0, 0))
-
-    def test_04_01_make_incidence_matrix_of_things_that_do_not_touch(self):
-        module = U.UntangleWorms()
-        L1 = np.zeros((10, 20), int)
-        L2 = np.zeros((10, 20), int)
-        L1[5, 5] = 1
-        L2[5, 15] = 1
-        result = module.make_incidence_matrix(L1, 1, L2, 1)
-        self.assertEqual(tuple(result.shape), (1, 1))
-        self.assertTrue(np.all(~result))
-
-    def test_04_02_make_incidence_matrix_of_things_that_touch(self):
-        module = U.UntangleWorms()
-        L1 = np.zeros((10, 20), int)
-        L2 = np.zeros((10, 20), int)
-        L1[5, 5] = 1
-        for i2, j2 in ((4, 4), (4, 5), (4, 6), (5, 4), (5, 6), (6, 4), (6, 5), (6, 6)):
-            L2[i2, j2] = 1
-            result = module.make_incidence_matrix(L1, 1, L2, 1)
-            self.assertEqual(tuple(result.shape), (1, 1))
-            self.assertTrue(np.all(result))
-
-    def test_04_03_make_incidence_matrix_of_many_things(self):
-        module = U.UntangleWorms()
-        L1 = np.zeros((10, 20), int)
-        L2 = np.zeros((10, 20), int)
-        L1[2, 1:5] = 1
-        L1[4, 6:10] = 2
-        L1[6, 11:15] = 3
-        L1[1:6, 16] = 4
-        L1[0, 2:15] = 5
-        L2[1, 1] = 1
-        L2[3, 5] = 2
-        L2[5, 10] = 3
-        L2[6, 15] = 4
-        L2[1, 15] = 5
-        expected = np.zeros((5, 5), bool)
-        expected[0, 0] = True
-        expected[0, 1] = True
-        expected[1, 1] = True
-        expected[1, 2] = True
-        expected[2, 2] = True
-        expected[2, 3] = True
-        expected[3, 3] = True
-        expected[3, 4] = True
-        expected[4, 4] = True
-        expected[4, 0] = True
-        result = module.make_incidence_matrix(L1, 5, L2, 5)
-        self.assertTrue(np.all(result == expected))
-
-    def test_05_00_get_all_paths_recur_none(self):
-        module = U.UntangleWorms()
-
-        class Result(object):
-            def __init__(self):
-                self.branch_areas = []
-                self.segments = []
-                self.incidence_matrix = np.zeros((0, 0), bool)
-                self.segment_lengths = []
-
-        paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
-        self.assertEqual(len(paths_list), 0)
-
-    def test_05_01_get_all_paths_recur_one(self):
-        module = U.UntangleWorms()
-
-        #
-        # Branch # 0 connects segment 0 and segment 1
-        #
-        class Result(object):
-            def __init__(self):
-                self.incident_branch_areas = [[0], [0]]
-                self.incident_segments = [[0, 1]]
-                self.segments = [np.zeros((2, 1)), np.zeros((2, 1))]
-                self.segment_lengths = [1, 1]
-                self.incidence_directions = np.array([[False, True]])
-
-        paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
-        self.assertEqual(len(paths_list), 1)
-        path = paths_list[0]
-        self.assertTrue(isinstance(path, module.Path))
-        self.assertEqual(tuple(path.segments), (0, 1))
-        self.assertEqual(tuple(path.branch_areas), (0,))
-
-    def test_05_02_get_all_paths_recur_depth_two(self):
-        module = U.UntangleWorms()
-
-        #
-        # Branch # 0 connects segment 0 and segment 1
-        # Branch # 1 connects segment 1 and 2
-        #
-        class Result(object):
-            def __init__(self):
-                self.incident_branch_areas = [[0], [0, 1], [1]]
-                self.incident_segments = [[0, 1], [1, 2]]
-                self.segments = [np.zeros((2, 1)), np.zeros((2, 1))] * 3
-                self.segment_lengths = [1, 1, 1]
-                self.incidence_directions = np.array(
-                    [[False, True, False], [False, True, False]]
-                )
-
-        paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
-        self.assertEqual(len(paths_list), 2)
-        expected = (((0, 1), (0,)), ((0, 1, 2), (0, 1)))
-        sorted_list = tuple(
-            sorted(
-                [
-                    (tuple(path.segments), tuple(path.branch_areas))
-                    for path in paths_list
-                ]
-            )
-        )
-        self.assertEqual(sorted_list, expected)
-
-    def test_05_03_get_all_paths_recur_many(self):
-        module = U.UntangleWorms()
-
-        #
-        # A hopeless tangle where all branches connect to all segments
-        #
-        class Result(object):
-            def __init__(self):
-                self.incident_branch_areas = [list(range(3))] * 4
-                self.incident_segments = [list(range(4))] * 3
-                self.segments = [(np.zeros((2, 1)), np.zeros((2, 1)))] * 4
-                self.segment_lengths = [1] * 4
-                self.incidence_directions = np.ones((3, 4), bool)
-
-        paths_list = module.get_all_paths_recur(
-            Result(), [0], [[i] for i in range(3)], 1, 0, 1000
-        )
-        sorted_list = tuple(
-            sorted(
-                [
-                    (tuple(path.segments), tuple(path.branch_areas))
-                    for path in paths_list
-                ]
-            )
-        )
-        #
-        # All possible permutations of 1,2,3 * all possible permutations
-        # of 1,2,3
-        #
-        permutations = (
-            (1, 2, 3),
-            (1, 3, 2),
-            (2, 1, 3),
-            (2, 3, 1),
-            (3, 1, 2),
-            (3, 2, 1),
-        )
-        #
-        # Singles...
-        #
-        expected = sum(
-            [
-                [((0, segment), (branch_area,)) for branch_area in range(3)]
-                for segment in range(1, 4)
-            ],
-            [],
-        )
-        #
-        # Doubles
-        #
-        expected += sum(
-            [
-                sum(
-                    [
-                        [
-                            (tuple([0] + list(ps[:2])), (b1, b2))
-                            for b1 in range(3)
-                            if b2 != b1
-                        ]
-                        for b2 in range(3)
-                    ],
-                    [],
-                )
-                for ps in permutations
-            ],
-            [],
-        )
-        #
-        # Triples
-        #
-        expected += sum(
-            [
-                sum(
-                    [
-                        sum(
-                            [
-                                [
-                                    (tuple([0] + list(ps)), (b1, b2, b3))
-                                    for b1 in range(3)
-                                    if b2 != b1 and b1 != b3
-                                ]
-                                for b2 in range(3)
-                                if b3 != b2
-                            ],
-                            [],
-                        )
-                        for b3 in range(3)
-                    ],
-                    [],
-                )
-                for ps in permutations
-            ],
-            [],
-        )
-        expected = tuple(sorted(expected))
-        self.assertEqual(sorted_list, expected)
-
-    def test_06_00_get_all_paths_none(self):
-        module = U.UntangleWorms()
-
-        class Result(object):
-            def __init__(self):
-                self.branch_areas = []
-                self.segments = []
-                self.incidence_matrix = np.zeros((0, 0), bool)
-
-        path_list = list(module.get_all_paths(Result(), 0, 1000))
-        self.assertEqual(len(path_list), 0)
-
-    def test_06_01_get_all_paths_one(self):
-        module = U.UntangleWorms()
-
-        class Result(object):
-            def __init__(self):
-                self.branch_areas = []
-                self.segments = [[np.zeros((1, 2)), np.zeros((1, 2))]]
-                self.incidence_matrix = np.zeros((0, 1), bool)
-                self.incidence_directions = [[True, False]]
-
-        path_list = list(module.get_all_paths(Result(), 0, 1000))
-        self.assertEqual(len(path_list), 1)
-        path = path_list[0]
-        self.assertTrue(isinstance(path, module.Path))
-        self.assertEqual(tuple(path.segments), (0,))
-        self.assertEqual(len(path.branch_areas), 0)
-
-    def test_06_02_get_all_paths_two_segments(self):
-        module = U.UntangleWorms()
-
-        class Result(object):
-            def __init__(self):
-                self.branch_areas = [1]
-                self.segments = [[np.zeros((1, 2)), np.zeros((1, 2))]] * 2
-                self.incidence_matrix = np.ones((1, 2), bool)
-                self.incidence_directions = np.array([[True, False]])
-
-        path_list = list(module.get_all_paths(Result(), 0, 1000))
-        self.assertEqual(len(path_list), 3)
-        sorted_list = tuple(
-            sorted(
-                [(tuple(path.segments), tuple(path.branch_areas)) for path in path_list]
-            )
-        )
-        expected = (((0,), ()), ((0, 1), (0,)), ((1,), ()))
-        self.assertEqual(sorted_list, expected)
-
-    def test_06_03_get_all_paths_many(self):
-        module = U.UntangleWorms()
-        np.random.seed(63)
-
-        class Result(object):
-            def __init__(self):
-                self.branch_areas = [0, 1, 2]
-                self.segments = [[np.zeros((1, 2)), np.zeros((1, 2))]] * 4
-                self.incidence_directions = np.random.uniform(size=(3, 4)) > 0.25
-                self.incidence_matrix = self.incidence_directions | (
-                    np.random.uniform(size=(3, 4)) > 0.25
-                )
-
-        graph = Result()
-        path_list = module.get_all_paths(graph, 0, 1000)
-        for path in path_list:
-            self.assertEqual(len(path.segments), len(path.branch_areas) + 1)
-            if len(path.segments) > 1:
-                self.assertTrue(path.segments[0] < path.segments[-1])
-                for prev, next, branch_area in zip(
-                    path.segments[:-1], path.segments[1:], path.branch_areas
-                ):
-                    self.assertTrue(graph.incidence_matrix[branch_area, prev])
-                    self.assertTrue(graph.incidence_matrix[branch_area, next])
-
-    def test_07_01_sample_control_points(self):
-        module = U.UntangleWorms()
-        path_coords = np.random.randint(0, 20, size=(11, 2))
-        distances = np.linspace(0.0, 10.0, 11)
-        result = module.sample_control_points(path_coords, distances, 6)
-        self.assertEqual(len(result), 6)
-        self.assertEqual(tuple(path_coords[0]), tuple(result[0]))
-        self.assertEqual(tuple(path_coords[-1]), tuple(result[-1]))
-        for i in range(1, 5):
-            self.assertEqual(tuple(path_coords[i * 2]), tuple(result[i]))
-
-    def test_07_02_sample_non_linear_control_points(self):
-        module = U.UntangleWorms()
-        path_coords = np.array([np.arange(11)] * 2).transpose()
-        distances = np.sqrt(np.arange(11))
-        result = module.sample_control_points(path_coords, distances, 6)
-        self.assertTrue(np.all(result[:, 0] >= np.linspace(0.0, 1.0, 6) ** 2 * 10))
-        self.assertTrue(np.all(result[:, 0] < np.linspace(0.0, 1.0, 6) ** 2 * 10 + 0.5))
-
-    def test_07_03_only_two_sample_points(self):
-        module = U.UntangleWorms()
-        path_coords = np.array([[0, 0], [1, 2]])
-        distances = np.array([0, 5])
-        result = module.sample_control_points(path_coords, distances, 6)
-        np.testing.assert_almost_equal(result[:, 0], np.linspace(0, 1, 6))
-        np.testing.assert_almost_equal(result[:, 1], np.linspace(0, 2, 6))
-
-    def test_08_00_worm_descriptor_building_none(self):
-        module = U.UntangleWorms()
-        params = self.make_params(dict(worm_radius=5, num_control_points=20))
-        result, _, _, _, _ = module.worm_descriptor_building([], params, (0, 0))
-        self.assertEqual(len(result), 0)
-
-    def test_08_01_worm_descriptor_building_one(self):
-        module = U.UntangleWorms()
-        params = self.make_params(
-            dict(radii_from_training=np.array([5, 5, 5]), num_control_points=3)
-        )
-        result, _, _, _, _ = module.worm_descriptor_building(
-            [np.array([[10, 15], [20, 25]])], params, (40, 50)
-        )
-        expected = np.zeros((40, 50), bool)
-        expected[np.arange(10, 21), np.arange(15, 26)] = True
-        ii, jj = np.mgrid[-5:6, -5:6]
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        expected = np.argwhere(expected)
-        eorder = np.lexsort((expected[:, 0], expected[:, 1]))
-        rorder = np.lexsort((result[:, 0], result[:, 1]))
-        self.assertTrue(np.all(result[:, 2] == 1))
-        self.assertEqual(len(expected), len(result))
-        self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
-
-    def test_08_02_worm_descriptor_building_oob(self):
-        """Test performance if part of the worm is out of bounds"""
-        module = U.UntangleWorms()
-        params = self.make_params(
-            dict(radii_from_training=np.array([5, 5, 5]), num_control_points=3)
-        )
-        result, _, _, _, _ = module.worm_descriptor_building(
-            [np.array([[1, 15], [11, 25]])], params, (40, 27)
-        )
-        expected = np.zeros((40, 27), bool)
-        expected[np.arange(1, 12), np.arange(15, 26)] = True
-        ii, jj = np.mgrid[-5:6, -5:6]
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        expected = np.argwhere(expected)
-        eorder = np.lexsort((expected[:, 0], expected[:, 1]))
-        rorder = np.lexsort((result[:, 0], result[:, 1]))
-        self.assertTrue(np.all(result[:, 2] == 1))
-        self.assertEqual(len(expected), len(result))
-        self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
-
-    def test_08_03_worm_descriptor_building_two(self):
-        """Test rebuilding two worms"""
-
-        module = U.UntangleWorms()
-        params = self.make_params(
-            dict(radii_from_training=np.array([5, 5, 5]), num_control_points=3)
-        )
-        result, _, _, _, _ = module.worm_descriptor_building(
-            [np.array([[10, 15], [20, 25]]), np.array([[10, 25], [20, 15]])],
-            params,
-            (40, 50),
-        )
-        expected = np.zeros((40, 50), bool)
-        expected[np.arange(10, 21), np.arange(15, 26)] = True
-        ii, jj = np.mgrid[-5:6, -5:6]
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        epoints = np.argwhere(expected)
-        elabels = np.ones(len(epoints), int)
-
-        expected = np.zeros((40, 50), bool)
-        expected[np.arange(10, 21), np.arange(25, 14, -1)] = True
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        epoints = np.vstack((epoints, np.argwhere(expected)))
-        elabels = np.hstack((elabels, np.ones(np.sum(expected), int) * 2))
-
-        eorder = np.lexsort((epoints[:, 0], epoints[:, 1]))
-        rorder = np.lexsort((result[:, 0], result[:, 1]))
-        self.assertEqual(len(epoints), len(result))
-        self.assertTrue(np.all(result[rorder, 2] == elabels[eorder]))
-        self.assertTrue(np.all(result[rorder, :2] == epoints[eorder]))
-
-    def test_09_01_fast_selection_two(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1])
-        path_segment_matrix = np.array([[True, False], [False, True]])
-        segment_lengths = np.array([5, 5])
-        best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 1, 1, 10000
-        )
-        self.assertEqual(tuple(best_paths), (0, 1))
-        self.assertEqual(best_cost, 2)
-
-    def test_09_02_fast_selection_overlap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 10])
-        path_segment_matrix = np.array(
-            [[True, False, True], [True, True, True], [False, True, True]]
-        )
-        segment_lengths = np.array([5, 3, 5])
-        best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 2, 5, 10000
-        )
-        self.assertEqual(tuple(best_paths), (0, 1))
-        self.assertEqual(best_cost, 2 + 3 * 2)
-
-    def test_09_03_fast_selection_gap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 10])
-        path_segment_matrix = np.array(
-            [[True, False, True], [False, False, True], [False, True, True]]
-        )
-        segment_lengths = np.array([5, 3, 5])
-        best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 5, 2, 10000
-        )
-        self.assertEqual(tuple(best_paths), (0, 1))
-        self.assertEqual(best_cost, 2 + 3 * 2)
-
-    def test_09_04_fast_selection_no_overlap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 7])
-        path_segment_matrix = np.array(
-            [[True, False, True], [True, True, True], [False, True, True]]
-        )
-        segment_lengths = np.array([5, 3, 5])
-        best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 2, 5, 10000
-        )
-        self.assertEqual(tuple(best_paths), (2,))
-        self.assertEqual(best_cost, 7)
-
-    def test_09_05_fast_selection_no_gap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 7])
-        path_segment_matrix = np.array(
-            [[True, False, True], [False, False, True], [False, True, True]]
-        )
-        segment_lengths = np.array([5, 3, 5])
-        best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 5, 2, 10000
-        )
-        self.assertEqual(tuple(best_paths), (2,))
-        self.assertEqual(best_cost, 7)
-
-    def test_10_01_A02(self):
-        params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(self.A02_image, params)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace, None, None)
-        module.wants_training_set_weights.value = False
-        module.override_leftover_weight.value = 6
-        module.override_overlap_weight.value = 3
-        module.run(workspace)
-        object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
-        worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        self.assertTrue(isinstance(worms, cpo.Objects))
-        worm_ijv = worms.get_ijv()
-        self.assertEqual(np.max(worm_ijv[:, 2]), 15)
-        m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
-        self.assertEqual(ocount, 15)
-        ncount = m.get_current_image_measurement(
-            "Count_" + NON_OVERLAPPING_OBJECTS_NAME
-        )
-        self.assertEqual(ncount, 15)
-        columns = module.get_measurement_columns(workspace.pipeline)
-        for column in columns:
-            oname, feature = column[:2]
-            v = m.get_current_measurement(oname, feature)
-
-    def test_10_02_nonoverlapping_outlines(self):
-        params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(self.A02_image, params)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace, None, None)
-        module.wants_training_set_weights.value = False
-        module.override_leftover_weight.value = 6
-        module.override_overlap_weight.value = 3
-        module.wants_nonoverlapping_outlines.value = True
-        module.nonoverlapping_outlines_name.value = NON_OVERLAPPING_OUTLINES_NAME
-        module.run(workspace)
-        object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
-        worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
-        outlines = workspace.image_set.get_image(
-            NON_OVERLAPPING_OUTLINES_NAME
-        ).pixel_data
-        expected = outline(worms) > 0
-        self.assertTrue(np.all(outlines == expected))
-
-    def test_10_03_overlapping_outlines(self):
-        params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(self.A02_image, params)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace, None, None)
-        module.wants_training_set_weights.value = False
-        module.override_leftover_weight.value = 6
-        module.override_overlap_weight.value = 3
-        module.wants_overlapping_outlines.value = True
-        module.overlapping_outlines_name.value = OVERLAPPING_OUTLINES_NAME
-        module.run(workspace)
-        object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
-        worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
-        outlines = np.sum(outlines, 2) > 0  # crunch color dimension
-        i, j, v = worms.ijv.transpose()
-        expected = np.zeros(outlines.shape, bool)
-        expected[i, j] = True
-        # all outlines are in some object...
-        self.assertTrue(np.all(expected[outlines]))
-
-    def test_11_01_train_dot(self):
-        # Test training a single pixel
-        # Regression test of bugs regarding this case
-        #
-        image = np.zeros((10, 20), bool)
-        image[5, 10] = True
-        workspace, module = self.make_workspace(image)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.mode.value = U.MODE_TRAIN
-        module.prepare_group(workspace, None, None)
-        module.run(workspace)
-
-    def test_12_01_trace_segments(self):
-        #
-        # Regression test of img-1541, branch_areas_binary is not zero
-        # but segments_binary is
-        #
-        module = U.UntangleWorms()
-        i, j, labels, segment_order, distances, num_segments = module.trace_segments(
-            np.zeros((10, 13), bool)
-        )
-        self.assertEqual(len(i), 0)
-        self.assertEqual(len(j), 0)
-        np.testing.assert_equal(labels, 0)
-        self.assertEqual(len(segment_order), 0)
-        self.assertEqual(len(distances), 0)
-        self.assertEqual(num_segments, 0)
-
-    def test_12_02_get_graph_from_branching_areas_and_segments(self):
-        #
-        # Regression test of img-1541, branch_areas_binary is not zero
-        # but segments_binary is
-        #
-        module = U.UntangleWorms()
-        branch_areas = np.zeros((31, 15), bool)
-        branch_areas[7:25, 7:10] = True
-        result = module.get_graph_from_branching_areas_and_segments(
-            branch_areas, np.zeros(branch_areas.shape, bool)
-        )
-        self.assertEqual(tuple(branch_areas.shape), result.image_size)
-        self.assertEqual(len(result.segment_coords), 0)
-        self.assertEqual(len(result.segment_counts), 0)
-        self.assertEqual(len(result.segment_order), 0)
-        self.assertEqual(len(result.segments), 0)
-
-    def test_13_01_recalculate_single_worm_control_points(self):
-        i, j = np.mgrid[0:10, 0:10]
-        l0 = ((i == 3) & (j >= 2) & (j <= 6)).astype(int)
-        l0[(i == 7) & (j >= 3) & (j <= 7)] = 3
-
-        l1 = ((j == 3) & (i >= 2) & (i <= 6)).astype(int) * 2
-        l1[(j == 7) & (i >= 3) & (i <= 7)] = 4
-
-        expected = np.array(
+            cellprofiler.modules.untangleworms.C_ALL,
+            cellprofiler.modules.untangleworms.C_MEDIUM,
+            cellprofiler.modules.untangleworms.C_HIGH,
+            cellprofiler.modules.untangleworms.C_VERY_HIGH,
+            cellprofiler.modules.untangleworms.C_CUSTOM,
+        ),
+    ):
+        assert module.complexity == complexity
+
+
+def make_workspace(image, data=None, write_mode="wb"):
+    """Make a workspace to run the given image and params file
+
+    image - a binary image
+    data - the binary of the params file to run
+    """
+    if data is not None:
+        with open(filename, "wb") as fd:
+            fd.write(data)
+
+    pipeline = cellprofiler.pipeline.Pipeline()
+
+    def callback(caller, event):
+        assert not isinstance(
+            event,
             (
-                ((3, 2), (3, 4), (3, 6)),
-                ((2, 3), (4, 3), (6, 3)),
-                ((7, 3), (7, 5), (7, 7)),
-                ((3, 7), (5, 7), (7, 7)),
+                cellprofiler.pipeline.RunExceptionEvent,
+                cellprofiler.pipeline.LoadExceptionEvent,
+            ),
+        )
+
+    pipeline.add_listener(callback)
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    module.image_name.value = IMAGE_NAME
+    module.nonoverlapping_objects.value = NON_OVERLAPPING_OBJECTS_NAME
+    module.overlap_objects.value = OVERLAP_OBJECTS_NAME
+    module.set_module_num(1)
+    pipeline.add_module(module)
+    img = cellprofiler.image.Image(image)
+    image_set_list = cellprofiler.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    image_set.add(IMAGE_NAME, img)
+    module.training_set_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    (
+        module.training_set_directory.custom_path,
+        module.training_set_file_name.value,
+    ) = os.path.split(filename)
+
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        cellprofiler.object.ObjectSet(),
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
+    )
+    return workspace, module
+
+
+def make_params(d):
+    """Make a fake params structure from a dictionary
+
+    e.g., x = dict(foo=dict(bar=5)) -> x.foo.bar = 5
+    """
+
+    class X(object):
+        def __init__(d):
+            for key in list(d.keys()):
+                value = d[key]
+                if isinstance(value, dict):
+                    value = X(value)
+                setattr(key, value)
+
+    return X(d)
+
+
+def test_load_params():
+    data = zlib.decompress(base64.b64decode(PARAMS))
+    workspace, module = make_workspace(numpy.zeros((10, 10), bool), data)
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    module.prepare_group(workspace, None, None)
+    params = module.read_params()
+    assert round(abs(params.min_worm_area - 601.2), 0) == 0
+    assert round(abs(params.max_area - 1188.5), 0) == 0
+    assert round(abs(params.cost_threshold - 200.8174), 3) == 0
+    assert params.num_control_points == 21
+    numpy.testing.assert_almost_equal(
+        params.mean_angles,
+        numpy.array(
+            [
+                -0.00527796256445404,
+                -0.0315202989978013,
+                -0.00811839821858939,
+                -0.0268318268190547,
+                -0.0120476701544335,
+                -0.0202651421433172,
+                -0.0182919505672029,
+                -0.00990476055380843,
+                -0.0184558846126189,
+                -0.0100827620455749,
+                -0.0121729201775023,
+                -0.0129790204861452,
+                0.0170195137830520,
+                0.00185471766328753,
+                0.00913261528049730,
+                -0.0106805477987750,
+                0.00473369321673608,
+                -0.00835547063778011,
+                -0.00382606935405797,
+                127.129708001680,
+            ]
+        ),
+    )
+    numpy.testing.assert_almost_equal(
+        params.inv_angles_covariance_matrix,
+        numpy.array(
+            [
+                [
+                    16.1831499639022,
+                    -5.06131059821028,
+                    -7.03307454602146,
+                    -2.88853420387429,
+                    3.34017866010302,
+                    3.45512576204933,
+                    -1.09841786238497,
+                    -2.79348760430306,
+                    -1.85931734891389,
+                    -0.652858408126458,
+                    -1.22752367898365,
+                    4.15573185568687,
+                    1.99443112453893,
+                    -2.26823701209981,
+                    -1.25144655688072,
+                    0.321931535265876,
+                    0.230928100005575,
+                    1.47235070063732,
+                    0.487902558505382,
+                    -0.0240787101275336,
+                ],
+                [
+                    -5.06131059821028,
+                    25.7442868663138,
+                    -7.04197641326958,
+                    -13.5057449289369,
+                    -2.23928687231578,
+                    4.31232681113232,
+                    6.56454500463435,
+                    0.336556097291049,
+                    0.175759837346977,
+                    -2.77098858956934,
+                    0.307050758321026,
+                    -2.12899901988826,
+                    1.32985035426604,
+                    2.77299577778623,
+                    6.03717697873141,
+                    -2.84152938638523,
+                    -2.50027246248360,
+                    2.88188404703382,
+                    -2.94724985136021,
+                    -0.00349792622125952,
+                ],
+                [
+                    -7.03307454602146,
+                    -7.04197641326958,
+                    34.8868022738369,
+                    -2.41698367836302,
+                    -11.9074612429652,
+                    -5.03219465159153,
+                    0.566581294377262,
+                    4.65965515408864,
+                    4.40918302814844,
+                    2.12317351869194,
+                    -1.29767770791342,
+                    -4.66814018817306,
+                    -1.18082874743096,
+                    3.51827877502392,
+                    2.85186107108145,
+                    -1.26716616779540,
+                    -1.09593786866014,
+                    -2.32869644778286,
+                    3.48194316456812,
+                    0.0623642923643842,
+                ],
+                [
+                    -2.88853420387429,
+                    -13.5057449289369,
+                    -2.41698367836302,
+                    44.6605979566156,
+                    0.348020753098590,
+                    -17.3115366179766,
+                    -12.7256060767026,
+                    5.70440571321352,
+                    6.41590904344264,
+                    -0.304578996360776,
+                    1.47801450095277,
+                    -0.908814536484512,
+                    -1.48164287245030,
+                    -2.34708447702134,
+                    -2.23115474987353,
+                    2.88954249368066,
+                    2.74733203099146,
+                    -3.04745351430166,
+                    2.86603729585242,
+                    0.00665888346219492,
+                ],
+                [
+                    3.34017866010302,
+                    -2.23928687231578,
+                    -11.9074612429652,
+                    0.348020753098590,
+                    46.4099158672193,
+                    -3.25559842794185,
+                    -21.3692910255085,
+                    -10.0863357869636,
+                    -1.88512464797353,
+                    -5.09750253669453,
+                    1.04201155533543,
+                    9.59270554140012,
+                    0.145271525356847,
+                    -5.72994886885862,
+                    -6.15723880027164,
+                    1.88718468304502,
+                    0.283089642962522,
+                    1.66577561191334,
+                    -3.04240109786268,
+                    0.0462492758625229,
+                ],
+                [
+                    3.45512576204933,
+                    4.31232681113232,
+                    -5.03219465159153,
+                    -17.3115366179766,
+                    -3.25559842794185,
+                    57.1526341670534,
+                    7.57995189380428,
+                    -30.3232000529691,
+                    -13.9152901068606,
+                    1.20521891799049,
+                    9.87949588048337,
+                    10.3794242331984,
+                    -4.19429285108215,
+                    -9.73213279908661,
+                    0.320110631214874,
+                    4.02636261974896,
+                    -1.45438578469807,
+                    -2.11793646742091,
+                    -1.21519495438964,
+                    -0.00660397622823739,
+                ],
+                [
+                    -1.09841786238497,
+                    6.56454500463435,
+                    0.566581294377262,
+                    -12.7256060767026,
+                    -21.3692910255085,
+                    7.57995189380428,
+                    55.2613391936066,
+                    -6.13432369324871,
+                    -20.0367084309419,
+                    -4.90180311830919,
+                    5.26313027293073,
+                    1.43916280645744,
+                    -0.336838408057983,
+                    2.29636776603810,
+                    5.18308930951763,
+                    -1.98288423853561,
+                    -2.53995069544169,
+                    -1.21462394180208,
+                    1.97319648119690,
+                    -0.0627444956856546,
+                ],
+                [
+                    -2.79348760430306,
+                    0.336556097291049,
+                    4.65965515408864,
+                    5.70440571321352,
+                    -10.0863357869636,
+                    -30.3232000529691,
+                    -6.13432369324871,
+                    79.4076938002120,
+                    11.3722618218994,
+                    -26.1279088515910,
+                    -18.2231695390128,
+                    -2.67921008934274,
+                    8.52472948160932,
+                    3.40897885951299,
+                    -0.0156673992253622,
+                    0.391511866283792,
+                    2.43961939136012,
+                    -4.02463696447393,
+                    1.21200189852376,
+                    -0.0276025739334060,
+                ],
+                [
+                    -1.85931734891389,
+                    0.175759837346977,
+                    4.40918302814844,
+                    6.41590904344264,
+                    -1.88512464797353,
+                    -13.9152901068606,
+                    -20.0367084309419,
+                    11.3722618218994,
+                    62.2896410297082,
+                    -4.73903263913512,
+                    -17.7829659347680,
+                    -17.3704452255960,
+                    -1.11146124458858,
+                    2.69303406406718,
+                    5.35251557583661,
+                    7.57574529347207,
+                    -2.24432157539803,
+                    -1.01589845612927,
+                    2.74166325038759,
+                    0.00616263316699783,
+                ],
+                [
+                    -0.652858408126458,
+                    -2.77098858956934,
+                    2.12317351869194,
+                    -0.304578996360776,
+                    -5.09750253669453,
+                    1.20521891799049,
+                    -4.90180311830919,
+                    -26.1279088515910,
+                    -4.73903263913512,
+                    53.6045562587984,
+                    1.49208866907909,
+                    -18.7976123565674,
+                    -15.3160914187456,
+                    4.62369094805509,
+                    6.25594149186720,
+                    -1.86433478999824,
+                    2.40465791383637,
+                    0.860045694295453,
+                    -5.03379983998103,
+                    -0.00250271852621389,
+                ],
+                [
+                    -1.22752367898365,
+                    0.307050758321026,
+                    -1.29767770791342,
+                    1.47801450095277,
+                    1.04201155533543,
+                    9.87949588048337,
+                    5.26313027293073,
+                    -18.2231695390128,
+                    -17.7829659347680,
+                    1.49208866907909,
+                    52.6257209831917,
+                    4.12959322744854,
+                    -12.4142184568466,
+                    -9.82200985900629,
+                    -3.97638811187418,
+                    1.15423868070705,
+                    6.11175904439983,
+                    2.88103313127626,
+                    -0.0202321884301434,
+                    -0.0770486841949908,
+                ],
+                [
+                    4.15573185568687,
+                    -2.12899901988826,
+                    -4.66814018817306,
+                    -0.908814536484512,
+                    9.59270554140012,
+                    10.3794242331984,
+                    1.43916280645744,
+                    -2.67921008934274,
+                    -17.3704452255960,
+                    -18.7976123565674,
+                    4.12959322744854,
+                    59.4024702854915,
+                    -0.643591318201096,
+                    -17.8872119905991,
+                    -14.6283664729331,
+                    0.921599492881119,
+                    0.898368585097109,
+                    2.02174339844234,
+                    1.40192545975918,
+                    0.0866552397218132,
+                ],
+                [
+                    1.99443112453893,
+                    1.32985035426604,
+                    -1.18082874743096,
+                    -1.48164287245030,
+                    0.145271525356847,
+                    -4.19429285108215,
+                    -0.336838408057983,
+                    8.52472948160932,
+                    -1.11146124458858,
+                    -15.3160914187456,
+                    -12.4142184568466,
+                    -0.643591318201096,
+                    51.7737313171135,
+                    -2.98701120529969,
+                    -20.1761854847240,
+                    -5.56229914135487,
+                    2.56729654359925,
+                    1.84129317709747,
+                    2.90488161640993,
+                    -0.0294908776237644,
+                ],
+                [
+                    -2.26823701209981,
+                    2.77299577778623,
+                    3.51827877502392,
+                    -2.34708447702134,
+                    -5.72994886885862,
+                    -9.73213279908661,
+                    2.29636776603810,
+                    3.40897885951299,
+                    2.69303406406718,
+                    4.62369094805509,
+                    -9.82200985900629,
+                    -17.8872119905991,
+                    -2.98701120529969,
+                    38.7045301665171,
+                    0.0132666292353374,
+                    -12.2104685640281,
+                    -4.94147299831573,
+                    3.32199768047190,
+                    -0.225506641087443,
+                    0.0431435753786928,
+                ],
+                [
+                    -1.25144655688072,
+                    6.03717697873141,
+                    2.85186107108145,
+                    -2.23115474987353,
+                    -6.15723880027164,
+                    0.320110631214874,
+                    5.18308930951763,
+                    -0.0156673992253622,
+                    5.35251557583661,
+                    6.25594149186720,
+                    -3.97638811187418,
+                    -14.6283664729331,
+                    -20.1761854847240,
+                    0.0132666292353374,
+                    50.0037711812637,
+                    1.51067910097860,
+                    -12.7274402250448,
+                    -7.12911129084980,
+                    2.74828112041922,
+                    0.0251424008457656,
+                ],
+                [
+                    0.321931535265876,
+                    -2.84152938638523,
+                    -1.26716616779540,
+                    2.88954249368066,
+                    1.88718468304502,
+                    4.02636261974896,
+                    -1.98288423853561,
+                    0.391511866283792,
+                    7.57574529347207,
+                    -1.86433478999824,
+                    1.15423868070705,
+                    0.921599492881119,
+                    -5.56229914135487,
+                    -12.2104685640281,
+                    1.51067910097860,
+                    46.6921496750757,
+                    -8.43566372164764,
+                    -15.0997112563034,
+                    3.65384550078426,
+                    -0.00453606919854300,
+                ],
+                [
+                    0.230928100005575,
+                    -2.50027246248360,
+                    -1.09593786866014,
+                    2.74733203099146,
+                    0.283089642962522,
+                    -1.45438578469807,
+                    -2.53995069544169,
+                    2.43961939136012,
+                    -2.24432157539803,
+                    2.40465791383637,
+                    6.11175904439983,
+                    0.898368585097109,
+                    2.56729654359925,
+                    -4.94147299831573,
+                    -12.7274402250448,
+                    -8.43566372164764,
+                    32.8028397335256,
+                    -3.87691864187466,
+                    -6.41814264219731,
+                    -0.0905326089208310,
+                ],
+                [
+                    1.47235070063732,
+                    2.88188404703382,
+                    -2.32869644778286,
+                    -3.04745351430166,
+                    1.66577561191334,
+                    -2.11793646742091,
+                    -1.21462394180208,
+                    -4.02463696447393,
+                    -1.01589845612927,
+                    0.860045694295453,
+                    2.88103313127626,
+                    2.02174339844234,
+                    1.84129317709747,
+                    3.32199768047190,
+                    -7.12911129084980,
+                    -15.0997112563034,
+                    -3.87691864187466,
+                    28.0765623007788,
+                    -8.07326731403660,
+                    0.0228470307583052,
+                ],
+                [
+                    0.487902558505382,
+                    -2.94724985136021,
+                    3.48194316456812,
+                    2.86603729585242,
+                    -3.04240109786268,
+                    -1.21519495438964,
+                    1.97319648119690,
+                    1.21200189852376,
+                    2.74166325038759,
+                    -5.03379983998103,
+                    -0.0202321884301434,
+                    1.40192545975918,
+                    2.90488161640993,
+                    -0.225506641087443,
+                    2.74828112041922,
+                    3.65384550078426,
+                    -6.41814264219731,
+                    -8.07326731403660,
+                    18.1513394317232,
+                    0.0139561765245330,
+                ],
+                [
+                    -0.0240787101275336,
+                    -0.00349792622125952,
+                    0.0623642923643842,
+                    0.00665888346219492,
+                    0.0462492758625229,
+                    -0.00660397622823739,
+                    -0.0627444956856546,
+                    -0.0276025739334060,
+                    0.00616263316699783,
+                    -0.00250271852621389,
+                    -0.0770486841949908,
+                    0.0866552397218132,
+                    -0.0294908776237644,
+                    0.0431435753786928,
+                    0.0251424008457656,
+                    -0.00453606919854300,
+                    -0.0905326089208310,
+                    0.0228470307583052,
+                    0.0139561765245330,
+                    0.00759059668024605,
+                ],
+            ]
+        ),
+    )
+    assert round(abs(params.max_radius - 5.0990), 3) == 0
+    assert round(abs(params.max_skel_length - 155.4545), 3) == 0
+    assert round(abs(params.min_path_length - 84.401680541266530), 7) == 0
+    assert round(abs(params.max_path_length - 171.8155554421827), 7) == 0
+    assert round(abs(params.median_worm_area - 1007.5), 7) == 0
+    assert round(abs(params.worm_radius - 5.099019527435303), 7) == 0
+    assert params.overlap_weight == 5
+    assert params.leftover_weight == 10
+    numpy.testing.assert_almost_equal(
+        params.radii_from_training,
+        numpy.array(
+            [
+                1.19132055711746,
+                2.75003945541382,
+                3.56039281511307,
+                4.05681743049622,
+                4.39353294944763,
+                4.52820824432373,
+                4.66245639991760,
+                4.75254730796814,
+                4.76993056106567,
+                4.78852712249756,
+                4.73509162521362,
+                4.76029792976379,
+                4.75030451583862,
+                4.69090248298645,
+                4.59827183151245,
+                4.55065062236786,
+                4.35989559841156,
+                4.10916972160339,
+                3.58363935613632,
+                2.83766316795349,
+                1.15910302543640,
+            ]
+        ),
+    )
+
+
+def test_load_xml_params():
+    with open("test/resources/modules/untangleworms/parameters.xml", "r") as fd:
+        data = fd.read()
+
+    workspace, module = make_workspace(
+        numpy.zeros((10, 10), bool), data, write_mode="w"
+    )
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    module.prepare_group(workspace, None, None)
+    params = module.read_params()
+    assert params.version == 10680
+    assert round(abs(params.min_worm_area - 596.898), 7) == 0
+    assert round(abs(params.max_area - 1183), 7) == 0
+    assert round(abs(params.cost_threshold - 100), 7) == 0
+    assert params.num_control_points == 21
+    assert round(abs(params.max_skel_length - 158.038188951), 7) == 0
+    assert round(abs(params.min_path_length - 76.7075694196), 7) == 0
+    assert round(abs(params.max_path_length - 173.842007846), 7) == 0
+    assert round(abs(params.median_worm_area - 1006.0), 7) == 0
+    assert round(abs(params.max_radius - 5.07108224265), 7) == 0
+    assert params.overlap_weight == 5
+    assert params.leftover_weight == 10
+    expected = numpy.array(
+        [
+            -0.010999071156,
+            -0.011369928253,
+            -0.0063572663907,
+            -0.00537369691481,
+            -0.00491960423727,
+            -0.00888319810452,
+            0.000958176954014,
+            -0.00329354759164,
+            -0.00182154382306,
+            -0.00252850541515,
+            0.00583731052007,
+            -0.00629326705054,
+            -0.000221502806058,
+            0.000541997532415,
+            7.10858314614e-05,
+            -0.000536334650268,
+            0.00846699296415,
+            0.00229934152116,
+            0.013315157629,
+            127.475166584,
+        ]
+    )
+    numpy.testing.assert_almost_equal(expected, params.mean_angles)
+    expected = numpy.array(
+        [
+            1.42515381896,
+            2.85816813675,
+            3.625274645,
+            4.0753094944,
+            4.35612078737,
+            4.52117778419,
+            4.63350649815,
+            4.68616131779,
+            4.72754363339,
+            4.7538931664,
+            4.74523602328,
+            4.73738576257,
+            4.71422245337,
+            4.67997686977,
+            4.63299502256,
+            4.54769060478,
+            4.37493539203,
+            4.10516708918,
+            3.6478380576,
+            2.87519387935,
+            1.41510654664,
+        ]
+    )
+    numpy.testing.assert_almost_equal(expected, params.radii_from_training)
+    expected = numpy.array(
+        [
+            [
+                14.4160767437,
+                -3.62948521476,
+                -5.54563467306,
+                -2.03727846881,
+                1.28497735663,
+                1.69152924813,
+                0.155723103489,
+                0.0968570278119,
+                -0.830941512378,
+                -0.212837030458,
+                0.343854099462,
+                0.541856348331,
+                0.0113083798588,
+                -0.526926108341,
+                0.499035732802,
+                -0.714281934407,
+                0.407365302927,
+                0.0412386837587,
+                0.399436023924,
+                0.0100796538444,
+            ],
+            [
+                -3.62948521476,
+                28.3822272923,
+                -5.69796350599,
+                -12.8940771298,
+                -3.24074903822,
+                6.60066559736,
+                4.7027587735,
+                -0.228375351756,
+                -0.93975886278,
+                -0.404133419773,
+                0.461061138309,
+                -0.620175812393,
+                0.426458145116,
+                0.242860102398,
+                -1.395472436,
+                -0.416345646399,
+                -0.744042489471,
+                1.2607667493,
+                0.0266160618793,
+                0.0125632227269,
+            ],
+            [
+                -5.54563467306,
+                -5.69796350599,
+                33.965523631,
+                -2.5184071008,
+                -11.9739358904,
+                -5.55211501206,
+                1.54963332447,
+                1.51853522595,
+                2.94238214784,
+                1.58963458609,
+                -1.09690230963,
+                -3.03348214943,
+                -0.499685304962,
+                0.0832942797245,
+                2.64055890507,
+                1.47285696771,
+                -0.837591498704,
+                -1.32897383529,
+                -0.0909573472139,
+                -0.00747385975607,
+            ],
+            [
+                -2.03727846881,
+                -12.8940771298,
+                -2.5184071008,
+                38.910896265,
+                -0.501289252952,
+                -16.9651461757,
+                -8.5206491768,
+                0.599043361039,
+                4.0425703374,
+                3.46803482473,
+                1.5750544267,
+                0.828548143764,
+                -0.468487536336,
+                1.18597661827,
+                0.798189409259,
+                0.862661371456,
+                -0.14246505168,
+                -1.3841655628,
+                0.236725547536,
+                -0.0163619841363,
+            ],
+            [
+                1.28497735663,
+                -3.24074903822,
+                -11.9739358904,
+                -0.501289252952,
+                50.690805239,
+                -2.50730714299,
+                -19.7892493084,
+                -8.70870454399,
+                0.544130042179,
+                3.96597772445,
+                4.72570280412,
+                2.85472249374,
+                -2.84084610444,
+                -4.25238476559,
+                -1.41656624794,
+                2.35443215524,
+                1.26857012684,
+                -0.0117059492945,
+                0.193085174503,
+                -0.0128948234117,
+            ],
+            [
+                1.69152924813,
+                6.60066559736,
+                -5.55211501206,
+                -16.9651461757,
+                -2.50730714299,
+                49.7744788862,
+                2.21292071874,
+                -18.9379120677,
+                -11.6040186403,
+                -0.650553765753,
+                3.61258885051,
+                2.19212295163,
+                -0.250008762357,
+                -2.6870585839,
+                -1.82043770689,
+                0.109737469347,
+                0.560938864345,
+                0.219973313189,
+                -0.590133590346,
+                -0.00967309489576,
+            ],
+            [
+                0.155723103489,
+                4.7027587735,
+                1.54963332447,
+                -8.5206491768,
+                -19.7892493084,
+                2.21292071874,
+                51.0843827257,
+                0.934339159637,
+                -16.1389407803,
+                -13.597573567,
+                -1.54861446638,
+                3.38169064096,
+                4.06874131702,
+                -0.827598209967,
+                0.403883540178,
+                -2.06739129329,
+                -2.88536104019,
+                1.06444751058,
+                0.425819183522,
+                0.0218279774716,
+            ],
+            [
+                0.0968570278119,
+                -0.228375351756,
+                1.51853522595,
+                0.599043361039,
+                -8.70870454399,
+                -18.9379120677,
+                0.934339159637,
+                53.1553410056,
+                3.83284330941,
+                -21.8128767252,
+                -12.4239738428,
+                -0.689818407647,
+                4.93635164952,
+                4.04304737017,
+                1.11729234765,
+                -0.61148362918,
+                -1.50162558801,
+                -1.61722109339,
+                0.491305564623,
+                0.00813673085389,
+            ],
+            [
+                -0.830941512378,
+                -0.93975886278,
+                2.94238214784,
+                4.0425703374,
+                0.544130042179,
+                -11.6040186403,
+                -16.1389407803,
+                3.83284330941,
+                47.6933352778,
+                1.02465850736,
+                -18.704856196,
+                -9.30970873094,
+                1.7845053387,
+                2.83710840227,
+                3.85412837972,
+                -0.420823216821,
+                1.56974432254,
+                -0.212411753395,
+                -0.638990283092,
+                -0.00117994378546,
+            ],
+            [
+                -0.212837030458,
+                -0.404133419773,
+                1.58963458609,
+                3.46803482473,
+                3.96597772445,
+                -0.650553765753,
+                -13.597573567,
+                -21.8128767252,
+                1.02465850736,
+                55.2260388503,
+                4.35803059752,
+                -17.4350070993,
+                -9.9394563068,
+                0.592362874638,
+                4.03037893175,
+                0.749631051365,
+                0.179619159884,
+                1.09520337409,
+                0.198303530561,
+                -0.0128674812863,
+            ],
+            [
+                0.343854099462,
+                0.461061138309,
+                -1.09690230963,
+                1.5750544267,
+                4.72570280412,
+                3.61258885051,
+                -1.54861446638,
+                -12.4239738428,
+                -18.704856196,
+                4.35803059752,
+                51.04055356,
+                3.08936728044,
+                -17.5902587966,
+                -10.8714973146,
+                -0.045009571053,
+                4.87264332876,
+                1.30470158026,
+                -0.320349338202,
+                0.55323063623,
+                -0.00361862544014,
+            ],
+            [
+                0.541856348331,
+                -0.620175812393,
+                -3.03348214943,
+                0.828548143764,
+                2.85472249374,
+                2.19212295163,
+                3.38169064096,
+                -0.689818407647,
+                -9.30970873094,
+                -17.4350070993,
+                3.08936728044,
+                47.4661853593,
+                -1.87723439855,
+                -15.2700084763,
+                -7.6273108814,
+                4.14811581054,
+                1.42240471385,
+                0.0505728359147,
+                -0.0106613679324,
+                -0.000211505765068,
+            ],
+            [
+                0.0113083798588,
+                0.426458145116,
+                -0.499685304962,
+                -0.468487536336,
+                -2.84084610444,
+                -0.250008762357,
+                4.06874131702,
+                4.93635164952,
+                1.7845053387,
+                -9.9394563068,
+                -17.5902587966,
+                -1.87723439855,
+                47.8240218251,
+                2.57791664619,
+                -14.5709240372,
+                -4.78007676552,
+                1.87167780269,
+                0.359928009336,
+                -1.18561757081,
+                0.014074799611,
+            ],
+            [
+                -0.526926108341,
+                0.242860102398,
+                0.0832942797245,
+                1.18597661827,
+                -4.25238476559,
+                -2.6870585839,
+                -0.827598209967,
+                4.04304737017,
+                2.83710840227,
+                0.592362874638,
+                -10.8714973146,
+                -15.2700084763,
+                2.57791664619,
+                46.696159054,
+                -4.74906899066,
+                -15.6278488145,
+                -4.24795289841,
+                2.87455853452,
+                3.07635737509,
+                0.00532906905096,
+            ],
+            [
+                0.499035732802,
+                -1.395472436,
+                2.64055890507,
+                0.798189409259,
+                -1.41656624794,
+                -1.82043770689,
+                0.403883540178,
+                1.11729234765,
+                3.85412837972,
+                4.03037893175,
+                -0.045009571053,
+                -7.6273108814,
+                -14.5709240372,
+                -4.74906899066,
+                40.1689374127,
+                -3.67980915371,
+                -10.3797521361,
+                -0.841069955948,
+                3.27779133415,
+                0.0045492369767,
+            ],
+            [
+                -0.714281934407,
+                -0.416345646399,
+                1.47285696771,
+                0.862661371456,
+                2.35443215524,
+                0.109737469347,
+                -2.06739129329,
+                -0.61148362918,
+                -0.420823216821,
+                0.749631051365,
+                4.87264332876,
+                4.14811581054,
+                -4.78007676552,
+                -15.6278488145,
+                -3.67980915371,
+                37.0559195085,
+                -1.42897044519,
+                -7.88598395567,
+                -1.9964210551,
+                -0.0047454750271,
+            ],
+            [
+                0.407365302927,
+                -0.744042489471,
+                -0.837591498704,
+                -0.14246505168,
+                1.26857012684,
+                0.560938864345,
+                -2.88536104019,
+                -1.50162558801,
+                1.56974432254,
+                0.179619159884,
+                1.30470158026,
+                1.42240471385,
+                1.87167780269,
+                -4.24795289841,
+                -10.3797521361,
+                -1.42897044519,
+                31.0878364175,
+                -3.67706594057,
+                -7.74307062767,
+                -0.0186367239616,
+            ],
+            [
+                0.0412386837587,
+                1.2607667493,
+                -1.32897383529,
+                -1.3841655628,
+                -0.0117059492945,
+                0.219973313189,
+                1.06444751058,
+                -1.61722109339,
+                -0.212411753395,
+                1.09520337409,
+                -0.320349338202,
+                0.0505728359147,
+                0.359928009336,
+                2.87455853452,
+                -0.841069955948,
+                -7.88598395567,
+                -3.67706594057,
+                17.6561215842,
+                -0.53359878584,
+                0.00910717515256,
+            ],
+            [
+                0.399436023924,
+                0.0266160618793,
+                -0.0909573472139,
+                0.236725547536,
+                0.193085174503,
+                -0.590133590346,
+                0.425819183522,
+                0.491305564623,
+                -0.638990283092,
+                0.198303530561,
+                0.55323063623,
+                -0.0106613679324,
+                -1.18561757081,
+                3.07635737509,
+                3.27779133415,
+                -1.9964210551,
+                -7.74307062767,
+                -0.53359878584,
+                13.2416621872,
+                0.00936896857131,
+            ],
+            [
+                0.0100796538444,
+                0.0125632227269,
+                -0.00747385975607,
+                -0.0163619841363,
+                -0.0128948234117,
+                -0.00967309489576,
+                0.0218279774715,
+                0.00813673085389,
+                -0.00117994378545,
+                -0.0128674812862,
+                -0.00361862544014,
+                -0.000211505765068,
+                0.014074799611,
+                0.00532906905096,
+                0.0045492369767,
+                -0.0047454750271,
+                -0.0186367239616,
+                0.00910717515256,
+                0.00936896857131,
+                0.00505367806039,
+            ],
+        ]
+    )
+    numpy.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
+
+
+def test_trace_segments_none():
+    """Test the trace_segments function on a blank image"""
+    image = numpy.zeros((10, 20), bool)
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    i, j, label, order, distance, count = module.trace_segments(image)
+    assert count == 0
+    for x in (i, j, label, order, distance):
+        assert len(x) == 0
+
+
+def test_trace_one_segment():
+    """Trace a single segment"""
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    image = numpy.zeros((10, 20), bool)
+    image[5, 1:18] = True
+    expected_order = numpy.zeros(image.shape, int)
+    expected_order[image] = numpy.arange(numpy.sum(image))
+    i, j, label, order, distance, count = module.trace_segments(image)
+    assert count == 1
+    assert numpy.all(label == 1)
+    for x in (i, j, order, distance):
+        assert len(x) == numpy.sum(image)
+
+    result_order = numpy.zeros(image.shape, int)
+    result_order[i, j] = order
+    assert numpy.all(image[i, j])
+    assert numpy.all(expected_order == result_order)
+
+
+def test_trace_short_segment():
+    """Trace a segment of a single point"""
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    image = numpy.zeros((10, 20), bool)
+    for i in range(1, 3):
+        image[5, 10 : (10 + i)] = True
+        expected_order = numpy.zeros(image.shape, int)
+        expected_order[image] = numpy.arange(numpy.sum(image))
+        i, j, label, order, distance, count = module.trace_segments(image)
+        assert count == 1
+        assert numpy.all(label == 1)
+        for x in (i, j, order, distance):
+            assert len(x) == numpy.sum(image)
+
+        result_order = numpy.zeros(image.shape, int)
+        result_order[i, j] = order
+        assert numpy.all(image[i, j])
+        assert numpy.all(expected_order == result_order)
+
+
+def test_trace_loop():
+    """Trace an object that loops on itself"""
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    image = numpy.zeros((10, 20), bool)
+    image[1:-1, 1:-1] = True
+    image[2:-2, 2:-2] = False
+    # Lop off the corners as would happen if skeletonized
+    image[1, 1] = image[1, -2] = image[-2, 1] = image[-2, -2] = False
+    #
+    # It should go clockwise, starting from 1,2
+    #
+    expected_order = numpy.zeros(image.shape, int)
+    i, j = numpy.mgrid[0 : image.shape[0], 0 : image.shape[1]]
+    slices = (
+        (1, slice(2, -2)),
+        (slice(2, -2), -2),
+        (-2, slice(-3, 1, -1)),
+        (slice(-3, 1, -1), 1),
+    )
+    ii, jj = numpy.array((2, 0), int)
+    ii = numpy.hstack([i[islice, jslice].flatten() for islice, jslice in slices])
+    jj = numpy.hstack([j[islice, jslice].flatten() for islice, jslice in slices])
+    expected_order[ii, jj] = numpy.arange(len(ii))
+    i, j, label, order, distance, count = module.trace_segments(image)
+    result_order = numpy.zeros(image.shape, int)
+    result_order[i, j] = order
+    assert numpy.all(expected_order == result_order)
+
+
+def test_trace_two():
+    """Trace two objects"""
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    image = numpy.zeros((10, 20), bool)
+    image[1:-1, 5] = True
+    image[1:-1, 15] = True
+    i, j, label, order, distance, count = module.trace_segments(image)
+    assert count == 2
+    result_order = numpy.zeros(image.shape, int)
+    result_order[i, j] = order
+    for j in (5, 15):
+        assert numpy.all(result_order[1:-1, j] == numpy.arange(image.shape[0] - 2))
+
+
+def test_make_incidence_matrix_of_nothing():
+    """Make incidence matrix with two empty labels matrices"""
+
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    result = module.make_incidence_matrix(
+        numpy.zeros((10, 20), int), 0, numpy.zeros((10, 20), int), 0
+    )
+    assert tuple(result.shape) == (0, 0)
+
+
+def test_make_incidence_matrix_of_things_that_do_not_touch():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    L1 = numpy.zeros((10, 20), int)
+    L2 = numpy.zeros((10, 20), int)
+    L1[5, 5] = 1
+    L2[5, 15] = 1
+    result = module.make_incidence_matrix(L1, 1, L2, 1)
+    assert tuple(result.shape) == (1, 1)
+    assert numpy.all(~result)
+
+
+def test_make_incidence_matrix_of_things_that_touch():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    L1 = numpy.zeros((10, 20), int)
+    L2 = numpy.zeros((10, 20), int)
+    L1[5, 5] = 1
+    for i2, j2 in ((4, 4), (4, 5), (4, 6), (5, 4), (5, 6), (6, 4), (6, 5), (6, 6)):
+        L2[i2, j2] = 1
+        result = module.make_incidence_matrix(L1, 1, L2, 1)
+        assert tuple(result.shape) == (1, 1)
+        assert numpy.all(result)
+
+
+def test_make_incidence_matrix_of_many_things():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    L1 = numpy.zeros((10, 20), int)
+    L2 = numpy.zeros((10, 20), int)
+    L1[2, 1:5] = 1
+    L1[4, 6:10] = 2
+    L1[6, 11:15] = 3
+    L1[1:6, 16] = 4
+    L1[0, 2:15] = 5
+    L2[1, 1] = 1
+    L2[3, 5] = 2
+    L2[5, 10] = 3
+    L2[6, 15] = 4
+    L2[1, 15] = 5
+    expected = numpy.zeros((5, 5), bool)
+    expected[0, 0] = True
+    expected[0, 1] = True
+    expected[1, 1] = True
+    expected[1, 2] = True
+    expected[2, 2] = True
+    expected[2, 3] = True
+    expected[3, 3] = True
+    expected[3, 4] = True
+    expected[4, 4] = True
+    expected[4, 0] = True
+    result = module.make_incidence_matrix(L1, 5, L2, 5)
+    assert numpy.all(result == expected)
+
+
+def test_get_all_paths_recur_none():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+
+    class Result(object):
+        def __init__(self):
+            branch_areas = []
+            segments = []
+            incidence_matrix = numpy.zeros((0, 0), bool)
+            segment_lengths = []
+
+    paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
+    assert len(paths_list) == 0
+
+
+def test_get_all_paths_recur_one():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+
+    #
+    # Branch # 0 connects segment 0 and segment 1
+    #
+    class Result(object):
+        def __init__(self):
+            incident_branch_areas = [[0], [0]]
+            incident_segments = [[0, 1]]
+            segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))]
+            segment_lengths = [1, 1]
+            incidence_directions = numpy.array([[False, True]])
+
+    paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
+    assert len(paths_list) == 1
+    path = paths_list[0]
+    assert isinstance(path, module.Path)
+    assert tuple(path.segments) == (0, 1)
+    assert tuple(path.branch_areas) == (0,)
+
+
+def test_get_all_paths_recur_depth_two():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+
+    #
+    # Branch # 0 connects segment 0 and segment 1
+    # Branch # 1 connects segment 1 and 2
+    #
+    class Result(object):
+        def __init__(self):
+            incident_branch_areas = [[0], [0, 1], [1]]
+            incident_segments = [[0, 1], [1, 2]]
+            segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))] * 3
+            segment_lengths = [1, 1, 1]
+            incidence_directions = numpy.array(
+                [[False, True, False], [False, True, False]]
             )
+
+    paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
+    assert len(paths_list) == 2
+    expected = (((0, 1), (0,)), ((0, 1, 2), (0, 1)))
+    sorted_list = tuple(
+        sorted(
+            [(tuple(path.segments), tuple(path.branch_areas)) for path in paths_list]
         )
+    )
+    assert sorted_list == expected
 
-        result, lengths = U.recalculate_single_worm_control_points([l0, l1], 3)
-        self.assertEqual(tuple(result.shape), (4, 3, 2))
-        self.assertEqual(len(lengths), 4)
-        # Flip any worms that aren't ordered canonically
-        for i in range(4):
-            if tuple(result[i, -1, :]) < tuple(result[i, 0, :]):
-                result[i, :, :] = result[i, ::-1, :]
 
-        self.assertTrue(np.all(lengths == 4))
-        np.testing.assert_array_equal(expected, result)
+def test_get_all_paths_recur_many():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
 
-    def test_13_02_recalculate_single_worm_control_points_no_objects(self):
-        # regression test of issue #930
-        result, lengths = U.recalculate_single_worm_control_points(
-            [np.zeros((10, 15), int)], 3
+    #
+    # A hopeless tangle where all branches connect to all segments
+    #
+    class Result(object):
+        def __init__(self):
+            incident_branch_areas = [list(range(3))] * 4
+            incident_segments = [list(range(4))] * 3
+            segments = [(numpy.zeros((2, 1)), numpy.zeros((2, 1)))] * 4
+            segment_lengths = [1] * 4
+            incidence_directions = numpy.ones((3, 4), bool)
+
+    paths_list = module.get_all_paths_recur(
+        Result(), [0], [[i] for i in range(3)], 1, 0, 1000
+    )
+    sorted_list = tuple(
+        sorted(
+            [(tuple(path.segments), tuple(path.branch_areas)) for path in paths_list]
         )
-        self.assertEqual(tuple(result.shape), (0, 3, 2))
-        self.assertEqual(len(lengths), 0)
+    )
+    #
+    # All possible permutations of 1,2,3 * all possible permutations
+    # of 1,2,3
+    #
+    permutations = ((1, 2, 3), (1, 3, 2), (2, 1, 3), (2, 3, 1), (3, 1, 2), (3, 2, 1))
+    #
+    # Singles...
+    #
+    expected = sum(
+        [
+            [((0, segment), (branch_area,)) for branch_area in range(3)]
+            for segment in range(1, 4)
+        ],
+        [],
+    )
+    #
+    # Doubles
+    #
+    expected += sum(
+        [
+            sum(
+                [
+                    [
+                        (tuple([0] + list(ps[:2])), (b1, b2))
+                        for b1 in range(3)
+                        if b2 != b1
+                    ]
+                    for b2 in range(3)
+                ],
+                [],
+            )
+            for ps in permutations
+        ],
+        [],
+    )
+    #
+    # Triples
+    #
+    expected += sum(
+        [
+            sum(
+                [
+                    sum(
+                        [
+                            [
+                                (tuple([0] + list(ps)), (b1, b2, b3))
+                                for b1 in range(3)
+                                if b2 != b1 and b1 != b3
+                            ]
+                            for b2 in range(3)
+                            if b3 != b2
+                        ],
+                        [],
+                    )
+                    for b3 in range(3)
+                ],
+                [],
+            )
+            for ps in permutations
+        ],
+        [],
+    )
+    expected = tuple(sorted(expected))
+    assert sorted_list == expected
+
+
+def test_get_all_paths_none():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+
+    class Result(object):
+        def __init__(self):
+            branch_areas = []
+            segments = []
+            incidence_matrix = numpy.zeros((0, 0), bool)
+
+    path_list = list(module.get_all_paths(Result(), 0, 1000))
+    assert len(path_list) == 0
+
+
+def test_get_all_paths_one():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+
+    class Result(object):
+        def __init__(self):
+            branch_areas = []
+            segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]]
+            incidence_matrix = numpy.zeros((0, 1), bool)
+            incidence_directions = [[True, False]]
+
+    path_list = list(module.get_all_paths(Result(), 0, 1000))
+    assert len(path_list) == 1
+    path = path_list[0]
+    assert isinstance(path, module.Path)
+    assert tuple(path.segments) == (0,)
+    assert len(path.branch_areas) == 0
+
+
+def test_get_all_paths_two_segments():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+
+    class Result(object):
+        def __init__(self):
+            branch_areas = [1]
+            segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 2
+            incidence_matrix = numpy.ones((1, 2), bool)
+            incidence_directions = numpy.array([[True, False]])
+
+    path_list = list(module.get_all_paths(Result(), 0, 1000))
+    assert len(path_list) == 3
+    sorted_list = tuple(
+        sorted([(tuple(path.segments), tuple(path.branch_areas)) for path in path_list])
+    )
+    expected = (((0,), ()), ((0, 1), (0,)), ((1,), ()))
+    assert sorted_list == expected
+
+
+def test_get_all_paths_many():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    numpy.random.seed(63)
+
+    class Result(object):
+        def __init__(self):
+            branch_areas = [0, 1, 2]
+            segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 4
+            incidence_directions = numpy.random.uniform(size=(3, 4)) > 0.25
+            incidence_matrix = incidence_directions | (
+                numpy.random.uniform(size=(3, 4)) > 0.25
+            )
+
+    graph = Result()
+    path_list = module.get_all_paths(graph, 0, 1000)
+    for path in path_list:
+        assert len(path.segments) == len(path.branch_areas) + 1
+        if len(path.segments) > 1:
+            assert path.segments[0] < path.segments[-1]
+            for prev, next, branch_area in zip(
+                path.segments[:-1], path.segments[1:], path.branch_areas
+            ):
+                assert graph.incidence_matrix[branch_area, prev]
+                assert graph.incidence_matrix[branch_area, next]
+
+
+def test_sample_control_points():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    path_coords = numpy.random.randint(0, 20, size=(11, 2))
+    distances = numpy.linspace(0.0, 10.0, 11)
+    result = module.sample_control_points(path_coords, distances, 6)
+    assert len(result) == 6
+    assert tuple(path_coords[0]) == tuple(result[0])
+    assert tuple(path_coords[-1]) == tuple(result[-1])
+    for i in range(1, 5):
+        assert tuple(path_coords[i * 2]) == tuple(result[i])
+
+
+def test_sample_non_linear_control_points():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    path_coords = numpy.array([numpy.arange(11)] * 2).transpose()
+    distances = numpy.sqrt(numpy.arange(11))
+    result = module.sample_control_points(path_coords, distances, 6)
+    assert numpy.all(result[:, 0] >= numpy.linspace(0.0, 1.0, 6) ** 2 * 10)
+    assert numpy.all(result[:, 0] < numpy.linspace(0.0, 1.0, 6) ** 2 * 10 + 0.5)
+
+
+def test_only_two_sample_points():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    path_coords = numpy.array([[0, 0], [1, 2]])
+    distances = numpy.array([0, 5])
+    result = module.sample_control_points(path_coords, distances, 6)
+    numpy.testing.assert_almost_equal(result[:, 0], numpy.linspace(0, 1, 6))
+    numpy.testing.assert_almost_equal(result[:, 1], numpy.linspace(0, 2, 6))
+
+
+def test_worm_descriptor_building_none():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    params = make_params(dict(worm_radius=5, num_control_points=20))
+    result, _, _, _, _ = module.worm_descriptor_building([], params, (0, 0))
+    assert len(result) == 0
+
+
+def test_worm_descriptor_building_one():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    params = make_params(
+        dict(radii_from_training=numpy.array([5, 5, 5]), num_control_points=3)
+    )
+    result, _, _, _, _ = module.worm_descriptor_building(
+        [numpy.array([[10, 15], [20, 25]])], params, (40, 50)
+    )
+    expected = numpy.zeros((40, 50), bool)
+    expected[numpy.arange(10, 21), numpy.arange(15, 26)] = True
+    ii, jj = numpy.mgrid[-5:6, -5:6]
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+    expected = numpy.argwhere(expected)
+    eorder = numpy.lexsort((expected[:, 0], expected[:, 1]))
+    rorder = numpy.lexsort((result[:, 0], result[:, 1]))
+    assert numpy.all(result[:, 2] == 1)
+    assert len(expected) == len(result)
+    assert numpy.all(result[rorder, :2] == expected[eorder, :])
+
+
+def test_worm_descriptor_building_oob():
+    """Test performance if part of the worm is out of bounds"""
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    params = make_params(
+        dict(radii_from_training=numpy.array([5, 5, 5]), num_control_points=3)
+    )
+    result, _, _, _, _ = module.worm_descriptor_building(
+        [numpy.array([[1, 15], [11, 25]])], params, (40, 27)
+    )
+    expected = numpy.zeros((40, 27), bool)
+    expected[numpy.arange(1, 12), numpy.arange(15, 26)] = True
+    ii, jj = numpy.mgrid[-5:6, -5:6]
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+    expected = numpy.argwhere(expected)
+    eorder = numpy.lexsort((expected[:, 0], expected[:, 1]))
+    rorder = numpy.lexsort((result[:, 0], result[:, 1]))
+    assert numpy.all(result[:, 2] == 1)
+    assert len(expected) == len(result)
+    assert numpy.all(result[rorder, :2] == expected[eorder, :])
+
+
+def test_worm_descriptor_building_two():
+    """Test rebuilding two worms"""
+
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    params = make_params(
+        dict(radii_from_training=numpy.array([5, 5, 5]), num_control_points=3)
+    )
+    result, _, _, _, _ = module.worm_descriptor_building(
+        [numpy.array([[10, 15], [20, 25]]), numpy.array([[10, 25], [20, 15]])],
+        params,
+        (40, 50),
+    )
+    expected = numpy.zeros((40, 50), bool)
+    expected[numpy.arange(10, 21), numpy.arange(15, 26)] = True
+    ii, jj = numpy.mgrid[-5:6, -5:6]
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+    epoints = numpy.argwhere(expected)
+    elabels = numpy.ones(len(epoints), int)
+
+    expected = numpy.zeros((40, 50), bool)
+    expected[numpy.arange(10, 21), numpy.arange(25, 14, -1)] = True
+    expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+    epoints = numpy.vstack((epoints, numpy.argwhere(expected)))
+    elabels = numpy.hstack((elabels, numpy.ones(numpy.sum(expected), int) * 2))
+
+    eorder = numpy.lexsort((epoints[:, 0], epoints[:, 1]))
+    rorder = numpy.lexsort((result[:, 0], result[:, 1]))
+    assert len(epoints) == len(result)
+    assert numpy.all(result[rorder, 2] == elabels[eorder])
+    assert numpy.all(result[rorder, :2] == epoints[eorder])
+
+
+def test_fast_selection_two():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    costs = numpy.array([1, 1])
+    path_segment_matrix = numpy.array([[True, False], [False, True]])
+    segment_lengths = numpy.array([5, 5])
+    best_paths, best_cost = module.fast_selection(
+        costs, path_segment_matrix, segment_lengths, 1, 1, 10000
+    )
+    assert tuple(best_paths) == (0, 1)
+    assert best_cost == 2
+
+
+def test_fast_selection_overlap():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    costs = numpy.array([1, 1, 10])
+    path_segment_matrix = numpy.array(
+        [[True, False, True], [True, True, True], [False, True, True]]
+    )
+    segment_lengths = numpy.array([5, 3, 5])
+    best_paths, best_cost = module.fast_selection(
+        costs, path_segment_matrix, segment_lengths, 2, 5, 10000
+    )
+    assert tuple(best_paths) == (0, 1)
+    assert best_cost == 2 + 3 * 2
+
+
+def test_fast_selection_gap():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    costs = numpy.array([1, 1, 10])
+    path_segment_matrix = numpy.array(
+        [[True, False, True], [False, False, True], [False, True, True]]
+    )
+    segment_lengths = numpy.array([5, 3, 5])
+    best_paths, best_cost = module.fast_selection(
+        costs, path_segment_matrix, segment_lengths, 5, 2, 10000
+    )
+    assert tuple(best_paths) == (0, 1)
+    assert best_cost == 2 + 3 * 2
+
+
+def test_fast_selection_no_overlap():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    costs = numpy.array([1, 1, 7])
+    path_segment_matrix = numpy.array(
+        [[True, False, True], [True, True, True], [False, True, True]]
+    )
+    segment_lengths = numpy.array([5, 3, 5])
+    best_paths, best_cost = module.fast_selection(
+        costs, path_segment_matrix, segment_lengths, 2, 5, 10000
+    )
+    assert tuple(best_paths) == (2,)
+    assert best_cost == 7
+
+
+def test_fast_selection_no_gap():
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    costs = numpy.array([1, 1, 7])
+    path_segment_matrix = numpy.array(
+        [[True, False, True], [False, False, True], [False, True, True]]
+    )
+    segment_lengths = numpy.array([5, 3, 5])
+    best_paths, best_cost = module.fast_selection(
+        costs, path_segment_matrix, segment_lengths, 5, 2, 10000
+    )
+    assert tuple(best_paths) == (2,)
+    assert best_cost == 7
+
+
+def test_A02():
+    params = zlib.decompress(base64.b64decode(PARAMS))
+    workspace, module = make_workspace(A02_image, params)
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    module.prepare_group(workspace, None, None)
+    module.wants_training_set_weights.value = False
+    module.override_leftover_weight.value = 6
+    module.override_overlap_weight.value = 3
+    module.run(workspace)
+    object_set = workspace.object_set
+    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
+    assert isinstance(worms, cellprofiler.object.Objects)
+    worm_ijv = worms.get_ijv()
+    assert numpy.max(worm_ijv[:, 2]) == 15
+    m = workspace.measurements
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
+    assert ocount == 15
+    ncount = m.get_current_image_measurement("Count_" + NON_OVERLAPPING_OBJECTS_NAME)
+    assert ncount == 15
+    columns = module.get_measurement_columns(workspace.pipeline)
+    for column in columns:
+        oname, feature = column[:2]
+        v = m.get_current_measurement(oname, feature)
+
+
+def test_nonoverlapping_outlines():
+    params = zlib.decompress(base64.b64decode(PARAMS))
+    workspace, module = make_workspace(A02_image, params)
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    module.prepare_group(workspace, None, None)
+    module.wants_training_set_weights.value = False
+    module.override_leftover_weight.value = 6
+    module.override_overlap_weight.value = 3
+    module.wants_nonoverlapping_outlines.value = True
+    module.nonoverlapping_outlines_name.value = NON_OVERLAPPING_OUTLINES_NAME
+    module.run(workspace)
+    object_set = workspace.object_set
+    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
+    outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
+    expected = centrosome.outline.outline(worms) > 0
+    assert numpy.all(outlines == expected)
+
+
+def test_overlapping_outlines():
+    params = zlib.decompress(base64.b64decode(PARAMS))
+    workspace, module = make_workspace(A02_image, params)
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    module.prepare_group(workspace, None, None)
+    module.wants_training_set_weights.value = False
+    module.override_leftover_weight.value = 6
+    module.override_overlap_weight.value = 3
+    module.wants_overlapping_outlines.value = True
+    module.overlapping_outlines_name.value = OVERLAPPING_OUTLINES_NAME
+    module.run(workspace)
+    object_set = workspace.object_set
+    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
+    outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
+    outlines = numpy.sum(outlines, 2) > 0  # crunch color dimension
+    i, j, v = worms.ijv.transpose()
+    expected = numpy.zeros(outlines.shape, bool)
+    expected[i, j] = True
+    # all outlines are in some object...
+    assert numpy.all(expected[outlines])
+
+
+def test_train_dot():
+    # Test training a single pixel
+    # Regression test of bugs regarding this case
+    #
+    image = numpy.zeros((10, 20), bool)
+    image[5, 10] = True
+    workspace, module = make_workspace(image)
+    assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
+    module.mode.value = cellprofiler.modules.untangleworms.MODE_TRAIN
+    module.prepare_group(workspace, None, None)
+    module.run(workspace)
+
+
+def test_trace_segments():
+    #
+    # Regression test of img-1541, branch_areas_binary is not zero
+    # but segments_binary is
+    #
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    i, j, labels, segment_order, distances, num_segments = module.trace_segments(
+        numpy.zeros((10, 13), bool)
+    )
+    assert len(i) == 0
+    assert len(j) == 0
+    numpy.testing.assert_equal(labels, 0)
+    assert len(segment_order) == 0
+    assert len(distances) == 0
+    assert num_segments == 0
+
+
+def test_get_graph_from_branching_areas_and_segments():
+    #
+    # Regression test of img-1541, branch_areas_binary is not zero
+    # but segments_binary is
+    #
+    module = cellprofiler.modules.untangleworms.UntangleWorms()
+    branch_areas = numpy.zeros((31, 15), bool)
+    branch_areas[7:25, 7:10] = True
+    result = module.get_graph_from_branching_areas_and_segments(
+        branch_areas, numpy.zeros(branch_areas.shape, bool)
+    )
+    assert tuple(branch_areas.shape) == result.image_size
+    assert len(result.segment_coords) == 0
+    assert len(result.segment_counts) == 0
+    assert len(result.segment_order) == 0
+    assert len(result.segments) == 0
+
+
+def test_recalculate_single_worm_control_points():
+    i, j = numpy.mgrid[0:10, 0:10]
+    l0 = ((i == 3) & (j >= 2) & (j <= 6)).astype(int)
+    l0[(i == 7) & (j >= 3) & (j <= 7)] = 3
+
+    l1 = ((j == 3) & (i >= 2) & (i <= 6)).astype(int) * 2
+    l1[(j == 7) & (i >= 3) & (i <= 7)] = 4
+
+    expected = numpy.array(
+        (
+            ((3, 2), (3, 4), (3, 6)),
+            ((2, 3), (4, 3), (6, 3)),
+            ((7, 3), (7, 5), (7, 7)),
+            ((3, 7), (5, 7), (7, 7)),
+        )
+    )
+
+    result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+        [l0, l1], 3
+    )
+    assert tuple(result.shape) == (4, 3, 2)
+    assert len(lengths) == 4
+    # Flip any worms that aren't ordered canonically
+    for i in range(4):
+        if tuple(result[i, -1, :]) < tuple(result[i, 0, :]):
+            result[i, :, :] = result[i, ::-1, :]
+
+    assert numpy.all(lengths == 4)
+    numpy.testing.assert_array_equal(expected, result)
+
+
+def test_recalculate_single_worm_control_points_no_objects():
+    # regression test of issue #930
+    result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+        [numpy.zeros((10, 15), int)], 3
+    )
+    assert tuple(result.shape) == (0, 3, 2)
+    assert len(lengths) == 0

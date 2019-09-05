@@ -1127,7 +1127,7 @@ class TestHDFCSV(HDF5DictTessstBase):
         }
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
         csv.set_all(d)
-        for key, strings in d.items():
+        for key, strings in list(d.items()):
             column = csv[key]
             self.assertEqual(len(column), len(strings))
             for s0, s1 in zip(strings, column):
@@ -1145,7 +1145,7 @@ class TestHDFCSV(HDF5DictTessstBase):
             self.assertIn(key, csv.get_column_names())
             self.assertIn(key, csv)
             self.assertIn(key, list(csv.keys()))
-            self.assertIn(key, iter(csv.keys()))
+            self.assertIn(key, iter(list(csv.keys())))
 
 
 class TestVStringArray(HDF5DictTessstBase):
@@ -1232,7 +1232,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(a[0], "")
 
     def test_04_04_get_unicode(self):
-        s = "\u03b4x"
+        s = "\\u03b4x"
         a = H5DICT.VStringArray(self.hdf_file)
         a[0] = s
         self.assertEqual(a[0], s)
@@ -1487,7 +1487,7 @@ class TestStringReference(HDF5DictTessstBase):
 
     def test_01_05_unicode(self):
         sr = H5DICT.StringReferencer(self.hdf_file.create_group("test"))
-        s = "\u03c0r\u00b2"
+        s = "\\u03c0r\\u00b2"
         result = sr.get_string_refs([s])
         self.assertEqual(len(result), 1)
         rstrings = sr.get_strings(result)

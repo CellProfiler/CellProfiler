@@ -1,10 +1,10 @@
-import cellprofiler.image
-import cellprofiler.modules.morphologicalskeleton
 import numpy.testing
 import pytest
 import skimage.data
 import skimage.morphology
 
+import cellprofiler.image
+import cellprofiler.modules.morphologicalskeleton
 
 instance = cellprofiler.modules.morphologicalskeleton.MorphologicalSkeleton()
 

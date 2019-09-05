@@ -1,7 +1,5 @@
 import io
-import base64
 import os.path
-import zlib
 
 import centrosome.filter
 import numpy
@@ -941,50 +939,11 @@ def test_enhance_dic(image, module, workspace):
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10583
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v2.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:Initial
-Name the output image:EnhancedSpeckles
-Select the operation:Enhance
-Feature size:11
-Feature type:Speckles
-Range of hole sizes:1,10
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedSpeckles
-Name the output image:EnhancedNeurites
-Select the operation:Enhance
-Feature size:9
-Feature type:Neurites
-Range of hole sizes:1,10
-
-EnhanceOrSuppressFeatures:[module_num:3|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedNeurites
-Name the output image:EnhancedDarkHoles
-Select the operation:Enhance
-Feature size:9
-Feature type:Dark holes
-Range of hole sizes:4,11
-
-EnhanceOrSuppressFeatures:[module_num:4|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedDarkHoles
-Name the output image:EnhancedCircles
-Select the operation:Enhance
-Feature size:9
-Feature type:Circles
-Range of hole sizes:4,11
-
-EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedCircles
-Name the output image:Suppressed
-Select the operation:Suppress
-Feature size:13
-Feature type:Circles
-Range of hole sizes:4,11
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -1069,32 +1028,11 @@ Range of hole sizes:4,11
 
 
 def test_test_load_v3():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10999
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v3.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the input image:DNA
-Name the output image:EnhancedTexture
-Select the operation:Enhance
-Feature size:10
-Feature type:Texture
-Range of hole sizes:1,10
-Smoothing scale:3.5
-Shear angle:45
-Decay:0.90
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedTexture
-Name the output image:EnhancedDIC
-Select the operation:Enhance
-Feature size:10
-Feature type:DIC
-Range of hole sizes:1,10
-Smoothing scale:1.5
-Shear angle:135
-Decay:0.99
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -1131,35 +1069,12 @@ Decay:0.99
     assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_DIC
 
 
-def test_01_05_load_v4():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-DateRevision:20120516145742
+def test_load_v4():
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v4.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Select the input image:Dendrite
-Name the output image:EnhancedDendrite
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Tubeness
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Select the input image:Axon
-Name the output image:EnhancedAxon
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Line structures
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -1201,39 +1116,11 @@ Enhancement method:Line structures
 
 
 def test_load_v5():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150414135713
-GitHash:3bad577
-ModuleCount:2
-HasImagePlaneDetails:False
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v5.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input image:Dendrite
-Name the output image:EnhancedDendrite
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Tubeness
-Speed and accuracy:Slow / circular
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input image:Axon
-Name the output image:EnhancedAxon
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Line structures
-Speed and accuracy:Fast / hexagonal
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):

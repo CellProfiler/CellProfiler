@@ -2,12 +2,12 @@
 """
 import base64
 import bz2
+import io
 import unittest
 
 import numpy
 import numpy.testing
 import scipy.ndimage
-import six.moves
 import centrosome.outline
 
 import cellprofiler.image
@@ -633,7 +633,7 @@ class TestObjects(unittest.TestCase):
             "yHi9D/Zh1YXpNSuDg3nMuV+zU3OZzbX4YIcrm1mhFDDE04GWL/kNGIbqIbGB6PU7nVrJsrdEwpdC"
             "0586EWcLZ2bTo9dlylZc3P6YeRkHtaKSSX/4u5IpwoSDIuO2gA=="
         )
-        stream = six.moves.StringIO(bz2.decompress(base64.b64decode(d)))
+        stream = io.BytesIO(bz2.decompress(base64.b64decode(d)))
         x = cellprofiler.object.Objects()
         x.segmented = numpy.load(stream)
         y = cellprofiler.object.Objects()

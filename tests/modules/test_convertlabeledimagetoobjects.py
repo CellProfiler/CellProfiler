@@ -6,7 +6,6 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.convertimagetoobjects
 
-
 instance = cellprofiler.modules.convertimagetoobjects.ConvertImageToObjects()
 
 
@@ -46,7 +45,6 @@ def image(request):
 
 
 def test_run_labels(image, module, workspace):
-
     # Ensure that pre-labeled objects retain their labels
     # even if they are connected
     module.x_name.value = "example"

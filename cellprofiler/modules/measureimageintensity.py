@@ -232,9 +232,9 @@ objects.""",
         dict = {}
         for im in self.images:
             key = (
-                (im.image_name, im.object_name)
+                (im.image_name.value, im.object_name.value)
                 if im.wants_objects.value
-                else (im.image_name,)
+                else (im.image_name.value,)
             )
             dict[key] = im
         return list(dict.values())

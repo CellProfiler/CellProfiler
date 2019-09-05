@@ -1,0 +1,22 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8948
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select or enter the column delimiter:Tab
+Prepend the output file name to the data file names?:Yes
+Add image metadata columns to your object data file?:No
+Add image/object numbers to output?:Yes
+Limit output to a size that is allowed in Excel?:No
+Select the columns of measurements to export?:Yes
+Calculate the per-image mean values for object measurements?:No
+Calculate the per-image median values for object measurements?:Yes
+Calculate the per-image standard deviation values for object measurements?:No
+Where do you want to save the files?:Custom folder with metadata
+Folder name\x3A:./\\<?Plate>
+Data to export:Image
+Combine these object measurements with those of the previous object?:No
+Name the data file (not including the output filename, if prepending was requested above):PFX_Image.csv
+Data to export:Nuclei
+Combine these object measurements with those of the previous object?:No
+Name the data file (not including the output filename, if prepending was requested above):Nuclei.csv

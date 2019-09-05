@@ -1,6 +1,7 @@
 import mahotas
 import numpy
 import numpy.testing
+import pytest
 import scipy.ndimage
 import skimage.color
 import skimage.feature
@@ -11,7 +12,6 @@ import skimage.morphology
 import skimage.segmentation
 import skimage.transform
 import skimage.util
-import pytest
 
 import cellprofiler.image
 import cellprofiler.modules.watershed

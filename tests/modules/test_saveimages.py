@@ -1,5 +1,5 @@
-import os.path
 import io
+import os.path
 
 import numpy
 import numpy.random
@@ -12,7 +12,6 @@ import cellprofiler.image
 import cellprofiler.modules.saveimages
 import cellprofiler.pipeline
 import cellprofiler.setting
-
 
 instance = cellprofiler.modules.saveimages.SaveImages()
 

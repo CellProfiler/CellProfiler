@@ -85,6 +85,7 @@ References
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
+import functools
 import itertools
 import os
 
@@ -482,8 +483,9 @@ of the straightened worms.""",
                 bcp = int(b.split("_")[-1])
                 return cellprofiler.utilities.legacy.cmp(acp, bcp)
 
-            cpx.sort(sort_fn)
-            cpy.sort(sort_fn)
+            cpx.sort(key=functools.cmp_to_key(sort_fn))
+            cpy.sort(key=functools.cmp_to_key(sort_fn))
+
             control_points = np.array(
                 [
                     [m.get_current_measurement(objects_name, f) for f in cp]
@@ -494,7 +496,7 @@ of the straightened worms.""",
             lengths = np.ceil(m.get_current_measurement(objects_name, m_length))
 
         nworms = len(lengths)
-        half_width = self.width.value / 2
+        half_width = self.width.value // 2
         width = 2 * half_width + 1
         if nworms == 0:
             shape = (width, width)
@@ -596,10 +598,10 @@ of the straightened worms.""",
                 # Compute the mean intensity of the top and bottom halves
                 # of the worm.
                 #
-                area_top = np.sum(smask[:halfway, :])
-                area_bottom = np.sum(smask[halfway:, :])
-                top_intensity = np.sum(simage[:halfway, :]) / area_top
-                bottom_intensity = np.sum(simage[halfway:, :]) / area_bottom
+                area_top = np.sum(smask[: int(halfway), :])
+                area_bottom = np.sum(smask[int(halfway) :, :])
+                top_intensity = np.sum(simage[: int(halfway), :]) / area_top
+                bottom_intensity = np.sum(simage[int(halfway) :, :]) / area_bottom
                 if (top_intensity > bottom_intensity) != (self.flip_worms == FLIP_TOP):
                     # Flip worm if it doesn't match user expectations
                     iii = len(ci) - iii - 1
@@ -746,7 +748,7 @@ of the straightened worms.""",
             orig_objects = object_set.get_objects(input_object_name)
 
             i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-            (min_i, max_i), (_, _) = extrema(i, labels, orig_objects.indices)
+            min_i, max_i, _, _ = extrema(i, labels, orig_objects.indices)
             min_i = np.hstack(([0], min_i))
             max_i = np.hstack(([labels.shape[0]], max_i)) + 1
             heights = max_i - min_i

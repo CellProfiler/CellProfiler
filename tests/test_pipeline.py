@@ -147,7 +147,7 @@ HasImagePlaneDetails:False"""
         """Test the get_measurement_columns method"""
         x = get_empty_pipeline()
         module = TestModuleWithMeasurement()
-        module.module_num = 1
+        module.set_module_num(1)
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
@@ -235,7 +235,7 @@ HasImagePlaneDetails:False"""
         self.assertEqual(len(columns), 9)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         module = TestModuleWithMeasurement()
-        module.module_num = 2
+        module.set_module_num(2)
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
@@ -337,7 +337,7 @@ HasImagePlaneDetails:False"""
             post_run,
             get_measurement_columns,
         )
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         measurements = pipeline.run()
         self.assertEqual(expects[0], "Done")
@@ -432,7 +432,7 @@ HasImagePlaneDetails:False"""
             post_run,
             get_measurement_columns,
         )
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         measurements = pipeline.run(grouping={"foo": "foo-B", "bar": "bar-B"})
         self.assertEqual(expects[0], "Done")
@@ -500,7 +500,7 @@ HasImagePlaneDetails:False"""
             post_group_callback=post_group,
             post_run_callback=post_run,
         )
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
@@ -523,7 +523,7 @@ HasImagePlaneDetails:False"""
         This is a regression test of IMG-277
         """
         module = MyClassForTest1101()
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
         should_be_true = [False]
@@ -557,7 +557,7 @@ HasImagePlaneDetails:False"""
     #
     #     module.setup(groupings,
     #                  prepare_run_callback=prepare_run)
-    #     module.module_num = 1
+    #     module.set_module_num(1)
     #     pipeline.add_module(module)
     #     workspace = cellprofiler.workspace.Workspace(
     #             pipeline, None, None, None, cellprofiler.measurement.Measurements(),
@@ -576,7 +576,7 @@ HasImagePlaneDetails:False"""
             try:
                 v.module_name
             except:
-                print("%s needs to define module_name as a class variable" % k)
+                print(("%s needs to define module_name as a class variable" % k))
                 success = False
         self.assertTrue(success)
 
@@ -584,7 +584,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         fd = six.moves.StringIO()
         pipeline.save(fd)
@@ -608,7 +608,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         measurements = cellprofiler.measurement.Measurements()
         my_measurement = [
@@ -657,7 +657,7 @@ HasImagePlaneDetails:False"""
         pipeline = cellprofiler.pipeline.Pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         measurements = cellprofiler.measurement.Measurements()
         # m2 and m3 should go into panic mode because they differ by a cap
@@ -781,7 +781,7 @@ HasImagePlaneDetails:False"""
     #     # Little endian utf-16 encoding
     #     module.my_variable.value = u"\\\u2211"
     #     module.other_variable.value = u"\u2222\u0038"
-    #     module.module_num = 1
+    #     module.set_module_num(1)
     #     module.notes = u"\u03B1\\\u03B2"
     #     pipeline.add_module(module)
     #     fd = six.moves.StringIO()
@@ -837,9 +837,9 @@ HasImagePlaneDetails:False"""
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\u2211"
-        module.module_num = 1
-        module.notes = "\u03B1\\\u03B2"
+        module.my_variable.value = "\\\\u2211"
+        module.set_module_num(1)
+        module.notes = "\\u03B1\\\\u03B2"
         pipeline.add_module(module)
         fd = six.moves.StringIO()
         pipeline.savetxt(fd)
@@ -858,9 +858,9 @@ HasImagePlaneDetails:False"""
         )
         pipeline.loadtxt(deprecated_pipeline_file)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\u2211"
-        module.module_num = 1
-        module.notes = "\u03B1\\\u03B2"
+        module.my_variable.value = "\\\\u2211"
+        module.set_module_num(1)
+        module.notes = "\\u03B1\\\\u03B2"
         self.assertEqual(len(pipeline.modules()), 1)
         result_module = pipeline.modules()[0]
         self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
@@ -930,7 +930,7 @@ HasImagePlaneDetails:False"""
             ATestModule([cellprofiler.setting.Choice("foo", ["Hello", "World"])]),
         ):
             pipeline = get_empty_pipeline()
-            module.module_num = 1
+            module.set_module_num(1)
             pipeline.add_module(module)
             for groupname in (
                 cellprofiler.setting.IMAGE_GROUP,
@@ -944,7 +944,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         my_setting = cellprofiler.setting.ImageNameProvider("foo", IMAGE_NAME)
         module = ATestModule([my_setting])
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
@@ -964,7 +964,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         my_setting = cellprofiler.setting.ObjectNameProvider("foo", OBJECT_NAME)
         module = ATestModule([my_setting])
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.OBJECT_GROUP)
         self.assertEqual(len(d), 1)
@@ -987,7 +987,7 @@ HasImagePlaneDetails:False"""
                 (OBJECT_NAME, FEATURE_NAME, cellprofiler.measurement.COLTYPE_FLOAT)
             ]
         )
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.MEASUREMENTS_GROUP)
         self.assertEqual(len(d), 1)
@@ -1010,7 +1010,7 @@ HasImagePlaneDetails:False"""
         module = ATestModule(
             other_providers={cellprofiler.setting.IMAGE_GROUP: [IMAGE_NAME]}
         )
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
@@ -1038,7 +1038,7 @@ HasImagePlaneDetails:False"""
             measurement_columns=measurement_columns,
             other_providers=other_providers,
         )
-        module.module_num = 1
+        module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cellprofiler.setting.IMAGE_GROUP)
         self.assertEqual(len(d), 2)
@@ -1125,7 +1125,7 @@ HasImagePlaneDetails:False"""
             ATestModule([cellprofiler.setting.ImageNameSubscriber("foo", IMAGE_NAME)]),
         ):
             pipeline = cellprofiler.pipeline.Pipeline()
-            module.module_num = 1
+            module.set_module_num(1)
             pipeline.add_module(module)
             result = pipeline.get_dependency_graph()
             self.assertEqual(len(result), 0)
@@ -1236,7 +1236,7 @@ HasImagePlaneDetails:False"""
             (
                 ["Well"],
                 ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-                [("foo", 1, 2, 3, {"Well": "\u03b1\u03b2"})],
+                [("foo", 1, 2, 3, {"Well": "\\u03b1\\u03b2"})],
             ),
             ([], [r'"\\foo\"bar","4","5","6"'], [(r'\foo"bar', 4, 5, 6)]),
         )
@@ -1268,7 +1268,7 @@ HasImagePlaneDetails:False"""
                 self.assertEqual(r, e[0])
 
     def test_18_02_write_image_plane_details(self):
-        test_data = ("foo", "\u03b1\u03b2", "".join([chr(i) for i in range(128)]))
+        test_data = ("foo", "\\u03b1\\u03b2", "".join([chr(i) for i in range(128)]))
         fd = six.moves.StringIO()
         cellprofiler.pipeline.write_file_list(fd, test_data)
         fd.seek(0)
@@ -1403,12 +1403,12 @@ class TestImagePlaneDetails(unittest.TestCase):
         #     fd = six.moves.StringIO()
         #     pipeline = cpp.Pipeline()
         #     module = ATestModule()
-        #     module.module_num = 1
+        #     module.set_module_num(1)
         #     module.notes.append("Hello")
         #     module.notes.append("World")
         #     pipeline.add_module(module)
         #     module = ATestModule()
-        #     module.module_num = 2
+        #     module.set_module_num(2)
         #     module.enabled = False
         #     pipeline.add_module(module)
         #     expected = "\n".join([
@@ -1467,7 +1467,7 @@ def profile_pipeline(pipeline_filename, output_filename=None, always_run=True):
         )
 
     if not os.path.exists(output_filename) or always_run:
-        print("Profiling %s" % pipeline_filename)
+        print(("Profiling %s" % pipeline_filename))
         cProfile.runctx(
             "run_pipeline(pipeline_filename)", globals(), locals(), output_filename
         )

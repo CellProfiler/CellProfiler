@@ -1,0 +1,10 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9120
+
+EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+Select the input objects:Nuclei
+Name the objects left after editing:EditedNuclei
+Do you want to save outlines of the edited objects?:Yes
+What do you want to call the outlines?:EditedNucleiOutlines
+Do you want to renumber the objects created by this module or retain the original numbering?:Renumber

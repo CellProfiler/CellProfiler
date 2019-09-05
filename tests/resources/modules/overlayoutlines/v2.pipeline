@@ -1,0 +1,15 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9063
+
+OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Display outlines on a blank image?:No
+Select image on which to display outlines:DNA
+Name the output image\x3A:PrimaryOverlay
+Select outline display mode\x3A:Color
+Select method to determine brightness of outlines\x3A:Max of image
+Line width\x3A:1.5
+Select outlines to display\x3A:PrimaryOutlines
+Select outline color\x3A:Red
+Select outlines to display\x3A:SecondaryOutlines
+Select outline color\x3A:Green

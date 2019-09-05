@@ -678,7 +678,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
                 # Arrange into an array where the rows are coordinates
                 # and the columns are the labels for that coordinate
                 #
-                lm = u[match, 2].reshape(numpy.sum(match) / (i + j), i + j)
+                lm = u[match, 2].reshape(numpy.sum(match) // (i + j), i + j)
                 #
                 # Sort by label.
                 #

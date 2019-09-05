@@ -1,23 +1,14 @@
-"""test_colortogray.py - test the ColorToGray module
-"""
-
-from six.moves import StringIO
-
 import numpy
-from cellprofiler.preferences import set_headless
+import six.moves
 
-set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.measurement
 import cellprofiler.image
-import cellprofiler.object
-
-import cellprofiler.modules.injectimage
+import cellprofiler.measurement
 import cellprofiler.modules.colortogray
-
+import cellprofiler.modules.injectimage
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.workspace
 import tests.modules
-from cellprofiler.workspace import Workspace
 
 IMAGE_NAME = "image"
 OUTPUT_IMAGE_F = "outputimage%d"
@@ -32,16 +23,16 @@ def get_my_image():
     return img
 
 
-def test_00_00_init():
+def test_init():
     x = cellprofiler.modules.colortogray.ColorToGray()
 
 
-def test_01_01_combine():
+def test_combine():
     img = get_my_image()
     inj = cellprofiler.modules.injectimage.InjectImage("my_image", img)
-    inj.module_num = 1
+    inj.set_module_num(1)
     ctg = cellprofiler.modules.colortogray.ColorToGray()
-    ctg.module_num = 2
+    ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
     ctg.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
     ctg.red_contribution.value = 1
@@ -56,12 +47,22 @@ def test_01_01_combine():
     measurements = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler.image.ImageSetList()
-    workspace = Workspace(pipeline, inj, None, None, measurements, image_set_list, None)
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline, inj, None, None, measurements, image_set_list, None
+    )
     inj.prepare_run(workspace)
     inj.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
-    ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
+    inj.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, inj, image_set, object_set, measurements, None
+        )
+    )
+    ctg.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, ctg, image_set, object_set, measurements, None
+        )
+    )
     grayscale = image_set.get_image("my_grayscale")
     assert grayscale
     img = grayscale.image
@@ -71,12 +72,12 @@ def test_01_01_combine():
     numpy.testing.assert_almost_equal(img[25, 25], 0)
 
 
-def test_01_02_split_all():
+def test_split_all():
     img = get_my_image()
     inj = cellprofiler.modules.injectimage.InjectImage("my_image", img)
-    inj.module_num = 1
+    inj.set_module_num(1)
     ctg = cellprofiler.modules.colortogray.ColorToGray()
-    ctg.module_num = 2
+    ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
     ctg.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
     ctg.use_red.value = True
@@ -93,12 +94,22 @@ def test_01_02_split_all():
     measurements = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler.image.ImageSetList()
-    workspace = Workspace(pipeline, inj, None, None, measurements, image_set_list, None)
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline, inj, None, None, measurements, image_set_list, None
+    )
     inj.prepare_run(workspace)
     inj.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
-    ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
+    inj.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, inj, image_set, object_set, measurements, None
+        )
+    )
+    ctg.run(
+        cellprofiler.workspace.Workspace(
+            pipeline, ctg, image_set, object_set, measurements, None
+        )
+    )
     red = image_set.get_image("my_red")
     assert red
     img = red.image
@@ -122,7 +133,7 @@ def test_01_02_split_all():
     numpy.testing.assert_almost_equal(img[25, 25], 0)
 
 
-def test_01_03_combine_channels():
+def test_combine_channels():
     numpy.random.seed(13)
     image = numpy.random.uniform(size=(20, 10, 5))
     image_set_list = cellprofiler.image.ImageSetList()
@@ -130,7 +141,7 @@ def test_01_03_combine_channels():
     image_set.add(IMAGE_NAME, cellprofiler.image.Image(image))
 
     module = cellprofiler.modules.colortogray.ColorToGray()
-    module.module_num = 1
+    module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
     module.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
     module.grayscale_name.value = OUTPUT_IMAGE_F % 1
@@ -154,7 +165,7 @@ def test_01_03_combine_channels():
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = Workspace(
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -169,7 +180,7 @@ def test_01_03_combine_channels():
     numpy.testing.assert_almost_equal(expected, pixels)
 
 
-def test_01_04_split_channels():
+def test_split_channels():
     numpy.random.seed(13)
     image = numpy.random.uniform(size=(20, 10, 5))
     image_set_list = cellprofiler.image.ImageSetList()
@@ -177,7 +188,7 @@ def test_01_04_split_channels():
     image_set.add(IMAGE_NAME, cellprofiler.image.Image(image))
 
     module = cellprofiler.modules.colortogray.ColorToGray()
-    module.module_num = 1
+    module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
     module.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
     module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS
@@ -198,7 +209,7 @@ def test_01_04_split_channels():
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = Workspace(
+    workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -214,7 +225,7 @@ def test_01_04_split_channels():
         numpy.testing.assert_almost_equal(image[:, :, channel_index], pixels)
 
 
-def test_2_3_load_combine():
+def test_load_combine():
     data = "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"
     pipeline = tests.modules.load_pipeline(None, data)
     module = pipeline.module(1)
@@ -226,7 +237,7 @@ def test_2_3_load_combine():
     assert module.blue_contribution.value == 3
 
 
-def test_2_4_load_split():
+def test_load_split():
     data = "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"
     pipeline = tests.modules.load_pipeline(None, data)
     module = pipeline.module(1)
@@ -241,43 +252,17 @@ def test_2_4_load_split():
     assert module.rgb_or_channels == cellprofiler.modules.colortogray.CH_RGB
 
 
-def test_2_5_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10308
+def test_load_v2():
+    with open("./tests/resources/modules/colortogray/v2.pipeline", "r") as fd:
+        data = fd.read()
 
-ColorToGray:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:DNA
-Conversion method:Combine
-Image type\x3A:Channels
-Name the output image:OrigGrayw
-Relative weight of the red channel:1
-Relative weight of the green channel:3
-Relative weight of the blue channel:5
-Convert red to gray?:Yes
-Name the output image:OrigRedx
-Convert green to gray?:Yes
-Name the output image:OrigGreeny
-Convert blue to gray?:Yes
-Name the output image:OrigBluez
-Channel count:3
-Channel number\x3A:Red\x3A 1
-Relative weight of the channel:1
-Image name\x3A:RedChannel1
-Channel number\x3A:Blue\x3A 3
-Relative weight of the channel:2
-Image name\x3A:GreenChannel2
-Channel number\x3A:Green\x3A 2
-Relative weight of the channel:3
-Image name\x3A:BlueChannel3
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
+    pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
@@ -306,84 +291,32 @@ Image name\x3A:BlueChannel3
     assert module.channels[2].image_name == "BlueChannel3"
 
 
-# FIXME:
-# def test_2_6_load_v3():
-#     """
-#     Tests a pipeline that was produced with module revision 3.
-#     The channel names are named according to the schema:
-#     Channel(#new_imagenumber)_(#channel_number),
-#     e.g. Channel3_2 would be the image number 3 that contains channel
-#     number 2.
-#     Thus it can be easily checked via the new image name, if the channel
-#     number is correctly parsed.
-#     """
-#
-#     data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-# Version:4
-# DateRevision:315
-# GitHash:
-# ModuleCount:5
-# HasImagePlaneDetails:False
-#
-# ColorToGray:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-#     Select the input image:\xff\xfeD\x00N\x00A\x00
-#     Conversion method:\xff\xfeS\x00p\x00l\x00i\x00t\x00
-#     Image type:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00G\x00r\x00a\x00y\x00
-#     Relative weight of the red channel:\xff\xfe1\x00.\x000\x00
-#     Relative weight of the green channel:\xff\xfe1\x00.\x000\x00
-#     Relative weight of the blue channel:\xff\xfe1\x00.\x000\x00
-#     Convert red to gray?:\xff\xfeY\x00e\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00R\x00e\x00d\x00
-#     Convert green to gray?:\xff\xfeY\x00e\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00G\x00r\x00e\x00e\x00n\x00
-#     Convert blue to gray?:\xff\xfeY\x00e\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00B\x00l\x00u\x00e\x00
-#     Convert hue to gray?:\xff\xfeY\x00e\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00H\x00u\x00e\x00
-#     Convert saturation to gray?:\xff\xfeY\x00e\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00S\x00a\x00t\x00u\x00r\x00a\x00t\x00i\x00o\x00n\x00
-#     Convert value to gray?:\xff\xfeY\x00e\x00s\x00
-#     Name the output image:\xff\xfeO\x00r\x00i\x00g\x00V\x00a\x00l\x00u\x00e\x00
-#     Channel count:\xff\xfe8\x00
-#     Channel number:\xff\xfeG\x00r\x00e\x00e\x00n\x00\x3A\x00 \x002\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x001\x00_\x002\x00
-#     Channel number:\xff\xfeR\x00e\x00d\x00\x3A\x00 \x001\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x002\x00_\x001\x00
-#     Channel number:\xff\xfeB\x00l\x00u\x00e\x00\x3A\x00 \x003\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x003\x00_\x003\x00
-#     Channel number:\xff\xfeA\x00l\x00p\x00h\x00a\x00\x3A\x00 \x004\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x004\x00_\x004\x00
-#     Channel number:\xff\xfe5\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x005\x00_\x005\x00
-#     Channel number:\xff\xfe7\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x006\x00_\x007\x00
-#     Channel number:\xff\xfe7\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x007\x00_\x007\x00
-#     Channel number:\xff\xfe6\x00
-#     Relative weight of the channel:\xff\xfe1\x00.\x000\x00
-#     Image name:\xff\xfeC\x00h\x00a\x00n\x00n\x00e\x00l\x008\x00_\x006\x00
-# """
-#     pipeline = cellprofiler.pipeline.Pipeline()
-#
-#     def callback(caller, event):
-#         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-#
-#     pipeline.add_listener(callback)
-#     pipeline.load(StringIO(data))
-#     assert len(pipeline.modules()) == 1
-#     module = pipeline.modules()[0]
-#     assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
-#     assert module.image_name == "DNA"
-#     assert module.channel_count.value == 8
-#     for i in range(module.channel_count.value):
-#         c = module.channels[i].image_name.value.split('_')[1]
-#         assert module.channels[i].channel_choice.value == int(c)
-#     assert module.channels[6].image_name.value == 'Channel7_7'
+def test_load_v3():
+    """
+    Tests a pipeline that was produced with module revision 3.
+    The channel names are named according to the schema:
+    Channel(#new_imagenumber)_(#channel_number),
+    e.g. Channel3_2 would be the image number 3 that contains channel
+    number 2.
+    Thus it can be easily checked via the new image name, if the channel
+    number is correctly parsed.
+    """
+    with open("./tests/resources/modules/colortogray/v3.pipeline", "r") as fd:
+        data = fd.read()
+
+    pipeline = cellprofiler.pipeline.Pipeline()
+
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+
+    pipeline.add_listener(callback)
+    pipeline.load(six.moves.StringIO(data))
+    assert len(pipeline.modules()) == 1
+    module = pipeline.modules()[0]
+    assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
+    assert module.image_name == "DNA"
+    assert module.channel_count.value == 8
+    for i in range(module.channel_count.value):
+        c = module.channels[i].image_name.value.split("_")[1]
+        assert module.channels[i].channel_choice.value == int(c)
+    assert module.channels[6].image_name.value == "Channel7_7"

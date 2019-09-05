@@ -516,7 +516,7 @@ class TestFilterSetting(unittest.TestCase):
         )
         f = cellprofiler.setting.Filter("", [f1])
         f.build([f1])
-        self.assertEqual(f.value, '\\(\\\\\\"\\)')
+        self.assertEqual(f.value, '\\(\\\\"\\)')
 
     def test_02_06_parse_escaped_symbol(self):
         ugly = '(\\")'

@@ -1,7 +1,8 @@
-import cellprofiler.modules.closing
 import numpy
 import numpy.testing
 import skimage.morphology
+
+import cellprofiler.modules.closing
 
 instance = cellprofiler.modules.closing.Closing()
 
@@ -37,7 +38,6 @@ def test_run(image, module, image_set, workspace):
         desired = numpy.zeros_like(image.pixel_data)
 
         for index, plane in enumerate(image.pixel_data):
-
             desired[index] = skimage.morphology.closing(plane, selem)
 
         numpy.testing.assert_array_equal(actual.pixel_data, desired)

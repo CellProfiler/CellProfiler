@@ -1824,7 +1824,7 @@ to store the image.
             """Added separate channels for flex images"""
             new_values = list(setting_values[: self.SLOT_FIRST_IMAGE_V5])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V5 :]
-            image_count = len(setting_values) / self.SLOT_IMAGE_FIELD_COUNT_V5
+            image_count = len(setting_values) // self.SLOT_IMAGE_FIELD_COUNT_V5
             #
             # Add the image count to the settings
             #

@@ -75,7 +75,7 @@ setuptools.setup(
         "pyzmq==15.3.0",
         "raven",
         "requests",
-        "scikit-image==0.14.0",
+        "scikit-image==0.14.4",
         "scikit-learn",
         "scipy",
         "six"

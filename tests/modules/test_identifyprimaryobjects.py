@@ -1676,6 +1676,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.exclude_size.value = False
         x.size_range.min = 10
         x.size_range.max = 40
+        x.use_advanced.value = True
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
         x.threshold.manual_threshold.value = .3
@@ -1713,6 +1714,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
         x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
         x.threshold.manual_threshold.value = .3
+        x.use_advanced.value = True
         img = numpy.zeros((200, 200))
         centers = [(100, 100), (30, 100), (100, 30), (170, 100), (100, 170)]
         present = [True, False, False, False, False]

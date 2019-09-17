@@ -97,7 +97,7 @@ class Analysis:
                     process incomplete ones (or incomplete groups if grouping)
         """
         with self.runner_lock:
-            assert not self.analysis_in_progress
+            # assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
 
             self.runner = AnalysisRunner(
@@ -107,6 +107,11 @@ class Analysis:
                 self.output_path,
                 analysis_event_callback,
             )
+
+            import IPython
+
+            IPython.embed()
+
             self.runner.start(num_workers=num_workers, overwrite=overwrite)
             return self.analysis_in_progress
 

@@ -530,7 +530,7 @@ def read_file_list(file_or_fd):
         pattern = r'(?:"((?:[^\\]|\\.)+?)")?(?:,|\s+)'
         for i in range(plane_count):
             fields = [x.groups()[0] for x in re.finditer(pattern, next(fd))]
-            fields = [None if x is None else x.decode("string-escape") for x in fields]
+            fields = [None if x is None else x for x in fields]
             url = fields[0]
             result.append(url)
         return result
@@ -564,7 +564,7 @@ def write_file_list(file_or_fd, file_list):
         for url in file_list:
             if isinstance(url, six.text_type):
                 url = url
-            url = url.encode("string_escape").replace('"', r"\"")
+            # url = url.encode("string_escape").replace('"', r"\"")
             line = '"%s",,,\n' % url
             fd.write(line)
     finally:
@@ -1140,7 +1140,9 @@ class Pipeline(object):
 
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
                     # En/decode needed to read example cppipe format
-                    setting = setting.encode().decode("unicode_escape").replace("\\\\", "\\")
+                    setting = (
+                        setting.encode().decode("unicode_escape").replace("\\\\", "\\")
+                    )
 
                     if do_deprecated_utf16_decode:
                         # decoding with 'unicode_escape' appears to be sufficient

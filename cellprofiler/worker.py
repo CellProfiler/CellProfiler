@@ -302,7 +302,7 @@ class AnalysisWorker(object):
         if not cpprefs.get_awt_headless():
             J.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
-        self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
+        self.notify_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         self.notify_socket.connect(NOTIFY_ADDR)
 
     def exit_thread(self):
@@ -668,7 +668,7 @@ class AnalysisWorker(object):
         poller = zmq.Poller()
         poller.register(self.notify_socket, zmq.POLLIN)
         announce_socket = the_zmq_context.socket(zmq.SUB)
-        announce_socket.setsockopt(zmq.SUBSCRIBE, "")
+        announce_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         announce_socket.connect(self.work_announce_address)
         try:
             poller.register(announce_socket, zmq.POLLIN)
@@ -800,7 +800,7 @@ def exit_on_stdin_close():
     notify_pub_socket = get_the_notify_pub_socket()
     deadman_socket = the_zmq_context.socket(zmq.PAIR)
     deadman_socket.connect(DEADMAN_START_ADDR)
-    deadman_socket.send(DEADMAN_START_MSG)
+    deadman_socket.send_string(DEADMAN_START_MSG)
     deadman_socket.close()
 
     # If sys.stdin closes, either our parent has closed it (indicating we

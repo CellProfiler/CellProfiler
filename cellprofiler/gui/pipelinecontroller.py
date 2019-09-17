@@ -2835,7 +2835,6 @@ class PipelineController(object):
 
             self.populate_goto_menu()
         except Exception as error:
-            print(error)
             extended_message = "Failure in analysis startup"
 
             error = cellprofiler.gui.dialog.Error("Error", extended_message)

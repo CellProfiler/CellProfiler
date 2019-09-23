@@ -10,26 +10,26 @@ import nucleus.image
 
 
 class TestImage(unittest.TestCase):
-    def test_00_00_init(self):
+    def test_init(self):
         nucleus.image.Image()
 
-    def test_01_01_init_image(self):
+    def test_init_image(self):
         x = nucleus.image.Image(numpy.zeros((10, 10)))
 
-    def test_01_02_init_image_mask(self):
+    def test_init_image_mask(self):
         x = nucleus.image.Image(
             image=numpy.zeros((10, 10)), mask=numpy.ones((10, 10), dtype=numpy.bool)
         )
 
-    def test_02_01_set_image(self):
+    def test_set_image(self):
         x = nucleus.image.Image()
         x.Image = numpy.ones((10, 10))
 
-    def test_02_02_set_mask(self):
+    def test_set_mask(self):
         x = nucleus.image.Image()
         x.Mask = numpy.ones((10, 10))
 
-    def test_03_01_image_casts(self):
+    def test_image_casts(self):
         one_target = numpy.ones((10, 10), dtype=numpy.float64)
         zero_target = numpy.zeros((10, 10), dtype=numpy.float64)
         tests = [
@@ -56,13 +56,13 @@ class TestImage(unittest.TestCase):
                 msg="Failed setting %s to max" % (repr(dtype)),
             )
 
-    def test_05_01_mask_of3D(self):
+    def test_mask_of3D(self):
         """The mask of a 3-d image should be 2-d"""
         x = nucleus.image.Image()
         x.image = numpy.ones((10, 10, 3))
         self.assertTrue(x.mask.ndim == 2)
 
-    def test_06_01_cropping(self):
+    def test_cropping(self):
         x = nucleus.image.Image()
         x.image = numpy.ones((7, 7))
         crop_mask = numpy.zeros((10, 10), bool)
@@ -136,114 +136,101 @@ class TestImage(unittest.TestCase):
     def test_spacing_volume(self):
         data = numpy.ones((5, 10, 10))
 
-        x = nucleus.image.Image(
-            image=data, dimensions=3, spacing=(0.77, 0.33, 0.33)
-        )
+        x = nucleus.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
 
         self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
     def test_spacing_volume_parent_image(self):
         data = numpy.ones((5, 10, 10))
 
-        px = nucleus.image.Image(
-            image=data, dimensions=3, spacing=(0.77, 0.33, 0.33)
-        )
+        px = nucleus.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
 
-        x = nucleus.image.Image(
-            image=data, parent_image=px, spacing=(0.77, 0.33, 0.33)
-        )
+        x = nucleus.image.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
 
         self.assertEqual(x.spacing, (0.77 / 0.33, 1.0, 1.0))
 
 
-IMAGE_NAME = "image"
-
-
 class TestImageSet(unittest.TestCase):
-    def test_01_01_add(self):
+    def test_add(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20))))
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20))))
         self.assertEqual(len(x.providers), 1)
-        self.assertEqual(x.providers[0].name, IMAGE_NAME)
+        self.assertEqual(x.providers[0].name, "image")
 
-    def test_01_02_get_image(self):
+    def test_get_image(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20))))
-        image = x.get_image(IMAGE_NAME)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20))))
+        image = x.get_image("image")
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
-    def test_02_01_must_be_binary(self):
+    def test_must_be_binary(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20), bool)))
-        image = x.get_image(IMAGE_NAME, must_be_binary=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20), bool)))
+        image = x.get_image("image", must_be_binary=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
-    def test_02_02_must_be_binary_throws(self):
+    def test_must_be_binary_throws(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20), float)))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_binary=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20), float)))
+        self.assertRaises(ValueError, x.get_image, "image", must_be_binary=True)
 
-    def test_03_01_must_be_gray(self):
+    def test_must_be_gray(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20), float)))
-        image = x.get_image(IMAGE_NAME, must_be_grayscale=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20), float)))
+        image = x.get_image("image", must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
-    def test_03_02_must_be_gray_throws(self):
+    def test_must_be_gray_throws(self):
         x = nucleus.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add(
-            IMAGE_NAME, nucleus.image.Image(numpy.random.uniform(size=(10, 20, 3)))
-        )
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_grayscale=True)
+        x.add("image", nucleus.image.Image(numpy.random.uniform(size=(10, 20, 3))))
+        self.assertRaises(ValueError, x.get_image, "image", must_be_grayscale=True)
 
-    def test_03_03_must_be_gray_color(self):
+    def test_must_be_gray_color(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20, 3), float)))
-        image = x.get_image(IMAGE_NAME, must_be_grayscale=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20, 3), float)))
+        image = x.get_image("image", must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
-    def test_04_01_must_be_color(self):
+    def test_must_be_color(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20, 3), float)))
-        image = x.get_image(IMAGE_NAME, must_be_color=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20, 3), float)))
+        image = x.get_image("image", must_be_color=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20, 3))
 
-    def test_04_02_must_be_color_throws(self):
+    def test_must_be_color_throws(self):
         x = nucleus.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.random.uniform(size=(10, 20))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_color=True)
+        x.add("image", nucleus.image.Image(numpy.random.uniform(size=(10, 20))))
+        self.assertRaises(ValueError, x.get_image, "image", must_be_color=True)
 
-    def test_05_01_must_be_rgb(self):
+    def test_must_be_rgb(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20, 3), float)))
-        image = x.get_image(IMAGE_NAME, must_be_rgb=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20, 3), float)))
+        image = x.get_image("image", must_be_rgb=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20, 3))
 
-    def test_05_02_must_be_rgb_throws_gray(self):
+    def test_must_be_rgb_throws_gray(self):
         x = nucleus.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.random.uniform(size=(10, 20))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_rgb=True)
+        x.add("image", nucleus.image.Image(numpy.random.uniform(size=(10, 20))))
+        self.assertRaises(ValueError, x.get_image, "image", must_be_rgb=True)
 
-    def test_05_03_must_be_rgb_throws_5_channel(self):
+    def test_must_be_rgb_throws_5_channel(self):
         x = nucleus.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add(
-            IMAGE_NAME, nucleus.image.Image(numpy.random.uniform(size=(10, 20, 5)))
-        )
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME, must_be_rgb=True)
+        x.add("image", nucleus.image.Image(numpy.random.uniform(size=(10, 20, 5))))
+        self.assertRaises(ValueError, x.get_image, "image", must_be_rgb=True)
 
-    def test_05_04_must_be_rgb_alpha(self):
+    def test_must_be_rgb_alpha(self):
         x = nucleus.image.ImageSet(0, {}, {})
-        x.add(IMAGE_NAME, nucleus.image.Image(numpy.zeros((10, 20, 4), float)))
-        image = x.get_image(IMAGE_NAME, must_be_rgb=True)
+        x.add("image", nucleus.image.Image(numpy.zeros((10, 20, 4), float)))
+        image = x.get_image("image", must_be_rgb=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20, 3))
 
 
 class TestImageSetList(unittest.TestCase):
-    def test_00_00_init(self):
+    def test_init(self):
         x = nucleus.image.ImageSetList()
         self.assertEqual(
             x.count(),
@@ -251,7 +238,7 @@ class TestImageSetList(unittest.TestCase):
             "# of elements of an empty image set list is %d, not zero" % (x.count()),
         )
 
-    def test_01_01_add_image_set_by_number(self):
+    def test_add_image_set_by_number(self):
         x = nucleus.image.ImageSetList()
         y = x.get_image_set(0)
         self.assertEqual(
@@ -265,7 +252,7 @@ class TestImageSetList(unittest.TestCase):
             "The number key should be zero, was %s" % (repr(y.keys["number"])),
         )
 
-    def test_01_02_add_image_set_by_key(self):
+    def test_add_image_set_by_key(self):
         x = nucleus.image.ImageSetList()
         key = {"key": "value"}
         y = x.get_image_set(key)
@@ -281,7 +268,7 @@ class TestImageSetList(unittest.TestCase):
         )
         self.assertEqual(repr(key), repr(y.keys))
 
-    def test_01_03_add_two_image_sets(self):
+    def test_add_two_image_sets(self):
         x = nucleus.image.ImageSetList()
         y = x.get_image_set(0)
         z = x.get_image_set(1)
@@ -297,7 +284,7 @@ class TestImageSetList(unittest.TestCase):
             z, x.get_image_set(1), "The second image set was not retrieved by index"
         )
 
-    def test_02_01_add_image_provider(self):
+    def test_add_image_provider(self):
         x = nucleus.image.ImageSetList()
         y = x.get_image_set(0)
         img = nucleus.image.Image(numpy.ones((10, 10)))
@@ -312,7 +299,7 @@ class TestImageSetList(unittest.TestCase):
         y.providers.append(z)
         self.assertEqual(img, y.get_image("TestImageProvider"))
 
-    def test_02_02_add_two_image_providers(self):
+    def test_add_two_image_providers(self):
         x = nucleus.image.ImageSetList()
         y = x.get_image_set(0)
         img1 = nucleus.image.Image(numpy.ones((10, 10)))
@@ -336,7 +323,7 @@ class TestImageSetList(unittest.TestCase):
         self.assertEqual(img1, y.get_image("IP1"), "Failed to get correct first image")
         self.assertEqual(img2, y.get_image("IP2"), "Failed to get correct second image")
 
-    def test_03_01_serialize_no_key(self):
+    def test_serialize_no_key(self):
         """Serialize an image list with no keys in the image sets"""
         x = nucleus.image.ImageSetList()
         for i in range(5):
@@ -347,7 +334,7 @@ class TestImageSetList(unittest.TestCase):
         y.load_state(s)
         self.assertEqual(y.count(), 5)
 
-    def test_03_02_serialize_key(self):
+    def test_serialize_key(self):
         x = nucleus.image.ImageSetList()
         values = (("A", "B"), ("C", "D"), ("E", "F"))
         for value1, value2 in values:
@@ -365,7 +352,7 @@ class TestImageSetList(unittest.TestCase):
             for key, value in (("K1", value1), ("K2", value2)):
                 self.assertEqual(image_set.keys[key], value)
 
-    def test_03_03_serialize_legacy_fields(self):
+    def test_serialize_legacy_fields(self):
         x = nucleus.image.ImageSetList()
         for i in range(5):
             x.get_image_set(i)

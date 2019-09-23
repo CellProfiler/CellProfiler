@@ -13,6 +13,7 @@ setuptools.setup(
         "wx": ["wxPython==4.0.6"],
     },
     install_requires=[
+        "boto3==1.9.233",
         "centrosome==1.1.6",
         "docutils==0.15.2",
         "h5py==2.10.0",

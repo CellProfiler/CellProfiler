@@ -144,10 +144,10 @@ particular wavelength.
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(
     **{
-        "IMG_PANEL_BLANK": cellprofiler.gui.help.content.image_resource(
+        "IMG_PANEL_BLANK": nucleus.gui.help.content.image_resource(
             "Images_FilelistPanel_Blank.png"
         ),
-        "IMG_PANEL_FILLED": cellprofiler.gui.help.content.image_resource(
+        "IMG_PANEL_FILLED": nucleus.gui.help.content.image_resource(
             "Images_FilelistPanel_Filled.png"
         ),
     }
@@ -163,15 +163,13 @@ FILTER_DEFAULT = (
 )
 
 
-class Images(cellprofiler.module.Module):
+class Images(nucleus.module.Module):
     variable_revision_number = 2
     module_name = "Images"
     category = "File Processing"
 
     MI_SHOW_IMAGE = "Show image"
-    MI_REMOVE = cellprofiler.setting.FileCollectionDisplay.DeleteMenuItem(
-        "Remove from list"
-    )
+    MI_REMOVE = nucleus.setting.FileCollectionDisplay.DeleteMenuItem("Remove from list")
     MI_REFRESH = "Refresh"
 
     def create_settings(self):
@@ -184,10 +182,10 @@ class Images(cellprofiler.module.Module):
         ]
         self.set_notes([" ".join(module_explanation)])
 
-        self.path_list_display = cellprofiler.setting.PathListDisplay()
+        self.path_list_display = nucleus.setting.PathListDisplay()
         predicates = [FilePredicate(), DirectoryPredicate(), ExtensionPredicate()]
 
-        self.filter_choice = cellprofiler.setting.Choice(
+        self.filter_choice = nucleus.setting.Choice(
             "Filter images?",
             FILTER_CHOICE_ALL,
             value=FILTER_CHOICE_IMAGES,
@@ -227,7 +225,7 @@ Several options are available for this setting:
             ),
         )
 
-        self.filter = cellprofiler.setting.Filter(
+        self.filter = nucleus.setting.Filter(
             "Select the rule criteria",
             predicates,
             FILTER_DEFAULT,
@@ -242,7 +240,7 @@ Specify a set of rules to narrow down the files to be analyzed.
             ),
         )
 
-        self.update_button = cellprofiler.setting.PathListRefreshButton(
+        self.update_button = nucleus.setting.PathListRefreshButton(
             "Apply filters to the file list",
             "Apply filters to the file list",
             doc="""\
@@ -274,12 +272,12 @@ pass the current filter.
                     )
                 )
         path = os.path.join(*modpath)
-        return cellprofiler.modules.loadimages.pathname2url(path)
+        return nucleus.modules.loadimages.pathname2url(path)
 
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
-            schema, rest = cellprofiler.utilities.hdf5_dict.HDF5FileList.split_url(url)
+            schema, rest = nucleus.utilities.hdf5_dict.HDF5FileList.split_url(url)
             return (
                 [schema]
                 + rest[0:1]
@@ -394,7 +392,7 @@ pass the current filter.
             # Changed from yes/no for filter to a choice
             filter_choice = (
                 FILTER_CHOICE_CUSTOM
-                if setting_values[1] == cellprofiler.setting.YES
+                if setting_values[1] == nucleus.setting.YES
                 else FILTER_CHOICE_NONE
             )
             setting_values = setting_values[:1] + [filter_choice] + setting_values[2:]
@@ -405,22 +403,22 @@ pass the current filter.
         return True
 
 
-class DirectoryPredicate(cellprofiler.setting.Filter.FilterPredicate):
+class DirectoryPredicate(nucleus.setting.Filter.FilterPredicate):
     """A predicate that only filters directories"""
 
     def __init__(self):
         subpredicates = (
-            cellprofiler.setting.Filter.CONTAINS_PREDICATE,
-            cellprofiler.setting.Filter.CONTAINS_REGEXP_PREDICATE,
-            cellprofiler.setting.Filter.STARTS_WITH_PREDICATE,
-            cellprofiler.setting.Filter.ENDSWITH_PREDICATE,
-            cellprofiler.setting.Filter.EQ_PREDICATE,
+            nucleus.setting.Filter.CONTAINS_PREDICATE,
+            nucleus.setting.Filter.CONTAINS_REGEXP_PREDICATE,
+            nucleus.setting.Filter.STARTS_WITH_PREDICATE,
+            nucleus.setting.Filter.ENDSWITH_PREDICATE,
+            nucleus.setting.Filter.EQ_PREDICATE,
         )
         predicates = [
-            cellprofiler.setting.Filter.DoesPredicate(subpredicates),
-            cellprofiler.setting.Filter.DoesNotPredicate(subpredicates),
+            nucleus.setting.Filter.DoesPredicate(subpredicates),
+            nucleus.setting.Filter.DoesNotPredicate(subpredicates),
         ]
-        cellprofiler.setting.Filter.FilterPredicate.__init__(
+        nucleus.setting.Filter.FilterPredicate.__init__(
             self,
             "directory",
             "Directory",
@@ -448,7 +446,7 @@ class DirectoryPredicate(cellprofiler.setting.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         self(
             (
-                cellprofiler.setting.FileCollectionDisplay.NODE_FILE,
+                nucleus.setting.FileCollectionDisplay.NODE_FILE,
                 ["/imaging", "image.tif"],
                 None,
             ),
@@ -456,22 +454,22 @@ class DirectoryPredicate(cellprofiler.setting.Filter.FilterPredicate):
         )
 
 
-class FilePredicate(cellprofiler.setting.Filter.FilterPredicate):
+class FilePredicate(nucleus.setting.Filter.FilterPredicate):
     """A predicate that only filters files"""
 
     def __init__(self):
         subpredicates = (
-            cellprofiler.setting.Filter.CONTAINS_PREDICATE,
-            cellprofiler.setting.Filter.CONTAINS_REGEXP_PREDICATE,
-            cellprofiler.setting.Filter.STARTS_WITH_PREDICATE,
-            cellprofiler.setting.Filter.ENDSWITH_PREDICATE,
-            cellprofiler.setting.Filter.EQ_PREDICATE,
+            nucleus.setting.Filter.CONTAINS_PREDICATE,
+            nucleus.setting.Filter.CONTAINS_REGEXP_PREDICATE,
+            nucleus.setting.Filter.STARTS_WITH_PREDICATE,
+            nucleus.setting.Filter.ENDSWITH_PREDICATE,
+            nucleus.setting.Filter.EQ_PREDICATE,
         )
         predicates = [
-            cellprofiler.setting.Filter.DoesPredicate(subpredicates),
-            cellprofiler.setting.Filter.DoesNotPredicate(subpredicates),
+            nucleus.setting.Filter.DoesPredicate(subpredicates),
+            nucleus.setting.Filter.DoesNotPredicate(subpredicates),
         ]
-        cellprofiler.setting.Filter.FilterPredicate.__init__(
+        nucleus.setting.Filter.FilterPredicate.__init__(
             self,
             "file",
             "File",
@@ -490,7 +488,7 @@ class FilePredicate(cellprofiler.setting.Filter.FilterPredicate):
         the args
         """
         (node_type, modpath, module) = node_type__modpath__module
-        if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_DIRECTORY:
+        if node_type == nucleus.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             filename = modpath[-2]
@@ -501,7 +499,7 @@ class FilePredicate(cellprofiler.setting.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         self(
             (
-                cellprofiler.setting.FileCollectionDisplay.NODE_FILE,
+                nucleus.setting.FileCollectionDisplay.NODE_FILE,
                 ["/imaging", "test.tif"],
                 None,
             ),
@@ -521,45 +519,45 @@ def is_image_extension(suffix):
     return extensions.contains(suffix.lower())
 
 
-class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
+class ExtensionPredicate(nucleus.setting.Filter.FilterPredicate):
     """A predicate that operates on file extensions"""
 
-    IS_TIF_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_TIF_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "istif",
         '"tif", "tiff", "ome.tif" or "ome.tiff"',
         lambda x: x.lower() in ("tif", "tiff", "ome.tif", "ome.tiff"),
         [],
         doc="The extension is associated with TIFF image files",
     )
-    IS_JPEG_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_JPEG_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "isjpeg",
         '"jpg" or "jpeg"',
         lambda x: x.lower() in ("jpg", "jpeg"),
         [],
         doc="The extension is associated with JPEG image files",
     )
-    IS_PNG_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_PNG_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "ispng",
         '"png"',
         lambda x: x.lower() == "png",
         [],
         doc="The extension is associated with PNG image files",
     )
-    IS_IMAGE_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_IMAGE_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "isimage",
         "the extension of an image file",
         is_image_extension,
         [],
         "Is an extension commonly associated with image files",
     )
-    IS_FLEX_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_FLEX_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "isflex",
         '"flex"',
         lambda x: x.lower() == "flex",
         [],
         doc="The extension is associated with .flex files",
     )
-    IS_MOVIE_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_MOVIE_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "ismovie",
         '"mov" or "avi"',
         lambda x: x.lower() in ("mov", "avi"),
@@ -577,10 +575,10 @@ class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
             self.IS_MOVIE_PREDICATE,
         )
         predicates = [
-            cellprofiler.setting.Filter.DoesPredicate(subpredicates, "Is"),
-            cellprofiler.setting.Filter.DoesNotPredicate(subpredicates, "Is not"),
+            nucleus.setting.Filter.DoesPredicate(subpredicates, "Is"),
+            nucleus.setting.Filter.DoesNotPredicate(subpredicates, "Is not"),
         ]
-        cellprofiler.setting.Filter.FilterPredicate.__init__(
+        nucleus.setting.Filter.FilterPredicate.__init__(
             self,
             "extension",
             "Extension",
@@ -596,7 +594,7 @@ class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
         all possible extension parsings.
         """
         (node_type, modpath, module) = node_type__modpath__module
-        if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_DIRECTORY:
+        if node_type == nucleus.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             filename = modpath[-2]
@@ -615,7 +613,7 @@ class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         self(
             (
-                cellprofiler.setting.FileCollectionDisplay.NODE_FILE,
+                nucleus.setting.FileCollectionDisplay.NODE_FILE,
                 ["/imaging", "test.tif"],
                 None,
             ),
@@ -623,28 +621,28 @@ class ExtensionPredicate(cellprofiler.setting.Filter.FilterPredicate):
         )
 
 
-class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
+class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
     """A predicate that applies subpredicates to image plane details"""
 
-    IS_COLOR_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_COLOR_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "iscolor",
         "Color",
         lambda x: (
-            cellprofiler.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[cellprofiler.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT]
-            == cellprofiler.pipeline.ImagePlaneDetails.MD_RGB
+            nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata
+            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT]
+            == nucleus.pipeline.ImagePlaneDetails.MD_RGB
         ),
         [],
         doc="The image is an interleaved color image (for example, a PNG image)",
     )
 
-    IS_MONOCHROME_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_MONOCHROME_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "ismonochrome",
         "Monochrome",
         lambda x: (
-            cellprofiler.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[cellprofiler.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT]
-            == cellprofiler.pipeline.ImagePlaneDetails.MD_MONOCHROME
+            nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata
+            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT]
+            == nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
         ),
         [],
         doc="The image is monochrome",
@@ -653,18 +651,18 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
     @staticmethod
     def is_stack(x):
         if (
-            cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_T in x.metadata
-            and x.metadata[cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_T] > 1
+            nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T in x.metadata
+            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T] > 1
         ):
             return True
         if (
-            cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Z in x.metadata
-            and x.metadata[cellprofiler.pipeline.ImagePlaneDetails.MD_SIZE_Z] > 1
+            nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z in x.metadata
+            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z] > 1
         ):
             return True
         return False
 
-    IS_STACK_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_STACK_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "isstack",
         "Stack",
         lambda x: ImagePredicate.is_stack(x),
@@ -672,7 +670,7 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
         doc="The image is a Z-stack or movie",
     )
 
-    IS_STACK_FRAME_PREDICATE = cellprofiler.setting.Filter.FilterPredicate(
+    IS_STACK_FRAME_PREDICATE = nucleus.setting.Filter.FilterPredicate(
         "isstackframe",
         "Stack frame",
         lambda x: x.index is not None,
@@ -690,11 +688,11 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
         predicates = [
             pred_class(subpredicates, text)
             for pred_class, text in (
-                (cellprofiler.setting.Filter.DoesPredicate, "Is"),
-                (cellprofiler.setting.Filter.DoesNotPredicate, "Is not"),
+                (nucleus.setting.Filter.DoesPredicate, "Is"),
+                (nucleus.setting.Filter.DoesNotPredicate, "Is not"),
             )
         ]
-        cellprofiler.setting.Filter.FilterPredicate.__init__(
+        nucleus.setting.Filter.FilterPredicate.__init__(
             self,
             "image",
             "Image",
@@ -705,24 +703,24 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
 
     def fn_filter(self, node_type__modpath__module, *args):
         (node_type, modpath, module) = node_type__modpath__module
-        if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_DIRECTORY:
+        if node_type == nucleus.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         ipd = module.get_image_plane_details(modpath)
         if ipd is None:
             return None
         return args[0](ipd, *args[1:])
 
-    class FakeModule(cellprofiler.module.Module):
+    class FakeModule(nucleus.module.Module):
         """A fake module for setting validation"""
 
         def get_image_plane_details(self, modpath):
             url = Images.modpath_to_url(modpath)
-            return cellprofiler.pipeline.ImagePlaneDetails(url)
+            return nucleus.pipeline.ImagePlaneDetails(url)
 
     def test_valid(self, pipeline, *args):
         self(
             (
-                cellprofiler.setting.FileCollectionDisplay.NODE_FILE,
+                nucleus.setting.FileCollectionDisplay.NODE_FILE,
                 ["/imaging", "test.tif"],
                 self.FakeModule(),
             ),

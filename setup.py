@@ -15,7 +15,7 @@ setuptools.setup(
     install_requires=[
         "docutils==0.15.2",
         "h5py==2.10.0",
-        "javabridge==1.0.18.post10+g7a91457",
+        "javabridge@https://github.com/CellProfiler/python-javabridge/tarball/master",
         "matplotlib==3.1.1",
         "numpy==1.17.2",
         "python-bioformats==1.5.2",

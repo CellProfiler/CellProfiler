@@ -7,6 +7,8 @@ import os
 import h5py
 import six.moves
 
+import nucleus.utilities.hdf5_dict
+
 logger = logging.getLogger(__name__)
 
 """Continue to run the pipeline
@@ -37,9 +39,9 @@ def is_workspace_file(path):
         return False
     h5file = h5py.File(path, mode="r")
     try:
-        if not cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(h5file):
+        if not nucleus.utilities.hdf5_dict.HDF5FileList.has_file_list(h5file):
             return False
-        return cellprofiler.utilities.hdf5_dict.HDF5Dict.has_hdf5_dict(h5file)
+        return nucleus.utilities.hdf5_dict.HDF5Dict.has_hdf5_dict(h5file)
     finally:
         h5file.close()
 
@@ -97,7 +99,7 @@ class Workspace(object):
         self.__loading = False
         if measurements is not None:
             self.set_file_list(
-                cellprofiler.utilities.hdf5_dict.HDF5FileList(
+                nucleus.utilities.hdf5_dict.HDF5FileList(
                     measurements.hdf5_dict.hdf5_file
                 )
             )
@@ -374,8 +376,8 @@ class Workspace(object):
             M_DEFAULT_INPUT_FOLDER,
             M_DEFAULT_OUTPUT_FOLDER,
         )
-        import cellprofiler.measurement as cpmeas
-        from cellprofiler.preferences import (
+        import nucleus.measurement as cpmeas
+        from nucleus.preferences import (
             set_default_image_directory,
             set_default_output_directory,
         )
@@ -462,7 +464,7 @@ class Workspace(object):
         os.close(fd)
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(self.__on_file_list_changed)
-        self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(
+        self.__file_list = nucleus.utilities.hdf5_dict.HDF5FileList(
             self.measurements.hdf5_dict.hdf5_file
         )
         self.__file_list.add_notification_callback(self.__on_file_list_changed)
@@ -504,7 +506,7 @@ class Workspace(object):
             os.unlink(self.__filename)
 
     def save_pipeline_to_measurements(self):
-        from cellprofiler.pipeline import M_PIPELINE
+        from nucleus.pipeline import M_PIPELINE
 
         fd = six.moves.StringIO()
         self.pipeline.savetxt(fd, save_image_plane_details=False)
@@ -512,10 +514,10 @@ class Workspace(object):
         self.measurements.flush()
 
     def save_default_folders_to_measurements(self):
-        from cellprofiler.pipeline import M_DEFAULT_INPUT_FOLDER
-        from cellprofiler.pipeline import M_DEFAULT_OUTPUT_FOLDER
-        from cellprofiler.preferences import get_default_image_directory
-        from cellprofiler.preferences import get_default_output_directory
+        from nucleus.pipeline import M_DEFAULT_INPUT_FOLDER
+        from nucleus.pipeline import M_DEFAULT_OUTPUT_FOLDER
+        from nucleus.preferences import get_default_image_directory
+        from nucleus.preferences import get_default_output_directory
 
         self.measurements.add_experiment_measurement(
             M_DEFAULT_INPUT_FOLDER, get_default_image_directory()
@@ -555,7 +557,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.image import ImageSetList
+                from nucleus.image import ImageSetList
 
                 self.__image_set_list = ImageSetList()
             try:

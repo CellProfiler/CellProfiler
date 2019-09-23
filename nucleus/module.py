@@ -112,14 +112,14 @@ class Module(object):
         """
         self.__module_num = module_num
         idx = module_num - 1
-        settings = handles[pipeline.SETTINGS][0, 0]
+        settings = handles[nucleus.pipeline.SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
         if (
-            pipeline.MODULE_NOTES in settings.dtype.fields
-            and settings[pipeline.MODULE_NOTES].shape[1] > idx
+            nucleus.pipeline.MODULE_NOTES in settings.dtype.fields
+            and settings[nucleus.pipeline.MODULE_NOTES].shape[1] > idx
         ):
-            n = settings[pipeline.MODULE_NOTES][0, idx].flatten()
+            n = settings[nucleus.pipeline.MODULE_NOTES][0, idx].flatten()
             for x in n:
                 if isinstance(x, numpy.ndarray):
                     if len(x) == 0:
@@ -127,19 +127,21 @@ class Module(object):
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if pipeline.SHOW_WINDOW in settings.dtype.fields:
-            self.__show_window = settings[pipeline.SHOW_WINDOW][0, idx] != 0
-        if pipeline.BATCH_STATE in settings.dtype.fields:
+        if nucleus.pipeline.SHOW_WINDOW in settings.dtype.fields:
+            self.__show_window = settings[nucleus.pipeline.SHOW_WINDOW][0, idx] != 0
+        if nucleus.pipeline.BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = numpy.array(
-                settings[pipeline.BATCH_STATE][0, idx].tostring()
+                settings[nucleus.pipeline.BATCH_STATE][0, idx].tostring()
             )
-        setting_count = settings[pipeline.NUMBERS_OF_VARIABLES][0, idx]
-        variable_revision_number = settings[pipeline.VARIABLE_REVISION_NUMBERS][0, idx]
-        module_name = settings[pipeline.MODULE_NAMES][0, idx][0]
+        setting_count = settings[nucleus.pipeline.NUMBERS_OF_VARIABLES][0, idx]
+        variable_revision_number = settings[nucleus.pipeline.VARIABLE_REVISION_NUMBERS][
+            0, idx
+        ]
+        module_name = settings[nucleus.pipeline.MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
-            value_cell = settings[pipeline.VARIABLE_VALUES][idx, i]
+            value_cell = settings[nucleus.pipeline.VARIABLE_VALUES][idx, i]
             if isinstance(value_cell, numpy.ndarray):
                 if numpy.product(value_cell.shape) == 0:
                     setting_values.append("")
@@ -286,39 +288,43 @@ class Module(object):
 
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
-        setting = handles[pipeline.SETTINGS][0, 0]
-        setting[pipeline.MODULE_NAMES][0, module_idx] = six.text_type(
+        setting = handles[nucleus.pipeline.SETTINGS][0, 0]
+        setting[nucleus.pipeline.MODULE_NAMES][0, module_idx] = six.text_type(
             self.module_class()
         )
-        setting[pipeline.MODULE_NOTES][0, module_idx] = numpy.ndarray(
+        setting[nucleus.pipeline.MODULE_NOTES][0, module_idx] = numpy.ndarray(
             shape=(len(self.notes), 1), dtype="object"
         )
         for i in range(0, len(self.notes)):
-            setting[pipeline.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
-        setting[pipeline.NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
+            setting[nucleus.pipeline.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
+        setting[nucleus.pipeline.NUMBERS_OF_VARIABLES][0, module_idx] = len(
+            self.settings()
+        )
         for i in range(0, len(self.settings())):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
-                setting[pipeline.VARIABLE_VALUES][
+                setting[nucleus.pipeline.VARIABLE_VALUES][
                     module_idx, i
                 ] = variable.get_unicode_value()
             if isinstance(variable, nucleus.setting.NameProvider):
-                setting[pipeline.VARIABLE_INFO_TYPES][module_idx, i] = six.text_type(
-                    "%s indep" % variable.group
-                )
+                setting[nucleus.pipeline.VARIABLE_INFO_TYPES][
+                    module_idx, i
+                ] = six.text_type("%s indep" % variable.group)
             elif isinstance(variable, nucleus.setting.NameSubscriber):
-                setting[pipeline.VARIABLE_INFO_TYPES][module_idx, i] = six.text_type(
-                    variable.group
-                )
-        setting[pipeline.VARIABLE_REVISION_NUMBERS][
+                setting[nucleus.pipeline.VARIABLE_INFO_TYPES][
+                    module_idx, i
+                ] = six.text_type(variable.group)
+        setting[nucleus.pipeline.VARIABLE_REVISION_NUMBERS][
             0, module_idx
         ] = self.variable_revision_number
-        setting[pipeline.MODULE_REVISION_NUMBERS][0, module_idx] = 0
-        setting[pipeline.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
+        setting[nucleus.pipeline.MODULE_REVISION_NUMBERS][0, module_idx] = 0
+        setting[nucleus.pipeline.SHOW_WINDOW][0, module_idx] = (
+            1 if self.show_window else 0
+        )
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[pipeline.BATCH_STATE][0, module_idx] = numpy.fromstring(
+        setting[nucleus.pipeline.BATCH_STATE][0, module_idx] = numpy.fromstring(
             self.batch_state.tostring(), numpy.uint8
         )
 

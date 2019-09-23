@@ -18,7 +18,7 @@
 #     pipeline = nucleus.pipeline.Pipeline()
 #     measurements = nucleus.measurement.Measurements()
 #     workspace = nucleus.workspace.Workspace(
-#         pipeline, ii, measurements, None, measurements, nucleus.image.ImageSetList()
+#         pipeline, ii, measurements, None, measurements, nucleus.image()
 #     )
 #     ii.prepare_run(workspace)
 #     ii.prepare_group(workspace, {}, [1])

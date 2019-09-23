@@ -619,7 +619,7 @@
 #
 #         image = nucleus.image.Image(image=numpy.zeros((30, 30)))
 #
-#         image_set_list = nucleus.image.ImageSetList()
+#         image_set_list = nucleus.image()
 #
 #         image_set = image_set_list.get_image_set(0)
 #
@@ -702,7 +702,7 @@
 #
 #         image = nucleus.image.Image(image=numpy.zeros((30, 30)))
 #
-#         image_set_list = nucleus.image.ImageSetList()
+#         image_set_list = nucleus.image()
 #
 #         image_set = image_set_list.get_image_set(0)
 #

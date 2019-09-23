@@ -19,6 +19,8 @@ import six.moves.urllib.request
 import skimage.external.tifffile
 
 import nucleus.image
+import nucleus.image
+import nucleus.image
 import nucleus.measurement
 import nucleus.module
 import nucleus.object
@@ -3100,7 +3102,7 @@ to store the image.
                             outlines |= centrosome.outline.outline(l).astype(
                                 outlines.dtype
                             )
-                        outline_image = nucleus.image.Image(
+                        outline_image = nucleus.image.Image.Image(
                             outlines, path_name=path, file_name=filename
                         )
                         workspace.image_set.add(
@@ -4091,7 +4093,9 @@ def load_data_file(pathname_or_url, load_fn):
     return load_fn(pathname_or_url)
 
 
-class LoadImagesImageProvider(nucleus.image.AbstractImageProvider):
+class LoadImagesImageProvider(
+    nucleus.image.AbstractImageProvider.AbstractImageProvider
+):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(
@@ -4381,7 +4385,7 @@ class LoadImagesImageProvider(nucleus.image.AbstractImageProvider):
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
-        self.__image = nucleus.image.Image(
+        self.__image = nucleus.image.Image.Image(
             img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
@@ -4418,7 +4422,7 @@ class LoadImagesImageProvider(nucleus.image.AbstractImageProvider):
         else:
             self.scale = 1
 
-        self.__image = nucleus.image.Image(
+        self.__image = nucleus.image.Image.Image(
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),

@@ -24,6 +24,8 @@ import six.moves.urllib.request
 
 import nucleus
 import nucleus.image
+import nucleus.image
+import nucleus.image_set_list
 import nucleus.measurement
 import nucleus.object
 import nucleus.preferences
@@ -1744,7 +1746,7 @@ class Pipeline(object):
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, nucleus.image.Image(input_pixels))
+            image_set.add(image_name, nucleus.image.Image.Image(input_pixels))
         object_set = nucleus.object.ObjectSet()
         measurements = nucleus.measurement.Measurements()
 

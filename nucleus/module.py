@@ -6,6 +6,7 @@ import numpy
 import six
 
 import nucleus.image
+import nucleus.image
 import nucleus.measurement
 import nucleus.object
 import nucleus.pipeline
@@ -1012,7 +1013,7 @@ class ImageProcessing(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = nucleus.image.Image(
+        y = nucleus.image.Image.Image(
             dimensions=dimensions, image=y_data, parent_image=x, convert=False
         )
 

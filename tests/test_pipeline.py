@@ -486,7 +486,7 @@
 #         pipeline.add_module(module)
 #         m = nucleus.measurement.Measurements()
 #         workspace = nucleus.workspace.Workspace(
-#             pipeline, module, m, None, m, nucleus.image.ImageSetList
+#             pipeline, module, m, None, m, nucleus.image
 #         )
 #         workspace.post_group_display_handler = post_group_display_handler
 #         workspace.post_run_display_handler = post_run_display_handler
@@ -543,7 +543,7 @@
 #     #     pipeline.add_module(module)
 #     #     workspace = nucleus.workspace.Workspace(
 #     #             pipeline, None, None, None, nucleus.measurement.Measurements(),
-#     #             nucleus.image.ImageSetList())
+#     #             nucleus.image())
 #     #     self.assertFalse(pipeline.prepare_run(workspace))
 #     #     self.assertEqual(workspace.measurements.image_set_count, 0)
 #
@@ -739,7 +739,7 @@
 #     #             self.assertTrue(isinstance(module, LI.LoadImages))
 #     #             module.location.custom_path = path
 #     #             m = nucleus.measurement.Measurements()
-#     #             image_set_list = nucleus.image.ImageSetList()
+#     #             image_set_list = nucleus.image()
 #     #             self.assertTrue(pipeline.prepare_run(nucleus.workspace.Workspace(
 #     #                 pipeline, module, None, None, m, image_set_list)))
 #     #             pipeline_text = m.get_experiment_measurement(nucleus.pipeline.M_PIPELINE)

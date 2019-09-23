@@ -5,6 +5,8 @@ import numpy
 import nucleus.image
 import pytest
 
+import nucleus.image
+
 
 class TestImage:
     def test_init(self):

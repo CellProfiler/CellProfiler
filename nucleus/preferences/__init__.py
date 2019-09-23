@@ -689,7 +689,7 @@ Sets the normalization factor for intensity normalization methods:
 -  *{INTENSITY_MODE_GAMMA}*: Set the value of gamma. Pixels are transformed according to the formula `O = I ** gamma`,
    where I is the pixel intensity. For `gamma` > 1.0, the output image will appear darker than the original image. For
    `gamma` < 1.0, the output image will appear brighter than the original image.
-   
+
 The normalization factor is ignored when the normalization method is *{INTENSITY_MODE_NORMAL}* or 
 *{INTENSITY_MODE_RAW}*.
 """.format(

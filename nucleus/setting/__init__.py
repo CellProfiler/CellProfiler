@@ -3787,7 +3787,7 @@ class Table(Setting):
 
         def compare_fn(row1, row2):
             for index in indices:
-                x = cellprofiler.utilities.legacy.cmp(row1[index], row2[index])
+                x = nucleus.utilities.legacy.cmp(row1[index], row2[index])
                 if x != 0:
                     return x
             return 0
@@ -4106,7 +4106,7 @@ class NumberConnector(object):
         return float(self.__fn())
 
     def __cmp__(self, other):
-        return cellprofiler.utilities.legacy.cmp(self.__fn(), other)
+        return nucleus.utilities.legacy.cmp(self.__fn(), other)
 
     def __hash__(self):
         return self.__fn().__hash__()

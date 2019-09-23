@@ -7,6 +7,7 @@ import os
 import h5py
 import six.moves
 
+import nucleus.measurement.measurements
 import nucleus.utilities.hdf5_dict
 
 logger = logging.getLogger(__name__)
@@ -398,7 +399,7 @@ class Workspace(object):
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = cpmeas.Measurements(
+            self.__measurements = nucleus.measurement.measurements.Measurements(
                 filename=self.__filename, mode="r+"
             )
             if self.__file_list is not None:
@@ -454,7 +455,8 @@ class Workspace(object):
 
         filename - name of the workspace file
         """
-        from .measurement import Measurements, make_temporary_file
+        from .measurement import make_temporary_file
+        from nucleus.measurement import Measurements
 
         if isinstance(self.measurements, Measurements):
             self.close()

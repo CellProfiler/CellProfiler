@@ -22,6 +22,7 @@ import nucleus.image
 import nucleus.image
 import nucleus.image
 import nucleus.measurement
+import nucleus.measurement.measurements
 import nucleus.module
 import nucleus.object
 import nucleus.pipeline
@@ -2072,7 +2073,7 @@ to store the image.
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        assert isinstance(m, nucleus.measurement.Measurements)
+        assert isinstance(m, nucleus.measurement.measurements.Measurements)
         image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
         for pathname, image_index in files:
@@ -2237,7 +2238,7 @@ to store the image.
         # 2: write fresh image set records to measurements.
         #
         measurements = workspace.measurements
-        assert isinstance(measurements, nucleus.measurement.Measurements)
+        assert isinstance(measurements, nucleus.measurement.measurements.Measurements)
         if measurements.image_set_count > 0:
             match_metadata = True
             md_dict = self.get_image_numbers_by_tags(workspace, tags)
@@ -2473,7 +2474,7 @@ to store the image.
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        assert isinstance(m, nucleus.measurement.Measurements)
+        assert isinstance(m, nucleus.measurement.measurements.Measurements)
         if m.image_set_count > 0 and self.do_group_by_metadata:
             match_metadata = True
             tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
@@ -3192,7 +3193,9 @@ to store the image.
                   for this channel.
         """
         if measurements is not None:
-            assert isinstance(measurements, nucleus.measurement.Measurements)
+            assert isinstance(
+                measurements, nucleus.measurement.measurements.Measurements
+            )
 
             def add_fn(feature, value):
                 measurements.add_measurement(

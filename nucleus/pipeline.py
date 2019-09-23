@@ -27,6 +27,7 @@ import nucleus.image
 import nucleus.image
 import nucleus.image_set_list
 import nucleus.measurement
+import nucleus.measurement.measurements
 import nucleus.object
 import nucleus.preferences
 import nucleus.setting
@@ -1415,7 +1416,7 @@ class Pipeline(object):
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         """
-        assert isinstance(m, nucleus.measurement.Measurements)
+        assert isinstance(m, nucleus.measurement.measurements.Measurements)
         fd = six.moves.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(
@@ -1748,7 +1749,7 @@ class Pipeline(object):
             input_pixels = image_dict[image_name]
             image_set.add(image_name, nucleus.image.Image.Image(input_pixels))
         object_set = nucleus.object.ObjectSet()
-        measurements = nucleus.measurement.Measurements()
+        measurements = nucleus.measurement.measurements.Measurements()
 
         # Run the modules
         for module in self.modules():
@@ -1784,7 +1785,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = nucleus.measurement.Measurements(
+        measurements = nucleus.measurement.measurements.Measurements(
             image_set_start=image_set_start,
             filename=measurements_filename,
             copy=initial_measurements,
@@ -1902,7 +1903,9 @@ class Pipeline(object):
             assert isinstance(image_set_end, int), "Image set end must be an integer"
 
         if initial_measurements is None:
-            measurements = nucleus.measurement.Measurements(image_set_start)
+            measurements = nucleus.measurement.measurements.Measurements(
+                image_set_start
+            )
         else:
             measurements = initial_measurements
 
@@ -2390,7 +2393,7 @@ class Pipeline(object):
 
         Write the pipeline, version # and timestamp.
         """
-        assert isinstance(m, nucleus.measurement.Measurements)
+        assert isinstance(m, nucleus.measurement.measurements.Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, nucleus.__version__)
         m.add_experiment_measurement(M_TIMESTAMP, datetime.datetime.now().isoformat())
@@ -3248,7 +3251,7 @@ class Pipeline(object):
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = nucleus.measurement.Measurements(mode="memory")
+        temp_measurements = nucleus.measurement.measurements.Measurements(mode="memory")
         new_workspace = None
         try:
             new_workspace = nucleus.workspace.Workspace(

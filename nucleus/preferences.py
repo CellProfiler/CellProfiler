@@ -53,7 +53,7 @@ def image_resource(filename):
     return relpath.replace("\\", "/")
 
 
-class HeadlessConfig(object):
+class HeadlessConfig:
     """
     This class functions as a configuration set for headless runs.
     The default config class is wx-based, which means we have to replace it

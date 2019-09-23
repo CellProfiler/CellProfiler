@@ -1,9 +1,3 @@
-"""Image.py
-
-Image        - Represents an image with secondary attributes such as a mask and labels
-ImageSetList - Represents the list of image filenames that make up a pipeline run
-"""
-
 import io
 import logging
 import math
@@ -12,6 +6,120 @@ import pickle
 import numpy
 
 logger = logging.getLogger(__name__)
+
+
+def crop_image(image, crop_mask, crop_internal=False):
+    """Crop an image to the size of the nonzero portion of a crop mask"""
+    i_histogram = crop_mask.sum(axis=1)
+    i_cumsum = numpy.cumsum(i_histogram != 0)
+    j_histogram = crop_mask.sum(axis=0)
+    j_cumsum = numpy.cumsum(j_histogram != 0)
+    if i_cumsum[-1] == 0:
+        # The whole image is cropped away
+        return numpy.zeros((0, 0), dtype=image.dtype)
+    if crop_internal:
+        #
+        # Make up sequences of rows and columns to keep
+        #
+        i_keep = numpy.argwhere(i_histogram > 0)
+        j_keep = numpy.argwhere(j_histogram > 0)
+        #
+        # Then slice the array by I, then by J to get what's not blank
+        #
+        return image[i_keep.flatten(), :][:, j_keep.flatten()].copy()
+    else:
+        #
+        # The first non-blank row and column are where the cumsum is 1
+        # The last are at the first where the cumsum is it's max (meaning
+        # what came after was all zeros and added nothing)
+        #
+        i_first = numpy.argwhere(i_cumsum == 1)[0]
+        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
+        i_end = i_last + 1
+        j_first = numpy.argwhere(j_cumsum == 1)[0]
+        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_end = j_last + 1
+
+        if image.ndim == 3:
+            return image[i_first[0] : i_end[0], j_first[0] : j_end[0], :].copy()
+
+        return image[i_first[0] : i_end[0], j_first[0] : j_end[0]].copy()
+
+
+def make_dictionary_key(key):
+    """Make a dictionary into a stable key for another dictionary"""
+    return ", ".join([":".join([str(y) for y in x]) for x in sorted(key.items())])
+
+
+class AbstractImageProvider:
+    """Represents an image provider that returns images
+    """
+
+    def provide_image(self, image_set):
+        """Return the image that is associated with the image set
+        """
+        raise NotImplementedError("Please implement ProvideImage for your class")
+
+    def __get_name(self):
+        """Call the abstract function, "get_name"
+        """
+        return self.get_name()
+
+    def get_name(self):
+        """The user-visible name for the image
+        """
+        raise NotImplementedError("Please implement get_name for your class")
+
+    def release_memory(self):
+        """Release whatever memory is associated with the image"""
+        logger.warning(
+            "Warning: no memory release function implemented for %s image",
+            self.get_name(),
+        )
+
+    name = property(__get_name)
+
+
+class CallbackImageProvider(AbstractImageProvider):
+    """An image provider proxy that calls the indicated callback functions (presumably in your module) to implement the methods
+    """
+
+    def __init__(self, name, image_provider_fn):
+        """Constructor
+        name              - name returned by the Name method
+        image_provider_fn - function called during ProvideImage with the arguments, image_set and the CallbackImageProvider instance
+        """
+
+        self.__name = name
+        self.__image_provider_fn = image_provider_fn
+
+    def provide_image(self, image_set):
+        return self.__image_provider_fn(image_set, self)
+
+    def get_name(self):
+        return self.__name
+
+
+class GrayscaleImage:
+    """A wrapper around a non-grayscale image
+
+    This is meant to be used if the image is 3-d but all channels
+       are the same or if the image is binary.
+    """
+
+    def __init__(self, image):
+        self.__image = image
+
+    def __getattr__(self, name):
+        return getattr(self.__image, name)
+
+    @property
+    def pixel_data(self):
+        """One 2-d channel of the color image as a numpy array"""
+        if self.__image.pixel_data.dtype.kind == "b":
+            return self.__image.pixel_data.astype(numpy.float64)
+
+        return self.__image.pixel_data[:, :, 0]
 
 
 class Image:
@@ -380,156 +488,7 @@ class Image:
         return self.__scale
 
 
-def crop_image(image, crop_mask, crop_internal=False):
-    """Crop an image to the size of the nonzero portion of a crop mask"""
-    i_histogram = crop_mask.sum(axis=1)
-    i_cumsum = numpy.cumsum(i_histogram != 0)
-    j_histogram = crop_mask.sum(axis=0)
-    j_cumsum = numpy.cumsum(j_histogram != 0)
-    if i_cumsum[-1] == 0:
-        # The whole image is cropped away
-        return numpy.zeros((0, 0), dtype=image.dtype)
-    if crop_internal:
-        #
-        # Make up sequences of rows and columns to keep
-        #
-        i_keep = numpy.argwhere(i_histogram > 0)
-        j_keep = numpy.argwhere(j_histogram > 0)
-        #
-        # Then slice the array by I, then by J to get what's not blank
-        #
-        return image[i_keep.flatten(), :][:, j_keep.flatten()].copy()
-    else:
-        #
-        # The first non-blank row and column are where the cumsum is 1
-        # The last are at the first where the cumsum is it's max (meaning
-        # what came after was all zeros and added nothing)
-        #
-        i_first = numpy.argwhere(i_cumsum == 1)[0]
-        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
-        i_end = i_last + 1
-        j_first = numpy.argwhere(j_cumsum == 1)[0]
-        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
-        j_end = j_last + 1
-
-        if image.ndim == 3:
-            return image[i_first[0] : i_end[0], j_first[0] : j_end[0], :].copy()
-
-        return image[i_first[0] : i_end[0], j_first[0] : j_end[0]].copy()
-
-
-class GrayscaleImage(object):
-    """A wrapper around a non-grayscale image
-
-    This is meant to be used if the image is 3-d but all channels
-       are the same or if the image is binary.
-    """
-
-    def __init__(self, image):
-        self.__image = image
-
-    def __getattr__(self, name):
-        return getattr(self.__image, name)
-
-    @property
-    def pixel_data(self):
-        """One 2-d channel of the color image as a numpy array"""
-        if self.__image.pixel_data.dtype.kind == "b":
-            return self.__image.pixel_data.astype(numpy.float64)
-
-        return self.__image.pixel_data[:, :, 0]
-
-
-class RGBImage(object):
-    """A wrapper that discards the alpha channel
-
-    This is meant to be used if the image is 3-d + alpha but the alpha
-    channel is discarded
-    """
-
-    def __init__(self, image):
-        self.__image = image
-
-    def __getattr__(self, name):
-        return getattr(self.__image, name)
-
-    @property
-    def pixel_data(self):
-        """Return the pixel data without the alpha channel"""
-        return self.__image.pixel_data[:, :, :3]
-
-
-class AbstractImageProvider(object):
-    """Represents an image provider that returns images
-    """
-
-    def provide_image(self, image_set):
-        """Return the image that is associated with the image set
-        """
-        raise NotImplementedError("Please implement ProvideImage for your class")
-
-    def __get_name(self):
-        """Call the abstract function, "get_name"
-        """
-        return self.get_name()
-
-    def get_name(self):
-        """The user-visible name for the image
-        """
-        raise NotImplementedError("Please implement get_name for your class")
-
-    def release_memory(self):
-        """Release whatever memory is associated with the image"""
-        logger.warning(
-            "Warning: no memory release function implemented for %s image",
-            self.get_name(),
-        )
-
-    name = property(__get_name)
-
-
-class VanillaImageProvider(AbstractImageProvider):
-    """This image provider returns the image given to it in the constructor
-
-    """
-
-    def __init__(self, name, image):
-        """Constructor takes the name of the image and the CellProfiler.Image.Image instance to be returned
-        """
-        self.__name = name
-        self.__image = image
-
-    def provide_image(self, image_set):
-        return self.__image
-
-    def get_name(self):
-        return self.__name
-
-    def release_memory(self):
-        self.__image = None
-
-
-class CallbackImageProvider(AbstractImageProvider):
-    """An image provider proxy that calls the indicated callback functions (presumably in your module) to implement the methods
-    """
-
-    def __init__(self, name, image_provider_fn):
-        """Constructor
-        name              - name returned by the Name method
-        image_provider_fn - function called during ProvideImage with the arguments, image_set and the CallbackImageProvider instance
-        """
-
-        self.__name = name
-        self.__image_provider_fn = image_provider_fn
-
-    def provide_image(self, image_set):
-        return self.__image_provider_fn(image_set, self)
-
-    def get_name(self):
-        return self.__name
-
-
-class ImageSet(object):
+class ImageSet:
     """Represents the images for a particular iteration of a pipeline
 
     An image set is composed of one image provider per image in the set.
@@ -668,7 +627,7 @@ class ImageSet(object):
         self.providers.append(provider)
 
 
-class ImageSetList(object):
+class ImageSetList:
     """Represents the list of image sets in a pipeline run
 
     """
@@ -680,46 +639,6 @@ class ImageSetList(object):
         self.__associating_by_key = None
         self.combine_path_and_file = False
         self.test_mode = test_mode
-
-    def get_image_set(self, keys_or_number):
-        """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
-
-        """
-        if not isinstance(keys_or_number, dict):
-            keys = {"number": keys_or_number}
-            number = keys_or_number
-            if self.__associating_by_key is None:
-                self.__associating_by_key = False
-            k = make_dictionary_key(keys)
-        else:
-            keys = keys_or_number
-            k = make_dictionary_key(keys)
-            if k in self.__image_sets_by_key:
-                number = self.__image_sets_by_key[k].number
-            else:
-                number = len(self.__image_sets)
-            self.__associating_by_key = True
-        if number >= len(self.__image_sets):
-            self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
-        if self.__image_sets[number] is None:
-            image_set = ImageSet(number, keys, self.legacy_fields)
-            self.__image_sets[number] = image_set
-            self.__image_sets_by_key[k] = image_set
-            if self.__associating_by_key:
-                k = make_dictionary_key(dict(number=number))
-                self.__image_sets_by_key[k] = image_set
-        else:
-            image_set = self.__image_sets[number]
-        return image_set
-
-    def purge_image_set(self, number):
-        """Remove the memory associated with an image set"""
-        keys = self.__image_sets[number].keys
-        image_set = self.__image_sets[number]
-        for provider in image_set.providers:
-            provider.release_memory()
-        self.__image_sets[number] = None
-        self.__image_sets_by_key[repr(keys)] = None
 
     def add_provider_to_all_image_sets(self, provider):
         """Provide an image to every image set
@@ -766,23 +685,36 @@ class ImageSetList(object):
             d[key_values].append(i + 1)
         return keys, [(dict(list(zip(keys, k))), d[k]) for k in sort_order]
 
-    def save_state(self):
-        """Return a string that can be used to load the image_set_list's state
+    def get_image_set(self, keys_or_number):
+        """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
 
-        load_state will restore the image set list's state. No image_set can
-        have image providers before this call.
         """
-        f = io.BytesIO()
-        pickle.dump(self.count(), f)
-        for i in range(self.count()):
-            image_set = self.get_image_set(i)
-            assert isinstance(image_set, ImageSet)
-            assert (
-                len(image_set.providers) == 0
-            ), "An image set cannot have providers while saving its state"
-            pickle.dump(image_set.keys, f)
-        pickle.dump(self.legacy_fields, f)
-        return f.getvalue()
+        if not isinstance(keys_or_number, dict):
+            keys = {"number": keys_or_number}
+            number = keys_or_number
+            if self.__associating_by_key is None:
+                self.__associating_by_key = False
+            k = make_dictionary_key(keys)
+        else:
+            keys = keys_or_number
+            k = make_dictionary_key(keys)
+            if k in self.__image_sets_by_key:
+                number = self.__image_sets_by_key[k].number
+            else:
+                number = len(self.__image_sets)
+            self.__associating_by_key = True
+        if number >= len(self.__image_sets):
+            self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
+        if self.__image_sets[number] is None:
+            image_set = ImageSet(number, keys, self.legacy_fields)
+            self.__image_sets[number] = image_set
+            self.__image_sets_by_key[k] = image_set
+            if self.__associating_by_key:
+                k = make_dictionary_key(dict(number=number))
+                self.__image_sets_by_key[k] = image_set
+        else:
+            image_set = self.__image_sets[number]
+        return image_set
 
     def load_state(self, state):
         """Load an image_set_list's state from the string returned from save_state"""
@@ -806,7 +738,69 @@ class ImageSetList(object):
         for i in range(count):
             self.get_image_set(all_keys[i])
 
+    def purge_image_set(self, number):
+        """Remove the memory associated with an image set"""
+        keys = self.__image_sets[number].keys
+        image_set = self.__image_sets[number]
+        for provider in image_set.providers:
+            provider.release_memory()
+        self.__image_sets[number] = None
+        self.__image_sets_by_key[repr(keys)] = None
 
-def make_dictionary_key(key):
-    """Make a dictionary into a stable key for another dictionary"""
-    return ", ".join([":".join([str(y) for y in x]) for x in sorted(key.items())])
+    def save_state(self):
+        """Return a string that can be used to load the image_set_list's state
+
+        load_state will restore the image set list's state. No image_set can
+        have image providers before this call.
+        """
+        f = io.BytesIO()
+        pickle.dump(self.count(), f)
+        for i in range(self.count()):
+            image_set = self.get_image_set(i)
+            assert isinstance(image_set, ImageSet)
+            assert (
+                len(image_set.providers) == 0
+            ), "An image set cannot have providers while saving its state"
+            pickle.dump(image_set.keys, f)
+        pickle.dump(self.legacy_fields, f)
+        return f.getvalue()
+
+
+class RGBImage:
+    """A wrapper that discards the alpha channel
+
+    This is meant to be used if the image is 3-d + alpha but the alpha
+    channel is discarded
+    """
+
+    def __init__(self, image):
+        self.__image = image
+
+    def __getattr__(self, name):
+        return getattr(self.__image, name)
+
+    @property
+    def pixel_data(self):
+        """Return the pixel data without the alpha channel"""
+        return self.__image.pixel_data[:, :, :3]
+
+
+class VanillaImageProvider(AbstractImageProvider):
+    """This image provider returns the image given to it in the constructor
+
+    """
+
+    def __init__(self, name, image):
+        """Constructor takes the name of the image and the CellProfiler.Image.Image instance to be returned
+        """
+        self.__name = name
+        self.__image = image
+
+    def get_name(self):
+        return self.__name
+
+    def provide_image(self, image_set):
+        return self.__image
+
+    def release_memory(self):
+        self.__image = None

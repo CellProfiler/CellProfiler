@@ -8,8 +8,9 @@ import six
 import nucleus.image
 import nucleus.measurement
 import nucleus.object
-import nucleus.setting
 import nucleus.pipeline
+import nucleus.setting
+
 
 class Module(object):
     """ Derive from the abstract module class to create your own module in Python
@@ -1113,10 +1114,7 @@ class ImageSegmentation(Module):
             return [nucleus.measurement.C_COUNT]
 
         if object_name == self.y_name.value:
-            return [
-                nucleus.measurement.C_LOCATION,
-                nucleus.measurement.C_NUMBER,
-            ]
+            return [nucleus.measurement.C_LOCATION, nucleus.measurement.C_NUMBER]
 
         return []
 

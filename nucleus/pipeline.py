@@ -5,11 +5,11 @@ import json
 import logging
 import os
 import re
+import string
 import sys
 import tempfile
 import timeit
 import uuid
-import string
 
 import javabridge
 import numpy
@@ -191,7 +191,9 @@ H_MESSAGE_FOR_USER = "MessageForUser"
 COOKIE = "CellProfiler Pipeline: http://www.nucleus.org"
 
 """Sad proofpoint cookie: see issue #1318"""
-SAD_PROOFPOINT_COOKIE = r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.nucleus\.org"
+SAD_PROOFPOINT_COOKIE = (
+    r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.nucleus\.org"
+)
 
 """HDF5 file header according to the specification
 
@@ -396,9 +398,7 @@ def add_all_measurements(handles, measurements):
         )
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements[nucleus.measurement.EXPERIMENT][
-            0, 0
-        ] = experiment_measurements
+        npy_measurements[nucleus.measurement.EXPERIMENT][0, 0] = experiment_measurements
         for field, feature_name in list(mapping.items()):
             feature_measurements = np.ndarray((1, 1), dtype="object")
             feature_measurements[0, 0] = measurements.get_experiment_measurement(
@@ -1023,9 +1023,7 @@ class Pipeline(object):
                     pass
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
-                CURRENT_VERSION = int(
-                    re.sub(r"\.|rc\d{1}", "", nucleus.__version__)
-                )
+                CURRENT_VERSION = int(re.sub(r"\.|rc\d{1}", "", nucleus.__version__))
             elif kwd == H_FROM_MATLAB:
                 from_matlab = value == "True"
             elif kwd == H_MODULE_COUNT:
@@ -1593,9 +1591,7 @@ class Pipeline(object):
         result = []
         for module in self.modules():
             for setting in module.settings():
-                if isinstance(
-                    setting, nucleus.setting.ExternalImageNameSubscriber
-                ):
+                if isinstance(setting, nucleus.setting.ExternalImageNameSubscriber):
                     result.append(setting.value)
         return result
 
@@ -1836,16 +1832,12 @@ class Pipeline(object):
 
                 if initial_measurements is not None and all(
                     [
-                        initial_measurements.has_feature(
-                            nucleus.measurement.IMAGE, f
-                        )
+                        initial_measurements.has_feature(nucleus.measurement.IMAGE, f)
                         for f in (GROUP_NUMBER, GROUP_INDEX)
                     ]
                 ):
                     group_number, group_index = [
-                        initial_measurements[
-                            nucleus.measurement.IMAGE, f, image_number
-                        ]
+                        initial_measurements[nucleus.measurement.IMAGE, f, image_number]
                         for f in (GROUP_NUMBER, GROUP_INDEX)
                     ]
                 else:
@@ -2152,8 +2144,7 @@ class Pipeline(object):
                         )
 
                     while (
-                        workspace.disposition
-                        == nucleus.workspace.DISPOSITION_PAUSE
+                        workspace.disposition == nucleus.workspace.DISPOSITION_PAUSE
                         and frame is not None
                     ):
                         # try to leave measurements temporary file in a readable state
@@ -2163,10 +2154,7 @@ class Pipeline(object):
 
                     if workspace.disposition == nucleus.workspace.DISPOSITION_SKIP:
                         break
-                    elif (
-                        workspace.disposition
-                        == nucleus.workspace.DISPOSITION_CANCEL
-                    ):
+                    elif workspace.disposition == nucleus.workspace.DISPOSITION_CANCEL:
                         measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
                         return
@@ -3296,9 +3284,7 @@ class Pipeline(object):
 
             url_columns = [
                 get_column(
-                    nucleus.measurement.C_URL,
-                    nucleus.measurement.C_OBJECTS_URL,
-                    iscd,
+                    nucleus.measurement.C_URL, nucleus.measurement.C_OBJECTS_URL, iscd
                 )
                 for iscd in iscds
             ]

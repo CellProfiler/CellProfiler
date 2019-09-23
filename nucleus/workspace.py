@@ -3,11 +3,9 @@
 
 import logging
 import os
-import six.moves
 
 import h5py
-
-import nucleus.utilities.hdf5_dict
+import six.moves
 
 logger = logging.getLogger(__name__)
 

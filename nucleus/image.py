@@ -809,6 +809,4 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     """Make a dictionary into a stable key for another dictionary"""
-    return ", ".join(
-        [":".join([str(y) for y in x]) for x in sorted(key.items())]
-    )
+    return ", ".join([":".join([str(y) for y in x]) for x in sorted(key.items())])

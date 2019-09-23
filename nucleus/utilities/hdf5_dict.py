@@ -4,7 +4,6 @@ This module implements the HDF5Dict class, which provides a dict-like
 interface for measurements, backed by an HDF5 file.
 """
 
-
 import bisect
 import functools
 import logging
@@ -19,11 +18,8 @@ import numpy
 import six
 from future.standard_library import install_aliases
 
-import nucleus.utilities.legacy
-
 install_aliases()
 import six.moves.urllib.parse
-
 
 logger = logging.getLogger(__name__)
 
@@ -1146,7 +1142,7 @@ class HDF5FileList(object):
             url = url
         else:
             url = str(url)
-        import urllib.request, urllib.parse, urllib.error
+        import urllib.parse, urllib.error
 
         schema, rest = urllib.parse.splittype(six.text_type(url))
         if schema is not None and schema.lower() == "omero":

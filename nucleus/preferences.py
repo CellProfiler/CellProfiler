@@ -7,7 +7,6 @@
            Create a function to populate a handles structure with preferences.
 """
 
-
 import logging
 import multiprocessing
 import os
@@ -19,6 +18,7 @@ import time
 import traceback
 import uuid
 import weakref
+
 import pkg_resources
 
 import nucleus.utilities.utf16encode
@@ -475,12 +475,8 @@ created according to the pathname you have typed.
 .. |image1| image:: {CREATE_BUTTON}\
 """.format(
     **{
-        "CREATE_BUTTON": image_resource(
-            "folder_create.png"
-        ),
-        "BROWSE_BUTTON": image_resource(
-            "folder_browse.png"
-        ),
+        "CREATE_BUTTON": image_resource("folder_create.png"),
+        "BROWSE_BUTTON": image_resource("folder_browse.png"),
     }
 )
 
@@ -1881,7 +1877,6 @@ __wants_pony = None
 
 
 def get_wants_pony():
-
     """
 
     :return:

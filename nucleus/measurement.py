@@ -16,12 +16,7 @@ import six
 from scipy.io.matlab import loadmat
 
 import nucleus.preferences
-from nucleus.utilities.hdf5_dict import (
-    HDF5Dict,
-    get_top_level_group,
-    VERSION,
-    NullLock,
-)
+from nucleus.utilities.hdf5_dict import HDF5Dict, get_top_level_group, VERSION, NullLock
 
 logger = logging.getLogger(__name__)
 

@@ -20,8 +20,8 @@ import six
 import six.moves
 import six.moves.urllib.parse
 import six.moves.urllib.request
-from bioformats.formatreader import clear_image_reader_cache
-from future.standard_library import install_aliases
+import bioformats.formatreader
+import future.standard_library
 
 import nucleus
 import nucleus.image
@@ -33,7 +33,7 @@ import nucleus.utilities.legacy
 import nucleus.utilities.utf16encode
 import nucleus.workspace
 
-install_aliases()
+future.standard_library.install_aliases()
 
 try:
     # implemented in scipy.io.matlab.miobase.py@5582
@@ -2161,7 +2161,7 @@ class Pipeline(object):
             # Close cached readers.
             # This may play a big role with cluster deployments or long standing jobs
             # by freeing up memory and resources.
-            clear_image_reader_cache()
+            bioformats.formatreader.clear_image_reader_cache()
             if measurements is not None:
                 workspace = nucleus.workspace.Workspace(
                     self, None, None, None, measurements, image_set_list, frame

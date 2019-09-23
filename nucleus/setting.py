@@ -1,5 +1,3 @@
-""" Setting.py - represents a module setting
-"""
 import functools
 import json
 import logging
@@ -14,18 +12,7 @@ import skimage.morphology
 
 import nucleus.measurement
 import nucleus.utilities.legacy
-from nucleus.preferences import (
-    DEFAULT_INPUT_FOLDER_NAME,
-    DEFAULT_OUTPUT_FOLDER_NAME,
-    DEFAULT_INPUT_SUBFOLDER_NAME,
-    DEFAULT_OUTPUT_SUBFOLDER_NAME,
-    ABSOLUTE_FOLDER_NAME,
-    URL_FOLDER_NAME,
-    NO_FOLDER_NAME,
-    get_default_image_directory,
-    get_default_output_directory,
-    standardize_default_folder_names,
-)
+import nucleus.preferences
 
 logger = logging.getLogger(__name__)
 
@@ -302,11 +289,11 @@ class DirectoryPath(Text):
     """
 
     DIR_ALL = [
-        ABSOLUTE_FOLDER_NAME,
-        DEFAULT_INPUT_FOLDER_NAME,
-        DEFAULT_OUTPUT_FOLDER_NAME,
-        DEFAULT_INPUT_SUBFOLDER_NAME,
-        DEFAULT_OUTPUT_SUBFOLDER_NAME,
+        nucleus.preferences.ABSOLUTE_FOLDER_NAME,
+        nucleus.preferences.DEFAULT_INPUT_FOLDER_NAME,
+        nucleus.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+        nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+        nucleus.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
     ]
 
     def __init__(
@@ -321,8 +308,8 @@ class DirectoryPath(Text):
     ):
         if dir_choices is None:
             dir_choices = DirectoryPath.DIR_ALL
-        if support_urls and not (URL_FOLDER_NAME in dir_choices):
-            dir_choices = dir_choices + [URL_FOLDER_NAME]
+        if support_urls and not (nucleus.preferences.URL_FOLDER_NAME in dir_choices):
+            dir_choices = dir_choices + [nucleus.preferences.URL_FOLDER_NAME]
         if value is None:
             value = DirectoryPath.static_join_string(dir_choices[0], "")
         self.dir_choices = dir_choices
@@ -359,7 +346,9 @@ class DirectoryPath(Text):
     @staticmethod
     def upgrade_setting(value):
         dir_choice, custom_path = DirectoryPath.split_string(value)
-        dir_choice = standardize_default_folder_names([dir_choice], 0)[0]
+        dir_choice = nucleus.preferences.standardize_default_folder_names(
+            [dir_choice], 0
+        )[0]
         return DirectoryPath.static_join_string(dir_choice, custom_path)
 
     def get_dir_choice(self):
@@ -384,14 +373,14 @@ class DirectoryPath(Text):
     def is_custom_choice(self):
         """True if the current dir_choice requires a custom path"""
         return self.dir_choice in [
-            ABSOLUTE_FOLDER_NAME,
-            DEFAULT_INPUT_SUBFOLDER_NAME,
-            DEFAULT_OUTPUT_SUBFOLDER_NAME,
-            URL_FOLDER_NAME,
+            nucleus.preferences.ABSOLUTE_FOLDER_NAME,
+            nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+            nucleus.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            nucleus.preferences.URL_FOLDER_NAME,
         ]
 
     def is_url(self):
-        return self.dir_choice == URL_FOLDER_NAME
+        return self.dir_choice == nucleus.preferences.URL_FOLDER_NAME
 
     def get_absolute_path(self, measurements=None, image_set_number=None):
         """Return the absolute path specified by the setting
@@ -399,19 +388,19 @@ class DirectoryPath(Text):
         Concoct an absolute path based on the directory choice,
         the custom path and metadata taken from the measurements.
         """
-        if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
-            return get_default_image_directory()
-        if self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            return get_default_output_directory()
-        if self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
-            root_directory = get_default_image_directory()
-        elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
-            root_directory = get_default_output_directory()
-        elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
+        if self.dir_choice == nucleus.preferences.DEFAULT_INPUT_FOLDER_NAME:
+            return nucleus.preferences.get_default_image_directory()
+        if self.dir_choice == nucleus.preferences.DEFAULT_OUTPUT_FOLDER_NAME:
+            return nucleus.preferences.get_default_output_directory()
+        if self.dir_choice == nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME:
+            root_directory = nucleus.preferences.get_default_image_directory()
+        elif self.dir_choice == nucleus.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME:
+            root_directory = nucleus.preferences.get_default_output_directory()
+        elif self.dir_choice == nucleus.preferences.ABSOLUTE_FOLDER_NAME:
             root_directory = os.curdir
-        elif self.dir_choice == URL_FOLDER_NAME:
+        elif self.dir_choice == nucleus.preferences.URL_FOLDER_NAME:
             root_directory = ""
-        elif self.dir_choice == NO_FOLDER_NAME:
+        elif self.dir_choice == nucleus.preferences.NO_FOLDER_NAME:
             return ""
         else:
             raise ValueError("Unknown directory choice: %s" % self.dir_choice)
@@ -431,7 +420,7 @@ class DirectoryPath(Text):
                     custom_path = custom_path.replace("\\\\", "\\")
         else:
             custom_path = self.custom_path
-        if self.dir_choice == URL_FOLDER_NAME:
+        if self.dir_choice == nucleus.preferences.URL_FOLDER_NAME:
             return custom_path
         path = os.path.join(root_directory, custom_path)
         return os.path.abspath(path)
@@ -440,8 +429,8 @@ class DirectoryPath(Text):
         """Figure out how to set up dir_choice and custom path given a path"""
         path = os.path.abspath(path)
         custom_path = self.custom_path
-        img_dir = get_default_image_directory()
-        out_dir = get_default_output_directory()
+        img_dir = nucleus.preferences.get_default_image_directory()
+        out_dir = nucleus.preferences.get_default_output_directory()
         if sys.platform.startswith("win"):
             # set to lower-case for comparisons
             cmp_path = path.lower()
@@ -453,17 +442,17 @@ class DirectoryPath(Text):
         if hasattr(os, "altsep"):
             seps += [os.altsep]
         if cmp_path == img_dir:
-            dir_choice = DEFAULT_INPUT_FOLDER_NAME
+            dir_choice = nucleus.preferences.DEFAULT_INPUT_FOLDER_NAME
         elif cmp_path == out_dir:
-            dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
+            dir_choice = nucleus.preferences.DEFAULT_OUTPUT_FOLDER_NAME
         elif cmp_path.startswith(img_dir) and cmp_path[len(img_dir)] in seps:
-            dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+            dir_choice = nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
             custom_path = path[len(img_dir) + 1 :]
         elif cmp_path.startswith(out_dir) and cmp_path[len(out_dir)] in seps:
-            dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+            dir_choice = nucleus.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
             custom_path = path[len(out_dir) + 1 :]
         else:
-            dir_choice = ABSOLUTE_FOLDER_NAME
+            dir_choice = nucleus.preferences.ABSOLUTE_FOLDER_NAME
             custom_path = path
         return dir_choice, custom_path
 
@@ -475,25 +464,27 @@ class DirectoryPath(Text):
             # os.path.join, so we need r".\\" at start to fake everyone out
             custom_path = r".\\" + custom_path
 
-        if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
+        if self.dir_choice == nucleus.preferences.DEFAULT_INPUT_FOLDER_NAME:
             pass
-        elif self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
+        elif self.dir_choice == nucleus.preferences.DEFAULT_OUTPUT_FOLDER_NAME:
             pass
-        elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
+        elif self.dir_choice == nucleus.preferences.ABSOLUTE_FOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
-        elif self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
+        elif self.dir_choice == nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
-        elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
+        elif self.dir_choice == nucleus.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
 
     def test_valid(self, pipeline):
-        if self.dir_choice not in self.dir_choices + [NO_FOLDER_NAME]:
+        if self.dir_choice not in self.dir_choices + [
+            nucleus.preferences.NO_FOLDER_NAME
+        ]:
             raise ValidationError(
                 "Unsupported directory choice: %s" % self.dir_choice, self
             )
@@ -503,7 +494,7 @@ class DirectoryPath(Text):
             and self.custom_path.find(r"\g<") != -1
         ):
             raise ValidationError("Metadata not supported for this setting", self)
-        if self.dir_choice == ABSOLUTE_FOLDER_NAME and (
+        if self.dir_choice == nucleus.preferences.ABSOLUTE_FOLDER_NAME and (
             (self.custom_path is None) or (len(self.custom_path) == 0)
         ):
             raise ValidationError("Please enter a valid path", self)

@@ -122,9 +122,7 @@ HasImagePlaneDetails:False"""
         not_txt = r"""not CellProfiler Pipeline: http://www.nucleus.org"""
         for text, expected in ((sensible, True), (proofpoint, True), (not_txt, False)):
             fd = six.moves.StringIO(text)
-            self.assertEqual(
-                nucleus.pipeline.Pipeline.is_pipeline_txt_fd(fd), expected
-            )
+            self.assertEqual(nucleus.pipeline.Pipeline.is_pipeline_txt_fd(fd), expected)
 
     def test_02_01_copy_nothing(self):
         # Regression test of issue #565
@@ -593,9 +591,7 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, nucleus.pipeline.LoadExceptionEvent)
-            )
+            self.assertFalse(isinstance(event, nucleus.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -642,9 +638,7 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, nucleus.pipeline.LoadExceptionEvent)
-            )
+            self.assertFalse(isinstance(event, nucleus.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -697,125 +691,124 @@ HasImagePlaneDetails:False"""
                 self.assertEqual(len(m_in), len(m_out))
                 self.assertTrue(numpy.all(m_in == m_out))
 
-                #     def test_13_04_pipeline_measurement(self):
-                #         data = r"""CellProfiler Pipeline: http://www.nucleus.org
-                # Version:3
-                # DateRevision:20120709180131
-                # ModuleCount:1
-                # HasImagePlaneDetails:False
-                #
-                # LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-                #     File type to be loaded:individual images
-                #     File selection method:Text-Exact match
-                #     Number of images in each group?:3
-                #     Type the text that the excluded images have in common:Do not use
-                #     Analyze all subfolders within the selected folder?:None
-                #     Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
-                #     Check image sets for unmatched or duplicate files?:Yes
-                #     Group images by metadata?:No
-                #     Exclude certain files?:No
-                #     Specify metadata fields to group by:
-                #     Select subfolders to analyze:
-                #     Image count:2
-                #     Text that these images have in common (case-sensitive):Channel1-01
-                #     Position of this image in each group:1
-                #     Extract metadata from where?:File name
-                #     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
-                #     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
-                #     Channel count:1
-                #     Group the movie frames?:No
-                #     Grouping method:Interleaved
-                #     Number of channels per group:2
-                #     Load the input as images or objects?:Images
-                #     Name this loaded image:rawGFP
-                #     Name this loaded object:Nuclei
-                #     Retain outlines of loaded objects?:No
-                #     Name the outline image:NucleiOutlines
-                #     Channel number:1
-                #     Rescale intensities?:Yes
-                #     Text that these images have in common (case-sensitive):Channel2-01
-                #     Position of this image in each group:2
-                #     Extract metadata from where?:File name
-                #     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
-                #     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
-                #     Channel count:1
-                #     Group the movie frames?:No
-                #     Grouping method:Interleaved
-                #     Number of channels per group:2
-                #     Load the input as images or objects?:Images
-                #     Name this loaded image:rawDNA
-                #     Name this loaded object:Nuclei
-                #     Retain outlines of loaded objects?:No
-                #     Name the outline image:NucleiOutlines
-                #     Channel number:1
-                #     Rescale intensities?:Yes
-                # """
-                #         maybe_download_sbs()
-                #         path = os.path.join(example_images_directory(), "ExampleSBSImages")
-                #         pipeline = cpp.Pipeline()
-                #         pipeline.load(six.moves.StringIO(data))
-                #         module = pipeline.modules()[0]
-                #         self.assertTrue(isinstance(module, LI.LoadImages))
-                #         module.location.custom_path = path
-                #         m = cpmeas.Measurements()
-                #         image_set_list = cpi.ImageSetList()
-                #         self.assertTrue(pipeline.prepare_run(cpw.Workspace(
-                #             pipeline, module, None, None, m, image_set_list)))
-                #         pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
-                #         pipeline_text = pipeline_text.encode("us-ascii")
-                #         pipeline = cpp.Pipeline()
-                #         pipeline.loadtxt(six.moves.StringIO(pipeline_text))
-                #         self.assertEqual(len(pipeline.modules()), 1)
-                #         module_out = pipeline.modules()[0]
-                #         self.assertTrue(isinstance(module_out, module.__class__))
-                #         self.assertEqual(len(module_out.settings()), len(module.settings()))
-                #         for m1setting, m2setting in zip(module.settings(), module_out.settings()):
-                #             self.assertTrue(isinstance(m1setting, cps.Setting))
-                #             self.assertTrue(isinstance(m2setting, cps.Setting))
-                #             self.assertEqual(m1setting.value, m2setting.value)
+    # def test_13_04_pipeline_measurement(self):
+    #     data = r"""CellProfiler Pipeline: http://www.nucleus.org
+    #     Version:3
+    #     DateRevision:20120709180131
+    #     ModuleCount:1
+    #     HasImagePlaneDetails:False
+    #
+    #     LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    #         File type to be loaded:individual images
+    #         File selection method:Text-Exact match
+    #         Number of images in each group?:3
+    #         Type the text that the excluded images have in common:Do not use
+    #         Analyze all subfolders within the selected folder?:None
+    #         Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
+    #         Check image sets for unmatched or duplicate files?:Yes
+    #         Group images by metadata?:No
+    #         Exclude certain files?:No
+    #         Specify metadata fields to group by:
+    #         Select subfolders to analyze:
+    #         Image count:2
+    #         Text that these images have in common (case-sensitive):Channel1-01
+    #         Position of this image in each group:1
+    #         Extract metadata from where?:File name
+    #         Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    #         Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    #         Channel count:1
+    #         Group the movie frames?:No
+    #         Grouping method:Interleaved
+    #         Number of channels per group:2
+    #         Load the input as images or objects?:Images
+    #         Name this loaded image:rawGFP
+    #         Name this loaded object:Nuclei
+    #         Retain outlines of loaded objects?:No
+    #         Name the outline image:NucleiOutlines
+    #         Channel number:1
+    #         Rescale intensities?:Yes
+    #         Text that these images have in common (case-sensitive):Channel2-01
+    #         Position of this image in each group:2
+    #         Extract metadata from where?:File name
+    #         Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    #         Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    #         Channel count:1
+    #         Group the movie frames?:No
+    #         Grouping method:Interleaved
+    #         Number of channels per group:2
+    #         Load the input as images or objects?:Images
+    #         Name this loaded image:rawDNA
+    #         Name this loaded object:Nuclei
+    #         Retain outlines of loaded objects?:No
+    #         Name the outline image:NucleiOutlines
+    #         Channel number:1
+    #         Rescale intensities?:Yes
+    #     """
+    #             maybe_download_sbs()
+    #             path = os.path.join(example_images_directory(), "ExampleSBSImages")
+    #             pipeline = nucleus.pipeline.Pipeline()
+    #             pipeline.load(six.moves.StringIO(data))
+    #             module = pipeline.modules()[0]
+    #             self.assertTrue(isinstance(module, LI.LoadImages))
+    #             module.location.custom_path = path
+    #             m = nucleus.measurement.Measurements()
+    #             image_set_list = nucleus.image.ImageSetList()
+    #             self.assertTrue(pipeline.prepare_run(nucleus.workspace.Workspace(
+    #                 pipeline, module, None, None, m, image_set_list)))
+    #             pipeline_text = m.get_experiment_measurement(nucleus.pipeline.M_PIPELINE)
+    #             pipeline_text = pipeline_text.encode("us-ascii")
+    #             pipeline = nucleus.pipeline.Pipeline()
+    #             pipeline.loadtxt(six.moves.StringIO(pipeline_text))
+    #             self.assertEqual(len(pipeline.modules()), 1)
+    #             module_out = pipeline.modules()[0]
+    #             self.assertTrue(isinstance(module_out, module.__class__))
+    #             self.assertEqual(len(module_out.settings()), len(module.settings()))
+    #             for m1setting, m2setting in zip(module.settings(), module_out.settings()):
+    #                 self.assertTrue(isinstance(m1setting, nucleus.setting.Setting))
+    #                 self.assertTrue(isinstance(m2setting, nucleus.setting.Setting))
+    #                 self.assertEqual(m1setting.value, m2setting.value)
 
-    # FIXME: wxPython 4 PR
-    # def test_14_01_unicode_save(self):
-    #     pipeline = get_empty_pipeline()
-    #     module = TestModuleWithMeasurement()
-    #     # Little endian utf-16 encoding
-    #     module.my_variable.value = u"\\\u2211"
-    #     module.other_variable.value = u"\u2222\u0038"
-    #     module.set_module_num(1)
-    #     module.notes = u"\u03B1\\\u03B2"
-    #     pipeline.add_module(module)
-    #     fd = six.moves.StringIO()
-    #     pipeline.savetxt(fd, save_image_plane_details=False)
-    #     result = fd.getvalue()
-    #     lines = result.split("\n")
-    #     self.assertEqual(len(lines), 11)
-    #     text, value = lines[-3].split(":")
-    #     #
-    #     # unicode encoding:
-    #     #     backslash: \\ (BOM encoding)
-    #     #     unicode character: \u2211 (n-ary summation)
-    #     #
-    #     # escape encoding:
-    #     #     utf-16 to byte: \xff\xfe\\\x00\x11"
-    #     #
-    #     # result = \\xff\\xfe\\\\\\x00\\x11"
-    #     self.assertEqual(value, '\\xff\\xfe\\\\\\x00\\x11"')
-    #     text, value = lines[-2].split(":")
-    #     #
-    #     # unicode encoding:
-    #     #     unicode character: \u
-    #     #
-    #     # escape encoding:
-    #     #     utf-16 to byte: \xff\xfe""8\x00
-    #     #
-    #     # result = \\xff\\xfe""8\\x00
-    #     self.assertEqual(value, '\\xff\\xfe""8\\x00')
-    #     mline = lines[7]
-    #     idx0 = mline.find("notes:")
-    #     mline = mline[(idx0 + 6):]
-    #     idx1 = mline.find("|")
-    #     value = eval(mline[:idx1].decode('string_escape'))
-    #     self.assertEqual(value, module.notes)
+    def test_14_01_unicode_save(self):
+        pipeline = get_empty_pipeline()
+        module = TestModuleWithMeasurement()
+        # Little endian utf-16 encoding
+        module.my_variable.value = "\\\u2211"
+        module.other_variable.value = "\u2222\u0038"
+        module.set_module_num(1)
+        module.notes = "\u03B1\\\u03B2"
+        pipeline.add_module(module)
+        fd = six.moves.StringIO()
+        pipeline.savetxt(fd, save_image_plane_details=False)
+        result = fd.getvalue()
+        lines = result.split("\n")
+        self.assertEqual(len(lines), 11)
+        text, value = lines[-3].split(":")
+        #
+        # unicode encoding:
+        #     backslash: \\ (BOM encoding)
+        #     unicode character: \u2211 (n-ary summation)
+        #
+        # escape encoding:
+        #     utf-16 to byte: \xff\xfe\\\x00\x11"
+        #
+        # result = \\xff\\xfe\\\\\\x00\\x11"
+        self.assertEqual(value, '\\xff\\xfe\\\\\\x00\\x11"')
+        text, value = lines[-2].split(":")
+        #
+        # unicode encoding:
+        #     unicode character: \u
+        #
+        # escape encoding:
+        #     utf-16 to byte: \xff\xfe""8\x00
+        #
+        # result = \\xff\\xfe""8\\x00
+        self.assertEqual(value, '\\xff\\xfe""8\\x00')
+        mline = lines[7]
+        idx0 = mline.find("notes:")
+        mline = mline[(idx0 + 6) :]
+        idx1 = mline.find("|")
+        value = eval(mline[:idx1].decode("string_escape"))
+        self.assertEqual(value, module.notes)
 
     def test_14_02_unicode_save_and_load(self):
         #
@@ -831,9 +824,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
 
         def callback(caller, event):
-            self.assertFalse(
-                isinstance(event, nucleus.pipeline.LoadExceptionEvent)
-            )
+            self.assertFalse(isinstance(event, nucleus.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
@@ -954,10 +945,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         self.assertEqual(provider[0], module)
         self.assertEqual(provider[1], my_setting)
-        for group in (
-            nucleus.setting.OBJECT_GROUP,
-            nucleus.setting.MEASUREMENTS_GROUP,
-        ):
+        for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
 
     def test_16_02_get_provider_dictionary_object(self):
@@ -974,10 +962,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         self.assertEqual(provider[0], module)
         self.assertEqual(provider[1], my_setting)
-        for group in (
-            nucleus.setting.IMAGE_GROUP,
-            nucleus.setting.MEASUREMENTS_GROUP,
-        ):
+        for group in (nucleus.setting.IMAGE_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
 
     def test_16_03_get_provider_dictionary_measurement(self):
@@ -999,10 +984,7 @@ HasImagePlaneDetails:False"""
         self.assertEqual(len(providers), 1)
         provider = providers[0]
         self.assertEqual(provider[0], module)
-        for group in (
-            nucleus.setting.OBJECT_GROUP,
-            nucleus.setting.IMAGE_GROUP,
-        ):
+        for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.IMAGE_GROUP):
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
 
     def test_16_04_get_provider_dictionary_other(self):
@@ -1019,10 +1001,7 @@ HasImagePlaneDetails:False"""
         self.assertEqual(len(providers), 1)
         provider = providers[0]
         self.assertEqual(provider[0], module)
-        for group in (
-            nucleus.setting.OBJECT_GROUP,
-            nucleus.setting.MEASUREMENTS_GROUP,
-        ):
+        for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
 
     def test_16_05_get_provider_dictionary_combo(self):
@@ -1134,15 +1113,9 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
         for i, module in enumerate(
             (
-                ATestModule(
-                    [nucleus.setting.ImageNameProvider("foo", IMAGE_NAME)]
-                ),
-                ATestModule(
-                    [nucleus.setting.ImageNameProvider("foo", ALT_IMAGE_NAME)]
-                ),
-                ATestModule(
-                    [nucleus.setting.ImageNameSubscriber("foo", IMAGE_NAME)]
-                ),
+                ATestModule([nucleus.setting.ImageNameProvider("foo", IMAGE_NAME)]),
+                ATestModule([nucleus.setting.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
+                ATestModule([nucleus.setting.ImageNameSubscriber("foo", IMAGE_NAME)]),
             )
         ):
             module.module_num = i + 1
@@ -1161,15 +1134,9 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
         for i, module in enumerate(
             (
-                ATestModule(
-                    [nucleus.setting.ObjectNameProvider("foo", OBJECT_NAME)]
-                ),
-                ATestModule(
-                    [nucleus.setting.ImageNameProvider("foo", IMAGE_NAME)]
-                ),
-                ATestModule(
-                    [nucleus.setting.ObjectNameSubscriber("foo", OBJECT_NAME)]
-                ),
+                ATestModule([nucleus.setting.ObjectNameProvider("foo", OBJECT_NAME)]),
+                ATestModule([nucleus.setting.ImageNameProvider("foo", IMAGE_NAME)]),
+                ATestModule([nucleus.setting.ObjectNameSubscriber("foo", OBJECT_NAME)]),
             )
         ):
             module.module_num = i + 1
@@ -1195,9 +1162,7 @@ HasImagePlaneDetails:False"""
         for i, module in enumerate(
             (
                 ATestModule(measurement_columns=measurement_columns),
-                ATestModule(
-                    [nucleus.setting.ImageNameProvider("foo", ALT_IMAGE_NAME)]
-                ),
+                ATestModule([nucleus.setting.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
                 ATestModule([measurement_setting]),
             )
         ):
@@ -1286,9 +1251,7 @@ HasImagePlaneDetails:False"""
         p.read_file_list(fd)
         self.assertEqual(len(p.file_list), 2)
         for path in paths:
-            self.assertIn(
-                nucleus.modules.loadimages.pathname2url(path), p.file_list
-            )
+            self.assertIn(nucleus.modules.loadimages.pathname2url(path), p.file_list)
 
     def test_19_02_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
@@ -1538,9 +1501,7 @@ class TestModuleWithMeasurement(nucleus.module.Module):
         return "nucleus.tests.Test_Pipeline.TestModuleWithMeasurement"
 
     def get_measurement_columns(self, pipeline):
-        return [
-            (nucleus.measurement.IMAGE, self.my_variable.value, "varchar(255)")
-        ]
+        return [(nucleus.measurement.IMAGE, self.my_variable.value, "varchar(255)")]
 
 
 class MyClassForTest1101(nucleus.module.Module):

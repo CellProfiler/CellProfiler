@@ -13,10 +13,10 @@ import warnings
 import h5py
 import numpy
 import six
-from scipy.io.matlab import loadmat
+import scipy.io.matlab
 
 import nucleus.preferences
-from nucleus.utilities.hdf5_dict import HDF5Dict, get_top_level_group, VERSION, NullLock
+import nucleus.utilities.hdf5_dict
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +280,7 @@ class Measurements(object):
             is_temporary = False
         if isinstance(copy, Measurements):
             with copy.hdf5_dict.lock:
-                self.hdf5_dict = HDF5Dict(
+                self.hdf5_dict = nucleus.utilities.hdf5_dict.HDF5Dict(
                     filename,
                     is_temporary=is_temporary,
                     copy=copy.hdf5_dict.top_group,
@@ -288,7 +288,7 @@ class Measurements(object):
                     image_numbers=image_numbers,
                 )
         elif hasattr(copy, "__getitem__") and hasattr(copy, "keys"):
-            self.hdf5_dict = HDF5Dict(
+            self.hdf5_dict = nucleus.utilities.hdf5_dict.HDF5Dict(
                 filename,
                 is_temporary=is_temporary,
                 copy=copy,
@@ -296,13 +296,15 @@ class Measurements(object):
                 image_numbers=image_numbers,
             )
             if not multithread:
-                self.hdf5_dict.lock = NullLock
+                self.hdf5_dict.lock = nucleus.utilities.hdf5_dict.NullLock
         elif copy is not None:
             raise ValueError(
                 "Copy source for measurments is neither a Measurements or HDF5 group."
             )
         else:
-            self.hdf5_dict = HDF5Dict(filename, is_temporary=is_temporary, mode=mode)
+            self.hdf5_dict = nucleus.utilities.hdf5_dict.HDF5Dict(
+                filename, is_temporary=is_temporary, mode=mode
+            )
         if is_temporary:
             os.close(fd)
 
@@ -475,7 +477,7 @@ class Measurements(object):
 
     def load(self, measurements_file_name):
         """Load measurements from a matlab file"""
-        handles = loadmat(measurements_file_name, struct_as_record=True)
+        handles = scipy.io.matlab.loadmat(measurements_file_name, struct_as_record=True)
         self.create_from_handles(handles)
 
     def create_from_handles(self, handles):
@@ -1975,9 +1977,9 @@ def load_measurements(
         fd.close()
 
     if header == HDF5_HEADER:
-        f, top_level = get_top_level_group(filename)
+        f, top_level = nucleus.utilities.hdf5_dict.get_top_level_group(filename)
         try:
-            if VERSION in list(f.keys()):
+            if nucleus.utilities.hdf5_dict.VERSION in list(f.keys()):
                 if run_name is not None:
                     top_level = top_level[run_name]
                 else:

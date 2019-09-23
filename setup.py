@@ -13,6 +13,7 @@ setuptools.setup(
         "wx": ["wxPython==4.0.6"],
     },
     install_requires=[
+        "centrosome==1.1.6",
         "docutils==0.15.2",
         "h5py==2.10.0",
         "javabridge@https://github.com/CellProfiler/python-javabridge/tarball/master",

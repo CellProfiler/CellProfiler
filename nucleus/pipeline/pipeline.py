@@ -1,23 +1,5 @@
-import bisect
-import datetime
-import hashlib
-import json
-import logging
-import os
-import re
-import string
-import sys
-import tempfile
-import timeit
-import uuid
-
 import bioformats.formatreader
-import future.standard_library
-import javabridge
-import numpy
-import scipy
 import scipy.io.matlab
-import six
 import six.moves
 import six.moves.urllib.parse
 import six.moves.urllib.request
@@ -33,6 +15,7 @@ import nucleus.setting
 import nucleus.utilities.legacy
 import nucleus.utilities.utf16encode
 import nucleus.workspace
+from nucleus.pipeline import *
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +150,7 @@ class Pipeline:
         for module in self.__modules:
             module.post_pipeline_load(self)
 
-        self.notify_listeners(PipelineLoadedEvent())
+        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
 
     def instantiate_module(self, module_name):
         import nucleus.modules
@@ -203,8 +186,8 @@ class Pipeline:
         """Create a numpy array representing this pipeline
 
         """
-        settings = numpy.ndarray(shape=[1, 1], dtype=SETTINGS_DTYPE)
-        handles = {SETTINGS: settings}
+        settings = numpy.ndarray(shape=[1, 1], dtype=nucleus.pipeline.SETTINGS_DTYPE)
+        handles = {nucleus.pipeline.SETTINGS: settings}
         setting = settings[0, 0]
         # The variables are a (modules,max # of variables) array of cells (objects)
         # where an empty cell is a (1,0) array of float64

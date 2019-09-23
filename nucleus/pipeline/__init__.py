@@ -1,22 +1,9 @@
 import bisect
-import datetime
-import hashlib
-import json
 import logging
-import os
 import re
-import string
-import sys
-import tempfile
-import timeit
-import uuid
 
-import bioformats.formatreader
 import future.standard_library
-import javabridge
 import numpy
-import scipy
-import scipy.io.matlab
 import six
 import six.moves
 import six.moves.urllib.parse
@@ -32,9 +19,14 @@ import nucleus.setting
 import nucleus.utilities.legacy
 import nucleus.utilities.utf16encode
 import nucleus.workspace
-
 from .abstract_pipeline_event import (
     AbstractPipelineEvent,
+    CancelledException,
+    EndRunEvent,
+    FileWalkEndedEvent,
+    FileWalkStartedEvent,
+    IPDLoadExceptionEvent,
+    LoadExceptionEvent,
     ModuleAddedPipelineEvent,
     ModuleDisabledEvent,
     ModuleEditedPipelineEvent,
@@ -42,21 +34,15 @@ from .abstract_pipeline_event import (
     ModuleMovedPipelineEvent,
     ModuleRemovedPipelineEvent,
     ModuleShowWindowEvent,
-    URLsAddedEvent,
-    URLsRemovedEvent,
-    EndRunEvent,
-    IPDLoadExceptionEvent,
-    LoadExceptionEvent,
-    PostRunExceptionEvent,
-    RunExceptionEvent,
-    CancelledException,
-    FileWalkEndedEvent,
-    FileWalkStartedEvent,
     PipelineClearedEvent,
     PipelineLoadCancelledException,
     PipelineLoadedEvent,
+    PostRunExceptionEvent,
     PrepareRunErrorEvent,
     PrepareRunExceptionEvent,
+    RunExceptionEvent,
+    URLsAddedEvent,
+    URLsRemovedEvent,
 )
 from .dependency import (
     Dependency,
@@ -64,6 +50,7 @@ from .dependency import (
     MeasurementDependency,
     ObjectDependency,
 )
+from .image_plane_details import ImagePlaneDetails
 from .pipeline import Pipeline
 
 future.standard_library.install_aliases()

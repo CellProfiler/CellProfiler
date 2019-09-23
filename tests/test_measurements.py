@@ -2,7 +2,6 @@ import base64
 import functools
 import os
 import tempfile
-import unittest
 import zlib
 
 import numpy
@@ -14,7 +13,7 @@ OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"
 
 
-class TestMeasurements(unittest.TestCase):
+class TestMeasurements:
     def test_00_00_init(self):
         x = nucleus.measurement.Measurements()
 
@@ -29,48 +28,48 @@ class TestMeasurements(unittest.TestCase):
             )
             if not isinstance(case, six.text_type):
                 case = case.decode("utf-8")
-            self.assertEqual(result, case)
+            assert result == case
 
     def test_01_01_image_number_is_zero(self):
         x = nucleus.measurement.Measurements()
-        self.assertEqual(x.image_set_number, 1)
+        assert x.image_set_number == 1
 
     def test_01_01_next_image(self):
         x = nucleus.measurement.Measurements()
         x.next_image_set()
-        self.assertEqual(x.image_set_number, 2)
+        assert x.image_set_number == 2
 
     def test_02_01_add_image_measurement(self):
         x = nucleus.measurement.Measurements()
         x.add_measurement("Image", "Feature", "Value")
-        self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value")
-        self.assertTrue("Image" in x.get_object_names())
-        self.assertTrue("Feature" in x.get_feature_names("Image"))
+        assert x.get_current_measurement("Image", "Feature") == "Value"
+        assert "Image" in x.get_object_names()
+        assert "Feature" in x.get_feature_names("Image")
 
     def test_02_01b_add_image_measurement_arrayinterface(self):
         x = nucleus.measurement.Measurements()
         x["Image", "Feature"] = "Value"
-        self.assertEqual(x["Image", "Feature"], "Value")
-        self.assertTrue("Image" in x.get_object_names())
-        self.assertTrue("Feature" in x.get_feature_names("Image"))
+        assert x["Image", "Feature"] == "Value"
+        assert "Image" in x.get_object_names()
+        assert "Feature" in x.get_feature_names("Image")
 
     def test_02_02_add_object_measurement(self):
         x = nucleus.measurement.Measurements()
         numpy.random.seed(0)
         m = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m)
-        self.assertTrue((x.get_current_measurement("Nuclei", "Feature") == m).all)
-        self.assertTrue("Nuclei" in x.get_object_names())
-        self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
+        assert (x.get_current_measurement("Nuclei", "Feature") == m).all
+        assert "Nuclei" in x.get_object_names()
+        assert "Feature" in x.get_feature_names("Nuclei")
 
     def test_02_02b_add_object_measurement_arrayinterface(self):
         x = nucleus.measurement.Measurements()
         numpy.random.seed(0)
         m = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m
-        self.assertTrue((x["Nuclei", "Feature"] == m).all)
-        self.assertTrue("Nuclei" in x.get_object_names())
-        self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
+        assert (x["Nuclei", "Feature"] == m).all
+        assert "Nuclei" in x.get_object_names()
+        assert "Feature" in x.get_feature_names("Nuclei")
 
     def test_02_03_add_two_measurements(self):
         x = nucleus.measurement.Measurements()
@@ -78,11 +77,11 @@ class TestMeasurements(unittest.TestCase):
         numpy.random.seed(0)
         m = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m)
-        self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value")
-        self.assertTrue((x.get_current_measurement("Nuclei", "Feature") == m).all())
-        self.assertTrue("Image" in x.get_object_names())
-        self.assertTrue("Nuclei" in x.get_object_names())
-        self.assertTrue("Feature" in x.get_feature_names("Image"))
+        assert x.get_current_measurement("Image", "Feature") == "Value"
+        assert (x.get_current_measurement("Nuclei", "Feature") == m).all()
+        assert "Image" in x.get_object_names()
+        assert "Nuclei" in x.get_object_names()
+        assert "Feature" in x.get_feature_names("Image")
 
     def test_02_03b_add_two_measurements_arrayinterface(self):
         x = nucleus.measurement.Measurements()
@@ -90,31 +89,31 @@ class TestMeasurements(unittest.TestCase):
         numpy.random.seed(0)
         m = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m
-        self.assertEqual(x["Image", "Feature"], "Value")
-        self.assertTrue((x["Nuclei", "Feature"] == m).all())
-        self.assertTrue("Image" in x.get_object_names())
-        self.assertTrue("Nuclei" in x.get_object_names())
-        self.assertTrue("Feature" in x.get_feature_names("Image"))
+        assert x["Image", "Feature"] == "Value"
+        assert (x["Nuclei", "Feature"] == m).all()
+        assert "Image" in x.get_object_names()
+        assert "Nuclei" in x.get_object_names()
+        assert "Feature" in x.get_feature_names("Image")
 
     def test_02_04_add_two_measurements_to_object(self):
         x = nucleus.measurement.Measurements()
         x.add_measurement("Image", "Feature1", "Value1")
         x.add_measurement("Image", "Feature2", "Value2")
-        self.assertEqual(x.get_current_measurement("Image", "Feature1"), "Value1")
-        self.assertEqual(x.get_current_measurement("Image", "Feature2"), "Value2")
-        self.assertTrue("Image" in x.get_object_names())
-        self.assertTrue("Feature1" in x.get_feature_names("Image"))
-        self.assertTrue("Feature2" in x.get_feature_names("Image"))
+        assert x.get_current_measurement("Image", "Feature1") == "Value1"
+        assert x.get_current_measurement("Image", "Feature2") == "Value2"
+        assert "Image" in x.get_object_names()
+        assert "Feature1" in x.get_feature_names("Image")
+        assert "Feature2" in x.get_feature_names("Image")
 
     def test_02_04b_add_two_measurements_to_object_arrayinterface(self):
         x = nucleus.measurement.Measurements()
         x["Image", "Feature1"] = "Value1"
         x["Image", "Feature2"] = "Value2"
-        self.assertEqual(x["Image", "Feature1"], "Value1")
-        self.assertEqual(x["Image", "Feature2"], "Value2")
-        self.assertTrue("Image" in x.get_object_names())
-        self.assertTrue("Feature1" in x.get_feature_names("Image"))
-        self.assertTrue("Feature2" in x.get_feature_names("Image"))
+        assert x["Image", "Feature1"] == "Value1"
+        assert x["Image", "Feature2"] == "Value2"
+        assert "Image" in x.get_object_names()
+        assert "Feature1" in x.get_feature_names("Image")
+        assert "Feature2" in x.get_feature_names("Image")
 
     def test_03_03_MultipleImageSets(self):
         numpy.random.seed(0)
@@ -126,14 +125,14 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Feature", "Value2")
         m2 = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m2)
-        self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value2")
-        self.assertTrue((x.get_current_measurement("Nuclei", "Feature") == m2).all())
+        assert x.get_current_measurement("Image", "Feature") == "Value2"
+        assert (x.get_current_measurement("Nuclei", "Feature") == m2).all()
         for a, b in zip(
             x.get_all_measurements("Image", "Feature"), ["Value1", "Value2"]
         ):
-            self.assertEqual(a, b)
+            assert a == b
         for a, b in zip(x.get_all_measurements("Nuclei", "Feature"), [m1, m2]):
-            self.assertTrue((a == b).all())
+            assert (a == b).all()
 
     def test_03_03b_MultipleImageSets_arrayinterface(self):
         numpy.random.seed(0)
@@ -145,12 +144,12 @@ class TestMeasurements(unittest.TestCase):
         x["Image", "Feature"] = "Value2"
         m2 = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m2
-        self.assertEqual(x["Image", "Feature"], "Value2")
-        self.assertTrue((x["Nuclei", "Feature"] == m2).all())
+        assert x["Image", "Feature"] == "Value2"
+        assert (x["Nuclei", "Feature"] == m2).all()
         for a, b in zip(x["Image", "Feature", :], ["Value1", "Value2"]):
-            self.assertEqual(a, b)
+            assert a == b
         for a, b in zip(x["Nuclei", "Feature", :], [m1, m2]):
-            self.assertTrue((a == b).all())
+            assert (a == b).all()
 
     def test_04_01_get_all_image_measurements_float(self):
         r = numpy.random.RandomState()
@@ -198,7 +197,7 @@ class TestMeasurements(unittest.TestCase):
                 image_set_number=image_number,
             )
         result = m.get_all_measurements(nucleus.measurement.IMAGE, "Feature")
-        self.assertTrue(all([r == six.text_type(v) for r, v in zip(result, vals)]))
+        assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
         r = numpy.random.RandomState()
@@ -211,7 +210,7 @@ class TestMeasurements(unittest.TestCase):
                 vals[image_number - 1]
             )
         result = m[nucleus.measurement.IMAGE, "Feature", :]
-        self.assertTrue(all([r == six.text_type(v) for r, v in zip(result, vals)]))
+        assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_03_get_all_image_measurements_unicode(self):
         r = numpy.random.RandomState()
@@ -227,7 +226,7 @@ class TestMeasurements(unittest.TestCase):
                 image_set_number=image_number,
             )
         result = m.get_all_measurements(nucleus.measurement.IMAGE, "Feature")
-        self.assertTrue(all([r == six.text_type(v) for r, v in zip(result, vals)]))
+        assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
         r = numpy.random.RandomState()
@@ -240,7 +239,7 @@ class TestMeasurements(unittest.TestCase):
                 image_number - 1
             ]
         result = m[nucleus.measurement.IMAGE, "Feature", :]
-        self.assertTrue(all([r == six.text_type(v) for r, v in zip(result, vals)]))
+        assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_04_get_all_object_measurements(self):
         r = numpy.random.RandomState()
@@ -256,8 +255,8 @@ class TestMeasurements(unittest.TestCase):
                 image_set_number=image_number,
             )
         result = m.get_all_measurements(OBJECT_NAME, "Feature")
-        self.assertTrue(
-            all([numpy.all(r == v) and len(r) == len(v) for r, v in zip(result, vals)])
+        assert all(
+            [numpy.all(r == v) and len(r) == len(v) for r, v in zip(result, vals)]
         )
 
     def test_04_04b_get_all_object_measurements_arrayinterface(self):
@@ -269,8 +268,8 @@ class TestMeasurements(unittest.TestCase):
         for image_number in bad_order:
             m[OBJECT_NAME, "Feature", image_number] = vals[image_number - 1]
         result = m[OBJECT_NAME, "Feature", :]
-        self.assertTrue(
-            all([numpy.all(r == v) and len(r) == len(v) for r, v in zip(result, vals)])
+        assert all(
+            [numpy.all(r == v) and len(r) == len(v) for r, v in zip(result, vals)]
         )
 
     # def test_04_05_get_many_string_measurements(self):
@@ -339,32 +338,32 @@ class TestMeasurements(unittest.TestCase):
         image_numbers = numpy.arange(1, len(test) + 1)
         m[nucleus.measurement.IMAGE, "Feature", image_numbers, numpy.uint8] = test
         result = m[nucleus.measurement.IMAGE, "Feature", image_numbers]
-        self.assertIsNone(result[0])
+        assert result[0] is None
         numpy.testing.assert_array_equal(test[1], result[1])
 
     def test_05_01_test_has_current_measurements(self):
         x = nucleus.measurement.Measurements()
-        self.assertFalse(x.has_current_measurements("Image", "Feature"))
+        assert not x.has_current_measurements("Image", "Feature")
 
     def test_05_02_test_has_current_measurements(self):
         x = nucleus.measurement.Measurements()
         x.add_measurement("Image", "OtherFeature", "Value")
-        self.assertFalse(x.has_current_measurements("Image", "Feature"))
+        assert not x.has_current_measurements("Image", "Feature")
 
     def test_05_02b_test_has_current_measurements_arrayinterface(self):
         x = nucleus.measurement.Measurements()
         x["Image", "OtherFeature"] = "Value"
-        self.assertFalse(x.has_current_measurements("Image", "Feature"))
+        assert not x.has_current_measurements("Image", "Feature")
 
     def test_05_03_test_has_current_measurements(self):
         x = nucleus.measurement.Measurements()
         x.add_measurement("Image", "Feature", "Value")
-        self.assertTrue(x.has_current_measurements("Image", "Feature"))
+        assert x.has_current_measurements("Image", "Feature")
 
     def test_05_03b_test_has_current_measurements_arrayinterface(self):
         x = nucleus.measurement.Measurements()
         x["Image", "Feature"] = "Value"
-        self.assertTrue(x.has_current_measurements("Image", "Feature"))
+        assert x.has_current_measurements("Image", "Feature")
 
     def test_06_00_00_dont_apply_metadata(self):
         x = nucleus.measurement.Measurements()
@@ -372,7 +371,7 @@ class TestMeasurements(unittest.TestCase):
         expected = "pre_post"
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = "pre_post"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_00_00b_dont_apply_metadata_arrayinterface(self):
         x = nucleus.measurement.Measurements()
@@ -380,7 +379,7 @@ class TestMeasurements(unittest.TestCase):
         expected = "pre_post"
         x["Image", "Metadata_Plate"] = value
         pattern = "pre_post"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_00_01_dont_apply_metadata_with_slash(self):
         x = nucleus.measurement.Measurements()
@@ -388,7 +387,7 @@ class TestMeasurements(unittest.TestCase):
         expected = "pre\\post"
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = "pre\\\\post"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_01_apply_metadata(self):
         x = nucleus.measurement.Measurements()
@@ -396,7 +395,7 @@ class TestMeasurements(unittest.TestCase):
         expected = "pre_" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"pre_\g<Plate>_post"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_02_apply_metadata_with_slash(self):
         x = nucleus.measurement.Measurements()
@@ -404,7 +403,7 @@ class TestMeasurements(unittest.TestCase):
         expected = "\\" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"\\\g<Plate>_post"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_03_apply_metadata_with_two_slashes(self):
         """Regression test of img-1144"""
@@ -415,7 +414,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", plate)
         x.add_measurement("Image", "Metadata_Well", well)
         pattern = r"\\\g<Plate>\\\g<Well>"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_04_apply_metadata_when_user_messes_with_your_head(self):
         x = nucleus.measurement.Measurements()
@@ -423,7 +422,7 @@ class TestMeasurements(unittest.TestCase):
         expected = r"\g<Plate>"
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"\\g<Plate>"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_05_apply_metadata_twice(self):
         """Regression test of img-1144 (second part)"""
@@ -434,27 +433,19 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", plate)
         x.add_measurement("Image", "Metadata_Well", well)
         pattern = r"\g<Plate>_\g<Well>"
-        self.assertEqual(x.apply_metadata(pattern), expected)
+        assert x.apply_metadata(pattern) == expected
 
     def test_06_06_apply_series_and_frame_metadata(self):
         x = nucleus.measurement.Measurements()
-        x[
-            nucleus.measurement.IMAGE, nucleus.measurement.C_SERIES + "_DNA"
-        ] = 1
-        x[
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_SERIES + "_DNAIllum",
-        ] = 0
+        x[nucleus.measurement.IMAGE, nucleus.measurement.C_SERIES + "_DNA"] = 1
+        x[nucleus.measurement.IMAGE, nucleus.measurement.C_SERIES + "_DNAIllum"] = 0
         x[nucleus.measurement.IMAGE, nucleus.measurement.C_FRAME + "_DNA"] = 2
-        x[
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_FRAME + "_DNAIllum",
-        ] = 0
+        x[nucleus.measurement.IMAGE, nucleus.measurement.C_FRAME + "_DNAIllum"] = 0
         pattern = r"\g<%s>_\g<%s>" % (
             nucleus.measurement.C_SERIES,
             nucleus.measurement.C_FRAME,
         )
-        self.assertEqual(x.apply_metadata(pattern), "1_2")
+        assert x.apply_metadata(pattern) == "1_2"
 
     def test_07_01_copy(self):
         x = nucleus.measurement.Measurements()
@@ -475,12 +466,9 @@ class TestMeasurements(unittest.TestCase):
 
         y = nucleus.measurement.Measurements(copy=x)
         for i in range(12):
-            self.assertEqual(
-                y.get_measurement(
-                    nucleus.measurement.IMAGE, "Metadata_Well", (i + 1)
-                ),
-                "A%02d" % (i + 1),
-            )
+            assert y.get_measurement(
+                nucleus.measurement.IMAGE, "Metadata_Well", (i + 1)
+            ) == "A%02d" % (i + 1)
             values = y.get_measurement(OBJECT_NAME, "AreaShape_Area", (i + 1))
             numpy.testing.assert_equal(values, areas[i])
 
@@ -515,16 +503,15 @@ class TestMeasurements(unittest.TestCase):
             f.close()
             m = nucleus.measurement.load_measurements(filename)
             for i in range(1, 4):
-                self.assertEqual(
-                    m.get_measurement(nucleus.measurement.IMAGE, "ImageNumber", i),
-                    i,
+                assert (
+                    m.get_measurement(nucleus.measurement.IMAGE, "ImageNumber", i) == i
                 )
             for i, plate in enumerate(("P-12345", "P-23456", "P-34567")):
-                self.assertEqual(
+                assert (
                     m.get_measurement(
                         nucleus.measurement.IMAGE, "Metadata_Plate", i + 1
-                    ),
-                    plate,
+                    )
+                    == plate
                 )
         finally:
             try:
@@ -558,8 +545,8 @@ class TestMeasurements(unittest.TestCase):
         result = m.group_by_metadata(["A", "B"])
         for d in result:
             for image_number in d.image_numbers:
-                self.assertEqual(d["A"], aa[image_number - 1])
-                self.assertEqual(d["B"], bb[image_number - 1])
+                assert d["A"] == aa[image_number - 1]
+                assert d["B"] == bb[image_number - 1]
 
     def test_09_02_get_groupings(self):
         m = nucleus.measurement.Measurements()
@@ -587,43 +574,31 @@ class TestMeasurements(unittest.TestCase):
         result = m.get_groupings(["Metadata_A", "Metadata_B"])
         for d, image_numbers in result:
             for image_number in image_numbers:
-                self.assertEqual(d["Metadata_A"], six.text_type(aa[image_number - 1]))
-                self.assertEqual(d["Metadata_B"], six.text_type(bb[image_number - 1]))
+                assert d["Metadata_A"] == six.text_type(aa[image_number - 1])
+                assert d["Metadata_B"] == six.text_type(bb[image_number - 1])
 
     def test_10_01_remove_image_measurement(self):
         m = nucleus.measurement.Measurements()
-        m.add_measurement(
-            nucleus.measurement.IMAGE, "M", "Hello", image_set_number=1
-        )
-        m.add_measurement(
-            nucleus.measurement.IMAGE, "M", "World", image_set_number=2
-        )
+        m.add_measurement(nucleus.measurement.IMAGE, "M", "Hello", image_set_number=1)
+        m.add_measurement(nucleus.measurement.IMAGE, "M", "World", image_set_number=2)
         m.remove_measurement(nucleus.measurement.IMAGE, "M", 1)
-        self.assertTrue(
-            m.get_measurement(nucleus.measurement.IMAGE, "M", 1) is None
-        )
-        self.assertEqual(
-            m.get_measurement(nucleus.measurement.IMAGE, "M", 2), "World"
-        )
+        assert m.get_measurement(nucleus.measurement.IMAGE, "M", 1) is None
+        assert m.get_measurement(nucleus.measurement.IMAGE, "M", 2) == "World"
 
     def test_10_02_remove_object_measurement(self):
         m = nucleus.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, "M", numpy.arange(5), image_set_number=1)
         m.add_measurement(OBJECT_NAME, "M", numpy.arange(7), image_set_number=2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
-        self.assertEqual(len(m.get_measurement(OBJECT_NAME, "M", 1)), 0)
+        assert len(m.get_measurement(OBJECT_NAME, "M", 1)) == 0
         numpy.testing.assert_equal(
             m.get_measurement(OBJECT_NAME, "M", 2), numpy.arange(7)
         )
 
     def test_10_03_remove_image_number(self):
         m = nucleus.measurement.Measurements()
-        m.add_measurement(
-            nucleus.measurement.IMAGE, "M", "Hello", image_set_number=1
-        )
-        m.add_measurement(
-            nucleus.measurement.IMAGE, "M", "World", image_set_number=2
-        )
+        m.add_measurement(nucleus.measurement.IMAGE, "M", "Hello", image_set_number=1)
+        m.add_measurement(nucleus.measurement.IMAGE, "M", "World", image_set_number=2)
         numpy.testing.assert_equal(
             numpy.array(m.get_image_numbers()), numpy.arange(1, 3)
         )
@@ -637,10 +612,8 @@ class TestMeasurements(unittest.TestCase):
         result = m.match_metadata(
             ("Metadata_foo", "Metadata_bar"), (numpy.zeros(3), numpy.zeros(3))
         )
-        self.assertEqual(len(result), 3)
-        self.assertTrue(
-            all([len(x) == 1 and x[0] == i + 1 for i, x in enumerate(result)])
-        )
+        assert len(result) == 3
+        assert all([len(x) == 1 and x[0] == i + 1 for i, x in enumerate(result)])
 
     def test_11_01_match_metadata_by_order(self):
         m = nucleus.measurement.Measurements()
@@ -651,10 +624,8 @@ class TestMeasurements(unittest.TestCase):
             nucleus.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=2
         )
         result = m.match_metadata(("Metadata_bar",), (numpy.zeros(2),))
-        self.assertEqual(len(result), 2)
-        self.assertTrue(
-            all([len(x) == 1 and x[0] == i + 1 for i, x in enumerate(result)])
-        )
+        assert len(result) == 2
+        assert all([len(x) == 1 and x[0] == i + 1 for i, x in enumerate(result)])
 
     def test_11_02_match_metadata_equal_length(self):
         m = nucleus.measurement.Measurements()
@@ -665,10 +636,7 @@ class TestMeasurements(unittest.TestCase):
             nucleus.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE,
-            "Metadata_foo",
-            "Goodbye",
-            image_set_number=2,
+            nucleus.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
         )
         m.add_measurement(
             nucleus.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
@@ -677,11 +645,11 @@ class TestMeasurements(unittest.TestCase):
             ("Metadata_foo", "Metadata_bar"),
             (("Goodbye", "Hello"), ("Phobos", "World")),
         )
-        self.assertEqual(len(result), 2)
-        self.assertEqual(len(result[0]), 1)
-        self.assertEqual(result[0][0], 2)
-        self.assertEqual(len(result[1]), 1)
-        self.assertEqual(result[1][0], 1)
+        assert len(result) == 2
+        assert len(result[0]) == 1
+        assert result[0][0] == 2
+        assert len(result[1]) == 1
+        assert result[1][0] == 1
 
     def test_11_03_match_metadata_different_length(self):
         m = nucleus.measurement.Measurements()
@@ -692,10 +660,7 @@ class TestMeasurements(unittest.TestCase):
             nucleus.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE,
-            "Metadata_foo",
-            "Goodbye",
-            image_set_number=2,
+            nucleus.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
         )
         m.add_measurement(
             nucleus.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
@@ -707,12 +672,12 @@ class TestMeasurements(unittest.TestCase):
             nucleus.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=3
         )
         result = m.match_metadata(("Metadata_foo",), (("Goodbye", "Hello"),))
-        self.assertEqual(len(result), 2)
-        self.assertEqual(len(result[0]), 1)
-        self.assertEqual(result[0][0], 2)
-        self.assertEqual(len(result[1]), 2)
-        self.assertEqual(result[1][0], 1)
-        self.assertEqual(result[1][1], 3)
+        assert len(result) == 2
+        assert len(result[0]) == 1
+        assert result[0][0] == 2
+        assert len(result[1]) == 2
+        assert result[1][0] == 1
+        assert result[1][1] == 3
 
     def test_12_00_load_version_0(self):
         data = (
@@ -737,12 +702,10 @@ class TestMeasurements(unittest.TestCase):
             fd.write(data)
             fd.close()
             m = nucleus.measurement.load_measurements(name)
-            self.assertEqual(tuple(m.get_image_numbers()), (1,))
-            self.assertEqual(
-                m.get_measurement(
-                    nucleus.measurement.IMAGE, "foo", image_set_number=1
-                ),
-                12345,
+            assert tuple(m.get_image_numbers()) == (1,)
+            assert (
+                m.get_measurement(nucleus.measurement.IMAGE, "foo", image_set_number=1)
+                == 12345
             )
         finally:
             if m is not None:
@@ -797,18 +760,14 @@ class TestMeasurements(unittest.TestCase):
             fd.write(data)
             fd.close()
             m = nucleus.measurement.load_measurements(name)
-            self.assertEqual(tuple(m.get_image_numbers()), (1, 2))
-            self.assertEqual(
-                m.get_measurement(
-                    nucleus.measurement.IMAGE, "foo", image_set_number=1
-                ),
-                12345,
+            assert tuple(m.get_image_numbers()) == (1, 2)
+            assert (
+                m.get_measurement(nucleus.measurement.IMAGE, "foo", image_set_number=1)
+                == 12345
             )
-            self.assertEqual(
-                m.get_measurement(
-                    nucleus.measurement.IMAGE, "foo", image_set_number=2
-                ),
-                23456,
+            assert (
+                m.get_measurement(nucleus.measurement.IMAGE, "foo", image_set_number=2)
+                == 23456
             )
             for image_number, expected in (
                 (1, numpy.array([234567, 123456])),
@@ -817,8 +776,8 @@ class TestMeasurements(unittest.TestCase):
                 values = m.get_measurement(
                     "Nuclei", "bar", image_set_number=image_number
                 )
-                self.assertEqual(len(expected), len(values))
-                self.assertTrue(numpy.all(expected == values))
+                assert len(expected) == len(values)
+                assert numpy.all(expected == values)
         finally:
             if m is not None:
                 del m
@@ -909,16 +868,16 @@ class TestMeasurements(unittest.TestCase):
             fd.write(data)
             fd.close()
             m = nucleus.measurement.load_measurements(name)
-            self.assertEqual(tuple(m.get_image_numbers()), (1,))
-            self.assertEqual(
+            assert tuple(m.get_image_numbers()) == (1,)
+            assert (
                 m.get_measurement(
                     nucleus.measurement.IMAGE, "Count_Nuclei", image_set_number=1
-                ),
-                1,
+                )
+                == 1
             )
             values = m.get_measurement("Nuclei", "Location_Center_X", 1)
-            self.assertEqual(len(values), 1)
-            self.assertAlmostEqual(values[0], 34.580433355219959)
+            assert len(values) == 1
+            assert round(abs(values[0] - 34.580433355219959), 7) == 0
         finally:
             if m is not None:
                 del m
@@ -930,9 +889,9 @@ class TestMeasurements(unittest.TestCase):
         try:
             m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             object_names = m.get_object_names()
-            self.assertEqual(len(object_names), 2)
-            self.assertTrue(OBJECT_NAME in object_names)
-            self.assertTrue(nucleus.measurement.IMAGE in object_names)
+            assert len(object_names) == 2
+            assert OBJECT_NAME in object_names
+            assert nucleus.measurement.IMAGE in object_names
         finally:
             del m
 
@@ -954,9 +913,9 @@ class TestMeasurements(unittest.TestCase):
                 numpy.zeros(3),
             )
             object_names = m.get_object_names()
-            self.assertEqual(len(object_names), 2)
-            self.assertTrue(OBJECT_NAME in object_names)
-            self.assertTrue(nucleus.measurement.IMAGE in object_names)
+            assert len(object_names) == 2
+            assert OBJECT_NAME in object_names
+            assert nucleus.measurement.IMAGE in object_names
         finally:
             del m
 
@@ -993,8 +952,8 @@ class TestMeasurements(unittest.TestCase):
         try:
             m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             feature_names = m.get_feature_names(OBJECT_NAME)
-            self.assertEqual(len(feature_names), 1)
-            self.assertTrue("Foo" in feature_names)
+            assert len(feature_names) == 1
+            assert "Foo" in feature_names
         finally:
             del m
 
@@ -1003,8 +962,8 @@ class TestMeasurements(unittest.TestCase):
         try:
             m[OBJECT_NAME, "Foo"] = numpy.zeros(3)
             feature_names = m.get_feature_names(OBJECT_NAME)
-            self.assertEqual(len(feature_names), 1)
-            self.assertTrue("Foo" in feature_names)
+            assert len(feature_names) == 1
+            assert "Foo" in feature_names
         finally:
             del m
 
@@ -1020,8 +979,8 @@ class TestMeasurements(unittest.TestCase):
                 (nucleus.measurement.AGG_STD_DEV, numpy.std(values)),
             ):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
-                self.assertTrue(feature in d)
-                self.assertAlmostEqual(d[feature], expected)
+                assert feature in d
+                assert round(abs(d[feature] - expected), 7) == 0
         finally:
             del m
 
@@ -1073,8 +1032,8 @@ class TestMeasurements(unittest.TestCase):
                 (nucleus.measurement.AGG_STD_DEV, numpy.std(values)),
             ):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
-                self.assertTrue(feature in d)
-                self.assertAlmostEqual(d[feature], expected)
+                assert feature in d
+                assert round(abs(d[feature] - expected), 7) == 0
         finally:
             del m
 
@@ -1087,7 +1046,7 @@ class TestMeasurements(unittest.TestCase):
                 value = m.get_measurement(
                     nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
-                self.assertEqual(expected, value)
+                assert expected == value
         finally:
             del m
 
@@ -1100,7 +1059,7 @@ class TestMeasurements(unittest.TestCase):
                 value = m.get_measurement(
                     nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
-                self.assertEqual(expected, value)
+                assert expected == value
         finally:
             del m
 
@@ -1115,7 +1074,7 @@ class TestMeasurements(unittest.TestCase):
                 value = m.get_measurement(
                     nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
-                self.assertEqual(expected, value)
+                assert expected == value
         finally:
             del m
 
@@ -1129,9 +1088,9 @@ class TestMeasurements(unittest.TestCase):
                     nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
                 if expected is None:
-                    self.assertTrue(value is None)
+                    assert value is None
                 else:
-                    self.assertEqual(expected, value)
+                    assert expected == value
         finally:
             del m
 
@@ -1155,7 +1114,7 @@ class TestMeasurements(unittest.TestCase):
                     OBJECT_NAME, FEATURE_NAME, image_set_number=i + 1
                 )
                 if expected is None:
-                    self.assertEqual(len(value), 0)
+                    assert len(value) == 0
                 else:
                     numpy.testing.assert_almost_equal(expected, value)
         finally:
@@ -1191,13 +1150,10 @@ class TestMeasurements(unittest.TestCase):
             for i, row_values in enumerate(expected_values):
                 image_number = i + 1
                 for value, feature_name in zip(row_values, expected_features):
-                    self.assertEqual(
-                        value,
-                        m.get_measurement(
-                            nucleus.measurement.IMAGE,
-                            feature_name,
-                            image_set_number=image_number,
-                        ),
+                    assert value == m.get_measurement(
+                        nucleus.measurement.IMAGE,
+                        feature_name,
+                        image_set_number=image_number,
                     )
         finally:
             m.close()
@@ -1244,14 +1200,14 @@ class TestMeasurements(unittest.TestCase):
         m = nucleus.measurement.Measurements()
         filename = m.hdf5_dict.filename
         del m
-        self.assertFalse(os.path.exists(filename))
+        assert not os.path.exists(filename)
 
     def test_19_04_dont_delete_file(self):
         fd, filename = tempfile.mkstemp(suffix=".h5")
         m = nucleus.measurement.Measurements(filename=filename)
         os.close(fd)
         del m
-        self.assertTrue(os.path.exists(filename))
+        assert os.path.exists(filename)
         os.unlink(filename)
 
     def test_20_01_add_one_relationship_measurement(self):
@@ -1275,11 +1231,11 @@ class TestMeasurements(unittest.TestCase):
             object_numbers2,
         )
         rg = m.get_relationship_groups()
-        self.assertEqual(len(rg), 1)
-        self.assertEqual(rg[0].module_number, 1)
-        self.assertEqual(rg[0].relationship, "Foo")
-        self.assertEqual(rg[0].object_name1, "O1")
-        self.assertEqual(rg[0].object_name2, "O2")
+        assert len(rg) == 1
+        assert rg[0].module_number == 1
+        assert rg[0].relationship == "Foo"
+        assert rg[0].object_name1 == "O1"
+        assert rg[0].object_name2 == "O2"
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key]
@@ -1479,11 +1435,11 @@ class TestMeasurements(unittest.TestCase):
         )
         m2.copy_relationships(m1)
         rg = m2.get_relationship_groups()
-        self.assertEqual(len(rg), 1)
-        self.assertEqual(rg[0].module_number, 1)
-        self.assertEqual(rg[0].relationship, "Foo")
-        self.assertEqual(rg[0].object_name1, "O1")
-        self.assertEqual(rg[0].object_name2, "O2")
+        assert len(rg) == 1
+        assert rg[0].module_number == 1
+        assert rg[0].relationship == "Foo"
+        assert rg[0].object_name1 == "O1"
+        assert rg[0].object_name2 == "O2"
         r = m2.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key]
@@ -1569,24 +1525,17 @@ class TestMeasurements(unittest.TestCase):
         m_in = nucleus.measurement.Measurements()
         m_in[nucleus.measurement.IMAGE, FEATURE_NAME, 1] = r.uniform()
         m_in[OBJECT_NAME, FEATURE_NAME, 1] = r.uniform(size=100)
-        m_out = nucleus.measurement.load_measurements_from_buffer(
-            m_in.file_contents()
-        )
-        self.assertAlmostEqual(
-            m_in[nucleus.measurement.IMAGE, FEATURE_NAME, 1],
-            m_out[nucleus.measurement.IMAGE, FEATURE_NAME, 1],
+        m_out = nucleus.measurement.load_measurements_from_buffer(m_in.file_contents())
+        assert (
+            round(
+                abs(
+                    m_in[nucleus.measurement.IMAGE, FEATURE_NAME, 1]
+                    - m_out[nucleus.measurement.IMAGE, FEATURE_NAME, 1]
+                ),
+                7,
+            )
+            == 0
         )
         numpy.testing.assert_array_almost_equal(
             m_in[OBJECT_NAME, FEATURE_NAME, 1], m_out[OBJECT_NAME, FEATURE_NAME, 1]
         )
-
-
-IMAGE_NAME = "ImageName"
-ALT_IMAGE_NAME = "AltImageName"
-OBJECT_NAME = "ObjectName"
-ALT_OBJECT_NAME = "AltObjectName"
-METADATA_NAMES = ["Metadata_%d" % i for i in range(1, 10)]
-
-
-if __name__ == "__main__":
-    unittest.main()

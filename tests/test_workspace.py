@@ -42,21 +42,21 @@ class TestWorkspace(unittest.TestCase):
 
     def test_01_01_is_workspace_file(self):
         path = self.make_workspace_file()
-        self.assertTrue(nucleus.workspace.is_workspace_file(path))
+        assert nucleus.workspace.is_workspace_file(path)
 
     def test_01_02_is_not_workspace_file(self):
-        self.assertFalse(nucleus.workspace.is_workspace_file(__file__))
+        assert not nucleus.workspace.is_workspace_file(__file__)
         for group in TOP_LEVEL_GROUP_NAME, FILE_LIST_GROUP:
             path = self.make_workspace_file()
             h5file = h5py.File(path)
             del h5file[group]
             h5file.close()
-            self.assertFalse(nucleus.workspace.is_workspace_file(path))
+            assert not nucleus.workspace.is_workspace_file(path)
 
     def test_01_03_file_handle_closed(self):
         # regression test of issue #1326
         path = self.make_workspace_file()
-        self.assertTrue(nucleus.workspace.is_workspace_file(path))
+        assert nucleus.workspace.is_workspace_file(path)
         os.remove(path)
         self.workspace_files.remove(path)
-        self.assertFalse(os.path.isfile(path))
+        assert not os.path.isfile(path)

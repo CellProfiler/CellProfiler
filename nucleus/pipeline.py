@@ -11,17 +11,16 @@ import tempfile
 import timeit
 import uuid
 
+import bioformats.formatreader
+import future.standard_library
 import javabridge
 import numpy
-import numpy as np
 import scipy
 import scipy.io.matlab
 import six
 import six.moves
 import six.moves.urllib.parse
 import six.moves.urllib.request
-import bioformats.formatreader
-import future.standard_library
 
 import nucleus
 import nucleus.image
@@ -88,7 +87,7 @@ CURRENT_MODULE_NUMBER = "CurrentModuleNumber"
 SHOW_WINDOW = "ShowFrame"
 BATCH_STATE = "BatchState"
 EXIT_STATUS = "Exit_Status"
-SETTINGS_DTYPE = np.dtype(
+SETTINGS_DTYPE = numpy.dtype(
     [
         (VARIABLE_VALUES, "|O4"),
         (VARIABLE_INFO_TYPES, "|O4"),
@@ -246,7 +245,9 @@ def add_all_images(handles, image_set, object_set):
                 "SmallRemovedSegmented" + object_name
             ] = objects.small_removed_segmented
 
-    npy_images = np.ndarray((1, 1), dtype=make_cell_struct_dtype(list(images.keys())))
+    npy_images = numpy.ndarray(
+        (1, 1), dtype=make_cell_struct_dtype(list(images.keys()))
+    )
     for key, image in list(images.items()):
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
@@ -340,11 +341,11 @@ def map_feature_names(feature_names, max_size=63):
             if name in list(mapping.keys()) or len(name) > max_size:
                 # Panic mode - a duplication
                 if not seeded:
-                    np.random.seed(0)
+                    numpy.random.seed(0)
                     seeded = True
                 while True:
-                    npname = np.fromstring(feature_name, "|S1")
-                    indices = np.random.permutation(len(name))[:max_size]
+                    npname = numpy.fromstring(feature_name, "|S1")
+                    indices = numpy.random.permutation(len(name))[:max_size]
                     indices.sort()
                     name = npname[indices]
                     name = name.tostring()
@@ -366,41 +367,41 @@ def add_all_measurements(handles, measurements):
         if len(measurements.get_feature_names(name)) > 0
     ]
     measurements_dtype = make_cell_struct_dtype(object_names)
-    npy_measurements = np.ndarray((1, 1), dtype=measurements_dtype)
+    npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
     handles[MEASUREMENTS] = npy_measurements
     image_numbers = measurements.get_image_numbers()
-    max_image_number = np.max(image_numbers)
-    has_image_number = np.zeros(max_image_number + 1, bool)
+    max_image_number = numpy.max(image_numbers)
+    has_image_number = numpy.zeros(max_image_number + 1, bool)
     has_image_number[image_numbers] = True
     for object_name in object_names:
         if object_name == nucleus.measurement.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
-        object_measurements = np.ndarray((1, 1), dtype=object_dtype)
+        object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
         for field, feature_name in list(mapping.items()):
-            feature_measurements = np.ndarray((1, max_image_number), dtype="object")
+            feature_measurements = numpy.ndarray((1, max_image_number), dtype="object")
             object_measurements[field][0, 0] = feature_measurements
-            for i in np.argwhere(~has_image_number[1:]).flatten():
-                feature_measurements[0, i] = np.zeros(0)
+            for i in numpy.argwhere(~has_image_number[1:]).flatten():
+                feature_measurements[0, i] = numpy.zeros(0)
             dddata = measurements[object_name, feature_name, image_numbers]
             for i, ddata in zip(image_numbers, dddata):
-                if np.isscalar(ddata) and np.isreal(ddata):
-                    feature_measurements[0, i - 1] = np.array([ddata])
+                if numpy.isscalar(ddata) and numpy.isreal(ddata):
+                    feature_measurements[0, i - 1] = numpy.array([ddata])
                 elif ddata is not None:
                     feature_measurements[0, i - 1] = ddata
                 else:
-                    feature_measurements[0, i - 1] = np.zeros(0)
+                    feature_measurements[0, i - 1] = numpy.zeros(0)
     if nucleus.measurement.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(
             measurements.get_feature_names(nucleus.measurement.EXPERIMENT)
         )
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
-        experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
+        experiment_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[nucleus.measurement.EXPERIMENT][0, 0] = experiment_measurements
         for field, feature_name in list(mapping.items()):
-            feature_measurements = np.ndarray((1, 1), dtype="object")
+            feature_measurements = numpy.ndarray((1, 1), dtype="object")
             feature_measurements[0, 0] = measurements.get_experiment_measurement(
                 feature_name
             )
@@ -727,8 +728,8 @@ class Pipeline(object):
                     for i in range(number_of_variables)
                 ]
                 module_settings = [
-                    ("" if np.product(x.shape) == 0 else str(x[0]))
-                    if isinstance(x, np.ndarray)
+                    ("" if numpy.product(x.shape) == 0 else str(x[0]))
+                    if isinstance(x, numpy.ndarray)
                     else str(x)
                     for x in module_settings
                 ]
@@ -783,7 +784,7 @@ class Pipeline(object):
         """Create a numpy array representing this pipeline
 
         """
-        settings = np.ndarray(shape=[1, 1], dtype=SETTINGS_DTYPE)
+        settings = numpy.ndarray(shape=[1, 1], dtype=SETTINGS_DTYPE)
         handles = {SETTINGS: settings}
         setting = settings[0, 0]
         # The variables are a (modules,max # of variables) array of cells (objects)
@@ -809,21 +810,25 @@ class Pipeline(object):
             (module_count, variable_count)
         )
         setting[MODULE_NAMES] = new_string_cell_array((1, module_count))
-        setting[NUMBERS_OF_VARIABLES] = np.ndarray(
-            (1, module_count), dtype=np.dtype("uint8")
+        setting[NUMBERS_OF_VARIABLES] = numpy.ndarray(
+            (1, module_count), dtype=numpy.dtype("uint8")
         )
         setting[PIXEL_SIZE] = nucleus.preferences.get_pixel_size()
-        setting[VARIABLE_REVISION_NUMBERS] = np.ndarray(
-            (1, module_count), dtype=np.dtype("uint8")
+        setting[VARIABLE_REVISION_NUMBERS] = numpy.ndarray(
+            (1, module_count), dtype=numpy.dtype("uint8")
         )
-        setting[MODULE_REVISION_NUMBERS] = np.ndarray(
-            (1, module_count), dtype=np.dtype("uint16")
+        setting[MODULE_REVISION_NUMBERS] = numpy.ndarray(
+            (1, module_count), dtype=numpy.dtype("uint16")
         )
         setting[MODULE_NOTES] = new_string_cell_array((1, module_count))
-        setting[SHOW_WINDOW] = np.ndarray((1, module_count), dtype=np.dtype("uint8"))
-        setting[BATCH_STATE] = np.ndarray((1, module_count), dtype=np.dtype("object"))
+        setting[SHOW_WINDOW] = numpy.ndarray(
+            (1, module_count), dtype=numpy.dtype("uint8")
+        )
+        setting[BATCH_STATE] = numpy.ndarray(
+            (1, module_count), dtype=numpy.dtype("object")
+        )
         for i in range(module_count):
-            setting[BATCH_STATE][0, i] = np.zeros((0,), np.uint8)
+            setting[BATCH_STATE][0, i] = numpy.zeros((0,), numpy.uint8)
 
         for module in self.modules(False):
             module.save_to_handles(handles)
@@ -1170,8 +1175,8 @@ class Pipeline(object):
                 # make batch_state decodable from text pipelines
                 # NOTE, MAGIC HERE: These variables are **necessary**, even though they
                 # aren't used anywhere obvious. Removing them **will** break these unit tests.
-                array = np.array
-                uint8 = np.uint8
+                array = numpy.array
+                uint8 = numpy.uint8
                 for a in attribute_strings:
                     if len(a.split(":")) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
@@ -1390,7 +1395,7 @@ class Pipeline(object):
         # a single field named "handles"
         #
         root = {
-            "handles": np.ndarray(
+            "handles": numpy.ndarray(
                 (1, 1), dtype=make_cell_struct_dtype(list(handles.keys()))
             )
         }
@@ -1461,11 +1466,13 @@ class Pipeline(object):
         else:
             image_tools = []
         image_tools.insert(0, "Image tools")
-        npy_image_tools = np.ndarray((1, len(image_tools)), dtype=np.dtype("object"))
+        npy_image_tools = numpy.ndarray(
+            (1, len(image_tools)), dtype=numpy.dtype("object")
+        )
         for tool, idx in zip(image_tools, list(range(0, len(image_tools)))):
             npy_image_tools[0, idx] = tool
 
-        current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
+        current = numpy.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
         handles[CURRENT] = current
         current[NUMBER_OF_IMAGE_SETS][0, 0] = [
             (
@@ -1494,7 +1501,7 @@ class Pipeline(object):
         current[IMAGE_TOOLS_FILENAMES][0, 0] = npy_image_tools
         current[IMAGE_TOOL_HELP][0, 0] = []
 
-        preferences = np.ndarray(shape=(1, 1), dtype=PREFERENCES_DTYPE)
+        preferences = numpy.ndarray(shape=(1, 1), dtype=PREFERENCES_DTYPE)
         handles[PREFERENCES] = preferences
         preferences[PIXEL_SIZE][0, 0] = nucleus.preferences.get_pixel_size()
         preferences[DEFAULT_MODULE_DIRECTORY][
@@ -1540,7 +1547,7 @@ class Pipeline(object):
 
         if len(images):
             pipeline_dtype = make_cell_struct_dtype(list(images.keys()))
-            pipeline = np.ndarray((1, 1), dtype=pipeline_dtype)
+            pipeline = numpy.ndarray((1, 1), dtype=pipeline_dtype)
             handles[PIPELINE] = pipeline
             for name, image in list(images.items()):
                 pipeline[name][0, 0] = images[name]
@@ -1550,23 +1557,23 @@ class Pipeline(object):
         )
         if not no_measurements:
             measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
-            npy_measurements = np.ndarray((1, 1), dtype=measurements_dtype)
+            npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
             handles["Measurements"] = npy_measurements
             for object_name in measurements.get_object_names():
                 object_dtype = make_cell_struct_dtype(
                     measurements.get_feature_names(object_name)
                 )
-                object_measurements = np.ndarray((1, 1), dtype=object_dtype)
+                object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
                 npy_measurements[object_name][0, 0] = object_measurements
                 for feature_name in measurements.get_feature_names(object_name):
-                    feature_measurements = np.ndarray(
+                    feature_measurements = numpy.ndarray(
                         (1, measurements.image_set_number), dtype="object"
                     )
                     object_measurements[feature_name][0, 0] = feature_measurements
                     data = measurements.get_current_measurement(
                         object_name, feature_name
                     )
-                    feature_measurements.fill(np.ndarray((0,), dtype=np.float64))
+                    feature_measurements.fill(numpy.ndarray((0,), dtype=numpy.float64))
                     if data is not None:
                         feature_measurements[
                             0, measurements.image_set_number - 1
@@ -1934,7 +1941,7 @@ class Pipeline(object):
             if len(to_remove) > 0 and measurements.has_feature(
                 nucleus.measurement.IMAGE, nucleus.measurement.IMAGE_NUMBER
             ):
-                for image_number in np.unique(to_remove):
+                for image_number in numpy.unique(to_remove):
                     measurements.remove_measurement(
                         nucleus.measurement.IMAGE,
                         nucleus.measurement.IMAGE_NUMBER,
@@ -2134,13 +2141,13 @@ class Pipeline(object):
                     #  have already completed. So we don't report them for it.
                     if module.module_name != "Restart" and should_write_measurements:
                         measurements.add_measurement(
-                            "Image", module_error_measurement, np.array([failure])
+                            "Image", module_error_measurement, numpy.array([failure])
                         )
 
                         measurements.add_measurement(
                             "Image",
                             execution_time_measurement,
-                            np.array([cpu_delta_sec]),
+                            numpy.array([cpu_delta_sec]),
                         )
 
                     while (
@@ -2476,14 +2483,14 @@ class Pipeline(object):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)
             image_numbers = m.get_image_numbers()
-            indexes = np.zeros(np.max(image_numbers) + 1, int)
-            indexes[image_numbers] = np.arange(len(image_numbers))
-            group_numbers = np.zeros(len(image_numbers), int)
-            group_indexes = np.zeros(len(image_numbers), int)
+            indexes = numpy.zeros(numpy.max(image_numbers) + 1, int)
+            indexes[image_numbers] = numpy.arange(len(image_numbers))
+            group_numbers = numpy.zeros(len(image_numbers), int)
+            group_indexes = numpy.zeros(len(image_numbers), int)
             for i, (key, group_image_numbers) in enumerate(groupings):
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
-                group_indexes[iii] = np.arange(len(iii)) + 1
+                group_indexes[iii] = numpy.arange(len(iii)) + 1
             m.add_all_measurements(
                 nucleus.measurement.IMAGE,
                 nucleus.measurement.GROUP_NUMBER,
@@ -2499,11 +2506,11 @@ class Pipeline(object):
             # increasing by group number and index.
             # We reorder here.
             #
-            order = np.lexsort((group_indexes, group_numbers))
-            if np.any(order[1:] != order[:-1] + 1):
-                new_image_numbers = np.zeros(max(image_numbers) + 1, int)
+            order = numpy.lexsort((group_indexes, group_numbers))
+            if numpy.any(order[1:] != order[:-1] + 1):
+                new_image_numbers = numpy.zeros(max(image_numbers) + 1, int)
                 new_image_numbers[image_numbers[order]] = (
-                    np.arange(len(image_numbers)) + 1
+                    numpy.arange(len(image_numbers)) + 1
                 )
                 m.reorder_image_measurements(new_image_numbers)
         m.flush()
@@ -3628,7 +3635,7 @@ class Pipeline(object):
                             % (url, pixels.DimensionOrder)
                         )
                     dims.append(dim)
-                index_order = np.mgrid[0 : dims[0], 0 : dims[1], 0 : dims[2]]
+                index_order = numpy.mgrid[0 : dims[0], 0 : dims[1], 0 : dims[2]]
                 c_indexes = index_order[c_idx].flatten()
                 z_indexes = index_order[z_idx].flatten()
                 t_indexes = index_order[t_idx].flatten()

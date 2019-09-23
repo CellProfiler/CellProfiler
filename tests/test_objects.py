@@ -13,7 +13,7 @@ import nucleus.object
 import nucleus.utilities.hdf5_dict
 
 
-class TestObjects(unittest.TestCase):
+class TestObjects:
     def setUp(self):
         self.__image10 = numpy.zeros((10, 10), dtype=numpy.bool)
         self.__image10[2:4, 2:4] = 1
@@ -35,12 +35,12 @@ class TestObjects(unittest.TestCase):
     def test_01_01_set_segmented(self):
         x = nucleus.object.Objects()
         x.segmented = self.__segmented10
-        self.assertTrue((self.__segmented10 == x.segmented).all())
+        assert (self.__segmented10 == x.segmented).all()
 
     def test_01_02_segmented(self):
         x = nucleus.object.Objects()
         x.segmented = self.__segmented10
-        self.assertTrue((self.__segmented10 == x.segmented).all())
+        assert (self.__segmented10 == x.segmented).all()
 
     def test_segmented_volume(self):
         segmentation = numpy.zeros((3, 10, 10), dtype=numpy.uint8)
@@ -53,17 +53,17 @@ class TestObjects(unittest.TestCase):
 
         x.segmented = segmentation
 
-        self.assertTrue(numpy.all(x.segmented == segmentation))
+        assert numpy.all(x.segmented == segmentation)
 
     def test_01_03_set_unedited_segmented(self):
         x = nucleus.object.Objects()
         x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
+        assert (self.__unedited_segmented10 == x.unedited_segmented).all()
 
     def test_01_04_unedited_segmented(self):
         x = nucleus.object.Objects()
         x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
+        assert (self.__unedited_segmented10 == x.unedited_segmented).all()
 
     def test_unedited_segmented_volume(self):
         segmentation = numpy.zeros((3, 10, 10), dtype=numpy.uint8)
@@ -76,14 +76,12 @@ class TestObjects(unittest.TestCase):
 
         x.unedited_segmented = segmentation
 
-        self.assertTrue(numpy.all(x.unedited_segmented == segmentation))
+        assert numpy.all(x.unedited_segmented == segmentation)
 
     def test_01_05_set_small_removed_segmented(self):
         x = nucleus.object.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
-        self.assertTrue(
-            (self.__small_removed_segmented10 == x.small_removed_segmented).all()
-        )
+        assert (self.__small_removed_segmented10 == x.small_removed_segmented).all()
 
     def test_small_removed_segmented_volume(self):
         segmentation = numpy.zeros((3, 10, 10), dtype=numpy.uint8)
@@ -96,14 +94,12 @@ class TestObjects(unittest.TestCase):
 
         x.small_removed_segmented = segmentation
 
-        self.assertTrue(numpy.all(x.small_removed_segmented == segmentation))
+        assert numpy.all(x.small_removed_segmented == segmentation)
 
     def test_01_06_unedited_segmented(self):
         x = nucleus.object.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
-        self.assertTrue(
-            (self.__small_removed_segmented10 == x.small_removed_segmented).all()
-        )
+        assert (self.__small_removed_segmented10 == x.small_removed_segmented).all()
 
     def test_02_01_set_all(self):
         x = nucleus.object.Objects()
@@ -119,25 +115,23 @@ class TestObjects(unittest.TestCase):
     def test_03_02_default_small_removed_segmented(self):
         x = nucleus.object.Objects()
         x.segmented = self.__segmented10
-        self.assertTrue((x.small_removed_segmented == self.__segmented10).all())
+        assert (x.small_removed_segmented == self.__segmented10).all()
         x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue(
-            (x.small_removed_segmented == self.__unedited_segmented10).all()
-        )
+        assert (x.small_removed_segmented == self.__unedited_segmented10).all()
 
     def test_shape_image_segmentation(self):
         x = nucleus.object.Objects()
 
         x.segmented = self.__segmented10
 
-        self.assertEqual(x.shape, (10, 10))
+        assert x.shape == (10, 10)
 
     def test_shape_volume_segmentation(self):
         x = nucleus.object.Objects()
 
         x.segmented = numpy.ones((5, 10, 10))
 
-        self.assertEqual(x.shape, (5, 10, 10))
+        assert x.shape == (5, 10, 10)
 
     def test_get_labels_image_segmentation(self):
         x = nucleus.object.Objects()
@@ -146,7 +140,7 @@ class TestObjects(unittest.TestCase):
 
         [(labels, _)] = x.get_labels()
 
-        self.assertTrue(numpy.all(labels == self.__segmented10))
+        assert numpy.all(labels == self.__segmented10)
 
     def test_get_labels_volume_segmentation(self):
         x = nucleus.object.Objects()
@@ -157,9 +151,9 @@ class TestObjects(unittest.TestCase):
 
         [(labels, _)] = x.get_labels()
 
-        self.assertEqual(segmentation.shape, labels.shape)
+        assert segmentation.shape == labels.shape
 
-        self.assertTrue(numpy.all(segmentation == labels))
+        assert numpy.all(segmentation == labels)
 
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
@@ -168,8 +162,8 @@ class TestObjects(unittest.TestCase):
         y = nucleus.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 0)
-        self.assertEqual(numpy.product(parents_of_children.shape), 0)
+        assert numpy.product(children_per_parent.shape) == 0
+        assert numpy.product(parents_of_children.shape) == 0
 
     def test_05_02_relate_zero_parents_one_child(self):
         x = nucleus.object.Objects()
@@ -179,9 +173,9 @@ class TestObjects(unittest.TestCase):
         labels[3:6, 3:6] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 0)
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0], 0)
+        assert numpy.product(children_per_parent.shape) == 0
+        assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 0
 
     def test_05_03_relate_one_parent_no_children(self):
         x = nucleus.object.Objects()
@@ -191,9 +185,9 @@ class TestObjects(unittest.TestCase):
         y = nucleus.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 1)
-        self.assertEqual(children_per_parent[0], 0)
-        self.assertEqual(numpy.product(parents_of_children.shape), 0)
+        assert numpy.product(children_per_parent.shape) == 1
+        assert children_per_parent[0] == 0
+        assert numpy.product(parents_of_children.shape) == 0
 
     def test_05_04_relate_one_parent_one_child(self):
         x = nucleus.object.Objects()
@@ -203,10 +197,10 @@ class TestObjects(unittest.TestCase):
         y = nucleus.object.Objects()
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 1)
-        self.assertEqual(children_per_parent[0], 1)
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0], 1)
+        assert numpy.product(children_per_parent.shape) == 1
+        assert children_per_parent[0] == 1
+        assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 1
 
     def test_05_05_relate_two_parents_one_child(self):
         x = nucleus.object.Objects()
@@ -219,11 +213,11 @@ class TestObjects(unittest.TestCase):
         labels[3:6, 5:9] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 2)
-        self.assertEqual(children_per_parent[0], 0)
-        self.assertEqual(children_per_parent[1], 1)
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0], 2)
+        assert numpy.product(children_per_parent.shape) == 2
+        assert children_per_parent[0] == 0
+        assert children_per_parent[1] == 1
+        assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 2
 
     def test_05_06_relate_one_parent_two_children(self):
         x = nucleus.object.Objects()
@@ -236,50 +230,50 @@ class TestObjects(unittest.TestCase):
         labels[3:6, 7:9] = 2
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 1)
-        self.assertEqual(children_per_parent[0], 2)
-        self.assertEqual(numpy.product(parents_of_children.shape), 2)
-        self.assertEqual(parents_of_children[0], 1)
-        self.assertEqual(parents_of_children[1], 1)
+        assert numpy.product(children_per_parent.shape) == 1
+        assert children_per_parent[0] == 2
+        assert numpy.product(parents_of_children.shape) == 2
+        assert parents_of_children[0] == 1
+        assert parents_of_children[1] == 1
 
     def test_05_07_relate_ijv_none(self):
         child_counts, parents_of = self.relate_ijv(
             numpy.zeros((0, 3), int), numpy.zeros((0, 3), int)
         )
-        self.assertEqual(len(child_counts), 0)
-        self.assertEqual(len(parents_of), 0)
+        assert len(child_counts) == 0
+        assert len(parents_of) == 0
 
         child_counts, parents_of = self.relate_ijv(
             numpy.zeros((0, 3), int), numpy.array([[1, 2, 3]])
         )
-        self.assertEqual(len(child_counts), 0)
-        self.assertEqual(len(parents_of), 3)
-        self.assertEqual(parents_of[2], 0)
+        assert len(child_counts) == 0
+        assert len(parents_of) == 3
+        assert parents_of[2] == 0
 
         child_counts, parents_of = self.relate_ijv(
             numpy.array([[1, 2, 3]]), numpy.zeros((0, 3), int)
         )
-        self.assertEqual(len(child_counts), 3)
-        self.assertEqual(child_counts[2], 0)
-        self.assertEqual(len(parents_of), 0)
+        assert len(child_counts) == 3
+        assert child_counts[2] == 0
+        assert len(parents_of) == 0
 
     def test_05_08_relate_ijv_no_match(self):
         child_counts, parents_of = self.relate_ijv(
             numpy.array([[3, 2, 1]]), numpy.array([[5, 6, 1]])
         )
-        self.assertEqual(len(child_counts), 1)
-        self.assertEqual(child_counts[0], 0)
-        self.assertEqual(len(parents_of), 1)
-        self.assertEqual(parents_of[0], 0)
+        assert len(child_counts) == 1
+        assert child_counts[0] == 0
+        assert len(parents_of) == 1
+        assert parents_of[0] == 0
 
     def test_05_09_relate_ijv_one_match(self):
         child_counts, parents_of = self.relate_ijv(
             numpy.array([[3, 2, 1]]), numpy.array([[3, 2, 1]])
         )
-        self.assertEqual(len(child_counts), 1)
-        self.assertEqual(child_counts[0], 1)
-        self.assertEqual(len(parents_of), 1)
-        self.assertEqual(parents_of[0], 1)
+        assert len(child_counts) == 1
+        assert child_counts[0] == 1
+        assert len(parents_of) == 1
+        assert parents_of[0] == 1
 
     def test_05_10_relate_ijv_many_points_one_match(self):
         r = numpy.random.RandomState()
@@ -291,10 +285,10 @@ class TestObjects(unittest.TestCase):
             (r.randint(0, 10, size=(100, 2)), numpy.ones(100, int))
         )
         child_counts, parents_of = self.relate_ijv(parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 1)
-        self.assertEqual(child_counts[0], 1)
-        self.assertEqual(len(parents_of), 1)
-        self.assertEqual(parents_of[0], 1)
+        assert len(child_counts) == 1
+        assert child_counts[0] == 1
+        assert len(parents_of) == 1
+        assert parents_of[0] == 1
 
     def test_05_11_relate_many_many(self):
         r = numpy.random.RandomState()
@@ -312,55 +306,55 @@ class TestObjects(unittest.TestCase):
             + 2 * (child_ijv[:, 1] >= 5).astype(int)
         )
         child_counts, parents_of = self.relate_ijv(parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 2)
-        self.assertEqual(tuple(child_counts), (2, 2))
-        self.assertEqual(len(parents_of), 4)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 2)
-        self.assertEqual(parents_of[2], 1)
-        self.assertEqual(parents_of[3], 2)
+        assert len(child_counts) == 2
+        assert tuple(child_counts) == (2, 2)
+        assert len(parents_of) == 4
+        assert parents_of[0] == 1
+        assert parents_of[1] == 2
+        assert parents_of[2] == 1
+        assert parents_of[3] == 2
 
     def test_05_12_relate_many_parent_missing_child(self):
         parent_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         child_ijv = numpy.array([[1, 0, 1], [3, 0, 2]])
         child_counts, parents_of = self.relate_ijv(parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 3)
-        self.assertEqual(tuple(child_counts), (1, 0, 1))
-        self.assertEqual(len(parents_of), 2)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 3)
+        assert len(child_counts) == 3
+        assert tuple(child_counts) == (1, 0, 1)
+        assert len(parents_of) == 2
+        assert parents_of[0] == 1
+        assert parents_of[1] == 3
 
     def test_05_13_relate_many_child_missing_parent(self):
         child_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         parent_ijv = numpy.array([[1, 0, 1], [3, 0, 2]])
         child_counts, parents_of = self.relate_ijv(parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 2)
-        self.assertEqual(tuple(child_counts), (1, 1))
-        self.assertEqual(len(parents_of), 3)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 0)
-        self.assertEqual(parents_of[2], 2)
+        assert len(child_counts) == 2
+        assert tuple(child_counts) == (1, 1)
+        assert len(parents_of) == 3
+        assert parents_of[0] == 1
+        assert parents_of[1] == 0
+        assert parents_of[2] == 2
 
     def test_05_14_relate_many_parent_missing_child_end(self):
         parent_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         child_ijv = numpy.array([[1, 0, 1], [2, 0, 2]])
         child_counts, parents_of = self.relate_ijv(parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 3)
-        self.assertEqual(tuple(child_counts), (1, 1, 0))
-        self.assertEqual(len(parents_of), 2)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 2)
+        assert len(child_counts) == 3
+        assert tuple(child_counts) == (1, 1, 0)
+        assert len(parents_of) == 2
+        assert parents_of[0] == 1
+        assert parents_of[1] == 2
 
     def test_05_15_relate_many_child_missing_end(self):
         child_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         parent_ijv = numpy.array([[1, 0, 1], [2, 0, 2]])
         child_counts, parents_of = self.relate_ijv(parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 2)
-        self.assertEqual(tuple(child_counts), (1, 1))
-        self.assertEqual(len(parents_of), 3)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 2)
-        self.assertEqual(parents_of[2], 0)
+        assert len(child_counts) == 2
+        assert tuple(child_counts) == (1, 1)
+        assert len(parents_of) == 3
+        assert parents_of[0] == 1
+        assert parents_of[1] == 2
+        assert parents_of[2] == 0
 
     def test_05_16_relate_uint16(self):
         # Regression test of issue 1285 - uint16 ijv values
@@ -381,17 +375,17 @@ class TestObjects(unittest.TestCase):
         ijv = x.get_ijv()
         new_labels = numpy.zeros(labels.shape, int)
         new_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
-        self.assertTrue(numpy.all(labels == new_labels))
+        assert numpy.all(labels == new_labels)
 
     def test_06_02_ijv_to_labels_empty(self):
         """Convert a blank ijv representation to labels"""
         x = nucleus.object.Objects()
         x.ijv = numpy.zeros((0, 3), int)
         y = x.get_labels()
-        self.assertEqual(len(y), 1)
+        assert len(y) == 1
         labels, indices = y[0]
-        self.assertEqual(len(indices), 0)
-        self.assertTrue(numpy.all(labels == 0))
+        assert len(indices) == 0
+        assert numpy.all(labels == 0)
 
     def test_06_03_ijv_to_labels_simple(self):
         """Convert an ijv representation w/o overlap to labels"""
@@ -406,11 +400,11 @@ class TestObjects(unittest.TestCase):
         x.ijv = ijv
         x.parent_image = nucleus.image.Image(numpy.zeros(labels.shape))
         labels_out = x.get_labels()
-        self.assertEqual(len(labels_out), 1)
+        assert len(labels_out) == 1
         labels_out, indices = labels_out[0]
-        self.assertTrue(numpy.all(labels_out == labels))
-        self.assertEqual(len(indices), 9)
-        self.assertTrue(numpy.all(numpy.unique(indices) == numpy.arange(1, 10)))
+        assert numpy.all(labels_out == labels)
+        assert len(indices) == 9
+        assert numpy.all(numpy.unique(indices) == numpy.arange(1, 10))
 
     def test_06_04_ijv_to_labels_overlapping(self):
         """Convert an ijv representation with overlap to labels"""
@@ -432,16 +426,16 @@ class TestObjects(unittest.TestCase):
         x = nucleus.object.Objects()
         x.ijv = ijv
         labels = x.get_labels()
-        self.assertEqual(len(labels), 2)
+        assert len(labels) == 2
         unique_a = numpy.unique(labels[0][0])[1:]
         unique_b = numpy.unique(labels[1][0])[1:]
         for a in unique_a:
-            self.assertTrue(a not in unique_b)
+            assert a not in unique_b
         for b in unique_b:
-            self.assertTrue(b not in unique_a)
+            assert b not in unique_a
         for i, j, v in ijv:
             mylabels = labels[0][0] if v in unique_a else labels[1][0]
-            self.assertEqual(mylabels[i, j], v)
+            assert mylabels[i, j] == v
 
     def test_06_05_ijv_three_overlapping(self):
         #
@@ -456,24 +450,24 @@ class TestObjects(unittest.TestCase):
         indices = numpy.zeros(3, bool)
         for l, i in x.get_labels():
             labels.append(l)
-            self.assertEqual(len(i), 1)
-            self.assertTrue(i[0] in (1, 2, 3))
+            assert len(i) == 1
+            assert i[0] in (1, 2, 3)
             indices[i[0] - 1] = True
-        self.assertTrue(numpy.all(indices))
-        self.assertEqual(len(labels), 3)
+        assert numpy.all(indices)
+        assert len(labels) == 3
         lstacked = numpy.dstack(labels)
         i, j, k = numpy.mgrid[
             0 : lstacked.shape[0], 0 : lstacked.shape[1], 0 : lstacked.shape[2]
         ]
-        self.assertTrue(numpy.all(lstacked[(i != 4) | (j != 5)] == 0))
-        self.assertEqual((1, 2, 3), tuple(sorted(lstacked[4, 5, :])))
+        assert numpy.all(lstacked[(i != 4) | (j != 5)] == 0)
+        assert (1, 2, 3) == tuple(sorted(lstacked[4, 5, :]))
 
     def test_07_00_make_ivj_outlines_empty(self):
         numpy.random.seed(70)
         x = nucleus.object.Objects()
         x.segmented = numpy.zeros((10, 20), int)
         image = x.make_ijv_outlines(numpy.random.uniform(size=(5, 3)))
-        self.assertTrue(numpy.all(image == 0))
+        assert numpy.all(image == 0)
 
     def test_07_01_make_ijv_outlines(self):
         numpy.random.seed(70)
@@ -492,17 +486,17 @@ class TestObjects(unittest.TestCase):
         colors = numpy.random.uniform(size=(3, 3)).astype(numpy.float32)
         image = x.make_ijv_outlines(colors)
         i1 = [i for i, color in enumerate(colors) if numpy.all(color == image[0, 5, :])]
-        self.assertEqual(len(i1), 1)
+        assert len(i1) == 1
         i2 = [
             i for i, color in enumerate(colors) if numpy.all(color == image[0, 12, :])
         ]
-        self.assertEqual(len(i2), 1)
+        assert len(i2) == 1
         i3 = [
             i for i, color in enumerate(colors) if numpy.all(color == image[-1, 8, :])
         ]
-        self.assertEqual(len(i3), 1)
-        self.assertNotEqual(i1[0], i2[0])
-        self.assertNotEqual(i2[0], i3[0])
+        assert len(i3) == 1
+        assert i1[0] != i2[0]
+        assert i2[0] != i3[0]
         colors = colors[numpy.array([i1[0], i2[0], i3[0]])]
         outlines = numpy.zeros((10, 20, 3), numpy.float32)
         alpha = numpy.zeros((10, 20))
@@ -672,14 +666,14 @@ class TestObjects(unittest.TestCase):
         numpy.testing.assert_array_equal(centers, [[5, 5]])
 
 
-class TestSegmentation(unittest.TestCase):
+class TestSegmentation:
     def test_01_01_dense(self):
         r = numpy.random.RandomState()
         r.seed(101)
         labels = r.randint(0, 10, size=(2, 3, 4, 5, 6, 7))
         s = nucleus.object.Segmentation(dense=labels)
-        self.assertTrue(s.has_dense())
-        self.assertFalse(s.has_sparse())
+        assert s.has_dense()
+        assert not s.has_sparse()
         numpy.testing.assert_array_equal(s.get_dense()[0], labels)
 
     def test_01_02_sparse(self):
@@ -688,16 +682,8 @@ class TestSegmentation(unittest.TestCase):
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
-                    numpy.uint32,
-                    1,
-                ),
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
-                    numpy.uint32,
-                    1,
-                ),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
                 (
                     nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -707,8 +693,8 @@ class TestSegmentation(unittest.TestCase):
         )
         s = nucleus.object.Segmentation(sparse=ijv)
         numpy.testing.assert_array_equal(s.sparse, ijv)
-        self.assertFalse(s.has_dense())
-        self.assertTrue(s.has_sparse())
+        assert not s.has_dense()
+        assert s.has_sparse()
 
     def test_02_01_sparse_to_dense(self):
         #
@@ -732,16 +718,8 @@ class TestSegmentation(unittest.TestCase):
         ijv = numpy.core.records.fromarrays(
             [numpy.hstack(x) for x in (ii, jj, vv)],
             [
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
-                    numpy.uint32,
-                    1,
-                ),
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
-                    numpy.uint32,
-                    1,
-                ),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
                 (
                     nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -751,8 +729,8 @@ class TestSegmentation(unittest.TestCase):
         )
         s = nucleus.object.Segmentation(sparse=ijv, shape=(1, 1, 1, 50, 50))
         dense, indices = s.get_dense()
-        self.assertEqual(tuple(dense.shape[1:]), (1, 1, 1, 50, 50))
-        self.assertEqual(numpy.sum(dense > 0), len(ijv))
+        assert tuple(dense.shape[1:]) == (1, 1, 1, 50, 50)
+        assert numpy.sum(dense > 0) == len(ijv)
         retrieval = dense[
             :,
             0,
@@ -765,7 +743,7 @@ class TestSegmentation(unittest.TestCase):
             retrieval
             == ijv[nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][None, :]
         )
-        self.assertTrue(numpy.all(numpy.sum(matches, 0) == 1))
+        assert numpy.all(numpy.sum(matches, 0) == 1)
 
     def test_02_02_dense_to_sparse(self):
         #
@@ -784,7 +762,7 @@ class TestSegmentation(unittest.TestCase):
             dense[idx, 0, 0, 0, mask] = idx + 1
         s = nucleus.object.Segmentation(dense=dense)
         ijv = s.sparse
-        self.assertEqual(numpy.sum(dense > 0), len(ijv))
+        assert numpy.sum(dense > 0) == len(ijv)
         retrieval = dense[
             :,
             0,
@@ -797,15 +775,15 @@ class TestSegmentation(unittest.TestCase):
             retrieval
             == ijv[nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][None, :]
         )
-        self.assertTrue(numpy.all(numpy.sum(matches, 0) == 1))
+        assert numpy.all(numpy.sum(matches, 0) == 1)
 
     def test_03_01_shape_dense(self):
         r = numpy.random.RandomState()
         r.seed(101)
         labels = r.randint(0, 10, size=(2, 3, 4, 5, 6, 7))
         s = nucleus.object.Segmentation(dense=labels)
-        self.assertTrue(s.has_shape())
-        self.assertEqual(tuple(s.shape), tuple(labels.shape[1:]))
+        assert s.has_shape()
+        assert tuple(s.shape) == tuple(labels.shape[1:])
 
     def test_03_02_shape_sparse_explicit(self):
         r = numpy.random.RandomState()
@@ -814,16 +792,8 @@ class TestSegmentation(unittest.TestCase):
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
-                    numpy.uint32,
-                    1,
-                ),
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
-                    numpy.uint32,
-                    1,
-                ),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
                 (
                     nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -832,8 +802,8 @@ class TestSegmentation(unittest.TestCase):
             ],
         )
         s = nucleus.object.Segmentation(sparse=ijv, shape=shape)
-        self.assertTrue(s.has_shape())
-        self.assertEqual(tuple(s.shape), shape)
+        assert s.has_shape()
+        assert tuple(s.shape) == shape
 
     def test_03_02_shape_sparse_implicit(self):
         r = numpy.random.RandomState()
@@ -842,16 +812,8 @@ class TestSegmentation(unittest.TestCase):
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
-                    numpy.uint32,
-                    1,
-                ),
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
-                    numpy.uint32,
-                    1,
-                ),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
                 (
                     nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -863,8 +825,8 @@ class TestSegmentation(unittest.TestCase):
         ijv[nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y] = 31
         shape = (1, 1, 1, 33, 13)
         s = nucleus.object.Segmentation(sparse=ijv)
-        self.assertFalse(s.has_shape())
-        self.assertEqual(tuple(s.shape), shape)
+        assert not s.has_shape()
+        assert tuple(s.shape) == shape
 
     def test_03_03_set_shape(self):
         r = numpy.random.RandomState()
@@ -873,16 +835,8 @@ class TestSegmentation(unittest.TestCase):
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
-                    numpy.uint32,
-                    1,
-                ),
-                (
-                    nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
-                    numpy.uint32,
-                    1,
-                ),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
+                (nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
                 (
                     nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -894,79 +848,79 @@ class TestSegmentation(unittest.TestCase):
         ijv[nucleus.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y] = 31
         shape = (1, 1, 1, 50, 50)
         s = nucleus.object.Segmentation(sparse=ijv)
-        self.assertFalse(s.has_shape())
+        assert not s.has_shape()
         s.shape = shape
-        self.assertEqual(tuple(s.shape), shape)
+        assert tuple(s.shape) == shape
 
 
-class TestDownsampleLabels(unittest.TestCase):
+class TestDownsampleLabels:
     def test_01_01_downsample_127(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int)
         result = nucleus.object.downsample_labels(labels)
-        self.assertEqual(result.dtype, numpy.dtype(numpy.int8))
-        self.assertTrue(numpy.all(result == labels))
+        assert result.dtype == numpy.dtype(numpy.int8)
+        assert numpy.all(result == labels)
 
     def test_01_02_downsample_128(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int) + 1
         result = nucleus.object.downsample_labels(labels)
-        self.assertEqual(result.dtype, numpy.dtype(numpy.int16))
-        self.assertTrue(numpy.all(result == labels))
+        assert result.dtype == numpy.dtype(numpy.int16)
+        assert numpy.all(result == labels)
 
     def test_01_03_downsample_32767(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int)
         result = nucleus.object.downsample_labels(labels)
-        self.assertEqual(result.dtype, numpy.dtype(numpy.int16))
-        self.assertTrue(numpy.all(result == labels))
+        assert result.dtype == numpy.dtype(numpy.int16)
+        assert numpy.all(result == labels)
 
     def test_01_04_downsample_32768(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int) + 1
         result = nucleus.object.downsample_labels(labels)
-        self.assertEqual(result.dtype, numpy.dtype(numpy.int32))
-        self.assertTrue(numpy.all(result == labels))
+        assert result.dtype == numpy.dtype(numpy.int32)
+        assert numpy.all(result == labels)
 
 
-class TestCropLabelsAndImage(unittest.TestCase):
+class TestCropLabelsAndImage:
     def test_01_01_crop_same(self):
         labels, image = nucleus.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((10, 20))
         )
-        self.assertEqual(tuple(labels.shape), (10, 20))
-        self.assertEqual(tuple(image.shape), (10, 20))
+        assert tuple(labels.shape) == (10, 20)
+        assert tuple(image.shape) == (10, 20)
 
     def test_01_02_crop_image(self):
         labels, image = nucleus.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((10, 30))
         )
-        self.assertEqual(tuple(labels.shape), (10, 20))
-        self.assertEqual(tuple(image.shape), (10, 20))
+        assert tuple(labels.shape) == (10, 20)
+        assert tuple(image.shape) == (10, 20)
         labels, image = nucleus.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((20, 20))
         )
-        self.assertEqual(tuple(labels.shape), (10, 20))
-        self.assertEqual(tuple(image.shape), (10, 20))
+        assert tuple(labels.shape) == (10, 20)
+        assert tuple(image.shape) == (10, 20)
 
     def test_01_03_crop_labels(self):
         labels, image = nucleus.object.crop_labels_and_image(
             numpy.zeros((10, 30)), numpy.zeros((10, 20))
         )
-        self.assertEqual(tuple(labels.shape), (10, 20))
-        self.assertEqual(tuple(image.shape), (10, 20))
+        assert tuple(labels.shape) == (10, 20)
+        assert tuple(image.shape) == (10, 20)
         labels, image = nucleus.object.crop_labels_and_image(
             numpy.zeros((20, 20)), numpy.zeros((10, 20))
         )
-        self.assertEqual(tuple(labels.shape), (10, 20))
-        self.assertEqual(tuple(image.shape), (10, 20))
+        assert tuple(labels.shape) == (10, 20)
+        assert tuple(image.shape) == (10, 20)
 
     def test_01_04_crop_both(self):
         labels, image = nucleus.object.crop_labels_and_image(
             numpy.zeros((10, 30)), numpy.zeros((20, 20))
         )
-        self.assertEqual(tuple(labels.shape), (10, 20))
-        self.assertEqual(tuple(image.shape), (10, 20))
+        assert tuple(labels.shape) == (10, 20)
+        assert tuple(image.shape) == (10, 20)
 
     def test_relate_children_volume(self):
         parent_labels = numpy.zeros((30, 30, 30), dtype=numpy.uint8)
@@ -1051,40 +1005,40 @@ class TestCropLabelsAndImage(unittest.TestCase):
         assert not numpy.all(overlay_region_1[0, 0, 0] == overlay_region_3[0, 0, 0])
 
 
-class TestSizeSimilarly(unittest.TestCase):
+class TestSizeSimilarly:
     def test_01_01_size_same(self):
         secondary, mask = nucleus.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((10, 20))
         )
-        self.assertEqual(tuple(secondary.shape), (10, 20))
-        self.assertTrue(numpy.all(mask))
+        assert tuple(secondary.shape) == (10, 20)
+        assert numpy.all(mask)
 
     def test_01_02_larger_secondary(self):
         secondary, mask = nucleus.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((10, 30))
         )
-        self.assertEqual(tuple(secondary.shape), (10, 20))
-        self.assertTrue(numpy.all(mask))
+        assert tuple(secondary.shape) == (10, 20)
+        assert numpy.all(mask)
         secondary, mask = nucleus.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((20, 20))
         )
-        self.assertEqual(tuple(secondary.shape), (10, 20))
-        self.assertTrue(numpy.all(mask))
+        assert tuple(secondary.shape) == (10, 20)
+        assert numpy.all(mask)
 
     def test_01_03_smaller_secondary(self):
         secondary, mask = nucleus.object.size_similarly(
             numpy.zeros((10, 20), int), numpy.zeros((10, 15), numpy.float32)
         )
-        self.assertEqual(tuple(secondary.shape), (10, 20))
-        self.assertTrue(numpy.all(mask[:10, :15]))
-        self.assertTrue(numpy.all(~mask[:10, 15:]))
-        self.assertEqual(secondary.dtype, numpy.dtype(numpy.float32))
+        assert tuple(secondary.shape) == (10, 20)
+        assert numpy.all(mask[:10, :15])
+        assert numpy.all(~mask[:10, 15:])
+        assert secondary.dtype == numpy.dtype(numpy.float32)
 
     def test_01_04_size_color(self):
         secondary, mask = nucleus.object.size_similarly(
             numpy.zeros((10, 20), int), numpy.zeros((10, 15, 3), numpy.float32)
         )
-        self.assertEqual(tuple(secondary.shape), (10, 20, 3))
-        self.assertTrue(numpy.all(mask[:10, :15]))
-        self.assertTrue(numpy.all(~mask[:10, 15:]))
-        self.assertEqual(secondary.dtype, numpy.dtype(numpy.float32))
+        assert tuple(secondary.shape) == (10, 20, 3)
+        assert numpy.all(mask[:10, :15])
+        assert numpy.all(~mask[:10, 15:])
+        assert secondary.dtype == numpy.dtype(numpy.float32)

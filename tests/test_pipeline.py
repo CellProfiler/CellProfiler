@@ -122,7 +122,7 @@ HasImagePlaneDetails:False"""
         not_txt = r"""not CellProfiler Pipeline: http://www.nucleus.org"""
         for text, expected in ((sensible, True), (proofpoint, True), (not_txt, False)):
             fd = six.moves.StringIO(text)
-            self.assertEqual(nucleus.pipeline.Pipeline.is_pipeline_txt_fd(fd), expected)
+            assert nucleus.pipeline.Pipeline.is_pipeline_txt_fd(fd) == expected
 
     def test_02_01_copy_nothing(self):
         # Regression test of issue #565
@@ -149,100 +149,84 @@ HasImagePlaneDetails:False"""
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 9)
-        self.assertTrue(
-            any(
-                [
-                    column[0] == "Image"
-                    and column[1] == "Group_Number"
-                    and column[2] == nucleus.measurement.COLTYPE_INTEGER
-                    for column in columns
-                ]
-            )
+        assert len(columns) == 9
+        assert any(
+            [
+                column[0] == "Image"
+                and column[1] == "Group_Number"
+                and column[2] == nucleus.measurement.COLTYPE_INTEGER
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    column[0] == "Image"
-                    and column[1] == "Group_Index"
-                    and column[2] == nucleus.measurement.COLTYPE_INTEGER
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                column[0] == "Image"
+                and column[1] == "Group_Index"
+                and column[2] == nucleus.measurement.COLTYPE_INTEGER
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    column[0] == "Image"
-                    and column[1] == "ModuleError_01TestModuleWithMeasurement"
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                column[0] == "Image"
+                and column[1] == "ModuleError_01TestModuleWithMeasurement"
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    column[0] == "Image"
-                    and column[1] == "ExecutionTime_01TestModuleWithMeasurement"
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                column[0] == "Image"
+                and column[1] == "ExecutionTime_01TestModuleWithMeasurement"
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    column[0] == nucleus.measurement.EXPERIMENT
-                    and column[1] == nucleus.pipeline.M_PIPELINE
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                column[0] == nucleus.measurement.EXPERIMENT
+                and column[1] == nucleus.pipeline.M_PIPELINE
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    column[0] == nucleus.measurement.EXPERIMENT
-                    and column[1] == nucleus.pipeline.M_VERSION
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                column[0] == nucleus.measurement.EXPERIMENT
+                and column[1] == nucleus.pipeline.M_VERSION
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    column[0] == nucleus.measurement.EXPERIMENT
-                    and column[1] == nucleus.pipeline.M_TIMESTAMP
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                column[0] == nucleus.measurement.EXPERIMENT
+                and column[1] == nucleus.pipeline.M_TIMESTAMP
+                for column in columns
+            ]
         )
-        self.assertTrue(
-            any(
-                [
-                    len(columns) > 3
-                    and column[0] == nucleus.measurement.EXPERIMENT
-                    and column[1] == nucleus.pipeline.M_MODIFICATION_TIMESTAMP
-                    and column[3][nucleus.measurement.MCA_AVAILABLE_POST_RUN]
-                    for column in columns
-                ]
-            )
+        assert any(
+            [
+                len(columns) > 3
+                and column[0] == nucleus.measurement.EXPERIMENT
+                and column[1] == nucleus.pipeline.M_MODIFICATION_TIMESTAMP
+                and column[3][nucleus.measurement.MCA_AVAILABLE_POST_RUN]
+                for column in columns
+            ]
         )
 
-        self.assertTrue(any([column[1] == "foo" for column in columns]))
+        assert any([column[1] == "foo" for column in columns])
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 9)
-        self.assertTrue(any([column[1] == "bar" for column in columns]))
+        assert len(columns) == 9
+        assert any([column[1] == "bar" for column in columns])
         module = TestModuleWithMeasurement()
         module.set_module_num(2)
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 12)
-        self.assertTrue(any([column[1] == "foo" for column in columns]))
-        self.assertTrue(any([column[1] == "bar" for column in columns]))
+        assert len(columns) == 12
+        assert any([column[1] == "foo" for column in columns])
+        assert any([column[1] == "bar" for column in columns])
         columns = x.get_measurement_columns(module)
-        self.assertEqual(len(columns), 9)
-        self.assertTrue(any([column[1] == "bar" for column in columns]))
+        assert len(columns) == 9
+        assert any([column[1] == "bar" for column in columns])
 
     def test_10_01_all_groups(self):
         """Test running a pipeline on all groups"""
@@ -256,7 +240,7 @@ HasImagePlaneDetails:False"""
 
         def prepare_run(workspace):
             image_set_list = workspace.image_set_list
-            self.assertEqual(expects[0], "PrepareRun")
+            assert expects[0] == "PrepareRun"
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
                     workspace.measurements[
@@ -274,20 +258,20 @@ HasImagePlaneDetails:False"""
 
         def prepare_group(workspace, grouping, image_numbers):
             expects_state, expects_grouping = expects
-            self.assertEqual(expects_state, "PrepareGroup")
+            assert expects_state == "PrepareGroup"
             if expects_grouping == 0:
                 expects[0], expects[1] = ("Run", 1)
-                self.assertSequenceEqual(image_numbers, (1, 2))
+                assert image_numbers == (1, 2)
             else:
                 expects[0], expects[1] = ("Run", 3)
-                self.assertSequenceEqual(image_numbers, (3, 4))
+                assert image_numbers == (3, 4)
             return True
 
         def run(workspace):
             expects_state, expects_image_number = expects
             image_number = workspace.measurements.image_set_number
-            self.assertEqual(expects_state, "Run")
-            self.assertEqual(expects_image_number, image_number)
+            assert expects_state == "Run"
+            assert expects_image_number == image_number
             if image_number == 1:
                 expects[0], expects[1] = ("Run", 2)
             elif image_number == 3:
@@ -300,20 +284,20 @@ HasImagePlaneDetails:False"""
 
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
-            self.assertEqual(expects_state, "PostGroup")
+            assert expects_state == "PostGroup"
             for key in keys:
-                self.assertTrue(key in grouping)
+                assert key in grouping
                 value = groupings[expects_grouping][0][key]
-                self.assertEqual(grouping[key], value)
+                assert grouping[key] == value
             if expects_grouping == 0:
-                self.assertEqual(workspace.measurements.image_set_number, 2)
+                assert workspace.measurements.image_set_number == 2
                 expects[0], expects[1] = ("PrepareGroup", 1)
             else:
-                self.assertEqual(workspace.measurements.image_set_number, 4)
+                assert workspace.measurements.image_set_number == 4
                 expects[0], expects[1] = ("PostRun", 0)
 
         def post_run(workspace):
-            self.assertEqual(expects[0], "PostRun")
+            assert expects[0] == "PostRun"
             expects[0], expects[1] = ("Done", 0)
 
         def get_measurement_columns(pipeline):
@@ -338,14 +322,14 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         measurements = pipeline.run()
-        self.assertEqual(expects[0], "Done")
+        assert expects[0] == "Done"
         image_numbers = measurements.get_all_measurements("Image", "mymeasurement")
-        self.assertEqual(len(image_numbers), 4)
-        self.assertTrue(numpy.all(image_numbers == numpy.array([1, 2, 3, 4])))
+        assert len(image_numbers) == 4
+        assert numpy.all(image_numbers == numpy.array([1, 2, 3, 4]))
         group_numbers = measurements.get_all_measurements("Image", "Group_Number")
-        self.assertTrue(numpy.all(group_numbers == numpy.array([1, 1, 2, 2])))
+        assert numpy.all(group_numbers == numpy.array([1, 1, 2, 2]))
         group_indexes = measurements.get_all_measurements("Image", "Group_Index")
-        self.assertTrue(numpy.all(group_indexes == numpy.array([1, 2, 1, 2])))
+        assert numpy.all(group_indexes == numpy.array([1, 2, 1, 2]))
 
     def test_10_02_one_group(self):
         """Test running a pipeline on one group"""
@@ -359,7 +343,7 @@ HasImagePlaneDetails:False"""
         )
 
         def prepare_run(workspace):
-            self.assertEqual(expects[0], "PrepareRun")
+            assert expects[0] == "PrepareRun"
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
                     workspace.measurements[
@@ -377,20 +361,20 @@ HasImagePlaneDetails:False"""
 
         def prepare_group(workspace, grouping, *args):
             expects_state, expects_grouping = expects
-            self.assertEqual(expects_state, "PrepareGroup")
+            assert expects_state == "PrepareGroup"
             for key in keys:
-                self.assertTrue(key in grouping)
+                assert key in grouping
                 value = groupings[expects_grouping][0][key]
-                self.assertEqual(grouping[key], value)
-            self.assertEqual(expects_grouping, 1)
+                assert grouping[key] == value
+            assert expects_grouping == 1
             expects[0], expects[1] = ("Run", 3)
             return True
 
         def run(workspace):
             expects_state, expects_image_number = expects
             image_number = workspace.measurements.image_set_number
-            self.assertEqual(expects_state, "Run")
-            self.assertEqual(expects_image_number, image_number)
+            assert expects_state == "Run"
+            assert expects_image_number == image_number
             if image_number == 3:
                 expects[0], expects[1] = ("Run", 4)
             elif image_number == 4:
@@ -400,15 +384,15 @@ HasImagePlaneDetails:False"""
 
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
-            self.assertEqual(expects_state, "PostGroup")
+            assert expects_state == "PostGroup"
             for key in keys:
-                self.assertTrue(key in grouping)
+                assert key in grouping
                 value = groupings[expects_grouping][0][key]
-                self.assertEqual(grouping[key], value)
+                assert grouping[key] == value
             expects[0], expects[1] = ("PostRun", 0)
 
         def post_run(workspace):
-            self.assertEqual(expects[0], "PostRun")
+            assert expects[0] == "PostRun"
             expects[0], expects[1] = ("Done", 0)
 
         def get_measurement_columns(pipeline):
@@ -433,7 +417,7 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         measurements = pipeline.run(grouping={"foo": "foo-B", "bar": "bar-B"})
-        self.assertEqual(expects[0], "Done")
+        assert expects[0] == "Done"
 
     def test_10_03_display(self):
         # Test that the individual pipeline methods do appropriate display.
@@ -459,26 +443,26 @@ HasImagePlaneDetails:False"""
             workspace.display_data.foo = "Bar"
 
         def display_handler(module1, display_data, image_set_number):
-            self.assertIs(module1, module)
-            self.assertEqual(display_data.foo, "Bar")
-            self.assertEqual(image_set_number, 1)
+            assert module1 is module
+            assert display_data.foo == "Bar"
+            assert image_set_number == 1
             callbacks_called.add("display_handler")
 
         def post_group(workspace, grouping):
             workspace.display_data.bar = "Baz"
 
         def post_group_display_handler(module1, display_data, image_set_number):
-            self.assertIs(module1, module)
-            self.assertEqual(display_data.bar, "Baz")
-            self.assertEqual(image_set_number, 1)
+            assert module1 is module
+            assert display_data.bar == "Baz"
+            assert image_set_number == 1
             callbacks_called.add("post_group_display_handler")
 
         def post_run(workspace):
             workspace.display_data.baz = "Foo"
 
         def post_run_display_handler(workspace, module1):
-            self.assertIs(module1, module)
-            self.assertEqual(workspace.display_data.baz, "Foo")
+            assert module1 is module
+            assert workspace.display_data.baz == "Foo"
             callbacks_called.add("post_run_display_handler")
 
         def get_measurement_columns(pipeline):
@@ -506,14 +490,14 @@ HasImagePlaneDetails:False"""
         )
         workspace.post_group_display_handler = post_group_display_handler
         workspace.post_run_display_handler = post_run_display_handler
-        self.assertTrue(pipeline.prepare_run(workspace))
+        assert pipeline.prepare_run(workspace)
         pipeline.prepare_group(workspace, {}, (1,))
         pipeline.run_image_set(m, 1, None, display_handler, None)
-        self.assertIn("display_handler", callbacks_called)
+        assert "display_handler" in callbacks_called
         pipeline.post_group(workspace, {})
-        self.assertIn("post_group_display_handler", callbacks_called)
+        assert "post_group_display_handler" in callbacks_called
         pipeline.post_run(workspace)
-        self.assertIn("post_run_display_handler", callbacks_called)
+        assert "post_run_display_handler" in callbacks_called
 
     def test_11_01_catch_operational_error(self):
         """Make sure that a pipeline can catch an operational error
@@ -532,7 +516,7 @@ HasImagePlaneDetails:False"""
 
         pipeline.add_listener(callback)
         pipeline.run()
-        self.assertTrue(should_be_true[0])
+        assert should_be_true[0]
 
     # FIXME: wxPython 4 PR
     # def test_11_02_catch_prepare_run_error(self):
@@ -576,7 +560,7 @@ HasImagePlaneDetails:False"""
             except:
                 print(("%s needs to define module_name as a class variable" % k))
                 success = False
-        self.assertTrue(success)
+        assert success
 
     def test_13_01_save_pipeline(self):
         pipeline = get_empty_pipeline()
@@ -591,14 +575,14 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, nucleus.pipeline.LoadExceptionEvent))
+            assert not isinstance(event, nucleus.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module_out = pipeline.modules()[-1]
         for setting_in, setting_out in zip(module.settings(), module_out.settings()):
-            self.assertEqual(setting_in.value, setting_out.value)
+            assert setting_in.value == setting_out.value
 
     def test_13_02_save_measurements(self):
         pipeline = get_empty_pipeline()
@@ -623,29 +607,32 @@ HasImagePlaneDetails:False"""
         fd.seek(0)
         measurements = nucleus.measurement.load_measurements(fd)
         my_measurement_out = measurements.get_all_measurements("Foo", "Bar")
-        self.assertEqual(len(my_measurement), len(my_measurement_out))
+        assert len(my_measurement) == len(my_measurement_out)
         for m_in, m_out in zip(my_measurement, my_measurement_out):
-            self.assertEqual(len(m_in), len(m_out))
-            self.assertTrue(numpy.all(m_in == m_out))
+            assert len(m_in) == len(m_out)
+            assert numpy.all(m_in == m_out)
         my_image_measurement_out = measurements.get_all_measurements("Image", "img")
-        self.assertEqual(len(my_image_measurement), len(my_image_measurement_out))
+        assert len(my_image_measurement) == len(my_image_measurement_out)
         for m_in, m_out in zip(my_image_measurement, my_image_measurement_out):
-            self.assertTrue(m_in == m_out)
+            assert m_in == m_out
         my_experiment_measurement_out = measurements.get_experiment_measurement("expt")
-        self.assertAlmostEqual(my_experiment_measurement, my_experiment_measurement_out)
+        assert (
+            round(abs(my_experiment_measurement - my_experiment_measurement_out), 7)
+            == 0
+        )
 
         fd.seek(0)
         pipeline = nucleus.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, nucleus.pipeline.LoadExceptionEvent))
+            assert not isinstance(event, nucleus.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         module_out = pipeline.modules()[-1]
         for setting_in, setting_out in zip(module.settings(), module_out.settings()):
-            self.assertEqual(setting_in.value, setting_out.value)
+            assert setting_in.value == setting_out.value
 
     def test_13_03_save_long_measurements(self):
         pipeline = nucleus.pipeline.Pipeline()
@@ -688,8 +675,8 @@ HasImagePlaneDetails:False"""
             map_name = mapping[name]
             my_measurement_out = measurements.get_all_measurements("Foo", map_name)
             for m_in, m_out in zip(expected, my_measurement_out):
-                self.assertEqual(len(m_in), len(m_out))
-                self.assertTrue(numpy.all(m_in == m_out))
+                assert len(m_in) == len(m_out)
+                assert numpy.all(m_in == m_out)
 
     # def test_13_04_pipeline_measurement(self):
     #     data = r"""CellProfiler Pipeline: http://www.nucleus.org
@@ -781,7 +768,7 @@ HasImagePlaneDetails:False"""
         pipeline.savetxt(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
-        self.assertEqual(len(lines), 11)
+        assert len(lines) == 11
         text, value = lines[-3].split(":")
         #
         # unicode encoding:
@@ -792,7 +779,7 @@ HasImagePlaneDetails:False"""
         #     utf-16 to byte: \xff\xfe\\\x00\x11"
         #
         # result = \\xff\\xfe\\\\\\x00\\x11"
-        self.assertEqual(value, '\\xff\\xfe\\\\\\x00\\x11"')
+        assert value == '\\xff\\xfe\\\\\\x00\\x11"'
         text, value = lines[-2].split(":")
         #
         # unicode encoding:
@@ -802,13 +789,13 @@ HasImagePlaneDetails:False"""
         #     utf-16 to byte: \xff\xfe""8\x00
         #
         # result = \\xff\\xfe""8\\x00
-        self.assertEqual(value, '\\xff\\xfe""8\\x00')
+        assert value == '\\xff\\xfe""8\\x00'
         mline = lines[7]
         idx0 = mline.find("notes:")
         mline = mline[(idx0 + 6) :]
         idx1 = mline.find("|")
         value = eval(mline[:idx1].decode("string_escape"))
-        self.assertEqual(value, module.notes)
+        assert value == module.notes
 
     def test_14_02_unicode_save_and_load(self):
         #
@@ -824,7 +811,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, nucleus.pipeline.LoadExceptionEvent))
+            assert not isinstance(event, nucleus.pipeline.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
@@ -836,11 +823,11 @@ HasImagePlaneDetails:False"""
         pipeline.savetxt(fd)
         fd.seek(0)
         pipeline.loadtxt(fd)
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
-        self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
-        self.assertEqual(module.notes, result_module.notes)
-        self.assertEqual(module.my_variable.value, result_module.my_variable.value)
+        assert isinstance(result_module, TestModuleWithMeasurement)
+        assert module.notes == result_module.notes
+        assert module.my_variable.value == result_module.my_variable.value
 
     def test_14_03_deprecated_unicode_load(self):
         pipeline = get_empty_pipeline()
@@ -852,11 +839,11 @@ HasImagePlaneDetails:False"""
         module.my_variable.value = "\\\\u2211"
         module.set_module_num(1)
         module.notes = "\\u03B1\\\\u03B2"
-        self.assertEqual(len(pipeline.modules()), 1)
+        assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
-        self.assertTrue(isinstance(result_module, TestModuleWithMeasurement))
-        self.assertEqual(module.notes, result_module.notes)
-        self.assertEqual(module.my_variable.value, result_module.my_variable.value)
+        assert isinstance(result_module, TestModuleWithMeasurement)
+        assert module.notes == result_module.notes
+        assert module.my_variable.value == result_module.my_variable.value
 
     # Sorry Ray, Python 2.6 and below doesn't have @skip
     if False:
@@ -929,7 +916,7 @@ HasImagePlaneDetails:False"""
                 nucleus.setting.MEASUREMENTS_GROUP,
             ):
                 d = pipeline.get_provider_dictionary(groupname)
-                self.assertEqual(len(d), 0)
+                assert len(d) == 0
 
     def test_16_01_get_provider_dictionary_image(self):
         pipeline = get_empty_pipeline()
@@ -938,15 +925,15 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
-        self.assertEqual(len(d), 1)
-        self.assertEqual(list(d.keys())[0], IMAGE_NAME)
+        assert len(d) == 1
+        assert list(d.keys())[0] == IMAGE_NAME
         providers = d[IMAGE_NAME]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(provider[0], module)
-        self.assertEqual(provider[1], my_setting)
+        assert provider[0] == module
+        assert provider[1] == my_setting
         for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
-            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+            assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_16_02_get_provider_dictionary_object(self):
         pipeline = get_empty_pipeline()
@@ -955,15 +942,15 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(nucleus.setting.OBJECT_GROUP)
-        self.assertEqual(len(d), 1)
-        self.assertEqual(list(d.keys())[0], OBJECT_NAME)
+        assert len(d) == 1
+        assert list(d.keys())[0] == OBJECT_NAME
         providers = d[OBJECT_NAME]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(provider[0], module)
-        self.assertEqual(provider[1], my_setting)
+        assert provider[0] == module
+        assert provider[1] == my_setting
         for group in (nucleus.setting.IMAGE_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
-            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+            assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_16_03_get_provider_dictionary_measurement(self):
         pipeline = get_empty_pipeline()
@@ -975,17 +962,17 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(nucleus.setting.MEASUREMENTS_GROUP)
-        self.assertEqual(len(d), 1)
+        assert len(d) == 1
         key = list(d.keys())[0]
-        self.assertEqual(len(key), 2)
-        self.assertEqual(key[0], OBJECT_NAME)
-        self.assertEqual(key[1], FEATURE_NAME)
+        assert len(key) == 2
+        assert key[0] == OBJECT_NAME
+        assert key[1] == FEATURE_NAME
         providers = d[key]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(provider[0], module)
+        assert provider[0] == module
         for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.IMAGE_GROUP):
-            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+            assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_16_04_get_provider_dictionary_other(self):
         pipeline = get_empty_pipeline()
@@ -995,14 +982,14 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
-        self.assertEqual(len(d), 1)
-        self.assertEqual(list(d.keys())[0], IMAGE_NAME)
+        assert len(d) == 1
+        assert list(d.keys())[0] == IMAGE_NAME
         providers = d[IMAGE_NAME]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(provider[0], module)
+        assert provider[0] == module
         for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
-            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+            assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_16_05_get_provider_dictionary_combo(self):
         pipeline = get_empty_pipeline()
@@ -1020,39 +1007,39 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
-        self.assertEqual(len(d), 2)
-        self.assertTrue(IMAGE_NAME in d)
+        assert len(d) == 2
+        assert IMAGE_NAME in d
         providers = d[IMAGE_NAME]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(provider[0], module)
-        self.assertEqual(provider[1], image_setting)
-        self.assertTrue(ALT_IMAGE_NAME in d)
+        assert provider[0] == module
+        assert provider[1] == image_setting
+        assert ALT_IMAGE_NAME in d
         providers = d[ALT_IMAGE_NAME]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(len(provider), 2)
-        self.assertEqual(provider[0], module)
+        assert len(provider) == 2
+        assert provider[0] == module
 
         d = pipeline.get_provider_dictionary(nucleus.setting.OBJECT_GROUP)
-        self.assertEqual(len(d), 1)
-        self.assertTrue(OBJECT_NAME in d)
+        assert len(d) == 1
+        assert OBJECT_NAME in d
         providers = d[OBJECT_NAME]
-        self.assertEqual(len(providers), 1)
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(len(provider), 2)
-        self.assertEqual(provider[0], module)
-        self.assertEqual(provider[1], object_setting)
+        assert len(provider) == 2
+        assert provider[0] == module
+        assert provider[1] == object_setting
 
         d = pipeline.get_provider_dictionary(nucleus.setting.MEASUREMENTS_GROUP)
-        self.assertEqual(len(d), 1)
+        assert len(d) == 1
         key = list(d.keys())[0]
-        self.assertEqual(len(key), 2)
-        self.assertEqual(key[0], OBJECT_NAME)
-        self.assertEqual(key[1], FEATURE_NAME)
-        self.assertEqual(len(providers), 1)
+        assert len(key) == 2
+        assert key[0] == OBJECT_NAME
+        assert key[1] == FEATURE_NAME
+        assert len(providers) == 1
         provider = providers[0]
-        self.assertEqual(provider[0], module)
+        assert provider[0] == module
 
     def test_16_06_get_provider_module(self):
         #
@@ -1076,25 +1063,25 @@ HasImagePlaneDetails:False"""
             module.module_num = i + 1
             pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
-        self.assertEqual(len(d), 1)
-        self.assertTrue(IMAGE_NAME in d)
-        self.assertEqual(len(d[IMAGE_NAME]), 2)
+        assert len(d) == 1
+        assert IMAGE_NAME in d
+        assert len(d[IMAGE_NAME]) == 2
         for module in (module1, module3):
-            self.assertTrue(any([x[0] == module for x in d[IMAGE_NAME]]))
+            assert any([x[0] == module for x in d[IMAGE_NAME]])
 
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP, module1)
-        self.assertEqual(len(d), 0)
+        assert len(d) == 0
 
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP, module2)
-        self.assertEqual(len(d), 1)
-        self.assertTrue(IMAGE_NAME in d)
-        self.assertEqual(d[IMAGE_NAME][0][0], module1)
+        assert len(d) == 1
+        assert IMAGE_NAME in d
+        assert d[IMAGE_NAME][0][0] == module1
 
         d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP, module4)
-        self.assertEqual(len(d), 1)
-        self.assertTrue(IMAGE_NAME in d)
-        self.assertEqual(len(d[IMAGE_NAME]), 1)
-        self.assertEqual(d[IMAGE_NAME][0][0], module3)
+        assert len(d) == 1
+        assert IMAGE_NAME in d
+        assert len(d[IMAGE_NAME]) == 1
+        assert d[IMAGE_NAME][0][0] == module3
 
     def test_17_00_get_dependency_graph_empty(self):
         for module in (
@@ -1107,7 +1094,7 @@ HasImagePlaneDetails:False"""
             module.set_module_num(1)
             pipeline.add_module(module)
             result = pipeline.get_dependency_graph()
-            self.assertEqual(len(result), 0)
+            assert len(result) == 0
 
     def test_17_01_get_dependency_graph_image(self):
         pipeline = nucleus.pipeline.Pipeline()
@@ -1121,14 +1108,14 @@ HasImagePlaneDetails:False"""
             module.module_num = i + 1
             pipeline.add_module(module)
         g = pipeline.get_dependency_graph()
-        self.assertEqual(len(g), 1)
+        assert len(g) == 1
         edge = g[0]
-        self.assertTrue(isinstance(edge, nucleus.pipeline.ImageDependency))
-        self.assertEqual(edge.source, pipeline.modules()[0])
-        self.assertEqual(edge.source_setting, pipeline.modules()[0].settings()[0])
-        self.assertEqual(edge.image_name, IMAGE_NAME)
-        self.assertEqual(edge.destination, pipeline.modules()[2])
-        self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+        assert isinstance(edge, nucleus.pipeline.ImageDependency)
+        assert edge.source == pipeline.modules()[0]
+        assert edge.source_setting == pipeline.modules()[0].settings()[0]
+        assert edge.image_name == IMAGE_NAME
+        assert edge.destination == pipeline.modules()[2]
+        assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
     def test_17_02_get_dependency_graph_object(self):
         pipeline = nucleus.pipeline.Pipeline()
@@ -1142,14 +1129,14 @@ HasImagePlaneDetails:False"""
             module.module_num = i + 1
             pipeline.add_module(module)
         g = pipeline.get_dependency_graph()
-        self.assertEqual(len(g), 1)
+        assert len(g) == 1
         edge = g[0]
-        self.assertTrue(isinstance(edge, nucleus.pipeline.ObjectDependency))
-        self.assertEqual(edge.source, pipeline.modules()[0])
-        self.assertEqual(edge.source_setting, pipeline.modules()[0].settings()[0])
-        self.assertEqual(edge.object_name, OBJECT_NAME)
-        self.assertEqual(edge.destination, pipeline.modules()[2])
-        self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+        assert isinstance(edge, nucleus.pipeline.ObjectDependency)
+        assert edge.source == pipeline.modules()[0]
+        assert edge.source_setting == pipeline.modules()[0].settings()[0]
+        assert edge.object_name == OBJECT_NAME
+        assert edge.destination == pipeline.modules()[2]
+        assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
     def test_17_03_get_dependency_graph_measurement(self):
         pipeline = nucleus.pipeline.Pipeline()
@@ -1169,14 +1156,14 @@ HasImagePlaneDetails:False"""
             module.module_num = i + 1
             pipeline.add_module(module)
         g = pipeline.get_dependency_graph()
-        self.assertEqual(len(g), 1)
+        assert len(g) == 1
         edge = g[0]
-        self.assertTrue(isinstance(edge, nucleus.pipeline.MeasurementDependency))
-        self.assertEqual(edge.source, pipeline.modules()[0])
-        self.assertEqual(edge.object_name, OBJECT_NAME)
-        self.assertEqual(edge.feature, FEATURE_NAME)
-        self.assertEqual(edge.destination, pipeline.modules()[2])
-        self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+        assert isinstance(edge, nucleus.pipeline.MeasurementDependency)
+        assert edge.source == pipeline.modules()[0]
+        assert edge.object_name == OBJECT_NAME
+        assert edge.feature == FEATURE_NAME
+        assert edge.destination == pipeline.modules()[2]
+        assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
     def test_18_01_read_image_plane_details(self):
         test_data = (
@@ -1228,9 +1215,9 @@ HasImagePlaneDetails:False"""
             s += "\n".join(body_lines) + "\n"
             fd = six.moves.StringIO(s)
             result = nucleus.pipeline.read_file_list(fd)
-            self.assertEqual(len(result), len(expected))
+            assert len(result) == len(expected)
             for r, e in zip(result, expected):
-                self.assertEqual(r, e[0])
+                assert r == e[0]
 
     def test_18_02_write_image_plane_details(self):
         test_data = ("foo", "\\u03b1\\u03b2", "".join([chr(i) for i in range(128)]))
@@ -1241,7 +1228,7 @@ HasImagePlaneDetails:False"""
         for rr, tt in zip(result, test_data):
             if isinstance(tt, six.text_type):
                 tt = tt.encode("utf-8")
-            self.assertEqual(rr, tt)
+            assert rr == tt
 
     def test_19_01_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]
@@ -1249,9 +1236,9 @@ HasImagePlaneDetails:False"""
         fd = six.moves.StringIO("\n".join([paths[0], "", paths[1]]))
         p = nucleus.pipeline.Pipeline()
         p.read_file_list(fd)
-        self.assertEqual(len(p.file_list), 2)
+        assert len(p.file_list) == 2
         for path in paths:
-            self.assertIn(nucleus.modules.loadimages.pathname2url(path), p.file_list)
+            assert nucleus.modules.loadimages.pathname2url(path) in p.file_list
 
     def test_19_02_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
@@ -1267,9 +1254,9 @@ HasImagePlaneDetails:False"""
         fd = six.moves.StringIO("\n".join(urls))
         p = nucleus.pipeline.Pipeline()
         p.read_file_list(fd)
-        self.assertEqual(len(p.file_list), len(urls))
+        assert len(p.file_list) == len(urls)
         for url in urls:
-            self.assertIn(url, p.file_list)
+            assert url in p.file_list
 
     def test_19_03_read_file_list_file(self):
         urls = [
@@ -1285,9 +1272,9 @@ HasImagePlaneDetails:False"""
         finally:
             os.close(fd)
             os.remove(path)
-        self.assertEqual(len(p.file_list), len(urls))
+        assert len(p.file_list) == len(urls)
         for url in urls:
-            self.assertIn(url, p.file_list)
+            assert url in p.file_list
 
     def test_19_04_read_http_file_list(self):
         url = "https://gist.githubusercontent.com/mcquin/67438dc4e8481c5b1d3881df56e1c4c4/raw/274835d9d3fef990d8bf34c4ee5f991b3880d74f/gistfile1.txt"
@@ -1298,9 +1285,9 @@ HasImagePlaneDetails:False"""
         ]
         p = nucleus.pipeline.Pipeline()
         p.read_file_list(url)
-        self.assertEqual(len(p.file_list), len(urls))
+        assert len(p.file_list) == len(urls)
         for url in urls:
-            self.assertIn(url, p.file_list)
+            assert url in p.file_list
 
 
 class TestImagePlaneDetails(unittest.TestCase):
@@ -1618,29 +1605,29 @@ if __name__ == "__main__":
 class TestUtils(unittest.TestCase):
     def test_02_001_EncapsulateString(self):
         a = nucleus.pipeline.encapsulate_string("Hello")
-        self.assertTrue(a.shape == (1,))
-        self.assertTrue(a.dtype.kind == "S")
-        self.assertTrue(a[0] == "Hello")
+        assert a.shape == (1,)
+        assert a.dtype.kind == "S"
+        assert a[0] == "Hello"
 
     def test_02_001_EncapsulateUnicode(self):
         a = nucleus.pipeline.encapsulate_string("Hello")
-        self.assertTrue(a.shape == (1,))
-        self.assertTrue(a.dtype.kind == "U")
-        self.assertTrue(a[0] == "Hello")
+        assert a.shape == (1,)
+        assert a.dtype.kind == "U"
+        assert a[0] == "Hello"
 
     def test_02_01_EncapsulateCell(self):
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = "Hello, world"
         nucleus.pipeline.encapsulate_strings_in_arrays(cell)
-        self.assertTrue(isinstance(cell[0, 0], numpy.ndarray))
-        self.assertTrue(cell[0, 0][0] == "Hello, world")
+        assert isinstance(cell[0, 0], numpy.ndarray)
+        assert cell[0, 0][0] == "Hello, world"
 
     def test_02_02_EncapsulateStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
         struct["foo"][0, 0] = "Hello, world"
         nucleus.pipeline.encapsulate_strings_in_arrays(struct)
-        self.assertTrue(isinstance(struct["foo"][0, 0], numpy.ndarray))
-        self.assertTrue(struct["foo"][0, 0][0] == "Hello, world")
+        assert isinstance(struct["foo"][0, 0], numpy.ndarray)
+        assert struct["foo"][0, 0][0] == "Hello, world"
 
     def test_02_03_EncapsulateCellInStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
@@ -1648,8 +1635,8 @@ class TestUtils(unittest.TestCase):
         cell[0, 0] = "Hello, world"
         struct["foo"][0, 0] = cell
         nucleus.pipeline.encapsulate_strings_in_arrays(struct)
-        self.assertTrue(isinstance(cell[0, 0], numpy.ndarray))
-        self.assertTrue(cell[0, 0][0] == "Hello, world")
+        assert isinstance(cell[0, 0], numpy.ndarray)
+        assert cell[0, 0][0] == "Hello, world"
 
     def test_02_04_EncapsulateStructInCell(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
@@ -1657,5 +1644,5 @@ class TestUtils(unittest.TestCase):
         cell[0, 0] = struct
         struct["foo"][0, 0] = "Hello, world"
         nucleus.pipeline.encapsulate_strings_in_arrays(cell)
-        self.assertTrue(isinstance(struct["foo"][0, 0], numpy.ndarray))
-        self.assertTrue(struct["foo"][0, 0][0] == "Hello, world")
+        assert isinstance(struct["foo"][0, 0], numpy.ndarray)
+        assert struct["foo"][0, 0][0] == "Hello, world"

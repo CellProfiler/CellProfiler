@@ -1,11 +1,7 @@
 # coding:utf-8
 
-import nucleus.gui.help.content
-from nucleus.preferences import (
-    ABSOLUTE_FOLDER_NAME,
-    DEFAULT_INPUT_SUBFOLDER_NAME,
-    DEFAULT_OUTPUT_SUBFOLDER_NAME,
-)
+import nucleus.modules
+import nucleus.preferences
 
 DEFINITION_OBJECT = """\
 In CellProfiler, we use the term *object* as a generic term to refer to
@@ -90,7 +86,7 @@ conditions you want to include.
 {REGEXP_HELP_REF}
 """.format(
     **{
-        "IMAGES_USING_RULES_ICON": cellprofiler.gui.help.content.image_resource(
+        "IMAGES_USING_RULES_ICON": nucleus.modules.image_resource(
             "Images_UsingRules.png"
         ),
         "REGEXP_HELP_REF": REGEXP_HELP_REF,
@@ -206,9 +202,9 @@ metadata tags in the folder name.
 {USING_METADATA_HELP_REF}
 """.format(
     **{
-        "ABSOLUTE_FOLDER_NAME": ABSOLUTE_FOLDER_NAME,
-        "DEFAULT_INPUT_SUBFOLDER_NAME": DEFAULT_INPUT_SUBFOLDER_NAME,
-        "DEFAULT_OUTPUT_SUBFOLDER_NAME": DEFAULT_OUTPUT_SUBFOLDER_NAME,
+        "ABSOLUTE_FOLDER_NAME": nucleus.preferences.ABSOLUTE_FOLDER_NAME,
+        "DEFAULT_INPUT_SUBFOLDER_NAME": nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+        "DEFAULT_OUTPUT_SUBFOLDER_NAME": nucleus.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
         "USING_METADATA_HELP_REF": USING_METADATA_HELP_REF,
         "USING_METADATA_TAGS_REF": USING_METADATA_TAGS_REF,
     }
@@ -223,7 +219,7 @@ overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 """
 
-StrelImage = cellprofiler.gui.help.content.image_resource("structuringelement.png")
+StrelImage = nucleus.modules.image_resource("structuringelement.png")
 
 HELP_FOR_STREL = """\
 The structuring element is the shape that will be applied in any morphological
@@ -239,8 +235,8 @@ pixel diameter with various structuring elements.
     **{"StrelImage": StrelImage}
 )
 
-PROTIP_RECOMMEND_ICON = cellprofiler.gui.help.content.image_resource("thumb-up.png")
+PROTIP_RECOMMEND_ICON = nucleus.modules.image_resource("thumb-up.png")
 
-PROTIP_AVOID_ICON = cellprofiler.gui.help.content.image_resource("thumb-down.png")
+PROTIP_AVOID_ICON = nucleus.modules.image_resource("thumb-down.png")
 
-TECH_NOTE_ICON = cellprofiler.gui.help.content.image_resource("gear.png")
+TECH_NOTE_ICON = nucleus.modules.image_resource("gear.png")

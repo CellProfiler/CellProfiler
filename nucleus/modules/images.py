@@ -7,9 +7,9 @@ import six.moves.urllib
 import six.moves.urllib.parse
 import six.moves.urllib.request
 
-import nucleus.gui.help.content
-import nucleus.icons
+# import nucleus.icons
 import nucleus.module
+import nucleus.modules
 import nucleus.modules._help
 import nucleus.modules.loadimages
 import nucleus.pipeline
@@ -144,10 +144,10 @@ particular wavelength.
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(
     **{
-        "IMG_PANEL_BLANK": nucleus.gui.help.content.image_resource(
+        "IMG_PANEL_BLANK": nucleus.modules.image_resource(
             "Images_FilelistPanel_Blank.png"
         ),
-        "IMG_PANEL_FILLED": nucleus.gui.help.content.image_resource(
+        "IMG_PANEL_FILLED": nucleus.modules.image_resource(
             "Images_FilelistPanel_Filled.png"
         ),
     }

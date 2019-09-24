@@ -12,7 +12,7 @@ import sys
 import threading
 import time
 import uuid
-
+import nucleus.utilities.legacy
 import h5py
 import numpy
 import six
@@ -1021,7 +1021,7 @@ class HDF5FileList(object):
         if filelist_name in g:
             g = g[filelist_name]
             # When loading CP 3.1.8 cpprojs, A_CLASS val is in bytes, thus the legacy.equals()
-            assert cellprofiler.utilities.legacy.equals(
+            assert nucleus.utilities.legacy.equals(
                 g.attrs.get(A_CLASS, None), CLASS_FILELIST_GROUP
             )
         else:
@@ -1197,7 +1197,7 @@ class HDF5FileList(object):
                         sort_order = sorted(
                             list(range(len(leaves))),
                             key=functools.cmp_to_key(
-                                lambda x, y: cellprofiler.utilities.legacy.cmp(
+                                lambda x, y: nucleus.utilities.legacy.cmp(
                                     leaves[x], leaves[y]
                                 )
                             ),
@@ -1325,7 +1325,7 @@ class HDF5FileList(object):
         return (
             isinstance(g, h5py.Group)
             and A_CLASS in g.attrs
-            and cellprofiler.utilities.legacy.equals(g.attrs[A_CLASS], CLASS_DIRECTORY)
+            and nucleus.utilities.legacy.equals(g.attrs[A_CLASS], CLASS_DIRECTORY)
         )
 
     def get_filelist(self, root_url=None):
@@ -1355,12 +1355,12 @@ class HDF5FileList(object):
                 urls = []
                 path_tuple = tuple(path)
                 if path_tuple in self.__cache:
-                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(
+                    a = nucleus.utilities.legacy.convert_bytes_to_str(
                         self.__cache[path_tuple].urls
                     )
                     urls += [root + x for x in a]
                 elif VStringArray.has_vstring_array(g):
-                    a = cellprofiler.utilities.legacy.convert_bytes_to_str(
+                    a = nucleus.utilities.legacy.convert_bytes_to_str(
                         self.cache_urls(g, path_tuple)
                     )
                     urls += [root + x for x in a]
@@ -2067,11 +2067,11 @@ class VStringArray(object):
     def has_vstring_array(group):
         return (
             ("index" in group)
-            and cellprofiler.utilities.legacy.equals(
+            and nucleus.utilities.legacy.equals(
                 group["index"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX
             )
             and ("data" in group)
-            and cellprofiler.utilities.legacy.equals(
+            and nucleus.utilities.legacy.equals(
                 group["data"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA
             )
         )
@@ -2088,7 +2088,7 @@ class VStringArray(object):
         if "index" in group:
             self.index = group["index"]
             # assert self.index.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX
-            assert cellprofiler.utilities.legacy.equals(
+            assert nucleus.utilities.legacy.equals(
                 self.index.attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX
             )
         else:
@@ -2104,7 +2104,7 @@ class VStringArray(object):
         if "data" in group:
             self.data = group["data"]
             # assert self.data.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA
-            assert cellprofiler.utilities.legacy.equals(
+            assert nucleus.utilities.legacy.equals(
                 self.data.attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA
             )
         else:
@@ -2270,10 +2270,8 @@ class VStringArray(object):
                     dj = self.data[(j0 + idx) : (j0 + idx_end)]
                     diff = numpy.argwhere(di != dj).flatten()
                     if len(diff) > 0:
-                        return cellprofiler.utilities.legacy.cmp(
-                            di[diff[0]], dj[diff[0]]
-                        )
-                return cellprofiler.utilities.legacy.cmp(li, lj)
+                        return nucleus.utilities.legacy.cmp(di[diff[0]], dj[diff[0]])
+                return nucleus.utilities.legacy.cmp(li, lj)
 
             order = list(range(len(self)))
             order.sort(cmp=compare)

@@ -285,7 +285,9 @@ class Pipeline:
         self.__modules = []
         self.__undo_stack = []
         self.__undo_start = None
+
         filename = None
+
         if hasattr(fd_or_filename, "seek") and hasattr(fd_or_filename, "read"):
             fd = fd_or_filename
             needs_close = False
@@ -318,10 +320,12 @@ class Pipeline:
             return
 
         header = fd.read(len(nucleus.pipeline.HDF5_HEADER))
+
         if needs_close:
             fd.close()
         else:
             fd.seek(0)
+
         if header[:8] == nucleus.pipeline.HDF5_HEADER:
             if filename is None:
                 fid, filename = tempfile.mkstemp(".h5")
@@ -368,10 +372,13 @@ class Pipeline:
             # From measurements...
             #
             handles = handles["handles"][0, 0]
+
         self.create_from_handles(handles)
+
         self.__settings = [
             self.capture_module_settings(module) for module in self.modules(False)
         ]
+
         self.__undo_stack = []
 
     def respond_to_version_mismatch_error(self, message):

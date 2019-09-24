@@ -66,10 +66,14 @@ class PluginImporter(object):
 sys.meta_path.append(PluginImporter())
 
 # python modules and their corresponding cellprofiler.module classes
-pymodule_to_cpmodule = {"images": "Images", "loadimages": "LoadImages"}
+pymodule_to_cpmodule = {
+    "align": "Align",
+    "images": "Images",
+    "loadimages": "LoadImages",
+}
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
-builtin_modules = ["images", "loadimages"]
+builtin_modules = ["align", "images", "loadimages"]
 
 all_modules = {}
 svn_revisions = {}

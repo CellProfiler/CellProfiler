@@ -7,11 +7,11 @@ import numpy as np
 import six
 
 import nucleus.modules
-import nucleus.module as cpm
-import nucleus.pipeline as cpp
-import nucleus.setting as cps
+import nucleus.module
+import nucleus.pipeline
+import nucleus.setting
 from nucleus.setting import YES
-import nucleus.measurement as cpmeas
+import nucleus.measurement
 
 __doc__ = """\
 Groups
@@ -150,7 +150,7 @@ number of groups you have.
 )
 
 
-class Groups(cpm.Module):
+class Groups(nucleus.module.Module):
     variable_revision_number = 2
     module_name = "Groups"
     category = "File Processing"
@@ -169,7 +169,7 @@ class Groups(cpm.Module):
         ]
         self.set_notes([" ".join(module_explanation)])
 
-        self.wants_groups = cps.Binary(
+        self.wants_groups = nucleus.setting.Binary(
             "Do you want to group your images?",
             False,
             doc="""\
@@ -181,7 +181,7 @@ See the main module help for more details.
             ),
         )
 
-        self.grouping_text = cps.HTMLText(
+        self.grouping_text = nucleus.setting.HTMLText(
             "",
             content="Each unique metadata value (or combination of values) will be defined as a group",
             size=(30, 2),
@@ -189,17 +189,17 @@ See the main module help for more details.
 
         self.grouping_metadata = []
 
-        self.grouping_metadata_count = cps.HiddenCount(
+        self.grouping_metadata_count = nucleus.setting.HiddenCount(
             self.grouping_metadata, "grouping metadata count"
         )
 
         self.add_grouping_metadata(can_remove=False)
 
-        self.add_grouping_metadata_button = cps.DoSomething(
+        self.add_grouping_metadata_button = nucleus.setting.DoSomething(
             "", "Add another metadata item", self.add_grouping_metadata
         )
 
-        self.grouping_list = cps.Table(
+        self.grouping_list = nucleus.setting.Table(
             "Grouping list",
             min_size=(300, 100),
             doc="""\
@@ -215,7 +215,7 @@ each.
 """,
         )
 
-        self.image_set_list = cps.Table(
+        self.image_set_list = nucleus.setting.Table(
             "Image sets",
             doc="""\
 This list displays the file name and location of each of the image sets
@@ -227,23 +227,23 @@ wells/plate ×2 sites/well = 2304 rows.
         )
 
     def add_grouping_metadata(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = nucleus.setting.SettingsGroup()
         self.grouping_metadata.append(group)
 
         def get_group_metadata_choices(pipeline):
             choices = self.get_metadata_choices(pipeline, group)
             if len(choices) == 0:
-                choices.append(cps.NONE)
+                choices.append(nucleus.setting.NONE)
             return choices
 
         if self.pipeline is not None:
             choices = get_group_metadata_choices(self.pipeline)
         else:
-            choices = [cps.NONE]
+            choices = [nucleus.setting.NONE]
 
         group.append(
             "metadata_choice",
-            cps.Choice(
+            nucleus.setting.Choice(
                 "Metadata category",
                 choices,
                 choices_fn=get_group_metadata_choices,
@@ -334,14 +334,14 @@ desired behavior.
             ),
         )
 
-        group.append("divider", cps.Divider())
+        group.append("divider", nucleus.setting.Divider())
 
         group.can_remove = can_remove
 
         if can_remove:
             group.append(
                 "remover",
-                cps.RemoveSettingButton(
+                nucleus.setting.RemoveSettingButton(
                     "", "Remove this metadata item", self.grouping_metadata, group
                 ),
             )
@@ -397,7 +397,7 @@ desired behavior.
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
         self.workspace = workspace
-        assert isinstance(self.pipeline, cpp.Pipeline)
+        assert isinstance(self.pipeline, nucleus.pipeline.Pipeline)
         if self.wants_groups:
             self.metadata_keys = []
             self.image_sets_initialized = workspace.refresh_image_set()
@@ -455,7 +455,7 @@ desired behavior.
             except:
                 return
             m = self.workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, nucleus.measurement.Measurements)
             channel_descriptors = m.get_channel_descriptors()
 
             self.grouping_list.clear_columns()
@@ -468,14 +468,16 @@ desired behavior.
                 if group.metadata_choice.value != "None"
             ]
             metadata_feature_names = [
-                "_".join((cpmeas.C_METADATA, key)) for key in metadata_key_names
+                "_".join((nucleus.measurement.C_METADATA, key))
+                for key in metadata_key_names
             ]
             metadata_key_names = [
-                x[(len(cpmeas.C_METADATA) + 1) :] for x in metadata_feature_names
+                x[(len(nucleus.measurement.C_METADATA) + 1) :]
+                for x in metadata_feature_names
             ]
             image_set_feature_names = [
-                cpmeas.GROUP_NUMBER,
-                cpmeas.GROUP_INDEX,
+                nucleus.measurement.GROUP_NUMBER,
+                nucleus.measurement.GROUP_INDEX,
             ] + metadata_feature_names
             self.image_set_list.insert_column(0, "Group number")
             self.image_set_list.insert_column(1, "Group index")
@@ -487,12 +489,20 @@ desired behavior.
             self.grouping_list.insert_column(len(metadata_key_names), "Count")
 
             image_numbers = m.get_image_numbers()
-            group_indexes = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers][:]
-            group_numbers = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers][:]
+            group_indexes = m[
+                nucleus.measurement.IMAGE,
+                nucleus.measurement.GROUP_INDEX,
+                image_numbers,
+            ][:]
+            group_numbers = m[
+                nucleus.measurement.IMAGE,
+                nucleus.measurement.GROUP_NUMBER,
+                image_numbers,
+            ][:]
             counts = np.bincount(group_numbers)
             first_indexes = np.argwhere(group_indexes == 1).flatten()
             group_keys = [
-                m[cpmeas.IMAGE, feature, image_numbers]
+                m[nucleus.measurement.IMAGE, feature, image_numbers]
                 for feature in metadata_feature_names
             ]
             k_count = sorted(
@@ -510,24 +520,31 @@ desired behavior.
                 self.grouping_list.data.append(row)
 
             for i, iscd in enumerate(channel_descriptors):
-                assert isinstance(iscd, cpp.Pipeline.ImageSetChannelDescriptor)
+                assert isinstance(
+                    iscd, nucleus.pipeline.Pipeline.ImageSetChannelDescriptor
+                )
                 image_name = iscd.name
                 idx = len(image_set_feature_names)
                 self.image_set_list.insert_column(idx, "Path: %s" % image_name)
                 self.image_set_list.insert_column(idx + 1, "File: %s" % image_name)
                 if iscd.channel_type == iscd.CT_OBJECTS:
                     image_set_feature_names.append(
-                        cpmeas.C_OBJECTS_PATH_NAME + "_" + iscd.name
+                        nucleus.measurement.C_OBJECTS_PATH_NAME + "_" + iscd.name
                     )
                     image_set_feature_names.append(
-                        cpmeas.C_OBJECTS_FILE_NAME + "_" + iscd.name
+                        nucleus.measurement.C_OBJECTS_FILE_NAME + "_" + iscd.name
                     )
                 else:
-                    image_set_feature_names.append(cpmeas.C_PATH_NAME + "_" + iscd.name)
-                    image_set_feature_names.append(cpmeas.C_FILE_NAME + "_" + iscd.name)
+                    image_set_feature_names.append(
+                        nucleus.measurement.C_PATH_NAME + "_" + iscd.name
+                    )
+                    image_set_feature_names.append(
+                        nucleus.measurement.C_FILE_NAME + "_" + iscd.name
+                    )
 
             all_features = [
-                m[cpmeas.IMAGE, ftr, image_numbers] for ftr in image_set_feature_names
+                m[nucleus.measurement.IMAGE, ftr, image_numbers]
+                for ftr in image_set_feature_names
             ]
             order = np.lexsort((group_indexes, group_numbers))
 
@@ -555,9 +572,9 @@ desired behavior.
         key_list = self.get_grouping_tags()
         m = workspace.measurements
         for key in key_list:
-            if key not in m.get_feature_names(cpmeas.IMAGE):
-                if key.startswith(cpmeas.C_METADATA):
-                    key = key[len(cpmeas.C_METADATA) + 1 :]
+            if key not in m.get_feature_names(nucleus.measurement.IMAGE):
+                if key.startswith(nucleus.measurement.C_METADATA):
+                    key = key[len(nucleus.measurement.C_METADATA) + 1 :]
                 workspace.pipeline.report_prepare_run_error(
                     self,
                     (
@@ -575,7 +592,7 @@ desired behavior.
         if not self.wants_groups:
             return None
         return [
-            "_".join((cpmeas.C_METADATA, g.metadata_choice.value))
+            "_".join((nucleus.measurement.C_METADATA, g.metadata_choice.value))
             for g in self.grouping_metadata
         ]
 
@@ -631,7 +648,7 @@ desired behavior.
         group_indexes = group_indexes[order]
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, nucleus.measurement.Measurements)
         #
         # Downstream processing requires that image sets be ordered by
         # increasing group number, then increasing group index.
@@ -639,8 +656,12 @@ desired behavior.
         new_image_numbers = np.zeros(np.max(image_numbers) + 1, int)
         new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers)) + 1
         m.reorder_image_measurements(new_image_numbers)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_NUMBER, group_numbers
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_INDEX, group_indexes
+        )
         m.set_grouping_tags(self.get_grouping_tags())
         return True
 
@@ -655,7 +676,11 @@ desired behavior.
         result = []
         if self.wants_groups:
             result.append(
-                (cpmeas.EXPERIMENT, cpmeas.M_GROUPING_TAGS, cpmeas.COLTYPE_VARCHAR)
+                (
+                    nucleus.measurement.EXPERIMENT,
+                    nucleus.measurement.M_GROUPING_TAGS,
+                    nucleus.measurement.COLTYPE_VARCHAR,
+                )
             )
             #
             # These are bound to be produced elsewhere, but it is quite
@@ -663,7 +688,13 @@ desired behavior.
             # duplicated by another module, no big deal.
             #
             for ftr in self.get_grouping_tags():
-                result.append((cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR))
+                result.append(
+                    (
+                        nucleus.measurement.IMAGE,
+                        ftr,
+                        nucleus.measurement.COLTYPE_VARCHAR,
+                    )
+                )
         return result
 
     def upgrade_settings(

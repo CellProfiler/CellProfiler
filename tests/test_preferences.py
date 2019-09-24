@@ -1,8 +1,3 @@
-# coding: latin-1
-"""test_preferences.py - test the preferences module
-"""
-
-
 import tempfile
 import unittest
 

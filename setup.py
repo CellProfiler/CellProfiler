@@ -20,6 +20,7 @@ setuptools.setup(
         "javabridge@https://github.com/CellProfiler/python-javabridge/tarball/master",
         "matplotlib==3.1.1",
         "numpy==1.17.2",
+        "prokaryote==2.4.1",
         "python-bioformats==1.5.2",
         "scikit-image==0.15.0",
         "scipy==1.3.1",

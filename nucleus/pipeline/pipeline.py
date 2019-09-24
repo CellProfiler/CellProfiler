@@ -1,3 +1,13 @@
+import datetime
+import hashlib
+import os
+import os.path
+import string
+import sys
+import tempfile
+import timeit
+import uuid
+
 import bioformats.formatreader
 import scipy.io.matlab
 import six.moves

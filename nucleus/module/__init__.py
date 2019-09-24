@@ -1,1 +1,1 @@
-from .module import Module, ImageProcessing, ImageSegmentation, ObjectProcessing
+from .module import ImageProcessing, ImageSegmentation, Module, ObjectProcessing

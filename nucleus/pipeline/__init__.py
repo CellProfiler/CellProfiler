@@ -622,14 +622,14 @@ def encapsulate_strings_in_arrays(handles):
         # cells - descend recursively
         flat = handles.flat
         for i in range(0, len(flat)):
-            if isinstance(flat[i], six.string_types):
+            if isinstance(flat[i], str):
                 flat[i] = encapsulate_string(flat[i])
             elif isinstance(flat[i], numpy.ndarray):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
         for field in list(handles.dtype.fields.keys()):
-            if isinstance(handles[field], six.string_types):
+            if isinstance(handles[field], str):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field], numpy.ndarray):
                 encapsulate_strings_in_arrays(handles[field])
@@ -638,9 +638,8 @@ def encapsulate_strings_in_arrays(handles):
 def encapsulate_string(s):
     """Encapsulate a string in an array of shape 1 of the length of the string
     """
-    if isinstance(s, str):
-        result = numpy.ndarray((1,), "<S%d" % (len(s)))
-    else:
-        result = numpy.ndarray((1,), "<U%d" % (len(s)))
+    result = numpy.ndarray((1,), "<U%d" % (len(s)))
+
     result[0] = s
+
     return result

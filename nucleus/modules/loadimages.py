@@ -4096,9 +4096,7 @@ def load_data_file(pathname_or_url, load_fn):
     return load_fn(pathname_or_url)
 
 
-class LoadImagesImageProvider(
-    nucleus.image.AbstractImageProvider.AbstractImageProvider
-):
+class LoadImagesImageProvider(nucleus.image.AbstractImageProvider):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(

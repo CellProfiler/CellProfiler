@@ -261,7 +261,7 @@ class Pipeline:
     def is_pipeline_txt_fd(fd):
         header = fd.read(1024)
         fd.seek(0)
-        if header.startswith(COOKIE):
+        if header.startswith("CellProfiler Pipeline: http://www.nucleus.org"):
             return True
         if re.search(SAD_PROOFPOINT_COOKIE, header):
             logger.info('print_emoji(":cat_crying_because_of_proofpoint:")')
@@ -706,7 +706,7 @@ class Pipeline:
         if len(self.__file_list) == 0:
             save_image_plane_details = False
 
-        fd.write("%s\n" % six.text_type(COOKIE))
+        fd.write("%s\n" % "CellProfiler Pipeline: http://www.nucleus.org")
         fd.write("%s:%d\n" % (six.text_type(H_VERSION), NATIVE_VERSION))
         fd.write(
             "%s:%d\n"

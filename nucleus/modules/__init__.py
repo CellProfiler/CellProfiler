@@ -8,6 +8,7 @@ import os.path
 import re
 import sys
 
+import boto3
 import pkg_resources
 
 import nucleus.module
@@ -276,3 +277,25 @@ def image_resource(filename):
     # Note: the HTML renderer requires to paths to use '/' so we replace
     # the windows default '\\' here
     return relpath.replace("\\", "/")
+
+
+def generate_presigned_url(url):
+    """
+    Generate a presigned URL, if necessary (e.g., s3).
+
+    :param url: An unsigned URL.
+    :return: The presigned URL.
+    """
+    if url.startswith("s3"):
+        client = boto3.client("s3")
+
+        bucket_name, filename = (
+            re.compile("s3://([\w\d\-.]+)/(.*)").search(url).groups()
+        )
+
+        url = client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": filename.replace("+", " ")},
+        )
+
+    return url

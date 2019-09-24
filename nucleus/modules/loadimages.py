@@ -9,7 +9,6 @@ import shutil
 import sys
 import tempfile
 
-import boto3
 import centrosome.outline
 import numpy
 import scipy.io.matlab.mio
@@ -30,6 +29,7 @@ import nucleus.preferences
 import nucleus.setting
 import nucleus.modules
 import nucleus.modules
+from nucleus.modules import generate_presigned_url
 
 """
 LoadImages
@@ -466,28 +466,6 @@ I_SEPARATED = "Separated"
 SUB_NONE = "None"
 SUB_ALL = "All"
 SUB_SOME = "Some"
-
-
-def generate_presigned_url(url):
-    """
-    Generate a presigned URL, if necessary (e.g., s3).
-
-    :param url: An unsigned URL.
-    :return: The presigned URL.
-    """
-    if url.startswith("s3"):
-        client = boto3.client("s3")
-
-        bucket_name, filename = (
-            re.compile("s3://([\w\d\-.]+)/(.*)").search(url).groups()
-        )
-
-        url = client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": bucket_name, "Key": filename.replace("+", " ")},
-        )
-
-    return url
 
 
 def default_cpimage_name(index):

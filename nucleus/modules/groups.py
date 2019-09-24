@@ -1,13 +1,12 @@
 # coding=utf-8
 import logging
 
-import nucleus.gui.help.content
-import nucleus.icons
 
 logger = logging.getLogger(__name__)
 import numpy as np
 import six
 
+import nucleus.modules
 import nucleus.module as cpm
 import nucleus.pipeline as cpp
 import nucleus.setting as cps
@@ -144,7 +143,7 @@ but only a subset of them may actually be active, depending on the
 number of groups you have.
 """.format(
     **{
-        "GROUPS_DISPLAY_TABLE": cellprofiler.gui.help.content.image_resource(
+        "GROUPS_DISPLAY_TABLE": nucleus.modules.image_resource(
             "Groups_ExampleDisplayTable.png"
         )
     }

@@ -175,7 +175,6 @@ NATIVE_VERSION = 5
 """The version of the image plane descriptor section"""
 IMAGE_PLANE_DESCRIPTOR_VERSION = 1
 
-H_VERSION = "Version"
 H_SVN_REVISION = "SVNRevision"
 H_DATE_REVISION = "DateRevision"
 """A pipeline file header variable for faking a matlab pipeline file"""
@@ -465,9 +464,9 @@ def read_file_list(file_or_fd):
     try:
         line = next(fd)
         properties = dict(read_fields(line))
-        if H_VERSION not in properties:
+        if "Version" not in properties:
             raise ValueError("Image plane details header is missing its version #")
-        version = int(properties[H_VERSION])
+        version = int(properties["Version"])
         if version != IMAGE_PLANE_DESCRIPTOR_VERSION:
             raise ValueError(
                 "Unable to read image plane details version # %d" % version
@@ -506,7 +505,7 @@ def write_file_list(file_or_fd, file_list):
     try:
         fd.write(
             '"%s":"%d","%s":"%d"\n'
-            % (H_VERSION, IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT, len(file_list))
+            % ("Version", IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT, len(file_list))
         )
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:

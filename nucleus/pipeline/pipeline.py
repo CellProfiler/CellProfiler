@@ -1,7 +1,10 @@
+import bisect
 import datetime
 import hashlib
+import logging
 import os
 import os.path
+import re
 import string
 import sys
 import tempfile
@@ -9,6 +12,7 @@ import timeit
 import uuid
 
 import bioformats.formatreader
+import numpy
 import scipy.io.matlab
 import six.moves
 import six.moves.urllib.parse
@@ -25,7 +29,6 @@ import nucleus.setting
 import nucleus.utilities.legacy
 import nucleus.utilities.utf16encode
 import nucleus.workspace
-from nucleus.pipeline import *
 
 logger = logging.getLogger(__name__)
 
@@ -216,31 +219,37 @@ class Pipeline:
                 raise
 
         module_count = len(self.modules(False))
-        setting[VARIABLE_VALUES] = new_string_cell_array((module_count, variable_count))
+        setting[
+            nucleus.pipeline.VARIABLE_VALUES
+        ] = nucleus.pipeline.new_string_cell_array((module_count, variable_count))
         # The variable info types are similarly shaped
-        setting[VARIABLE_INFO_TYPES] = new_string_cell_array(
-            (module_count, variable_count)
+        setting[
+            nucleus.pipeline.VARIABLE_INFO_TYPES
+        ] = nucleus.pipeline.new_string_cell_array((module_count, variable_count))
+        setting[nucleus.pipeline.MODULE_NAMES] = nucleus.pipeline.new_string_cell_array(
+            (1, module_count)
         )
-        setting[MODULE_NAMES] = new_string_cell_array((1, module_count))
-        setting[NUMBERS_OF_VARIABLES] = numpy.ndarray(
+        setting[nucleus.pipeline.NUMBERS_OF_VARIABLES] = numpy.ndarray(
             (1, module_count), dtype=numpy.dtype("uint8")
         )
-        setting[PIXEL_SIZE] = nucleus.preferences.get_pixel_size()
-        setting[VARIABLE_REVISION_NUMBERS] = numpy.ndarray(
+        setting[nucleus.pipeline.PIXEL_SIZE] = nucleus.preferences.get_pixel_size()
+        setting[nucleus.pipeline.VARIABLE_REVISION_NUMBERS] = numpy.ndarray(
             (1, module_count), dtype=numpy.dtype("uint8")
         )
-        setting[MODULE_REVISION_NUMBERS] = numpy.ndarray(
+        setting[nucleus.pipeline.MODULE_REVISION_NUMBERS] = numpy.ndarray(
             (1, module_count), dtype=numpy.dtype("uint16")
         )
-        setting[MODULE_NOTES] = new_string_cell_array((1, module_count))
-        setting[SHOW_WINDOW] = numpy.ndarray(
+        setting[nucleus.pipeline.MODULE_NOTES] = nucleus.pipeline.new_string_cell_array(
+            (1, module_count)
+        )
+        setting[nucleus.pipeline.SHOW_WINDOW] = numpy.ndarray(
             (1, module_count), dtype=numpy.dtype("uint8")
         )
-        setting[BATCH_STATE] = numpy.ndarray(
+        setting[nucleus.pipeline.BATCH_STATE] = numpy.ndarray(
             (1, module_count), dtype=numpy.dtype("object")
         )
         for i in range(module_count):
-            setting[BATCH_STATE][0, i] = numpy.zeros((0,), numpy.uint8)
+            setting[nucleus.pipeline.BATCH_STATE][0, i] = numpy.zeros((0,), numpy.uint8)
 
         for module in self.modules(False):
             module.save_to_handles(handles)
@@ -254,7 +263,7 @@ class Pipeline:
 
         returns True if the file starts with the CellProfiler cookie.
         """
-        with open(filename, "rb") as fd:
+        with open(filename, "r", encoding="utf-8") as fd:
             return Pipeline.is_pipeline_txt_fd(fd)
 
     @staticmethod
@@ -263,7 +272,7 @@ class Pipeline:
         fd.seek(0)
         if header.startswith("CellProfiler Pipeline: http://www.nucleus.org"):
             return True
-        if re.search(SAD_PROOFPOINT_COOKIE, header):
+        if re.search(nucleus.pipeline.SAD_PROOFPOINT_COOKIE, header):
             logger.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
@@ -292,7 +301,7 @@ class Pipeline:
             fd.seek(0)
             needs_close = False
         elif os.path.exists(fd_or_filename):
-            fd = open(fd_or_filename, "r")
+            fd = open(fd_or_filename, "r", encoding="utf-8")
             needs_close = True
             filename = fd_or_filename
         else:
@@ -308,12 +317,12 @@ class Pipeline:
 
             return
 
-        header = fd.read(len(HDF5_HEADER))
+        header = fd.read(len(nucleus.pipeline.HDF5_HEADER))
         if needs_close:
             fd.close()
         else:
             fd.seek(0)
-        if header[:8] == HDF5_HEADER:
+        if header[:8] == nucleus.pipeline.HDF5_HEADER:
             if filename is None:
                 fid, filename = tempfile.mkstemp(".h5")
                 fd_out = os.fdopen(fid, "wb")
@@ -324,30 +333,32 @@ class Pipeline:
                 return
             else:
                 m = nucleus.measurement.load_measurements(filename)
-                pipeline_text = m.get_experiment_measurement(M_PIPELINE)
+                pipeline_text = m.get_experiment_measurement(
+                    nucleus.pipeline.M_PIPELINE
+                )
                 pipeline_text = pipeline_text
                 self.load(six.moves.StringIO(pipeline_text))
                 return
 
-        if has_mat_read_error:
+        if nucleus.pipeline.has_mat_read_error:
             try:
                 handles = scipy.io.matlab.mio.loadmat(
                     fd_or_filename, struct_as_record=True
                 )
-            except MatReadError:
+            except nucleus.pipeline.MatReadError:
                 logging.error("Caught exception in Matlab reader\n", exc_info=True)
-                e = MatReadError(
+                e = nucleus.pipeline.MatReadError(
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n"
                     % fd_or_filename
                 )
-                self.notify_listeners(LoadExceptionEvent(e, None))
+                self.notify_listeners(nucleus.pipeline.LoadExceptionEvent(e, None))
                 return
             except Exception as e:
                 logging.error(
                     "Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
                     exc_info=True,
                 )
-                self.notify_listeners(LoadExceptionEvent(e, None))
+                self.notify_listeners(nucleus.pipeline.LoadExceptionEvent(e, None))
                 return
         else:
             handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
@@ -384,7 +395,7 @@ class Pipeline:
         if hasattr(fp_or_filename, "seek") and hasattr(fp_or_filename, "read"):
             fd = fp_or_filename
         else:
-            fd = open(fp_or_filename, "r")
+            fd = open(fp_or_filename, "r", encoding="utf-8")
 
         def rl():
             """Read a line from fd"""
@@ -403,7 +414,7 @@ class Pipeline:
         if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
 
-        version = NATIVE_VERSION
+        version = nucleus.pipeline.NATIVE_VERSION
         from_matlab = False
         do_deprecated_utf16_decode = False
         do_utf16_decode = False
@@ -424,12 +435,12 @@ class Pipeline:
 
             kwd, value = line.split(":")
 
-            if kwd == H_VERSION:
+            if kwd == "Version":
                 version = int(value)
-                if version > NATIVE_VERSION:
+                if version > nucleus.pipeline.NATIVE_VERSION:
                     raise ValueError(
                         "Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(
-                            version, NATIVE_VERSION
+                            version, nucleus.pipeline.NATIVE_VERSION
                         )
                     )
                 elif 1 < version < 4:
@@ -438,19 +449,24 @@ class Pipeline:
                     do_utf16_decode = True
                 elif version == 5:
                     pass
-            elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
+            elif kwd in (
+                nucleus.pipeline.H_SVN_REVISION,
+                nucleus.pipeline.H_DATE_REVISION,
+            ):
                 pipeline_version = int(value)
-                CURRENT_VERSION = int(re.sub(r"\.|rc\d{1}", "", nucleus.__version__))
-            elif kwd == H_FROM_MATLAB:
+                nucleus.pipeline.CURRENT_VERSION = int(
+                    re.sub(r"\.|rc\d{1}", "", nucleus.__version__)
+                )
+            elif kwd == nucleus.pipeline.H_FROM_MATLAB:
                 from_matlab = value == "True"
-            elif kwd == H_MODULE_COUNT:
+            elif kwd == nucleus.pipeline.H_MODULE_COUNT:
                 module_count = int(value)
-            elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
+            elif kwd == nucleus.pipeline.H_HAS_IMAGE_PLANE_DETAILS:
                 has_image_plane_details = value == "True"
-            elif kwd == H_MESSAGE_FOR_USER:
+            elif kwd == nucleus.pipeline.H_MESSAGE_FOR_USER:
                 value = value
                 self.caption_for_user, self.message_for_user = value.split("|", 1)
-            elif kwd == H_GIT_HASH:
+            elif kwd == nucleus.pipeline.H_GIT_HASH:
                 git_hash = value
             else:
                 print(line)
@@ -469,7 +485,7 @@ class Pipeline:
 
         if CURRENT_VERSION is None:
             pass
-        if pipeline_version > CURRENT_VERSION:
+        if pipeline_version > nucleus.pipeline.CURRENT_VERSION:
             message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(
                 pipeline_version, CURRENT_VERSION
             )
@@ -478,7 +494,7 @@ class Pipeline:
         else:
             if (
                 not nucleus.preferences.get_headless()
-            ) and pipeline_version < CURRENT_VERSION:
+            ) and pipeline_version < nucleus.pipeline.CURRENT_VERSION:
                 if git_hash is not None:
                     message = (
                         "Your pipeline was saved using an old version\n"
@@ -618,7 +634,9 @@ class Pipeline:
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
-                event = LoadExceptionEvent(instance, module, module_name, settings)
+                event = nucleus.pipeline.LoadExceptionEvent(
+                    instance, module, module_name, settings
+                )
                 self.notify_listeners(event)
                 if event.cancel_run:
                     break
@@ -627,7 +645,7 @@ class Pipeline:
                 module_number += 1
         if has_image_plane_details:
             self.clear_urls(add_undo=False)
-            self.__file_list = read_file_list(fd)
+            self.__file_list = nucleus.pipeline.read_file_list(fd)
             self.__filtered_file_list_images_settings = None
             self.__filtered_image_plane_details_metadata_settings = None
 
@@ -637,9 +655,9 @@ class Pipeline:
         ]
         for module in self.modules(False):
             module.post_pipeline_load(self)
-        self.notify_listeners(PipelineLoadedEvent())
+        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
         if has_image_plane_details:
-            self.notify_listeners(URLsAddedEvent(self.__file_list))
+            self.notify_listeners(nucleus.pipeline.URLsAddedEvent(self.__file_list))
         self.__undo_stack = []
         return pipeline_version, git_hash
 
@@ -648,7 +666,7 @@ class Pipeline:
 
         fd_or_filename - either a file descriptor or the name of the file
         """
-        if format == FMT_MATLAB:
+        if format == nucleus.pipeline.FMT_MATLAB:
             handles = self.save_to_handles()
             self.savemat(fd_or_filename, handles)
         elif format == "Native":
@@ -679,7 +697,7 @@ class Pipeline:
         Line 3: "DateRevision:#" the version # of the CellProfiler
                 that wrote this file (date encoded as int, see cp.utitlities.version)
         Line 4: "ModuleCount:#" the number of modules saved in the file
-        Line 5: "HasImagePlaneDetails:True/False" has the list of image plane info after the settings
+        Line 5: "Hasnucleus.pipeline.ImagePlaneDetails:True/False" has the list of image plane info after the settings
         Line 5: blank
 
         The module list follows. Each module has a header composed of
@@ -707,19 +725,27 @@ class Pipeline:
             save_image_plane_details = False
 
         fd.write("%s\n" % "CellProfiler Pipeline: http://www.nucleus.org")
-        fd.write("%s:%d\n" % (six.text_type(H_VERSION), NATIVE_VERSION))
+        fd.write(
+            "%s:%d\n" % (six.text_type("Version"), nucleus.pipeline.NATIVE_VERSION)
+        )
         fd.write(
             "%s:%d\n"
             % (
-                six.text_type(H_DATE_REVISION),
+                six.text_type(nucleus.pipeline.H_DATE_REVISION),
                 int(re.sub(r"\.|rc\d{1}", "", nucleus.__version__)),
             )
         )
-        fd.write("%s:%s\n" % (six.text_type(H_GIT_HASH), ""))
-        fd.write("%s:%d\n" % (six.text_type(H_MODULE_COUNT), len(self.__modules)))
+        fd.write("%s:%s\n" % (six.text_type(nucleus.pipeline.H_GIT_HASH), ""))
+        fd.write(
+            "%s:%d\n"
+            % (six.text_type(nucleus.pipeline.H_MODULE_COUNT), len(self.__modules))
+        )
         fd.write(
             "%s:%s\n"
-            % (six.text_type(H_HAS_IMAGE_PLANE_DETAILS), str(save_image_plane_details))
+            % (
+                six.text_type(nucleus.pipeline.H_HAS_IMAGE_PLANE_DETAILS),
+                str(save_image_plane_details),
+            )
         )
         attributes = (
             "module_num",
@@ -765,7 +791,7 @@ class Pipeline:
                 )
         if save_image_plane_details:
             fd.write("\n")
-            write_file_list(fd, self.__file_list)
+            nucleus.pipeline.write_file_list(fd, self.__file_list)
         if needs_close:
             fd.close()
 
@@ -795,20 +821,21 @@ class Pipeline:
         measurements - measurements structure that is the result of running the pipeline
         """
         handles = self.build_matlab_handles()
-        add_all_measurements(handles, measurements)
-        handles[CURRENT][NUMBER_OF_IMAGE_SETS][0, 0] = float(
-            measurements.image_set_number + 1
-        )
-        handles[CURRENT][SET_BEING_ANALYZED][0, 0] = float(
-            measurements.image_set_number + 1
-        )
+        nucleus.pipeline.add_all_measurements(handles, measurements)
+        handles[nucleus.pipeline.CURRENT][nucleus.pipeline.NUMBER_OF_IMAGE_SETS][
+            0, 0
+        ] = float(measurements.image_set_number + 1)
+        handles[nucleus.pipeline.CURRENT][nucleus.pipeline.SET_BEING_ANALYZED][
+            0, 0
+        ] = float(measurements.image_set_number + 1)
         #
         # For the output file, you have to bury it a little deeper - the root has to have
         # a single field named "handles"
         #
         root = {
             "handles": numpy.ndarray(
-                (1, 1), dtype=make_cell_struct_dtype(list(handles.keys()))
+                (1, 1),
+                dtype=nucleus.pipeline.make_cell_struct_dtype(list(handles.keys())),
             )
         }
         for key, value in list(handles.items()):
@@ -830,7 +857,9 @@ class Pipeline:
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(
             nucleus.measurement.EXPERIMENT,
-            M_USER_PIPELINE if user_pipeline else M_PIPELINE,
+            nucleus.pipeline.M_USER_PIPELINE
+            if user_pipeline
+            else nucleus.pipeline.M_PIPELINE,
             fd.getvalue(),
             can_overwrite=True,
         )
@@ -884,54 +913,66 @@ class Pipeline:
         for tool, idx in zip(image_tools, list(range(0, len(image_tools)))):
             npy_image_tools[0, idx] = tool
 
-        current = numpy.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
-        handles[CURRENT] = current
-        current[NUMBER_OF_IMAGE_SETS][0, 0] = [
+        current = numpy.ndarray(shape=[1, 1], dtype=nucleus.pipeline.CURRENT_DTYPE)
+        handles[nucleus.pipeline.CURRENT] = current
+        current[nucleus.pipeline.NUMBER_OF_IMAGE_SETS][0, 0] = [
             (
                 image_set is not None
-                and NUMBER_OF_IMAGE_SETS in image_set.legacy_fields
-                and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]
+                and nucleus.pipeline.NUMBER_OF_IMAGE_SETS in image_set.legacy_fields
+                and image_set.legacy_fields[nucleus.pipeline.NUMBER_OF_IMAGE_SETS]
             )
             or 1
         ]
-        current[SET_BEING_ANALYZED][0, 0] = [
+        current[nucleus.pipeline.SET_BEING_ANALYZED][0, 0] = [
             (measurements and measurements.image_set_number) or 1
         ]
-        current[NUMBER_OF_MODULES][0, 0] = [len(self.__modules)]
-        current[SAVE_OUTPUT_HOW_OFTEN][0, 0] = [1]
-        current[TIME_STARTED][0, 0] = str(datetime.datetime.now())
-        current[STARTING_IMAGE_SET][0, 0] = [1]
-        current[STARTUP_DIRECTORY][
+        current[nucleus.pipeline.NUMBER_OF_MODULES][0, 0] = [len(self.__modules)]
+        current[nucleus.pipeline.SAVE_OUTPUT_HOW_OFTEN][0, 0] = [1]
+        current[nucleus.pipeline.TIME_STARTED][0, 0] = str(datetime.datetime.now())
+        current[nucleus.pipeline.STARTING_IMAGE_SET][0, 0] = [1]
+        current[nucleus.pipeline.STARTUP_DIRECTORY][
             0, 0
         ] = nucleus.preferences.cell_profiler_root_directory()
-        current[DEFAULT_OUTPUT_DIRECTORY][
+        current[nucleus.pipeline.DEFAULT_OUTPUT_DIRECTORY][
             0, 0
         ] = nucleus.preferences.get_default_output_directory()
-        current[DEFAULT_IMAGE_DIRECTORY][
+        current[nucleus.pipeline.DEFAULT_IMAGE_DIRECTORY][
             0, 0
         ] = nucleus.preferences.get_default_image_directory()
-        current[IMAGE_TOOLS_FILENAMES][0, 0] = npy_image_tools
-        current[IMAGE_TOOL_HELP][0, 0] = []
+        current[nucleus.pipeline.IMAGE_TOOLS_FILENAMES][0, 0] = npy_image_tools
+        current[nucleus.pipeline.IMAGE_TOOL_HELP][0, 0] = []
 
-        preferences = numpy.ndarray(shape=(1, 1), dtype=PREFERENCES_DTYPE)
-        handles[PREFERENCES] = preferences
-        preferences[PIXEL_SIZE][0, 0] = nucleus.preferences.get_pixel_size()
-        preferences[DEFAULT_MODULE_DIRECTORY][
+        preferences = numpy.ndarray(
+            shape=(1, 1), dtype=nucleus.pipeline.PREFERENCES_DTYPE
+        )
+        handles[nucleus.pipeline.PREFERENCES] = preferences
+        preferences[nucleus.pipeline.PIXEL_SIZE][
+            0, 0
+        ] = nucleus.preferences.get_pixel_size()
+        preferences[nucleus.pipeline.DEFAULT_MODULE_DIRECTORY][
             0, 0
         ] = nucleus.preferences.module_directory()
-        preferences[DEFAULT_OUTPUT_DIRECTORY][
+        preferences[nucleus.pipeline.DEFAULT_OUTPUT_DIRECTORY][
             0, 0
         ] = nucleus.preferences.get_default_output_directory()
-        preferences[DEFAULT_IMAGE_DIRECTORY][
+        preferences[nucleus.pipeline.DEFAULT_IMAGE_DIRECTORY][
             0, 0
         ] = nucleus.preferences.get_default_image_directory()
-        preferences[INTENSITY_COLOR_MAP][0, 0] = "gray"
-        preferences[LABEL_COLOR_MAP][0, 0] = "jet"
-        preferences[STRIP_PIPELINE][0, 0] = "Yes"  # TODO - get from preferences
-        preferences[SKIP_ERRORS][0, 0] = "No"  # TODO - get from preferences
-        preferences[DISPLAY_MODE_VALUE][0, 0] = [1]  # TODO - get from preferences
-        preferences[FONT_SIZE][0, 0] = [10]  # TODO - get from preferences
-        preferences[DISPLAY_WINDOWS][0, 0] = [
+        preferences[nucleus.pipeline.INTENSITY_COLOR_MAP][0, 0] = "gray"
+        preferences[nucleus.pipeline.LABEL_COLOR_MAP][0, 0] = "jet"
+        preferences[nucleus.pipeline.STRIP_PIPELINE][
+            0, 0
+        ] = "Yes"  # TODO - get from preferences
+        preferences[nucleus.pipeline.SKIP_ERRORS][
+            0, 0
+        ] = "No"  # TODO - get from preferences
+        preferences[nucleus.pipeline.DISPLAY_MODE_VALUE][0, 0] = [
+            1
+        ]  # TODO - get from preferences
+        preferences[nucleus.pipeline.FONT_SIZE][0, 0] = [
+            10
+        ]  # TODO - get from preferences
+        preferences[nucleus.pipeline.DISPLAY_WINDOWS][0, 0] = [
             1 for module in self.__modules
         ]  # TODO - UI allowing user to choose whether to display a window
 
@@ -944,7 +985,7 @@ class Pipeline:
                 if image.mask is not None:
                     images["CropMask" + provider.name] = image.mask
             for key, value in list(image_set.legacy_fields.items()):
-                if key != NUMBER_OF_IMAGE_SETS:
+                if key != nucleus.pipeline.NUMBER_OF_IMAGE_SETS:
                     images[key] = value
 
         if object_set:
@@ -958,9 +999,11 @@ class Pipeline:
                     ] = objects.small_removed_segmented
 
         if len(images):
-            pipeline_dtype = make_cell_struct_dtype(list(images.keys()))
+            pipeline_dtype = nucleus.pipeline.make_cell_struct_dtype(
+                list(images.keys())
+            )
             pipeline = numpy.ndarray((1, 1), dtype=pipeline_dtype)
-            handles[PIPELINE] = pipeline
+            handles[nucleus.pipeline.PIPELINE] = pipeline
             for name, image in list(images.items()):
                 pipeline[name][0, 0] = images[name]
 
@@ -968,11 +1011,13 @@ class Pipeline:
             measurements is None or len(measurements.get_object_names()) == 0
         )
         if not no_measurements:
-            measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
+            measurements_dtype = nucleus.pipeline.make_cell_struct_dtype(
+                measurements.get_object_names()
+            )
             npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
             handles["Measurements"] = npy_measurements
             for object_name in measurements.get_object_names():
-                object_dtype = make_cell_struct_dtype(
+                object_dtype = nucleus.pipeline.make_cell_struct_dtype(
                     measurements.get_feature_names(object_name)
                 )
                 object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
@@ -1057,7 +1102,7 @@ class Pipeline:
                 if module.needs_conversion():
                     module.convert(self, metadata, namesandtypes, groups)
                     self.remove_module(module.module_num)
-            self.notify_listeners(PipelineLoadedEvent())
+            self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
 
     def convert_default_input_folder(self, path):
         """Convert all references to the default input folder to abolute paths
@@ -1089,7 +1134,7 @@ class Pipeline:
                             setting.custom_path = subpath
                 if was_edited:
                     self.edit_module(module.module_num, True)
-            self.notify_listeners(PipelineLoadedEvent())
+            self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
 
     def fix_legacy_pipeline(self):
         """Perform inter-module fixes needed for some legacy pipelines"""
@@ -1104,7 +1149,9 @@ class Pipeline:
                 if isinstance(module, LoadSingleImage):
                     for other_module in self.modules()[(i + 1) :]:
                         if other_module.is_load_module():
-                            self.move_module(other_module.module_num, DIRECTION_UP)
+                            self.move_module(
+                                other_module.module_num, nucleus.pipeline.DIRECTION_UP
+                            )
                             break
                     else:
                         continue
@@ -1156,7 +1203,7 @@ class Pipeline:
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, nucleus.image.Image.Image(input_pixels))
+            image_set.add(image_name, nucleus.image.Image(input_pixels))
         object_set = nucleus.object.ObjectSet()
         measurements = nucleus.measurement.measurements.Measurements()
 
@@ -1252,12 +1299,18 @@ class Pipeline:
                 if initial_measurements is not None and all(
                     [
                         initial_measurements.has_feature(nucleus.measurement.IMAGE, f)
-                        for f in (GROUP_NUMBER, GROUP_INDEX)
+                        for f in (
+                            nucleus.pipeline.GROUP_NUMBER,
+                            nucleus.pipeline.GROUP_INDEX,
+                        )
                     ]
                 ):
                     group_number, group_index = [
                         initial_measurements[nucleus.measurement.IMAGE, f, image_number]
-                        for f in (GROUP_NUMBER, GROUP_INDEX)
+                        for f in (
+                            nucleus.pipeline.GROUP_NUMBER,
+                            nucleus.pipeline.GROUP_INDEX,
+                        )
                     ]
                 else:
                     group_number = gn + 1
@@ -1371,7 +1424,7 @@ class Pipeline:
 
             last_image_number = None
 
-            pipeline_stats_logger.info(
+            nucleus.pipeline.pipeline_stats_logger.info(
                 "Times reported are CPU and Wall-clock times for each module"
             )
 
@@ -1386,7 +1439,9 @@ class Pipeline:
             for group_number, group_index, image_number, closure in __group:
                 if image_number is None:
                     if not closure(workspace):
-                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
+                        measurements.add_experiment_measurement(
+                            nucleus.pipeline.EXIT_STATUS, "Failure"
+                        )
 
                         return
 
@@ -1499,7 +1554,7 @@ class Pipeline:
                     cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
                     wall_delta_sec = max(0, wall_t1 - wall_t0)
 
-                    pipeline_stats_logger.info(
+                    nucleus.pipeline.pipeline_stats_logger.info(
                         "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                         % (
                             start_time.ctime(),
@@ -1534,7 +1589,9 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = RunExceptionEvent(exception, module, tb)
+                        event = nucleus.pipeline.RunExceptionEvent(
+                            exception, module, tb
+                        )
 
                         self.notify_listeners(event)
 
@@ -1576,7 +1633,9 @@ class Pipeline:
                     if workspace.disposition == nucleus.workspace.DISPOSITION_SKIP:
                         break
                     elif workspace.disposition == nucleus.workspace.DISPOSITION_CANCEL:
-                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
+                        measurements.add_experiment_measurement(
+                            nucleus.pipeline.EXIT_STATUS, "Failure"
+                        )
 
                         return
             # Close cached readers.
@@ -1593,7 +1652,9 @@ class Pipeline:
                 #
                 # Record the status after post_run
                 #
-                measurements.add_experiment_measurement(EXIT_STATUS, exit_status)
+                measurements.add_experiment_measurement(
+                    nucleus.pipeline.EXIT_STATUS, exit_status
+                )
         finally:
             if measurements is not None:
                 # XXX - We want to force the measurements to update the
@@ -1667,7 +1728,7 @@ class Pipeline:
                 self.run_module(module, workspace)
                 if module.show_window:
                     display_handler(module, workspace.display_data, image_set_number)
-            except CancelledException:
+            except nucleus.pipeline.CancelledException:
                 # Analysis worker interaction handler is telling us that
                 # the UI has cancelled the run. Forward exception upward.
                 raise
@@ -1683,7 +1744,9 @@ class Pipeline:
                         nucleus.measurement.IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
-                evt = RunExceptionEvent(exception, module, sys.exc_info()[2])
+                evt = nucleus.pipeline.RunExceptionEvent(
+                    exception, module, sys.exc_info()[2]
+                )
                 self.notify_listeners(evt)
                 if evt.cancel_run or evt.skip_thisset:
                     # actual cancellation or skipping handled upstream.
@@ -1694,7 +1757,7 @@ class Pipeline:
             cpu_t1 = sum(os_times[:-1])
             cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
             wall_delta_secs = max(0, wall_t1 - wall_t0)
-            pipeline_stats_logger.info(
+            nucleus.pipeline.pipeline_stats_logger.info(
                 "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                 % (
                     start_time.ctime(),
@@ -1727,7 +1790,7 @@ class Pipeline:
 
     def end_run(self):
         """Tell everyone that a run is ending"""
-        self.notify_listeners(EndRunEvent())
+        self.notify_listeners(nucleus.pipeline.EndRunEvent())
 
     def run_group_with_yield(
         self, workspace, grouping, image_numbers, stop_module, title, message
@@ -1804,8 +1867,10 @@ class Pipeline:
         """
         assert isinstance(m, nucleus.measurement.measurements.Measurements)
         self.write_pipeline_measurement(m)
-        m.add_experiment_measurement(M_VERSION, nucleus.__version__)
-        m.add_experiment_measurement(M_TIMESTAMP, datetime.datetime.now().isoformat())
+        m.add_experiment_measurement(nucleus.pipeline.M_VERSION, nucleus.__version__)
+        m.add_experiment_measurement(
+            nucleus.pipeline.M_TIMESTAMP, datetime.datetime.now().isoformat()
+        )
         m.flush()
 
     def prepare_run(self, workspace, end_module=None):
@@ -1850,7 +1915,7 @@ class Pipeline:
         def on_pipeline_event(pipeline, event, prepare_run_error_detected=None):
             if prepare_run_error_detected is None:
                 prepare_run_error_detected = prepare_run_error_detected
-            if isinstance(event, PrepareRunErrorEvent):
+            if isinstance(event, nucleus.pipeline.PrepareRunErrorEvent):
                 prepare_run_error_detected[0] = True
 
         had_image_sets = False
@@ -1874,7 +1939,7 @@ class Pipeline:
                         module.module_name,
                         exc_info=True,
                     )
-                    event = PrepareRunExceptionEvent(
+                    event = nucleus.pipeline.PrepareRunExceptionEvent(
                         instance, module, sys.exc_info()[2]
                     )
                     self.notify_listeners(event)
@@ -1980,7 +2045,9 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = PostRunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = nucleus.pipeline.PostRunExceptionEvent(
+                    instance, module, sys.exc_info()[2]
+                )
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
@@ -1998,7 +2065,8 @@ class Pipeline:
                         exc_info=True,
                     )
         workspace.measurements.add_experiment_measurement(
-            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat()
+            nucleus.pipeline.M_MODIFICATION_TIMESTAMP,
+            datetime.datetime.now().isoformat(),
         )
 
         return "Complete"
@@ -2029,7 +2097,9 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = nucleus.pipeline.RunExceptionEvent(
+                    instance, module, sys.exc_info()[2]
+                )
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
@@ -2135,7 +2205,9 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = nucleus.pipeline.RunExceptionEvent(
+                    instance, module, sys.exc_info()[2]
+                )
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -2157,7 +2229,9 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = nucleus.pipeline.RunExceptionEvent(
+                    instance, module, sys.exc_info()[2]
+                )
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -2214,7 +2288,7 @@ class Pipeline:
         try:
             while len(self.__modules) > 0:
                 self.remove_module(self.__modules[-1].module_num)
-            self.notify_listeners(PipelineClearedEvent())
+            self.notify_listeners(nucleus.pipeline.PipelineClearedEvent())
             self.init_modules()
         finally:
             self.stop_undoable_action()
@@ -2241,7 +2315,7 @@ class Pipeline:
         the other modules in the list
         """
         idx = module_num - 1
-        if direction == DIRECTION_DOWN:
+        if direction == nucleus.pipeline.DIRECTION_DOWN:
             if module_num >= len(self.__modules):
                 raise ValueError(
                     "%(module_num)d is at or after the last module in the pipeline and can"
@@ -2257,7 +2331,7 @@ class Pipeline:
             next_settings = self.__settings[idx + 1]
             self.__settings[idx + 1] = self.__settings[idx]
             self.__settings[idx] = next_settings
-        elif direction == DIRECTION_UP:
+        elif direction == nucleus.pipeline.DIRECTION_UP:
             if module_num <= 1:
                 raise ValueError(
                     "The module is at the top of the pipeline and can" "t move up"
@@ -2275,13 +2349,15 @@ class Pipeline:
         else:
             raise ValueError("Unknown direction: %s" % direction)
         self.notify_listeners(
-            ModuleMovedPipelineEvent(new_module_num, direction, False)
+            nucleus.pipeline.ModuleMovedPipelineEvent(new_module_num, direction, False)
         )
 
         def undo():
             self.move_module(
                 module.module_num,
-                DIRECTION_DOWN if direction == DIRECTION_UP else DIRECTION_UP,
+                nucleus.pipeline.DIRECTION_DOWN
+                if direction == nucleus.pipeline.DIRECTION_UP
+                else nucleus.pipeline.DIRECTION_UP,
             )
 
         message = "Move %s %s" % (module.module_name, direction)
@@ -2296,7 +2372,7 @@ class Pipeline:
             )
             return
         module.enabled = True
-        self.notify_listeners(ModuleEnabledEvent(module))
+        self.notify_listeners(nucleus.pipeline.ModuleEnabledEvent(module))
 
         def undo():
             self.disable_module(module)
@@ -2312,7 +2388,7 @@ class Pipeline:
                 % module.module_name
             )
         module.enabled = False
-        self.notify_listeners(ModuleDisabledEvent(module))
+        self.notify_listeners(nucleus.pipeline.ModuleDisabledEvent(module))
 
         def undo():
             self.enable_module(module)
@@ -2329,7 +2405,7 @@ class Pipeline:
         """
         if state != module.show_window:
             module.show_window = state
-            self.notify_listeners(ModuleShowWindowEvent(module))
+            self.notify_listeners(nucleus.pipeline.ModuleShowWindowEvent(module))
 
             def undo():
                 self.show_module_window(module, not state)
@@ -2373,7 +2449,7 @@ class Pipeline:
         self.__file_list_generation = uid
         self.__filtered_file_list_images_settings = None
         self.__image_plane_details_metadata_settings = None
-        self.notify_listeners(URLsAddedEvent(real_list))
+        self.notify_listeners(nucleus.pipeline.URLsAddedEvent(real_list))
         if add_undo:
 
             def undo():
@@ -2396,7 +2472,7 @@ class Pipeline:
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
             self.__file_list_generation = uuid.uuid4()
-            self.notify_listeners(URLsRemovedEvent(real_list))
+            self.notify_listeners(nucleus.pipeline.URLsRemovedEvent(real_list))
 
             def undo():
                 self.add_urls(real_list, False)
@@ -2411,7 +2487,7 @@ class Pipeline:
             self.__filtered_file_list_images_settings = None
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
-            self.notify_listeners(URLsRemovedEvent(old_urls))
+            self.notify_listeners(nucleus.pipeline.URLsRemovedEvent(old_urls))
             if add_undo:
 
                 def undo():
@@ -2430,7 +2506,9 @@ class Pipeline:
             urls = file_list.get_filelist()
         except Exception as instance:
             logger.error("Failed to get file list from workspace", exc_info=True)
-            x = IPDLoadExceptionEvent("Failed to get file list from workspace")
+            x = nucleus.pipeline.IPDLoadExceptionEvent(
+                "Failed to get file list from workspace"
+            )
             self.notify_listeners(x)
             if x.cancel_run:
                 raise instance
@@ -2457,7 +2535,7 @@ class Pipeline:
             pathname = path_or_fd
             if pathname.startswith(FILE_SCHEME):
                 pathname = url2pathname(pathname)
-                with open(pathname, "r") as fd:
+                with open(pathname, "r", encoding="utf-8") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
                 try:
@@ -2466,7 +2544,7 @@ class Pipeline:
                 finally:
                     fd.close()
             else:
-                with open(pathname, "r") as fd:
+                with open(pathname, "r", encoding="utf-8") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
@@ -2738,7 +2816,9 @@ class Pipeline:
                 key = tuple([mc[idx] for mc in metadata_columns])
                 value = [
                     pipeline.find_image_plane_details(
-                        ImagePlaneDetails(u[idx], s[idx], i[idx], c[idx])
+                        nucleus.pipeline.ImagePlaneDetails(
+                            u[idx], s[idx], i[idx], c[idx]
+                        )
                     )
                     for u, s, i, c in zip(
                         url_columns, series_columns, index_columns, channel_columns
@@ -2862,7 +2942,7 @@ class Pipeline:
         ):
             module.module_num = mn
         self.notify_listeners(
-            ModuleAddedPipelineEvent(
+            nucleus.pipeline.ModuleAddedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -2886,7 +2966,7 @@ class Pipeline:
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
         self.notify_listeners(
-            ModuleRemovedPipelineEvent(
+            nucleus.pipeline.ModuleRemovedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -2908,7 +2988,7 @@ class Pipeline:
         module = self.__modules[idx]
         new_settings = self.capture_module_settings(module)
         self.notify_listeners(
-            ModuleEditedPipelineEvent(
+            nucleus.pipeline.ModuleEditedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -2921,7 +3001,9 @@ class Pipeline:
             module.set_settings_from_values(
                 old_settings, variable_revision_number, module_name, False
             )
-            self.notify_listeners(ModuleEditedPipelineEvent(module_num))
+            self.notify_listeners(
+                nucleus.pipeline.ModuleEditedPipelineEvent(module_num)
+            )
             self.__settings[idx] = old_settings
 
         self.__undo_stack.append((undo, "Edited %s" % module_name))
@@ -2935,14 +3017,14 @@ class Pipeline:
         return self.__image_plane_details
 
     def on_walk_completed(self):
-        self.notify_listeners(FileWalkEndedEvent())
+        self.notify_listeners(nucleus.pipeline.FileWalkEndedEvent())
 
     def wp_add_files(self, dirpath, directories, filenames):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
             url = "file:" + six.moves.urllib.request.pathname2url(path)
-            ipd = ImagePlaneDetails(url, None, None, None)
+            ipd = nucleus.pipeline.ImagePlaneDetails(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
@@ -2955,27 +3037,33 @@ class Pipeline:
         if metadata.image_count == 1:
             m = {}
             pixels = metadata.image(0).Pixels
-            m[ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
-            m[ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
-            m[ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
+            m[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
+            m[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
+            m[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
 
             if pixels.SizeC == 1:
                 #
                 # Monochrome image
                 #
-                m[ImagePlaneDetails.MD_COLOR_FORMAT] = ImagePlaneDetails.MD_MONOCHROME
+                m[
+                    nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
+                ] = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
                 channel = pixels.Channel(0)
                 channel_name = channel.Name
                 if channel_name is not None:
-                    m[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
+                    m[nucleus.pipeline.ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
             elif pixels.channel_count == 1:
                 #
                 # Oh contradictions! It's interleaved, really RGB or RGBA
                 #
-                m[ImagePlaneDetails.MD_COLOR_FORMAT] = ImagePlaneDetails.MD_RGB
+                m[
+                    nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
+                ] = nucleus.pipeline.ImagePlaneDetails.MD_RGB
             else:
-                m[ImagePlaneDetails.MD_COLOR_FORMAT] = ImagePlaneDetails.MD_PLANAR
-            exemplar = ImagePlaneDetails(url, None, None, None)
+                m[
+                    nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
+                ] = nucleus.pipeline.ImagePlaneDetails.MD_PLANAR
+            exemplar = nucleus.pipeline.ImagePlaneDetails(url, None, None, None)
             if ipd is None:
                 ipd = self.find_image_plane_details(exemplar)
             if ipd is not None:
@@ -2994,23 +3082,27 @@ class Pipeline:
                     m = {}
                     plane = pixels.Plane(index)
                     c = plane.TheC
-                    m[ImagePlaneDetails.MD_C] = plane.TheC
-                    m[ImagePlaneDetails.MD_T] = plane.TheT
-                    m[ImagePlaneDetails.MD_Z] = plane.TheZ
+                    m[nucleus.pipeline.ImagePlaneDetails.MD_C] = plane.TheC
+                    m[nucleus.pipeline.ImagePlaneDetails.MD_T] = plane.TheT
+                    m[nucleus.pipeline.ImagePlaneDetails.MD_Z] = plane.TheZ
                     if pixels.channel_count > c:
                         channel = pixels.Channel(c)
                         channel_name = channel.Name
                         if channel_name is not None:
-                            m[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
+                            m[
+                                nucleus.pipeline.ImagePlaneDetails.MD_CHANNEL_NAME
+                            ] = channel_name
                         if channel.SamplesPerPixel == 1:
                             m[
-                                ImagePlaneDetails.MD_COLOR_FORMAT
-                            ] = ImagePlaneDetails.MD_MONOCHROME
+                                nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
+                            ] = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
                         else:
                             m[
-                                ImagePlaneDetails.MD_COLOR_FORMAT
-                            ] = ImagePlaneDetails.MD_RGB
-                    exemplar = ImagePlaneDetails(url, series, index, None)
+                                nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
+                            ] = nucleus.pipeline.ImagePlaneDetails.MD_RGB
+                    exemplar = nucleus.pipeline.ImagePlaneDetails(
+                        url, series, index, None
+                    )
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:
                         exemplar.metadata.update(m)
@@ -3023,13 +3115,13 @@ class Pipeline:
                 # Movie metadata might not have planes
                 #
                 if pixels.SizeC == 1:
-                    color_format = ImagePlaneDetails.MD_MONOCHROME
+                    color_format = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
                     n_channels = 1
                 elif pixels.channel_count == 1:
-                    color_format = ImagePlaneDetails.MD_RGB
+                    color_format = nucleus.pipeline.ImagePlaneDetails.MD_RGB
                     n_channels = 1
                 else:
-                    color_format = ImagePlaneDetails.MD_MONOCHROME
+                    color_format = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
                     n_channels = pixels.SizeC
                 n = 1
                 dims = []
@@ -3057,16 +3149,20 @@ class Pipeline:
                     zip(c_indexes, z_indexes, t_indexes)
                 ):
                     channel = pixels.Channel(c_idx)
-                    exemplar = ImagePlaneDetails(url, series, index, None)
+                    exemplar = nucleus.pipeline.ImagePlaneDetails(
+                        url, series, index, None
+                    )
                     metadata = {
-                        ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
-                        ImagePlaneDetails.MD_SIZE_Z: 1,
-                        ImagePlaneDetails.MD_SIZE_T: 1,
-                        ImagePlaneDetails.MD_COLOR_FORMAT: color_format,
+                        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
+                        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z: 1,
+                        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T: 1,
+                        nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT: color_format,
                     }
                     channel_name = channel.Name
                     if channel_name is not None and len(channel_name) > 0:
-                        metadata[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
+                        metadata[
+                            nucleus.pipeline.ImagePlaneDetails.MD_CHANNEL_NAME
+                        ] = channel_name
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:
                         exemplar.metadata.update(metadata)
@@ -3128,7 +3224,7 @@ class Pipeline:
 
         Report errors due to misconfiguration, such as no files found.
         """
-        event = PrepareRunErrorEvent(module, message)
+        event = nucleus.pipeline.PrepareRunErrorEvent(module, message)
         self.notify_listeners(event)
 
     def is_image_from_file(self, image_name):
@@ -3169,33 +3265,33 @@ class Pipeline:
         columns = [
             (
                 nucleus.measurement.EXPERIMENT,
-                M_PIPELINE,
+                nucleus.pipeline.M_PIPELINE,
                 nucleus.measurement.COLTYPE_LONGBLOB,
             ),
             (
                 nucleus.measurement.EXPERIMENT,
-                M_VERSION,
+                nucleus.pipeline.M_VERSION,
                 nucleus.measurement.COLTYPE_VARCHAR,
             ),
             (
                 nucleus.measurement.EXPERIMENT,
-                M_TIMESTAMP,
+                nucleus.pipeline.M_TIMESTAMP,
                 nucleus.measurement.COLTYPE_VARCHAR,
             ),
             (
                 nucleus.measurement.EXPERIMENT,
-                M_MODIFICATION_TIMESTAMP,
+                nucleus.pipeline.M_MODIFICATION_TIMESTAMP,
                 nucleus.measurement.COLTYPE_VARCHAR,
                 {nucleus.measurement.MCA_AVAILABLE_POST_RUN: True},
             ),
             (
                 nucleus.measurement.IMAGE,
-                GROUP_NUMBER,
+                nucleus.pipeline.GROUP_NUMBER,
                 nucleus.measurement.COLTYPE_INTEGER,
             ),
             (
                 nucleus.measurement.IMAGE,
-                GROUP_INDEX,
+                nucleus.pipeline.GROUP_INDEX,
                 nucleus.measurement.COLTYPE_INTEGER,
             ),
         ]
@@ -3344,12 +3440,12 @@ class Pipeline:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
                                 if group == nucleus.setting.OBJECT_GROUP:
-                                    dependency = ObjectDependency(
+                                    dependency = nucleus.pipeline.ObjectDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
                                 elif group == nucleus.setting.IMAGE_GROUP:
-                                    dependency = ImageDependency(
+                                    dependency = nucleus.pipeline.ImageDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
@@ -3363,7 +3459,7 @@ class Pipeline:
                             nucleus.setting.MEASUREMENTS_GROUP
                         ][key]:
                             if pmodule.module_num < module.module_num:
-                                dependency = MeasurementDependency(
+                                dependency = nucleus.pipeline.MeasurementDependency(
                                     pmodule,
                                     module,
                                     object_name,

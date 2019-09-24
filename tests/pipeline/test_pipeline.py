@@ -102,10 +102,10 @@ class TestPipeline(unittest.TestCase):
             sys.stderr.write("Failed to remove temporary %s directory" % subdir)
             traceback.print_exc()
 
-    def test_00_00_init(self):
+    def test_init(self):
         x = nucleus.pipeline.Pipeline()
 
-    def test_01_02_is_txt_fd_sorry_for_your_proofpoint(self):
+    def test_is_txt_fd_sorry_for_your_proofpoint(self):
         # Regression test of issue #1318
         sensible = r"""CellProfiler Pipeline: http://www.nucleus.org
     Version:3
@@ -124,7 +124,7 @@ HasImagePlaneDetails:False"""
             fd = six.moves.StringIO(text)
             assert nucleus.pipeline.Pipeline.is_pipeline_txt_fd(fd) == expected
 
-    def test_02_01_copy_nothing(self):
+    def test_copy_nothing(self):
         # Regression test of issue #565
         #
         # Can't copy an empty pipeline
@@ -132,7 +132,7 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
         p2 = pipeline.copy()
 
-    def test_06_01_run_pipeline(self):
+    def test_run_pipeline(self):
         x = exploding_pipeline(self)
         module = nucleus.modules.injectimage.InjectImage(
             "OneCell", image_with_one_cell()
@@ -141,7 +141,7 @@ HasImagePlaneDetails:False"""
         x.add_module(module)
         x.run()
 
-    def test_09_01_get_measurement_columns(self):
+    def test_get_measurement_columns(self):
         """Test the get_measurement_columns method"""
         x = get_empty_pipeline()
         module = TestModuleWithMeasurement()
@@ -228,7 +228,7 @@ HasImagePlaneDetails:False"""
         assert len(columns) == 9
         assert any([column[1] == "bar" for column in columns])
 
-    def test_10_01_all_groups(self):
+    def test_all_groups(self):
         """Test running a pipeline on all groups"""
         pipeline = exploding_pipeline(self)
         expects = ["PrepareRun", 0]
@@ -331,7 +331,7 @@ HasImagePlaneDetails:False"""
         group_indexes = measurements.get_all_measurements("Image", "Group_Index")
         assert numpy.all(group_indexes == numpy.array([1, 2, 1, 2]))
 
-    def test_10_02_one_group(self):
+    def test_one_group(self):
         """Test running a pipeline on one group"""
         pipeline = exploding_pipeline(self)
         expects = ["PrepareRun", 0]
@@ -419,7 +419,7 @@ HasImagePlaneDetails:False"""
         measurements = pipeline.run(grouping={"foo": "foo-B", "bar": "bar-B"})
         assert expects[0] == "Done"
 
-    def test_10_03_display(self):
+    def test_display(self):
         # Test that the individual pipeline methods do appropriate display.
 
         pipeline = exploding_pipeline(self)
@@ -499,7 +499,7 @@ HasImagePlaneDetails:False"""
         pipeline.post_run(workspace)
         assert "post_run_display_handler" in callbacks_called
 
-    def test_11_01_catch_operational_error(self):
+    def test_catch_operational_error(self):
         """Make sure that a pipeline can catch an operational error
 
         This is a regression test of IMG-277
@@ -519,7 +519,7 @@ HasImagePlaneDetails:False"""
         assert should_be_true[0]
 
     # FIXME: wxPython 4 PR
-    # def test_11_02_catch_prepare_run_error(self):
+    # def test_catch_prepare_run_error(self):
     #     pipeline = exploding_pipeline(self)
     #     module = GroupModule()
     #     keys = ('foo', 'bar')
@@ -547,7 +547,7 @@ HasImagePlaneDetails:False"""
     #     self.assertFalse(pipeline.prepare_run(workspace))
     #     self.assertEqual(workspace.measurements.image_set_count, 0)
 
-    def test_12_01_img_286(self):
+    def test_img_286(self):
         """Regression test for img-286: module name in class"""
         nucleus.modules.fill_modules()
         success = True
@@ -562,7 +562,7 @@ HasImagePlaneDetails:False"""
                 success = False
         assert success
 
-    def test_13_01_save_pipeline(self):
+    def test_save_pipeline(self):
         pipeline = get_empty_pipeline()
         nucleus.modules.fill_modules()
         module = nucleus.modules.instantiate_module("Align")
@@ -584,7 +584,7 @@ HasImagePlaneDetails:False"""
         for setting_in, setting_out in zip(module.settings(), module_out.settings()):
             assert setting_in.value == setting_out.value
 
-    def test_13_02_save_measurements(self):
+    def test_save_measurements(self):
         pipeline = get_empty_pipeline()
         nucleus.modules.fill_modules()
         module = nucleus.modules.instantiate_module("Align")
@@ -634,7 +634,7 @@ HasImagePlaneDetails:False"""
         for setting_in, setting_out in zip(module.settings(), module_out.settings()):
             assert setting_in.value == setting_out.value
 
-    def test_13_03_save_long_measurements(self):
+    def test_save_long_measurements(self):
         pipeline = nucleus.pipeline.Pipeline()
         nucleus.modules.fill_modules()
         module = nucleus.modules.instantiate_module("Align")
@@ -678,7 +678,7 @@ HasImagePlaneDetails:False"""
                 assert len(m_in) == len(m_out)
                 assert numpy.all(m_in == m_out)
 
-    # def test_13_04_pipeline_measurement(self):
+    # def test_pipeline_measurement(self):
     #     data = r"""CellProfiler Pipeline: http://www.nucleus.org
     #     Version:3
     #     DateRevision:20120709180131
@@ -755,7 +755,7 @@ HasImagePlaneDetails:False"""
     #                 self.assertTrue(isinstance(m2setting, nucleus.setting.Setting))
     #                 self.assertEqual(m1setting.value, m2setting.value)
 
-    def test_14_01_unicode_save(self):
+    def test_unicode_save(self):
         pipeline = get_empty_pipeline()
         module = TestModuleWithMeasurement()
         # Little endian utf-16 encoding
@@ -797,7 +797,7 @@ HasImagePlaneDetails:False"""
         value = eval(mline[:idx1].decode("string_escape"))
         assert value == module.notes
 
-    def test_14_02_unicode_save_and_load(self):
+    def test_unicode_save_and_load(self):
         #
         # Put "TestModuleWithMeasurement" into the module list
         #
@@ -829,7 +829,7 @@ HasImagePlaneDetails:False"""
         assert module.notes == result_module.notes
         assert module.my_variable.value == result_module.my_variable.value
 
-    def test_14_03_deprecated_unicode_load(self):
+    def test_deprecated_unicode_load(self):
         pipeline = get_empty_pipeline()
         deprecated_pipeline_file = os.path.realpath(
             os.path.join(os.path.dirname(__file__), "resources/pipelineV3.cppipe")
@@ -850,7 +850,7 @@ HasImagePlaneDetails:False"""
 
         @unittest.skip("skipping profiling AllModules - too slow")
         @numpy.testing.decorators.slow
-        def test_15_01_profile_example_all(self):
+        def test_profile_example_all(self):
             """
             Profile ExampleAllModulesPipeline
 
@@ -879,7 +879,7 @@ HasImagePlaneDetails:False"""
             profile_pipeline(pipeline_filename)
             nucleus.preferences.set_default_image_directory(old_image_dir)
 
-    # def test_15_02_profile_example_fly(self):
+    # def test_profile_example_fly(self):
     #     """
     #     Profile ExampleFlyImages pipeline
     #
@@ -902,7 +902,7 @@ HasImagePlaneDetails:False"""
     #     profile_pipeline(fd, output_filename=os.path.join(build_dir, "profile.txt"))
     #     cpprefs.set_default_image_directory(old_image_dir)
 
-    def test_16_00_get_provider_dictionary_nothing(self):
+    def test_get_provider_dictionary_nothing(self):
         for module in (
             ATestModule(),
             ATestModule([nucleus.setting.Choice("foo", ["Hello", "World"])]),
@@ -918,7 +918,7 @@ HasImagePlaneDetails:False"""
                 d = pipeline.get_provider_dictionary(groupname)
                 assert len(d) == 0
 
-    def test_16_01_get_provider_dictionary_image(self):
+    def test_get_provider_dictionary_image(self):
         pipeline = get_empty_pipeline()
         my_setting = nucleus.setting.ImageNameProvider("foo", IMAGE_NAME)
         module = ATestModule([my_setting])
@@ -935,7 +935,7 @@ HasImagePlaneDetails:False"""
         for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
-    def test_16_02_get_provider_dictionary_object(self):
+    def test_get_provider_dictionary_object(self):
         pipeline = get_empty_pipeline()
         my_setting = nucleus.setting.ObjectNameProvider("foo", OBJECT_NAME)
         module = ATestModule([my_setting])
@@ -952,7 +952,7 @@ HasImagePlaneDetails:False"""
         for group in (nucleus.setting.IMAGE_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
-    def test_16_03_get_provider_dictionary_measurement(self):
+    def test_get_provider_dictionary_measurement(self):
         pipeline = get_empty_pipeline()
         module = ATestModule(
             measurement_columns=[
@@ -974,7 +974,7 @@ HasImagePlaneDetails:False"""
         for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.IMAGE_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
-    def test_16_04_get_provider_dictionary_other(self):
+    def test_get_provider_dictionary_other(self):
         pipeline = get_empty_pipeline()
         module = ATestModule(
             other_providers={nucleus.setting.IMAGE_GROUP: [IMAGE_NAME]}
@@ -991,7 +991,7 @@ HasImagePlaneDetails:False"""
         for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
-    def test_16_05_get_provider_dictionary_combo(self):
+    def test_get_provider_dictionary_combo(self):
         pipeline = get_empty_pipeline()
         image_setting = nucleus.setting.ImageNameProvider("foo", IMAGE_NAME)
         object_setting = nucleus.setting.ObjectNameProvider("foo", OBJECT_NAME)
@@ -1041,7 +1041,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         assert provider[0] == module
 
-    def test_16_06_get_provider_module(self):
+    def test_get_provider_module(self):
         #
         # Module 1 provides IMAGE_NAME
         # Module 2 provides OBJECT_NAME
@@ -1083,7 +1083,7 @@ HasImagePlaneDetails:False"""
         assert len(d[IMAGE_NAME]) == 1
         assert d[IMAGE_NAME][0][0] == module3
 
-    def test_17_00_get_dependency_graph_empty(self):
+    def test_get_dependency_graph_empty(self):
         for module in (
             ATestModule(),
             ATestModule([nucleus.setting.Choice("foo", ["Hello", "World"])]),
@@ -1096,7 +1096,7 @@ HasImagePlaneDetails:False"""
             result = pipeline.get_dependency_graph()
             assert len(result) == 0
 
-    def test_17_01_get_dependency_graph_image(self):
+    def test_get_dependency_graph_image(self):
         pipeline = nucleus.pipeline.Pipeline()
         for i, module in enumerate(
             (
@@ -1117,7 +1117,7 @@ HasImagePlaneDetails:False"""
         assert edge.destination == pipeline.modules()[2]
         assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
-    def test_17_02_get_dependency_graph_object(self):
+    def test_get_dependency_graph_object(self):
         pipeline = nucleus.pipeline.Pipeline()
         for i, module in enumerate(
             (
@@ -1138,7 +1138,7 @@ HasImagePlaneDetails:False"""
         assert edge.destination == pipeline.modules()[2]
         assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
-    def test_17_03_get_dependency_graph_measurement(self):
+    def test_get_dependency_graph_measurement(self):
         pipeline = nucleus.pipeline.Pipeline()
         measurement_columns = [
             (OBJECT_NAME, FEATURE_NAME, nucleus.measurement.COLTYPE_FLOAT)
@@ -1165,7 +1165,7 @@ HasImagePlaneDetails:False"""
         assert edge.destination == pipeline.modules()[2]
         assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
-    def test_18_01_read_image_plane_details(self):
+    def test_read_image_plane_details(self):
         test_data = (
             (
                 [],
@@ -1219,18 +1219,24 @@ HasImagePlaneDetails:False"""
             for r, e in zip(result, expected):
                 assert r == e[0]
 
-    def test_18_02_write_image_plane_details(self):
-        test_data = ("foo", "\\u03b1\\u03b2", "".join([chr(i) for i in range(128)]))
-        fd = six.moves.StringIO()
-        nucleus.pipeline.write_file_list(fd, test_data)
-        fd.seek(0)
-        result = nucleus.pipeline.read_file_list(fd)
-        for rr, tt in zip(result, test_data):
-            if isinstance(tt, six.text_type):
-                tt = tt.encode("utf-8")
-            assert rr == tt
+    def test_write_image_plane_details(self):
+        test_data = ("foo", "\\u03b1\\u03b2")
 
-    def test_19_01_read_file_list_pathnames(self):
+        fd = six.moves.StringIO()
+
+        nucleus.pipeline.write_file_list(fd, test_data)
+
+        fd.seek(0)
+
+        result = nucleus.pipeline.read_file_list(fd)
+
+        for x, y in zip(result, test_data):
+            if not isinstance(y, str):
+                y = y.encode("utf-8")
+
+            assert x == y
+
+    def test_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]
         paths = [os.path.join(root, x) for x in ("foo.tif", "bar.tif")]
         fd = six.moves.StringIO("\n".join([paths[0], "", paths[1]]))
@@ -1240,7 +1246,7 @@ HasImagePlaneDetails:False"""
         for path in paths:
             assert nucleus.modules.loadimages.pathname2url(path) in p.file_list
 
-    def test_19_02_read_file_list_urls(self):
+    def test_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
         file_url = nucleus.modules.loadimages.pathname2url(
             os.path.join(root, "foo.tif")
@@ -1258,7 +1264,7 @@ HasImagePlaneDetails:False"""
         for url in urls:
             assert url in p.file_list
 
-    def test_19_03_read_file_list_file(self):
+    def test_read_file_list_file(self):
         urls = [
             "http://nucleus.org/foo.tif",
             "https://github.com/foo.tif",
@@ -1276,7 +1282,7 @@ HasImagePlaneDetails:False"""
         for url in urls:
             assert url in p.file_list
 
-    def test_19_04_read_http_file_list(self):
+    def test_read_http_file_list(self):
         url = "https://gist.githubusercontent.com/mcquin/67438dc4e8481c5b1d3881df56e1c4c4/raw/274835d9d3fef990d8bf34c4ee5f991b3880d74f/gistfile1.txt"
         urls = [
             "http://nucleus.org/foo.tif",
@@ -1516,27 +1522,27 @@ class GroupModule(nucleus.module.Module):
 
 
 class TestUtils(unittest.TestCase):
-    def test_02_001_EncapsulateUnicode(self):
+    def test_EncapsulateUnicode(self):
         a = nucleus.pipeline.encapsulate_string("Hello")
         assert a.shape == (1,)
         assert a.dtype.kind == "U"
         assert a[0] == "Hello"
 
-    def test_02_01_EncapsulateCell(self):
+    def test_EncapsulateCell(self):
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = "Hello, world"
         nucleus.pipeline.encapsulate_strings_in_arrays(cell)
         assert isinstance(cell[0, 0], numpy.ndarray)
         assert cell[0, 0][0] == "Hello, world"
 
-    def test_02_02_EncapsulateStruct(self):
+    def test_EncapsulateStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
         struct["foo"][0, 0] = "Hello, world"
         nucleus.pipeline.encapsulate_strings_in_arrays(struct)
         assert isinstance(struct["foo"][0, 0], numpy.ndarray)
         assert struct["foo"][0, 0][0] == "Hello, world"
 
-    def test_02_03_EncapsulateCellInStruct(self):
+    def test_EncapsulateCellInStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = "Hello, world"
@@ -1545,7 +1551,7 @@ class TestUtils(unittest.TestCase):
         assert isinstance(cell[0, 0], numpy.ndarray)
         assert cell[0, 0][0] == "Hello, world"
 
-    def test_02_04_EncapsulateStructInCell(self):
+    def test_EncapsulateStructInCell(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = struct

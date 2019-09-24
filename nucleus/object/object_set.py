@@ -1,3 +1,5 @@
+import nucleus.object
+
 from nucleus.object import *
 
 
@@ -15,15 +17,15 @@ class ObjectSet:
                         over an old one of the same name (for debugging)
         """
         self.__can_overwrite = can_overwrite
-        self.__types_and_instances = {OBJECT_TYPE_NAME: {}}
+        self.__types_and_instances = {"objects": {}}
 
     @property
     def __objects_by_name(self):
-        return self.__types_and_instances[OBJECT_TYPE_NAME]
+        return self.__types_and_instances["objects"]
 
     def add_objects(self, objects, name):
         assert isinstance(
-            objects, Objects
+            objects, nucleus.object.Objects
         ), "objects must be an instance of CellProfiler.Objects"
         assert (
             name not in list(self.__objects_by_name.keys())

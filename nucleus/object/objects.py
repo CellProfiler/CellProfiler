@@ -4,6 +4,8 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 
+import nucleus.object
+
 from nucleus.object import *
 
 
@@ -78,7 +80,7 @@ class Objects:
 
     @staticmethod
     def __labels_to_segmentation(labels):
-        dense = downsample_labels(labels)
+        dense = nucleus.object.downsample_labels(labels)
 
         if dense.ndim == 3:
             z, x, y = dense.shape
@@ -88,12 +90,12 @@ class Objects:
 
         dense = dense.reshape((1, 1, 1, z, x, y))
 
-        return Segmentation(dense=dense)
+        return nucleus.object.Segmentation(dense=dense)
 
     @staticmethod
     def __segmentation_to_labels(segmentation):
         assert isinstance(
-            segmentation, Segmentation
+            segmentation, nucleus.object.Segmentation
         ), "Operation failed because objects were not initialized"
 
         dense, indices = segmentation.get_dense()

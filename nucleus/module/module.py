@@ -1013,7 +1013,7 @@ class ImageProcessing(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = nucleus.image.Image.Image(
+        y = nucleus.image.Image(
             dimensions=dimensions, image=y_data, parent_image=x, convert=False
         )
 

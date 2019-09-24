@@ -643,7 +643,7 @@ class Pipeline:
         self.__undo_stack = []
         return pipeline_version, git_hash
 
-    def save(self, fd_or_filename, format=FMT_NATIVE, save_image_plane_details=True):
+    def save(self, fd_or_filename, format="Native", save_image_plane_details=True):
         """Save the pipeline to a file
 
         fd_or_filename - either a file descriptor or the name of the file
@@ -651,7 +651,7 @@ class Pipeline:
         if format == FMT_MATLAB:
             handles = self.save_to_handles()
             self.savemat(fd_or_filename, handles)
-        elif format == FMT_NATIVE:
+        elif format == "Native":
             self.savetxt(
                 fd_or_filename, save_image_plane_details=save_image_plane_details
             )

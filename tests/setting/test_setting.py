@@ -275,37 +275,10 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
             expected_unbounded_max,
             expected_abs,
         ) in (
-            (
-                0,
-                nucleus.setting.END,
-                0,
-                "0",
-                nucleus.setting.END,
-                nucleus.setting.END,
-                True,
-                True,
-            ),
-            (
-                nucleus.setting.BEGIN,
-                15,
-                0,
-                nucleus.setting.BEGIN,
-                15,
-                "15",
-                False,
-                True,
-            ),
+            (0, "end", 0, "0", "end", "end", True, True),
+            ("begin", 15, 0, "begin", 15, "15", False, True),
             (0, -15, 0, "0", -15, "15", False, False),
-            (
-                0,
-                "-" + nucleus.setting.END,
-                0,
-                "0",
-                nucleus.setting.END,
-                nucleus.setting.END,
-                True,
-                False,
-            ),
+            (0, "-" + "end", 0, "0", "end", "end", True, False),
         ):
             s = nucleus.setting.IntegerOrUnboundedRange("foo", (minval, maxval))
             assert s.min == expected_min
@@ -329,8 +302,8 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
 
     def test_01_04_set_end(self):
         s = nucleus.setting.IntegerOrUnboundedRange("foo", (0, 15))
-        s.value_text = s.compose_max_text(nucleus.setting.END)
-        assert s.max == nucleus.setting.END
+        s.value_text = s.compose_max_text("end")
+        assert s.max == "end"
 
     def test_01_05_set_abs(self):
         s = nucleus.setting.IntegerOrUnboundedRange("foo", (0, -15))
@@ -340,13 +313,11 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
         assert s.max == 15
 
     def test_01_06_set_abs_end(self):
-        s = nucleus.setting.IntegerOrUnboundedRange(
-            "foo", (0, "-" + nucleus.setting.END)
-        )
+        s = nucleus.setting.IntegerOrUnboundedRange("foo", (0, "-" + "end"))
         assert not s.is_abs()
         s.value_text = s.compose_abs()
         assert s.is_abs()
-        assert s.max == nucleus.setting.END
+        assert s.max == "end"
 
     def test_01_07_set_rel(self):
         s = nucleus.setting.IntegerOrUnboundedRange("foo", (0, 15))
@@ -355,10 +326,10 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
         assert s.max == -15
 
     def test_01_06_set_rel_end(self):
-        s = nucleus.setting.IntegerOrUnboundedRange("foo", (0, nucleus.setting.END))
+        s = nucleus.setting.IntegerOrUnboundedRange("foo", (0, "end"))
         s.value_text = s.compose_rel()
         assert not s.is_abs()
-        assert s.max == nucleus.setting.END
+        assert s.max == "end"
 
 
 class TestFilterSetting(unittest.TestCase):

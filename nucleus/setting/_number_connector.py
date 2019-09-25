@@ -1,7 +1,7 @@
 import nucleus.utilities.legacy
 
 
-class NumberConnector(object):
+class NumberConnector:
     """This object connects a function to a number slot
 
     You can use this if you have a value that changes contextually

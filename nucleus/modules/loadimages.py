@@ -29,7 +29,7 @@ import nucleus.preferences
 import nucleus.setting
 import nucleus.modules
 import nucleus.modules
-from nucleus.modules import generate_presigned_url
+from nucleus.modules import generate_presigned_url, identify
 
 """
 LoadImages
@@ -567,13 +567,13 @@ files that you want to exclude from analysis (such as thumbnails created
 by an imaging system). Select *{YES}* to enter text to match against
 such files for exclusion.
 """.format(
-                **{"MS_EXACT_MATCH": MS_EXACT_MATCH, "YES": nucleus.setting.YES}
+                **{"MS_EXACT_MATCH": MS_EXACT_MATCH, "YES": "Yes"}
             ),
         )
 
         self.match_exclude = nucleus.setting.Text(
             "Type the text that the excluded images have in common",
-            nucleus.setting.DO_NOT_USE,
+            "Do not use",
             doc="""\
 *(Used only if file exclusion is selected)*
 
@@ -654,7 +654,7 @@ create a duplicate as a correction or may miss an image entirely. See
 the *Extract metadata from where?* setting for more details on
 obtaining, extracting, and using metadata tags.
 """.format(
-                **{"YES": nucleus.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -678,7 +678,7 @@ AVIs, ZVIs), each movie is already treated as a group of images, so
 there is no need to enable here.
 """.format(
                 **{
-                    "YES": nucleus.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_GROUPING_HELP_REF": nucleus.modules._help.USING_METADATA_GROUPING_HELP_REF,
                 }
             ),
@@ -974,7 +974,7 @@ grouping, first specify how the channels are grouped (interleaving and
 number of channels per group), then assign image names to each of the
 channels individually.
 """.format(
-                    **{"YES": nucleus.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
@@ -1189,7 +1189,7 @@ This is the name for the objects loaded from your image
 Select *{YES}* if you want to create an image of the outlines of the
 loaded objects.
 """.format(
-                    **{"YES": nucleus.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
@@ -1257,7 +1257,7 @@ Select *{NO}* to ignore the image metadata and rescale the image to 0
 – 1.0 by dividing by 255 or 65535, depending on the number of bits used
 to store the image.
 """.format(
-                    **{"YES": nucleus.setting.YES, "NO": nucleus.setting.NO}
+                    **{"YES": "Yes", "NO": "No"}
                 ),
             ),
         )
@@ -1700,12 +1700,12 @@ to store the image.
         def upgrade_3_to_4(setting_values):
             """Added text exclusion at slot # 10"""
             new_values = list(setting_values)
-            new_values.insert(10, nucleus.setting.DO_NOT_USE)
+            new_values.insert(10, "Do not use")
             return new_values, 4
 
         def upgrade_4_to_5(setting_values):
             new_values = list(setting_values)
-            new_values.append(nucleus.setting.NO)
+            new_values.append("No")
             return new_values, 5
 
         def upgrade_5_to_new_1(setting_values):
@@ -1739,8 +1739,8 @@ to store the image.
                 text_to_find = setting_values[i * 2 + 1]
                 image_name = setting_values[i * 2 + 2]
                 if (
-                    text_to_find == nucleus.setting.DO_NOT_USE
-                    or image_name == nucleus.setting.DO_NOT_USE
+                    text_to_find == "Do not use"
+                    or image_name == "Do not use"
                     or text_to_find == "/"
                     or image_name == "/"
                     or text_to_find == "\\"
@@ -1756,7 +1756,7 @@ to store the image.
         def upgrade_new_1_to_2(setting_values):
             """Add the metadata slots to the images"""
             new_values = list(setting_values[: self.SLOT_FIRST_IMAGE_V1])
-            new_values.append(nucleus.setting.NO)  # Group by metadata is off
+            new_values.append("No")  # Group by metadata is off
             for i in range(
                 (len(setting_values) - self.SLOT_FIRST_IMAGE_V1)
                 / self.SLOT_IMAGE_FIELD_COUNT_V1
@@ -1768,8 +1768,8 @@ to store the image.
                         setting_values[off + 1],
                         setting_values[off + 2],
                         M_NONE,
-                        nucleus.setting.NONE,
-                        nucleus.setting.NONE,
+                        "None",
+                        "None",
                     ]
                 )
             return new_values, 2
@@ -1777,10 +1777,10 @@ to store the image.
         def upgrade_new_2_to_3(setting_values):
             """Add the checkbox for excluding certain files"""
             new_values = list(setting_values[: self.SLOT_FIRST_IMAGE_V2])
-            if setting_values[self.SLOT_MATCH_EXCLUDE] == nucleus.setting.DO_NOT_USE:
-                new_values += [nucleus.setting.NO]
+            if setting_values[self.SLOT_MATCH_EXCLUDE] == "Do not use":
+                new_values += ["No"]
             else:
-                new_values += [nucleus.setting.YES]
+                new_values += ["Yes"]
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V2 :]
             return new_values, 3
 
@@ -1845,7 +1845,7 @@ to store the image.
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V6 :]
             for i in range(image_count):
                 new_values += setting_values[: self.SLOT_IMAGE_FIELD_COUNT_V5]
-                new_values += [nucleus.setting.NO, I_INTERLEAVED, "2"]
+                new_values += ["No", I_INTERLEAVED, "2"]
                 channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V6])
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5 :]
                 channel_field_count = self.SLOT_CHANNEL_FIELD_COUNT_V6 * channel_count
@@ -1864,7 +1864,7 @@ to store the image.
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V7 :]
                 for j in range(channel_count):
                     new_values += setting_values[: self.SLOT_CHANNEL_FIELD_COUNT_V7] + [
-                        nucleus.setting.YES
+                        "Yes"
                     ]
                     setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V7 :]
             return new_values, 8
@@ -1904,7 +1904,7 @@ to store the image.
                 for j in range(channel_count):
                     new_values += (
                         setting_values[: self.SLOT_OFFSET_OBJECT_NAME_V9]
-                        + [nucleus.setting.NO, "NucleiOutlines"]
+                        + ["No", "NucleiOutlines"]
                         + setting_values[
                             self.SLOT_OFFSET_OBJECT_NAME_V9 : self.SLOT_CHANNEL_FIELD_COUNT_V9
                         ]
@@ -1919,7 +1919,7 @@ to store the image.
                 + [""]
                 + setting_values[self.SLOT_IMAGE_COUNT_V10 :]
             )
-            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == nucleus.setting.YES:
+            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == "Yes":
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_ALL
             else:
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
@@ -3509,7 +3509,7 @@ to store the image.
         elif not is_image(filename):
             return False
         if (
-            (self.text_to_exclude() != nucleus.setting.DO_NOT_USE)
+            (self.text_to_exclude() != "Do not use")
             and self.exclude
             and (filename.find(self.text_to_exclude()) >= 0)
         ):
@@ -4364,7 +4364,7 @@ class LoadImagesImageProvider(nucleus.image.AbstractImageProvider):
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
-        self.__image = nucleus.image.Image.Image(
+        self.__image = nucleus.image.Image(
             img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
@@ -4401,7 +4401,7 @@ class LoadImagesImageProvider(nucleus.image.AbstractImageProvider):
         else:
             self.scale = 1
 
-        self.__image = nucleus.image.Image.Image(
+        self.__image = nucleus.image.Image(
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),

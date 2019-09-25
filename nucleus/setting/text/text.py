@@ -9,22 +9,10 @@ import nucleus.measurement
 import nucleus.preferences
 import nucleus.setting
 import nucleus.utilities.legacy
+from nucleus.setting._validation_error import ValidationError
+from nucleus.setting._setting import Setting
 
 logger = logging.getLogger(__name__)
-
-from nucleus.setting import (
-    Setting,
-    METADATA_ATTRIBUTE,
-    DO_NOT_USE,
-    ValidationError,
-    PROVIDED_ATTRIBUTES,
-    IMAGE_GROUP,
-    OBJECT_GROUP,
-    FILE_IMAGE_ATTRIBUTE,
-    EXTERNAL_IMAGE_ATTRIBUTE,
-    GRID_GROUP,
-    CROPPING_ATTRIBUTE,
-)
 
 
 class Text(Setting):
@@ -35,7 +23,7 @@ class Text(Setting):
     def __init__(self, text, value, *args, **kwargs):
         kwargs = kwargs.copy()
         self.multiline_display = kwargs.pop("multiline", False)
-        self.metadata_display = kwargs.pop(METADATA_ATTRIBUTE, False)
+        self.metadata_display = kwargs.pop("metadata", False)
         super(Text, self).__init__(text, value, *args, **kwargs)
 
 
@@ -519,12 +507,12 @@ class NameProvider(AlphanumericText):
     """A setting that provides a named object
     """
 
-    def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, group, value="Do not use", *args, **kwargs):
         self.__provided_attributes = {"group": group}
         kwargs = kwargs.copy()
         if "provided_attributes" in kwargs:
             self.__provided_attributes.update(kwargs["provided_attributes"])
-            del kwargs[PROVIDED_ATTRIBUTES]
+            del kwargs["provided_attributes"]
         kwargs["first_must_be_alpha"] = True
         super(NameProvider, self).__init__(text, value, *args, **kwargs)
 
@@ -552,9 +540,9 @@ class ImageNameProvider(NameProvider):
     """A setting that provides an image name
     """
 
-    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, value="Do not use", *args, **kwargs):
         super(ImageNameProvider, self).__init__(
-            text, IMAGE_GROUP, value, *args, **kwargs
+            text, "imagegroup", value, *args, **kwargs
         )
 
 
@@ -562,9 +550,9 @@ class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
     """
 
-    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, value="Do not use", *args, **kwargs):
         super(ObjectNameProvider, self).__init__(
-            text, OBJECT_GROUP, value, *args, **kwargs
+            text, "objectgroup", value, *args, **kwargs
         )
 
     def test_valid(self, pipeline):
@@ -580,11 +568,11 @@ class ObjectNameProvider(NameProvider):
 class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""
 
-    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, value="Do not use", *args, **kwargs):
         kwargs = kwargs.copy()
-        if PROVIDED_ATTRIBUTES not in kwargs:
-            kwargs[PROVIDED_ATTRIBUTES] = {}
-        kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
+        if "provided_attributes" not in kwargs:
+            kwargs["provided_attributes"] = {}
+        kwargs["provided_attributes"]["file_image"] = True
         super(FileImageNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
@@ -592,22 +580,22 @@ class ExternalImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image is loaded
     externally. (eg: from Java)"""
 
-    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, value="Do not use", *args, **kwargs):
         kwargs = kwargs.copy()
-        if PROVIDED_ATTRIBUTES not in kwargs:
-            kwargs[PROVIDED_ATTRIBUTES] = {}
-        kwargs[PROVIDED_ATTRIBUTES][EXTERNAL_IMAGE_ATTRIBUTE] = True
+        if "provided_attributes" not in kwargs:
+            kwargs["provided_attributes"] = {}
+        kwargs["provided_attributes"]["external_image"] = True
         super(ExternalImageNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
 class CroppingNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has a cropping mask"""
 
-    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, value="Do not use", *args, **kwargs):
         kwargs = kwargs.copy()
-        if PROVIDED_ATTRIBUTES not in kwargs:
-            kwargs[PROVIDED_ATTRIBUTES] = {}
-        kwargs[PROVIDED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
+        if "provided_attributes" not in kwargs:
+            kwargs["provided_attributes"] = {}
+        kwargs["provided_attributes"]["cropping_image"] = True
         super(CroppingNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
@@ -615,7 +603,7 @@ class OutlineNameProvider(ImageNameProvider):
     """A setting that provides an object outline name
     """
 
-    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+    def __init__(self, text, value="Do not use", *args, **kwargs):
         super(OutlineNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
@@ -624,7 +612,9 @@ class GridNameProvider(NameProvider):
     """
 
     def __init__(self, text, value="Grid", *args, **kwargs):
-        super(GridNameProvider, self).__init__(text, GRID_GROUP, value, *args, **kwargs)
+        super(GridNameProvider, self).__init__(
+            text, "gridgroup", value, *args, **kwargs
+        )
 
 
 class OddInteger(Integer):
@@ -635,3 +625,49 @@ class OddInteger(Integer):
 
         if value % 2 == 0:
             raise ValidationError("Must be odd, was even", self)
+
+
+def filter_duplicate_names(name_list):
+    """remove any repeated names from a list of (name, ...) keeping the last occurrence."""
+    name_dict = dict(list(zip((n[0] for n in name_list), name_list)))
+    return [name_dict[n[0]] for n in name_list]
+
+
+def get_name_provider_choices(pipeline, last_setting, group):
+    """Scan the pipeline to find name providers for the given group
+
+    pipeline - pipeline to scan
+    last_setting - scan the modules in order until you arrive at this setting
+    group - the name of the group of providers to scan
+    returns a list of tuples, each with (provider name, module name, module number)
+    """
+    choices = []
+    for module in pipeline.modules(False):
+        module_choices = [
+            (
+                other_name,
+                module.module_name,
+                module.module_num,
+                module.is_input_module(),
+            )
+            for other_name in module.other_providers(group)
+        ]
+        for setting in module.visible_settings():
+            if setting.key() == last_setting.key():
+                return filter_duplicate_names(choices)
+            if (
+                isinstance(setting, NameProvider)
+                and module.enabled
+                and setting != "Do not use"
+                and last_setting.matches(setting)
+            ):
+                module_choices.append(
+                    (
+                        setting.value,
+                        module.module_name,
+                        module.module_num,
+                        module.is_input_module(),
+                    )
+                )
+        choices += module_choices
+    assert False, "Setting not among visible settings in pipeline"

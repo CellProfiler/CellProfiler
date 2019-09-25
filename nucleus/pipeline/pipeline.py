@@ -868,7 +868,6 @@ class Pipeline:
             if user_pipeline
             else nucleus.pipeline.M_PIPELINE,
             fd.getvalue(),
-            can_overwrite=True,
         )
 
     def clear_measurements(self, m):
@@ -3392,7 +3391,7 @@ class Pipeline:
                 if (name not in result) or target_module is not None:
                     result[name] = []
                 result[name].append((module, None))
-            if groupname == nucleus.setting.MEASUREMENTS_GROUP:
+            if groupname == "measurementsgroup":
                 for c in module.get_measurement_columns(self):
                     object_name, feature_name = c[:2]
                     k = (object_name, feature_name)
@@ -3405,7 +3404,7 @@ class Pipeline:
                     and setting.get_group() == groupname
                 ):
                     name = setting.value
-                    if name == nucleus.setting.DO_NOT_USE:
+                    if name == "Do not use":
                         continue
                     if name not in result or target_module is not None:
                         result[name] = []
@@ -3428,11 +3427,7 @@ class Pipeline:
         #   where the first element of the tuple is the module and the
         #   second is either None or the setting.
         #
-        all_groups = (
-            nucleus.setting.OBJECT_GROUP,
-            nucleus.setting.IMAGE_GROUP,
-            nucleus.setting.MEASUREMENTS_GROUP,
-        )
+        all_groups = ("objectgroup", "imagegroup", "measurementsgroup")
         providers = dict([(g, self.get_provider_dictionary(g)) for g in all_groups])
         #
         # Now match subscribers against providers.
@@ -3446,12 +3441,12 @@ class Pipeline:
                     if group in providers and name in providers[group]:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
-                                if group == nucleus.setting.OBJECT_GROUP:
+                                if group == "objectgroup":
                                     dependency = nucleus.pipeline.ObjectDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
-                                elif group == nucleus.setting.IMAGE_GROUP:
+                                elif group == "imagegroup":
                                     dependency = nucleus.pipeline.ImageDependency(
                                         pmodule, module, name, psetting, setting
                                     )
@@ -3461,10 +3456,8 @@ class Pipeline:
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     key = (object_name, feature_name)
-                    if key in providers[nucleus.setting.MEASUREMENTS_GROUP]:
-                        for pmodule, psetting in providers[
-                            nucleus.setting.MEASUREMENTS_GROUP
-                        ][key]:
+                    if key in providers["measurementsgroup"]:
+                        for pmodule, psetting in providers["measurementsgroup"][key]:
                             if pmodule.module_num < module.module_num:
                                 dependency = nucleus.pipeline.MeasurementDependency(
                                     pmodule,

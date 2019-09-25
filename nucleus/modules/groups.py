@@ -10,7 +10,7 @@ import nucleus.modules
 import nucleus.module
 import nucleus.pipeline
 import nucleus.setting
-from nucleus.setting import YES
+import nucleus.setting
 import nucleus.measurement
 
 __doc__ = """\
@@ -177,7 +177,7 @@ Select "*{YES}*" if you need to split your images into image subsets (or
 *groups*) such that each group is processed independently of each other.
 See the main module help for more details.
 """.format(
-                **{"YES": YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -233,13 +233,13 @@ wells/plate ×2 sites/well = 2304 rows.
         def get_group_metadata_choices(pipeline):
             choices = self.get_metadata_choices(pipeline, group)
             if len(choices) == 0:
-                choices.append(nucleus.setting.NONE)
+                choices.append("None")
             return choices
 
         if self.pipeline is not None:
             choices = get_group_metadata_choices(self.pipeline)
         else:
-            choices = [nucleus.setting.NONE]
+            choices = ["None"]
 
         group.append(
             "metadata_choice",

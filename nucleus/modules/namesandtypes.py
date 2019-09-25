@@ -2349,7 +2349,7 @@ requests an object selection.
                 new_setting_values += setting_values[
                     idx : (idx + NUM_ASSIGNMENT_SETTINGS_V3)
                 ]
-                new_setting_values += [nucleus.setting.NO, "LoadedObjects"]
+                new_setting_values += ["No", "LoadedObjects"]
             setting_values = new_setting_values
             variable_revision_number = 4
 

@@ -54,10 +54,10 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
-import nucleus.image as cpi
-import nucleus.measurement as cpmeas
-import nucleus.module as cpm
-import nucleus.setting as cps
+import nucleus.image
+import nucleus.measurement
+import nucleus.module
+import nucleus.setting
 
 M_MUTUAL_INFORMATION = "Mutual Information"
 M_CROSS_CORRELATION = "Normalized Cross Correlation"
@@ -75,46 +75,48 @@ C_ALIGN = "Align"
 MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
 
-class Align(cpm.Module):
+class Align(nucleus.module.Module):
     module_name = "Align"
     category = "Image Processing"
     variable_revision_number = 3
 
     def create_settings(self):
-        self.first_input_image = cps.ImageNameSubscriber(
+        self.first_input_image = nucleus.setting.ImageNameSubscriber(
             "Select the first input image",
-            cps.NONE,
+            "None",
             doc="""\
 Specify the name of the first image to align.""",
         )
 
-        self.first_output_image = cps.ImageNameProvider(
+        self.first_output_image = nucleus.setting.ImageNameProvider(
             "Name the first output image",
             "AlignedRed",
             doc="""\
 Enter the name of the first aligned image.""",
         )
 
-        self.separator_1 = cps.Divider(line=False)
-        self.second_input_image = cps.ImageNameSubscriber(
+        self.separator_1 = nucleus.setting.Divider(line=False)
+        self.second_input_image = nucleus.setting.ImageNameSubscriber(
             "Select the second input image",
-            cps.NONE,
+            "None",
             doc="""\
 Specify the name of the second image to align.""",
         )
 
-        self.second_output_image = cps.ImageNameProvider(
+        self.second_output_image = nucleus.setting.ImageNameProvider(
             "Name the second output image",
             "AlignedGreen",
             doc="""\
 Enter the name of the second aligned image.""",
         )
 
-        self.separator_2 = cps.Divider(line=False)
+        self.separator_2 = nucleus.setting.Divider(line=False)
         self.additional_images = []
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image)
+        self.add_button = nucleus.setting.DoSomething(
+            "", "Add another image", self.add_image
+        )
 
-        self.alignment_method = cps.Choice(
+        self.alignment_method = nucleus.setting.Choice(
             "Select the alignment method",
             M_ALL,
             doc="""\
@@ -143,7 +145,7 @@ Two options for the alignment method are available:
             % globals(),
         )
 
-        self.crop_mode = cps.Choice(
+        self.crop_mode = nucleus.setting.Choice(
             "Crop mode",
             [C_CROP, C_PAD, C_SAME_SIZE],
             doc="""\
@@ -182,15 +184,15 @@ excluded from analysis. There are three choices for cropping:
 
     def add_image(self, can_remove=True):
         """Add an image + associated questions and buttons"""
-        group = cps.SettingsGroup()
+        group = nucleus.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
+            group.append("divider", nucleus.setting.Divider(line=False))
 
         group.append(
             "input_image_name",
-            cps.ImageNameSubscriber(
+            nucleus.setting.ImageNameSubscriber(
                 "Select the additional image",
-                cps.NONE,
+                "None",
                 doc="""
  Select the additional image to align?""",
             ),
@@ -198,7 +200,7 @@ excluded from analysis. There are three choices for cropping:
 
         group.append(
             "output_image_name",
-            cps.ImageNameProvider(
+            nucleus.setting.ImageNameProvider(
                 "Name the output image",
                 "AlignedBlue",
                 doc="""
@@ -208,7 +210,7 @@ excluded from analysis. There are three choices for cropping:
 
         group.append(
             "align_choice",
-            cps.Choice(
+            nucleus.setting.Choice(
                 "Select how the alignment is to be applied",
                 [A_SIMILARLY, A_SEPARATELY],
                 doc="""\
@@ -228,7 +230,7 @@ a separate alignment to the first image can be calculated:
         if can_remove:
             group.append(
                 "remover",
-                cps.RemoveSettingButton(
+                nucleus.setting.RemoveSettingButton(
                     "", "Remove above image", self.additional_images, group
                 ),
             )
@@ -626,7 +628,7 @@ a separate alignment to the first image can be calculated:
         p1[:, :] = True
         if np.all(crop_mask):
             crop_mask = None
-        output_image = cpi.Image(
+        output_image = nucleus.image.Image(
             output_pixels, mask=output_mask, crop_mask=crop_mask, parent_image=image
         )
         workspace.image_set.add(output_image_name, output_image)
@@ -680,12 +682,12 @@ a separate alignment to the first image can be calculated:
         return offsets.tolist(), shapes.tolist()
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == nucleus.measurement.IMAGE:
             return [C_ALIGN]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == C_ALIGN:
+        if object_name == nucleus.measurement.IMAGE and category == C_ALIGN:
             return ["Xshift", "Yshift"]
         return []
 
@@ -707,9 +709,9 @@ a separate alignment to the first image can be calculated:
         for axis in ("X", "Y"):
             columns += [
                 (
-                    cpmeas.IMAGE,
+                    nucleus.measurement.IMAGE,
                     MEASUREMENT_FORMAT % (axis, target),
-                    cpmeas.COLTYPE_INTEGER,
+                    nucleus.measurement.COLTYPE_INTEGER,
                 )
                 for target in targets
             ]
@@ -733,10 +735,7 @@ a separate alignment to the first image can be calculated:
             # 9:  AlternateImage2
             # 10: AlternateAlignedImage2
             new_setting_values = list(setting_values[:4])
-            if (
-                setting_values[4] != cps.DO_NOT_USE
-                and setting_values[5] != cps.DO_NOT_USE
-            ):
+            if setting_values[4] != "Do not use" and setting_values[5] != "Do not use":
                 new_setting_values += [
                     setting_values[4],
                     setting_values[5],
@@ -744,8 +743,8 @@ a separate alignment to the first image can be calculated:
                 ]
             for i in (7, 9):
                 if (
-                    setting_values[i] != cps.DO_NOT_USE
-                    and setting_values[i + 1] != cps.DO_NOT_USE
+                    setting_values[i] != "Do not use"
+                    and setting_values[i + 1] != "Do not use"
                 ):
                     new_setting_values += [
                         setting_values[i],
@@ -772,10 +771,7 @@ a separate alignment to the first image can be calculated:
             # 10: AlternateAlignedImage2
             # 11: Wants cropping.
             new_setting_values = list(setting_values[:4])
-            if (
-                setting_values[4] != cps.DO_NOT_USE
-                and setting_values[5] != cps.DO_NOT_USE
-            ):
+            if setting_values[4] != "Do not use" and setting_values[5] != "Do not use":
                 new_setting_values += [
                     setting_values[4],
                     setting_values[5],
@@ -783,8 +779,8 @@ a separate alignment to the first image can be calculated:
                 ]
             for i in (7, 9):
                 if (
-                    setting_values[i] != cps.DO_NOT_USE
-                    and setting_values[i + 1] != cps.DO_NOT_USE
+                    setting_values[i] != "Do not use"
+                    and setting_values[i + 1] != "Do not use"
                 ):
                     new_setting_values += [
                         setting_values[i],
@@ -815,10 +811,7 @@ a separate alignment to the first image can be calculated:
             # 14: MoreAlignedImageName4
             # 15: Wants cropping.
             new_setting_values = list(setting_values[:4])
-            if (
-                setting_values[4] != cps.DO_NOT_USE
-                and setting_values[5] != cps.DO_NOT_USE
-            ):
+            if setting_values[4] != "Do not use" and setting_values[5] != "Do not use":
                 new_setting_values += [
                     setting_values[4],
                     setting_values[5],
@@ -826,8 +819,8 @@ a separate alignment to the first image can be calculated:
                 ]
             for i in (7, 9, 11, 13):
                 if (
-                    setting_values[i] != cps.DO_NOT_USE
-                    and setting_values[i + 1] != cps.DO_NOT_USE
+                    setting_values[i] != "Do not use"
+                    and setting_values[i + 1] != "Do not use"
                 ):
                     new_setting_values += [
                         setting_values[i],
@@ -848,7 +841,7 @@ a separate alignment to the first image can be calculated:
             # wants_cropping changed to crop_mode
             setting_values = (
                 setting_values[:1]
-                + [C_CROP if setting_values[1] == cps.YES else C_SAME_SIZE]
+                + [C_CROP if setting_values[1] == "Yes" else C_SAME_SIZE]
                 + setting_values[2:]
             )
             variable_revision_number = 3

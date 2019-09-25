@@ -392,7 +392,7 @@ pass the current filter.
             # Changed from yes/no for filter to a choice
             filter_choice = (
                 FILTER_CHOICE_CUSTOM
-                if setting_values[1] == nucleus.setting.YES
+                if setting_values[1] == "Yes"
                 else FILTER_CHOICE_NONE
             )
             setting_values = setting_values[:1] + [filter_choice] + setting_values[2:]

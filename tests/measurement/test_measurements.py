@@ -3,6 +3,7 @@ import functools
 import os
 import tempfile
 import zlib
+import unittest
 
 import numpy
 import six.moves
@@ -29,6 +30,7 @@ class TestMeasurements:
 
             if not isinstance(case, six.text_type):
                 case = case.decode("utf-8")
+
             assert result == case
 
     def test_01_01_image_number_is_zero(self):
@@ -1147,7 +1149,9 @@ class TestMeasurements:
         try:
             m.load_image_sets(six.moves.StringIO(data))
             features = m.get_feature_names(nucleus.measurement.IMAGE)
-            self.assertItemsEqual(features, expected_features)
+
+            unittest.TestCase().assertCountEqual(features, expected_features)
+
             for i, row_values in enumerate(expected_values):
                 image_number = i + 1
                 for value, feature_name in zip(row_values, expected_features):
@@ -1160,42 +1164,67 @@ class TestMeasurements:
             m.close()
 
     # FIXME: wxPython 4 PR
-    # def test_19_02_write_and_load_image_sets(self):
-    #     m = nucleus.measurement.Measurements()
-    #     m.add_all_measurements(nucleus.measurement.IMAGE, nucleus.measurement.GROUP_NUMBER, [1, 1, 2])
-    #     m.add_all_measurements(nucleus.measurement.IMAGE, nucleus.measurement.GROUP_INDEX, [1, 2, 1])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "URL_DNA",
-    #             ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "FileName_DNA", ["bar.tif", "foo.tif", "foobar.tif"])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "Metadata_test",
-    #             ["quotetest\"", "backslashtest\\", "unicodeescapetest\\u0384"])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "Metadata_testunicode",
-    #             [u"quotetest\"", u"backslashtest\\", u"unicodeescapetest\u0384"])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "Metadata_testnull",
-    #             ["Something", None, "SomethingElse"])
-    #     m.add_all_measurements(
-    #             nucleus.measurement.IMAGE, "Dont_copy", ["do", "not", "copy"])
-    #     fd = six.moves.StringIO()
-    #     m.write_image_sets(fd)
-    #     fd.seek(0)
-    #     mdest = nucleus.measurement.Measurements()
-    #     mdest.load_image_sets(fd)
-    #     expected_features = [
-    #         feature_name for feature_name in m.get_feature_names(nucleus.measurement.IMAGE)
-    #         if feature_name != "Dont_copy"]
-    #     self.assertItemsEqual(expected_features, mdest.get_feature_names(nucleus.measurement.IMAGE))
-    #     image_numbers = m.get_image_numbers()
-    #     for feature_name in expected_features:
-    #         src = m.get_measurement(nucleus.measurement.IMAGE, feature_name, image_numbers)
-    #         dest = mdest.get_measurement(nucleus.measurement.IMAGE, feature_name, image_numbers)
-    #         self.assertSequenceEqual(list(src), list(dest))
+    def test_19_02_write_and_load_image_sets(self):
+        m = nucleus.measurement.Measurements()
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_NUMBER, [1, 1, 2]
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_INDEX, [1, 2, 1]
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE,
+            "URL_DNA",
+            ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"],
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"]
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE,
+            "FileName_DNA",
+            ["bar.tif", "foo.tif", "foobar.tif"],
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE,
+            "Metadata_test",
+            ['quotetest"', "backslashtest\\", "unicodeescapetest\\u0384"],
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE,
+            "Metadata_testunicode",
+            ['quotetest"', "backslashtest\\", "unicodeescapetest\u0384"],
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE,
+            "Metadata_testnull",
+            ["Something", None, "SomethingElse"],
+        )
+        m.add_all_measurements(
+            nucleus.measurement.IMAGE, "Dont_copy", ["do", "not", "copy"]
+        )
+        fd = six.moves.StringIO()
+        m.write_image_sets(fd)
+        fd.seek(0)
+        mdest = nucleus.measurement.Measurements()
+        mdest.load_image_sets(fd)
+        expected_features = [
+            feature_name
+            for feature_name in m.get_feature_names(nucleus.measurement.IMAGE)
+            if feature_name != "Dont_copy"
+        ]
+        unittest.TestCase().assertCountEqual(
+            expected_features, mdest.get_feature_names(nucleus.measurement.IMAGE)
+        )
+        image_numbers = m.get_image_numbers()
+        for feature_name in expected_features:
+            src = m.get_measurement(
+                nucleus.measurement.IMAGE, feature_name, image_numbers
+            )
+            dest = mdest.get_measurement(
+                nucleus.measurement.IMAGE, feature_name, image_numbers
+            )
+            unittest.TestCase().assertCountEqual(list(src), list(dest))
 
     def test_19_03_delete_tempfile(self):
         m = nucleus.measurement.Measurements()
@@ -1393,7 +1422,8 @@ class TestMeasurements:
                 (x.module_number, x.relationship, x.object_name1, x.object_name2)
                 for x in m.get_relationship_groups()
             ]
-            self.assertItemsEqual(list(d.keys()), rg)
+
+            unittest.TestCase().assertCountEqual(list(d.keys()), rg)
 
             for key in d:
                 image_numbers2, object_numbers2 = d[key]

@@ -208,7 +208,7 @@ Select "*{YES}*" if your file or path names or file headers contain
 information (i.e., metadata) you would like to extract and store along
 with your measurements. See the main module help for more details.
 """.format(
-                **{"YES": nucleus.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -555,7 +555,7 @@ extraction.
 """.format(
                     **{
                         "FILTER_RULES_BUTTONS_HELP": nucleus.modules._help.FILTER_RULES_BUTTONS_HELP,
-                        "YES": nucleus.setting.YES,
+                        "YES": "Yes",
                     }
                 ),
             ),
@@ -595,7 +595,7 @@ the file as “Windows CSV” or “Windows Comma Separated”.
             "csv_filename",
             nucleus.setting.FilenameText(
                 "Metadata file name",
-                nucleus.setting.NONE,
+                "None",
                 browse_msg="Choose CSV file",
                 exts=[("Data file (*.csv)", "*.csv")],
                 doc="Provide the file name of the CSV file containing the metadata you want to load.",
@@ -662,8 +662,8 @@ not being applied, your choice on this setting may be the culprit.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(
                     **{
-                        "NO": nucleus.setting.NO,
-                        "YES": nucleus.setting.YES,
+                        "NO": "No",
+                        "YES": "Yes",
                         "PROTIP_RECOMMEND_ICON": nucleus.modules._help.PROTIP_RECOMMEND_ICON,
                     }
                 ),
@@ -1389,7 +1389,7 @@ not being applied, your choice on this setting may be the culprit.
                         IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i + 1)
                     )
                 ]
-                new_setting_values.append(nucleus.setting.NO)
+                new_setting_values.append("No")
             setting_values = new_setting_values
             variable_revision_number = 2
 

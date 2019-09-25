@@ -8,6 +8,9 @@ import h5py
 import numpy
 import scipy.io
 import six
+import six.moves
+import six.moves.urllib
+import nucleus.utilities.hdf5_dict
 
 import nucleus.utilities
 import nucleus.measurement
@@ -316,7 +319,7 @@ class Measurements:
         #
         self.image_set_number = self.image_set_count + 1
 
-    def add_image_measurement(self, feature_name, data, can_overwrite=False):
+    def add_image_measurement(self, feature_name, data):
         """Add a measurement to the "Image" category
 
         """
@@ -337,7 +340,7 @@ class Measurements:
         """The number of the group currently being processed"""
         return self.get_current_image_measurement(nucleus.measurement.GROUP_NUMBER)
 
-    def set_group_number(self, group_number, can_overwrite=False):
+    def set_group_number(self, group_number):
         self.add_image_measurement(nucleus.measurement.GROUP_NUMBER, group_number)
 
     group_number = property(get_group_number, set_group_number)
@@ -648,13 +651,7 @@ class Measurements:
             )
 
     def add_measurement(
-        self,
-        object_name,
-        feature_name,
-        data,
-        can_overwrite=False,
-        image_set_number=None,
-        data_type=None,
+        self, object_name, feature_name, data, image_set_number=None, data_type=None
     ):
         """Add a measurement or, for objects, an array of measurements to the set
 
@@ -1257,7 +1254,7 @@ class Measurements:
                     mean_feature_name = nucleus.measurement.get_agg_measurement_name(
                         nucleus.measurement.AGG_MEAN, object_name, feature
                     )
-                    mean = values.mean() if values is not None else numpy.NaN
+                    mean = numpy.mean(values) if values is not None else numpy.NaN
                     d[mean_feature_name] = mean
                 if nucleus.measurement.AGG_MEDIAN in aggs:
                     median_feature_name = nucleus.measurement.get_agg_measurement_name(
@@ -1269,7 +1266,7 @@ class Measurements:
                     stdev_feature_name = nucleus.measurement.get_agg_measurement_name(
                         nucleus.measurement.AGG_STD_DEV, object_name, feature
                     )
-                    stdev = values.std() if values is not None else numpy.NaN
+                    stdev = numpy.std(values) if values is not None else numpy.NaN
                     d[stdev_feature_name] = stdev
         return d
 
@@ -1592,8 +1589,8 @@ class Measurements:
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from .modules.loadimages import LoadImagesImageProviderURL
-        from .image import GrayscaleImage, RGBImage
+        from nucleus.modules.loadimages import LoadImagesImageProviderURL
+        from nucleus.image import GrayscaleImage, RGBImage
 
         name = str(name)
         if name in self.__images:
@@ -1726,7 +1723,7 @@ class Measurements:
     names = property(get_names)
 
     def add(self, name, image):
-        from .image import VanillaImageProvider
+        from nucleus.image import VanillaImageProvider
 
         old_providers = [
             provider for provider in self.providers if provider.name == name
@@ -1757,7 +1754,7 @@ class Measurements:
         """
         from nucleus.pipeline import Pipeline
 
-        ImageSetChannelDescriptor = Pipeline.ImageSetChannelDescriptor
+        image_set_channel_descriptor = Pipeline.ImageSetChannelDescriptor
         iscds = []
         for feature_name in self.get_feature_names(nucleus.measurement.EXPERIMENT):
             if feature_name.startswith(nucleus.measurement.C_CHANNEL_TYPE):
@@ -1765,7 +1762,7 @@ class Measurements:
                     (len(nucleus.measurement.C_CHANNEL_TYPE) + 1) :
                 ]
                 channel_type = self.get_experiment_measurement(feature_name)
-                if channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
+                if channel_type == image_set_channel_descriptor.CT_OBJECTS:
                     url_feature = "_".join(
                         [nucleus.measurement.C_OBJECTS_URL, channel_name]
                     )
@@ -1773,7 +1770,7 @@ class Measurements:
                     url_feature = "_".join([nucleus.measurement.C_URL, channel_name])
                 if url_feature not in self.get_feature_names(nucleus.measurement.IMAGE):
                     continue
-                iscds.append(ImageSetChannelDescriptor(channel_name, channel_type))
+                iscds.append(image_set_channel_descriptor(channel_name, channel_type))
         return iscds
 
     def get_channel_descriptor(self, name):

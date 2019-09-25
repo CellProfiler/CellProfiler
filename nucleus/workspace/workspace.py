@@ -14,7 +14,7 @@ import nucleus.workspace
 logger = logging.getLogger(__name__)
 
 
-class Workspace(object):
+class Workspace:
     """The workspace contains the processing information and state for
     a pipeline run on an image set
     """

@@ -142,7 +142,7 @@ The choices are:
 
                 skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
 
-            filenames.append(filename)
+            #filenames.append(filename)
 
         if self.show_window:
             workspace.display_data.filenames = filenames

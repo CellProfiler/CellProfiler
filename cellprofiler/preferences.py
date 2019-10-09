@@ -368,7 +368,7 @@ EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi", "h5"]
 JVM_HEAP_MB = "JVMHeapMB"
 
 '''Default JVM heap size'''
-DEFAULT_JVM_HEAP_MB = 512
+DEFAULT_JVM_HEAP_MB = 81920
 
 '''Save neither the pipeline nor the file list when saving the project'''
 SPP_NEITHER = "Neither"

@@ -689,7 +689,16 @@ class PipelineController(object):
     def __on_revert_workspace(self, event):
         path = cellprofiler.preferences.get_current_workspace_path()
         if path is not None:
-            self.do_open_workspace(path)
+            if (
+            wx.MessageBox(
+                "Do you really want to revert all unsaved changes?",
+                "Revert to saved file",
+                wx.YES_NO | wx.ICON_QUESTION,
+                self.__frame,
+            )
+            == wx.YES
+        ):
+                self.do_open_workspace(path)
 
     def do_open_workspace_dlg(self):
         """Display the open workspace dialog, returning the chosen file

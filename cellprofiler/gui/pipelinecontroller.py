@@ -2358,7 +2358,10 @@ class PipelineController(object):
     def __on_add_module(self, event):
         if not self.__add_module_frame.IsShownOnScreen():
             x, y = self.__frame.GetPosition()
-            x = max(x - self.__add_module_frame.GetSize().width, 0)
+            if x > self.__add_module_frame.GetSize().width:
+                x -= self.__add_module_frame.GetSize().width
+            else:
+                x += self.__module_controls_panel.GetSize().width
             self.__add_module_frame.SetPosition((x, y))
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()

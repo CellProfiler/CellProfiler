@@ -668,9 +668,9 @@ class PipelineController(object):
     def show_test_controls(self):
         """Show the controls for dealing with test mode"""
         self.__test_controls_panel.GetSizer().Show(self.__tcp_test_sizer)
+        self.__test_controls_panel.Layout()
         self.__test_controls_panel.GetSizer().Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.GetSizer().Hide(self.__tcp_analysis_sizer)
-        self.__test_controls_panel.Layout()
         self.__test_controls_panel.GetParent().Layout()
         self.__frame.enable_debug_commands()
 

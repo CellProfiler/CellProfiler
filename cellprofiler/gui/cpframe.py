@@ -857,6 +857,7 @@ class CPFrame(wx.Frame):
         # ID_HELP_MODULE is used in _both_ button contexts and menu contexts,
         # so it needs event bindings for either type
         self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
+        self.Bind(wx.EVT_BUTTON, self.__on_help_module, id=ID_HELP_MODULE)
 
         self.Bind(wx.EVT_MENU, self.about, id=ID_HELP_ABOUT)
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)

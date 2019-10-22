@@ -4188,6 +4188,7 @@ class FLDropTarget(wx.FileDropTarget):
 
     def OnDropFiles(self, x, y, filenames):
         self.file_callback_fn(x, y, filenames)
+        return True
 
     def OnDropText(self, x, y, text):
         self.text_callback_fn(x, y, text)

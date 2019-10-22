@@ -978,7 +978,7 @@ class PipelineListView(object):
         module = event.get_module()
         list_ctrl, index = self.get_ctrl_and_index(module)
         if not module.is_input_module() and (not self.list_ctrl.running_item or
-                                             self.list_ctrl_running_item > index):
+                                             self.list_ctrl.running_item > index):
             self.list_ctrl.set_running_item(index)
 
     def on_stop_debugging(self):

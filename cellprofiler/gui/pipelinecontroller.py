@@ -2209,7 +2209,6 @@ class PipelineController(object):
                         break
                     keep_going = update_pulse(message[0])
                 interrupt[0] = not keep_going
-                logger.warn("set stop")
             interrupt[0] = True
         self.__workspace.invalidate_image_set()
 

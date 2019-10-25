@@ -246,7 +246,7 @@ def test_load_5channel_tif():
     module.set_module_num(1)
     module.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
     module.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.images[0].channels[0].image_name.value = IMAGE_NAME
     module.images[0].common_text.value = file_name
@@ -319,7 +319,7 @@ def test_file_metadata():
     load_images.add_imagecb()
     load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
     load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-    load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    load_images.location.dir_choice = "Elsewhere..."
     load_images.location.custom_path = directory
     load_images.group_by_metadata.value = True
     load_images.images[
@@ -425,7 +425,7 @@ def test_missing_image():
     load_images.add_imagecb()
     load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
     load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-    load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    load_images.location.dir_choice = "Elsewhere..."
     load_images.location.custom_path = directory
     load_images.group_by_metadata.value = True
     load_images.check_images.value = True
@@ -482,7 +482,7 @@ def test_conflict():
         load_images.add_imagecb()
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.location.custom_path = directory
         load_images.group_by_metadata.value = True
         load_images.images[
@@ -561,7 +561,7 @@ def test_hierarchy():
         load_images.add_imagecb()
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.location.custom_path = directory
         load_images.group_by_metadata.value = True
         load_images.images[0].common_text.value = "_w1_"
@@ -660,7 +660,7 @@ def test_allowed_conflict():
                 nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
             )
             load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-            load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+            load_images.location.dir_choice = "Elsewhere..."
             load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.metadata_fields.value = [
@@ -773,7 +773,7 @@ def test_subfolders():
         load_images.set_module_num(1)
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.descend_subdirectories.value = nucleus.modules.loadimages.SUB_ALL
         load_images.location.custom_path = directory
         load_images.images[0].common_text.value = ".tif"
@@ -853,7 +853,7 @@ def test_some_subfolders():
         load_images.set_module_num(1)
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.descend_subdirectories.value = nucleus.modules.loadimages.SUB_SOME
         load_images.subdirectory_filter.value = load_images.subdirectory_filter.get_value_string(
             exclusions
@@ -1256,7 +1256,7 @@ def test_get_groupings():
         tests.modules.example_images_directory(), "ExampleSBSImages"
     )
     module = nucleus.modules.loadimages.LoadImages()
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = sbs_path
     module.group_by_metadata.value = True
     module.images[0].common_text.value = "Channel1-"
@@ -1319,7 +1319,7 @@ def test_load_avi():
     module.file_types.value = nucleus.modules.loadimages.FF_AVI_MOVIES
     module.images[0].common_text.value = file_name
     module.images[0].channels[0].image_name.value = "MyImage"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = avi_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1379,7 +1379,7 @@ def test_load_stk():
     module.file_types.value = nucleus.modules.loadimages.FF_STK_MOVIES
     module.images[0].common_text.value = "stk"
     module.images[0].channels[0].image_name.value = "MyImage"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1434,7 +1434,7 @@ def test_01_load_2_stk():
     module.images[1].common_text.value = "C1.stk"
     module.images[1].channels[0].image_name.value = "MyOtherImage"
 
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1458,7 +1458,7 @@ def test_02_load_stk():
     module.file_types.value = nucleus.modules.loadimages.FF_STK_MOVIES
     module.images[0].common_text.value = "C0.stk"
     module.images[0].channels[0].image_name.value = "MyImage"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1491,7 +1491,7 @@ def test_load_flex():
     module.add_channel(module.images[0])
     module.images[0].channels[1].image_name.value = "Red"
     module.images[0].channels[1].channel_number.value = "1"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = flex_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1559,7 +1559,7 @@ def test_group_interleaved_avi_frames():
     channel = module.images[0].channels[1]
     channel.channel_number.value = "3"
     channel.image_name.value = "Channel03"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = avi_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1635,7 +1635,7 @@ def test_group_separated_avi_frames():
     channel = module.images[0].channels[1]
     channel.channel_number.value = "3"
     channel.image_name.value = "Channel03"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = avi_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1702,7 +1702,7 @@ def test_load_flex_interleaved():
     module.images[0].channels[1].channel_number.value = "1"
     module.images[0].wants_movie_frame_grouping.value = True
     module.images[0].channels_per_group.value = 2
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = flex_path
     module.images[0].interleaving.value = nucleus.modules.loadimages.I_INTERLEAVED
     module.set_module_num(1)
@@ -1769,7 +1769,7 @@ def test_load_flex_separated():
     module.images[0].wants_movie_frame_grouping.value = True
     module.images[0].channels_per_group.value = 2
     module.images[0].interleaving.value = nucleus.modules.loadimages.I_SEPARATED
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = flex_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1891,7 +1891,7 @@ def make_objects_workspace(image, mode="L", filename="myfile.tif"):
     module.images[0].channels[0].object_name.value = OBJECTS_NAME
     module.images[0].channels[0].wants_outlines.value = True
     module.images[0].channels[0].outlines_name.value = OUTLINES_NAME
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = directory
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -2044,7 +2044,7 @@ def test_overlapped_objects():
 def test_batch_images():
     module = nucleus.modules.loadimages.LoadImages()
     module.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     orig_path = os.path.join(
         tests.modules.example_images_directory(), "ExampleSBSImages"
     )
@@ -2113,7 +2113,7 @@ def test_batch_images():
 def test_batch_movies():
     module = nucleus.modules.loadimages.LoadImages()
     module.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.file_types.value = nucleus.modules.loadimages.FF_AVI_MOVIES
     orig_path = tests.modules.testimages_directory()
     module.location.custom_path = orig_path
@@ -2183,7 +2183,7 @@ def test_batch_movies():
 def test_batch_flex():
     module = nucleus.modules.loadimages.LoadImages()
     module.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.file_types.value = nucleus.modules.loadimages.FF_OTHER_MOVIES
     orig_path = tests.modules.testimages_directory()
     orig_url = nucleus.modules.loadimages.pathname2url(orig_path)
@@ -2317,7 +2317,7 @@ def make_prepare_run_workspace(file_names):
 
     module = nucleus.modules.loadimages.LoadImages()
     module.set_module_num(1)
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = directory
 
     pipeline = nucleus.pipeline.Pipeline()

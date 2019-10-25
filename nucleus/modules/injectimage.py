@@ -99,7 +99,7 @@ class InjectImage(nucleus.module.Module):
             mask = self.__mask[workspace.image_set.image_number - 1]
         else:
             mask = self.__mask
-        image = nucleus.image.Image.Image(image, mask)
+        image = nucleus.image.Image(image, mask)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):

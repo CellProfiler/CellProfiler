@@ -911,7 +911,7 @@ def test_some_subfolders():
 
 
 def get_example_pipeline_data():
-    with open("./tests/resources/modules/loadimages/example.pipeline", "r") as fd:
+    with open("./tests/data/modules/loadimages/example.pipeline", "r") as fd:
         data = fd.read()
 
     return data
@@ -2997,7 +2997,7 @@ Rescale intensities?:Yes
 
 
 def test_provide_volume():
-    path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+    path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
     provider = nucleus.modules.loadimages.LoadImagesImageProvider(
         name="ball",
@@ -3022,7 +3022,7 @@ def test_provide_volume():
 
 def test_provide_npy():
     resource_directory = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources")
+        os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
     provider = nucleus.modules.loadimages.LoadImagesImageProvider(
@@ -3041,7 +3041,7 @@ def test_provide_npy():
 
 def test_provide_npy_volume():
     resource_directory = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources")
+        os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
     provider = nucleus.modules.loadimages.LoadImagesImageProvider(
@@ -3061,7 +3061,7 @@ def test_provide_npy_volume():
 
 class TestLoadImagesImageProviderURL:
     def test_provide_volume():
-        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
         provider = nucleus.modules.loadimages.LoadImagesImageProviderURL(
             name="ball",

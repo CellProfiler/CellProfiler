@@ -247,7 +247,16 @@ def config_write(key, value):
 
         shutup = wx.LogNull()
     __cached_values[key] = value
-    get_config().Write(key, value)
+
+    cfg = get_config()
+    if isinstance(value, bool):
+        cfg.WriteBool(key, value)
+    elif isinstance(value, int):
+        cfg.WriteInt(key, value)
+    else:
+        cfg.Write(key, value)
+
+    cfg.Flush()
 
 
 def config_exists(key):
@@ -1126,7 +1135,7 @@ def get_show_sampling():
 
 def set_show_sampling(value):
     global __show_sampling
-    get_config().WriteBool(SHOW_SAMPLING, bool(value))
+    config_write(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
 
 
@@ -1294,7 +1303,7 @@ def get_telemetry():
 
 
 def set_telemetry(val):
-    get_config().WriteBool(TELEMETRY, val)
+    config_write(TELEMETRY, val)
 
 
 def get_telemetry_prompt():
@@ -1305,7 +1314,7 @@ def get_telemetry_prompt():
 
 
 def set_telemetry_prompt(val):
-    get_config().WriteBool(TELEMETRY_PROMPT, val)
+    config_write(TELEMETRY_PROMPT, val)
 
 
 def get_startup_blurb():
@@ -1315,7 +1324,7 @@ def get_startup_blurb():
 
 
 def set_startup_blurb(val):
-    get_config().WriteBool(STARTUPBLURB, val)
+    config_write(STARTUPBLURB, val)
 
 
 def get_primary_outline_color():
@@ -1632,7 +1641,7 @@ def get_max_workers():
 def set_max_workers(value):
     """Set the maximum number of worker processes allowed during analysis"""
     global __max_workers
-    get_config().WriteInt(MAX_WORKERS, value)
+    config_write(MAX_WORKERS, value)
     __max_workers = value
 
 

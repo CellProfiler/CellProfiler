@@ -28,9 +28,6 @@ class TestMeasurements:
                 nucleus.measurement.Measurements.wrap_string(case)
             )
 
-            if not isinstance(case, six.text_type):
-                case = case.decode("utf-8")
-
             assert result == case
 
     def test_01_01_image_number_is_zero(self):

@@ -272,9 +272,8 @@ def load_measurements(
         finally:
             f.close()
     else:
-        m = Measurements(filename=dest_file)
-        m.load(filename)
-        return m
+        #FIXME - add clearer exception
+        pass
 
 
 def find_metadata_tokens(pattern):

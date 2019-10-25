@@ -845,6 +845,7 @@ class Pipeline:
             )
         }
         for key, value in list(handles.items()):
+            print(key,type(key),type(value))
             root["handles"][key][0, 0] = value
         self.savemat(filename, root)
 

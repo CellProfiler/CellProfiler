@@ -2,6 +2,7 @@ import bisect
 import logging
 import re
 
+import functools
 import future.standard_library
 import numpy
 import six
@@ -282,98 +283,98 @@ def map_feature_names(feature_names, max_size=63):
     mapping = {}
     seeded = False
 
-    def shortest_first(a, b):
-        return (
-            -1
-            if len(a) < len(b)
-            else 1
-            if len(b) < len(a)
-            else nucleus.utilities.legacy.cmp(a, b)
-        )
+    # def shortest_first(a, b):
+    #     return (
+    #         -1
+    #         if len(a) < len(b)
+    #         else 1
+    #         if len(b) < len(a)
+    #         else nucleus.utilities.legacy.cmp(a, b)
+    #     )
 
-    for feature_name in sorted(feature_names, shortest_first):
-        if len(feature_name) > max_size:
-            name = feature_name
-            to_remove = len(feature_name) - max_size
-            remove_count = 0
-            for to_drop in (
-                ("a", "e", "i", "o", "u"),
-                (
-                    "b",
-                    "c",
-                    "d",
-                    "f",
-                    "g",
-                    "h",
-                    "j",
-                    "k",
-                    "l",
-                    "m",
-                    "n",
-                    "p",
-                    "q",
-                    "r",
-                    "s",
-                    "t",
-                    "v",
-                    "w",
-                    "x",
-                    "y",
-                    "z",
-                ),
-                (
-                    "A",
-                    "B",
-                    "C",
-                    "D",
-                    "E",
-                    "F",
-                    "G",
-                    "H",
-                    "I",
-                    "J",
-                    "K",
-                    "L",
-                    "M",
-                    "N",
-                    "O",
-                    "P",
-                    "Q",
-                    "R",
-                    "S",
-                    "T",
-                    "U",
-                    "V",
-                    "W",
-                    "X",
-                    "Y",
-                    "Z",
-                ),
-            ):
-                for index in range(len(name) - 1, -1, -1):
-                    if name[index] in to_drop:
-                        name = name[:index] + name[index + 1 :]
-                        remove_count += 1
-                        if remove_count == to_remove:
-                            break
-                if remove_count == to_remove:
-                    break
-            if name in list(mapping.keys()) or len(name) > max_size:
-                # Panic mode - a duplication
-                if not seeded:
-                    numpy.random.seed(0)
-                    seeded = True
-                while True:
-                    npname = numpy.fromstring(feature_name, "|S1")
-                    indices = numpy.random.permutation(len(name))[:max_size]
-                    indices.sort()
-                    name = npname[indices]
-                    name = name.tostring()
-                    if not name in list(mapping.keys()):
-                        break
-        else:
-            name = feature_name
-        mapping[name] = feature_name
+    for feature_name in feature_names:
+        # if len(feature_name) > max_size:
+        #     name = feature_name
+        #     to_remove = len(feature_name) - max_size
+        #     remove_count = 0
+        #     for to_drop in (
+        #         ("a", "e", "i", "o", "u"),
+        #         (
+        #             "b",
+        #             "c",
+        #             "d",
+        #             "f",
+        #             "g",
+        #             "h",
+        #             "j",
+        #             "k",
+        #             "l",
+        #             "m",
+        #             "n",
+        #             "p",
+        #             "q",
+        #             "r",
+        #             "s",
+        #             "t",
+        #             "v",
+        #             "w",
+        #             "x",
+        #             "y",
+        #             "z",
+        #         ),
+        #         (
+        #             "A",
+        #             "B",
+        #             "C",
+        #             "D",
+        #             "E",
+        #             "F",
+        #             "G",
+        #             "H",
+        #             "I",
+        #             "J",
+        #             "K",
+        #             "L",
+        #             "M",
+        #             "N",
+        #             "O",
+        #             "P",
+        #             "Q",
+        #             "R",
+        #             "S",
+        #             "T",
+        #             "U",
+        #             "V",
+        #             "W",
+        #             "X",
+        #             "Y",
+        #             "Z",
+        #         ),
+        #     ):
+        #         for index in range(len(name) - 1, -1, -1):
+        #             if name[index] in to_drop:
+        #                 name = name[:index] + name[index + 1 :]
+        #                 remove_count += 1
+        #                 if remove_count == to_remove:
+        #                     break
+        #         if remove_count == to_remove:
+        #             break
+        #     if name in list(mapping.keys()) or len(name) > max_size:
+        #         # Panic mode - a duplication
+        #         if not seeded:
+        #             numpy.random.seed(0)
+        #             seeded = True
+        #         while True:
+        #             npname = numpy.fromstring(feature_name, "|S1")
+        #             indices = numpy.random.permutation(len(name))[:max_size]
+        #             indices.sort()
+        #             name = npname[indices]
+        #             name = name.tostring()
+        #             if not name in list(mapping.keys()):
+        #                 break
+        # else:
+        #     name = feature_name
+        mapping[feature_name] = feature_name
     return mapping
 
 
@@ -402,6 +403,11 @@ def add_all_measurements(handles, measurements):
         npy_measurements[object_name][0, 0] = object_measurements
         for field, feature_name in list(mapping.items()):
             feature_measurements = numpy.ndarray((1, max_image_number), dtype="object")
+            #import IPython
+            #IPython.embed()
+            if type(field) == bytes:
+                field = field.decode('utf-8')
+            print(field)
             object_measurements[field][0, 0] = feature_measurements
             for i in numpy.argwhere(~has_image_number[1:]).flatten():
                 feature_measurements[0, i] = numpy.zeros(0)

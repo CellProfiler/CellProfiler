@@ -760,10 +760,10 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         module = TestModuleWithMeasurement()
         # Little endian utf-16 encoding
-        module.my_variable.value = "\\\u2211"
-        module.other_variable.value = "\u2222\u0038"
+        module.my_variable.value = "∑"
+        module.other_variable.value = "∢8"
         module.set_module_num(1)
-        module.notes = "\u03B1\\\u03B2"
+        module.notes = "αβ"
         pipeline.add_module(module)
         fd = six.moves.StringIO()
         pipeline.savetxt(fd, save_image_plane_details=False)
@@ -771,31 +771,14 @@ HasImagePlaneDetails:False"""
         lines = result.split("\n")
         assert len(lines) == 11
         text, value = lines[-3].split(":")
-        #
-        # unicode encoding:
-        #     backslash: \\ (BOM encoding)
-        #     unicode character: \u2211 (n-ary summation)
-        #
-        # escape encoding:
-        #     utf-16 to byte: \xff\xfe\\\x00\x11"
-        #
-        # result = \\xff\\xfe\\\\\\x00\\x11"
-        assert value == '\\xff\\xfe\\\\\\x00\\x11"'
+        assert value == '∑'
         text, value = lines[-2].split(":")
-        #
-        # unicode encoding:
-        #     unicode character: \u
-        #
-        # escape encoding:
-        #     utf-16 to byte: \xff\xfe""8\x00
-        #
-        # result = \\xff\\xfe""8\\x00
-        assert value == '\\xff\\xfe""8\\x00'
+        assert value == '∢8'
         mline = lines[7]
         idx0 = mline.find("notes:")
         mline = mline[(idx0 + 6) :]
         idx1 = mline.find("|")
-        value = eval(mline[:idx1].decode("string_escape"))
+        value = eval(mline[:idx1])
         assert value == module.notes
 
     def test_unicode_save_and_load(self):
@@ -827,7 +810,7 @@ HasImagePlaneDetails:False"""
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
         assert isinstance(result_module, TestModuleWithMeasurement)
-        assert f"'{module.notes}'" == result_module.notes
+        assert module.notes == eval(result_module.notes)
         assert module.my_variable.value == result_module.my_variable.value
 
     def test_deprecated_unicode_load(self):

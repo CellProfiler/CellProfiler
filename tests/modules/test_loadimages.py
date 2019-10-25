@@ -82,7 +82,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     pipeline.convert_legacy_input_modules()
     pipeline.prepare_run(w2)
 
-    ff1 = m1.get_feature_names(nucleus.measurement.IMAGE)
+    ff1 = m1.get_feature_names("Image")
     ffexpected = [
         f.replace("IMAGE_FOR_", "")
         for f in ff1
@@ -90,7 +90,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     ]
     ff2 = [
         x
-        for x in m2.get_feature_names(nucleus.measurement.IMAGE)
+        for x in m2.get_feature_names("Image")
         if not any(
             [
                 x.startswith(y)
@@ -111,7 +111,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
 
     for feature in ff1:
         if feature.startswith("Metadata"):
-            assert m2.has_feature(nucleus.measurement.IMAGE, feature)
+            assert m2.has_feature("Image", feature)
     ff1a = list(
         filter((lambda x: not x.startswith("Metadata")), ff1)
     )
@@ -125,7 +125,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     order1, order2 = [
         numpy.lexsort(
             [
-                mm.get_measurement(nucleus.measurement.IMAGE, f, image_numbers)
+                mm.get_measurement("Image", f, image_numbers)
                 for f in m_url
             ]
         )
@@ -135,16 +135,16 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     image_numbers2 = image_numbers[order2]
     for f1, f2 in zip(ff1a, ff2):
         if f1 in (
-            nucleus.measurement.GROUP_INDEX,
-            nucleus.measurement.GROUP_NUMBER,
-            nucleus.measurement.IMAGE_NUMBER,
+            "Group_Index",
+            "Group_Number",
+            "Image_Number",
         ):
             continue
         v1 = m1.get_measurement(
-            nucleus.measurement.IMAGE, f1, image_set_number=image_numbers1
+            "Image", f1, image_set_number=image_numbers1
         )
         v2 = m2.get_measurement(
-            nucleus.measurement.IMAGE, f2, image_set_number=image_numbers2
+            "Image", f2, image_set_number=image_numbers2
         )
         if f1.startswith("PathName") or f1.startswith(
             "ObjectsPathName"
@@ -596,7 +596,7 @@ def test_hierarchy():
         )
         for i in range(12):
             channel1_filename = m.get_measurement(
-                nucleus.measurement.IMAGE,
+                "Image",
                 "FileName" + "_" + "Channel1",
                 i + 1,
             )
@@ -604,7 +604,7 @@ def test_hierarchy():
                 load_images.images[0].file_metadata.value, channel1_filename
             ).groupdict()
             illum_filename = m.get_measurement(
-                nucleus.measurement.IMAGE,
+                "Image",
                 "FileName" + "_" + "Illum",
                 i + 1,
             )
@@ -983,13 +983,13 @@ def test_get_measurements():
     }
     for cat, expected in list(categories.items()):
         assert set(expected) == set(
-            module.get_measurements(pipeline, nucleus.measurement.IMAGE, cat)
+            module.get_measurements(pipeline, "Image", cat)
         )
     module.images[0].metadata_choice.value = nucleus.modules.loadimages.M_BOTH
     categories["Metadata"] += ["Year", "Month", "Day"]
     for cat, expected in list(categories.items()):
         assert set(expected) == set(
-            module.get_measurements(pipeline, nucleus.measurement.IMAGE, cat)
+            module.get_measurements(pipeline, "Image", cat)
         )
 
 
@@ -999,7 +999,7 @@ def test_get_categories():
     pipeline = nucleus.pipeline.Pipeline()
     pipeline.load(fd)
     module = pipeline.module(1)
-    results = module.get_categories(pipeline, nucleus.measurement.IMAGE)
+    results = module.get_categories(pipeline, "Image")
     expected = [
         "FileName",
         "PathName",
@@ -1072,7 +1072,7 @@ def test_get_movie_measurements():
             assert len(columns) == len(expected_cols)
             for column in columns:
                 assert column in expected_cols
-            categories = module.get_categories(None, nucleus.measurement.IMAGE)
+            categories = module.get_categories(None, "Image")
             assert len(categories) == 9
             category_dict = {}
             for column in expected_cols:
@@ -1084,7 +1084,7 @@ def test_get_movie_measurements():
                 assert category in categories
                 expected_features = category_dict[category]
                 features = module.get_measurements(
-                    None, nucleus.measurement.IMAGE, category
+                    None, "Image", category
                 )
                 assert len(features) == len(expected_features)
                 assert len(features) == len(set(features))
@@ -1141,7 +1141,7 @@ def test_get_flex_measurements():
         assert len(columns) == len(expected_cols)
         for column in columns:
             assert column in expected_cols
-        categories = module.get_categories(None, nucleus.measurement.IMAGE)
+        categories = module.get_categories(None, "Image")
         assert len(categories) == 10
         category_dict = {}
         for column in expected_cols:
@@ -1153,7 +1153,7 @@ def test_get_flex_measurements():
             assert category in categories
             expected_features = category_dict[category]
             features = module.get_measurements(
-                None, nucleus.measurement.IMAGE, category
+                None, "Image", category
             )
             assert len(features) == len(expected_features)
             assert len(features) == len(set(features))
@@ -1168,14 +1168,14 @@ def test_get_object_measurement_columns():
     columns = module.get_measurement_columns(None)
     for object_name, feature in (
         (
-            nucleus.measurement.IMAGE,
+            "Image",
             "ObjectsFileName" + "_" + OBJECTS_NAME,
         ),
         (
-            nucleus.measurement.IMAGE,
+            "Image",
             "ObjectsPathName" + "_" + OBJECTS_NAME,
         ),
-        (nucleus.measurement.IMAGE, "Count" + "_" + OBJECTS_NAME),
+        ("Image", "Count" + "_" + OBJECTS_NAME),
         (OBJECTS_NAME, "Location_Center_X"),
         (OBJECTS_NAME, "Location_Center_Y"),
         (OBJECTS_NAME, "Number_Object_Number"),
@@ -1196,7 +1196,7 @@ def test_get_object_categories():
     channel.object_name.value = OBJECTS_NAME
     for object_name, expected_categories in (
         (
-            nucleus.measurement.IMAGE,
+            "Image",
             (
                 "ObjectsFileName",
                 "ObjectsPathName",
@@ -1221,7 +1221,7 @@ def test_get_object_measurements():
     channel.object_name.value = OBJECTS_NAME
     for object_name, expected in (
         (
-            nucleus.measurement.IMAGE,
+            "Image",
             (
                 ("ObjectsFileName", [OBJECTS_NAME]),
                 ("ObjectsPathName", [OBJECTS_NAME]),
@@ -1923,7 +1923,7 @@ def test_load_empty_objects():
     assert numpy.all(o.segmented == 0)
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name, measurement in (
-        (nucleus.measurement.IMAGE, "Count_%s" % OBJECTS_NAME),
+        ("Image", "Count_%s" % OBJECTS_NAME),
         (OBJECTS_NAME, "Location_Center_X"),
         (OBJECTS_NAME, "Location_Center_Y"),
         (OBJECTS_NAME, "Number_Object_Number"),
@@ -2089,19 +2089,19 @@ def test_batch_images():
     module.prepare_group(workspace, group_keys, image_numbers)
     for image_number in image_numbers:
         path = m.get_measurement(
-            nucleus.measurement.IMAGE,
+            "Image",
             "PathName" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert path == target_path
         file_name = m.get_measurement(
-            nucleus.measurement.IMAGE,
+            "Image",
             "FileName" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert re.match(file_regexp, file_name) is not None
         url = m.get_measurement(
-            nucleus.measurement.IMAGE,
+            "Image",
             "URL" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
@@ -2166,7 +2166,7 @@ def test_batch_movies():
     for image_number in image_numbers:
         assert (
             m.get_measurement(
-                nucleus.measurement.IMAGE,
+                "Image",
                 "PathName_" + IMAGE_NAME,
                 image_set_number=image_number,
             )
@@ -2174,7 +2174,7 @@ def test_batch_movies():
         )
         assert (
             m.get_measurement(
-                nucleus.measurement.IMAGE, "Metadata_T", image_set_number=image_number
+                "Image", "Metadata_T", image_set_number=image_number
             )
             == image_number - 1
         )
@@ -2234,13 +2234,13 @@ def test_batch_flex():
         for image_number in image_numbers:
             assert (
                 m.get_measurement(
-                    nucleus.measurement.IMAGE, "PathName_" + IMAGE_NAME, image_number
+                    "Image", "PathName_" + IMAGE_NAME, image_number
                 )
                 == target_path
             )
             assert (
                 m.get_measurement(
-                    nucleus.measurement.IMAGE,
+                    "Image",
                     nucleus.modules.loadimages.C_SERIES + "_" + IMAGE_NAME,
                     image_number,
                 )
@@ -2368,7 +2368,7 @@ def test_prepare_run_measurements():
                 ("URL", url),
             ):
                 value = m.get_measurement(
-                    nucleus.measurement.IMAGE, "_".join((category, image_name)), i
+                    "Image", "_".join((category, image_name)), i
                 )
                 assert value == expected
 
@@ -2415,14 +2415,14 @@ def test_00_load_from_url():
     )
     for image_number, (filename, alt_filename) in zip(image_numbers, names):
         url = m.get_measurement(
-            nucleus.measurement.IMAGE,
+            "Image",
             "URL" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         expected = url_base + "/" + filename
         assert expected == url
         url = m.get_measurement(
-            nucleus.measurement.IMAGE,
+            "Image",
             "URL" + "_" + ALT_IMAGE_NAME,
             image_set_number=image_number,
         )

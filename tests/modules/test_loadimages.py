@@ -3061,6 +3061,8 @@ def test_provide_npy_volume():
 
 class TestLoadImagesImageProviderURL:
     def test_provide_volume():
+        import IPython
+        IPython.embed()
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
         provider = nucleus.modules.loadimages.LoadImagesImageProviderURL(
@@ -3083,6 +3085,8 @@ class TestLoadImagesImageProviderURL:
         numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
     def test_provide_volume_3_planes():
+        import IPython
+        IPython.embed()
         data = numpy.random.rand(3, 256, 256)
 
         path = tempfile.NamedTemporaryFile(suffix=".tif", delete=False).name

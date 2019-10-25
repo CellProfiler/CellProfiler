@@ -1171,33 +1171,33 @@ HasImagePlaneDetails:False"""
             ),
             (
                 ["Well"],
-                ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-                [("foo", 1, 2, 3, {"Well": "\\u03b1\\u03b2"})],
+                ['"foo","1","2","3","Î±Î²"'],
+                [("foo", 1, 2, 3, {"Well": "αβ"})],
             ),
             ([], [r'"\\foo\"bar","4","5","6"'], [(r'\foo"bar', 4, 5, 6)]),
         )
         for metadata_columns, body_lines, expected in test_data:
             s = '"%s":"%d","%s":"%d"\n' % (
-                nucleus.pipeline.H_VERSION,
-                nucleus.pipeline.IMAGE_PLANE_DESCRIPTOR_VERSION,
-                nucleus.pipeline.H_PLANE_COUNT,
+                "Version",
+                1,
+                "PlaneCount",
                 len(body_lines),
             )
             s += (
                 '"'
                 + '","'.join(
                     [
-                        nucleus.pipeline.H_URL,
-                        nucleus.pipeline.H_SERIES,
-                        nucleus.pipeline.H_INDEX,
-                        nucleus.pipeline.H_CHANNEL,
+                        "URL",
+                        "Series",
+                        "Index",
+                        "Channel"
                     ]
                     + metadata_columns
                 )
                 + '"\n'
             )
             s += "\n".join(body_lines) + "\n"
-            fd = six.moves.StringIO(s)
+            fd = io.StringIO(s)
             result = nucleus.pipeline.read_file_list(fd)
             assert len(result) == len(expected)
             for r, e in zip(result, expected):

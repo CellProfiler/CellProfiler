@@ -1176,9 +1176,9 @@ def test_get_object_measurement_columns():
             "ObjectsPathName" + "_" + OBJECTS_NAME,
         ),
         (nucleus.measurement.IMAGE, "Count" + "_" + OBJECTS_NAME),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_X),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_Y),
-        (OBJECTS_NAME, nucleus.measurement.M_NUMBER_OBJECT_NUMBER),
+        (OBJECTS_NAME, "Location_Center_X"),
+        (OBJECTS_NAME, "Location_Center_Y"),
+        (OBJECTS_NAME, "Number_Object_Number"),
     ):
         assert any(
             [
@@ -1234,11 +1234,11 @@ def test_get_object_measurements():
                 (
                     "Location",
                     [
-                        nucleus.measurement.FTR_CENTER_X,
-                        nucleus.measurement.FTR_CENTER_Y,
+                        "Center_X",
+                        "Center_Y",
                     ],
                 ),
-                ("Number", [nucleus.measurement.FTR_OBJECT_NUMBER]),
+                ("Number", ["Object_Number"]),
             ),
         ),
     ):
@@ -1923,10 +1923,10 @@ def test_load_empty_objects():
     assert numpy.all(o.segmented == 0)
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name, measurement in (
-        (nucleus.measurement.IMAGE, nucleus.measurement.FF_COUNT % OBJECTS_NAME),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_X),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_Y),
-        (OBJECTS_NAME, nucleus.measurement.M_NUMBER_OBJECT_NUMBER),
+        (nucleus.measurement.IMAGE, "Count_%s" % OBJECTS_NAME),
+        (OBJECTS_NAME, "Location_Center_X"),
+        (OBJECTS_NAME, "Location_Center_Y"),
+        (OBJECTS_NAME, "Number_Object_Number"),
     ):
         assert any(
             [
@@ -1938,7 +1938,7 @@ def test_load_empty_objects():
     m = workspace.measurements
     assert isinstance(m, nucleus.measurement.Measurements)
     assert (
-        m.get_current_image_measurement(nucleus.measurement.FF_COUNT % OBJECTS_NAME)
+        m.get_current_image_measurement("Count_%s" % OBJECTS_NAME)
         == 0
     )
 
@@ -1954,7 +1954,7 @@ def test_load_indexed_objects():
     m = workspace.measurements
     assert isinstance(m, nucleus.measurement.Measurements)
     assert (
-        m.get_current_image_measurement(nucleus.measurement.FF_COUNT % OBJECTS_NAME)
+        m.get_current_image_measurement("Count_%s" % OBJECTS_NAME)
         == 9
     )
     i, j = numpy.mgrid[0 : image.shape[0], 0 : image.shape[1]]
@@ -1962,12 +1962,12 @@ def test_load_indexed_objects():
     x = numpy.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
     y = numpy.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
     v = m.get_current_measurement(
-        OBJECTS_NAME, nucleus.measurement.M_NUMBER_OBJECT_NUMBER
+        OBJECTS_NAME, "Number_Object_Number"
     )
     assert numpy.all(v == numpy.arange(1, 10))
-    v = m.get_current_measurement(OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_X)
+    v = m.get_current_measurement(OBJECTS_NAME, "Location_Center_X")
     assert numpy.all(v == x)
-    v = m.get_current_measurement(OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_Y)
+    v = m.get_current_measurement(OBJECTS_NAME, "Location_Center_Y")
     assert numpy.all(v == y)
 
 

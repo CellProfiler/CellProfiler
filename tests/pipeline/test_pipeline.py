@@ -13,6 +13,7 @@ import numpy
 import numpy.lib.index_tricks
 import six
 import six.moves
+import io
 
 import nucleus.image
 import nucleus.measurement
@@ -815,18 +816,18 @@ HasImagePlaneDetails:False"""
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\\u2211"
+        module.my_variable.value = "∑"
         module.set_module_num(1)
-        module.notes = "\\u03B1\\\\u03B2"
+        module.notes = "∑"
         pipeline.add_module(module)
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         pipeline.savetxt(fd)
         fd.seek(0)
         pipeline.loadtxt(fd)
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
         assert isinstance(result_module, TestModuleWithMeasurement)
-        assert module.notes == result_module.notes
+        assert f"'{module.notes}'" == result_module.notes
         assert module.my_variable.value == result_module.my_variable.value
 
     def test_deprecated_unicode_load(self):

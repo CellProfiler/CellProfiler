@@ -571,21 +571,20 @@ class Pipeline:
                     if len(line.split(":")) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":")
-
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
                     # En/decode needed to read example cppipe format
-                    setting = (
-                        setting.encode().decode("unicode_escape").replace("\\\\", "\\")
-                    )
-
-                    if do_deprecated_utf16_decode:
-                        # decoding with 'unicode_escape' appears to be sufficient
-                        pass
-                    elif do_utf16_decode:
-                        # Real hack-y way to do utf-16 decoding; was read as str so can't .decode('utf-16')
-                        setting = "".join(
-                            filter(lambda x: x in string.printable, setting)
-                        )
+                    # setting = (
+                    #     setting.encode().decode("unicode_escape").replace("\\\\", "\\")
+                    # )
+                    #
+                    # if do_deprecated_utf16_decode:
+                    #     # decoding with 'unicode_escape' appears to be sufficient
+                    #     pass
+                    # elif do_utf16_decode:
+                    #     # Real hack-y way to do utf-16 decoding; was read as str so can't .decode('utf-16')
+                    #     setting = "".join(
+                    #         filter(lambda x: x in string.printable, setting)
+                    #     )
 
                     settings.append(setting)
                 #
@@ -620,7 +619,7 @@ class Pipeline:
                         continue
                     # En/decode needed to read example cppipe format
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
-                    value = eval(value.encode().decode("unicode_escape"))
+                    #value = eval(value.encode().decode("unicode_escape"))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
                     else:

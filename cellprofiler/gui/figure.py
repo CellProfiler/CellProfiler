@@ -655,7 +655,7 @@ class Figure(wx.Frame):
             if evt.xdata is not None:
                 x0 = min(self.mouse_down[0], evt.xdata)
                 x1 = max(self.mouse_down[0], evt.xdata)
-            if evt.ydata != None:
+            if evt.ydata is not None:
                 y0 = min(self.mouse_down[1], evt.ydata)
                 y1 = max(self.mouse_down[1], evt.ydata)
 

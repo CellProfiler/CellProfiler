@@ -3081,7 +3081,8 @@ to store the image.
                             outlines |= centrosome.outline.outline(l).astype(
                                 outlines.dtype
                             )
-                        outline_image = nucleus.image.Image.Image(
+
+                        outline_image = nucleus.image.Image(
                             outlines, path_name=path, file_name=filename
                         )
                         workspace.image_set.add(

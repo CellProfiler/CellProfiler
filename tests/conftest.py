@@ -1,4 +1,4 @@
-import bioformats
+import bioformats.formatreader
 
 import nucleus.preferences
 import nucleus.utilities.java

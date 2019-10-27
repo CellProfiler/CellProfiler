@@ -1,10 +1,19 @@
 import os
 import tempfile
 
+from bioformats.formatwriter import write_image
 import logging
 logger = logging.getLogger(__name__)
+import numpy
+import unittest
+from urllib.request import URLopener
 
 __temp_example_images_folder = None
+__temp_test_images_folder = None
+
+cp_logo_url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/0c64193dd9108934400494fffa41d24f3df1573c/artwork/CP_logo.png"
+cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
+cp_logo_url_shape = (70, 187, 3)
 
 def example_images_directory():
     global __temp_example_images_folder
@@ -28,6 +37,37 @@ def example_images_directory():
         )
     return __temp_example_images_folder
 
+def testimages_directory():
+    global __temp_test_images_folder
+    if "CP_TESTIMAGES" in os.environ:
+        return os.environ["CP_TESTIMAGES"]
+    fyle = os.path.abspath(__file__)
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
+    d = os.path.split(d)[0]  # trunk.CellProfiler
+    d = os.path.split(d)[0]  # trunk
+    path = os.path.join(d, "TestImages")
+    if os.path.exists(path):
+        return path
+    if __temp_test_images_folder is None:
+        __temp_test_images_folder = tempfile.mkdtemp(prefix="cp_testimages")
+        logger.warning(
+            "Creating temporary folder %s for test images" % __temp_test_images_folder
+        )
+    return __temp_test_images_folder
+
+def svn_mirror_url():
+    """Return the URL for the SVN mirror
+
+    Use the value of the environment variable, "CP_SVNMIRROR_URL" with
+    a default of http://cellprofiler.org/svnmirror.
+    """
+    return os.environ.get("CP_SVNMIRROR_URL", "http://cellprofiler.org/svnmirror")
+
+def testimages_url():
+    return svn_mirror_url() + "/" + "TestImages"
+
 def maybe_download_example_image(folders, file_name, shape=None):
     """Download the given ExampleImages file if not in the directory
 
@@ -47,11 +87,24 @@ def maybe_download_example_image(folders, file_name, shape=None):
         directory = os.path.join(*tuple([example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        random_state = np.random.RandomState()
+        random_state = numpy.random.RandomState()
         random_state.seed()
-        image = (random_state.uniform(size=shape) * 255).astype(np.uint8)
-        write_image(local_path, image, PT_UINT8)
+        image = (random_state.uniform(size=shape) * 255).astype(numpy.uint8)
+        write_image(local_path, image, "uint8")
     return local_path
+
+def maybe_download_example_images(folders, file_names):
+    """Download multiple files to the example images directory
+
+    folders - sequence of subfolders of ExampleImages
+    file_names - sequence of file names to be fetched from the single directory
+                described by the list of folders
+
+    Returns the local directory containing the images.
+    """
+    for file_name in file_names:
+        maybe_download_example_image(folders, file_name)
+    return os.path.join(example_images_directory(), *folders)
 
 def maybe_download_fly():
     """Download the fly example directory"""

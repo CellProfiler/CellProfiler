@@ -14,7 +14,7 @@ import nucleus.module
 import nucleus.pipeline
 import nucleus.setting
 import nucleus.modules
-import nucleus.modules._help
+import nucleus.module._help
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,7 @@ Measurements made by this module
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
 """.format(
     **{
-        "METADATA_DISPLAY_TABLE": nucleus.modules.image_resource(
+        "METADATA_DISPLAY_TABLE": nucleus.utilities.image_resource(
             "Metadata_ExampleDisplayTable.png"
         )
     }
@@ -379,7 +379,7 @@ extraction method” button to add more.
                         "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                         "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
                         "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
-                        "PROTIP_RECOMMEND_ICON": nucleus.modules._help.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": nucleus.module._help.PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),
@@ -554,7 +554,7 @@ extraction.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                     **{
-                        "FILTER_RULES_BUTTONS_HELP": nucleus.modules._help.FILTER_RULES_BUTTONS_HELP,
+                        "FILTER_RULES_BUTTONS_HELP": nucleus.module._help.FILTER_RULES_BUTTONS_HELP,
                         "YES": "Yes",
                     }
                 ),
@@ -633,7 +633,7 @@ source; press |image0| to add more rows.
 .. |image0| image:: {MODULE_ADD_BUTTON}
 """.format(
                     **{
-                        "MODULE_ADD_BUTTON": nucleus.modules.image_resource(
+                        "MODULE_ADD_BUTTON": nucleus.utilities.image_resource(
                             "module_add.png"
                         )
                     }
@@ -664,7 +664,7 @@ not being applied, your choice on this setting may be the culprit.
                     **{
                         "NO": "No",
                         "YES": "Yes",
-                        "PROTIP_RECOMMEND_ICON": nucleus.modules._help.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": nucleus.module._help.PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),
@@ -711,7 +711,7 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                url = nucleus.modules.generate_presigned_url(csv_path)
+                url = nucleus.utilities.generate_presigned_url(csv_path)
                 fd = six.moves.urllib.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
@@ -763,7 +763,7 @@ not being applied, your choice on this setting may be the culprit.
                 "java/io/StringReader", "(Ljava/lang/String;)V", header
             )
         elif group.csv_location.is_url():
-            url = nucleus.modules.generate_presigned_url(self.csv_path(group))
+            url = nucleus.utilities.generate_presigned_url(self.csv_path(group))
             jurl = javabridge.make_instance(
                 "java/net/URL", "(Ljava/lang/String;)V", url
             )

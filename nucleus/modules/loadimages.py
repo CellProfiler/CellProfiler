@@ -28,8 +28,9 @@ import nucleus.pipeline
 import nucleus.preferences
 import nucleus.setting
 import nucleus.modules
-import nucleus.modules
-from nucleus.modules import generate_presigned_url, identify
+#import nucleus.modules
+from nucleus.modules import identify
+from nucleus.utilities import generate_presigned_url
 
 """
 LoadImages
@@ -551,7 +552,7 @@ Three options are available:
                     "MS_EXACT_MATCH": MS_EXACT_MATCH,
                     "MS_REGEXP": MS_REGEXP,
                     "MS_ORDER": MS_ORDER,
-                    "REGEXP_HELP_REF": nucleus.modules._help.REGEXP_HELP_REF,
+                    "REGEXP_HELP_REF": nucleus.module._help.REGEXP_HELP_REF,
                 }
             ),
         )
@@ -625,7 +626,7 @@ well:
             allow_metadata=False,
             doc="Select the folder containing the images to be loaded. {IO_FOLDER_CHOICE_HELP_TEXT}".format(
                 **{
-                    "IO_FOLDER_CHOICE_HELP_TEXT": nucleus.modules._help.IO_FOLDER_CHOICE_HELP_TEXT
+                    "IO_FOLDER_CHOICE_HELP_TEXT": nucleus.module._help.IO_FOLDER_CHOICE_HELP_TEXT
                 }
             ),
         )
@@ -679,7 +680,7 @@ there is no need to enable here.
 """.format(
                 **{
                     "YES": "Yes",
-                    "USING_METADATA_GROUPING_HELP_REF": nucleus.modules._help.USING_METADATA_GROUPING_HELP_REF,
+                    "USING_METADATA_GROUPING_HELP_REF": nucleus.module._help.USING_METADATA_GROUPING_HELP_REF,
                 }
             ),
         )

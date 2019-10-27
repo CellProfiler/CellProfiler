@@ -403,11 +403,8 @@ def add_all_measurements(handles, measurements):
         npy_measurements[object_name][0, 0] = object_measurements
         for field, feature_name in list(mapping.items()):
             feature_measurements = numpy.ndarray((1, max_image_number), dtype="object")
-            #import IPython
-            #IPython.embed()
             if type(field) == bytes:
                 field = field.decode('utf-8')
-            print(field)
             object_measurements[field][0, 0] = feature_measurements
             for i in numpy.argwhere(~has_image_number[1:]).flatten():
                 feature_measurements[0, i] = numpy.zeros(0)

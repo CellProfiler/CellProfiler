@@ -650,14 +650,10 @@ class Figure(wx.Frame):
             y0 = evt.ydata
             y1 = evt.ydata
         else:
-            x0, x1 = self.mouse_down[0], self.mouse_down[0]
-            y0, y1 = self.mouse_down[1], self.mouse_down[1]
-            if evt.xdata is not None:
-                x0 = min(self.mouse_down[0], evt.xdata)
-                x1 = max(self.mouse_down[0], evt.xdata)
-            if evt.ydata is not None:
-                y0 = min(self.mouse_down[1], evt.ydata)
-                y1 = max(self.mouse_down[1], evt.ydata)
+            x0 = min(self.mouse_down[0], evt.xdata or self.mouse_down[0])
+            x1 = max(self.mouse_down[0], evt.xdata or self.mouse_down[0])
+            y0 = min(self.mouse_down[1], evt.ydata or self.mouse_down[1])
+            y1 = max(self.mouse_down[1], evt.ydata or self.mouse_down[1])
 
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)

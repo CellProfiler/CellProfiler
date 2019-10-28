@@ -307,8 +307,8 @@ def get_crosshair_cursor():
             abuf = numpy.ones((16, 16), dtype="uint8") * 255
             abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
             image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            image.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
             __crosshair_cursor = wx.Cursor(image)
         else:
             __crosshair_cursor = wx.CROSS_CURSOR
@@ -650,10 +650,10 @@ class Figure(wx.Frame):
             y0 = evt.ydata
             y1 = evt.ydata
         else:
-            x0 = min(self.mouse_down[0], evt.xdata)
-            x1 = max(self.mouse_down[0], evt.xdata)
-            y0 = min(self.mouse_down[1], evt.ydata)
-            y1 = max(self.mouse_down[1], evt.ydata)
+            x0 = min(self.mouse_down[0], evt.xdata or self.mouse_down[0])
+            x1 = max(self.mouse_down[0], evt.xdata or self.mouse_down[0])
+            y0 = min(self.mouse_down[1], evt.ydata or self.mouse_down[1])
+            y1 = max(self.mouse_down[1], evt.ydata or self.mouse_down[1])
 
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)

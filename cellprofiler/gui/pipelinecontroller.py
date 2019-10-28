@@ -668,9 +668,9 @@ class PipelineController(object):
     def show_test_controls(self):
         """Show the controls for dealing with test mode"""
         self.__test_controls_panel.GetSizer().Show(self.__tcp_test_sizer)
+        self.__test_controls_panel.Layout()
         self.__test_controls_panel.GetSizer().Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.GetSizer().Hide(self.__tcp_analysis_sizer)
-        self.__test_controls_panel.Layout()
         self.__test_controls_panel.GetParent().Layout()
         self.__frame.enable_debug_commands()
 
@@ -689,7 +689,16 @@ class PipelineController(object):
     def __on_revert_workspace(self, event):
         path = cellprofiler.preferences.get_current_workspace_path()
         if path is not None:
-            self.do_open_workspace(path)
+            if (
+            wx.MessageBox(
+                "Do you really want to revert all unsaved changes?",
+                "Revert to saved file",
+                wx.YES_NO | wx.ICON_QUESTION,
+                self.__frame,
+            )
+            == wx.YES
+        ):
+                self.do_open_workspace(path)
 
     def do_open_workspace_dlg(self):
         """Display the open workspace dialog, returning the chosen file
@@ -2200,7 +2209,6 @@ class PipelineController(object):
                         break
                     keep_going = update_pulse(message[0])
                 interrupt[0] = not keep_going
-                logger.warn("set stop")
             interrupt[0] = True
         self.__workspace.invalidate_image_set()
 
@@ -2349,7 +2357,10 @@ class PipelineController(object):
     def __on_add_module(self, event):
         if not self.__add_module_frame.IsShownOnScreen():
             x, y = self.__frame.GetPosition()
-            x = max(x - self.__add_module_frame.GetSize().width, 0)
+            if x > self.__add_module_frame.GetSize().width:
+                x -= self.__add_module_frame.GetSize().width
+            else:
+                x += self.__module_controls_panel.GetSize().width
             self.__add_module_frame.SetPosition((x, y))
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()
@@ -4176,9 +4187,11 @@ class FLDropTarget(wx.FileDropTarget):
 
     def OnDropFiles(self, x, y, filenames):
         self.file_callback_fn(x, y, filenames)
+        return True
 
     def OnDropText(self, x, y, text):
         self.text_callback_fn(x, y, text)
+        return True
 
     def OnEnter(self, x, y, d):
         return wx.DragCopy

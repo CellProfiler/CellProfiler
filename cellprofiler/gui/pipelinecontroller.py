@@ -4191,6 +4191,7 @@ class FLDropTarget(wx.FileDropTarget):
 
     def OnDropText(self, x, y, text):
         self.text_callback_fn(x, y, text)
+        return True
 
     def OnEnter(self, x, y, d):
         return wx.DragCopy

@@ -1174,8 +1174,9 @@ HasImagePlaneDetails:False"""
                 ['"foo","1","2","3","Î±Î²"'],
                 [("foo", 1, 2, 3, {"Well": "αβ"})],
             ),
-            ([], [r'"\\foo\"bar","4","5","6"'], [(r'\foo"bar', 4, 5, 6)]),
+            ([], [r'"\foo"bar","4","5","6"'], [(r'\foo"bar', 4, 5, 6)]),
         )
+
         for metadata_columns, body_lines, expected in test_data:
             s = '"%s":"%d","%s":"%d"\n' % (
                 "Version",
@@ -1196,10 +1197,14 @@ HasImagePlaneDetails:False"""
                 )
                 + '"\n'
             )
+
             s += "\n".join(body_lines) + "\n"
-            fd = io.StringIO(s)
-            result = nucleus.pipeline.read_file_list(fd)
+
+            with io.StringIO(s) as fd:
+                result = nucleus.pipeline.read_file_list(fd)
+
             assert len(result) == len(expected)
+
             for r, e in zip(result, expected):
                 assert r == e[0]
 

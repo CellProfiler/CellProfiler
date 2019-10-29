@@ -23,6 +23,7 @@ import nucleus.image
 import nucleus.measurement
 import nucleus.object
 import nucleus.pipeline
+import nucleus.pipeline.dependency
 import nucleus.pipeline.event
 import nucleus.preferences
 import nucleus.setting
@@ -3446,12 +3447,12 @@ class Pipeline:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
                                 if group == "objectgroup":
-                                    dependency = nucleus.pipeline.ObjectDependency(
+                                    dependency = nucleus.pipeline.dependency.ObjectDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
                                 elif group == "imagegroup":
-                                    dependency = nucleus.pipeline.ImageDependency(
+                                    dependency = nucleus.pipeline.dependency.ImageDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
@@ -3463,7 +3464,7 @@ class Pipeline:
                     if key in providers["measurementsgroup"]:
                         for pmodule, psetting in providers["measurementsgroup"][key]:
                             if pmodule.module_num < module.module_num:
-                                dependency = nucleus.pipeline.MeasurementDependency(
+                                dependency = nucleus.pipeline.dependency.MeasurementDependeny(
                                     pmodule,
                                     module,
                                     object_name,

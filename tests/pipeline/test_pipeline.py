@@ -22,6 +22,9 @@ import nucleus.modules
 import nucleus.modules.injectimage
 import nucleus.modules.loadimages
 import nucleus.pipeline
+import nucleus.pipeline.dependency._image_dependency
+import nucleus.pipeline.dependency._measurement_dependency
+import nucleus.pipeline.dependency._object_dependency
 import nucleus.pipeline.event._load_exception
 import nucleus.pipeline.event.run_exception._run_exception
 import nucleus.preferences
@@ -1104,7 +1107,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(edge, nucleus.pipeline.ImageDependency)
+        assert isinstance(edge, nucleus.pipeline.dependency._image_dependency.ImageDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.source_setting == pipeline.modules()[0].settings()[0]
         assert edge.image_name == IMAGE_NAME
@@ -1125,7 +1128,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(edge, nucleus.pipeline.ObjectDependency)
+        assert isinstance(edge, nucleus.pipeline.dependency._object_dependency.ObjectDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.source_setting == pipeline.modules()[0].settings()[0]
         assert edge.object_name == OBJECT_NAME
@@ -1152,7 +1155,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(edge, nucleus.pipeline.MeasurementDependency)
+        assert isinstance(edge, nucleus.pipeline.dependency._measurement_dependency.MeasurementDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.object_name == OBJECT_NAME
         assert edge.feature == FEATURE_NAME

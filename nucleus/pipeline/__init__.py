@@ -44,12 +44,10 @@ from nucleus.pipeline.event._pipeline_cleared import PipelineCleared
 from nucleus.pipeline.event._module_moved import ModuleMoved
 from nucleus.pipeline.event._module_added import ModuleAdded
 from nucleus.pipeline.event._pipeline_loaded import PipelineLoaded
-from ._dependency import (
-    Dependency,
-    ImageDependency,
-    MeasurementDependency,
-    ObjectDependency,
-)
+from nucleus.pipeline.dependency._measurement_dependency import MeasurementDependency
+from nucleus.pipeline.dependency._image_dependency import ImageDependency
+from nucleus.pipeline.dependency._object_dependency import ObjectDependency
+from nucleus.pipeline.dependency._dependency import Dependency
 from ._image_plane import ImagePlane
 from ._pipeline import Pipeline
 from ._image_set_channel_descriptor import ImageSetChannelDescriptor

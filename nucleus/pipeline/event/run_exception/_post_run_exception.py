@@ -1,7 +1,7 @@
-from ._run_exception_event import RunExceptionEvent
+from ._run_exception import RunException
 
 
-class PostRunExceptionEvent(RunExceptionEvent):
+class PostRunException(RunException):
     """An event indicating an uncaught exception during the post_run phase"""
 
     def event_type(self):

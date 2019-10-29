@@ -23,7 +23,7 @@ import nucleus.modules.injectimage
 import nucleus.modules.loadimages
 import nucleus.pipeline
 import nucleus.pipeline.event._load_exception
-import nucleus.pipeline.event.run_exception_event._run_exception_event
+import nucleus.pipeline.event.run_exception._run_exception
 import nucleus.preferences
 import nucleus.setting
 import nucleus.workspace
@@ -72,11 +72,11 @@ def exploding_pipeline(test):
     x = get_empty_pipeline()
 
     def fn(pipeline, event):
-        if isinstance(event, nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent):
+        if isinstance(event, nucleus.pipeline.event.run_exception._run_exception.RunException):
             import traceback
 
             test.assertFalse(
-                isinstance(event, nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent),
+                isinstance(event, nucleus.pipeline.event.run_exception._run_exception.RunException),
                 "\n".join([event.error.message] + traceback.format_tb(event.tb)),
             )
 
@@ -514,7 +514,7 @@ HasImagePlaneDetails:False"""
         should_be_true = [False]
 
         def callback(caller, event):
-            if isinstance(event, nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent):
+            if isinstance(event, nucleus.pipeline.event.run_exception._run_exception.RunException):
                 should_be_true[0] = True
 
         pipeline.add_listener(callback)

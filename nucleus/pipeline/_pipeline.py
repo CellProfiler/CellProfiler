@@ -1641,9 +1641,7 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent(
-                            exception, module, tb
-                        )
+                        event = nucleus.pipeline.event.RunExceptionEvent(exception, module, tb)
 
                         self.notify_listeners(event)
 
@@ -1796,7 +1794,7 @@ class Pipeline:
                         nucleus.measurement.IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
-                evt = nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent(
+                evt = nucleus.pipeline.event.RunExceptionEvent(
                     exception, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(evt)
@@ -1993,7 +1991,7 @@ class Pipeline:
                         module.module_name,
                         exc_info=True,
                     )
-                    event = nucleus.pipeline.event.run_exception_event._prepare_run_exception_event.PrepareRunExceptionEvent(
+                    event = nucleus.pipeline.event.PrepareRunExceptionEvent(
                         instance, module, sys.exc_info()[2]
                     )
                     self.notify_listeners(event)
@@ -2099,7 +2097,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.event.run_exception_event._post_run_exception_event.PostRunExceptionEvent(
+                event = nucleus.pipeline.event.PostRunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2151,7 +2149,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent(
+                event = nucleus.pipeline.event.RunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2259,7 +2257,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent(
+                event = nucleus.pipeline.event.RunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2283,7 +2281,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent(
+                event = nucleus.pipeline.event.RunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)

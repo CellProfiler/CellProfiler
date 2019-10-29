@@ -1,7 +1,7 @@
 from .._event import Event
 
 
-class RunExceptionEvent(Event):
+class RunException(Event):
     """An exception was caught during a pipeline run
 
     Initializer:

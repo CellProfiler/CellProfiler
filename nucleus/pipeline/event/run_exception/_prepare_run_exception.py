@@ -1,7 +1,7 @@
-from ._run_exception_event import RunExceptionEvent
+from ._run_exception import RunException
 
 
-class PrepareRunExceptionEvent(RunExceptionEvent):
+class PrepareRunException(RunException):
     """An event indicating an uncaught exception during the prepare_run phase"""
 
     def event_type(self):

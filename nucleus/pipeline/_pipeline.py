@@ -1927,7 +1927,7 @@ class Pipeline:
                 prepare_run_error_detected[0] = True
 
         had_image_sets = False
-        with self.PipelineListener(self, on_pipeline_event):
+        with nucleus.pipeline.PipelineListener(self, on_pipeline_event):
             for module in self.modules():
                 if module == end_module:
                     break
@@ -2684,29 +2684,6 @@ class Pipeline:
         self.__available_metadata_keys = available_metadata_keys
         self.__image_plane_details_metadata_settings = self.get_module_state(module)
 
-    class ImageSetChannelDescriptor(object):
-        """This class represents the metadata for one image set channel
-
-        An image set has a collection of channels which are either planar
-        images or objects. The ImageSetChannelDescriptor describes one
-        of these:
-
-        The channel's name
-
-        The channel's type - grayscale image / color image / objects / mask
-        or illumination function
-        """
-
-        # Channel types
-        CT_GRAYSCALE = "Grayscale"
-        CT_COLOR = "Color"
-        CT_MASK = "Mask"
-        CT_OBJECTS = "Objects"
-        CT_FUNCTION = "Function"
-
-        def __init__(self, name, channel_type):
-            self.name = name
-            self.channel_type = channel_type
 
     LEGACY_LOAD_MODULES = ["LoadImages", "LoadData", "LoadSingleImage"]
 
@@ -3199,29 +3176,6 @@ class Pipeline:
 
     def remove_listener(self, listener):
         self.__listeners.remove(listener)
-
-    class PipelineListener(object):
-        """A class to wrap add/remove listener for use with "with"
-
-        Usage:
-        def my_listener(pipeline, event):
-            .....
-        with pipeline.PipelineListener(pipeline, my_listener):
-            # listener has been added
-            .....
-        # listener has been removed
-        """
-
-        def __init__(self, pipeline, listener):
-            self.pipeline = pipeline
-            self.listener = listener
-
-        def __enter__(self):
-            self.pipeline.add_listener(self.listener)
-            return self
-
-        def __exit__(self, exc_type, exc_value, tb):
-            self.pipeline.remove_listener(self.listener)
 
     def report_prepare_run_error(self, module, message):
         """Report an error during prepare_run that prevents image set construction

@@ -51,6 +51,8 @@ from ._dependency import (
 )
 from ._image_plane_details import ImagePlaneDetails
 from ._pipeline import Pipeline
+from ._image_set_channel_descriptor import ImageSetChannelDescriptor
+from ._pipeline_listener import PipelineListener
 
 future.standard_library.install_aliases()
 

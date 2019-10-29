@@ -3,13 +3,15 @@ import numpy
 import nucleus.image
 import nucleus.measurement
 import nucleus.module
+import nucleus.module.image_segmentation._image_segmentation
+import nucleus.module.image_segmentation._object_processing
 import nucleus.object
 import nucleus.workspace
 
 
 class TestObjectProcessing:
     def test_get_categories_image(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -20,7 +22,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_categories_input_object(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -31,7 +33,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_categories_output_object(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -46,7 +48,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_categories_other(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -57,7 +59,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurement_columns(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -104,7 +106,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurement_columns_additional_objects(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -188,7 +190,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_image_count(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -201,7 +203,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_image_other(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -212,7 +214,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_input_object_children(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -225,7 +227,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_input_object_other(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -236,7 +238,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_location(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -253,7 +255,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_number(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -266,7 +268,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_parent(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -279,7 +281,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_other(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -290,7 +292,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_other_other(self):
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -303,7 +305,7 @@ class TestObjectProcessing:
     def test_add_measurements(self):
         measurements = nucleus.measurement.Measurements()
 
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -404,7 +406,7 @@ class TestObjectProcessing:
     def test_run(self):
         measurements = nucleus.measurement.Measurements()
 
-        module = nucleus.module.ObjectProcessing()
+        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 

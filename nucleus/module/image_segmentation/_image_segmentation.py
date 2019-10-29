@@ -1,0 +1,193 @@
+import numpy
+
+import nucleus.measurement
+import nucleus.object
+import nucleus.setting
+from .._module import Module
+
+
+class ImageSegmentation(Module):
+    category = "Image Segmentation"
+
+    def add_measurements(self, workspace, object_name=None):
+        if object_name is None:
+            object_name = self.y_name.value
+
+        objects = workspace.object_set.get_objects(object_name)
+
+        centers = objects.center_of_mass()
+
+        if len(centers) == 0:
+            center_z, center_y, center_x = [], [], []
+        else:
+            if objects.volumetric:
+                center_z, center_y, center_x = centers.transpose()
+            else:
+                center_z = [0] * len(centers)
+
+                center_y, center_x = centers.transpose()
+
+        workspace.measurements.add_measurement(
+            object_name, nucleus.measurement.M_LOCATION_CENTER_X, center_x
+        )
+
+        workspace.measurements.add_measurement(
+            object_name, nucleus.measurement.M_LOCATION_CENTER_Y, center_y
+        )
+
+        workspace.measurements.add_measurement(
+            object_name, nucleus.measurement.M_LOCATION_CENTER_Z, center_z
+        )
+
+        workspace.measurements.add_measurement(
+            object_name,
+            nucleus.measurement.M_NUMBER_OBJECT_NUMBER,
+            numpy.arange(1, objects.count + 1),
+        )
+
+        workspace.measurements.add_measurement(
+            nucleus.measurement.IMAGE,
+            nucleus.measurement.FF_COUNT % object_name,
+            numpy.array([objects.count], dtype=float),
+        )
+
+    def create_settings(self):
+        self.x_name = nucleus.setting.ImageNameSubscriber(
+            "Select the input image", doc="Select the image you want to use."
+        )
+
+        self.y_name = nucleus.setting.ObjectNameProvider(
+            "Name the output object",
+            self.__class__.__name__,
+            doc="Enter the name you want to call the object produced by this module.",
+        )
+
+    def display(self, workspace, figure):
+        layout = (2, 1)
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions, subplots=layout
+        )
+
+        figure.subplot_imshow(
+            colormap="gray",
+            image=workspace.display_data.x_data,
+            title=self.x_name.value,
+            x=0,
+            y=0,
+        )
+
+        figure.subplot_imshow_labels(
+            background_image=workspace.display_data.x_data,
+            image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
+            title=self.y_name.value,
+            x=1,
+            y=0,
+        )
+
+    def get_categories(self, pipeline, object_name):
+        if object_name == nucleus.measurement.IMAGE:
+            return [nucleus.measurement.C_COUNT]
+
+        if object_name == self.y_name.value:
+            return [nucleus.measurement.C_LOCATION, nucleus.measurement.C_NUMBER]
+
+        return []
+
+    def get_measurement_columns(self, pipeline, object_name=None):
+        if object_name is None:
+            object_name = self.y_name.value
+
+        return [
+            (
+                object_name,
+                nucleus.measurement.M_LOCATION_CENTER_X,
+                nucleus.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                object_name,
+                nucleus.measurement.M_LOCATION_CENTER_Y,
+                nucleus.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                object_name,
+                nucleus.measurement.M_LOCATION_CENTER_Z,
+                nucleus.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                object_name,
+                nucleus.measurement.M_NUMBER_OBJECT_NUMBER,
+                nucleus.measurement.COLTYPE_INTEGER,
+            ),
+            (
+                nucleus.measurement.IMAGE,
+                nucleus.measurement.FF_COUNT % object_name,
+                nucleus.measurement.COLTYPE_INTEGER,
+            ),
+        ]
+
+    def get_measurements(self, pipeline, object_name, category):
+        if (
+            object_name == nucleus.measurement.IMAGE
+            and category == nucleus.measurement.C_COUNT
+        ):
+            return [self.y_name.value]
+
+        if object_name == self.y_name.value:
+            if category == nucleus.measurement.C_LOCATION:
+                return [
+                    nucleus.measurement.FTR_CENTER_X,
+                    nucleus.measurement.FTR_CENTER_Y,
+                    nucleus.measurement.FTR_CENTER_Z,
+                ]
+
+            if category == nucleus.measurement.C_NUMBER:
+                return [nucleus.measurement.FTR_OBJECT_NUMBER]
+
+        return []
+
+    def run(self, workspace):
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        images = workspace.image_set
+
+        x = images.get_image(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.pixel_data
+
+        args = (setting.value for setting in self.settings()[2:])
+
+        y_data = self.function(x_data, *args)
+
+        y = nucleus.object.Objects()
+
+        y.segmented = y_data
+
+        y.parent_image = x.parent_image
+
+        objects = workspace.object_set
+
+        objects.add_objects(y, y_name)
+
+        self.add_measurements(workspace)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
+
+    def settings(self):
+        return [self.x_name, self.y_name]
+
+    def visible_settings(self):
+        return [self.x_name, self.y_name]
+
+    def volumetric(self):
+        return True

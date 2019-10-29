@@ -1,12 +1,12 @@
 # coding=utf-8
 
 import glob
-import imp
 import logging
 import os
 import os.path
 import re
 import sys
+import types
 
 import nucleus.module
 import nucleus.preferences
@@ -45,7 +45,7 @@ class PluginImporter(object):
         assert prefix == "nucleus.modules.plugins"
 
         try:
-            mod = imp.new_module(fullname)
+            mod = types.ModuleType(fullname)
             sys.modules[fullname] = mod
             mod.__loader__ = self
             mod.__file__ = os.path.join(

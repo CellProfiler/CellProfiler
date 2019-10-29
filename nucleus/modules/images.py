@@ -630,9 +630,9 @@ class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
         "iscolor",
         "Color",
         lambda x: (
-            nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT]
-            == nucleus.pipeline.ImagePlaneDetails.MD_RGB
+                nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT in x.metadata
+                and x.metadata[nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT]
+                == nucleus.pipeline.ImagePlane.MD_RGB
         ),
         [],
         doc="The image is an interleaved color image (for example, a PNG image)",
@@ -642,9 +642,9 @@ class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
         "ismonochrome",
         "Monochrome",
         lambda x: (
-            nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT]
-            == nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
+                nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT in x.metadata
+                and x.metadata[nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT]
+                == nucleus.pipeline.ImagePlane.MD_MONOCHROME
         ),
         [],
         doc="The image is monochrome",
@@ -653,13 +653,13 @@ class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
     @staticmethod
     def is_stack(x):
         if (
-            nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T in x.metadata
-            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T] > 1
+            nucleus.pipeline.ImagePlane.MD_SIZE_T in x.metadata
+            and x.metadata[nucleus.pipeline.ImagePlane.MD_SIZE_T] > 1
         ):
             return True
         if (
-            nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z in x.metadata
-            and x.metadata[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z] > 1
+            nucleus.pipeline.ImagePlane.MD_SIZE_Z in x.metadata
+            and x.metadata[nucleus.pipeline.ImagePlane.MD_SIZE_Z] > 1
         ):
             return True
         return False
@@ -719,7 +719,7 @@ class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
         @staticmethod
         def get_image_plane_details(modpath):
             url = Images.modpath_to_url(modpath)
-            return nucleus.pipeline.ImagePlaneDetails(url)
+            return nucleus.pipeline.ImagePlane(url)
 
     def test_valid(self, pipeline, *args):
         self(

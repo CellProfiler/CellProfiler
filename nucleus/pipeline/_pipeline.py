@@ -2849,7 +2849,7 @@ class Pipeline:
                 key = tuple([mc[idx] for mc in metadata_columns])
                 value = [
                     pipeline.find_image_plane_details(
-                        nucleus.pipeline.ImagePlaneDetails(
+                        nucleus.pipeline.ImagePlane(
                             u[idx], s[idx], i[idx], c[idx]
                         )
                     )
@@ -3057,7 +3057,7 @@ class Pipeline:
         for filename in filenames:
             path = os.path.join(dirpath, filename)
             url = "file:" + six.moves.urllib.request.pathname2url(path)
-            ipd = nucleus.pipeline.ImagePlaneDetails(url, None, None, None)
+            ipd = nucleus.pipeline.ImagePlane(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
@@ -3070,33 +3070,33 @@ class Pipeline:
         if metadata.image_count == 1:
             m = {}
             pixels = metadata.image(0).Pixels
-            m[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
-            m[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
-            m[nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
+            m[nucleus.pipeline.ImagePlane.MD_SIZE_C] = str(pixels.SizeC)
+            m[nucleus.pipeline.ImagePlane.MD_SIZE_Z] = str(pixels.SizeZ)
+            m[nucleus.pipeline.ImagePlane.MD_SIZE_T] = str(pixels.SizeT)
 
             if pixels.SizeC == 1:
                 #
                 # Monochrome image
                 #
                 m[
-                    nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
-                ] = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
+                    nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT
+                ] = nucleus.pipeline.ImagePlane.MD_MONOCHROME
                 channel = pixels.Channel(0)
                 channel_name = channel.Name
                 if channel_name is not None:
-                    m[nucleus.pipeline.ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
+                    m[nucleus.pipeline.ImagePlane.MD_CHANNEL_NAME] = channel_name
             elif pixels.channel_count == 1:
                 #
                 # Oh contradictions! It's interleaved, really RGB or RGBA
                 #
                 m[
-                    nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
-                ] = nucleus.pipeline.ImagePlaneDetails.MD_RGB
+                    nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT
+                ] = nucleus.pipeline.ImagePlane.MD_RGB
             else:
                 m[
-                    nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
-                ] = nucleus.pipeline.ImagePlaneDetails.MD_PLANAR
-            exemplar = nucleus.pipeline.ImagePlaneDetails(url, None, None, None)
+                    nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT
+                ] = nucleus.pipeline.ImagePlane.MD_PLANAR
+            exemplar = nucleus.pipeline.ImagePlane(url, None, None, None)
             if ipd is None:
                 ipd = self.find_image_plane_details(exemplar)
             if ipd is not None:
@@ -3115,25 +3115,25 @@ class Pipeline:
                     m = {}
                     plane = pixels.Plane(index)
                     c = plane.TheC
-                    m[nucleus.pipeline.ImagePlaneDetails.MD_C] = plane.TheC
-                    m[nucleus.pipeline.ImagePlaneDetails.MD_T] = plane.TheT
-                    m[nucleus.pipeline.ImagePlaneDetails.MD_Z] = plane.TheZ
+                    m[nucleus.pipeline.ImagePlane.MD_C] = plane.TheC
+                    m[nucleus.pipeline.ImagePlane.MD_T] = plane.TheT
+                    m[nucleus.pipeline.ImagePlane.MD_Z] = plane.TheZ
                     if pixels.channel_count > c:
                         channel = pixels.Channel(c)
                         channel_name = channel.Name
                         if channel_name is not None:
                             m[
-                                nucleus.pipeline.ImagePlaneDetails.MD_CHANNEL_NAME
+                                nucleus.pipeline.ImagePlane.MD_CHANNEL_NAME
                             ] = channel_name
                         if channel.SamplesPerPixel == 1:
                             m[
-                                nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
-                            ] = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
+                                nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT
+                            ] = nucleus.pipeline.ImagePlane.MD_MONOCHROME
                         else:
                             m[
-                                nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT
-                            ] = nucleus.pipeline.ImagePlaneDetails.MD_RGB
-                    exemplar = nucleus.pipeline.ImagePlaneDetails(
+                                nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT
+                            ] = nucleus.pipeline.ImagePlane.MD_RGB
+                    exemplar = nucleus.pipeline.ImagePlane(
                         url, series, index, None
                     )
                     ipd = self.find_image_plane_details(exemplar)
@@ -3148,13 +3148,13 @@ class Pipeline:
                 # Movie metadata might not have planes
                 #
                 if pixels.SizeC == 1:
-                    color_format = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
+                    color_format = nucleus.pipeline.ImagePlane.MD_MONOCHROME
                     n_channels = 1
                 elif pixels.channel_count == 1:
-                    color_format = nucleus.pipeline.ImagePlaneDetails.MD_RGB
+                    color_format = nucleus.pipeline.ImagePlane.MD_RGB
                     n_channels = 1
                 else:
-                    color_format = nucleus.pipeline.ImagePlaneDetails.MD_MONOCHROME
+                    color_format = nucleus.pipeline.ImagePlane.MD_MONOCHROME
                     n_channels = pixels.SizeC
                 n = 1
                 dims = []
@@ -3182,19 +3182,19 @@ class Pipeline:
                         zip(c_indexes, z_indexes, t_indexes)
                 ):
                     channel = pixels.Channel(c_idx)
-                    exemplar = nucleus.pipeline.ImagePlaneDetails(
+                    exemplar = nucleus.pipeline.ImagePlane(
                         url, series, index, None
                     )
                     metadata = {
-                        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
-                        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z: 1,
-                        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T: 1,
-                        nucleus.pipeline.ImagePlaneDetails.MD_COLOR_FORMAT: color_format,
+                        nucleus.pipeline.ImagePlane.MD_SIZE_C: channel.SamplesPerPixel,
+                        nucleus.pipeline.ImagePlane.MD_SIZE_Z: 1,
+                        nucleus.pipeline.ImagePlane.MD_SIZE_T: 1,
+                        nucleus.pipeline.ImagePlane.MD_COLOR_FORMAT: color_format,
                     }
                     channel_name = channel.Name
                     if channel_name is not None and len(channel_name) > 0:
                         metadata[
-                            nucleus.pipeline.ImagePlaneDetails.MD_CHANNEL_NAME
+                            nucleus.pipeline.ImagePlane.MD_CHANNEL_NAME
                         ] = channel_name
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:

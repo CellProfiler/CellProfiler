@@ -961,7 +961,7 @@ not being applied, your choice on this setting may be the culprit.
             key_set,
         )
         ipds = [
-            nucleus.pipeline.ImagePlaneDetails(jipd)
+            nucleus.pipeline.ImagePlane(jipd)
             for jipd in env.get_object_array_elements(jipds)
         ]
         keys = sorted(javabridge.iterate_collection(key_set, javabridge.to_string))
@@ -1273,13 +1273,13 @@ not being applied, your choice on this setting may be the culprit.
         )
 
     NUMERIC_DATA_TYPES = (
-        nucleus.pipeline.ImagePlaneDetails.MD_T,
-        nucleus.pipeline.ImagePlaneDetails.MD_Z,
-        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_C,
-        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_T,
-        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Z,
-        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_X,
-        nucleus.pipeline.ImagePlaneDetails.MD_SIZE_Y,
+        nucleus.pipeline.ImagePlane.MD_T,
+        nucleus.pipeline.ImagePlane.MD_Z,
+        nucleus.pipeline.ImagePlane.MD_SIZE_C,
+        nucleus.pipeline.ImagePlane.MD_SIZE_T,
+        nucleus.pipeline.ImagePlane.MD_SIZE_Z,
+        nucleus.pipeline.ImagePlane.MD_SIZE_X,
+        nucleus.pipeline.ImagePlane.MD_SIZE_Y,
         nucleus.measurement.C_SERIES,
         nucleus.measurement.C_FRAME,
     )

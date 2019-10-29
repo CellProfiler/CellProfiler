@@ -4,7 +4,7 @@ import javabridge
 import six.moves.urllib
 
 
-class ImagePlaneDetails:
+class ImagePlane:
     """This class represents the location and metadata for a 2-d image plane
 
     You need four pieces of information to reference an image plane:

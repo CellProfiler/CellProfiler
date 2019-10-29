@@ -1801,7 +1801,7 @@ requests an object selection.
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")
         ipd = nucleus.pipeline.find_image_plane_details(
-            nucleus.pipeline.ImagePlaneDetails(
+            nucleus.pipeline.ImagePlane(
                 single_image.image_plane.url,
                 single_image.image_plane.series,
                 single_image.image_plane.index,
@@ -1891,7 +1891,7 @@ requests an object selection.
         if num_dimensions == 2:
             coords = javabridge.get_env().make_int_array(numpy.zeros(2, numpy.int32))
             ipds = [
-                nucleus.pipeline.ImagePlaneDetails(
+                nucleus.pipeline.ImagePlane(
                     javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
                 )
             ]
@@ -1902,7 +1902,7 @@ requests an object selection.
                 coords[2] = i
                 jcoords = javabridge.get_env().make_int_array(coords)
                 ipds.append(
-                    nucleus.pipeline.ImagePlaneDetails(
+                    nucleus.pipeline.ImagePlane(
                         javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
                     )
                 )
@@ -2032,7 +2032,7 @@ requests an object selection.
             index = None  # signal that we haven't read the metadata
             series = None
             coords = javabridge.get_env().make_int_array(numpy.zeros(2, int))
-            ipd = nucleus.pipeline.ImagePlaneDetails(
+            ipd = nucleus.pipeline.ImagePlane(
                 javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
             )
             url = ipd.url
@@ -2043,7 +2043,7 @@ requests an object selection.
                 coords[2] = i
                 jcoords = javabridge.get_env().make_int_array(coords)
                 ipds.append(
-                    nucleus.pipeline.ImagePlaneDetails(
+                    nucleus.pipeline.ImagePlane(
                         javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
                     )
                 )
@@ -2627,7 +2627,7 @@ class MetadataPredicate(nucleus.setting.Filter.FilterPredicate):
 
     def test_valid(self, pipeline, *args):
         modpath = ["imaging", "image.png"]
-        ipd = nucleus.pipeline.ImagePlaneDetails("/imaging/image.png", None, None, None)
+        ipd = nucleus.pipeline.ImagePlane("/imaging/image.png", None, None, None)
         self(
             (
                 nucleus.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,

@@ -50,7 +50,7 @@ from ._dependency import (
     MeasurementDependency,
     ObjectDependency,
 )
-from ._image_plane_details import ImagePlaneDetails
+from ._image_plane import ImagePlane
 from ._pipeline import Pipeline
 from ._image_set_channel_descriptor import ImageSetChannelDescriptor
 from ._listener import Listener

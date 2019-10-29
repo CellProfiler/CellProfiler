@@ -22,7 +22,7 @@ class TestImagePlaneDetails(unittest.TestCase):
             """,
             dict(url=url, series=series, index=index, channel=channel, d=d),
         )
-        return nucleus.pipeline.ImagePlaneDetails(jipd)
+        return nucleus.pipeline.ImagePlane(jipd)
 
         # def test_01_01_init(self):
         #     self.get_ipd();

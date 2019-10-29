@@ -1269,9 +1269,9 @@ HasImagePlaneDetails:False"""
     def test_read_http_file_list(self):
         url = "https://gist.githubusercontent.com/mcquin/67438dc4e8481c5b1d3881df56e1c4c4/raw/274835d9d3fef990d8bf34c4ee5f991b3880d74f/gistfile1.txt"
         urls = [
-            "http://nucleus.org/foo.tif",
-            "https://github.com/foo.tif",
             "ftp://example.com/foo.tif",
+            "http://cellprofiler.org/foo.tif",
+            "https://github.com/foo.tif"
         ]
         p = nucleus.pipeline.Pipeline()
         p.read_file_list(url)

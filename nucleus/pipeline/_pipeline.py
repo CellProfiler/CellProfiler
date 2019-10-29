@@ -8,6 +8,7 @@ import re
 import sys
 import tempfile
 import timeit
+import urllib.request
 import uuid
 
 import bioformats.formatreader
@@ -2534,25 +2535,30 @@ class Pipeline:
         if isinstance(path_or_fd, six.string_types):
             from nucleus.modules.loadimages import (
                 url2pathname,
-                FILE_SCHEME,
-                PASSTHROUGH_SCHEMES,
+                FILE_SCHEME
             )
 
             pathname = path_or_fd
+
+            # import IPython
+            # IPython.embed()
+
             if pathname.startswith(FILE_SCHEME):
                 pathname = url2pathname(pathname)
+
                 with open(pathname, "r", encoding="utf-8") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
-            elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
-                try:
-                    fd = six.moves.urllib.request.urlopen(pathname)
-                    self.read_file_list(fd, add_undo=add_undo)
-                finally:
-                    fd.close()
+            elif any(pathname.startswith(protocol) for protocol in ('http', 'https', 'ftp', 'omero', 's3')):
+                with urllib.request.urlopen(pathname) as response:
+                    data = response.read().decode("utf-8").splitlines()
+
+                self.read_file_list(data, add_undo=add_undo)
             else:
                 with open(pathname, "r", encoding="utf-8") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
+
             return
+
         self.add_pathnames_to_file_list(
             list(
                 map(

@@ -1,5 +1,5 @@
-from . import _setting
 import nucleus.utilities.legacy
+from . import _setting
 
 
 class Table(_setting.Setting):

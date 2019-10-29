@@ -1,5 +1,5 @@
-from ._module import ImageProcessing, ImageSegmentation, Module, ObjectProcessing
 import nucleus.preferences
+from ._module import ImageProcessing, ImageSegmentation, Module, ObjectProcessing
 
 DEFINITION_OBJECT = """\
 In CellProfiler, we use the term *object* as a generic term to refer to

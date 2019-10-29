@@ -1,5 +1,5 @@
-from nucleus.setting._validation_error import ValidationError
 from nucleus.setting._setting import Setting
+from nucleus.setting._validation_error import ValidationError
 from nucleus.setting.text import get_name_provider_choices, OutlineNameProvider
 
 

@@ -1,7 +1,7 @@
 import json
-import six.moves.urllib
 
 import javabridge
+import six.moves.urllib
 
 
 class ImagePlaneDetails:

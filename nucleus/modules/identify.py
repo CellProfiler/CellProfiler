@@ -1,8 +1,10 @@
 # coding=utf-8
 
 import functools
+
 import numpy
 import scipy.ndimage
+
 import nucleus.measurement
 import nucleus.module
 

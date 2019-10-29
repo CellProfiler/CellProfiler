@@ -5,7 +5,6 @@ import logging
 import os
 import os.path
 import re
-import string
 import sys
 import tempfile
 import timeit

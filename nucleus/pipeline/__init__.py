@@ -2,7 +2,6 @@ import bisect
 import logging
 import re
 
-import functools
 import future.standard_library
 import numpy
 import six

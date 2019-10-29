@@ -1,11 +1,9 @@
 import centrosome.index
 import centrosome.outline
-import numpy
 import scipy.ndimage
 import scipy.sparse
 
 import nucleus.object
-
 from nucleus.object import *
 
 

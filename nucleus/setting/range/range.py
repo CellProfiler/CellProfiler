@@ -2,8 +2,8 @@ import logging
 
 import six
 
-from nucleus.setting._validation_error import ValidationError
 from nucleus.setting._setting import Setting
+from nucleus.setting._validation_error import ValidationError
 
 logger = logging.getLogger(__name__)
 

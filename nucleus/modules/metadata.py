@@ -11,10 +11,10 @@ import six.moves
 
 import nucleus.measurement
 import nucleus.module
+import nucleus.module
+import nucleus.modules
 import nucleus.pipeline
 import nucleus.setting
-import nucleus.modules
-import nucleus.module
 
 logger = logging.getLogger(__name__)
 

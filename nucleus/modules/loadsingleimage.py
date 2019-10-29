@@ -87,13 +87,13 @@ from nucleus.measurement import (
     C_OBJECTS_PATH_NAME,
     C_FILE_NAME,
 )
-from nucleus.modules import images
 from nucleus.module import (
     USING_METADATA_HELP_REF,
     USING_METADATA_TAGS_REF,
     IO_FOLDER_CHOICE_HELP_TEXT,
     IO_WITH_METADATA_HELP_TEXT,
 )
+from nucleus.modules import images
 from nucleus.modules.identify import (
     add_object_count_measurements,
     add_object_location_measurements,

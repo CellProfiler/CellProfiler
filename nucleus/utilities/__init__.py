@@ -1,8 +1,8 @@
 import os
-import pkg_resources
 import re
 
 import boto3
+import pkg_resources
 
 
 def image_resource(filename):

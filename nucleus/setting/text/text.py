@@ -9,8 +9,8 @@ import nucleus.measurement
 import nucleus.preferences
 import nucleus.setting
 import nucleus.utilities.legacy
-from nucleus.setting._validation_error import ValidationError
 from nucleus.setting._setting import Setting
+from nucleus.setting._validation_error import ValidationError
 
 logger = logging.getLogger(__name__)
 

@@ -12,12 +12,12 @@ import skimage.color
 import nucleus.image
 import nucleus.measurement
 import nucleus.module
+import nucleus.module
 import nucleus.object
 import nucleus.pipeline
 import nucleus.preferences
 import nucleus.setting
 from nucleus.modules import identify, images, loadimages
-import nucleus.module
 
 logger = logging.getLogger(__name__)
 

@@ -6,14 +6,13 @@ import warnings
 
 import h5py
 import numpy
-import scipy.io
 import six
 import six.moves
 import six.moves.urllib
-import nucleus.utilities.hdf5_dict
 
-import nucleus.utilities
 import nucleus.measurement
+import nucleus.utilities
+import nucleus.utilities.hdf5_dict
 
 
 class Measurements:

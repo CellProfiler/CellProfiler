@@ -3,8 +3,8 @@ import os
 
 import six
 
-from . import _setting
 from nucleus.setting.text import get_name_provider_choices, DirectoryPath
+from . import _setting
 from ._validation_error import ValidationError
 
 

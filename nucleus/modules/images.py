@@ -9,8 +9,8 @@ import six.moves.urllib.request
 
 # import nucleus.icons
 import nucleus.module
-import nucleus.modules
 import nucleus.module
+import nucleus.modules
 import nucleus.modules.loadimages
 import nucleus.pipeline
 import nucleus.setting

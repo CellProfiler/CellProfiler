@@ -12,11 +12,13 @@ import sys
 import threading
 import time
 import uuid
-import nucleus.utilities.legacy
+
 import h5py
 import numpy
 import six
 from future.standard_library import install_aliases
+
+import nucleus.utilities.legacy
 
 install_aliases()
 import six.moves.urllib.parse

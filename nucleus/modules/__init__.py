@@ -8,9 +8,6 @@ import os.path
 import re
 import sys
 
-import boto3
-import pkg_resources
-
 import nucleus.module
 import nucleus.preferences
 

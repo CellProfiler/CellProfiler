@@ -23,12 +23,12 @@ import nucleus.image
 import nucleus.measurement
 import nucleus.measurement._measurements
 import nucleus.module
+import nucleus.modules
 import nucleus.object
 import nucleus.pipeline
 import nucleus.preferences
 import nucleus.setting
-import nucleus.modules
-#import nucleus.modules
+# import nucleus.modules
 from nucleus.modules import identify
 from nucleus.utilities import generate_presigned_url
 

@@ -8,7 +8,6 @@ import bioformats.omexml
 import javabridge
 import numpy
 import skimage.color
-from six.moves import xrange
 
 import nucleus.image
 import nucleus.measurement
@@ -17,7 +16,8 @@ import nucleus.object
 import nucleus.pipeline
 import nucleus.preferences
 import nucleus.setting
-from nucleus.modules import _help, identify, images, loadimages
+from nucleus.modules import identify, images, loadimages
+from nucleus.module import _help
 
 logger = logging.getLogger(__name__)
 
@@ -140,9 +140,9 @@ Measurements made by this module
                 :width: 100%
 """.format(
     **{
-        "DAPI": nucleus.modules.image_resource("dapi.png"),
-        "GFP": nucleus.modules.image_resource("gfp.png"),
-        "NAT_EXAMPLE_DISPLAY": nucleus.modules.image_resource(
+        "DAPI": nucleus.utilities.image_resource("dapi.png"),
+        "GFP": nucleus.utilities.image_resource("gfp.png"),
+        "NAT_EXAMPLE_DISPLAY": nucleus.utilities.image_resource(
             "NamesAndTypes_ExampleDisplayTable.png"
         ),
     }

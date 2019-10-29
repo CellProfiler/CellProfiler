@@ -1,6 +1,5 @@
 # coding:utf-8
 
-import nucleus.modules
 import nucleus.preferences
 
 DEFINITION_OBJECT = """\
@@ -86,7 +85,7 @@ conditions you want to include.
 {REGEXP_HELP_REF}
 """.format(
     **{
-        "IMAGES_USING_RULES_ICON": nucleus.modules.image_resource(
+        "IMAGES_USING_RULES_ICON": nucleus.preferences.image_resource(
             "Images_UsingRules.png"
         ),
         "REGEXP_HELP_REF": REGEXP_HELP_REF,
@@ -219,7 +218,7 @@ overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 """
 
-StrelImage = nucleus.modules.image_resource("structuringelement.png")
+StrelImage = nucleus.preferences.image_resource("structuringelement.png")
 
 HELP_FOR_STREL = """\
 The structuring element is the shape that will be applied in any morphological
@@ -235,8 +234,8 @@ pixel diameter with various structuring elements.
     **{"StrelImage": StrelImage}
 )
 
-PROTIP_RECOMMEND_ICON = nucleus.modules.image_resource("thumb-up.png")
+PROTIP_RECOMMEND_ICON = nucleus.preferences.image_resource("thumb-up.png")
 
-PROTIP_AVOID_ICON = nucleus.modules.image_resource("thumb-down.png")
+PROTIP_AVOID_ICON = nucleus.preferences.image_resource("thumb-down.png")
 
-TECH_NOTE_ICON = nucleus.modules.image_resource("gear.png")
+TECH_NOTE_ICON = nucleus.preferences.image_resource("gear.png")

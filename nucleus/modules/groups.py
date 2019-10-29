@@ -143,7 +143,7 @@ but only a subset of them may actually be active, depending on the
 number of groups you have.
 """.format(
     **{
-        "GROUPS_DISPLAY_TABLE": nucleus.modules.image_resource(
+        "GROUPS_DISPLAY_TABLE": nucleus.utilities.image_resource(
             "Groups_ExampleDisplayTable.png"
         )
     }

@@ -88,7 +88,7 @@ from nucleus.measurement import (
     C_FILE_NAME,
 )
 from nucleus.modules import images
-from nucleus.modules._help import (
+from nucleus.module._help import (
     USING_METADATA_HELP_REF,
     USING_METADATA_TAGS_REF,
     IO_FOLDER_CHOICE_HELP_TEXT,

@@ -1,0 +1,28 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+        Version:1
+        SVNRevision:9157
+
+        LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+            What type of files are you loading?:individual images
+            How do you want to load these files?:Text-Exact match
+            How many images are there in each group?:3
+            Type the text that the excluded images have in common:ILLUM
+            Analyze all subfolders within the selected folder?:No
+            Image location:Default Image Folder
+            Enter the full path to the images:
+            Do you want to check image sets for missing or duplicate files?:Yes
+            Do you want to group image sets by metadata?:Yes
+            Do you want to exclude certain files?:Yes
+            What metadata fields do you want to group by?:
+            Type the text that these images have in common (case-sensitive):Channel2
+            What do you want to call this image in CellProfiler?:DNA
+            What is the position of this image in each group?:1
+            Do you want to extract metadata from the file name, the subfolder path or both?:File name
+            Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<WellRow>.+)-(?P<WellCol>\x5B0-9\x5D{2})
+            Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})
+            Type the text that these images have in common (case-sensitive):Channel1
+            What do you want to call this image in CellProfiler?:Cytoplasm
+            What is the position of this image in each group?:2
+            Do you want to extract metadata from the file name, the subfolder path or both?:File name
+            Type the regular expression that finds metadata in the file name\x3A:^.*-(?P<WellRow>.+)-(?P<WellCol>\x5B0-9\x5D{2})
+            Type the regular expression that finds metadata in the subfolder path\x3A:(?P<Year>\x5B0-9\x5D{4})-(?P<Month>\x5B0-9\x5D{2})-(?P<Day>\x5B0-9\x5D{2})

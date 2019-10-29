@@ -10,12 +10,11 @@ import six.moves.urllib.request
 # import nucleus.icons
 import nucleus.module
 import nucleus.modules
-import nucleus.modules._help
+import nucleus.module._help
 import nucleus.modules.loadimages
 import nucleus.pipeline
 import nucleus.setting
 import nucleus.utilities.hdf5_dict
-import nucleus.modules._help
 
 __doc__ = """\
 Images
@@ -144,10 +143,10 @@ particular wavelength.
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(
     **{
-        "IMG_PANEL_BLANK": nucleus.modules.image_resource(
+        "IMG_PANEL_BLANK": nucleus.utilities.image_resource(
             "Images_FilelistPanel_Blank.png"
         ),
-        "IMG_PANEL_FILLED": nucleus.modules.image_resource(
+        "IMG_PANEL_FILLED": nucleus.utilities.image_resource(
             "Images_FilelistPanel_Filled.png"
         ),
     }
@@ -235,7 +234,7 @@ Specify a set of rules to narrow down the files to be analyzed.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                 **{
-                    "FILTER_RULES_BUTTONS_HELP": nucleus.modules._help.FILTER_RULES_BUTTONS_HELP
+                    "FILTER_RULES_BUTTONS_HELP": nucleus.module._help.FILTER_RULES_BUTTONS_HELP
                 }
             ),
         )

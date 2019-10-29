@@ -267,11 +267,6 @@ class Measurements:
         """True if the image set has an explicit start"""
         return self.image_set_start is not None
 
-    def load(self, measurements_file_name):
-        """Load measurements from a matlab file"""
-        handles = scipy.io.matlab.loadmat(measurements_file_name, struct_as_record=True)
-        self.create_from_handles(handles)
-
     def create_from_handles(self, handles):
         """Load measurements from a handles structure"""
         m = handles["handles"][0, 0][nucleus.measurement.MEASUREMENTS_GROUP_NAME][0, 0]

@@ -224,29 +224,6 @@ def make_temporary_file():
     )
 
 
-def load_measurements_from_buffer(buf):
-    default_output_directory = nucleus.preferences.get_default_output_directory()
-    if not (
-        os.path.exists(default_output_directory)
-        and os.access(default_output_directory, os.W_OK)
-    ):
-        default_output_directory = None
-    fd, filename = tempfile.mkstemp(
-        prefix="Cpmeasurements", suffix=".hdf5", dir=default_output_directory
-    )
-    if sys.platform.startswith("win"):
-        # Change file descriptor mode to binary
-        import msvcrt
-
-        msvcrt.setmode(fd, os.O_BINARY)
-    os.write(fd, buf)
-    os.close(fd)
-    try:
-        return load_measurements(filename)
-    finally:
-        os.unlink(filename)
-
-
 def load_measurements(
     filename, dest_file=None, can_overwrite=False, run_name=None, image_numbers=None
 ):
@@ -295,9 +272,8 @@ def load_measurements(
         finally:
             f.close()
     else:
-        m = Measurements(filename=dest_file)
-        m.load(filename)
-        return m
+        #FIXME - add clearer exception
+        pass
 
 
 def find_metadata_tokens(pattern):

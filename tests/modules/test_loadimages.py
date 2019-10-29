@@ -82,26 +82,26 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     pipeline.convert_legacy_input_modules()
     pipeline.prepare_run(w2)
 
-    ff1 = m1.get_feature_names(nucleus.measurement.IMAGE)
+    ff1 = m1.get_feature_names("Image")
     ffexpected = [
         f.replace("IMAGE_FOR_", "")
         for f in ff1
-        if not f.startswith(nucleus.measurement.C_METADATA)
+        if not f.startswith("Metadata")
     ]
     ff2 = [
         x
-        for x in m2.get_feature_names(nucleus.measurement.IMAGE)
+        for x in m2.get_feature_names("Image")
         if not any(
             [
                 x.startswith(y)
                 for y in (
-                    nucleus.measurement.C_FRAME,
-                    nucleus.measurement.C_SERIES,
-                    nucleus.measurement.C_OBJECTS_FRAME,
-                    nucleus.measurement.C_OBJECTS_SERIES,
-                    nucleus.measurement.C_CHANNEL,
-                    nucleus.measurement.C_OBJECTS_CHANNEL,
-                    nucleus.measurement.C_METADATA,
+                    "Frame",
+                    "Series",
+                    "ObjectsFrame",
+                    "ObjectsSeries",
+                    "Channel",
+                    "ObjectsChannel",
+                    "Metadata",
                     nucleus.modules.namesandtypes.M_IMAGE_SET,
                 )
             ]
@@ -110,10 +110,10 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     assert ffexpected == ff2
 
     for feature in ff1:
-        if feature.startswith(nucleus.measurement.C_METADATA):
-            assert m2.has_feature(nucleus.measurement.IMAGE, feature)
+        if feature.startswith("Metadata"):
+            assert m2.has_feature("Image", feature)
     ff1a = list(
-        filter((lambda x: not x.startswith(nucleus.measurement.C_METADATA)), ff1)
+        filter((lambda x: not x.startswith("Metadata")), ff1)
     )
     assert m1.image_set_count == m2.image_set_count
     image_numbers = m1.get_image_numbers()
@@ -125,7 +125,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     order1, order2 = [
         numpy.lexsort(
             [
-                mm.get_measurement(nucleus.measurement.IMAGE, f, image_numbers)
+                mm.get_measurement("Image", f, image_numbers)
                 for f in m_url
             ]
         )
@@ -135,24 +135,24 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     image_numbers2 = image_numbers[order2]
     for f1, f2 in zip(ff1a, ff2):
         if f1 in (
-            nucleus.measurement.GROUP_INDEX,
-            nucleus.measurement.GROUP_NUMBER,
-            nucleus.measurement.IMAGE_NUMBER,
+            "Group_Index",
+            "Group_Number",
+            "Image_Number",
         ):
             continue
         v1 = m1.get_measurement(
-            nucleus.measurement.IMAGE, f1, image_set_number=image_numbers1
+            "Image", f1, image_set_number=image_numbers1
         )
         v2 = m2.get_measurement(
-            nucleus.measurement.IMAGE, f2, image_set_number=image_numbers2
+            "Image", f2, image_set_number=image_numbers2
         )
-        if f1.startswith(nucleus.measurement.C_PATH_NAME) or f1.startswith(
-            nucleus.measurement.C_OBJECTS_PATH_NAME
+        if f1.startswith("PathName") or f1.startswith(
+            "ObjectsPathName"
         ):
             for p1, p2 in zip(v1, v2):
                 assert os.path.normcase(p1) == os.path.normcase(p2)
-        elif f1.startswith(nucleus.measurement.C_URL) or f1.startswith(
-            nucleus.measurement.C_OBJECTS_URL
+        elif f1.startswith("URL") or f1.startswith(
+            "ObjectsURL"
         ):
             for p1, p2 in zip(v1, v2):
                 assert os.path.normcase(
@@ -246,7 +246,7 @@ def test_load_5channel_tif():
     module.set_module_num(1)
     module.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
     module.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.images[0].channels[0].image_name.value = IMAGE_NAME
     module.images[0].common_text.value = file_name
@@ -319,7 +319,7 @@ def test_file_metadata():
     load_images.add_imagecb()
     load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
     load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-    load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    load_images.location.dir_choice = "Elsewhere..."
     load_images.location.custom_path = directory
     load_images.group_by_metadata.value = True
     load_images.images[
@@ -425,7 +425,7 @@ def test_missing_image():
     load_images.add_imagecb()
     load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
     load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-    load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    load_images.location.dir_choice = "Elsewhere..."
     load_images.location.custom_path = directory
     load_images.group_by_metadata.value = True
     load_images.check_images.value = True
@@ -482,7 +482,7 @@ def test_conflict():
         load_images.add_imagecb()
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.location.custom_path = directory
         load_images.group_by_metadata.value = True
         load_images.images[
@@ -561,7 +561,7 @@ def test_hierarchy():
         load_images.add_imagecb()
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.location.custom_path = directory
         load_images.group_by_metadata.value = True
         load_images.images[0].common_text.value = "_w1_"
@@ -596,16 +596,16 @@ def test_hierarchy():
         )
         for i in range(12):
             channel1_filename = m.get_measurement(
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.C_FILE_NAME + "_" + "Channel1",
+                "Image",
+                "FileName" + "_" + "Channel1",
                 i + 1,
             )
             ctags = re.search(
                 load_images.images[0].file_metadata.value, channel1_filename
             ).groupdict()
             illum_filename = m.get_measurement(
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.C_FILE_NAME + "_" + "Illum",
+                "Image",
+                "FileName" + "_" + "Illum",
                 i + 1,
             )
             itags = re.search(
@@ -660,7 +660,7 @@ def test_allowed_conflict():
                 nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
             )
             load_images.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-            load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+            load_images.location.dir_choice = "Elsewhere..."
             load_images.location.custom_path = directory
             load_images.group_by_metadata.value = True
             load_images.metadata_fields.value = [
@@ -773,7 +773,7 @@ def test_subfolders():
         load_images.set_module_num(1)
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.descend_subdirectories.value = nucleus.modules.loadimages.SUB_ALL
         load_images.location.custom_path = directory
         load_images.images[0].common_text.value = ".tif"
@@ -853,7 +853,7 @@ def test_some_subfolders():
         load_images.set_module_num(1)
         load_images.file_types.value = nucleus.modules.loadimages.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-        load_images.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+        load_images.location.dir_choice = "Elsewhere..."
         load_images.descend_subdirectories.value = nucleus.modules.loadimages.SUB_SOME
         load_images.subdirectory_filter.value = load_images.subdirectory_filter.get_value_string(
             exclusions
@@ -911,7 +911,7 @@ def test_some_subfolders():
 
 
 def get_example_pipeline_data():
-    with open("./tests/resources/modules/loadimages/example.pipeline", "r") as fd:
+    with open("./tests/data/modules/loadimages/example.pipeline", "r") as fd:
         data = fd.read()
 
     return data
@@ -983,13 +983,13 @@ def test_get_measurements():
     }
     for cat, expected in list(categories.items()):
         assert set(expected) == set(
-            module.get_measurements(pipeline, nucleus.measurement.IMAGE, cat)
+            module.get_measurements(pipeline, "Image", cat)
         )
     module.images[0].metadata_choice.value = nucleus.modules.loadimages.M_BOTH
     categories["Metadata"] += ["Year", "Month", "Day"]
     for cat, expected in list(categories.items()):
         assert set(expected) == set(
-            module.get_measurements(pipeline, nucleus.measurement.IMAGE, cat)
+            module.get_measurements(pipeline, "Image", cat)
         )
 
 
@@ -999,7 +999,7 @@ def test_get_categories():
     pipeline = nucleus.pipeline.Pipeline()
     pipeline.load(fd)
     module = pipeline.module(1)
-    results = module.get_categories(pipeline, nucleus.measurement.IMAGE)
+    results = module.get_categories(pipeline, "Image")
     expected = [
         "FileName",
         "PathName",
@@ -1072,7 +1072,7 @@ def test_get_movie_measurements():
             assert len(columns) == len(expected_cols)
             for column in columns:
                 assert column in expected_cols
-            categories = module.get_categories(None, nucleus.measurement.IMAGE)
+            categories = module.get_categories(None, "Image")
             assert len(categories) == 9
             category_dict = {}
             for column in expected_cols:
@@ -1084,7 +1084,7 @@ def test_get_movie_measurements():
                 assert category in categories
                 expected_features = category_dict[category]
                 features = module.get_measurements(
-                    None, nucleus.measurement.IMAGE, category
+                    None, "Image", category
                 )
                 assert len(features) == len(expected_features)
                 assert len(features) == len(set(features))
@@ -1141,7 +1141,7 @@ def test_get_flex_measurements():
         assert len(columns) == len(expected_cols)
         for column in columns:
             assert column in expected_cols
-        categories = module.get_categories(None, nucleus.measurement.IMAGE)
+        categories = module.get_categories(None, "Image")
         assert len(categories) == 10
         category_dict = {}
         for column in expected_cols:
@@ -1153,7 +1153,7 @@ def test_get_flex_measurements():
             assert category in categories
             expected_features = category_dict[category]
             features = module.get_measurements(
-                None, nucleus.measurement.IMAGE, category
+                None, "Image", category
             )
             assert len(features) == len(expected_features)
             assert len(features) == len(set(features))
@@ -1168,17 +1168,17 @@ def test_get_object_measurement_columns():
     columns = module.get_measurement_columns(None)
     for object_name, feature in (
         (
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME,
+            "Image",
+            "ObjectsFileName" + "_" + OBJECTS_NAME,
         ),
         (
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME,
+            "Image",
+            "ObjectsPathName" + "_" + OBJECTS_NAME,
         ),
-        (nucleus.measurement.IMAGE, nucleus.measurement.C_COUNT + "_" + OBJECTS_NAME),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_X),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_Y),
-        (OBJECTS_NAME, nucleus.measurement.M_NUMBER_OBJECT_NUMBER),
+        ("Image", "Count" + "_" + OBJECTS_NAME),
+        (OBJECTS_NAME, "Location_Center_X"),
+        (OBJECTS_NAME, "Location_Center_Y"),
+        (OBJECTS_NAME, "Number_Object_Number"),
     ):
         assert any(
             [
@@ -1196,15 +1196,15 @@ def test_get_object_categories():
     channel.object_name.value = OBJECTS_NAME
     for object_name, expected_categories in (
         (
-            nucleus.measurement.IMAGE,
+            "Image",
             (
-                nucleus.measurement.C_OBJECTS_FILE_NAME,
-                nucleus.measurement.C_OBJECTS_PATH_NAME,
-                nucleus.measurement.C_OBJECTS_URL,
-                nucleus.measurement.C_COUNT,
+                "ObjectsFileName",
+                "ObjectsPathName",
+                "ObjectsURL",
+                "Count",
             ),
         ),
-        (OBJECTS_NAME, (nucleus.measurement.C_LOCATION, nucleus.measurement.C_NUMBER)),
+        (OBJECTS_NAME, ("Location", "Number")),
         ("Foo", []),
     ):
         categories = module.get_categories(None, object_name)
@@ -1221,24 +1221,24 @@ def test_get_object_measurements():
     channel.object_name.value = OBJECTS_NAME
     for object_name, expected in (
         (
-            nucleus.measurement.IMAGE,
+            "Image",
             (
-                (nucleus.measurement.C_OBJECTS_FILE_NAME, [OBJECTS_NAME]),
-                (nucleus.measurement.C_OBJECTS_PATH_NAME, [OBJECTS_NAME]),
-                (nucleus.measurement.C_COUNT, [OBJECTS_NAME]),
+                ("ObjectsFileName", [OBJECTS_NAME]),
+                ("ObjectsPathName", [OBJECTS_NAME]),
+                ("Count", [OBJECTS_NAME]),
             ),
         ),
         (
             OBJECTS_NAME,
             (
                 (
-                    nucleus.measurement.C_LOCATION,
+                    "Location",
                     [
-                        nucleus.measurement.FTR_CENTER_X,
-                        nucleus.measurement.FTR_CENTER_Y,
+                        "Center_X",
+                        "Center_Y",
                     ],
                 ),
-                (nucleus.measurement.C_NUMBER, [nucleus.measurement.FTR_OBJECT_NUMBER]),
+                ("Number", ["Object_Number"]),
             ),
         ),
     ):
@@ -1256,7 +1256,7 @@ def test_get_groupings():
         tests.modules.example_images_directory(), "ExampleSBSImages"
     )
     module = nucleus.modules.loadimages.LoadImages()
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = sbs_path
     module.group_by_metadata.value = True
     module.images[0].common_text.value = "Channel1-"
@@ -1319,7 +1319,7 @@ def test_load_avi():
     module.file_types.value = nucleus.modules.loadimages.FF_AVI_MOVIES
     module.images[0].common_text.value = file_name
     module.images[0].channels[0].image_name.value = "MyImage"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = avi_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1343,7 +1343,7 @@ def test_load_avi():
     img1 = image.pixel_data
     assert tuple(img1.shape) == (264, 542, 3)
     t = m.get_current_image_measurement(
-        "_".join((nucleus.measurement.C_METADATA, nucleus.modules.loadimages.M_T))
+        "_".join(("Metadata", nucleus.modules.loadimages.M_T))
     )
     assert t == 0
     image_set = image_set_list.get_image_set(1)
@@ -1358,7 +1358,7 @@ def test_load_avi():
     assert tuple(img2.shape) == (264, 542, 3)
     assert numpy.any(img1 != img2)
     t = m.get_current_image_measurement(
-        "_".join((nucleus.measurement.C_METADATA, nucleus.modules.loadimages.M_T))
+        "_".join(("Metadata", nucleus.modules.loadimages.M_T))
     )
     assert t == 1
 
@@ -1379,7 +1379,7 @@ def test_load_stk():
     module.file_types.value = nucleus.modules.loadimages.FF_STK_MOVIES
     module.images[0].common_text.value = "stk"
     module.images[0].channels[0].image_name.value = "MyImage"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1434,7 +1434,7 @@ def test_01_load_2_stk():
     module.images[1].common_text.value = "C1.stk"
     module.images[1].channels[0].image_name.value = "MyOtherImage"
 
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1458,7 +1458,7 @@ def test_02_load_stk():
     module.file_types.value = nucleus.modules.loadimages.FF_STK_MOVIES
     module.images[0].common_text.value = "C0.stk"
     module.images[0].channels[0].image_name.value = "MyImage"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1491,7 +1491,7 @@ def test_load_flex():
     module.add_channel(module.images[0])
     module.images[0].channels[1].image_name.value = "Red"
     module.images[0].channels[1].channel_number.value = "1"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = flex_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1559,7 +1559,7 @@ def test_group_interleaved_avi_frames():
     channel = module.images[0].channels[1]
     channel.channel_number.value = "3"
     channel.image_name.value = "Channel03"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = avi_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1590,7 +1590,7 @@ def test_group_interleaved_avi_frames():
     assert tuple(img3.shape) == (264, 542, 3)
     assert round(abs(numpy.mean(img3) - 0.07781), 3) == 0
     t = m.get_current_image_measurement(
-        "_".join((nucleus.measurement.C_METADATA, nucleus.modules.loadimages.M_T))
+        "_".join(("Metadata", nucleus.modules.loadimages.M_T))
     )
     assert t == 0
     image_set = image_set_list.get_image_set(1)
@@ -1605,7 +1605,7 @@ def test_group_interleaved_avi_frames():
     assert tuple(img2.shape) == (264, 542, 3)
     assert round(abs(numpy.mean(img2) - 0.07860), 3) == 0
     t = m.get_current_image_measurement(
-        "_".join((nucleus.measurement.C_METADATA, nucleus.modules.loadimages.M_T))
+        "_".join(("Metadata", nucleus.modules.loadimages.M_T))
     )
     assert t == 1
     assert m.get_current_image_measurement("Frame_Channel03") == 7
@@ -1635,7 +1635,7 @@ def test_group_separated_avi_frames():
     channel = module.images[0].channels[1]
     channel.channel_number.value = "3"
     channel.image_name.value = "Channel03"
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = avi_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1665,7 +1665,7 @@ def test_group_separated_avi_frames():
     assert tuple(img3.shape) == (264, 542, 3)
     assert round(abs(numpy.mean(img3) - 0.073312), 3) == 0
     t = m.get_current_image_measurement(
-        "_".join((nucleus.measurement.C_METADATA, nucleus.modules.loadimages.M_T))
+        "_".join(("Metadata", nucleus.modules.loadimages.M_T))
     )
     assert t == 0
     image_set = image_set_list.get_image_set(1)
@@ -1681,7 +1681,7 @@ def test_group_separated_avi_frames():
     assert tuple(img2.shape) == (264, 542, 3)
     assert round(abs(numpy.mean(img2) - 0.079923), 3) == 0
     t = m.get_current_image_measurement(
-        "_".join((nucleus.measurement.C_METADATA, nucleus.modules.loadimages.M_T))
+        "_".join(("Metadata", nucleus.modules.loadimages.M_T))
     )
     assert t == 1
     assert m.get_current_image_measurement("Frame_Channel03") == 27
@@ -1702,7 +1702,7 @@ def test_load_flex_interleaved():
     module.images[0].channels[1].channel_number.value = "1"
     module.images[0].wants_movie_frame_grouping.value = True
     module.images[0].channels_per_group.value = 2
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = flex_path
     module.images[0].interleaving.value = nucleus.modules.loadimages.I_INTERLEAVED
     module.set_module_num(1)
@@ -1769,7 +1769,7 @@ def test_load_flex_separated():
     module.images[0].wants_movie_frame_grouping.value = True
     module.images[0].channels_per_group.value = 2
     module.images[0].interleaving.value = nucleus.modules.loadimages.I_SEPARATED
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = flex_path
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1891,7 +1891,7 @@ def make_objects_workspace(image, mode="L", filename="myfile.tif"):
     module.images[0].channels[0].object_name.value = OBJECTS_NAME
     module.images[0].channels[0].wants_outlines.value = True
     module.images[0].channels[0].outlines_name.value = OUTLINES_NAME
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = directory
     module.set_module_num(1)
     pipeline = nucleus.pipeline.Pipeline()
@@ -1923,10 +1923,10 @@ def test_load_empty_objects():
     assert numpy.all(o.segmented == 0)
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name, measurement in (
-        (nucleus.measurement.IMAGE, nucleus.measurement.FF_COUNT % OBJECTS_NAME),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_X),
-        (OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_Y),
-        (OBJECTS_NAME, nucleus.measurement.M_NUMBER_OBJECT_NUMBER),
+        ("Image", "Count_%s" % OBJECTS_NAME),
+        (OBJECTS_NAME, "Location_Center_X"),
+        (OBJECTS_NAME, "Location_Center_Y"),
+        (OBJECTS_NAME, "Number_Object_Number"),
     ):
         assert any(
             [
@@ -1938,7 +1938,7 @@ def test_load_empty_objects():
     m = workspace.measurements
     assert isinstance(m, nucleus.measurement.Measurements)
     assert (
-        m.get_current_image_measurement(nucleus.measurement.FF_COUNT % OBJECTS_NAME)
+        m.get_current_image_measurement("Count_%s" % OBJECTS_NAME)
         == 0
     )
 
@@ -1954,7 +1954,7 @@ def test_load_indexed_objects():
     m = workspace.measurements
     assert isinstance(m, nucleus.measurement.Measurements)
     assert (
-        m.get_current_image_measurement(nucleus.measurement.FF_COUNT % OBJECTS_NAME)
+        m.get_current_image_measurement("Count_%s" % OBJECTS_NAME)
         == 9
     )
     i, j = numpy.mgrid[0 : image.shape[0], 0 : image.shape[1]]
@@ -1962,12 +1962,12 @@ def test_load_indexed_objects():
     x = numpy.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
     y = numpy.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
     v = m.get_current_measurement(
-        OBJECTS_NAME, nucleus.measurement.M_NUMBER_OBJECT_NUMBER
+        OBJECTS_NAME, "Number_Object_Number"
     )
     assert numpy.all(v == numpy.arange(1, 10))
-    v = m.get_current_measurement(OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_X)
+    v = m.get_current_measurement(OBJECTS_NAME, "Location_Center_X")
     assert numpy.all(v == x)
-    v = m.get_current_measurement(OBJECTS_NAME, nucleus.measurement.M_LOCATION_CENTER_Y)
+    v = m.get_current_measurement(OBJECTS_NAME, "Location_Center_Y")
     assert numpy.all(v == y)
 
 
@@ -2044,7 +2044,7 @@ def test_overlapped_objects():
 def test_batch_images():
     module = nucleus.modules.loadimages.LoadImages()
     module.match_method.value = nucleus.modules.loadimages.MS_REGEXP
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     orig_path = os.path.join(
         tests.modules.example_images_directory(), "ExampleSBSImages"
     )
@@ -2089,20 +2089,20 @@ def test_batch_images():
     module.prepare_group(workspace, group_keys, image_numbers)
     for image_number in image_numbers:
         path = m.get_measurement(
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
+            "Image",
+            "PathName" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert path == target_path
         file_name = m.get_measurement(
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
+            "Image",
+            "FileName" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert re.match(file_regexp, file_name) is not None
         url = m.get_measurement(
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_URL + "_" + IMAGE_NAME,
+            "Image",
+            "URL" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert url == nucleus.modules.loadimages.pathname2url(
@@ -2113,7 +2113,7 @@ def test_batch_images():
 def test_batch_movies():
     module = nucleus.modules.loadimages.LoadImages()
     module.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.file_types.value = nucleus.modules.loadimages.FF_AVI_MOVIES
     orig_path = tests.modules.testimages_directory()
     module.location.custom_path = orig_path
@@ -2166,7 +2166,7 @@ def test_batch_movies():
     for image_number in image_numbers:
         assert (
             m.get_measurement(
-                nucleus.measurement.IMAGE,
+                "Image",
                 "PathName_" + IMAGE_NAME,
                 image_set_number=image_number,
             )
@@ -2174,7 +2174,7 @@ def test_batch_movies():
         )
         assert (
             m.get_measurement(
-                nucleus.measurement.IMAGE, "Metadata_T", image_set_number=image_number
+                "Image", "Metadata_T", image_set_number=image_number
             )
             == image_number - 1
         )
@@ -2183,7 +2183,7 @@ def test_batch_movies():
 def test_batch_flex():
     module = nucleus.modules.loadimages.LoadImages()
     module.match_method.value = nucleus.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.file_types.value = nucleus.modules.loadimages.FF_OTHER_MOVIES
     orig_path = tests.modules.testimages_directory()
     orig_url = nucleus.modules.loadimages.pathname2url(orig_path)
@@ -2234,13 +2234,13 @@ def test_batch_flex():
         for image_number in image_numbers:
             assert (
                 m.get_measurement(
-                    nucleus.measurement.IMAGE, "PathName_" + IMAGE_NAME, image_number
+                    "Image", "PathName_" + IMAGE_NAME, image_number
                 )
                 == target_path
             )
             assert (
                 m.get_measurement(
-                    nucleus.measurement.IMAGE,
+                    "Image",
                     nucleus.modules.loadimages.C_SERIES + "_" + IMAGE_NAME,
                     image_number,
                 )
@@ -2317,7 +2317,7 @@ def make_prepare_run_workspace(file_names):
 
     module = nucleus.modules.loadimages.LoadImages()
     module.set_module_num(1)
-    module.location.dir_choice = nucleus.setting.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = directory
 
     pipeline = nucleus.pipeline.Pipeline()
@@ -2363,12 +2363,12 @@ def test_prepare_run_measurements():
             full_path = os.path.join(directory, filename)
             url = "file:" + urllib.request.pathname2url(full_path)
             for category, expected in (
-                (nucleus.measurement.C_FILE_NAME, filename),
-                (nucleus.measurement.C_PATH_NAME, directory),
-                (nucleus.measurement.C_URL, url),
+                ("FileName", filename),
+                ("PathName", directory),
+                ("URL", url),
             ):
                 value = m.get_measurement(
-                    nucleus.measurement.IMAGE, "_".join((category, image_name)), i
+                    "Image", "_".join((category, image_name)), i
                 )
                 assert value == expected
 
@@ -2415,15 +2415,15 @@ def test_00_load_from_url():
     )
     for image_number, (filename, alt_filename) in zip(image_numbers, names):
         url = m.get_measurement(
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_URL + "_" + IMAGE_NAME,
+            "Image",
+            "URL" + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         expected = url_base + "/" + filename
         assert expected == url
         url = m.get_measurement(
-            nucleus.measurement.IMAGE,
-            nucleus.measurement.C_URL + "_" + ALT_IMAGE_NAME,
+            "Image",
+            "URL" + "_" + ALT_IMAGE_NAME,
             image_set_number=image_number,
         )
         expected = url_base + "/" + alt_filename
@@ -2997,7 +2997,7 @@ Rescale intensities?:Yes
 
 
 def test_provide_volume():
-    path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+    path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
     provider = nucleus.modules.loadimages.LoadImagesImageProvider(
         name="ball",
@@ -3022,7 +3022,7 @@ def test_provide_volume():
 
 def test_provide_npy():
     resource_directory = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources")
+        os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
     provider = nucleus.modules.loadimages.LoadImagesImageProvider(
@@ -3041,7 +3041,7 @@ def test_provide_npy():
 
 def test_provide_npy_volume():
     resource_directory = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources")
+        os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
     provider = nucleus.modules.loadimages.LoadImagesImageProvider(
@@ -3061,7 +3061,9 @@ def test_provide_npy_volume():
 
 class TestLoadImagesImageProviderURL:
     def test_provide_volume():
-        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+        import IPython
+        IPython.embed()
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
         provider = nucleus.modules.loadimages.LoadImagesImageProviderURL(
             name="ball",
@@ -3083,6 +3085,8 @@ class TestLoadImagesImageProviderURL:
         numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
     def test_provide_volume_3_planes():
+        import IPython
+        IPython.embed()
         data = numpy.random.rand(3, 256, 256)
 
         path = tempfile.NamedTemporaryFile(suffix=".tif", delete=False).name

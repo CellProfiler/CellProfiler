@@ -13,6 +13,7 @@ import numpy
 import numpy.lib.index_tricks
 import six
 import six.moves
+import io
 
 import nucleus.image
 import nucleus.measurement
@@ -602,7 +603,7 @@ HasImagePlaneDetails:False"""
                 measurements.next_image_set()
             measurements.add_measurement("Foo", "Bar", my_measurement[i])
             measurements.add_image_measurement("img", my_image_measurement[i])
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = nucleus.measurement.load_measurements(fd)
@@ -657,7 +658,7 @@ HasImagePlaneDetails:False"""
         measurements.add_all_measurements("Foo", m1_name, my_measurement)
         measurements.add_all_measurements("Foo", m2_name, my_other_measurement)
         measurements.add_all_measurements("Foo", m3_name, my_final_measurement)
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = nucleus.measurement.load_measurements(fd)
@@ -759,10 +760,10 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         module = TestModuleWithMeasurement()
         # Little endian utf-16 encoding
-        module.my_variable.value = "\\\u2211"
-        module.other_variable.value = "\u2222\u0038"
+        module.my_variable.value = "∑"
+        module.other_variable.value = "∢8"
         module.set_module_num(1)
-        module.notes = "\u03B1\\\u03B2"
+        module.notes = "αβ"
         pipeline.add_module(module)
         fd = six.moves.StringIO()
         pipeline.savetxt(fd, save_image_plane_details=False)
@@ -770,31 +771,14 @@ HasImagePlaneDetails:False"""
         lines = result.split("\n")
         assert len(lines) == 11
         text, value = lines[-3].split(":")
-        #
-        # unicode encoding:
-        #     backslash: \\ (BOM encoding)
-        #     unicode character: \u2211 (n-ary summation)
-        #
-        # escape encoding:
-        #     utf-16 to byte: \xff\xfe\\\x00\x11"
-        #
-        # result = \\xff\\xfe\\\\\\x00\\x11"
-        assert value == '\\xff\\xfe\\\\\\x00\\x11"'
+        assert value == '∑'
         text, value = lines[-2].split(":")
-        #
-        # unicode encoding:
-        #     unicode character: \u
-        #
-        # escape encoding:
-        #     utf-16 to byte: \xff\xfe""8\x00
-        #
-        # result = \\xff\\xfe""8\\x00
-        assert value == '\\xff\\xfe""8\\x00'
+        assert value == '∢8'
         mline = lines[7]
         idx0 = mline.find("notes:")
         mline = mline[(idx0 + 6) :]
         idx1 = mline.find("|")
-        value = eval(mline[:idx1].decode("string_escape"))
+        value = eval(mline[:idx1])
         assert value == module.notes
 
     def test_unicode_save_and_load(self):
@@ -815,18 +799,18 @@ HasImagePlaneDetails:False"""
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\\u2211"
+        module.my_variable.value = "∑"
         module.set_module_num(1)
-        module.notes = "\\u03B1\\\\u03B2"
+        module.notes = "∑"
         pipeline.add_module(module)
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         pipeline.savetxt(fd)
         fd.seek(0)
         pipeline.loadtxt(fd)
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
         assert isinstance(result_module, TestModuleWithMeasurement)
-        assert module.notes == result_module.notes
+        assert module.notes == eval(result_module.notes)
         assert module.my_variable.value == result_module.my_variable.value
 
     def test_deprecated_unicode_load(self):
@@ -911,9 +895,9 @@ HasImagePlaneDetails:False"""
             module.set_module_num(1)
             pipeline.add_module(module)
             for groupname in (
-                nucleus.setting.IMAGE_GROUP,
-                nucleus.setting.OBJECT_GROUP,
-                nucleus.setting.MEASUREMENTS_GROUP,
+                "imagegroup",
+                "objectgroup",
+                "measurementsgroup",
             ):
                 d = pipeline.get_provider_dictionary(groupname)
                 assert len(d) == 0
@@ -924,7 +908,7 @@ HasImagePlaneDetails:False"""
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
+        d = pipeline.get_provider_dictionary("imagegroup")
         assert len(d) == 1
         assert list(d.keys())[0] == IMAGE_NAME
         providers = d[IMAGE_NAME]
@@ -932,7 +916,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         assert provider[0] == module
         assert provider[1] == my_setting
-        for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
+        for group in ("objectgroup", "measurementsgroup"):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_object(self):
@@ -941,7 +925,7 @@ HasImagePlaneDetails:False"""
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary(nucleus.setting.OBJECT_GROUP)
+        d = pipeline.get_provider_dictionary("objectgroup")
         assert len(d) == 1
         assert list(d.keys())[0] == OBJECT_NAME
         providers = d[OBJECT_NAME]
@@ -949,7 +933,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         assert provider[0] == module
         assert provider[1] == my_setting
-        for group in (nucleus.setting.IMAGE_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
+        for group in ("imagegroup", "measurementsgroup"):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_measurement(self):
@@ -961,7 +945,7 @@ HasImagePlaneDetails:False"""
         )
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary(nucleus.setting.MEASUREMENTS_GROUP)
+        d = pipeline.get_provider_dictionary("measurementsgroup")
         assert len(d) == 1
         key = list(d.keys())[0]
         assert len(key) == 2
@@ -971,24 +955,24 @@ HasImagePlaneDetails:False"""
         assert len(providers) == 1
         provider = providers[0]
         assert provider[0] == module
-        for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.IMAGE_GROUP):
+        for group in ("objectgroup", "imagegroup"):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_other(self):
         pipeline = get_empty_pipeline()
         module = ATestModule(
-            other_providers={nucleus.setting.IMAGE_GROUP: [IMAGE_NAME]}
+            other_providers={"imagegroup": [IMAGE_NAME]}
         )
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
+        d = pipeline.get_provider_dictionary("imagegroup")
         assert len(d) == 1
         assert list(d.keys())[0] == IMAGE_NAME
         providers = d[IMAGE_NAME]
         assert len(providers) == 1
         provider = providers[0]
         assert provider[0] == module
-        for group in (nucleus.setting.OBJECT_GROUP, nucleus.setting.MEASUREMENTS_GROUP):
+        for group in ("objectgroup", "measurementsgroup"):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_combo(self):
@@ -998,7 +982,7 @@ HasImagePlaneDetails:False"""
         measurement_columns = [
             (OBJECT_NAME, FEATURE_NAME, nucleus.measurement.COLTYPE_FLOAT)
         ]
-        other_providers = {nucleus.setting.IMAGE_GROUP: [ALT_IMAGE_NAME]}
+        other_providers = {"imagegroup": [ALT_IMAGE_NAME]}
         module = ATestModule(
             settings=[image_setting, object_setting],
             measurement_columns=measurement_columns,
@@ -1006,7 +990,7 @@ HasImagePlaneDetails:False"""
         )
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
+        d = pipeline.get_provider_dictionary("imagegroup")
         assert len(d) == 2
         assert IMAGE_NAME in d
         providers = d[IMAGE_NAME]
@@ -1021,7 +1005,7 @@ HasImagePlaneDetails:False"""
         assert len(provider) == 2
         assert provider[0] == module
 
-        d = pipeline.get_provider_dictionary(nucleus.setting.OBJECT_GROUP)
+        d = pipeline.get_provider_dictionary("objectgroup")
         assert len(d) == 1
         assert OBJECT_NAME in d
         providers = d[OBJECT_NAME]
@@ -1031,7 +1015,7 @@ HasImagePlaneDetails:False"""
         assert provider[0] == module
         assert provider[1] == object_setting
 
-        d = pipeline.get_provider_dictionary(nucleus.setting.MEASUREMENTS_GROUP)
+        d = pipeline.get_provider_dictionary("measurementsgroup")
         assert len(d) == 1
         key = list(d.keys())[0]
         assert len(key) == 2
@@ -1062,22 +1046,22 @@ HasImagePlaneDetails:False"""
         for i, module in enumerate((module1, module2, module3, module4)):
             module.module_num = i + 1
             pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP)
+        d = pipeline.get_provider_dictionary("imagegroup")
         assert len(d) == 1
         assert IMAGE_NAME in d
         assert len(d[IMAGE_NAME]) == 2
         for module in (module1, module3):
             assert any([x[0] == module for x in d[IMAGE_NAME]])
 
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP, module1)
+        d = pipeline.get_provider_dictionary("imagegroup", module1)
         assert len(d) == 0
 
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP, module2)
+        d = pipeline.get_provider_dictionary("imagegroup", module2)
         assert len(d) == 1
         assert IMAGE_NAME in d
         assert d[IMAGE_NAME][0][0] == module1
 
-        d = pipeline.get_provider_dictionary(nucleus.setting.IMAGE_GROUP, module4)
+        d = pipeline.get_provider_dictionary("imagegroup", module4)
         assert len(d) == 1
         assert IMAGE_NAME in d
         assert len(d[IMAGE_NAME]) == 1
@@ -1187,33 +1171,33 @@ HasImagePlaneDetails:False"""
             ),
             (
                 ["Well"],
-                ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-                [("foo", 1, 2, 3, {"Well": "\\u03b1\\u03b2"})],
+                ['"foo","1","2","3","Î±Î²"'],
+                [("foo", 1, 2, 3, {"Well": "αβ"})],
             ),
             ([], [r'"\\foo\"bar","4","5","6"'], [(r'\foo"bar', 4, 5, 6)]),
         )
         for metadata_columns, body_lines, expected in test_data:
             s = '"%s":"%d","%s":"%d"\n' % (
-                nucleus.pipeline.H_VERSION,
-                nucleus.pipeline.IMAGE_PLANE_DESCRIPTOR_VERSION,
-                nucleus.pipeline.H_PLANE_COUNT,
+                "Version",
+                1,
+                "PlaneCount",
                 len(body_lines),
             )
             s += (
                 '"'
                 + '","'.join(
                     [
-                        nucleus.pipeline.H_URL,
-                        nucleus.pipeline.H_SERIES,
-                        nucleus.pipeline.H_INDEX,
-                        nucleus.pipeline.H_CHANNEL,
+                        "URL",
+                        "Series",
+                        "Index",
+                        "Channel"
                     ]
                     + metadata_columns
                 )
                 + '"\n'
             )
             s += "\n".join(body_lines) + "\n"
-            fd = six.moves.StringIO(s)
+            fd = io.StringIO(s)
             result = nucleus.pipeline.read_file_list(fd)
             assert len(result) == len(expected)
             for r, e in zip(result, expected):

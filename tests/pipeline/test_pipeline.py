@@ -1254,17 +1254,23 @@ HasImagePlaneDetails:False"""
             "https://github.com/foo.tif",
             "ftp://example.com/foo.tif",
         ]
-        fd, path = tempfile.mkstemp(".txt", text=True)
-        try:
-            os.write(fd, "\n".join(urls))
-            p = nucleus.pipeline.Pipeline()
-            p.read_file_list(path)
-        finally:
-            os.close(fd)
-            os.remove(path)
-        assert len(p.file_list) == len(urls)
+
+        content = "\n".join(urls)
+
+        with tempfile.NamedTemporaryFile() as temporary:
+            with open(temporary.name, "w") as fp:
+                fp.write(content)
+
+                fp.seek(0)
+
+            pipeline = nucleus.pipeline.Pipeline()
+
+            pipeline.read_file_list(fp.name)
+
+        assert len(pipeline.file_list) == len(urls)
+
         for url in urls:
-            assert url in p.file_list
+            assert url in pipeline.file_list
 
     def test_read_http_file_list(self):
         url = "https://gist.githubusercontent.com/mcquin/67438dc4e8481c5b1d3881df56e1c4c4/raw/274835d9d3fef990d8bf34c4ee5f991b3880d74f/gistfile1.txt"

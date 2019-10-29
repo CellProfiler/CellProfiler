@@ -603,10 +603,15 @@ HasImagePlaneDetails:False"""
                 measurements.next_image_set()
             measurements.add_measurement("Foo", "Bar", my_measurement[i])
             measurements.add_image_measurement("img", my_image_measurement[i])
-        fd = io.StringIO()
-        pipeline.save_measurements(fd, measurements)
-        fd.seek(0)
-        measurements = nucleus.measurement.load_measurements(fd)
+
+        with tempfile.NamedTemporaryFile() as temporary:
+            with open(temporary.name, "w") as fd:
+                pipeline.save_measurements(fd.name, measurements)
+
+                fd.seek(0)
+
+            measurements = nucleus.measurement.load_measurements(temporary.name)
+
         my_measurement_out = measurements.get_all_measurements("Foo", "Bar")
         assert len(my_measurement) == len(my_measurement_out)
         for m_in, m_out in zip(my_measurement, my_measurement_out):

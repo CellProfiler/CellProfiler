@@ -1,10 +1,10 @@
 import h5py
 
-import nucleus.measurement.measurements
+import nucleus.measurement._measurements
 import nucleus.utilities.hdf5_dict
 
-from .disposition_changed_event import DispositionChangedEvent
-from .workspace import Workspace
+from ._disposition_changed_event import DispositionChangedEvent
+from ._workspace import Workspace
 
 """Continue to run the pipeline
 

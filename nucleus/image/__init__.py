@@ -1,15 +1,15 @@
 import numpy
 
-from .abstract_image_provider import (
+from ._abstract_image_provider import (
     AbstractImageProvider,
     CallbackImageProvider,
     VanillaImageProvider,
 )
-from .grayscale_image import GrayscaleImage
-from .image import Image
-from .image_set import ImageSet
-from .image_set_list import ImageSetList
-from .rgb_image import RGBImage
+from ._grayscale_image import GrayscaleImage
+from ._image import Image
+from ._image_set import ImageSet
+from ._image_set_list import ImageSetList
+from ._rgb_image import RGBImage
 
 
 def crop_image(image, crop_mask, crop_internal=False):

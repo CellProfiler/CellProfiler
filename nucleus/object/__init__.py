@@ -4,9 +4,9 @@ import skimage.color
 
 import nucleus.preferences
 
-from .object_set import ObjectSet
-from .objects import Objects
-from .segmentation import Segmentation
+from ._object_set import ObjectSet
+from ._objects import Objects
+from ._segmentation import Segmentation
 
 OBJECT_TYPE_NAME = "objects"
 

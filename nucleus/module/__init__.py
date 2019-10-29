@@ -1,4 +1,4 @@
-from .module import ImageProcessing, ImageSegmentation, Module, ObjectProcessing
+from ._module import ImageProcessing, ImageSegmentation, Module, ObjectProcessing
 import nucleus.preferences
 
 DEFINITION_OBJECT = """\

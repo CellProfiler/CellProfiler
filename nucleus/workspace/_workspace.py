@@ -1,4 +1,4 @@
-"""workspace.py - the workspace for an imageset
+"""_workspace.py - the workspace for an imageset
 """
 
 import logging
@@ -366,7 +366,7 @@ class Workspace:
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = nucleus.measurement.measurements.Measurements(
+            self.__measurements = nucleus.measurement._measurements.Measurements(
                 filename=self.__filename, mode="r+"
             )
             if self.__file_list is not None:

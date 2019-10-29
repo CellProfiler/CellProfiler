@@ -13,14 +13,14 @@ import six.moves.urllib.request
 import nucleus
 import nucleus.image
 import nucleus.measurement
-import nucleus.measurement.measurements
+import nucleus.measurement._measurements
 import nucleus.object
 import nucleus.preferences
 import nucleus.setting
 import nucleus.utilities.legacy
 import nucleus.utilities.utf16encode
 import nucleus.workspace
-from .abstract_pipeline_event import (
+from ._abstract_pipeline_event import (
     AbstractPipelineEvent,
     CancelledException,
     EndRunEvent,
@@ -45,14 +45,14 @@ from .abstract_pipeline_event import (
     URLsAddedEvent,
     URLsRemovedEvent,
 )
-from .dependency import (
+from ._dependency import (
     Dependency,
     ImageDependency,
     MeasurementDependency,
     ObjectDependency,
 )
-from .image_plane_details import ImagePlaneDetails
-from .pipeline import Pipeline
+from ._image_plane_details import ImagePlaneDetails
+from ._pipeline import Pipeline
 
 future.standard_library.install_aliases()
 

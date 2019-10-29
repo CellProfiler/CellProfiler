@@ -816,7 +816,7 @@ HasImagePlaneDetails:False"""
     def test_deprecated_unicode_load(self):
         pipeline = get_empty_pipeline()
         deprecated_pipeline_file = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "data/pipeline/v3.cppipe")
+            os.path.join(os.path.dirname(__file__), "../data/pipeline/v3.cppipe")
         )
         pipeline.loadtxt(deprecated_pipeline_file)
         module = TestModuleWithMeasurement()

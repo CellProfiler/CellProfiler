@@ -457,8 +457,8 @@ class Pipeline:
                 elif version == 5:
                     pass
             elif kwd in (
-                nucleus.pipeline.H_SVN_REVISION,
-                nucleus.pipeline.H_DATE_REVISION,
+                    nucleus.pipeline.H_SVN_REVISION,
+                    nucleus.pipeline.H_DATE_REVISION,
             ):
                 pipeline_version = int(value)
                 nucleus.pipeline.CURRENT_VERSION = int(
@@ -500,7 +500,7 @@ class Pipeline:
             self.respond_to_version_mismatch_error(message)
         else:
             if (
-                not nucleus.preferences.get_headless()
+                    not nucleus.preferences.get_headless()
             ) and pipeline_version < nucleus.pipeline.CURRENT_VERSION:
                 if git_hash is not None:
                     message = (
@@ -556,7 +556,7 @@ class Pipeline:
                 if split_loc == -1:
                     raise ValueError("Invalid format for module header: %s" % line)
                 module_name = line[:split_loc].strip()
-                attribute_string = line[(split_loc + 1) :]
+                attribute_string = line[(split_loc + 1):]
                 #
                 # Decode the settings
                 #
@@ -597,9 +597,9 @@ class Pipeline:
                 # repr, so True -> 'True', etc.
                 #
                 if (
-                    len(attribute_string) < 2
-                    or attribute_string[0] != "["
-                    or attribute_string[-1] != "]"
+                        len(attribute_string) < 2
+                        or attribute_string[0] != "["
+                        or attribute_string[-1] != "]"
                 ):
                     raise ValueError(
                         "Invalid format for attributes: %s" % attribute_string
@@ -619,7 +619,7 @@ class Pipeline:
                         continue
                     # En/decode needed to read example cppipe format
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
-                    #value = eval(value.encode().decode("unicode_escape"))
+                    # value = eval(value.encode().decode("unicode_escape"))
                     if attribute == "variable_revision_number":
                         variable_revision_number = value
                     else:
@@ -683,7 +683,7 @@ class Pipeline:
             raise NotImplementedError("Unknown pipeline file format: %s" % format)
 
     def savetxt(
-        self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
+            self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
     ):
         """Save the pipeline in a text format
 
@@ -766,7 +766,7 @@ class Pipeline:
         notes_idx = 4
         for module in self.__modules:
             if (
-                modules_to_save is not None
+                    modules_to_save is not None
             ) and module.module_num not in modules_to_save:
                 continue
             fd.write(six.text_type("\n"))
@@ -882,11 +882,11 @@ class Pipeline:
         """Save a handles structure accounting for scipy version compatibility to a filename or file-like object"""
         sver = scipy.__version__.split(".")
         if (
-            len(sver) >= 2
-            and sver[0].isdigit()
-            and int(sver[0]) == 0
-            and sver[1].isdigit()
-            and int(sver[1]) < 8
+                len(sver) >= 2
+                and sver[0].isdigit()
+                and int(sver[0]) == 0
+                and sver[1].isdigit()
+                and int(sver[1]) < 8
         ):
             #
             # 1-d -> 2-d not done
@@ -923,9 +923,9 @@ class Pipeline:
         handles[nucleus.pipeline.CURRENT] = current
         current[nucleus.pipeline.NUMBER_OF_IMAGE_SETS][0, 0] = [
             (
-                image_set is not None
-                and nucleus.pipeline.NUMBER_OF_IMAGE_SETS in image_set.legacy_fields
-                and image_set.legacy_fields[nucleus.pipeline.NUMBER_OF_IMAGE_SETS]
+                    image_set is not None
+                    and nucleus.pipeline.NUMBER_OF_IMAGE_SETS in image_set.legacy_fields
+                    and image_set.legacy_fields[nucleus.pipeline.NUMBER_OF_IMAGE_SETS]
             )
             or 1
         ]
@@ -1002,7 +1002,7 @@ class Pipeline:
                 if objects.has_small_removed_segmented():
                     images[
                         "SmallRemovedSegmented" + name
-                    ] = objects.small_removed_segmented
+                        ] = objects.small_removed_segmented
 
         if len(images):
             pipeline_dtype = nucleus.pipeline.make_cell_struct_dtype(
@@ -1014,7 +1014,7 @@ class Pipeline:
                 pipeline[name][0, 0] = images[name]
 
         no_measurements = (
-            measurements is None or len(measurements.get_object_names()) == 0
+                measurements is None or len(measurements.get_object_names()) == 0
         )
         if not no_measurements:
             measurements_dtype = nucleus.pipeline.make_cell_struct_dtype(
@@ -1121,8 +1121,8 @@ class Pipeline:
                 for setting in module.settings():
                     if isinstance(setting, nucleus.setting.DirectoryPath):
                         if (
-                            setting.dir_choice
-                            == nucleus.preferences.DEFAULT_INPUT_FOLDER_NAME
+                                setting.dir_choice
+                                == nucleus.preferences.DEFAULT_INPUT_FOLDER_NAME
                         ):
                             setting.dir_choice = (
                                 nucleus.preferences.ABSOLUTE_FOLDER_NAME
@@ -1130,8 +1130,8 @@ class Pipeline:
                             setting.custom_path = path
                             was_edited = True
                         elif (
-                            setting.dir_choice
-                            == nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                                setting.dir_choice
+                                == nucleus.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                         ):
                             subpath = os.path.join(path, setting.custom_path)
                             setting.dir_choice = (
@@ -1153,7 +1153,7 @@ class Pipeline:
         while True:
             for i, module in enumerate(self.modules()):
                 if isinstance(module, LoadSingleImage):
-                    for other_module in self.modules()[(i + 1) :]:
+                    for other_module in self.modules()[(i + 1):]:
                         if other_module.is_load_module():
                             self.move_module(
                                 other_module.module_num, nucleus.pipeline.DIRECTION_UP
@@ -1201,7 +1201,7 @@ class Pipeline:
         # ExternalImageProviders
         for name in input_image_names:
             assert name in image_dict, (
-                'Image named "%s" was not provided in the input dictionary' % name
+                    'Image named "%s" was not provided in the input dictionary' % name
             )
 
         # Create image set from provided dict
@@ -1228,13 +1228,13 @@ class Pipeline:
         return output_dict
 
     def run(
-        self,
-        frame=None,
-        image_set_start=1,
-        image_set_end=None,
-        grouping=None,
-        measurements_filename=None,
-        initial_measurements=None,
+            self,
+            frame=None,
+            image_set_start=1,
+            image_set_end=None,
+            grouping=None,
+            measurements_filename=None,
+            initial_measurements=None,
     ):
         """Run the pipeline
 
@@ -1266,18 +1266,18 @@ class Pipeline:
 
         measurements.is_first_image = True
         for m in self.run_with_yield(
-            frame,
-            image_set_start,
-            image_set_end,
-            grouping,
-            run_in_background=False,
-            initial_measurements=measurements,
+                frame,
+                image_set_start,
+                image_set_end,
+                grouping,
+                run_in_background=False,
+                initial_measurements=measurements,
         ):
             measurements = m
         return measurements
 
     def group(
-        self, grouping, image_set_start, image_set_end, initial_measurements, workspace
+            self, grouping, image_set_start, image_set_end, initial_measurements, workspace
     ):
         """Enumerate relevant image sets.  This function is side-effect free, so it can be called more than once."""
 
@@ -1303,13 +1303,13 @@ class Pipeline:
                     continue
 
                 if initial_measurements is not None and all(
-                    [
-                        initial_measurements.has_feature(nucleus.measurement.IMAGE, f)
-                        for f in (
-                            nucleus.pipeline.GROUP_NUMBER,
-                            nucleus.pipeline.GROUP_INDEX,
+                        [
+                            initial_measurements.has_feature(nucleus.measurement.IMAGE, f)
+                            for f in (
+                                nucleus.pipeline.GROUP_NUMBER,
+                                nucleus.pipeline.GROUP_INDEX,
                         )
-                    ]
+                        ]
                 ):
                     group_number, group_index = [
                         initial_measurements[nucleus.measurement.IMAGE, f, image_number]
@@ -1338,14 +1338,14 @@ class Pipeline:
                 )
 
     def run_with_yield(
-        self,
-        frame=None,
-        image_set_start=1,
-        image_set_end=None,
-        grouping=None,
-        run_in_background=True,
-        status_callback=None,
-        initial_measurements=None,
+            self,
+            frame=None,
+            image_set_start=1,
+            image_set_end=None,
+            grouping=None,
+            run_in_background=True,
+            status_callback=None,
+            initial_measurements=None,
     ):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
@@ -1412,7 +1412,7 @@ class Pipeline:
                         to_remove += list(grouping_image_numbers)
 
             if len(to_remove) > 0 and measurements.has_feature(
-                nucleus.measurement.IMAGE, nucleus.measurement.IMAGE_NUMBER
+                    nucleus.measurement.IMAGE, nucleus.measurement.IMAGE_NUMBER
             ):
                 for image_number in numpy.unique(to_remove):
                     measurements.remove_measurement(
@@ -1628,8 +1628,8 @@ class Pipeline:
                         )
 
                     while (
-                        workspace.disposition == nucleus.workspace.DISPOSITION_PAUSE
-                        and frame is not None
+                            workspace.disposition == nucleus.workspace.DISPOSITION_PAUSE
+                            and frame is not None
                     ):
                         # try to leave measurements temporary file in a readable state
                         measurements.flush()
@@ -1673,12 +1673,12 @@ class Pipeline:
             self.end_run()
 
     def run_image_set(
-        self,
-        measurements,
-        image_set_number,
-        interaction_handler,
-        display_handler,
-        cancel_handler,
+            self,
+            measurements,
+            image_set_number,
+            interaction_handler,
+            display_handler,
+            cancel_handler,
     ):
         """Run the pipeline for a single image set storing the results in measurements.
 
@@ -1799,7 +1799,7 @@ class Pipeline:
         self.notify_listeners(nucleus.pipeline.EndRunEvent())
 
     def run_group_with_yield(
-        self, workspace, grouping, image_numbers, stop_module, title, message
+            self, workspace, grouping, image_numbers, stop_module, title, message
     ):
         """Run the modules for the image_numbers in a group up to an agg module
 
@@ -1935,7 +1935,7 @@ class Pipeline:
                     workspace.set_module(module)
                     workspace.show_frame(module.show_window)
                     if (
-                        not module.prepare_run(workspace)
+                            not module.prepare_run(workspace)
                     ) or prepare_run_error_detected[0]:
                         if workspace.measurements.image_set_count > 0:
                             had_image_sets = True
@@ -1965,7 +1965,7 @@ class Pipeline:
             return False
 
         if not m.has_feature(
-            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_NUMBER
+                nucleus.measurement.IMAGE, nucleus.measurement.GROUP_NUMBER
         ):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)
@@ -1997,7 +1997,7 @@ class Pipeline:
             if numpy.any(order[1:] != order[:-1] + 1):
                 new_image_numbers = numpy.zeros(max(image_numbers) + 1, int)
                 new_image_numbers[image_numbers[order]] = (
-                    numpy.arange(len(image_numbers)) + 1
+                        numpy.arange(len(image_numbers)) + 1
                 )
                 m.reorder_image_measurements(new_image_numbers)
         m.flush()
@@ -2060,8 +2060,8 @@ class Pipeline:
                 if event.cancel_run:
                     return "Failure"
             if (
-                module.show_window
-                and module.__class__.display_post_run != Module.display_post_run
+                    module.show_window
+                    and module.__class__.display_post_run != Module.display_post_run
             ):
                 try:
                     workspace.post_run_display(module)
@@ -2165,10 +2165,10 @@ class Pipeline:
         for column in columns:
             object_name, feature, coltype = column[:3]
             if object_name == nucleus.measurement.IMAGE and feature.startswith(
-                nucleus.measurement.C_METADATA
+                    nucleus.measurement.C_METADATA
             ):
                 current_metadata.append(
-                    feature[(len(nucleus.measurement.C_METADATA) + 1) :]
+                    feature[(len(nucleus.measurement.C_METADATA) + 1):]
                 )
 
         m = re.findall("\\(\\?[<](.+?)[>]\\)", pattern)
@@ -2182,9 +2182,9 @@ class Pipeline:
                             [
                                 x.startswith(y)
                                 for y in (
-                                    nucleus.measurement.C_SERIES,
-                                    nucleus.measurement.C_FRAME,
-                                )
+                                nucleus.measurement.C_SERIES,
+                                nucleus.measurement.C_FRAME,
+                            )
                             ]
                         )
                     ),
@@ -2244,8 +2244,8 @@ class Pipeline:
                 if event.cancel_run:
                     return False
             if (
-                module.show_window
-                and module.__class__.display_post_group != Module.display_post_group
+                    module.show_window
+                    and module.__class__.display_post_group != Module.display_post_group
             ):
                 try:
                     workspace.post_group_display(module)
@@ -2459,7 +2459,6 @@ class Pipeline:
         self.__image_plane_details_metadata_settings = None
         self.notify_listeners(nucleus.pipeline.URLsAddedEvent(real_list))
         if add_undo:
-
             def undo():
                 self.remove_urls(real_list)
 
@@ -2497,7 +2496,6 @@ class Pipeline:
             self.__image_plane_details = []
             self.notify_listeners(nucleus.pipeline.URLsRemovedEvent(old_urls))
             if add_undo:
-
                 def undo():
                     self.add_urls(old_urls, False)
 
@@ -2684,7 +2682,6 @@ class Pipeline:
         self.__available_metadata_keys = available_metadata_keys
         self.__image_plane_details_metadata_settings = self.get_module_state(module)
 
-
     LEGACY_LOAD_MODULES = ["LoadImages", "LoadData", "LoadSingleImage"]
 
     def has_legacy_loaders(self):
@@ -2758,7 +2755,7 @@ class Pipeline:
                     category = image_category
                 feature_name = "_".join((category, iscd.name))
                 if feature_name in temp_measurements.get_feature_names(
-                    nucleus.measurement.IMAGE
+                        nucleus.measurement.IMAGE
                 ):
                     return temp_measurements.get_measurement(
                         nucleus.measurement.IMAGE, feature_name, all_image_numbers
@@ -2873,8 +2870,8 @@ class Pipeline:
         """Stop editing the pipeline, combining many actions into one"""
         if len(self.__undo_stack) > self.__undo_start + 1:
             # Only combine if two or more edits
-            actions = self.__undo_stack[self.__undo_start :]
-            del self.__undo_stack[self.__undo_start :]
+            actions = self.__undo_stack[self.__undo_start:]
+            del self.__undo_stack[self.__undo_start:]
 
             def undo():
                 for action, message in reversed(actions):
@@ -2895,7 +2892,7 @@ class Pipeline:
     def module(self, module_num):
         module = self.__modules[module_num - 1]
         assert (
-            module.module_num == module_num
+                module.module_num == module_num
         ), "Misnumbered module. Expected %d, got %d" % (module_num, module.module_num)
         return module
 
@@ -2922,8 +2919,8 @@ class Pipeline:
         idx = module_num - 1
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
         for module, mn in zip(
-            self.__modules[idx + 1 :],
-            list(range(module_num + 1, len(self.__modules) + 1)),
+                self.__modules[idx + 1:],
+                list(range(module_num + 1, len(self.__modules) + 1)),
         ):
             module.module_num = mn
         self.notify_listeners(
@@ -2947,7 +2944,7 @@ class Pipeline:
         idx = module_num - 1
         removed_module = self.__modules[idx]
         is_image_set_modification = removed_module.is_load_module()
-        self.__modules = self.__modules[:idx] + self.__modules[idx + 1 :]
+        self.__modules = self.__modules[:idx] + self.__modules[idx + 1:]
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
         self.notify_listeners(
@@ -3126,12 +3123,12 @@ class Pipeline:
                             % (url, pixels.DimensionOrder)
                         )
                     dims.append(dim)
-                index_order = numpy.mgrid[0 : dims[0], 0 : dims[1], 0 : dims[2]]
+                index_order = numpy.mgrid[0: dims[0], 0: dims[1], 0: dims[2]]
                 c_indexes = index_order[c_idx].flatten()
                 z_indexes = index_order[z_idx].flatten()
                 t_indexes = index_order[t_idx].flatten()
                 for index, (c_idx, z_idx, t_idx) in enumerate(
-                    zip(c_indexes, z_indexes, t_indexes)
+                        zip(c_indexes, z_indexes, t_indexes)
                 ):
                     channel = pixels.Channel(c_idx)
                     exemplar = nucleus.pipeline.ImagePlaneDetails(
@@ -3260,8 +3257,8 @@ class Pipeline:
         should_write_columns = True
         for module in self.modules():
             if (
-                terminating_module is not None
-                and terminating_module_num <= module.module_num
+                    terminating_module is not None
+                    and terminating_module_num <= module.module_num
             ):
                 break
             columns += module.get_measurement_columns(self)
@@ -3334,8 +3331,8 @@ class Pipeline:
         #
         for module in self.modules():
             if (
-                target_module is not None
-                and target_module.module_num <= module.module_num
+                    target_module is not None
+                    and target_module.module_num <= module.module_num
             ):
                 break
             #
@@ -3356,8 +3353,8 @@ class Pipeline:
                     result[k].append((module, None))
             for setting in module.visible_settings():
                 if (
-                    isinstance(setting, nucleus.setting.NameProvider)
-                    and setting.get_group() == groupname
+                        isinstance(setting, nucleus.setting.NameProvider)
+                        and setting.get_group() == groupname
                 ):
                     name = setting.value
                     if name == "Do not use":
@@ -3428,7 +3425,7 @@ class Pipeline:
         return result
 
     def synthesize_measurement_name(
-        self, module, object, category, feature, image, scale
+            self, module, object, category, feature, image, scale
     ):
         """Turn a measurement requested by a Matlab module into a measurement name
 
@@ -3450,10 +3447,10 @@ class Pipeline:
         measurement_columns = self.get_measurement_columns(module)
         measurements = [x[1] for x in measurement_columns if x[0] == object]
         for measurement in (
-            "_".join((category, feature, image, scale)),
-            "_".join((category, feature, image)),
-            "_".join((category, feature, scale)),
-            "_".join((category, feature)),
+                "_".join((category, feature, image, scale)),
+                "_".join((category, feature, image)),
+                "_".join((category, feature, scale)),
+                "_".join((category, feature)),
         ):
             if measurement in measurements:
                 return measurement

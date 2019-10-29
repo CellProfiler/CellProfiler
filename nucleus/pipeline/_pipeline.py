@@ -460,7 +460,7 @@ class Pipeline:
             ):
                 pipeline_version = int(value)
                 nucleus.pipeline.CURRENT_VERSION = int(
-                    re.sub(r"\.|rc\d{1}", "", nucleus.__version__)
+                    re.sub(r"\.|rc\d", "", nucleus.__version__)
                 )
             elif kwd == nucleus.pipeline.H_FROM_MATLAB:
                 from_matlab = value == "True"
@@ -736,7 +736,7 @@ class Pipeline:
             "%s:%d\n"
             % (
                 six.text_type(nucleus.pipeline.H_DATE_REVISION),
-                int(re.sub(r"\.|rc\d{1}", "", nucleus.__version__)),
+                int(re.sub(r"\.|rc\d", "", nucleus.__version__)),
             )
         )
         fd.write("%s:%s\n" % (six.text_type(nucleus.pipeline.H_GIT_HASH), ""))

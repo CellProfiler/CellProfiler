@@ -2540,9 +2540,6 @@ class Pipeline:
 
             pathname = path_or_fd
 
-            # import IPython
-            # IPython.embed()
-
             if pathname.startswith(FILE_SCHEME):
                 pathname = url2pathname(pathname)
 

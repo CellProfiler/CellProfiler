@@ -1,7 +1,7 @@
 from ._event import Event
 
 
-class ModuleEnabledEvent(Event):
+class ModuleEnabled(Event):
     """A module was enabled
 
     module - the module that was enabled.

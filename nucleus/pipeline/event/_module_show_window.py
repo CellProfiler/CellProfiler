@@ -1,7 +1,7 @@
 from ._event import Event
 
 
-class ModuleShowWindowEvent(Event):
+class ModuleShowWindow(Event):
     """A module had its "show_window" state changed
 
     module - the module that had its state changed

@@ -1,7 +1,7 @@
 from ._event import Event
 
 
-class EndRunEvent(Event):
+class EndRun(Event):
     """A run ended"""
 
     def event_type(self):

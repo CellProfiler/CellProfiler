@@ -1,7 +1,7 @@
 from ._event import Event
 
 
-class LoadExceptionEvent(Event):
+class LoadException(Event):
     """An exception was caught during pipeline loading
 
     """

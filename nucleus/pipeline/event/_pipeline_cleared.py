@@ -1,13 +1,13 @@
 from ._event import Event
 
 
-class PipelineClearedEvent(Event):
+class PipelineCleared(Event):
     """Indicates that all modules have been removed from the pipeline
 
     """
 
     def __init__(self):
-        super(PipelineClearedEvent, self).__init__(
+        super(PipelineCleared, self).__init__(
             is_pipeline_modification=True, is_image_set_modification=True
         )
 

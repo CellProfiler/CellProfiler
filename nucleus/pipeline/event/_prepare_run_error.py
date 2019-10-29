@@ -1,7 +1,7 @@
 from ._event import Event
 
 
-class PrepareRunErrorEvent(Event):
+class PrepareRunError(Event):
     """A user configuration error prevented CP from running the pipeline
 
     Modules use this class to report conditions that prevent construction

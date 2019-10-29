@@ -1,7 +1,7 @@
 from ._event import Event
 
 
-class IPDLoadExceptionEvent(Event):
+class IPDLoadException(Event):
     """An exception was cauaght while trying to load the image plane details
 
     This event is reported when an exception is thrown while loading

@@ -22,7 +22,7 @@ import nucleus.modules
 import nucleus.modules.injectimage
 import nucleus.modules.loadimages
 import nucleus.pipeline
-import nucleus.pipeline.event._load_exception_event
+import nucleus.pipeline.event._load_exception
 import nucleus.pipeline.event.run_exception_event._run_exception_event
 import nucleus.preferences
 import nucleus.setting
@@ -579,7 +579,7 @@ HasImagePlaneDetails:False"""
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.event._load_exception_event.LoadExceptionEvent)
+                                  nucleus.pipeline.event._load_exception.LoadException)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -635,7 +635,7 @@ HasImagePlaneDetails:False"""
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.event._load_exception_event.LoadExceptionEvent)
+                                  nucleus.pipeline.event._load_exception.LoadException)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -805,7 +805,7 @@ HasImagePlaneDetails:False"""
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.event._load_exception_event.LoadExceptionEvent)
+                                  nucleus.pipeline.event._load_exception.LoadException)
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()

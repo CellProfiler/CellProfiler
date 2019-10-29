@@ -1,13 +1,13 @@
 from ._event import Event
 
 
-class ModuleMovedPipelineEvent(Event):
+class ModuleMoved(Event):
     """A module moved up or down
 
     """
 
     def __init__(self, module_num, direction, is_image_set_modification):
-        super(ModuleMovedPipelineEvent, self).__init__(
+        super(ModuleMoved, self).__init__(
             is_pipeline_modification=True,
             is_image_set_modification=is_image_set_modification,
         )

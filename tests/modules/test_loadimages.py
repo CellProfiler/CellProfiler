@@ -27,7 +27,7 @@ import nucleus.modules.loadimages
 import nucleus.modules.namesandtypes
 import nucleus.object
 import nucleus.pipeline
-import nucleus.pipeline.event._load_exception_event
+import nucleus.pipeline.event._load_exception
 import nucleus.pipeline.event.run_exception_event._run_exception_event
 import nucleus.preferences
 import nucleus.setting
@@ -2327,7 +2327,7 @@ def make_prepare_run_workspace(file_names):
     def callback(caller, event):
         assert not isinstance(
             event,
-            (nucleus.pipeline.event._load_exception_event.LoadExceptionEvent,
+            (nucleus.pipeline.event._load_exception.LoadException,
              nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent),
         )
 
@@ -2397,7 +2397,7 @@ def test_00_load_from_url():
     def callback(caller, event):
         assert not isinstance(
             event,
-            (nucleus.pipeline.event._load_exception_event.LoadExceptionEvent,
+            (nucleus.pipeline.event._load_exception.LoadException,
              nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent),
         )
 

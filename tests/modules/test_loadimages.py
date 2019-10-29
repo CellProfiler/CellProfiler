@@ -27,6 +27,8 @@ import nucleus.modules.loadimages
 import nucleus.modules.namesandtypes
 import nucleus.object
 import nucleus.pipeline
+import nucleus.pipeline.abstract_pipeline_event._load_exception_event
+import nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event
 import nucleus.preferences
 import nucleus.setting
 import nucleus.workspace
@@ -58,7 +60,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     pipeline.load(io.StringIO(pipeline_text))
 
     def callback(caller, event):
-        assert not isinstance(event, nucleus.pipeline.RunExceptionEvent)
+        assert not isinstance(event, nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     m = [
@@ -187,7 +189,7 @@ def tearDown():
 
 
 def error_callback(calller, event):
-    if isinstance(event, nucleus.pipeline.RunExceptionEvent):
+    if isinstance(event, nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent):
         pytest.fail(event.error.message)
 
 
@@ -254,7 +256,7 @@ def test_load_5channel_tif():
     pipeline = nucleus.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, nucleus.pipeline.RunExceptionEvent)
+        assert not isinstance(event, nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
@@ -2325,7 +2327,8 @@ def make_prepare_run_workspace(file_names):
     def callback(caller, event):
         assert not isinstance(
             event,
-            (nucleus.pipeline.LoadExceptionEvent, nucleus.pipeline.RunExceptionEvent),
+            (nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent,
+             nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent),
         )
 
     pipeline.add_listener(callback)
@@ -2394,7 +2397,8 @@ def test_00_load_from_url():
     def callback(caller, event):
         assert not isinstance(
             event,
-            (nucleus.pipeline.LoadExceptionEvent, nucleus.pipeline.RunExceptionEvent),
+            (nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent,
+             nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent),
         )
 
     pipeline.add_listener(callback)

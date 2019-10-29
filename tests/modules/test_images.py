@@ -5,6 +5,7 @@ import tempfile
 import nucleus.measurement
 import nucleus.modules.images
 import nucleus.pipeline
+import nucleus.pipeline.abstract_pipeline_event._load_exception_event
 import nucleus.workspace
 
 
@@ -31,7 +32,8 @@ class TestImages:
         pipeline = nucleus.pipeline.Pipeline()
 
         def callback(caller, event):
-            assert not isinstance(event, nucleus.pipeline.LoadExceptionEvent)
+            assert not isinstance(event,
+                                  nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
@@ -56,7 +58,8 @@ class TestImages:
             pipeline = nucleus.pipeline.Pipeline()
 
             def callback(caller, event):
-                assert not isinstance(event, nucleus.pipeline.LoadExceptionEvent)
+                assert not isinstance(event,
+                                      nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent)
 
             pipeline.add_listener(callback)
             pipeline.load(io.StringIO(data % fctext))

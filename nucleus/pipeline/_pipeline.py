@@ -23,6 +23,25 @@ import nucleus.image
 import nucleus.measurement
 import nucleus.object
 import nucleus.pipeline
+import nucleus.pipeline.abstract_pipeline_event._end_run_event
+import nucleus.pipeline.abstract_pipeline_event._file_walk_ended_event
+import nucleus.pipeline.abstract_pipeline_event._ipd_load_exception_event
+import nucleus.pipeline.abstract_pipeline_event._load_exception_event
+import nucleus.pipeline.abstract_pipeline_event._module_added_pipeline_event
+import nucleus.pipeline.abstract_pipeline_event._module_disabled_event
+import nucleus.pipeline.abstract_pipeline_event._module_edited_pipeline_event
+import nucleus.pipeline.abstract_pipeline_event._module_enabled_event
+import nucleus.pipeline.abstract_pipeline_event._module_moved_pipeline_event
+import nucleus.pipeline.abstract_pipeline_event._module_removed_pipeline_event
+import nucleus.pipeline.abstract_pipeline_event._module_show_window_event
+import nucleus.pipeline.abstract_pipeline_event._pipeline_cleared_event
+import nucleus.pipeline.abstract_pipeline_event._pipeline_loaded_event
+import nucleus.pipeline.abstract_pipeline_event._prepare_run_error_event
+import nucleus.pipeline.abstract_pipeline_event.run_exception_event._post_run_exception_event
+import nucleus.pipeline.abstract_pipeline_event.run_exception_event._prepare_run_exception_event
+import nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event
+import nucleus.pipeline.abstract_pipeline_event._urls_added_event
+import nucleus.pipeline.abstract_pipeline_event._urls_removed_event
 import nucleus.preferences
 import nucleus.setting
 import nucleus.utilities.legacy
@@ -125,7 +144,7 @@ class Pipeline:
             module_names = settings[nucleus.pipeline.MODULE_NAMES]
         except Exception as instance:
             logger.error("Failed to load pipeline", exc_info=True)
-            e = nucleus.pipeline.LoadExceptionEvent(instance, None)
+            e = nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent(instance, None)
             self.notify_listeners(e)
             return
         module_count = module_names.shape[1]
@@ -154,7 +173,7 @@ class Pipeline:
                     for x in module_settings
                 ]
 
-                event = nucleus.pipeline.LoadExceptionEvent(
+                event = nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent(
                     instance, module, module_name, module_settings
                 )
                 self.notify_listeners(event)
@@ -168,7 +187,8 @@ class Pipeline:
         for module in self.__modules:
             module.post_pipeline_load(self)
 
-        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
+        self.notify_listeners(
+            nucleus.pipeline.abstract_pipeline_event._pipeline_loaded_event.PipelineLoadedEvent())
 
     @staticmethod
     def instantiate_module(module_name):
@@ -361,14 +381,16 @@ class Pipeline:
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n"
                     % fd_or_filename
                 )
-                self.notify_listeners(nucleus.pipeline.LoadExceptionEvent(e, None))
+                self.notify_listeners(
+                    nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent(e, None))
                 return
             except Exception as e:
                 logging.error(
                     "Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
                     exc_info=True,
                 )
-                self.notify_listeners(nucleus.pipeline.LoadExceptionEvent(e, None))
+                self.notify_listeners(
+                    nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent(e, None))
                 return
         else:
             handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
@@ -436,9 +458,11 @@ class Pipeline:
         self.__settings = [self.capture_module_settings(module) for module in self.modules(False)]
         for module in self.modules(False):
             module.post_pipeline_load(self)
-        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
+        self.notify_listeners(
+            nucleus.pipeline.abstract_pipeline_event._pipeline_loaded_event.PipelineLoadedEvent())
         if details:
-            self.notify_listeners(nucleus.pipeline.URLsAddedEvent(self.__file_list))
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._urls_added_event.URLsAddedEvent(self.__file_list))
         self.__undo_stack = []
         return checksum, version
 
@@ -635,7 +659,7 @@ class Pipeline:
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
-                event = nucleus.pipeline.LoadExceptionEvent(
+                event = nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent(
                     instance, module, module_name, settings
                 )
                 self.notify_listeners(event)
@@ -1147,7 +1171,8 @@ class Pipeline:
                 if module.needs_conversion():
                     module.convert(self, metadata, namesandtypes, groups)
                     self.remove_module(module.module_num)
-            self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._pipeline_loaded_event.PipelineLoadedEvent())
 
     def convert_default_input_folder(self, path):
         """Convert all references to the default input folder to abolute paths
@@ -1179,7 +1204,8 @@ class Pipeline:
                             setting.custom_path = subpath
                 if was_edited:
                     self.edit_module(module.module_num, True)
-            self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._pipeline_loaded_event.PipelineLoadedEvent())
 
     def fix_legacy_pipeline(self):
         """Perform inter-module fixes needed for some legacy pipelines"""
@@ -1634,7 +1660,7 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = nucleus.pipeline.RunExceptionEvent(
+                        event = nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent(
                             exception, module, tb
                         )
 
@@ -1789,7 +1815,7 @@ class Pipeline:
                         nucleus.measurement.IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
-                evt = nucleus.pipeline.RunExceptionEvent(
+                evt = nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent(
                     exception, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(evt)
@@ -1835,7 +1861,7 @@ class Pipeline:
 
     def end_run(self):
         """Tell everyone that a run is ending"""
-        self.notify_listeners(nucleus.pipeline.EndRunEvent())
+        self.notify_listeners(nucleus.pipeline.abstract_pipeline_event._end_run_event.EndRunEvent())
 
     def run_group_with_yield(
             self, workspace, grouping, image_numbers, stop_module, title, message
@@ -1962,7 +1988,7 @@ class Pipeline:
         def on_pipeline_event(pipeline, event, prepare_run_error_detected=None):
             if prepare_run_error_detected is None:
                 prepare_run_error_detected = prepare_run_error_detected
-            if isinstance(event, nucleus.pipeline.PrepareRunErrorEvent):
+            if isinstance(event, nucleus.pipeline.abstract_pipeline_event._prepare_run_error_event.PrepareRunErrorEvent):
                 prepare_run_error_detected[0] = True
 
         had_image_sets = False
@@ -1986,7 +2012,7 @@ class Pipeline:
                         module.module_name,
                         exc_info=True,
                     )
-                    event = nucleus.pipeline.PrepareRunExceptionEvent(
+                    event = nucleus.pipeline.abstract_pipeline_event.run_exception_event._prepare_run_exception_event.PrepareRunExceptionEvent(
                         instance, module, sys.exc_info()[2]
                     )
                     self.notify_listeners(event)
@@ -2092,7 +2118,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.PostRunExceptionEvent(
+                event = nucleus.pipeline.abstract_pipeline_event.run_exception_event._post_run_exception_event.PostRunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2144,7 +2170,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.RunExceptionEvent(
+                event = nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2252,7 +2278,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.RunExceptionEvent(
+                event = nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2276,7 +2302,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = nucleus.pipeline.RunExceptionEvent(
+                event = nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -2335,7 +2361,8 @@ class Pipeline:
         try:
             while len(self.__modules) > 0:
                 self.remove_module(self.__modules[-1].module_num)
-            self.notify_listeners(nucleus.pipeline.PipelineClearedEvent())
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._pipeline_cleared_event.PipelineClearedEvent())
             self.init_modules()
         finally:
             self.stop_undoable_action()
@@ -2396,7 +2423,7 @@ class Pipeline:
         else:
             raise ValueError("Unknown direction: %s" % direction)
         self.notify_listeners(
-            nucleus.pipeline.ModuleMovedPipelineEvent(new_module_num, direction, False)
+            nucleus.pipeline.abstract_pipeline_event._module_moved_pipeline_event.ModuleMovedPipelineEvent(new_module_num, direction, False)
         )
 
         def undo():
@@ -2419,7 +2446,7 @@ class Pipeline:
             )
             return
         module.enabled = True
-        self.notify_listeners(nucleus.pipeline.ModuleEnabledEvent(module))
+        self.notify_listeners(nucleus.pipeline.abstract_pipeline_event._module_enabled_event.ModuleEnabledEvent(module))
 
         def undo():
             self.disable_module(module)
@@ -2435,7 +2462,8 @@ class Pipeline:
                 % module.module_name
             )
         module.enabled = False
-        self.notify_listeners(nucleus.pipeline.ModuleDisabledEvent(module))
+        self.notify_listeners(
+            nucleus.pipeline.abstract_pipeline_event._module_disabled_event.ModuleDisabledEvent(module))
 
         def undo():
             self.enable_module(module)
@@ -2452,7 +2480,8 @@ class Pipeline:
         """
         if state != module.show_window:
             module.show_window = state
-            self.notify_listeners(nucleus.pipeline.ModuleShowWindowEvent(module))
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._module_show_window_event.ModuleShowWindowEvent(module))
 
             def undo():
                 self.show_module_window(module, not state)
@@ -2496,7 +2525,7 @@ class Pipeline:
         self.__file_list_generation = uid
         self.__filtered_file_list_images_settings = None
         self.__image_plane_details_metadata_settings = None
-        self.notify_listeners(nucleus.pipeline.URLsAddedEvent(real_list))
+        self.notify_listeners(nucleus.pipeline.abstract_pipeline_event._urls_added_event.URLsAddedEvent(real_list))
         if add_undo:
             def undo():
                 self.remove_urls(real_list)
@@ -2518,7 +2547,8 @@ class Pipeline:
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
             self.__file_list_generation = uuid.uuid4()
-            self.notify_listeners(nucleus.pipeline.URLsRemovedEvent(real_list))
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._urls_removed_event.URLsRemovedEvent(real_list))
 
             def undo():
                 self.add_urls(real_list, False)
@@ -2533,7 +2563,8 @@ class Pipeline:
             self.__filtered_file_list_images_settings = None
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
-            self.notify_listeners(nucleus.pipeline.URLsRemovedEvent(old_urls))
+            self.notify_listeners(
+                nucleus.pipeline.abstract_pipeline_event._urls_removed_event.URLsRemovedEvent(old_urls))
             if add_undo:
                 def undo():
                     self.add_urls(old_urls, False)
@@ -2551,7 +2582,7 @@ class Pipeline:
             urls = file_list.get_filelist()
         except Exception as instance:
             logger.error("Failed to get file list from workspace", exc_info=True)
-            x = nucleus.pipeline.IPDLoadExceptionEvent(
+            x = nucleus.pipeline.abstract_pipeline_event._ipd_load_exception_event.IPDLoadExceptionEvent(
                 "Failed to get file list from workspace"
             )
             self.notify_listeners(x)
@@ -2965,7 +2996,7 @@ class Pipeline:
         ):
             module.module_num = mn
         self.notify_listeners(
-            nucleus.pipeline.ModuleAddedPipelineEvent(
+            nucleus.pipeline.abstract_pipeline_event._module_added_pipeline_event.ModuleAddedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -2989,7 +3020,7 @@ class Pipeline:
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
         self.notify_listeners(
-            nucleus.pipeline.ModuleRemovedPipelineEvent(
+            nucleus.pipeline.abstract_pipeline_event._module_removed_pipeline_event.ModuleRemovedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -3011,7 +3042,7 @@ class Pipeline:
         module = self.__modules[idx]
         new_settings = self.capture_module_settings(module)
         self.notify_listeners(
-            nucleus.pipeline.ModuleEditedPipelineEvent(
+            nucleus.pipeline.abstract_pipeline_event._module_edited_pipeline_event.ModuleEditedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -3025,7 +3056,7 @@ class Pipeline:
                 old_settings, variable_revision_number, module_name, False
             )
             self.notify_listeners(
-                nucleus.pipeline.ModuleEditedPipelineEvent(module_num)
+                nucleus.pipeline.abstract_pipeline_event._module_edited_pipeline_event.ModuleEditedPipelineEvent(module_num)
             )
             self.__settings[idx] = old_settings
 
@@ -3040,7 +3071,7 @@ class Pipeline:
         return self.__image_plane_details
 
     def on_walk_completed(self):
-        self.notify_listeners(nucleus.pipeline.FileWalkEndedEvent())
+        self.notify_listeners(nucleus.pipeline.abstract_pipeline_event._file_walk_ended_event.FileWalkEndedEvent())
 
     def wp_add_files(self, dirpath, directories, filenames):
         ipds = []
@@ -3224,7 +3255,7 @@ class Pipeline:
 
         Report errors due to misconfiguration, such as no files found.
         """
-        event = nucleus.pipeline.PrepareRunErrorEvent(module, message)
+        event = nucleus.pipeline.abstract_pipeline_event._prepare_run_error_event.PrepareRunErrorEvent(module, message)
         self.notify_listeners(event)
 
     def is_image_from_file(self, image_name):

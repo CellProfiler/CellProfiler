@@ -1032,7 +1032,7 @@ def remove_output_file_name_listener(listener):
     try:
         __output_filename_listeners.remove(listener)
     except:
-        logger.warn("File name listener doubly removed")
+        logger.warning("File name listener doubly removed")
 
 
 def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):

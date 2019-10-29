@@ -363,7 +363,7 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception as e:
-                logger.warn(
+                logger.warning(
                     "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now."
                     % self.filename
                 )

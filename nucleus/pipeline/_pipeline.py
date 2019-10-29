@@ -20,7 +20,6 @@ import six.moves.urllib.request
 import nucleus
 import nucleus.image
 import nucleus.measurement
-import nucleus.measurement._measurements
 import nucleus.object
 import nucleus.pipeline
 import nucleus.preferences
@@ -857,7 +856,7 @@ class Pipeline:
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         """
-        assert isinstance(m, nucleus.measurement._measurements.Measurements)
+        assert isinstance(m, nucleus.measurement.Measurements)
         fd = six.moves.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(
@@ -1209,7 +1208,7 @@ class Pipeline:
             input_pixels = image_dict[image_name]
             image_set.add(image_name, nucleus.image.Image(input_pixels))
         object_set = nucleus.object.ObjectSet()
-        measurements = nucleus.measurement._measurements.Measurements()
+        measurements = nucleus.measurement.Measurements()
 
         # Run the modules
         for module in self.modules():
@@ -1245,7 +1244,7 @@ class Pipeline:
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = nucleus.measurement._measurements.Measurements(
+        measurements = nucleus.measurement.Measurements(
             image_set_start=image_set_start,
             filename=measurements_filename,
             copy=initial_measurements,
@@ -1369,7 +1368,7 @@ class Pipeline:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
 
         if initial_measurements is None:
-            measurements = nucleus.measurement._measurements.Measurements(
+            measurements = nucleus.measurement.Measurements(
                 image_set_start
             )
         else:
@@ -1869,7 +1868,7 @@ class Pipeline:
 
         Write the pipeline, version # and timestamp.
         """
-        assert isinstance(m, nucleus.measurement._measurements.Measurements)
+        assert isinstance(m, nucleus.measurement.Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(nucleus.pipeline.M_VERSION, nucleus.__version__)
         m.add_experiment_measurement(
@@ -2063,7 +2062,7 @@ class Pipeline:
                     workspace.post_run_display(module)
                 except Exception as instance:
                     # Warn about display failure but keep going.
-                    logging.warn(
+                    logging.warning(
                         "Caught exception during post_run_display for module %s."
                         % module.module_name,
                         exc_info=True,
@@ -2246,7 +2245,7 @@ class Pipeline:
                 try:
                     workspace.post_group_display(module)
                 except:
-                    logging.warn(
+                    logging.warning(
                         "Failed during post group display for module %s"
                         % module.module_name,
                         exc_info=True,
@@ -2370,7 +2369,7 @@ class Pipeline:
     def enable_module(self, module):
         """Enable a module = make it executable"""
         if module.enabled:
-            logger.warn(
+            logger.warning(
                 "Asked to enable module %s, but it was already enabled"
                 % module.module_name
             )
@@ -2387,7 +2386,7 @@ class Pipeline:
     def disable_module(self, module):
         """Disable a module = prevent it from being executed"""
         if not module.enabled:
-            logger.warn(
+            logger.warning(
                 "Asked to disable module %s, but it was already disabled"
                 % module.module_name
             )
@@ -2742,7 +2741,7 @@ class Pipeline:
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = nucleus.measurement._measurements.Measurements(mode="memory")
+        temp_measurements = nucleus.measurement.Measurements(mode="memory")
         new_workspace = None
         try:
             new_workspace = nucleus.workspace.Workspace(

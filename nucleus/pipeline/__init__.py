@@ -12,7 +12,6 @@ import six.moves.urllib.request
 import nucleus
 import nucleus.image
 import nucleus.measurement
-import nucleus.measurement._measurements
 import nucleus.object
 import nucleus.preferences
 import nucleus.setting

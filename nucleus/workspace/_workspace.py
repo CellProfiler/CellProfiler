@@ -366,7 +366,7 @@ class Workspace:
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = nucleus.measurement._measurements.Measurements(
+            self.__measurements = nucleus.measurement.Measurements(
                 filename=self.__filename, mode="r+"
             )
             if self.__file_list is not None:

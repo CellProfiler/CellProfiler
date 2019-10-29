@@ -405,18 +405,7 @@ class Pipeline:
         else:
             fd = open(fp_or_filename, "r", encoding="utf-8")
 
-        def rl():
-            """Read a line from fd"""
-            try:
-                line = next(fd)
-                if line is None:
-                    return None
-                line = line.strip()
-                return line
-            except StopIteration:
-                return None
-
-        header = rl()
+        header = readline(fd)
 
         # FIXME:
         if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
@@ -430,8 +419,10 @@ class Pipeline:
         git_hash = None
         pipeline_version = nucleus.__version__
         CURRENT_VERSION = None
+
         while True:
-            line = rl()
+            line = readline(fd)
+
             if line is None:
                 if module_count == 0:
                     break
@@ -479,6 +470,42 @@ class Pipeline:
             else:
                 print(line)
 
+        pipeline_version = self.validate_pipeline_version(
+            CURRENT_VERSION,
+            git_hash,
+            pipeline_version
+        )
+
+        new_modules = self.setup_modules(
+            fd,
+            from_matlab,
+            module_count,
+            raise_on_error
+        )
+
+        if has_image_plane_details:
+            self.clear_urls(add_undo=False)
+            self.__file_list = nucleus.pipeline.read_file_list(fd)
+            self.__filtered_file_list_images_settings = None
+            self.__filtered_image_plane_details_metadata_settings = None
+
+        self.__modules = new_modules
+
+        self.__settings = [self.capture_module_settings(module) for module in self.modules(False)]
+
+        for module in self.modules(False):
+            module.post_pipeline_load(self)
+
+        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
+
+        if has_image_plane_details:
+            self.notify_listeners(nucleus.pipeline.URLsAddedEvent(self.__file_list))
+
+        self.__undo_stack = []
+
+        return pipeline_version, git_hash
+
+    def validate_pipeline_version(self, CURRENT_VERSION, git_hash, pipeline_version):
         if 20080101000000 < pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
@@ -490,7 +517,6 @@ class Pipeline:
             ).strftime(" @ %c")
         else:
             pipeline_date = ""
-
         if CURRENT_VERSION is None:
             pass
         if pipeline_version > nucleus.pipeline.CURRENT_VERSION:
@@ -538,7 +564,10 @@ class Pipeline:
                         "later versions of CellProfiler."
                     ).format(pipeline_version)
                     logging.warning(message)
+        
+        return pipeline_version
 
+    def setup_modules(self, fd, from_matlab, module_count, raise_on_error):
         #
         # The module section
         #
@@ -546,7 +575,7 @@ class Pipeline:
         module_number = 1
         skip_attributes = ["svn_version", "module_num"]
         for i in six.moves.xrange(module_count):
-            line = rl()
+            line = readline(fd)
             if line is None:
                 break
             settings = []
@@ -563,7 +592,7 @@ class Pipeline:
                 #
                 last_module = False
                 while True:
-                    line = rl()
+                    line = readline(fd)
                     if line is None:
                         last_module = True
                         break
@@ -588,55 +617,16 @@ class Pipeline:
                     #     )
 
                     settings.append(setting)
-                #
-                # Set up the module
-                #
-                module = self.instantiate_module(module_name)
-                module.set_module_num(module_number)
-                #
-                # Decode the attributes. These are turned into strings using
-                # repr, so True -> 'True', etc.
-                #
-                if (
-                        len(attribute_string) < 2
-                        or attribute_string[0] != "["
-                        or attribute_string[-1] != "]"
-                ):
-                    raise ValueError(
-                        "Invalid format for attributes: %s" % attribute_string
-                    )
-                attribute_strings = attribute_string[1:-1].split("|")
-                variable_revision_number = None
-                # make batch_state decodable from text pipelines
-                # NOTE, MAGIC HERE: These variables are **necessary**, even though they
-                # aren't used anywhere obvious. Removing them **will** break these unit tests.
-                array = numpy.array
-                uint8 = numpy.uint8
-                for a in attribute_strings:
-                    if len(a.split(":")) != 2:
-                        raise ValueError("Invalid attribute string: %s" % a)
-                    attribute, value = a.split(":")
-                    if attribute in skip_attributes:
-                        continue
-                    # En/decode needed to read example cppipe format
-                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
-                    # value = eval(value.encode().decode("unicode_escape"))
-                    if attribute == "variable_revision_number":
-                        variable_revision_number = value
-                    else:
-                        setattr(module, attribute, value)
-                if variable_revision_number is None:
-                    raise ValueError(
-                        "Module %s did not have a variable revision # attribute"
-                        % module_name
-                    )
-                module.set_settings_from_values(
-                    settings, variable_revision_number, module_name, from_matlab
+
+                module = self.setup_module(
+                    attribute_string,
+                    from_matlab,
+                    module,
+                    module_name,
+                    module_number,
+                    settings,
+                    skip_attributes
                 )
-
-                if module_name == "NamesAndTypes":
-                    self.__volumetric = module.process_as_3d.value
-
             except Exception as instance:
                 if raise_on_error:
                     raise
@@ -650,23 +640,67 @@ class Pipeline:
             if module is not None:
                 new_modules.append(module)
                 module_number += 1
-        if has_image_plane_details:
-            self.clear_urls(add_undo=False)
-            self.__file_list = nucleus.pipeline.read_file_list(fd)
-            self.__filtered_file_list_images_settings = None
-            self.__filtered_image_plane_details_metadata_settings = None
+        return new_modules
 
-        self.__modules = new_modules
-        self.__settings = [
-            self.capture_module_settings(module) for module in self.modules(False)
-        ]
-        for module in self.modules(False):
-            module.post_pipeline_load(self)
-        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
-        if has_image_plane_details:
-            self.notify_listeners(nucleus.pipeline.URLsAddedEvent(self.__file_list))
-        self.__undo_stack = []
-        return pipeline_version, git_hash
+    def setup_module(
+            self,
+            attribute_string,
+            from_matlab,
+            module,
+            module_name,
+            module_number,
+            settings,
+            skip_attributes
+    ):
+        #
+        # Set up the module
+        #
+        module = self.instantiate_module(module_name)
+        module.set_module_num(module_number)
+        #
+        # Decode the attributes. These are turned into strings using
+        # repr, so True -> 'True', etc.
+        #
+        if (
+                len(attribute_string) < 2
+                or attribute_string[0] != "["
+                or attribute_string[-1] != "]"
+        ):
+            raise ValueError(
+                "Invalid format for attributes: %s" % attribute_string
+            )
+        attribute_strings = attribute_string[1:-1].split("|")
+        variable_revision_number = None
+        # make batch_state decodable from text pipelines
+        # NOTE, MAGIC HERE: These variables are **necessary**, even though they
+        # aren't used anywhere obvious. Removing them **will** break these unit tests.
+        array = numpy.array
+        uint8 = numpy.uint8
+        for a in attribute_strings:
+            if len(a.split(":")) != 2:
+                raise ValueError("Invalid attribute string: %s" % a)
+            attribute, value = a.split(":")
+            if attribute in skip_attributes:
+                continue
+            # En/decode needed to read example cppipe format
+            # TODO: remove en/decode when example cppipe no longer has \x__ characters
+            # value = eval(value.encode().decode("unicode_escape"))
+            if attribute == "variable_revision_number":
+                variable_revision_number = value
+            else:
+                setattr(module, attribute, value)
+        if variable_revision_number is None:
+            raise ValueError(
+                "Module %s did not have a variable revision # attribute"
+                % module_name
+            )
+        module.set_settings_from_values(
+            settings, variable_revision_number, module_name, from_matlab
+        )
+        if module_name == "NamesAndTypes":
+            self.__volumetric = module.process_as_3d.value
+
+        return module
 
     def save(self, fd_or_filename, format="Native", save_image_plane_details=True):
         """Save the pipeline to a file
@@ -3478,3 +3512,15 @@ class Pipeline:
 
         assert "Groups" in [m.module_name for m in self.modules()]
         return self.settings_hash(until_module="Groups", as_string=True)
+
+
+def readline(fd):
+    """Read a line from fd"""
+    try:
+        line = next(fd)
+        if line is None:
+            return None
+        line = line.strip()
+        return line
+    except StopIteration:
+        return None

@@ -14,7 +14,7 @@ import nucleus.module
 import nucleus.pipeline
 import nucleus.setting
 import nucleus.modules
-import nucleus.module._help
+import nucleus.module
 
 logger = logging.getLogger(__name__)
 
@@ -379,7 +379,7 @@ extraction method” button to add more.
                         "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                         "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
                         "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
-                        "PROTIP_RECOMMEND_ICON": nucleus.module._help.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": nucleus.module.PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),
@@ -554,7 +554,7 @@ extraction.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                     **{
-                        "FILTER_RULES_BUTTONS_HELP": nucleus.module._help.FILTER_RULES_BUTTONS_HELP,
+                        "FILTER_RULES_BUTTONS_HELP": nucleus.module.FILTER_RULES_BUTTONS_HELP,
                         "YES": "Yes",
                     }
                 ),
@@ -664,7 +664,7 @@ not being applied, your choice on this setting may be the culprit.
                     **{
                         "NO": "No",
                         "YES": "Yes",
-                        "PROTIP_RECOMMEND_ICON": nucleus.module._help.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": nucleus.module.PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),

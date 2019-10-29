@@ -10,7 +10,7 @@ import six.moves.urllib.request
 # import nucleus.icons
 import nucleus.module
 import nucleus.modules
-import nucleus.module._help
+import nucleus.module
 import nucleus.modules.loadimages
 import nucleus.pipeline
 import nucleus.setting
@@ -234,7 +234,7 @@ Specify a set of rules to narrow down the files to be analyzed.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                 **{
-                    "FILTER_RULES_BUTTONS_HELP": nucleus.module._help.FILTER_RULES_BUTTONS_HELP
+                    "FILTER_RULES_BUTTONS_HELP": nucleus.module.FILTER_RULES_BUTTONS_HELP
                 }
             ),
         )

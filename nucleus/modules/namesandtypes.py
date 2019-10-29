@@ -17,7 +17,7 @@ import nucleus.pipeline
 import nucleus.preferences
 import nucleus.setting
 from nucleus.modules import identify, images, loadimages
-from nucleus.module import _help
+import nucleus.module
 
 logger = logging.getLogger(__name__)
 
@@ -635,7 +635,7 @@ You can match corresponding channels to each other in one of two ways:
                 **{
                     "MATCH_BY_METADATA": MATCH_BY_METADATA,
                     "MATCH_BY_ORDER": MATCH_BY_ORDER,
-                    "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
+                    "USING_METADATA_HELP_REF": nucleus.module.USING_METADATA_HELP_REF,
                 }
             ),
         )
@@ -681,7 +681,7 @@ Specify a filter using rules to narrow down the files to be analyzed.
 
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
-                    **{"FILTER_RULES_BUTTONS_HELP": _help.FILTER_RULES_BUTTONS_HELP}
+                    **{"FILTER_RULES_BUTTONS_HELP": nucleus.module.FILTER_RULES_BUTTONS_HELP}
                 ),
             ),
         )
@@ -762,7 +762,7 @@ times.
 
 .. |NAT_CopyAssignment_image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(
-                    **{"PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON}
+                    **{"PROTIP_RECOMMEND_ICON": nucleus.module.PROTIP_RECOMMEND_ICON}
                 ),
             ),
         )

@@ -1203,7 +1203,8 @@ class Measurements:
             result.append(groupings[key])
         return result
 
-    def agg_ignore_object(self, object_name):
+    @staticmethod
+    def agg_ignore_object(object_name):
         """Ignore objects (other than 'Image') if this returns true"""
         if object_name in (
             nucleus.measurement.EXPERIMENT,

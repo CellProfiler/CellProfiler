@@ -23,7 +23,8 @@ class MultiChoice(_setting.Setting):
         )
         self.__choices = choices
 
-    def parse_value(self, value):
+    @staticmethod
+    def parse_value(value):
         if value is None:
             return ""
         elif isinstance(value, six.string_types):
@@ -168,15 +169,18 @@ class MeasurementMultiChoice(MultiChoice):
         """
         super(MeasurementMultiChoice, self).__init__(text, [], value, *args, **kwargs)
 
-    def encode_object_name(self, object_name):
+    @staticmethod
+    def encode_object_name(object_name):
         """Encode object name, escaping |"""
         return object_name.replace("|", "||")
 
-    def decode_object_name(self, object_name):
+    @staticmethod
+    def decode_object_name(object_name):
         """Decode the escaped object name"""
         return object_name.replace("||", "|")
 
-    def split_choice(self, choice):
+    @staticmethod
+    def split_choice(choice):
         """Split object and feature within a choice"""
         subst_choice = choice.replace("||", "++")
         loc = subst_choice.find("|")

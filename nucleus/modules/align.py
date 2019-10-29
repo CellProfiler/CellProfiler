@@ -410,7 +410,8 @@ a separate alignment to the first image can be calculated:
                 image1_pixels, image2_pixels, image1_mask, image2_mask
             )
 
-    def align_cross_correlation(self, pixels1, pixels2):
+    @staticmethod
+    def align_cross_correlation(pixels1, pixels2):
         """Align the second image with the first using max cross-correlation
 
         returns the x,y offsets to add to image1's indexes to align it with
@@ -534,7 +535,8 @@ a separate alignment to the first image can be calculated:
             j = j - fshape[1]
         return j, i
 
-    def align_mutual_information(self, pixels1, pixels2, mask1, mask2):
+    @staticmethod
+    def align_mutual_information(pixels1, pixels2, mask1, mask2):
         """Align the second image with the first using mutual information
 
         returns the x,y offsets to add to image1's indexes to align it with
@@ -585,8 +587,9 @@ a separate alignment to the first image can be calculated:
             if i == last_i and j == last_j:
                 return j, i
 
+    @staticmethod
     def apply_alignment(
-        self, workspace, input_image_name, output_image_name, off_x, off_y, shape
+            workspace, input_image_name, output_image_name, off_x, off_y, shape
     ):
         """Apply an alignment to the input image to result in the output image
 

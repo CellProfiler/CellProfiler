@@ -439,7 +439,8 @@ pipeline.
                 return file_setting
         return None
 
-    def file_wants_images(self, file_setting):
+    @staticmethod
+    def file_wants_images(file_setting):
         """True if the file_setting produces images, false if it produces objects"""
         return file_setting.image_objects_choice == IO_IMAGES
 
@@ -569,7 +570,8 @@ pipeline.
         workspace.display_data.col_labels = ("Image name", "File")
         workspace.display_data.statistics = statistics
 
-    def is_interactive(self):
+    @staticmethod
+    def is_interactive():
         return False
 
     def display(self, workspace, figure):

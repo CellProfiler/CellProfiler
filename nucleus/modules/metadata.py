@@ -692,7 +692,8 @@ not being applied, your choice on this setting may be the culprit.
                 ),
             )
 
-    def csv_path(self, group):
+    @staticmethod
+    def csv_path(group):
         return os.path.join(
             group.csv_location.get_absolute_path(), group.csv_filename.value
         )

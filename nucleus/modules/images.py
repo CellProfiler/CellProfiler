@@ -426,7 +426,8 @@ class DirectoryPredicate(nucleus.setting.Filter.FilterPredicate):
             doc="Apply the rule to directories",
         )
 
-    def fn_filter(self, node_type__modpath__module, *args):
+    @staticmethod
+    def fn_filter(node_type__modpath__module, *args):
         """The DirectoryPredicate filter function
 
         The arg slot expects a tuple of node_type and modpath.
@@ -477,7 +478,8 @@ class FilePredicate(nucleus.setting.Filter.FilterPredicate):
             doc="Apply the rule to files",
         )
 
-    def fn_filter(self, node_type__modpath__module, *args):
+    @staticmethod
+    def fn_filter(node_type__modpath__module, *args):
         """The FilePredicate filter function
 
         The arg slot expects a tuple of node_type and modpath.
@@ -586,7 +588,8 @@ class ExtensionPredicate(nucleus.setting.Filter.FilterPredicate):
             doc="The rule applies to the file extension",
         )
 
-    def fn_filter(self, node_type__modpath__module, *args):
+    @staticmethod
+    def fn_filter(node_type__modpath__module, *args):
         """The ExtensionPredicate filter function
 
         If the element is a file, try the different predicates on
@@ -700,7 +703,8 @@ class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
             doc="Filter based on image characteristics",
         )
 
-    def fn_filter(self, node_type__modpath__module, *args):
+    @staticmethod
+    def fn_filter(node_type__modpath__module, *args):
         (node_type, modpath, module) = node_type__modpath__module
         if node_type == nucleus.setting.FileCollectionDisplay.NODE_DIRECTORY:
             return None
@@ -712,7 +716,8 @@ class ImagePredicate(nucleus.setting.Filter.FilterPredicate):
     class FakeModule(nucleus.module.Module):
         """A fake module for setting validation"""
 
-        def get_image_plane_details(self, modpath):
+        @staticmethod
+        def get_image_plane_details(modpath):
             url = Images.modpath_to_url(modpath)
             return nucleus.pipeline.ImagePlaneDetails(url)
 

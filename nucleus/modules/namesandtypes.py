@@ -777,7 +777,8 @@ times.
                 ),
             )
 
-    def copy_assignment(self, assignment, assignment_list, add_assignment_fn):
+    @staticmethod
+    def copy_assignment(assignment, assignment_list, add_assignment_fn):
         """Make a copy of an assignment
 
         Make a copy of the assignment and add it directly after the
@@ -1448,7 +1449,8 @@ requests an object selection.
             script, dict(expr=group.rule_filter.value, name=name, axes=axes)
         )
 
-    def get_metadata_comparator(self, workspace, key):
+    @staticmethod
+    def get_metadata_comparator(workspace, key):
         """Get a Java Comparator<String> for a metadata key"""
         pipeline = workspace.pipeline
         if pipeline.get_available_metadata_keys().get(key) in (
@@ -1673,7 +1675,8 @@ requests an object selection.
                 ),
             )
 
-    def handle_errors(self, errors):
+    @staticmethod
+    def handle_errors(errors):
         """Handle UI presentation of errors and user's response
 
         errors - a wrapped Java list of ImageSetError objects
@@ -1713,7 +1716,8 @@ requests an object selection.
                 return False
         return True
 
-    def create_imageset_dictionary(self, workspace, image_sets, channel_names):
+    @staticmethod
+    def create_imageset_dictionary(workspace, image_sets, channel_names):
         """Create a compression dictionary for OME-encoded image sets
 
         Image sets are serialized as OME-XML which is bulky and repetitive.
@@ -1740,7 +1744,8 @@ requests an object selection.
         ] = np_d
         return cd
 
-    def get_imageset_dictionary(self, workspace):
+    @staticmethod
+    def get_imageset_dictionary(workspace):
         """Returns the imageset dictionary as a Java byte array"""
         m = workspace.measurements
         if m.has_feature(nucleus.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY):
@@ -1790,7 +1795,8 @@ requests an object selection.
             ipd = self.get_single_image_ipd(single_image, ipds)
             columns.append([ipd] * max_len)
 
-    def get_single_image_ipd(self, single_image, ipds):
+    @staticmethod
+    def get_single_image_ipd(single_image, ipds):
         """Get an image plane descriptor for this single_image group"""
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")

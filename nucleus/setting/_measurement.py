@@ -23,7 +23,8 @@ class Measurement(_setting.Setting):
         super(Measurement, self).__init__(text, value, *args, **kwargs)
         self.__object_fn = object_fn
 
-    def construct_value(self, category, feature_name, object_or_image_name, scale):
+    @staticmethod
+    def construct_value(category, feature_name, object_or_image_name, scale):
         """Construct a value that might represent a partially complete value"""
         if category is None:
             value = "None"

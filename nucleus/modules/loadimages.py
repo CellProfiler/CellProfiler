@@ -1274,7 +1274,8 @@ to store the image.
                 ),
             )
 
-    def channel_wants_images(self, channel):
+    @staticmethod
+    def channel_wants_images(channel):
         """True if the channel produces images, false if it produces objects"""
         return channel.image_object_choice == IO_IMAGES
 

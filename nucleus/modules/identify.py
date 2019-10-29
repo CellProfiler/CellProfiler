@@ -72,7 +72,8 @@ TECH_NOTE_ICON = "gear.png"
 
 
 class Identify(nucleus.module.Module):
-    def get_object_categories(self, pipeline, object_name, object_dictionary):
+    @staticmethod
+    def get_object_categories(pipeline, object_name, object_dictionary):
         """Get categories related to creating new children
 
         pipeline - the pipeline being run (not used)
@@ -94,8 +95,9 @@ class Identify(nucleus.module.Module):
             result += [nucleus.measurement.C_CHILDREN]
         return result
 
+    @staticmethod
     def get_object_measurements(
-        self, pipleline, object_name, category, object_dictionary
+            pipleline, object_name, category, object_dictionary
     ):
         """Get measurements related to creating new children
 

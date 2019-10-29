@@ -60,8 +60,6 @@ class InjectImage(nucleus.module.Module):
             "Please implement GetHelp in your derived module class"
         )
 
-    variable_revision_number = 1
-
     def write_to_handles(self, handles):
         """Write out the module's state to the handles
 

@@ -163,7 +163,8 @@ class Pipeline:
 
         self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
 
-    def instantiate_module(self, module_name):
+    @staticmethod
+    def instantiate_module(module_name):
         import nucleus.modules
 
         return nucleus.modules.instantiate_module(module_name)
@@ -379,7 +380,8 @@ class Pipeline:
 
         self.__undo_stack = []
 
-    def respond_to_version_mismatch_error(self, message):
+    @staticmethod
+    def respond_to_version_mismatch_error(message):
         logging.warning(message)
 
     def loadtxt(self, fp_or_filename, raise_on_error=False):
@@ -875,7 +877,8 @@ class Pipeline:
         m.clear()
         self.write_experiment_measurements(m)
 
-    def savemat(self, filename, root):
+    @staticmethod
+    def savemat(filename, root):
         """Save a handles structure accounting for scipy version compatibility to a filename or file-like object"""
         sver = scipy.__version__.split(".")
         if (
@@ -1852,10 +1855,12 @@ class Pipeline:
                 progress_dialog.Destroy()
             m.image_set_number = orig_image_number
 
-    def create_progress_dialog(self, message, pipeline, title):
+    @staticmethod
+    def create_progress_dialog(message, pipeline, title):
         return None
 
-    def run_module(self, module, workspace):
+    @staticmethod
+    def run_module(module, workspace):
         """Run one CellProfiler module
 
         Run the CellProfiler module with whatever preparation and cleanup

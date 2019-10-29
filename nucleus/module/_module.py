@@ -329,7 +329,8 @@ class Module:
             self.batch_state.tostring(), numpy.uint8
         )
 
-    def in_batch_mode(self):
+    @staticmethod
+    def in_batch_mode():
         """Return True if the module knows that the pipeline is in batch mode"""
         return None
 
@@ -589,7 +590,8 @@ class Module:
         """
         return False
 
-    def is_create_batch_module(self):
+    @staticmethod
+    def is_create_batch_module():
         """If true, the module will pickle the pipeline into a batch file and exit
 
         This is needed by modules which can't properly operate in a batch
@@ -598,7 +600,8 @@ class Module:
         """
         return False
 
-    def is_aggregation_module(self):
+    @staticmethod
+    def is_aggregation_module():
         """If true, the module uses data from other imagesets in a group
 
         Aggregation modules perform operations that require access to
@@ -633,7 +636,8 @@ class Module:
         """
         pass
 
-    def is_object_identification_module(self):
+    @staticmethod
+    def is_object_identification_module():
         """If true, the module will identify primary, secondary or tertiary objects"""
         return False
 
@@ -789,7 +793,8 @@ class Module:
         """
         return []
 
-    def get_object_relationships(self, pipeline):
+    @staticmethod
+    def get_object_relationships(pipeline):
         """Return a sequence describing the relationships recorded in measurements
 
         This method reports the relationships recorded in the measurements
@@ -858,7 +863,8 @@ class Module:
         """
         return []
 
-    def get_measurement_objects(self, pipeline, object_name, category, measurement):
+    @staticmethod
+    def get_measurement_objects(pipeline, object_name, category, measurement):
         """Return a list of secondary object names used as a basis for a particular measure
 
         object_name - either "Image" or the name of the primary object
@@ -894,7 +900,8 @@ class Module:
                 return True
         return False
 
-    def should_stop_writing_measurements(self):
+    @staticmethod
+    def should_stop_writing_measurements():
         """Returns True if measurements should not be taken after this module
 
         The ExportToDatabase and ExportToExcel modules expect that no

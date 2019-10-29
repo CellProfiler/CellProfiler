@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class ModuleMovedPipelineEvent(AbstractPipelineEvent):
+class ModuleMovedPipelineEvent(Event):
     """A module moved up or down
 
     """

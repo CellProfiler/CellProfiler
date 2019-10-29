@@ -1,7 +1,7 @@
-from .._abstract_pipeline_event import AbstractPipelineEvent
+from .._event import Event
 
 
-class RunExceptionEvent(AbstractPipelineEvent):
+class RunExceptionEvent(Event):
     """An exception was caught during a pipeline run
 
     Initializer:

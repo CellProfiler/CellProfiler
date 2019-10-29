@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class ModuleDisabledEvent(AbstractPipelineEvent):
+class ModuleDisabledEvent(Event):
     """A module was disabled
 
     module - the module that was disabled.

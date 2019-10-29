@@ -1,4 +1,4 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import (Event, CancelledException, PipelineLoadCancelledException)
 from ._end_run_event import EndRunEvent
 from ._file_walk_ended_event import FileWalkEndedEvent
 from ._file_walk_started_event import FileWalkStartedEvent

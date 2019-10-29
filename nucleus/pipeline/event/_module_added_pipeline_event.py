@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class ModuleAddedPipelineEvent(AbstractPipelineEvent):
+class ModuleAddedPipelineEvent(Event):
     """A module was added to the pipeline
 
     """

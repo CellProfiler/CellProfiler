@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class PipelineLoadedEvent(AbstractPipelineEvent):
+class PipelineLoadedEvent(Event):
     """Indicates that the pipeline has been (re)loaded
 
     """

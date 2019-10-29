@@ -22,8 +22,8 @@ import nucleus.modules
 import nucleus.modules.injectimage
 import nucleus.modules.loadimages
 import nucleus.pipeline
-import nucleus.pipeline.abstract_pipeline_event._load_exception_event
-import nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event
+import nucleus.pipeline.event._load_exception_event
+import nucleus.pipeline.event.run_exception_event._run_exception_event
 import nucleus.preferences
 import nucleus.setting
 import nucleus.workspace
@@ -72,11 +72,11 @@ def exploding_pipeline(test):
     x = get_empty_pipeline()
 
     def fn(pipeline, event):
-        if isinstance(event, nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent):
+        if isinstance(event, nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent):
             import traceback
 
             test.assertFalse(
-                isinstance(event, nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent),
+                isinstance(event, nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent),
                 "\n".join([event.error.message] + traceback.format_tb(event.tb)),
             )
 
@@ -514,7 +514,7 @@ HasImagePlaneDetails:False"""
         should_be_true = [False]
 
         def callback(caller, event):
-            if isinstance(event, nucleus.pipeline.abstract_pipeline_event.run_exception_event._run_exception_event.RunExceptionEvent):
+            if isinstance(event, nucleus.pipeline.event.run_exception_event._run_exception_event.RunExceptionEvent):
                 should_be_true[0] = True
 
         pipeline.add_listener(callback)
@@ -579,7 +579,7 @@ HasImagePlaneDetails:False"""
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent)
+                                  nucleus.pipeline.event._load_exception_event.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -635,7 +635,7 @@ HasImagePlaneDetails:False"""
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent)
+                                  nucleus.pipeline.event._load_exception_event.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -805,7 +805,7 @@ HasImagePlaneDetails:False"""
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.abstract_pipeline_event._load_exception_event.LoadExceptionEvent)
+                                  nucleus.pipeline.event._load_exception_event.LoadExceptionEvent)
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()

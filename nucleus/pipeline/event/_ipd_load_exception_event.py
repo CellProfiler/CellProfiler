@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class IPDLoadExceptionEvent(AbstractPipelineEvent):
+class IPDLoadExceptionEvent(Event):
     """An exception was cauaght while trying to load the image plane details
 
     This event is reported when an exception is thrown while loading

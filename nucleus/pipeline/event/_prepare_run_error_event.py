@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class PrepareRunErrorEvent(AbstractPipelineEvent):
+class PrepareRunErrorEvent(Event):
     """A user configuration error prevented CP from running the pipeline
 
     Modules use this class to report conditions that prevent construction

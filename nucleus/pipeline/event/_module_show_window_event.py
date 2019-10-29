@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class ModuleShowWindowEvent(AbstractPipelineEvent):
+class ModuleShowWindowEvent(Event):
     """A module had its "show_window" state changed
 
     module - the module that had its state changed

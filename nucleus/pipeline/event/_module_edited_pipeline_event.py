@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class ModuleEditedPipelineEvent(AbstractPipelineEvent):
+class ModuleEditedPipelineEvent(Event):
     """A module had its settings changed
 
     """

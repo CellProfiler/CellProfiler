@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class ModuleEnabledEvent(AbstractPipelineEvent):
+class ModuleEnabledEvent(Event):
     """A module was enabled
 
     module - the module that was enabled.

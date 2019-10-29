@@ -1,4 +1,4 @@
-class AbstractPipelineEvent:
+class Event:
     """Something that happened to the pipeline and was indicated to the listeners
     """
 

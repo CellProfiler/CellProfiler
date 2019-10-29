@@ -1,7 +1,7 @@
-from ._abstract_pipeline_event import AbstractPipelineEvent
+from ._event import Event
 
 
-class PipelineClearedEvent(AbstractPipelineEvent):
+class PipelineClearedEvent(Event):
     """Indicates that all modules have been removed from the pipeline
 
     """

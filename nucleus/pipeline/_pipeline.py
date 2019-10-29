@@ -32,6 +32,10 @@ import nucleus.workspace
 logger = logging.getLogger(__name__)
 
 
+def _is_fp(x):
+    return hasattr(x, "seek") and hasattr(x, "read")
+
+
 class Pipeline:
     """A pipeline represents the modules that a user has put together
     to analyze their images.
@@ -39,6 +43,8 @@ class Pipeline:
     """
 
     def __init__(self):
+        self.__filtered_image_plane_details_metadata_settings = None
+        self.caption_for_user = None
         self.__modules = []
         self.__listeners = []
         self.__measurement_columns = {}
@@ -396,21 +402,47 @@ class Pipeline:
         See savetxt for more comprehensive documentation.
         """
         self.__modules = []
-        self.caption_for_user = None
         self.message_for_user = None
-        module_count = sys.maxsize
 
-        if hasattr(fp_or_filename, "seek") and hasattr(fp_or_filename, "read"):
-            fd = fp_or_filename
+        if _is_fp(fp_or_filename):
+            return self.__loads(fp_or_filename, raise_on_error)
         else:
-            fd = open(fp_or_filename, "r", encoding="utf-8")
+            return self.__load(fp_or_filename, raise_on_error)
 
+    def __load(self, fp, raise_on_error=False):
+        with open(fp, "r", encoding="utf-8") as fd:
+            return self.parse_pipeline(fd, raise_on_error)
+
+    def __loads(self, s, raise_on_error=False):
+        return self.parse_pipeline(s, raise_on_error)
+
+    def parse_pipeline(self, fd, raise_on_error, count=sys.maxsize):
         header = readline(fd)
-
         # FIXME:
         if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
+        from_matlab, checksum, details, count, version = self.validate_pipeline_file(fd, count)
+        new_modules = self.setup_modules(
+            fd,
+            from_matlab,
+            count,
+            raise_on_error
+        )
+        if details:
+            self.clear_urls(add_undo=False)
+            self.__file_list = nucleus.pipeline.read_file_list(fd)
+            self.__filtered_file_list_images_settings = None
+        self.__modules = new_modules
+        self.__settings = [self.capture_module_settings(module) for module in self.modules(False)]
+        for module in self.modules(False):
+            module.post_pipeline_load(self)
+        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
+        if details:
+            self.notify_listeners(nucleus.pipeline.URLsAddedEvent(self.__file_list))
+        self.__undo_stack = []
+        return checksum, version
 
+    def validate_pipeline_file(self, fd, module_count):
         version = nucleus.pipeline.NATIVE_VERSION
         from_matlab = False
         do_deprecated_utf16_decode = False
@@ -419,7 +451,6 @@ class Pipeline:
         git_hash = None
         pipeline_version = nucleus.__version__
         CURRENT_VERSION = None
-
         while True:
             line = readline(fd)
 
@@ -476,34 +507,7 @@ class Pipeline:
             pipeline_version
         )
 
-        new_modules = self.setup_modules(
-            fd,
-            from_matlab,
-            module_count,
-            raise_on_error
-        )
-
-        if has_image_plane_details:
-            self.clear_urls(add_undo=False)
-            self.__file_list = nucleus.pipeline.read_file_list(fd)
-            self.__filtered_file_list_images_settings = None
-            self.__filtered_image_plane_details_metadata_settings = None
-
-        self.__modules = new_modules
-
-        self.__settings = [self.capture_module_settings(module) for module in self.modules(False)]
-
-        for module in self.modules(False):
-            module.post_pipeline_load(self)
-
-        self.notify_listeners(nucleus.pipeline.PipelineLoadedEvent())
-
-        if has_image_plane_details:
-            self.notify_listeners(nucleus.pipeline.URLsAddedEvent(self.__file_list))
-
-        self.__undo_stack = []
-
-        return pipeline_version, git_hash
+        return from_matlab, git_hash, has_image_plane_details, module_count, pipeline_version
 
     def validate_pipeline_version(self, CURRENT_VERSION, git_hash, pipeline_version):
         if 20080101000000 < pipeline_version < 30080101000000:
@@ -564,7 +568,7 @@ class Pipeline:
                         "later versions of CellProfiler."
                     ).format(pipeline_version)
                     logging.warning(message)
-        
+
         return pipeline_version
 
     def setup_modules(self, fd, from_matlab, module_count, raise_on_error):

@@ -1,4 +1,4 @@
-class PipelineListener:
+class Listener:
     """A class to wrap add/remove listener for use with "with"
 
     Usage:

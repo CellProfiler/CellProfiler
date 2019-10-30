@@ -528,7 +528,7 @@ class Pipeline:
         return module
 
     def dump(self, fp, save_image_plane_details=True):
-        nucleus.pipeline.dump_v5(self, fp, save_image_plane_details)
+        nucleus.pipeline.dump(self, fp, save_image_plane_details)
 
     def save_pipeline_notes(self, fd, indent=2):
         """Save pipeline notes to a text file

@@ -3,7 +3,12 @@ import re
 import nucleus.pipeline
 
 
-def dump_v5(pipeline, fp, save_image_plane_details=True):
+def dump(pipeline, fp, save_image_plane_details=True, version=5):
+    if version == 5:
+        dump_v5(pipeline, fp, save_image_plane_details)
+
+
+def dump_v5(pipeline, fp, save_image_plane_details):
     if hasattr(fp, "write"):
         fd = fp
         needs_close = False

@@ -18,7 +18,7 @@ import nucleus.setting
 import nucleus.utilities.legacy
 import nucleus.utilities.utf16encode
 import nucleus.workspace
-from nucleus.pipeline._io import dump_v5
+from nucleus.pipeline._io import dump
 from nucleus.pipeline.event._event import (
     Event,
     CancelledException,

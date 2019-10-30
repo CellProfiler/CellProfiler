@@ -150,9 +150,7 @@ class Module:
                     setting_values.append(str(value_cell[0]))
             else:
                 setting_values.append(value_cell)
-        self.set_settings_from_values(
-            setting_values, variable_revision_number, module_name
-        )
+        self.set_settings_from_values(setting_values, variable_revision_number, module_name)
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
@@ -168,9 +166,7 @@ class Module:
         """
         pass
 
-    def set_settings_from_values(
-        self, setting_values, variable_revision_number, module_name, from_matlab=None
-    ):
+    def set_settings_from_values(self, setting_values, variable_revision_number, module_name):
         """Set the settings in a module, given a list of values
 
         The default implementation gets all the settings and then
@@ -179,22 +175,15 @@ class Module:
         whatever values are in the list or however many values
         are in the list.
         """
-        if from_matlab is None:
-            from_matlab = not "." in module_name
-        setting_values, variable_revision_number, from_matlab = self.upgrade_settings(
-            setting_values, variable_revision_number, module_name, from_matlab
-        )
-        # we can't handle matlab settings anymore
-        assert not from_matlab, (
-            "Module %s's upgrade_settings returned from_matlab==True" % module_name
-        )
+
+        setting_values, variable_revision_number = self.upgrade_settings(setting_values,
+                                                                                      variable_revision_number,
+                                                                                      module_name)
         self.prepare_settings(setting_values)
         for v, value in zip(self.settings(), setting_values):
             v.value = value
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
@@ -214,7 +203,7 @@ class Module:
         they should leave things as-is so that the caller can report
         an error.
         """
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def post_pipeline_load(self, pipeline):
         """This is a convenient place to do things to your module after the

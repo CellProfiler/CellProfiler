@@ -1378,9 +1378,7 @@ not being applied, your choice on this setting may be the culprit.
             return keys
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT_V1])
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V1]

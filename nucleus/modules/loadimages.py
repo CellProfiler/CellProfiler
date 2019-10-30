@@ -1666,9 +1666,7 @@ to store the image.
 
         return None
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         #
         # historic rewrites from CP1.0

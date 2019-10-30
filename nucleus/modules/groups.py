@@ -697,9 +697,7 @@ desired behavior.
                 )
         return result
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Remove the image name from the settings

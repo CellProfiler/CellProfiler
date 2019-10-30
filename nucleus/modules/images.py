@@ -374,9 +374,7 @@ pass the current filter.
     def run(self, workspace):
         pass
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Upgrade pipeline settings from a previous revision
 
         setting_values - the text values of the module's settings

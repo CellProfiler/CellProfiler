@@ -13,7 +13,6 @@ import uuid
 
 import bioformats.formatreader
 import numpy
-import scipy.io.matlab
 import six.moves
 import six.moves.urllib.parse
 import six.moves.urllib.request
@@ -204,7 +203,7 @@ class Pipeline:
             )
             return False
 
-    def save_to_handles(self):
+    def to_ndarray(self):
         """Create a numpy array representing this pipeline
 
         """
@@ -261,7 +260,7 @@ class Pipeline:
             setting[nucleus.pipeline.BATCH_STATE][0, i] = numpy.zeros((0,), numpy.uint8)
 
         for module in self.modules(False):
-            module.save_to_handles(handles)
+            module.to_ndarray(handles)
         return handles
 
     @staticmethod
@@ -328,69 +327,27 @@ class Pipeline:
 
             return
 
-        header = fd.read(len(nucleus.pipeline.HDF5_HEADER))
-
         if needs_close:
             fd.close()
         else:
             fd.seek(0)
 
-        if header[:8] == nucleus.pipeline.HDF5_HEADER:
-            if filename is None:
-                fid, filename = tempfile.mkstemp(".h5")
-                fd_out = os.fdopen(fid, "wb")
-                fd_out.write(fd.read())
-                fd_out.close()
-                self.load(filename)
-                os.unlink(filename)
-                return
-            else:
-                m = nucleus.measurement.load_measurements(filename)
-                pipeline_text = m.get_experiment_measurement(
-                    nucleus.pipeline.M_PIPELINE
-                )
-                pipeline_text = pipeline_text
-                self.load(six.moves.StringIO(pipeline_text))
-                return
-
-        if nucleus.pipeline.has_mat_read_error:
-            try:
-                handles = scipy.io.matlab.mio.loadmat(
-                    fd_or_filename, struct_as_record=True
-                )
-            except nucleus.pipeline.MatReadError:
-                logging.error("Caught exception in Matlab reader\n", exc_info=True)
-                e = nucleus.pipeline.MatReadError(
-                    "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n"
-                    % fd_or_filename
-                )
-                self.notify_listeners(
-                    nucleus.pipeline.event.LoadException(e, None))
-                return
-            except Exception as e:
-                logging.error(
-                    "Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
-                    exc_info=True,
-                )
-                self.notify_listeners(
-                    nucleus.pipeline.event.LoadException(e, None))
-                return
+        if filename is None:
+            fid, filename = tempfile.mkstemp(".h5")
+            fd_out = os.fdopen(fid, "wb")
+            fd_out.write(fd.read())
+            fd_out.close()
+            self.load(filename)
+            os.unlink(filename)
+            return
         else:
-            handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
-
-        if "handles" in handles:
-            #
-            # From measurements...
-            #
-            handles = handles["handles"][0, 0]
-
-        self.create_from_handles(handles)
-
-        self.__settings = [
-            self.capture_module_settings(module) for module in self.modules(False)
-        ]
-
-        self.__undo_stack = []
+            m = nucleus.measurement.load_measurements(filename)
+            pipeline_text = m.get_experiment_measurement(
+                nucleus.pipeline.M_PIPELINE
+            )
+            pipeline_text = pipeline_text
+            self.load(six.moves.StringIO(pipeline_text))
+            return
 
     @staticmethod
     def respond_to_version_mismatch_error(message):
@@ -426,13 +383,8 @@ class Pipeline:
         # FIXME:
         if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
-        from_matlab, checksum, details, count, version = self.validate_pipeline_file(fd, count)
-        new_modules = self.setup_modules(
-            fd,
-            from_matlab,
-            count,
-            raise_on_error
-        )
+        checksum, details, count, version = self.validate_pipeline_file(fd, count)
+        new_modules = self.setup_modules(fd, count, raise_on_error)
         if details:
             self.clear_urls(add_undo=False)
             self.__file_list = nucleus.pipeline.read_file_list(fd)
@@ -450,7 +402,6 @@ class Pipeline:
 
     def validate_pipeline_file(self, fd, module_count):
         version = nucleus.pipeline.NATIVE_VERSION
-        from_matlab = False
         do_deprecated_utf16_decode = False
         do_utf16_decode = False
         has_image_plane_details = False
@@ -493,8 +444,6 @@ class Pipeline:
                 nucleus.pipeline.CURRENT_VERSION = int(
                     re.sub(r"\.|rc\d", "", nucleus.__version__)
                 )
-            elif kwd == nucleus.pipeline.H_FROM_MATLAB:
-                from_matlab = value == "True"
             elif kwd == nucleus.pipeline.H_MODULE_COUNT:
                 module_count = int(value)
             elif kwd == nucleus.pipeline.H_HAS_IMAGE_PLANE_DETAILS:
@@ -513,7 +462,7 @@ class Pipeline:
             pipeline_version
         )
 
-        return from_matlab, git_hash, has_image_plane_details, module_count, pipeline_version
+        return git_hash, has_image_plane_details, module_count, pipeline_version
 
     def validate_pipeline_version(self, CURRENT_VERSION, git_hash, pipeline_version):
         if 20080101000000 < pipeline_version < 30080101000000:
@@ -577,7 +526,7 @@ class Pipeline:
 
         return pipeline_version
 
-    def setup_modules(self, fd, from_matlab, module_count, raise_on_error):
+    def setup_modules(self, fd, module_count, raise_on_error):
         #
         # The module section
         #
@@ -628,15 +577,8 @@ class Pipeline:
 
                     settings.append(setting)
 
-                module = self.setup_module(
-                    attribute_string,
-                    from_matlab,
-                    module,
-                    module_name,
-                    module_number,
-                    settings,
-                    skip_attributes
-                )
+                module = self.setup_module(attribute_string, module_name=module_name, module_number=module_number,
+                                           settings=settings, skip_attributes=skip_attributes)
             except Exception as instance:
                 if raise_on_error:
                     raise
@@ -652,16 +594,7 @@ class Pipeline:
                 module_number += 1
         return new_modules
 
-    def setup_module(
-            self,
-            attribute_string,
-            from_matlab,
-            module,
-            module_name,
-            module_number,
-            settings,
-            skip_attributes
-    ):
+    def setup_module(self, attribute_string, module_name, module_number, settings, skip_attributes):
         #
         # Set up the module
         #
@@ -704,9 +637,7 @@ class Pipeline:
                 "Module %s did not have a variable revision # attribute"
                 % module_name
             )
-        module.set_settings_from_values(
-            settings, variable_revision_number, module_name, from_matlab
-        )
+        module.set_settings_from_values(settings, variable_revision_number, module_name)
         if module_name == "NamesAndTypes":
             self.__volumetric = module.process_as_3d.value
 
@@ -717,15 +648,8 @@ class Pipeline:
 
         fd_or_filename - either a file descriptor or the name of the file
         """
-        if format == nucleus.pipeline.FMT_MATLAB:
-            handles = self.save_to_handles()
-            self.savemat(fd_or_filename, handles)
-        elif format == "Native":
-            self.savetxt(
-                fd_or_filename, save_image_plane_details=save_image_plane_details
-            )
-        else:
-            raise NotImplementedError("Unknown pipeline file format: %s" % format)
+        self.savetxt(fd_or_filename, save_image_plane_details=save_image_plane_details)
+
 
     def savetxt(
             self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
@@ -865,34 +789,6 @@ class Pipeline:
             lines.append("")
         fd.write("\n".join(lines))
 
-    def save_measurements(self, filename, measurements):
-        """Save the measurements and the pipeline settings in a Matlab file
-
-        filename     - name of file to create, or a file-like object
-        measurements - measurements structure that is the result of running the pipeline
-        """
-        handles = self.build_matlab_handles()
-        nucleus.pipeline.add_all_measurements(handles, measurements)
-        handles[nucleus.pipeline.CURRENT][nucleus.pipeline.NUMBER_OF_IMAGE_SETS][
-            0, 0
-        ] = float(measurements.image_set_number + 1)
-        handles[nucleus.pipeline.CURRENT][nucleus.pipeline.SET_BEING_ANALYZED][
-            0, 0
-        ] = float(measurements.image_set_number + 1)
-        #
-        # For the output file, you have to bury it a little deeper - the root has to have
-        # a single field named "handles"
-        #
-        root = {
-            "handles": numpy.ndarray(
-                (1, 1),
-                dtype=nucleus.pipeline.make_cell_struct_dtype(list(handles.keys())),
-            )
-        }
-        for key, value in list(handles.items()):
-            root["handles"][key][0, 0] = value
-        self.savemat(filename, root)
-
     def write_pipeline_measurement(self, m, user_pipeline=False):
         """Write the pipeline experiment measurement to the measurements
 
@@ -921,172 +817,6 @@ class Pipeline:
         """
         m.clear()
         self.write_experiment_measurements(m)
-
-    @staticmethod
-    def savemat(filename, root):
-        """Save a handles structure accounting for scipy version compatibility to a filename or file-like object"""
-        sver = scipy.__version__.split(".")
-        if (
-                len(sver) >= 2
-                and sver[0].isdigit()
-                and int(sver[0]) == 0
-                and sver[1].isdigit()
-                and int(sver[1]) < 8
-        ):
-            #
-            # 1-d -> 2-d not done
-            #
-            scipy.io.matlab.mio.savemat(
-                filename, root, format="5", long_field_names=True
-            )
-        else:
-            scipy.io.matlab.mio.savemat(
-                filename, root, format="5", long_field_names=True, oned_as="column"
-            )
-
-    def build_matlab_handles(self, image_set=None, object_set=None, measurements=None):
-        handles = self.save_to_handles()
-        image_tools_dir = os.path.join(
-            nucleus.preferences.cell_profiler_root_directory(), "ImageTools"
-        )
-        if os.access(image_tools_dir, os.R_OK):
-            image_tools = [
-                str(os.path.split(os.path.splitext(filename)[0])[1])
-                for filename in os.listdir(image_tools_dir)
-                if os.path.splitext(filename)[1] == ".m"
-            ]
-        else:
-            image_tools = []
-        image_tools.insert(0, "Image tools")
-        npy_image_tools = numpy.ndarray(
-            (1, len(image_tools)), dtype=numpy.dtype("object")
-        )
-        for tool, idx in zip(image_tools, list(range(0, len(image_tools)))):
-            npy_image_tools[0, idx] = tool
-
-        current = numpy.ndarray(shape=[1, 1], dtype=nucleus.pipeline.CURRENT_DTYPE)
-        handles[nucleus.pipeline.CURRENT] = current
-        current[nucleus.pipeline.NUMBER_OF_IMAGE_SETS][0, 0] = [
-            (
-                    image_set is not None
-                    and nucleus.pipeline.NUMBER_OF_IMAGE_SETS in image_set.legacy_fields
-                    and image_set.legacy_fields[nucleus.pipeline.NUMBER_OF_IMAGE_SETS]
-            )
-            or 1
-        ]
-        current[nucleus.pipeline.SET_BEING_ANALYZED][0, 0] = [
-            (measurements and measurements.image_set_number) or 1
-        ]
-        current[nucleus.pipeline.NUMBER_OF_MODULES][0, 0] = [len(self.__modules)]
-        current[nucleus.pipeline.SAVE_OUTPUT_HOW_OFTEN][0, 0] = [1]
-        current[nucleus.pipeline.TIME_STARTED][0, 0] = str(datetime.datetime.now())
-        current[nucleus.pipeline.STARTING_IMAGE_SET][0, 0] = [1]
-        current[nucleus.pipeline.STARTUP_DIRECTORY][
-            0, 0
-        ] = nucleus.preferences.cell_profiler_root_directory()
-        current[nucleus.pipeline.DEFAULT_OUTPUT_DIRECTORY][
-            0, 0
-        ] = nucleus.preferences.get_default_output_directory()
-        current[nucleus.pipeline.DEFAULT_IMAGE_DIRECTORY][
-            0, 0
-        ] = nucleus.preferences.get_default_image_directory()
-        current[nucleus.pipeline.IMAGE_TOOLS_FILENAMES][0, 0] = npy_image_tools
-        current[nucleus.pipeline.IMAGE_TOOL_HELP][0, 0] = []
-
-        preferences = numpy.ndarray(
-            shape=(1, 1), dtype=nucleus.pipeline.PREFERENCES_DTYPE
-        )
-        handles[nucleus.pipeline.PREFERENCES] = preferences
-        preferences[nucleus.pipeline.PIXEL_SIZE][
-            0, 0
-        ] = nucleus.preferences.get_pixel_size()
-        preferences[nucleus.pipeline.DEFAULT_MODULE_DIRECTORY][
-            0, 0
-        ] = nucleus.preferences.module_directory()
-        preferences[nucleus.pipeline.DEFAULT_OUTPUT_DIRECTORY][
-            0, 0
-        ] = nucleus.preferences.get_default_output_directory()
-        preferences[nucleus.pipeline.DEFAULT_IMAGE_DIRECTORY][
-            0, 0
-        ] = nucleus.preferences.get_default_image_directory()
-        preferences[nucleus.pipeline.INTENSITY_COLOR_MAP][0, 0] = "gray"
-        preferences[nucleus.pipeline.LABEL_COLOR_MAP][0, 0] = "jet"
-        preferences[nucleus.pipeline.STRIP_PIPELINE][
-            0, 0
-        ] = "Yes"  # TODO - get from preferences
-        preferences[nucleus.pipeline.SKIP_ERRORS][
-            0, 0
-        ] = "No"  # TODO - get from preferences
-        preferences[nucleus.pipeline.DISPLAY_MODE_VALUE][0, 0] = [
-            1
-        ]  # TODO - get from preferences
-        preferences[nucleus.pipeline.FONT_SIZE][0, 0] = [
-            10
-        ]  # TODO - get from preferences
-        preferences[nucleus.pipeline.DISPLAY_WINDOWS][0, 0] = [
-            1 for module in self.__modules
-        ]  # TODO - UI allowing user to choose whether to display a window
-
-        images = {}
-        if image_set:
-            for provider in image_set.providers:
-                image = image_set.get_image(provider.name)
-                if image.image is not None:
-                    images[provider.name] = image.image
-                if image.mask is not None:
-                    images["CropMask" + provider.name] = image.mask
-            for key, value in list(image_set.legacy_fields.items()):
-                if key != nucleus.pipeline.NUMBER_OF_IMAGE_SETS:
-                    images[key] = value
-
-        if object_set:
-            for name, objects in object_set.all_objects:
-                images["Segmented" + name] = objects.segmented
-                if objects.has_unedited_segmented():
-                    images["UneditedSegmented" + name] = objects.unedited_segmented
-                if objects.has_small_removed_segmented():
-                    images[
-                        "SmallRemovedSegmented" + name
-                        ] = objects.small_removed_segmented
-
-        if len(images):
-            pipeline_dtype = nucleus.pipeline.make_cell_struct_dtype(
-                list(images.keys())
-            )
-            pipeline = numpy.ndarray((1, 1), dtype=pipeline_dtype)
-            handles[nucleus.pipeline.PIPELINE] = pipeline
-            for name, image in list(images.items()):
-                pipeline[name][0, 0] = images[name]
-
-        no_measurements = (
-                measurements is None or len(measurements.get_object_names()) == 0
-        )
-        if not no_measurements:
-            measurements_dtype = nucleus.pipeline.make_cell_struct_dtype(
-                measurements.get_object_names()
-            )
-            npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
-            handles["Measurements"] = npy_measurements
-            for object_name in measurements.get_object_names():
-                object_dtype = nucleus.pipeline.make_cell_struct_dtype(
-                    measurements.get_feature_names(object_name)
-                )
-                object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
-                npy_measurements[object_name][0, 0] = object_measurements
-                for feature_name in measurements.get_feature_names(object_name):
-                    feature_measurements = numpy.ndarray(
-                        (1, measurements.image_set_number), dtype="object"
-                    )
-                    object_measurements[feature_name][0, 0] = feature_measurements
-                    data = measurements.get_current_measurement(
-                        object_name, feature_name
-                    )
-                    feature_measurements.fill(numpy.ndarray((0,), dtype=numpy.float64))
-                    if data is not None:
-                        feature_measurements[
-                            0, measurements.image_set_number - 1
-                        ] = data
-        return handles
 
     def find_external_input_images(self):
         """Find the names of the images that need to be supplied externally
@@ -3032,9 +2762,7 @@ class Pipeline:
 
         def undo():
             module = self.__modules[idx]
-            module.set_settings_from_values(
-                old_settings, variable_revision_number, module_name, False
-            )
+            module.set_settings_from_values(old_settings, variable_revision_number, module_name)
             self.notify_listeners(
                 nucleus.pipeline.event.ModuleEdited(module_num)
             )
@@ -3475,44 +3203,6 @@ class Pipeline:
                                 result.append(dependency)
                                 break
         return result
-
-    def synthesize_measurement_name(
-            self, module, object, category, feature, image, scale
-    ):
-        """Turn a measurement requested by a Matlab module into a measurement name
-
-        Some Matlab modules specify measurement names as a combination
-        of category, feature, image name and scale, but not all measurements
-        have associated images or scales. This function attempts to match
-        the given parts to the measurements available to the module and
-        returns the best guess at a measurement. It throws a value error
-        exception if it can't find a match
-
-        module - the module requesting the measurement. Only measurements
-                 made prior to this module will be considered.
-        object - the object name or "Image"
-        category - The module's measurement category (e.g., Intensity or AreaShape)
-        feature - a descriptive name for the measurement
-        image - the measurement should be made on this image (optional)
-        scale - the measurement should be made at this scale
-        """
-        measurement_columns = self.get_measurement_columns(module)
-        measurements = [x[1] for x in measurement_columns if x[0] == object]
-        for measurement in (
-                "_".join((category, feature, image, scale)),
-                "_".join((category, feature, image)),
-                "_".join((category, feature, scale)),
-                "_".join((category, feature)),
-        ):
-            if measurement in measurements:
-                return measurement
-        raise ValueError(
-            "No such measurement in pipeline: "
-            + ("Category = %s" % category)
-            + (", Feature = %s" % feature)
-            + (", Image (optional) = %s" % image)
-            + (", Scale (optional) = %s" % scale)
-        )
 
     def loaders_settings_hash(self):
         """Return a hash for the settings that control image loading, or None

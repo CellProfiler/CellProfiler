@@ -876,9 +876,7 @@ pipeline.
         for module in edited_modules:
             pipeline.edit_module(module.module_num, True)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)
             # The first setting was blank in Matlab. Now it contains

@@ -50,7 +50,7 @@ class Pipeline:
         self.__listeners = []
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
-        self.__test_mode = False
+        self.test_mode = False
         self.message_for_user = None
         self.__settings = []
         self.__undo_stack = []
@@ -1941,14 +1941,6 @@ class Pipeline:
         """
         for module in self.modules():
             module.turn_off_batch_mode()
-
-    def get_test_mode(self):
-        return self.__test_mode
-
-    def set_test_mode(self, val):
-        self.__test_mode = val
-
-    test_mode = property(get_test_mode, set_test_mode)
 
     def clear(self):
         self.start_undoable_action()

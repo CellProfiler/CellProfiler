@@ -1924,30 +1924,6 @@ to store the image.
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
             return new_values, 11
 
-        if from_matlab:
-            if variable_revision_number == 1:
-                setting_values, variable_revision_number = upgrade_1_to_2(
-                    setting_values
-                )
-            if variable_revision_number == 2:
-                setting_values, variable_revision_number = upgrade_2_to_3(
-                    setting_values
-                )
-            if variable_revision_number == 3:
-                setting_values, variable_revision_number = upgrade_3_to_4(
-                    setting_values
-                )
-            if variable_revision_number == 4:
-                setting_values, variable_revision_number = upgrade_4_to_5(
-                    setting_values
-                )
-            if variable_revision_number == 5:
-                setting_values, variable_revision_number = upgrade_5_to_new_1(
-                    setting_values
-                )
-            from_matlab = False
-
-        assert not from_matlab
         if variable_revision_number == 1:
             setting_values, variable_revision_number = upgrade_new_1_to_2(
                 setting_values
@@ -2005,7 +1981,7 @@ to store the image.
             variable_revision_number == self.variable_revision_number
         ), "Cannot read version %d of %s" % (variable_revision_number, self.module_name)
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def is_load_module(self):
         """LoadImages creates image sets so it is a load module"""

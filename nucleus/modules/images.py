@@ -381,8 +381,6 @@ pass the current filter.
 
         variable_revision_number - revision # of module version that saved them
 
-        module_name / from_matlab - ignore please
-
         Returns upgraded setting values, revision number and matlab flag
         """
         if variable_revision_number == 1:
@@ -394,7 +392,7 @@ pass the current filter.
             )
             setting_values = setting_values[:1] + [filter_choice] + setting_values[2:]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

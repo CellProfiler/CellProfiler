@@ -2512,7 +2512,7 @@ requests an object selection.
 
             variable_revision_number = 8
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

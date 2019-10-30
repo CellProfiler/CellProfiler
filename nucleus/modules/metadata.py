@@ -1460,7 +1460,7 @@ not being applied, your choice on this setting may be the culprit.
             setting_values[4:] = sum(groups, [])
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

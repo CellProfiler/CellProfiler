@@ -177,8 +177,6 @@ IMAGE_PLANE_DESCRIPTOR_VERSION = 1
 
 H_SVN_REVISION = "SVNRevision"
 H_DATE_REVISION = "DateRevision"
-"""A pipeline file header variable for faking a matlab pipeline file"""
-H_FROM_MATLAB = "FromMatlab"
 """The GIT hash of the revision"""
 H_GIT_HASH = "GitHash"
 

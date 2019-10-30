@@ -195,8 +195,6 @@ class Module:
         module_name - the name of the module that did the saving. This can be
                       used to import the settings from another module if
                       that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
 
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise

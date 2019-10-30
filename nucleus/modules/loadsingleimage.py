@@ -877,29 +877,10 @@ pipeline.
             pipeline.edit_module(module.module_num, True)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
-        if from_matlab and variable_revision_number == 4:
-            new_setting_values = list(setting_values)
-            # The first setting was blank in Matlab. Now it contains
-            # the directory choice
-            if setting_values[1] == ".":
-                new_setting_values[0] = cps.DEFAULT_INPUT_FOLDER_NAME
-            elif setting_values[1] == "&":
-                new_setting_values[0] = cps.DEFAULT_OUTPUT_FOLDER_NAME
-            else:
-                new_setting_values[0] = DIR_CUSTOM_FOLDER
-            #
-            # Remove "Do not use" images
-            #
-            for i in [8, 6, 4]:
-                if new_setting_values[i + 1] == cps.DO_NOT_USE:
-                    del new_setting_values[i : i + 2]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
         #
         # Minor revision: default image folder -> default input folder
         #
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             if setting_values[0].startswith("Default image"):
                 dir_choice = cps.DEFAULT_INPUT_FOLDER_NAME
                 custom_directory = setting_values[1]
@@ -927,7 +908,7 @@ pipeline.
             setting_values[SLOT_DIR]
         )
 
-        if variable_revision_number == 2 and (not from_matlab):
+        if variable_revision_number == 2:
             # changes to DirectoryPath and URL handling
             dir = setting_values[0]
             dir_choice, custom_dir = cps.DirectoryPath.split_string(dir)
@@ -945,7 +926,7 @@ pipeline.
                 )
             variable_revision_number = 3
 
-        if variable_revision_number == 3 and (not from_matlab):
+        if variable_revision_number == 3:
             # Added rescale option
             new_setting_values = setting_values[:1]
             for i in range(1, len(setting_values), 2):
@@ -953,7 +934,7 @@ pipeline.
             setting_values = new_setting_values
             variable_revision_number = 4
 
-        if variable_revision_number == 4 and (not from_matlab):
+        if variable_revision_number == 4:
             # Added load objects
             new_setting_values = setting_values[:1]
             for i in range(1, len(setting_values), S_FILE_SETTINGS_COUNT_V4):
@@ -969,4 +950,4 @@ pipeline.
             setting_values = new_setting_values
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

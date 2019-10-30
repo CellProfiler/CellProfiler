@@ -397,7 +397,7 @@ class Workspace:
                 self.pipeline.clear()
             else:
                 fd = six.moves.StringIO()
-                self.pipeline.savetxt(fd, save_image_plane_details=False)
+                self.pipeline.dump(fd, save_image_plane_details=False)
                 self.__measurements.add_experiment_measurement(
                     M_PIPELINE, fd.getvalue()
                 )
@@ -480,7 +480,7 @@ class Workspace:
         from nucleus.pipeline import M_PIPELINE
 
         fd = six.moves.StringIO()
-        self.pipeline.savetxt(fd, save_image_plane_details=False)
+        self.pipeline.dump(fd, save_image_plane_details=False)
         self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
         self.measurements.flush()
 

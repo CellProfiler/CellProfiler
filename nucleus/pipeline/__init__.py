@@ -209,7 +209,7 @@ COOKIE = "CellProfiler Pipeline: http://www.nucleus.org"
 
 """Sad proofpoint cookie: see issue #1318"""
 SAD_PROOFPOINT_COOKIE = (
-    r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.nucleus\.org"
+    r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.cellprofiler\.org"
 )
 
 """HDF5 file header according to the specification

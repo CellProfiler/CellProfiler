@@ -89,7 +89,7 @@ class Pipeline:
     def copy(self, save_image_plane_details=True):
         """Create a copy of the pipeline modules and settings"""
         fd = six.moves.StringIO()
-        self.save(fd, save_image_plane_details=save_image_plane_details)
+        self.dump(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
         pipeline.load(fd)
@@ -136,7 +136,7 @@ class Pipeline:
         try:
             self.copy()  # if this fails, we probably can't reload
             fd = six.moves.StringIO()
-            self.save(fd)
+            self.dump(fd)
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
             return True
@@ -162,7 +162,7 @@ class Pipeline:
     def is_pipeline_txt_fd(fd):
         header = fd.read(1024)
         fd.seek(0)
-        if header.startswith("CellProfiler Pipeline: http://www.nucleus.org"):
+        if header.startswith("CellProfiler Pipeline: http://www.cellprofiler.org"):
             return True
         if re.search(nucleus.pipeline.SAD_PROOFPOINT_COOKIE, header):
             logger.info('print_emoji(":cat_crying_because_of_proofpoint:")')
@@ -527,17 +527,7 @@ class Pipeline:
 
         return module
 
-    def save(self, fd_or_filename, format="Native", save_image_plane_details=True):
-        """Save the pipeline to a file
-
-        fd_or_filename - either a file descriptor or the name of the file
-        """
-        self.savetxt(fd_or_filename, save_image_plane_details=save_image_plane_details)
-
-
-    def savetxt(
-            self, fd_or_filename, modules_to_save=None, save_image_plane_details=True
-    ):
+    def dump(self, fp, save_image_plane_details=True):
         """Save the pipeline in a text format
 
         fd_or_filename - can be either a "file descriptor" with a "write"
@@ -572,40 +562,24 @@ class Pipeline:
         are a collection of images and their metadata.
         See read_image_plane_details for the file format
         """
-        if hasattr(fd_or_filename, "write"):
-            fd = fd_or_filename
+        if hasattr(fp, "write"):
+            fd = fp
             needs_close = False
         else:
-            fd = open(fd_or_filename, "wt")
+            fd = open(fp, "wt")
             needs_close = True
 
         # Don't write image plane details if we don't have any
         if len(self.__file_list) == 0:
             save_image_plane_details = False
 
-        fd.write("%s\n" % "CellProfiler Pipeline: http://www.nucleus.org")
-        fd.write(
-            "%s:%d\n" % (six.text_type("Version"), nucleus.pipeline.NATIVE_VERSION)
-        )
-        fd.write(
-            "%s:%d\n"
-            % (
-                six.text_type(nucleus.pipeline.H_DATE_REVISION),
-                int(re.sub(r"\.|rc\d", "", nucleus.__version__)),
-            )
-        )
-        fd.write("%s:%s\n" % (six.text_type(nucleus.pipeline.H_GIT_HASH), ""))
-        fd.write(
-            "%s:%d\n"
-            % (six.text_type(nucleus.pipeline.H_MODULE_COUNT), len(self.__modules))
-        )
-        fd.write(
-            "%s:%s\n"
-            % (
-                six.text_type(nucleus.pipeline.H_HAS_IMAGE_PLANE_DETAILS),
-                str(save_image_plane_details),
-            )
-        )
+        fd.write("%s\n" % "CellProfiler Pipeline: http://www.cellprofiler.org")
+        fd.write("%s:%d\n" % (str("Version"), nucleus.pipeline.NATIVE_VERSION))
+        fd.write("%s:%d\n" % (str(nucleus.pipeline.H_DATE_REVISION), int(re.sub(r"\.|rc\d", "", nucleus.__version__))))
+        fd.write("%s:%s\n" % (str(nucleus.pipeline.H_GIT_HASH), ""))
+        fd.write("%s:%d\n" % (str(nucleus.pipeline.H_MODULE_COUNT), len(self.__modules)))
+        fd.write("%s:%s\n" % (str(nucleus.pipeline.H_HAS_IMAGE_PLANE_DETAILS), str(save_image_plane_details)))
+
         attributes = (
             "module_num",
             "svn_version",
@@ -618,10 +592,6 @@ class Pipeline:
         )
         notes_idx = 4
         for module in self.__modules:
-            if (
-                    modules_to_save is not None
-            ) and module.module_num not in modules_to_save:
-                continue
             fd.write(six.text_type("\n"))
             attribute_values = [
                 repr(getattr(module, attribute)) for attribute in attributes
@@ -685,7 +655,7 @@ class Pipeline:
         """
         assert isinstance(m, nucleus.measurement.Measurements)
         fd = six.moves.StringIO()
-        self.savetxt(fd, save_image_plane_details=False)
+        self.dump(fd, save_image_plane_details=False)
         m.add_measurement(
             nucleus.measurement.EXPERIMENT,
             nucleus.pipeline.M_USER_PIPELINE

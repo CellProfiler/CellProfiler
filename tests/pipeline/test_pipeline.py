@@ -109,19 +109,19 @@ class TestPipeline(unittest.TestCase):
 
     def test_is_txt_fd_sorry_for_your_proofpoint(self):
         # Regression test of issue #1318
-        sensible = r"""CellProfiler Pipeline: http://www.nucleus.org
+        sensible = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     Version:3
     DateRevision:20140723174500
     GitHash:6c2d896
     ModuleCount:17
     HasImagePlaneDetails:False"""
-        proofpoint = r"""CellProfiler Pipeline: https://urldefense.proofpoint.com/v2/url?u=http-3A__www.nucleus.org&d=AwIGAg&c=4R1YgkJNMyVWjMjneTwN5tJRn8m8VqTSNCjYLg1wNX4&r=ZlgBKM1XjsDOEFy5b6o_Y9E076K1Jlt5FonpX_9mB-M&m=mjjreN4DEr49dWksH8OkXbV51OsYqIX18TSsFFmPurA&s=tQ-7XP8ph9RHRlzicZb6N-OxPxQNMXYLqkucuJS9Hys&e=
+        proofpoint = r"""CellProfiler Pipeline: https://urldefense.proofpoint.com/v2/url?u=http-3A__www.cellprofiler.org&d=AwIGAg&c=4R1YgkJNMyVWjMjneTwN5tJRn8m8VqTSNCjYLg1wNX4&r=ZlgBKM1XjsDOEFy5b6o_Y9E076K1Jlt5FonpX_9mB-M&m=mjjreN4DEr49dWksH8OkXbV51OsYqIX18TSsFFmPurA&s=tQ-7XP8ph9RHRlzicZb6N-OxPxQNMXYLqkucuJS9Hys&e=
 Version:3
 DateRevision:20140723174500
 GitHash:6c2d896
 ModuleCount:17
 HasImagePlaneDetails:False"""
-        not_txt = r"""not CellProfiler Pipeline: http://www.nucleus.org"""
+        not_txt = r"""not CellProfiler Pipeline: http://www.cellprofiler.org"""
         for text, expected in ((sensible, True), (proofpoint, True), (not_txt, False)):
             fd = six.moves.StringIO(text)
             assert nucleus.pipeline.Pipeline.is_pipeline_txt_fd(fd) == expected
@@ -564,14 +564,14 @@ HasImagePlaneDetails:False"""
                 success = False
         assert success
 
-    def test_save_pipeline(self):
+    def test_dump(self):
         pipeline = get_empty_pipeline()
         nucleus.modules.fill_modules()
         module = nucleus.modules.instantiate_module("Align")
         module.set_module_num(1)
         pipeline.add_module(module)
         fd = six.moves.StringIO()
-        pipeline.save(fd)
+        pipeline.dump(fd)
         fd.seek(0)
 
         pipeline = nucleus.pipeline.Pipeline()
@@ -673,7 +673,7 @@ HasImagePlaneDetails:False"""
         module.notes = "αβ"
         pipeline.add_module(module)
         fd = six.moves.StringIO()
-        pipeline.savetxt(fd, save_image_plane_details=False)
+        pipeline.dump(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
         assert len(lines) == 11
@@ -711,7 +711,7 @@ HasImagePlaneDetails:False"""
         module.notes = "∑"
         pipeline.add_module(module)
         fd = io.StringIO()
-        pipeline.savetxt(fd)
+        pipeline.dump(fd)
         fd.seek(0)
         pipeline.loadtxt(fd)
         assert len(pipeline.modules()) == 1
@@ -1148,7 +1148,7 @@ HasImagePlaneDetails:False"""
             os.path.join(root, "foo.tif")
         )
         urls = [
-            "http://nucleus.org/foo.tif",
+            "http://cellprofiler.org/foo.tif",
             file_url,
             "https://github.com/foo.tif",
             "ftp://example.com/foo.tif",

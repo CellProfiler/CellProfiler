@@ -11,10 +11,6 @@ def dump_v5(pipeline, fp, save_image_plane_details=True):
         fd = open(fp, "wt")
         needs_close = True
 
-    # Don't write image plane details if we don't have any
-    if len(pipeline.file_list) == 0:
-        save_image_plane_details = False
-
     date_revision = int(re.sub(r"\.|rc\d", "", nucleus.__version__))
     module_count = len(pipeline.modules())
 
@@ -51,7 +47,7 @@ def dump_v5(pipeline, fp, save_image_plane_details=True):
         for setting in module.settings():
             fd.write(f"    {setting.text}:{setting.unicode_value}\n")
 
-    if save_image_plane_details:
+    if save_image_plane_details and len(pipeline.file_list) > 0:
         fd.write("\n")
 
         nucleus.pipeline.write_file_list(fd, pipeline.file_list)

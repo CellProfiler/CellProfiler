@@ -22,11 +22,7 @@ import nucleus.modules
 import nucleus.modules.injectimage
 import nucleus.modules.loadimages
 import nucleus.pipeline
-import nucleus.pipeline.dependency._image_dependency
-import nucleus.pipeline.dependency._measurement_dependency
-import nucleus.pipeline.dependency._object_dependency
-import nucleus.pipeline.event._load_exception
-import nucleus.pipeline.event.run_exception._run_exception
+import nucleus.pipeline.dependency
 import nucleus.preferences
 import nucleus.setting
 import nucleus.workspace
@@ -75,11 +71,11 @@ def exploding_pipeline(test):
     x = get_empty_pipeline()
 
     def fn(pipeline, event):
-        if isinstance(event, nucleus.pipeline.event.run_exception._run_exception.RunException):
+        if isinstance(event, nucleus.pipeline.RunException):
             import traceback
 
             test.assertFalse(
-                isinstance(event, nucleus.pipeline.event.run_exception._run_exception.RunException),
+                isinstance(event, nucleus.pipeline.event.RunException),
                 "\n".join([event.error.message] + traceback.format_tb(event.tb)),
             )
 
@@ -517,7 +513,7 @@ HasImagePlaneDetails:False"""
         should_be_true = [False]
 
         def callback(caller, event):
-            if isinstance(event, nucleus.pipeline.event.run_exception._run_exception.RunException):
+            if isinstance(event, nucleus.pipeline.event.RunException):
                 should_be_true[0] = True
 
         pipeline.add_listener(callback)
@@ -581,8 +577,7 @@ HasImagePlaneDetails:False"""
         pipeline = nucleus.pipeline.Pipeline()
 
         def callback(caller, event):
-            assert not isinstance(event,
-                                  nucleus.pipeline.event._load_exception.LoadException)
+            assert not isinstance(event, nucleus.pipeline.event.LoadException)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -707,8 +702,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
 
         def callback(caller, event):
-            assert not isinstance(event,
-                                  nucleus.pipeline.event._load_exception.LoadException)
+            assert not isinstance(event, nucleus.pipeline.event.LoadException)
 
         pipeline.add_listener(callback)
         module = TestModuleWithMeasurement()
@@ -1007,7 +1001,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(edge, nucleus.pipeline.dependency._image_dependency.ImageDependency)
+        assert isinstance(edge, nucleus.pipeline.dependency.ImageDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.source_setting == pipeline.modules()[0].settings()[0]
         assert edge.image_name == IMAGE_NAME
@@ -1028,7 +1022,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(edge, nucleus.pipeline.dependency._object_dependency.ObjectDependency)
+        assert isinstance(edge, nucleus.pipeline.dependency.ObjectDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.source_setting == pipeline.modules()[0].settings()[0]
         assert edge.object_name == OBJECT_NAME
@@ -1055,7 +1049,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(edge, nucleus.pipeline.dependency._measurement_dependency.MeasurementDependency)
+        assert isinstance(edge, nucleus.pipeline.dependency.MeasurementDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.object_name == OBJECT_NAME
         assert edge.feature == FEATURE_NAME
@@ -1168,7 +1162,7 @@ HasImagePlaneDetails:False"""
 
     def test_read_file_list_file(self):
         urls = [
-            "http://nucleus.org/foo.tif",
+            "http://cellprofiler.org/foo.tif",
             "https://github.com/foo.tif",
             "ftp://example.com/foo.tif",
         ]

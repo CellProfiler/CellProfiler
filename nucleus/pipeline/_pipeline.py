@@ -2324,7 +2324,7 @@ class Pipeline:
 
                 with open(pathname, "r", encoding="utf-8") as fd:
                     self.read_file_list(fd, add_undo=add_undo)
-            elif any(pathname.startswith(protocol) for protocol in ('http', 'https', 'ftp', 'omero', 's3')):
+            elif any(pathname.startswith(protocol) for protocol in ('http', 'https', 'ftp', 'omero', 's3', 'gs')):
                 with urllib.request.urlopen(pathname) as response:
                     data = response.read().decode("utf-8").splitlines()
 

@@ -116,62 +116,6 @@ class Pipeline:
             return h.hexdigest()
         return h.digest()
 
-    def create_from_handles(self, handles):
-        """Read a pipeline's modules out of the handles structure
-
-        """
-        self.__modules = []
-        try:
-            settings = handles[nucleus.pipeline.SETTINGS][0, 0]
-            module_names = settings[nucleus.pipeline.MODULE_NAMES]
-        except Exception as instance:
-            logger.error("Failed to load pipeline", exc_info=True)
-            e = nucleus.pipeline.event.LoadException(instance, None)
-            self.notify_listeners(e)
-            return
-        module_count = module_names.shape[1]
-        real_module_num = 1
-        for module_num in range(1, module_count + 1):
-            idx = module_num - 1
-            module_name = module_names[0, idx][0]
-            module = None
-            try:
-                module = self.instantiate_module(module_name)
-                module.create_from_handles(handles, module_num)
-                module.module_num = real_module_num
-            except Exception as instance:
-                logger.error("Failed to load pipeline", exc_info=True)
-                number_of_variables = settings[nucleus.pipeline.NUMBERS_OF_VARIABLES][
-                    0, idx
-                ]
-                module_settings = [
-                    settings[nucleus.pipeline.VARIABLE_VALUES][idx, i]
-                    for i in range(number_of_variables)
-                ]
-                module_settings = [
-                    ("" if numpy.product(x.shape) == 0 else str(x[0]))
-                    if isinstance(x, numpy.ndarray)
-                    else str(x)
-                    for x in module_settings
-                ]
-
-                event = nucleus.pipeline.event.LoadException(
-                    instance, module, module_name, module_settings
-                )
-                self.notify_listeners(event)
-                if event.cancel_run:
-                    # The pipeline is somewhat loaded at this point
-                    # so we break the loop and clean up as well as we can
-                    break
-            if module is not None:
-                self.__modules.append(module)
-                real_module_num += 1
-        for module in self.__modules:
-            module.post_pipeline_load(self)
-
-        self.notify_listeners(
-            nucleus.pipeline.event.PipelineLoaded())
-
     @staticmethod
     def instantiate_module(module_name):
         import nucleus.modules

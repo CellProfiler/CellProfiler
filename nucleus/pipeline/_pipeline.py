@@ -147,66 +147,6 @@ class Pipeline:
             )
             return False
 
-    def to_ndarray(self):
-        """Create a numpy array representing this pipeline
-
-        """
-        settings = numpy.ndarray(shape=[1, 1], dtype=nucleus.pipeline.SETTINGS_DTYPE)
-        handles = {nucleus.pipeline.SETTINGS: settings}
-        setting = settings[0, 0]
-        # The variables are a (modules,max # of variables) array of cells (objects)
-        # where an empty cell is a (1,0) array of float64
-
-        try:
-            variable_count = max(
-                [len(module.settings()) for module in self.modules(False)]
-            )
-        except:
-            for module in self.modules(False):
-                if not isinstance(module.settings(), list):
-                    raise ValueError(
-                        "Module %s.settings() did not return a list\n value: %s"
-                        % (module.module_name, module.settings())
-                    )
-                raise
-
-        module_count = len(self.modules(False))
-        setting[
-            nucleus.pipeline.VARIABLE_VALUES
-        ] = nucleus.pipeline.new_string_cell_array((module_count, variable_count))
-        # The variable info types are similarly shaped
-        setting[
-            nucleus.pipeline.VARIABLE_INFO_TYPES
-        ] = nucleus.pipeline.new_string_cell_array((module_count, variable_count))
-        setting[nucleus.pipeline.MODULE_NAMES] = nucleus.pipeline.new_string_cell_array(
-            (1, module_count)
-        )
-        setting[nucleus.pipeline.NUMBERS_OF_VARIABLES] = numpy.ndarray(
-            (1, module_count), dtype=numpy.dtype("uint8")
-        )
-        setting[nucleus.pipeline.PIXEL_SIZE] = nucleus.preferences.get_pixel_size()
-        setting[nucleus.pipeline.VARIABLE_REVISION_NUMBERS] = numpy.ndarray(
-            (1, module_count), dtype=numpy.dtype("uint8")
-        )
-        setting[nucleus.pipeline.MODULE_REVISION_NUMBERS] = numpy.ndarray(
-            (1, module_count), dtype=numpy.dtype("uint16")
-        )
-        setting[nucleus.pipeline.MODULE_NOTES] = nucleus.pipeline.new_string_cell_array(
-            (1, module_count)
-        )
-        setting[nucleus.pipeline.SHOW_WINDOW] = numpy.ndarray(
-            (1, module_count), dtype=numpy.dtype("uint8")
-        )
-        setting[nucleus.pipeline.BATCH_STATE] = numpy.ndarray(
-            (1, module_count), dtype=numpy.dtype("object")
-        )
-        for i in range(module_count):
-            setting[nucleus.pipeline.BATCH_STATE][0, i] = numpy.zeros((0,), numpy.uint8)
-
-        for module in self.modules(False):
-            module.to_ndarray(handles)
-        return handles
-
     @staticmethod
     def is_pipeline_txt_file(filename):
         """Test a file to see if it can be loaded by Pipeline.loadtxt

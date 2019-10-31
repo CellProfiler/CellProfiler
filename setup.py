@@ -114,6 +114,10 @@ setuptools.setup(
     },
     description="An open source image processing library",
     ext_modules=__extensions,
+    extras_require={
+        "dev": ["black==19.10b0", "pre-commit==1.20.0"],
+        "test": ["pytest==5.2.2"]
+    },
     install_requires=[
         "deprecation",
         "matplotlib",

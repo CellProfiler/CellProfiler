@@ -1,11 +1,13 @@
-__pycache__
+*.cpp
+*.pyc
+*.pyd
+*.so
 .cache
 .eggs
 .idea
 .tox
-*.so
+__pycache__
 build
 centrosome.egg-info/
-*.pyc
-*.pyd
 dist
+pip-wheel-metadata/

@@ -21,7 +21,10 @@ class BuildExtension(setuptools.command.build_ext.build_ext):
         numpy_includes = pkg_resources.resource_filename("numpy", "core/include")
 
         for extension in self.extensions:
-            if hasattr(extension, "include_dirs") and numpy_includes not in extension.include_dirs:
+            if (
+                hasattr(extension, "include_dirs")
+                and numpy_includes not in extension.include_dirs
+            ):
                 extension.include_dirs.append(numpy_includes)
 
             extension.include_dirs.append("centrosome/include")
@@ -30,9 +33,7 @@ class BuildExtension(setuptools.command.build_ext.build_ext):
 
 
 class Test(setuptools.command.test.test):
-    user_options = [
-        ("pytest-args=", "a", "Arguments to pass to py.test")
-    ]
+    user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
 
     def initialize_options(self):
         setuptools.command.test.test.initialize_options(self)
@@ -66,7 +67,7 @@ __extensions = [
         name="centrosome._propagate",
         sources=[
             "centrosome/_propagate.{}".format("c" if __suffix == "cpp" else __suffix)
-        ]
+        ],
     )
 ]
 
@@ -79,10 +80,8 @@ for pyxfile in glob.glob(os.path.join("centrosome", "*.pyx")):
     __extensions += [
         setuptools.Extension(
             name="centrosome.{}".format(name),
-            sources=[
-                "centrosome/{}.{}".format(name, __suffix)
-            ],
-            **__extkwargs
+            sources=["centrosome/{}.{}".format(name, __suffix)],
+            **__extkwargs,
         )
     ]
 
@@ -108,15 +107,12 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Scientific/Engineering",
     ],
-    cmdclass={
-        "build_ext": BuildExtension,
-        "test": Test
-    },
+    cmdclass={"build_ext": BuildExtension, "test": Test},
     description="An open source image processing library",
     ext_modules=__extensions,
     extras_require={
         "dev": ["black==19.10b0", "pre-commit==1.20.0"],
-        "test": ["pytest==5.2.2"]
+        "test": ["pytest==5.2.2"],
     },
     install_requires=[
         "deprecation",
@@ -130,17 +126,8 @@ setuptools.setup(
     license="BSD",
     long_description="",
     name="centrosome",
-    packages=[
-        "centrosome"
-    ],
-    setup_requires=[
-        "cython",
-        "numpy",
-        "pytest",
-    ],
-    tests_require=[
-        "pytest",
-    ],
+    packages=["centrosome"],
+    setup_requires=["cython", "numpy", "pytest",],
     url="https://github.com/CellProfiler/centrosome",
-    version="1.1.6"
+    version="1.1.6",
 )

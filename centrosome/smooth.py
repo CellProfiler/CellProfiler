@@ -19,8 +19,7 @@ def smooth_with_noise(image, bits):
     r = rr.normal(size=image.shape)
     delta = pow(2.0, -bits)
     image_copy = np.clip(image, delta, 1)
-    result = np.exp2(np.log2(image_copy + delta) * r +
-                     (1 - r) * np.log2(image_copy))
+    result = np.exp2(np.log2(image_copy + delta) * r + (1 - r) * np.log2(image_copy))
     result[result > 1] = 1
     result[result < 0] = 0
     return result
@@ -56,15 +55,13 @@ def circular_gaussian_kernel(sd, radius):
     radius - build a circular kernel that convolves all points in the circle
              bounded by this radius 
     """
-    i, j = np.mgrid[-radius:radius + 1, -radius:radius + 1].astype(
-        float) / radius
+    i, j = np.mgrid[-radius : radius + 1, -radius : radius + 1].astype(float) / radius
     mask = i ** 2 + j ** 2 <= 1
     i = i * radius / sd
     j = j * radius / sd
 
     kernel = np.zeros((2 * radius + 1, 2 * radius + 1))
-    kernel[mask] = np.e ** (-(i[mask] ** 2 + j[mask] ** 2) /
-                            (2 * sd ** 2))
+    kernel[mask] = np.e ** (-(i[mask] ** 2 + j[mask] ** 2) / (2 * sd ** 2))
     #
     # Normalize the kernel so that there is no net effect on a uniform image
     #
@@ -73,7 +70,7 @@ def circular_gaussian_kernel(sd, radius):
 
 
 def fit_polynomial(pixel_data, mask, clip=True):
-    '''Return an "image" which is a polynomial fit to the pixel data
+    """Return an "image" which is a polynomial fit to the pixel data
     
     Fit the image to the polynomial Ax**2+By**2+Cxy+Dx+Ey+F
     
@@ -85,19 +82,20 @@ def fit_polynomial(pixel_data, mask, clip=True):
     clip - if True, clip the output array so that pixels less than zero
            in the fitted image are zero and pixels that are greater than
            one are one.
-    '''
+    """
     mask = np.logical_and(mask, pixel_data > 0)
     if not np.any(mask):
         return pixel_data
-    x, y = np.mgrid[0:pixel_data.shape[0], 0:pixel_data.shape[1]]
+    x, y = np.mgrid[0 : pixel_data.shape[0], 0 : pixel_data.shape[1]]
     x2 = x * x
     y2 = y * y
     xy = x * y
     o = np.ones(pixel_data.shape)
     a = np.array([x[mask], y[mask], x2[mask], y2[mask], xy[mask], o[mask]])
     coeffs = scipy.linalg.lstsq(a.transpose(), pixel_data[mask])[0]
-    output_pixels = np.sum([coeff * index for coeff, index in
-                            zip(coeffs, [x, y, x2, y2, xy, o])], 0)
+    output_pixels = np.sum(
+        [coeff * index for coeff, index in zip(coeffs, [x, y, x2, y2, xy, o])], 0
+    )
     if clip:
         output_pixels[output_pixels > 1] = 1
         output_pixels[output_pixels < 0] = 0

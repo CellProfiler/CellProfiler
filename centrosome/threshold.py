@@ -47,26 +47,40 @@ TM_MCT_PER_OBJECT = "MCT PerObject"
 TM_MANUAL = "Manual"
 TM_MEASUREMENT = "Measurement"
 TM_BINARY_IMAGE = "Binary image"
-'''Compute a single threshold for the entire image'''
+"""Compute a single threshold for the entire image"""
 TM_GLOBAL = "Global"
 
-'''Compute a local thresholding matrix of the same size as the image'''
+"""Compute a local thresholding matrix of the same size as the image"""
 TM_ADAPTIVE = "Adaptive"
 
-'''Compute a threshold for each labeled object in the image'''
+"""Compute a threshold for each labeled object in the image"""
 TM_PER_OBJECT = "PerObject"
 
-TM_METHODS = [TM_OTSU, TM_MOG, TM_BACKGROUND, TM_ROBUST_BACKGROUND,
-              TM_RIDLER_CALVARD, TM_KAPUR, TM_MCT]
+TM_METHODS = [
+    TM_OTSU,
+    TM_MOG,
+    TM_BACKGROUND,
+    TM_ROBUST_BACKGROUND,
+    TM_RIDLER_CALVARD,
+    TM_KAPUR,
+    TM_MCT,
+]
 
 TM_GLOBAL_METHODS = [" ".join((x, TM_GLOBAL)) for x in TM_METHODS]
 
 
-def get_threshold(threshold_method, threshold_modifier, image,
-                  mask=None, labels=None,
-                  threshold_range_min=None, threshold_range_max=None,
-                  threshold_correction_factor=1.0,
-                  adaptive_window_size=10, **kwargs):
+def get_threshold(
+    threshold_method,
+    threshold_modifier,
+    image,
+    mask=None,
+    labels=None,
+    threshold_range_min=None,
+    threshold_range_max=None,
+    threshold_correction_factor=1.0,
+    adaptive_window_size=10,
+    **kwargs,
+):
     """Compute a threshold for an image
     
     threshold_method - one of the TM_ methods above
@@ -111,8 +125,7 @@ def get_threshold(threshold_method, threshold_modifier, image,
                                in a three-class Otsu to the foreground if true
                                or the background if false.
     """
-    global_threshold = get_global_threshold(
-        threshold_method, image, mask, **kwargs)
+    global_threshold = get_global_threshold(threshold_method, image, mask, **kwargs)
     global_threshold *= threshold_correction_factor
     if not threshold_range_min is None:
         global_threshold = max(global_threshold, threshold_range_min)
@@ -122,29 +135,40 @@ def get_threshold(threshold_method, threshold_modifier, image,
         local_threshold = global_threshold
     elif threshold_modifier == TM_ADAPTIVE:
         local_threshold = get_adaptive_threshold(
-            threshold_method, image, global_threshold,
-            mask, adaptive_window_size=adaptive_window_size, **kwargs)
+            threshold_method,
+            image,
+            global_threshold,
+            mask,
+            adaptive_window_size=adaptive_window_size,
+            **kwargs,
+        )
         local_threshold = local_threshold * threshold_correction_factor
     elif threshold_modifier == TM_PER_OBJECT:
         local_threshold = get_per_object_threshold(
-            threshold_method, image, global_threshold, mask, labels,
-            threshold_range_min, threshold_range_max, **kwargs)
+            threshold_method,
+            image,
+            global_threshold,
+            mask,
+            labels,
+            threshold_range_min,
+            threshold_range_max,
+            **kwargs,
+        )
         local_threshold = local_threshold * threshold_correction_factor
     else:
         raise NotImplementedError(
-            "%s thresholding is not implemented" % (threshold_modifier))
+            "%s thresholding is not implemented" % (threshold_modifier)
+        )
     if isinstance(local_threshold, np.ndarray):
         #
         # Constrain thresholds to within .7 to 1.5 of the global threshold.
         #
-        threshold_range_min = max(threshold_range_min, global_threshold * .7)
+        threshold_range_min = max(threshold_range_min, global_threshold * 0.7)
         threshold_range_max = min(threshold_range_max, global_threshold * 1.5)
         if not threshold_range_min is None:
-            local_threshold[local_threshold < threshold_range_min] = \
-                threshold_range_min
+            local_threshold[local_threshold < threshold_range_min] = threshold_range_min
         if not threshold_range_max is None:
-            local_threshold[local_threshold > threshold_range_max] = \
-                threshold_range_max
+            local_threshold[local_threshold > threshold_range_max] = threshold_range_max
         if (threshold_modifier == TM_PER_OBJECT) and (labels is not None):
             local_threshold[labels == 0] = 1.0
     else:
@@ -175,17 +199,14 @@ def get_global_threshold(threshold_method, image, mask=None, **kwargs):
     elif threshold_method == TM_MCT:
         fn = get_maximum_correlation_threshold
     else:
-        raise NotImplementedError(
-            "%s algorithm not implemented" % (threshold_method))
-    kwargs = dict([(k, v) for k, v in kwargs.items()
-                   if k in fn.args])
+        raise NotImplementedError("%s algorithm not implemented" % (threshold_method))
+    kwargs = dict([(k, v) for k, v in kwargs.items() if k in fn.args])
     return fn(image, mask, **kwargs)
 
 
-def get_adaptive_threshold(threshold_method, image, threshold,
-                           mask=None,
-                           adaptive_window_size=10,
-                           **kwargs):
+def get_adaptive_threshold(
+    threshold_method, image, threshold, mask=None, adaptive_window_size=10, **kwargs
+):
     """Given a global threshold, compute a threshold per pixel
     
     Break the image into blocks, computing the threshold per block.
@@ -202,8 +223,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     # Use a floating point block size to apportion the roundoff
     # roughly equally to each block
     #
-    increment = (np.array(image_size, dtype=float) /
-                 np.array(nblocks, dtype=float))
+    increment = np.array(image_size, dtype=float) / np.array(nblocks, dtype=float)
     #
     # Put the answer here
     #
@@ -222,9 +242,8 @@ def get_adaptive_threshold(threshold_method, image, threshold,
             block = image[i0:i1, j0:j1]
             block_mask = None if mask is None else mask[i0:i1, j0:j1]
             block_threshold[i, j] = get_global_threshold(
-                threshold_method,
-                block, mask=block_mask,
-                **kwargs)
+                threshold_method, block, mask=block_mask, **kwargs
+            )
     #
     # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
     #
@@ -233,31 +252,42 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     xEnd = int((nblocks[0] - 0.5) * increment[0])
     yStart = int(increment[1] / 2)
     yEnd = int((nblocks[1] - 0.5) * increment[1])
-    xtStart = .5
-    xtEnd = image.shape[0] - .5
-    ytStart = .5
-    ytEnd = image.shape[1] - .5
+    xtStart = 0.5
+    xtEnd = image.shape[0] - 0.5
+    ytStart = 0.5
+    ytEnd = image.shape[1] - 0.5
     block_x_coords = np.linspace(xStart, xEnd, nblocks[0])
     block_y_coords = np.linspace(yStart, yEnd, nblocks[1])
     adaptive_interpolation = scipy.interpolate.RectBivariateSpline(
-        block_x_coords, block_y_coords, block_threshold,
+        block_x_coords,
+        block_y_coords,
+        block_threshold,
         bbox=(xtStart, xtEnd, ytStart, ytEnd),
-        kx=spline_order, ky=spline_order)
-    thresh_out_x_coords = np.linspace(.5, int(nblocks[0] * increment[0]) - .5,
-                                      thresh_out.shape[0])
-    thresh_out_y_coords = np.linspace(.5, int(nblocks[1] * increment[1]) - .5,
-                                      thresh_out.shape[1])
+        kx=spline_order,
+        ky=spline_order,
+    )
+    thresh_out_x_coords = np.linspace(
+        0.5, int(nblocks[0] * increment[0]) - 0.5, thresh_out.shape[0]
+    )
+    thresh_out_y_coords = np.linspace(
+        0.5, int(nblocks[1] * increment[1]) - 0.5, thresh_out.shape[1]
+    )
 
-    thresh_out = adaptive_interpolation(thresh_out_x_coords,
-                                        thresh_out_y_coords)
+    thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
 
     return thresh_out
 
 
-def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
-                             threshold_range_min=None,
-                             threshold_range_max=None,
-                             **kwargs):
+def get_per_object_threshold(
+    method,
+    image,
+    threshold,
+    mask=None,
+    labels=None,
+    threshold_range_min=None,
+    threshold_range_max=None,
+    **kwargs,
+):
     """Return a matrix giving threshold per pixel calculated per-object
     
     image - image to be thresholded
@@ -277,15 +307,19 @@ def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
             label_mask = np.logical_and(mask[extent], label_mask)
         values = image[extent]
         per_object_threshold = get_global_threshold(
-            method, values, mask=label_mask, **kwargs)
+            method, values, mask=label_mask, **kwargs
+        )
         local_threshold[extent][label_mask] = per_object_threshold
     return local_threshold
 
 
-def get_otsu_threshold(image, mask=None,
-                       two_class_otsu=True,
-                       use_weighted_variance=True,
-                       assign_middle_to_foreground=True):
+def get_otsu_threshold(
+    image,
+    mask=None,
+    two_class_otsu=True,
+    use_weighted_variance=True,
+    assign_middle_to_foreground=True,
+):
     if not mask is None:
         image = image[mask]
     else:
@@ -336,7 +370,7 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     pixel_count = np.product(cropped_image.shape)
     max_count = 512 ** 2  # maximum # of pixels analyzed
     #
-    # We need at least 3 pixels to keep from crashing because the highest 
+    # We need at least 3 pixels to keep from crashing because the highest
     # and lowest are chopped out below.
     #
     object_fraction = float(object_fraction)
@@ -365,18 +399,16 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     pixel_count = np.product(cropped_image.shape)
     # Guess at the class means for the 3 classes: background,
     # in-between and object
-    bg_pixel = cropped_image[
-        int(round(pixel_count * background_fraction / 2.0))]
-    fg_pixel = cropped_image[
-        int(round(pixel_count * (1 - object_fraction / 2)))]
+    bg_pixel = cropped_image[int(round(pixel_count * background_fraction / 2.0))]
+    fg_pixel = cropped_image[int(round(pixel_count * (1 - object_fraction / 2)))]
     class_mean = np.array([bg_pixel, (bg_pixel + fg_pixel) / 2, fg_pixel])
     class_std = np.ones((3,)) * 0.15
     # Initialize prior probabilities of a pixel belonging to each class.
     # The intermediate class steals some probability from the background
     # and object classes.
-    class_prob = np.array([3.0 / 4.0 * background_fraction,
-                           1.0 / 4.0,
-                           3.0 / 4.0 * object_fraction])
+    class_prob = np.array(
+        [3.0 / 4.0 * background_fraction, 1.0 / 4.0, 3.0 / 4.0 * object_fraction]
+    )
     # Expectation-Maximization algorithm for fitting the three Gaussian
     # distributions/classes to the data. Note, the code below is general
     # and works for any number of classes. Iterate until parameters don't
@@ -389,8 +421,9 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     r = np.random.RandomState()
     r.seed(np.frombuffer(cropped_image[:100].data, np.uint8).tolist())
     for data in (
-            r.permutation(cropped_image)[0:(len(cropped_image) // 10)],
-            cropped_image):
+        r.permutation(cropped_image)[0 : (len(cropped_image) // 10)],
+        cropped_image,
+    ):
         delta = 1
         pixel_count = len(data)
         while delta > 0.001:
@@ -401,19 +434,21 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
             for k in range(class_count):
                 norm = scipy.stats.norm(class_mean[k], class_std[k])
                 pixel_class_prob[:, k] = class_prob[k] * norm.pdf(data)
-            pixel_class_normalizer = np.sum(pixel_class_prob,
-                                            1) + .000000000001
+            pixel_class_normalizer = np.sum(pixel_class_prob, 1) + 0.000000000001
             for k in range(class_count):
-                pixel_class_prob[:, k] = pixel_class_prob[:,
-                                         k] / pixel_class_normalizer
+                pixel_class_prob[:, k] = pixel_class_prob[:, k] / pixel_class_normalizer
                 # Update parameters in Gaussian distributions
                 class_prob[k] = np.mean(pixel_class_prob[:, k])
-                class_mean[k] = (np.sum(pixel_class_prob[:, k] * data) /
-                                 (class_prob[k] * pixel_count))
-                class_std[k] = \
-                    math.sqrt(np.sum(pixel_class_prob[:, k] *
-                                     (data - class_mean[k]) ** 2) /
-                              (pixel_count * class_prob[k])) + .000001
+                class_mean[k] = np.sum(pixel_class_prob[:, k] * data) / (
+                    class_prob[k] * pixel_count
+                )
+                class_std[k] = (
+                    math.sqrt(
+                        np.sum(pixel_class_prob[:, k] * (data - class_mean[k]) ** 2)
+                        / (pixel_count * class_prob[k])
+                    )
+                    + 0.000001
+                )
             delta = np.sum(np.abs(old_class_mean - class_mean))
     # Now the Gaussian distributions are fitted and we can describe the
     # histogram of the pixel intensities as the sum of these Gaussian
@@ -425,15 +460,17 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     # Construct an equally spaced array of values between the background
     # and object mean
     ndivisions = 10000
-    level = (np.arange(ndivisions) *
-             ((class_mean[2] - class_mean[0]) / ndivisions)
-             + class_mean[0])
+    level = (
+        np.arange(ndivisions) * ((class_mean[2] - class_mean[0]) / ndivisions)
+        + class_mean[0]
+    )
     class_gaussian = np.ndarray((ndivisions, class_count))
     for k in range(class_count):
         norm = scipy.stats.norm(class_mean[k], class_std[k])
         class_gaussian[:, k] = class_prob[k] * norm.pdf(level)
-    if (abs(class_prob[1] + class_prob[2] - object_fraction) <
-            abs(class_prob[2] - object_fraction)):
+    if abs(class_prob[1] + class_prob[2] - object_fraction) < abs(
+        class_prob[2] - object_fraction
+    ):
         # classifying the intermediate as object more closely models
         # the user's desired object fraction
         background_distribution = class_gaussian[:, 0]
@@ -467,8 +504,9 @@ def get_background_threshold(image, mask=None):
     robust_min = 0.02 * (img_max - img_min) + img_min
     robust_max = 0.98 * (img_max - img_min) + img_min
     nbins = 256
-    cropped_image = cropped_image[np.logical_and(cropped_image > robust_min,
-                                                 cropped_image < robust_max)]
+    cropped_image = cropped_image[
+        np.logical_and(cropped_image > robust_min, cropped_image < robust_max)
+    ]
     if len(cropped_image) == 0:
         return robust_min
 
@@ -485,17 +523,18 @@ def get_background_threshold(image, mask=None):
     return img_min + cutoff * 2 * (img_max - img_min)
 
 
-get_background_threshold.args = inspect.getargspec(
-    get_background_threshold).args
+get_background_threshold.args = inspect.getargspec(get_background_threshold).args
 
 
-def get_robust_background_threshold(image,
-                                    mask=None,
-                                    lower_outlier_fraction=0.05,
-                                    upper_outlier_fraction=0.05,
-                                    deviations_above_average=2.0,
-                                    average_fn=np.mean,
-                                    variance_fn=np.std):
+def get_robust_background_threshold(
+    image,
+    mask=None,
+    lower_outlier_fraction=0.05,
+    upper_outlier_fraction=0.05,
+    deviations_above_average=2.0,
+    average_fn=np.mean,
+    variance_fn=np.std,
+):
     """Calculate threshold based on mean & standard deviation
        The threshold is calculated by trimming the top and bottom 5% of
        pixels off the image, then calculating the mean and standard deviation
@@ -536,22 +575,23 @@ def get_robust_background_threshold(image,
 
 
 get_robust_background_threshold.args = inspect.getargspec(
-    get_robust_background_threshold).args
+    get_robust_background_threshold
+).args
 
 
 def mad(a):
-    '''Calculate the median absolute deviation of a sample
+    """Calculate the median absolute deviation of a sample
     
     a - a numpy array-like collection of values
     
     returns the median of the deviation of a from its median.
-    '''
+    """
     a = np.asfarray(a).flatten()
     return np.median(np.abs(a - np.median(a)))
 
 
 def binned_mode(a):
-    '''Calculate a binned mode of a sample
+    """Calculate a binned mode of a sample
     
     a - array of values
     
@@ -559,14 +599,14 @@ def binned_mode(a):
     number that is a compromise between fineness of measurement and
     the stochastic nature of counting which roughly scales as the
     square root of the sample size.
-    '''
+    """
     a = np.asarray(a).flatten()
     a_min = np.min(a)
     a_max = np.max(a)
     n_bins = np.ceil(np.sqrt(len(a)))
     b = ((a - a_min) / (a_max - a_min) * n_bins).astype(int)
     idx = np.argmax(np.bincount(b))
-    return np.percentile(a, 100 * float(idx + .5) / n_bins)
+    return np.percentile(a, 100 * float(idx + 0.5) / n_bins)
 
 
 def get_ridler_calvard_threshold(image, mask=None):
@@ -585,29 +625,30 @@ def get_ridler_calvard_threshold(image, mask=None):
 
     # We want to limit the dynamic range of the image to 256. Otherwise,
     # an image with almost all values near zero can give a bad result.
-    min_val = np.max(cropped_image) / 256;
-    cropped_image[cropped_image < min_val] = min_val;
-    im = np.log(cropped_image);
-    min_val = np.min(im);
-    max_val = np.max(im);
-    im = (im - min_val) / (max_val - min_val);
-    pre_thresh = 0;
+    min_val = np.max(cropped_image) / 256
+    cropped_image[cropped_image < min_val] = min_val
+    im = np.log(cropped_image)
+    min_val = np.min(im)
+    max_val = np.max(im)
+    im = (im - min_val) / (max_val - min_val)
+    pre_thresh = 0
     # This method needs an initial value to start iterating. Using
     # graythresh (Otsu's method) is probably not the best, because the
     # Ridler Calvard threshold ends up being too close to this one and in
     # most cases has the same exact value.
     new_thresh = otsu(im)
-    delta = 0.00001;
+    delta = 0.00001
     while abs(pre_thresh - new_thresh) > delta:
-        pre_thresh = new_thresh;
-        mean1 = np.mean(im[im < pre_thresh]);
-        mean2 = np.mean(im[im >= pre_thresh]);
-        new_thresh = np.mean([mean1, mean2]);
-    return math.exp(min_val + (max_val - min_val) * new_thresh);
+        pre_thresh = new_thresh
+        mean1 = np.mean(im[im < pre_thresh])
+        mean2 = np.mean(im[im >= pre_thresh])
+        new_thresh = np.mean([mean1, mean2])
+    return math.exp(min_val + (max_val - min_val) * new_thresh)
 
 
 get_ridler_calvard_threshold.args = inspect.getargspec(
-    get_ridler_calvard_threshold).args
+    get_ridler_calvard_threshold
+).args
 
 
 def get_kapur_threshold(image, mask=None):
@@ -620,12 +661,11 @@ def get_kapur_threshold(image, mask=None):
     log_image = np.log2(smooth_with_noise(cropped_image, 8))
     min_log_image = np.min(log_image)
     max_log_image = np.max(log_image)
-    histogram = scipy.ndimage.histogram(log_image,
-                                        min_log_image,
-                                        max_log_image,
-                                        256)
-    histogram_values = (min_log_image + (max_log_image - min_log_image) *
-                        np.arange(256, dtype=float) / 255)
+    histogram = scipy.ndimage.histogram(log_image, min_log_image, max_log_image, 256)
+    histogram_values = (
+        min_log_image
+        + (max_log_image - min_log_image) * np.arange(256, dtype=float) / 255
+    )
     # drop any zero bins
     keep = histogram != 0
     histogram = histogram[keep]
@@ -636,26 +676,26 @@ def get_kapur_threshold(image, mask=None):
         # Normalize to probabilities
     p = histogram.astype(float) / float(np.sum(histogram))
     # Find the probabilities totals up to and above each possible threshold.
-    lo_sum = np.cumsum(p);
-    hi_sum = lo_sum[-1] - lo_sum;
-    lo_e = np.cumsum(p * np.log2(p));
-    hi_e = lo_e[-1] - lo_e;
+    lo_sum = np.cumsum(p)
+    hi_sum = lo_sum[-1] - lo_sum
+    lo_e = np.cumsum(p * np.log2(p))
+    hi_e = lo_e[-1] - lo_e
 
     # compute the entropies
-    lo_entropy = lo_e / lo_sum - np.log2(lo_sum);
-    hi_entropy = hi_e / hi_sum - np.log2(hi_sum);
+    lo_entropy = lo_e / lo_sum - np.log2(lo_sum)
+    hi_entropy = hi_e / hi_sum - np.log2(hi_sum)
 
-    sum_entropy = lo_entropy[:-1] + hi_entropy[:-1];
+    sum_entropy = lo_entropy[:-1] + hi_entropy[:-1]
     sum_entropy[np.logical_not(np.isfinite(sum_entropy))] = np.Inf
-    entry = np.argmin(sum_entropy);
-    return 2 ** ((histogram_values[entry] + histogram_values[entry + 1]) / 2);
+    entry = np.argmin(sum_entropy)
+    return 2 ** ((histogram_values[entry] + histogram_values[entry + 1]) / 2)
 
 
 get_kapur_threshold.args = inspect.getargspec(get_kapur_threshold).args
 
 
 def get_maximum_correlation_threshold(image, mask=None, bins=256):
-    '''Return the maximum correlation threshold of the image
+    """Return the maximum correlation threshold of the image
     
     image - image to be thresholded
     
@@ -666,7 +706,7 @@ def get_maximum_correlation_threshold(image, mask=None, bins=256):
     This is an implementation of the maximum correlation threshold as
     described in Padmanabhan, "A novel algorithm for optimal image thresholding
     of biological data", Journal of Neuroscience Methods 193 (2010) p 380-384
-    '''
+    """
 
     if mask is not None:
         image = image[mask]
@@ -682,8 +722,7 @@ def get_maximum_correlation_threshold(image, mask=None, bins=256):
     max_value = np.max(image)
     if min_value == max_value:
         return min_value
-    image = ((image - min_value) * (bins - 1) /
-             (max_value - min_value)).astype(int)
+    image = ((image - min_value) * (bins - 1) / (max_value - min_value)).astype(int)
     histogram = np.bincount(image)
     #
     # Compute (j - mean) and (j - mean) **2
@@ -705,8 +744,7 @@ def get_maximum_correlation_threshold(image, mask=None, bins=256):
     #
     # For the bottom, we need (Nm - Ni) * Ni / Nm
     #
-    ni = nm - np.hstack(
-        [[0], np.cumsum(histogram[:-1])])  # number of pixels above i-1
+    ni = nm - np.hstack([[0], np.cumsum(histogram[:-1])])  # number of pixels above i-1
     denominator = np.sqrt(sndiff2 * (nm - ni) * ni / nm)
     #
     mct = numerator / denominator
@@ -715,8 +753,9 @@ def get_maximum_correlation_threshold(image, mask=None, bins=256):
     return min_value + my_bin * (max_value - min_value) / (bins - 1)
 
 
-get_maximum_correlation_threshold.args = \
-    inspect.getargspec(get_maximum_correlation_threshold).args
+get_maximum_correlation_threshold.args = inspect.getargspec(
+    get_maximum_correlation_threshold
+).args
 
 
 def weighted_variance(image, mask, binary_image):
@@ -738,7 +777,7 @@ def weighted_variance(image, mask, binary_image):
         return 0
 
     fg = np.log2(np.maximum(image[binary_image & mask], minval))
-    bg = np.log2(np.maximum(image[(~ binary_image) & mask], minval))
+    bg = np.log2(np.maximum(image[(~binary_image) & mask], minval))
     nfg = np.product(fg.shape)
     nbg = np.product(bg.shape)
     if nfg == 0:
@@ -781,19 +820,19 @@ def sum_of_entropies(image, mask, binary_image):
         return math.log(np.sum(mask), 2)
         #
     # Create log-transformed lists of points in the foreground and background
-    # 
+    #
     fg = image[binary_image & mask]
-    bg = image[(~ binary_image) & mask]
+    bg = image[(~binary_image) & mask]
     if len(fg) == 0 or len(bg) == 0:
         return 0
     log_fg = np.log2(fg)
     log_bg = np.log2(bg)
     #
     # Make these into histograms
-    hfg = np.histogram(log_fg, 256, range=(lower,upper), normed=False, weights=None)[0]
-    hbg = np.histogram(log_bg, 256, range=(lower,upper), normed=False, weights=None)[0]
-    #hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
-    #hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
+    hfg = np.histogram(log_fg, 256, range=(lower, upper), normed=False, weights=None)[0]
+    hbg = np.histogram(log_bg, 256, range=(lower, upper), normed=False, weights=None)[0]
+    # hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
+    # hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
     #
     # Drop empty bins
     #
@@ -815,20 +854,19 @@ def sum_of_entropies(image, mask, binary_image):
 
 
 def log_transform(image):
-    '''Renormalize image intensities to log space
+    """Renormalize image intensities to log space
     
     Returns a tuple of transformed image and a dictionary to be passed into
     inverse_log_transform. The minimum and maximum from the dictionary
     can be applied to an image by the inverse_log_transform to 
     convert it back to its former intensity values.
-    '''
+    """
     orig_min, orig_max = scipy.ndimage.extrema(image)[:2]
     #
     # We add 1/2 bit noise to an 8 bit image to give the log a bottom
     #
     limage = image.copy()
-    noise_min = orig_min + (orig_max - orig_min) / 256.0 + np.finfo(
-        image.dtype).eps
+    noise_min = orig_min + (orig_max - orig_min) / 256.0 + np.finfo(image.dtype).eps
     limage[limage < noise_min] = noise_min
     d = {"noise_min": noise_min}
     limage = np.log(limage)
@@ -839,9 +877,9 @@ def log_transform(image):
 
 
 def inverse_log_transform(image, d):
-    '''Convert the values in image back to the scale prior to log_transform
+    """Convert the values in image back to the scale prior to log_transform
     
     image - an image or value or values similarly scaled to image
     d - object returned by log_transform
-    '''
+    """
     return np.exp(unstretch(image, d["log_min"], d["log_max"]))

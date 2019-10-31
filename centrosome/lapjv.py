@@ -7,8 +7,9 @@ from ._lapjv import augmenting_row_reduction
 from ._lapjv import augment
 from six.moves import range
 
-def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions = 2):
-    '''Sparse linear assignment solution using Jonker-Volgenant algorithm
+
+def lapjv(i, j, costs, wants_dual_variables=False, augmenting_row_reductions=2):
+    """Sparse linear assignment solution using Jonker-Volgenant algorithm
     
     i,j - similarly-sized vectors that pair the object at index i[n] with
           the object at index j[j]
@@ -32,12 +33,13 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     
     returns (x, y), the pairs of assignments that represent the solution
     or (x, y, u, v) if the dual variables are requested.
-    '''
+    """
     import os
+
     i = np.atleast_1d(i).astype(int)
     j = np.atleast_1d(j).astype(int)
     costs = np.atleast_1d(costs)
-    
+
     assert len(i) == len(j), "i and j must be the same length"
     assert len(i) == len(costs), "costs must be the same length as i"
 
@@ -56,10 +58,10 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     i_count = np.bincount(i)
     assert not np.any(i_count == 0), "all i must be paired with at least one j"
     i_index = np.hstack([[0], np.cumsum(i_count[:-1])])
-    
-    n = len(j_count) # dimension of the square cost matrix
+
+    n = len(j_count)  # dimension of the square cost matrix
     assert n == len(i_count), "There must be the same number of unique i and j"
-    
+
     # # # # # # # #
     #
     # Variable initialization:
@@ -75,7 +77,7 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     x = np.ascontiguousarray(np.ones(n, np.uint32) * n)
     y = np.ascontiguousarray(np.ones(n, np.uint32) * n, np.uint32)
     u = np.ascontiguousarray(np.zeros(n, np.float64))
-    
+
     # # # # # # # #
     #
     # Column reduction
@@ -105,36 +107,43 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     #
     assignment_count = np.bincount(min_i[min_i != n])
     assignment_count = np.hstack(
-        (assignment_count, np.zeros(n - len(assignment_count), int)))
+        (assignment_count, np.zeros(n - len(assignment_count), int))
+    )
     free_i = assignment_count == 0
     one_i = assignment_count == 1
-    #order = np.lexsort((costs, i)) Replace with this after all is done
-    order = np.lexsort((j,i))
+    # order = np.lexsort((costs, i)) Replace with this after all is done
+    order = np.lexsort((j, i))
     j = np.ascontiguousarray(j[order], np.uint32)
     costs = np.ascontiguousarray(costs[order], np.float64)
     i_index = np.ascontiguousarray(i_index, np.uint32)
     i_count = np.ascontiguousarray(i_count, np.uint32)
-    if np.any(one_i): 
+    if np.any(one_i):
         reduction_transfer(
             np.ascontiguousarray(np.argwhere(one_i).flatten(), np.uint32),
-            j, i_index, i_count, x, u, v, costs)
+            j,
+            i_index,
+            i_count,
+            x,
+            u,
+            v,
+            costs,
+        )
     #
     # Perform augmenting row reduction on unassigned i
     #
     ii = np.ascontiguousarray(np.argwhere(free_i).flatten(), np.uint32)
     if len(ii) > 0:
-        for iii in range (augmenting_row_reductions):
-            ii = augmenting_row_reduction(
-                n, ii, j, i_index, i_count, x, y, u, v, costs)
-    augment(n, ii,
-            j, i_index, i_count, x, y, u, v, costs)
+        for iii in range(augmenting_row_reductions):
+            ii = augmenting_row_reduction(n, ii, j, i_index, i_count, x, y, u, v, costs)
+    augment(n, ii, j, i_index, i_count, x, y, u, v, costs)
     if wants_dual_variables:
-        return x,y,u,v
+        return x, y, u, v
     else:
-        return x,y
-    
+        return x, y
+
+
 def slow_reduction_transfer(ii, j, idx, count, x, u, v, c):
-    '''Perform the reduction transfer step from the Jonker-Volgenant algorithm
+    """Perform the reduction transfer step from the Jonker-Volgenant algorithm
     
     The data is input in a ragged array in terms of "i" structured as a
     vector of values for each i,j combination where:
@@ -161,16 +170,17 @@ def slow_reduction_transfer(ii, j, idx, count, x, u, v, c):
     The authors note that reduction transfer can be applied in later stages
     of the algorithm but does not seem to provide a substantial benefit
     in speed.
-    '''
+    """
     for i in ii:
         j1 = x[i]
-        jj = j[idx[i]:(idx[i]+count[i])]
-        uu = np.min((c[idx[i]:(idx[i]+count[i])] - v[jj])[jj != j1])
+        jj = j[idx[i] : (idx[i] + count[i])]
+        uu = np.min((c[idx[i] : (idx[i] + count[i])] - v[jj])[jj != j1])
         v[j1] = v[j1] - uu + u[i]
         u[i] = uu
-        
+
+
 def slow_augmenting_row_reduction(n, ii, jj, idx, count, x, y, u, v, c):
-    '''Perform the augmenting row reduction step from the Jonker-Volgenaut algorithm
+    """Perform the augmenting row reduction step from the Jonker-Volgenaut algorithm
     
     n - the number of i and j in the linear assignment problem
     ii - the unassigned i
@@ -185,8 +195,8 @@ def slow_augmenting_row_reduction(n, ii, jj, idx, count, x, y, u, v, c):
     c - the cost for each entry.
     
     returns the new unassigned i
-    '''
-        
+    """
+
     #######################################
     #
     # From Jonker:
@@ -213,11 +223,11 @@ def slow_augmenting_row_reduction(n, ii, jj, idx, count, x, y, u, v, c):
     while k < limit:
         i = ii[k]
         k += 1
-        j = jj[idx[i]:(idx[i] + count[i])]
-        uu = c[idx[i]:(idx[i] + count[i])] - v[j]
+        j = jj[idx[i] : (idx[i] + count[i])]
+        uu = c[idx[i] : (idx[i] + count[i])] - v[j]
         order = np.lexsort([uu])
         u1, u2 = uu[order[:2]]
-        j1,j2 = j[order[:2]]
+        j1, j2 = j[order[:2]]
         i1 = y[j1]
         if u1 < u2:
             v[j1] = v[j1] - u2 + u1
@@ -232,10 +242,11 @@ def slow_augmenting_row_reduction(n, ii, jj, idx, count, x, y, u, v, c):
                 free.append(i1)
         x[i] = j1
         y[j1] = i
-    return np.array(free,np.uint32)
+    return np.array(free, np.uint32)
+
 
 def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
-    '''Perform the augmentation step to assign unassigned i and j
+    """Perform the augmentation step to assign unassigned i and j
     
     n - the # of i and j, also the marker of unassigned x and y
     ii - the unassigned i
@@ -246,8 +257,8 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     y - the assignments of i for each j
     u,v - the dual variables
     c - the costs
-    '''
-    
+    """
+
     ##################################################
     #
     # Augment procedure: from the Jonker paper.
@@ -259,13 +270,13 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     # begin
     #   for all unassigned i* do
     #   begin
-    #     for j:= 1 ... n do 
+    #     for j:= 1 ... n do
     #       begin d[j] := c[i*,j] - v[j] ; pred[j] := i* end;
     #     READY: = { ) ; SCAN: = { } ; TODO: = { 1 ... n} ;
     #     repeat
     #       if SCAN = { } then
     #       begin
-    #         u = min {d[j] for j in TODO} ; 
+    #         u = min {d[j] for j in TODO} ;
     #         SCAN: = {j | d[j] = u} ;
     #         TODO: = TODO - SCAN;
     #         for j in SCAN do if y[j]==0 then go to augment
@@ -280,7 +291,7 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     #           begin SCAN: = SCAN + {j} ; TODO: = TODO - {j} end
     #       end
     #    until false; (* repeat always ends with go to augment *)
-    #augment:
+    # augment:
     #   (* price updating *)
     #   for k in READY do v[k]: = v[k] + d[k] - u;
     #   (* augmentation *)
@@ -288,18 +299,18 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     #     i: = pred[j]; y[ j ] := i ; k:=j; j:=x[i]; x[i]:= k
     #   until i = i*
     #  end
-    #end
+    # end
     inf = np.sum(c) + 1
     d = np.zeros(n)
-    cc = np.zeros((n,n))
-    cc[:,:] = inf
+    cc = np.zeros((n, n))
+    cc[:, :] = inf
     for i in range(n):
-        cc[i,jj[idx[i]:(idx[i]+count[i])]] = c[idx[i]:(idx[i]+count[i])]
+        cc[i, jj[idx[i] : (idx[i] + count[i])]] = c[idx[i] : (idx[i] + count[i])]
     c = cc
     for i in ii:
         print("Processing i=%d" % i)
-        j = jj[idx[i]:(idx[i] + count[i])]
-        d = c[i,:] - v
+        j = jj[idx[i] : (idx[i] + count[i])]
+        d = c[i, :] - v
         pred = np.ones(n, int) * i
         on_deck = []
         ready = []
@@ -326,7 +337,10 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
                 u1 = c[iii, j1] - v[j1] - umin
                 for j1 in list(to_do):
                     h = c[iii, j1] - v[j1] - u1
-                    print("Consider j=%d as replacement, c[%d,%d]=%f,v[%d]=%f,h=%f, d[j]= %f" % (j1,iii,j1,c[iii,j1],j1,v[j1],h,d[j1]))
+                    print(
+                        "Consider j=%d as replacement, c[%d,%d]=%f,v[%d]=%f,h=%f, d[j]= %f"
+                        % (j1, iii, j1, c[iii, j1], j1, v[j1], h, d[j1])
+                    )
                     if h < d[j1]:
                         print("Add to chain")
                         pred[j1] = iii
@@ -357,4 +371,4 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
     #
     for i in range(n):
         j = x[i]
-        u[i] = c[i,j] - v[j]
+        u[i] = c[i, j] - v[j]

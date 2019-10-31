@@ -1,8 +1,9 @@
 from __future__ import absolute_import
 import numpy as np
 
+
 class Indexes(object):
-    '''The Indexes class stores indexes for manipulating subsets on behalf of a parent set
+    """The Indexes class stores indexes for manipulating subsets on behalf of a parent set
     
     The idea here is that you have a parent set of "things", for instance
     some pixels or objects. Each of these might have, conceptually, an N-d
@@ -33,18 +34,18 @@ class Indexes(object):
                j_weights[j_indexes.fwd_idx[indexes.rev_idx] + indexes.idx[1]])
                
     sums_of_weights = np.bincount(indexes.rev_idx, weights)
-    '''
-    
+    """
+
     def __init__(self, counts):
-        '''Constructor
+        """Constructor
         
         counts - an NxM array of dimensions of sub-arrays
                  N is the number of dimensions of the sub-object array
                  M is the number of objects.
-        '''
+        """
         counts = np.atleast_2d(counts).astype(int)
         self.__counts = counts.copy()
-        if np.sum(np.prod(counts,0)) == 0:
+        if np.sum(np.prod(counts, 0)) == 0:
             self.__length = 0
             self.__fwd_idx = np.zeros(counts.shape[1], int)
             self.__rev_idx = np.zeros(0, int)
@@ -53,9 +54,10 @@ class Indexes(object):
         cs = np.cumsum(np.prod(counts, 0))
         self.__length = cs[-1]
         self.__fwd_idx = np.hstack(([0], cs[:-1]))
-        self.__rev_idx = np.zeros(self.__length,int)
-        non_empty_indices = \
-            np.arange(counts.shape[1]).astype(int)[np.prod(counts, 0) > 0]
+        self.__rev_idx = np.zeros(self.__length, int)
+        non_empty_indices = np.arange(counts.shape[1]).astype(int)[
+            np.prod(counts, 0) > 0
+        ]
         if len(non_empty_indices) > 0:
             self.__rev_idx[self.__fwd_idx[non_empty_indices[0]]] = non_empty_indices[0]
             if len(non_empty_indices) > 1:
@@ -65,56 +67,57 @@ class Indexes(object):
             self.__idx = []
             indexes = np.arange(self.length) - self.__fwd_idx[self.__rev_idx]
             for i, count in enumerate(counts[:-1]):
-                modulos = np.prod(counts[(i+1):,:], 0)
+                modulos = np.prod(counts[(i + 1) :, :], 0)
                 self.__idx.append((indexes / modulos[self.__rev_idx]).astype(int))
                 indexes = indexes % modulos[self.__rev_idx]
             self.__idx.append(indexes)
             self.__idx = np.array(self.__idx)
-            
+
     @property
     def length(self):
-        '''The number of elements in all sub-objects
+        """The number of elements in all sub-objects
         
         Use this number to create an array that holds a value for each
         sub-object.
-        '''
+        """
         return self.__length
-    
+
     @property
     def fwd_idx(self):
-        '''The index to the first sub object per super-object
+        """The index to the first sub object per super-object
         
         Use the fwd_idx as part of the address of the sub-object.
-        '''
+        """
         return self.__fwd_idx
-    
+
     @property
     def rev_idx(self):
-        '''The index of the super-object per sub-object'''
+        """The index of the super-object per sub-object"""
         return self.__rev_idx
-    
+
     @property
     def idx(self):
-        '''For each sub-object, its indexes relative to the super-object array
+        """For each sub-object, its indexes relative to the super-object array
         
         This lets you find the axis coordinates of any place in a sub-object
         array. For instance, if you have 2-d arrays of sub-objects,
         index.idx[0],index.idx[1] gives the coordinates of each sub-object
         in its array.
-        '''
+        """
         return self.__idx
 
     @property
     def counts(self):
-        '''The dimensions for each object along each of the axes
+        """The dimensions for each object along each of the axes
         
         The same values are stored here as are in the counts
         passed into the constructor.
-        '''
+        """
         return self.__counts
 
+
 def all_pairs(n):
-    '''Return an (n*(n - 1)) x 2 array of all non-identity pairs of n things
+    """Return an (n*(n - 1)) x 2 array of all non-identity pairs of n things
     
     n - # of things
     
@@ -128,11 +131,11 @@ def all_pairs(n):
      [1, 2],
      [2, 0],
      [2, 1]]
-     '''
+     """
     # Get all against all
     i, j = [x.flatten() for x in np.mgrid[0:n, 0:n]]
     # Eliminate the diagonal of i == j
-    i, j = [x[i != j] for x in (i,j)]
+    i, j = [x[i != j] for x in (i, j)]
     # Order by smallest of i or j first, then j then i for neatness
     order = np.lexsort((j, i, np.maximum(i, j)))
     return np.column_stack((i[order], j[order]))

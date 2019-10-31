@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import numpy
 
+
 def princomp(x):
     """Determine the principal components of a vector of measurements
     
@@ -13,14 +14,12 @@ def princomp(x):
     Analysis", Shlens, 2005 http://www.snl.salk.edu/~shlens/pub/notes/pca.pdf
     (unpublished)
     """
-    
-    (M,N)  = x.shape
-    Mean   = x.mean(0)
-    y      = x - Mean
-    cov    = numpy.dot(y.transpose(),y) / (M-1)
-    (V,PC) = numpy.linalg.eig(cov)
-    order  = (-V).argsort()
-    coeff  = PC[:,order]
+
+    (M, N) = x.shape
+    Mean = x.mean(0)
+    y = x - Mean
+    cov = numpy.dot(y.transpose(), y) / (M - 1)
+    (V, PC) = numpy.linalg.eig(cov)
+    order = (-V).argsort()
+    coeff = PC[:, order]
     return coeff
-    
-    

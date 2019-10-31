@@ -37,10 +37,7 @@ def euclidean_dist(point1, point2):
 
 
 class NeighbourMovementTrackingParameters(object):
-    parameters_nbrs = {
-        "nbrs_number": 6,
-        "nbrs_maxdist": 30
-    }
+    parameters_nbrs = {"nbrs_number": 6, "nbrs_maxdist": 30}
 
     # max_distance is not scaled by avgCellDiameter as it solely depends on the image motion
 
@@ -48,27 +45,24 @@ class NeighbourMovementTrackingParameters(object):
         "avgCellDiameter": 35,
         "iterations": 20,
         "big_size": 200,
-        "max_distance": 300
+        "max_distance": 300,
     }
 
     parameters_cost_initial = {
         "check_if_big": False,
         "default_empty_cost": 15,
         "default_empty_reliable_cost_mult": 2.5,
-        "area_weight": 25
+        "area_weight": 25,
     }
 
     parameters_cost_iteration = {
         "check_if_big": True,
         "default_empty_cost": 15,
         "default_empty_reliable_cost_mult": 2,
-        "area_weight": 30
+        "area_weight": 30,
     }
 
-    parameters_cell_features = {
-        "reliable_area": 150,
-        "reliable_distance": 30
-    }
+    parameters_cell_features = {"reliable_area": 150, "reliable_distance": 30}
 
 
 class CellFeatures(object):
@@ -82,7 +76,9 @@ class CellFeatures(object):
     """
 
     def __init__(self, center, area, number, image_size):
-        self.parameters = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cell_features)
+        self.parameters = copy.deepcopy(
+            NeighbourMovementTrackingParameters.parameters_cell_features
+        )
 
         self.center = center
 
@@ -96,7 +92,14 @@ class CellFeatures(object):
         return self.__repr__()
 
     def __repr__(self):
-        return str(self.number) + ": " + "Center is " + str(self.center) + ", Area is " + str(self.area)
+        return (
+            str(self.number)
+            + ": "
+            + "Center is "
+            + str(self.center)
+            + ", Area is "
+            + str(self.area)
+        )
 
     def distance(self, to_cell):
         return euclidean_dist(self.center, to_cell.center)
@@ -110,18 +113,21 @@ class CellFeatures(object):
         """
         labels = labels.astype(int)
 
-        areas = scipy.ndimage.measurements.sum(labels != 0, labels, list(range(1, numpy.max(labels) + 1)))
+        areas = scipy.ndimage.measurements.sum(
+            labels != 0, labels, list(range(1, numpy.max(labels) + 1))
+        )
 
         existing_labels = [i for (i, a) in enumerate(areas, 1) if a > 0]
 
         existing_areas = [a for a in areas if a > 0]
 
-        existing_centers = scipy.ndimage.measurements.center_of_mass(labels != 0, labels, existing_labels)
+        existing_centers = scipy.ndimage.measurements.center_of_mass(
+            labels != 0, labels, existing_labels
+        )
 
         zipped = zip(existing_labels, existing_centers, existing_areas)
 
-        features = [CellFeatures(c, a, i, labels.shape)
-                    for i, c, a in zipped if a != 0]
+        features = [CellFeatures(c, a, i, labels.shape) for i, c, a in zipped if a != 0]
 
         return features
 
@@ -136,7 +142,20 @@ class CellFeatures(object):
         if min_size == -1:
             min_size = self.parameters["reliable_area"]
 
-        return (self.area > min_size and min(self.center[0], min(self.center[1], min(self.image_size[0] - self.center[0], self.image_size[1] - self.center[1]))) > self.parameters["reliable_distance"])
+        return (
+            self.area > min_size
+            and min(
+                self.center[0],
+                min(
+                    self.center[1],
+                    min(
+                        self.image_size[0] - self.center[0],
+                        self.image_size[1] - self.center[1],
+                    ),
+                ),
+            )
+            > self.parameters["reliable_distance"]
+        )
 
 
 class Trace(object):
@@ -158,14 +177,21 @@ class Trace(object):
 
         self.cell_motion = euclidean_dist(frame1_cell.center, frame2_cell.center)
 
-        self.cell_motion_vector = (frame1_cell.center[0] - frame2_cell.center[0], frame1_cell.center[1] - frame2_cell.center[1])
+        self.cell_motion_vector = (
+            frame1_cell.center[0] - frame2_cell.center[0],
+            frame1_cell.center[1] - frame2_cell.center[1],
+        )
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return "Trace: cells are " + str((self.previous_cell.number, self.current_cell.number)) + " motion is " + str(
-            self.cell_motion)
+        return (
+            "Trace: cells are "
+            + str((self.previous_cell.number, self.current_cell.number))
+            + " motion is "
+            + str(self.cell_motion)
+        )
 
     @staticmethod
     def from_detections_assignment(detections_1, detections_2, assignments):
@@ -185,15 +211,25 @@ class Trace(object):
 class NeighbourMovementTracking(object):
     def __init__(self):
         # Copy initial parameters.
-        self.parameters_nbrs = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_nbrs)
+        self.parameters_nbrs = copy.deepcopy(
+            NeighbourMovementTrackingParameters.parameters_nbrs
+        )
 
-        self.parameters_tracking = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_tracking)
+        self.parameters_tracking = copy.deepcopy(
+            NeighbourMovementTrackingParameters.parameters_tracking
+        )
 
-        self.parameters_cost_initial = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cost_initial)
+        self.parameters_cost_initial = copy.deepcopy(
+            NeighbourMovementTrackingParameters.parameters_cost_initial
+        )
 
-        self.parameters_cost_iteration = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cost_iteration)
+        self.parameters_cost_iteration = copy.deepcopy(
+            NeighbourMovementTrackingParameters.parameters_cost_iteration
+        )
 
-        self.parameters_cell_features = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cell_features)
+        self.parameters_cell_features = copy.deepcopy(
+            NeighbourMovementTrackingParameters.parameters_cell_features
+        )
 
     def run_tracking(self, label_image_1, label_image_2):
         """
@@ -215,7 +251,9 @@ class NeighbourMovementTracking(object):
             traces = self.improve_traces(detections_1, detections_2, traces)
 
         # Filter traces.
-        return [(trace.previous_cell.number, trace.current_cell.number) for trace in traces]
+        return [
+            (trace.previous_cell.number, trace.current_cell.number) for trace in traces
+        ]
 
     def is_cell_big(self, cell_detection):
         """
@@ -225,7 +263,10 @@ class NeighbourMovementTracking(object):
 
         @return:
         """
-        return cell_detection.area > self.parameters_tracking["big_size"] * self.scale * self.scale
+        return (
+            cell_detection.area
+            > self.parameters_tracking["big_size"] * self.scale * self.scale
+        )
 
     @staticmethod
     def derive_detections(label_image):
@@ -238,13 +279,20 @@ class NeighbourMovementTracking(object):
 
     def find_initials_traces(self, detections_1, detections_2):
         # calculate initial costs
-        costs = self.calculate_costs(detections_1, detections_2, self.calculate_basic_cost, self.parameters_cost_initial)
+        costs = self.calculate_costs(
+            detections_1,
+            detections_2,
+            self.calculate_basic_cost,
+            self.parameters_cost_initial,
+        )
 
         # solve tracking problem
         assignment = self.solve_assignement(costs)
 
         # create tracks
-        traces = Trace.from_detections_assignment(detections_1, detections_2, assignment)
+        traces = Trace.from_detections_assignment(
+            detections_1, detections_2, assignment
+        )
 
         return traces
 
@@ -289,7 +337,12 @@ class NeighbourMovementTracking(object):
             distance = euclidean_dist(d1.center, d2.center) / self.scale
         else:
             # it is not in motions if there is no trace (cell is considered to vanish)
-            distance = min([euclidean_dist(my_motion, motions[n]) for n in my_nbrs_with_motion]) / self.scale
+            distance = (
+                min(
+                    [euclidean_dist(my_motion, motions[n]) for n in my_nbrs_with_motion]
+                )
+                / self.scale
+            )
 
         area_change = 1 - min(d1.area, d2.area) / max(d1.area, d2.area)
 
@@ -313,30 +366,51 @@ class NeighbourMovementTracking(object):
         cost_matrix = numpy.zeros((size_sum, size_sum))
 
         # lost cells cost
-        cost_matrix[0:len(detections_1), len(detections_2):size_sum] = params["default_empty_cost"] + (1 - numpy.eye(
-            len(detections_1), len(detections_1))) * invalid_match
+        cost_matrix[0 : len(detections_1), len(detections_2) : size_sum] = (
+            params["default_empty_cost"]
+            + (1 - numpy.eye(len(detections_1), len(detections_1))) * invalid_match
+        )
 
         # new cells cost
-        cost_matrix[len(detections_1):size_sum, 0:len(detections_2)] = params["default_empty_cost"] + (1 - numpy.eye(
-            len(detections_2), len(detections_2))) * invalid_match
+        cost_matrix[len(detections_1) : size_sum, 0 : len(detections_2)] = (
+            params["default_empty_cost"]
+            + (1 - numpy.eye(len(detections_2), len(detections_2))) * invalid_match
+        )
 
         # increase costs for reliable detections
-        for row in [i for i in range(0, len(detections_1)) if detections_1[i].is_reliable() and (
-            not params["check_if_big"] or self.is_cell_big(detections_1[i]))]:
-            cost_matrix[row, len(detections_2):size_sum] *= params["default_empty_reliable_cost_mult"]
+        for row in [
+            i
+            for i in range(0, len(detections_1))
+            if detections_1[i].is_reliable()
+            and (not params["check_if_big"] or self.is_cell_big(detections_1[i]))
+        ]:
+            cost_matrix[row, len(detections_2) : size_sum] *= params[
+                "default_empty_reliable_cost_mult"
+            ]
 
-        for col in [i for i in range(0, len(detections_2)) if detections_2[i].is_reliable() and (
-            not params["check_if_big"] or self.is_cell_big(detections_2[i]))]:
-            cost_matrix[len(detections_1):size_sum, col] *= params["default_empty_reliable_cost_mult"]
+        for col in [
+            i
+            for i in range(0, len(detections_2))
+            if detections_2[i].is_reliable()
+            and (not params["check_if_big"] or self.is_cell_big(detections_2[i]))
+        ]:
+            cost_matrix[len(detections_1) : size_sum, col] *= params[
+                "default_empty_reliable_cost_mult"
+            ]
 
         # calculate cost of matching cells
         def cost_if_not_too_far(detection_1, detection_2):
-            if detection_1.distance(detection_2) <= self.parameters_tracking["max_distance"]:
+            if (
+                detection_1.distance(detection_2)
+                <= self.parameters_tracking["max_distance"]
+            ):
                 return calculate_match_cost(detection_1, detection_2)
             else:
                 return invalid_match
 
-        cost_matrix[0:len(detections_1), 0:len(detections_2)] = [[cost_if_not_too_far(d1, d2) for d2 in detections_2] for d1 in detections_1]
+        cost_matrix[0 : len(detections_1), 0 : len(detections_2)] = [
+            [cost_if_not_too_far(d1, d2) for d2 in detections_2] for d1 in detections_1
+        ]
 
         return cost_matrix
 
@@ -344,19 +418,38 @@ class NeighbourMovementTracking(object):
         # calculate cell motion and neighbours
         cells_motion = dict([(t.previous_cell, t.cell_motion_vector) for t in traces])
 
-        neighbours = dict([(d, NeighbourMovementTracking.find_closest_neighbours(d, detections_1, self.parameters_nbrs["nbrs_number"], self.parameters_nbrs["nbrs_maxdist"] * self.scale)) for d in detections_1])
+        neighbours = dict(
+            [
+                (
+                    d,
+                    NeighbourMovementTracking.find_closest_neighbours(
+                        d,
+                        detections_1,
+                        self.parameters_nbrs["nbrs_number"],
+                        self.parameters_nbrs["nbrs_maxdist"] * self.scale,
+                    ),
+                )
+                for d in detections_1
+            ]
+        )
 
         # calculate localised costs
-        cost_function = lambda d1, d2: self.calculate_localised_cost(d1, d2, neighbours, cells_motion)
+        cost_function = lambda d1, d2: self.calculate_localised_cost(
+            d1, d2, neighbours, cells_motion
+        )
 
-        localized_costs = self.calculate_costs(detections_1, detections_2, cost_function, self.parameters_cost_iteration)
+        localized_costs = self.calculate_costs(
+            detections_1, detections_2, cost_function, self.parameters_cost_iteration
+        )
 
         # solve tracking problem
 
         assignment = self.solve_assignement(localized_costs)
 
         # create tracks
-        improved_traces = Trace.from_detections_assignment(detections_1, detections_2, assignment)
+        improved_traces = Trace.from_detections_assignment(
+            detections_1, detections_2, assignment
+        )
 
         return improved_traces
 
@@ -375,7 +468,12 @@ class NeighbourMovementTracking(object):
 
         n = costs.shape[0]
 
-        pairs = [(i, j) for i in range(0, n) for j in range(0, n) if costs[i, j] < invalid_match]
+        pairs = [
+            (i, j)
+            for i in range(0, n)
+            for j in range(0, n)
+            if costs[i, j] < invalid_match
+        ]
 
         costs_list = [costs[i, j] for (i, j) in pairs]
 

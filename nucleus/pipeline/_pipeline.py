@@ -1,6 +1,7 @@
 import bisect
 import datetime
 import hashlib
+import io
 import logging
 import os
 import os.path
@@ -1179,6 +1180,7 @@ class Pipeline:
                         )
 
                         return
+
             # Close cached readers.
             # This may play a big role with cluster deployments or long standing jobs
             # by freeing up memory and resources.

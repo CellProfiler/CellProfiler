@@ -1,3 +1,10 @@
+"""
+Functions to read and write CellProfiler pipelines.
+
+pipeline._io’s API matches the APIs exposed by the json, marshal, and pickle
+standard library modules.
+"""
+
 import re
 
 import nucleus.pipeline
@@ -9,25 +16,18 @@ def dump(pipeline, fp, save_image_plane_details=True, version=5):
 
 
 def dump_v5(pipeline, fp, save_image_plane_details):
-    if hasattr(fp, "write"):
-        fd = fp
-        needs_close = False
-    else:
-        fd = open(fp, "wt")
-        needs_close = True
-
     if len(pipeline.file_list) == 0:
         save_image_plane_details = False
 
     date_revision = int(re.sub(r"\.|rc\d", "", nucleus.__version__))
     module_count = len(pipeline.modules())
 
-    fd.write("CellProfiler Pipeline: http://www.cellprofiler.org\n")
-    fd.write(f"Version:{nucleus.pipeline.NATIVE_VERSION:d}\n")
-    fd.write(f"DateRevision:{date_revision:d}\n")
-    fd.write(f"GitHash:{''}\n")
-    fd.write(f"ModuleCount:{module_count:d}\n")
-    fd.write(f"HasImagePlaneDetails:{save_image_plane_details}\n")
+    fp.write("CellProfiler Pipeline: http://www.cellprofiler.org\n")
+    fp.write(f"Version:{nucleus.pipeline.NATIVE_VERSION:d}\n")
+    fp.write(f"DateRevision:{date_revision:d}\n")
+    fp.write(f"GitHash:{''}\n")
+    fp.write(f"ModuleCount:{module_count:d}\n")
+    fp.write(f"HasImagePlaneDetails:{save_image_plane_details}\n")
 
     default_module_attributes = (
         "module_num",
@@ -41,7 +41,7 @@ def dump_v5(pipeline, fp, save_image_plane_details):
     )
 
     for module in pipeline.modules():
-        fd.write("\n")
+        fp.write("\n")
 
         module_attributes = []
 
@@ -50,15 +50,27 @@ def dump_v5(pipeline, fp, save_image_plane_details):
 
             module_attributes += [f"{default_module_attribute}:{attribute}"]
 
-        fd.write(f"{module.module_name}:[{'|'.join(module_attributes)}]\n")
+        fp.write(f"{module.module_name}:[{'|'.join(module_attributes)}]\n")
 
         for setting in module.settings():
-            fd.write(f"    {setting.text}:{setting.unicode_value}\n")
+            fp.write(f"    {setting.text}:{setting.unicode_value}\n")
 
     if save_image_plane_details:
-        fd.write("\n")
+        fp.write("\n")
 
-        nucleus.pipeline.write_file_list(fd, pipeline.file_list)
+        nucleus.pipeline.write_file_list(fp, pipeline.file_list)
 
-    if needs_close:
-        fd.close()
+
+# TODO: implement `dumps`
+def dumps():
+    raise NotImplementedError
+
+
+# TODO: implement `load`
+def load():
+    raise NotImplementedError
+
+
+# TODO: implement `loads`
+def loads():
+    raise NotImplementedError

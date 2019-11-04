@@ -1,9 +1,4 @@
-import io
 import re
-import os
-import tempfile
-import urllib.parse
-import urllib.request
 
 import nucleus.measurement
 import nucleus.pipeline

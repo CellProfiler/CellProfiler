@@ -301,7 +301,7 @@ class EditObjectsDialog(wx.Dialog):
         #
         self.orig_axes = self.figure.add_subplot(1, 1, 1)
         self.orig_axes.set_zorder(1)  # preferentially select on click.
-        self.orig_axes._adjustable = "box-forced"
+        self.orig_axes._adjustable = "box"
         self.orig_axes.set_title(
             self.title,
             fontname=cellprofiler.preferences.get_title_font_name(),

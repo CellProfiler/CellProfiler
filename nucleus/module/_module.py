@@ -419,8 +419,6 @@ class Module:
         modules have been run (creating whatever images and measurements
         those modules create) previous to a given module.
         """
-        if self.__module_num == -1:
-            raise Exception("Module has not been created")
         return self.__module_num
 
     def set_module_num(self, module_num):

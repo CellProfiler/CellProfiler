@@ -2946,7 +2946,7 @@ class Pipeline:
                     if key in providers["measurementsgroup"]:
                         for pmodule, psetting in providers["measurementsgroup"][key]:
                             if pmodule.module_num < module.module_num:
-                                dependency = nucleus.pipeline.dependency.MeasurementDependeny(
+                                dependency = nucleus.pipeline.MeasurementDependency(
                                     pmodule,
                                     module,
                                     object_name,
@@ -2954,6 +2954,7 @@ class Pipeline:
                                     psetting,
                                     setting,
                                 )
+
                                 result.append(dependency)
                                 break
         return result

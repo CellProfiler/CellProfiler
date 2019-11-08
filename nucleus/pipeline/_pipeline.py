@@ -1133,7 +1133,11 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = nucleus.pipeline.event.RunExceptionEvent(exception, module, tb)
+                        event = nucleus.pipeline.event.RunException(
+                            exception,
+                            module,
+                            tb
+                        )
 
                         self.notify_listeners(event)
 

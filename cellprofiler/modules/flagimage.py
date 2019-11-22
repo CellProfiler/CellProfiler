@@ -93,7 +93,7 @@ When set to *%(YES)s*, this option allows you to bypass skipping on the last
 cycle of an image group.  This behavior is usually not desired, but may be 
 useful when using SaveImages 'Save on last cycle' option for an image made
 by any other module than MakeProjection, CorrectIlluminationCalculate, and Tile.
-""" % globals()))
+""" % globals())
 
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()
@@ -603,7 +603,7 @@ image is not flagged.
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         if (not ok) and flag.wants_skip:
             #TODO FIX
-            workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1
+            #workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1
             workspace.disposition = cpw.DISPOSITION_SKIP
         return statistics
 

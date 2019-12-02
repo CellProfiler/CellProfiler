@@ -321,7 +321,7 @@ available colormaps can be seen `here`_.
             neighbor_has_pixels = has_pixels
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
-                neighbor_labels, neighbor_objects.segmented
+                neighbor_labels, neighbor_objects.small_removed_segmented
             )
             neighbor_has_pixels = (
                 np.bincount(neighbor_objects.small_removed_segmented.ravel())[1:] > 0
@@ -594,7 +594,10 @@ available colormaps can be seen `here`_.
                 )
                 distance_matrix = np.sqrt(di * di + dj * dj)
                 distance_matrix[~has_pixels, :] = np.inf
-                distance_matrix[:, ~neighbor_has_pixels] = np.inf
+                if self.neighbors_are_objects:
+                    distance_matrix[:, ~neighbor_has_pixels] = np.inf
+                else:
+                    distance_matrix[1, ~neighbor_has_pixels] = np.inf
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor

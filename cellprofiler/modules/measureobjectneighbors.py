@@ -716,6 +716,7 @@ available colormaps can be seen `here`_.
             workspace.display_data.neighbor_cm_name = neighbor_cm_name
             workspace.display_data.percent_touching_cm_name = percent_touching_cm_name
             workspace.display_data.orig_labels = objects.segmented
+            workspace.display_data.neighbor_labels = neighbor_objects.small_removed_segmented
             workspace.display_data.expanded_labels = expanded_labels
             workspace.display_data.object_mask = object_mask
             workspace.display_data.dimensions = dimensions
@@ -738,6 +739,7 @@ available colormaps can be seen `here`_.
         neighbor_cm.set_under((0, 0, 0))
         neighbor_cm = matplotlib.cm.ScalarMappable(cmap=neighbor_cm)
         if self.neighbors_are_objects:
+            expandplot_position = 0
             percent_touching_cm = get_colormap(
                 workspace.display_data.percent_touching_cm_name
             )
@@ -745,6 +747,14 @@ available colormaps can be seen `here`_.
             percent_touching_image = workspace.display_data.percent_touching_image
             percent_touching_image[~object_mask] = -1
             percent_touching_cm = matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)
+        else:
+            expandplot_position = 1
+            figure.subplot_imshow_labels(
+                1,
+                0,
+                workspace.display_data.neighbor_labels,
+                "Neighbors: %s" % self.neighbors_name.value,
+            )
         if np.any(object_mask):
             figure.subplot_imshow(
                 0,
@@ -798,7 +808,7 @@ available colormaps can be seen `here`_.
         if self.distance_method == D_EXPAND:
             figure.subplot_imshow_labels(
                 1,
-                0,
+                expandplot_position,
                 expanded_labels,
                 "Expanded %s" % self.object_name.value,
                 sharexy=figure.subplot(0, 0),

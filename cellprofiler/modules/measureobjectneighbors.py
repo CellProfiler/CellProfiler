@@ -310,7 +310,7 @@ available colormaps can be seen `here`_.
             neighbor_has_pixels = has_pixels
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
-                neighbor_labels, neighbor_objects.segmented)
+                neighbor_labels, neighbor_objects.small_removed_segmented)
             neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
@@ -361,9 +361,7 @@ available colormaps can be seen `here`_.
             # nearest neighbors
             #
             ocenters = centers_of_labels(objects.small_removed_segmented).transpose()
-            ncenters = centers_of_labels(
-                neighbor_objects.small_removed_segmented
-            ).transpose()
+            ncenters = centers_of_labels(neighbor_labels).transpose()
             areas = fix(scind.sum(np.ones(labels.shape), labels, object_indexes))
             perimeter_outlines = outline(labels)
             perimeters = fix(

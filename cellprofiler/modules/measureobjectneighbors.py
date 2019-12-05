@@ -580,10 +580,7 @@ available colormaps can be seen `here`_.
                 )
                 distance_matrix = np.sqrt(di * di + dj * dj)
                 distance_matrix[~has_pixels, :] = np.inf
-                if self.neighbors_are_objects:
-                    distance_matrix[:, ~neighbor_has_pixels] = np.inf
-                else:
-                    distance_matrix[1, ~neighbor_has_pixels] = np.inf
+                distance_matrix[:, ~neighbor_has_pixels] = np.inf
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor

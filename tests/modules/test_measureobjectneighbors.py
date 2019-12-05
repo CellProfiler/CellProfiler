@@ -846,8 +846,8 @@ def test_small_removed_same():
         objects, cellprofiler.modules.measureobjectneighbors.D_EXPAND, distance=1
     )
     no = workspace.object_set.get_objects(OBJECTS_NAME)
-    no.unedited_segmented = objects_unedited
-    no.small_removed_segmented = objects
+    no.small_removed_segmented = objects_unedited
+    no.segmented = objects
     module.run(workspace)
     m = workspace.measurements
     v = m[

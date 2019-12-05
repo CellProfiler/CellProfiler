@@ -246,6 +246,13 @@ available colormaps can be seen `here`_.
 .. _here: http://matplotlib.org/examples/color/colormaps_reference.html""",
         )
 
+        self.wants_excluded_objects = cps.Binary('Consider objects discarded for touching image border?',
+                                                 True, doc="""\
+        When set to *%(YES)s*, objects which were previously discarded for touching the image borders will be considered
+        as potential object neighbours in this analysis. You may want to disable this if using object sets which were
+        further filtered, since those filters won't have been applied to the previously discarded objects.
+        """)
+
     def settings(self):
         return [
             self.object_name,
@@ -264,7 +271,7 @@ available colormaps can be seen `here`_.
         result = [self.object_name, self.neighbors_name, self.distance_method]
         if self.distance_method == D_WITHIN:
             result += [self.distance]
-        result += [self.wants_count_image]
+        result += [self.wants_excluded_objects, self.wants_count_image]
         if self.wants_count_image.value:
             result += [self.count_image_name, self.count_colormap]
         if self.neighbors_are_objects:
@@ -286,34 +293,16 @@ available colormaps can be seen `here`_.
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
-        assert isinstance(neighbor_objects, cpo.Objects)
         neighbor_labels = neighbor_objects.small_removed_segmented
-        #
-        # Need to add in labels touching border.
-        #
-        unedited_segmented = neighbor_objects.unedited_segmented
-        touching_border = np.zeros(np.max(unedited_segmented) + 1, bool)
-        touching_border[unedited_segmented[0, :]] = True
-        touching_border[unedited_segmented[-1, :]] = True
-        touching_border[unedited_segmented[:, 0]] = True
-        touching_border[unedited_segmented[:, -1]] = True
-        touching_border[0] = False
-        touching_border_mask = touching_border[unedited_segmented]
+        neighbor_kept_labels = neighbor_objects.segmented
+        assert isinstance(neighbor_objects, cpo.Objects)
+        if not self.wants_excluded_objects.value:
+            # Remove labels not present in kept segmentation while preserving object IDs.
+            mask = neighbor_kept_labels > 0
+            neighbor_labels[~mask] = 0
         nobjects = np.max(labels)
         nkept_objects = len(objects.indices)
-        nneighbors = np.max(neighbor_labels)
-        if np.any(touching_border) and np.all(
-            ~touching_border_mask[neighbor_labels != 0]
-        ):
-            # Add the border labels if any were excluded
-            touching_border_object_number = np.cumsum(touching_border) + np.max(
-                neighbor_labels
-            )
-            touching_border_mask = touching_border_mask & (neighbor_labels == 0)
-            neighbor_labels = neighbor_labels.copy().astype(np.int32)
-            neighbor_labels[touching_border_mask] = touching_border_object_number[
-                unedited_segmented[touching_border_mask]
-            ]
+        nneighbors = len(np.unique(neighbor_labels)) - 1
 
         _, object_numbers = objects.relate_labels(labels, kept_labels)
         if self.neighbors_are_objects:
@@ -321,11 +310,8 @@ available colormaps can be seen `here`_.
             neighbor_has_pixels = has_pixels
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
-                neighbor_labels, neighbor_objects.small_removed_segmented
-            )
-            neighbor_has_pixels = (
-                np.bincount(neighbor_objects.small_removed_segmented.ravel())[1:] > 0
-            )
+                neighbor_labels, neighbor_objects.segmented)
+            neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
         first_object_number = np.zeros((nobjects,), int)
@@ -716,7 +702,7 @@ available colormaps can be seen `here`_.
             workspace.display_data.neighbor_cm_name = neighbor_cm_name
             workspace.display_data.percent_touching_cm_name = percent_touching_cm_name
             workspace.display_data.orig_labels = objects.segmented
-            workspace.display_data.neighbor_labels = neighbor_objects.small_removed_segmented
+            workspace.display_data.neighbor_labels = neighbor_labels
             workspace.display_data.expanded_labels = expanded_labels
             workspace.display_data.object_mask = object_mask
             workspace.display_data.dimensions = dimensions

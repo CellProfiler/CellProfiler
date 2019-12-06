@@ -103,6 +103,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
                     cellprofiler.measurement.C_OBJECTS_CHANNEL,
                     cellprofiler.measurement.C_METADATA,
                     cellprofiler.modules.namesandtypes.M_IMAGE_SET,
+                    "Group_Length"
                 )
             ]
         )

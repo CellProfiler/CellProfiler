@@ -270,13 +270,13 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             groups.grouping_metadata[i].metadata_choice.choices.extend(choices)
             groups.grouping_metadata[i].metadata_choice.value = choice
         columns = groups.get_measurement_columns(None)
-        self.assertEqual(len(columns), 4)
+        self.assertEqual(len(columns), 5)
         column = columns[0]
         self.assertEqual(column[0], cpmeas.EXPERIMENT)
         self.assertEqual(column[1], cpmeas.M_GROUPING_TAGS)
         self.assertTrue(column[2].startswith(cpmeas.COLTYPE_VARCHAR))
         column_metadata = []
-        for column in columns[1:]:
+        for column in columns[2:]:
             self.assertEqual(column[0], cpmeas.IMAGE)
             self.assertEqual(column[2], cpmeas.COLTYPE_VARCHAR)
             column_metadata.append(column[1])

@@ -302,7 +302,7 @@ available colormaps can be seen `here`_.
             neighbor_labels[~mask] = 0
         nobjects = np.max(labels)
         nkept_objects = len(objects.indices)
-        nneighbors = len(np.unique(neighbor_labels)) - 1
+        nneighbors = np.max(neighbor_labels)
 
         _, object_numbers = objects.relate_labels(labels, kept_labels)
         if self.neighbors_are_objects:

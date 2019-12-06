@@ -602,8 +602,8 @@ image is not flagged.
         assert isinstance(m, cpmeas.Measurements)
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         if (not ok) and flag.wants_skip:
-            #TODO FIX
-            #workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1
+            if self.ignore_flag_on_last and (m.group_length-m.group_index)==1:
+                workspace.disposition = cpw.DISPOSITION_CONTINUE
             workspace.disposition = cpw.DISPOSITION_SKIP
         return statistics
 

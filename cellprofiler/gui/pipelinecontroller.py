@@ -2901,6 +2901,8 @@ class PipelineController(object):
                 cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index)
             self.__debug_measurements.add_image_measurement(
                 cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index)
+            self.__debug_measurements.add_image_measurement(
+                "Group_Length", len(self.__groupings[self.__grouping_index][1]))
             workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline,
                                                          module,
                                                          self.__debug_measurements,

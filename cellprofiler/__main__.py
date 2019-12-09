@@ -69,6 +69,24 @@ def main(args=None):
 
     options, args = parse_args(args)
 
+    if any(options.pipeline_filename.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
+        import urllib2
+        temp_pipe_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.cppipe')
+        downloaded_pipeline = urllib2.urlopen(options.pipeline_filename)
+        with open(temp_pipe_file.name,'w') as a:
+            for line in downloaded_pipeline:
+                a.write(line)
+        options.pipeline_filename = temp_pipe_file.name
+
+    if any(options.image_set_file.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
+        import urllib2
+        temp_csv_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+        downloaded_csv = urllib2.urlopen(options.image_set_file)
+        with open(temp_csv_file.name,'w') as a:
+            for line in downloaded_csv:
+                a.write(line)
+        options.image_set_file = temp_csv_file.name
+
     if options.print_version:
         __version__(exit_code)
 

@@ -259,6 +259,7 @@ available colormaps can be seen `here`_.
             self.neighbors_name,
             self.distance_method,
             self.distance,
+            self.wants_excluded_objects,
             self.wants_count_image,
             self.count_image_name,
             self.count_colormap,

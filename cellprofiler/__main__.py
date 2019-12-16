@@ -80,12 +80,21 @@ def main(args=None):
 
     if any(options.image_set_file.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
         import urllib2
-        temp_csv_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
-        downloaded_csv = urllib2.urlopen(options.image_set_file)
-        with open(temp_csv_file.name,'w') as a:
-            for line in downloaded_csv:
+        temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+        downloaded_set_csv = urllib2.urlopen(options.image_set_file)
+        with open(temp_set_file.name,'w') as a:
+            for line in downloaded_set_csv:
                 a.write(line)
-        options.image_set_file = temp_csv_file.name
+        options.image_set_file = temp_set_file.name
+
+    if any(options.data_file.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
+        import urllib2
+        temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+        downloaded_data_csv = urllib2.urlopen(options.data_file)
+        with open(temp_data_file.name,'w') as a:
+            for line in downloaded_data_csv:
+                a.write(line)
+        options.data_file = temp_data_file.name
 
     if options.print_version:
         __version__(exit_code)

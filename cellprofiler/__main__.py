@@ -33,6 +33,7 @@ import pkg_resources
 import re
 import site
 import tempfile
+import urlparse
 import six.moves
 
 OMERO_CK_HOST = "host"
@@ -69,7 +70,8 @@ def main(args=None):
 
     options, args = parse_args(args)
 
-    if any(options.pipeline_filename.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
+    o = urlparse.urlparse(options.pipeline_filename)
+    if o[0] in ("ftp", "http", "https"):
         import urllib2
         temp_pipe_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.cppipe')
         downloaded_pipeline = urllib2.urlopen(options.pipeline_filename)
@@ -78,23 +80,27 @@ def main(args=None):
                 a.write(line)
         options.pipeline_filename = temp_pipe_file.name
 
-    if any(options.image_set_file.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
-        import urllib2
-        temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
-        downloaded_set_csv = urllib2.urlopen(options.image_set_file)
-        with open(temp_set_file.name,'w') as a:
-            for line in downloaded_set_csv:
-                a.write(line)
-        options.image_set_file = temp_set_file.name
+    if options.image_set_file:
+        o = urlparse.urlparse(options.image_set_file)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+            downloaded_set_csv = urllib2.urlopen(options.image_set_file)
+            with open(temp_set_file.name,'w') as a:
+                for line in downloaded_set_csv:
+                    a.write(line)
+            options.image_set_file = temp_set_file.name
 
-    if any(options.data_file.startswith(protocol) for protocol in ('http', 'https', 'ftp')):
-        import urllib2
-        temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
-        downloaded_data_csv = urllib2.urlopen(options.data_file)
-        with open(temp_data_file.name,'w') as a:
-            for line in downloaded_data_csv:
-                a.write(line)
-        options.data_file = temp_data_file.name
+    if options.data_file:
+        o = urlparse.urlparse(options.data_file)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+            downloaded_data_csv = urllib2.urlopen(options.data_file)
+            with open(temp_data_file.name,'w') as a:
+                for line in downloaded_data_csv:
+                    a.write(line)
+            options.data_file = temp_data_file.name
 
     if options.print_version:
         __version__(exit_code)

@@ -1380,7 +1380,7 @@ class Measurements(object):
 
         fd = fd_or_file
 
-        to_save = [GROUP_NUMBER, GROUP_INDEX]
+        to_save = [GROUP_NUMBER, GROUP_INDEX, "Group_Length"]
         to_save_prefixes = [
             C_URL, C_PATH_NAME, C_FILE_NAME, C_SERIES, C_FRAME,
             C_CHANNEL, C_OBJECTS_URL, C_OBJECTS_PATH_NAME,

@@ -85,8 +85,7 @@ class ConvtesterMixin:
                 cellprofiler.measurement.C_CHANNEL,
                 cellprofiler.measurement.C_OBJECTS_CHANNEL,
                 cellprofiler.measurement.C_METADATA,
-                cellprofiler.modules.namesandtypes.M_IMAGE_SET,
-                "Group_Length"
+                cellprofiler.modules.namesandtypes.M_IMAGE_SET
             )])]
         self.assertItemsEqual(ffexpected, ff2)
         for feature in ff1:

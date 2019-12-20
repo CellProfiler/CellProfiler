@@ -493,7 +493,6 @@ def test_get_measurement_columns_neighbors():
                 scale,
             )
             for feature in cellprofiler.modules.measureobjectneighbors.M_ALL
-            if feature != cellprofiler.modules.measureobjectneighbors.M_PERCENT_TOUCHING
         ]
         assert len(columns) == len(features)
         for column in columns:
@@ -636,6 +635,64 @@ def test_two_neighbors():
     )
     assert len(v) == 1
     assert round(abs(v[0] - 90), 7) == 0
+
+
+def test_different_neighbors_touching(self):
+    labels = np.zeros((20, 10), int)
+    olabels[2:5, 2:5] = 1
+    nlabels = np.zeros((20, 10), int)
+    nlabels[3, 5] = 2
+    nlabels[5, 2] = 1
+    workspace, module = make_workspace(
+        olabels,
+        cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
+        distance=0,
+        neighbors_labels=nlabels,
+    )
+    assert isinstance(module, cellprofiler.modules.measureobjectneighbors.MeasureObjectNeighbors)
+    module.run(workspace)
+    m = workspace.measurements
+    assert isinstance(m, cellprofiler.measurement.Measurements)
+    v = m.get_current_measurement(
+        OBJECTS_NAME,
+        module.get_measurement_name(
+            cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_OBJECT_NUMBER
+        ),
+    )
+    assert len(v) == 1
+    assert v[0] == 2
+    v = m.get_current_measurement(
+        OBJECTS_NAME,
+        module.get_measurement_name(
+            cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_OBJECT_NUMBER
+        ),
+    )
+    assert len(v) == 1
+    assert v[0] == 1
+    v = m.get_current_measurement(
+        OBJECTS_NAME,
+        module.get_measurement_name(
+            cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_DISTANCE
+        ),
+    )
+    assert len(v) == 1
+    assert v[0] == 2
+    v = m.get_current_measurement(
+        OBJECTS_NAME,
+        module.get_measurement_name(
+            cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_DISTANCE
+        ),
+    )
+    assert len(v) == 1
+    assert round(v[0], 7) == round(5**(.5), 7)
+    v = m.get_current_measurement(
+        OBJECTS_NAME,
+        module.get_measurement_name(
+            cellprofiler.modules.measureobjectneighbors.M_PERCENT_TOUCHING
+        ),
+    )
+    assert len(v) == 1
+    assert round(v[0], 7) == 62.5
 
 
 def test_relationships():

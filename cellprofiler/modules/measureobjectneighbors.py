@@ -275,10 +275,9 @@ available colormaps can be seen `here`_.
         result += [self.wants_excluded_objects, self.wants_count_image]
         if self.wants_count_image.value:
             result += [self.count_image_name, self.count_colormap]
-        if self.neighbors_are_objects:
-            result += [self.wants_percent_touching_image]
-            if self.wants_percent_touching_image.value:
-                result += [self.touching_image_name, self.touching_colormap]
+        result += [self.wants_percent_touching_image]
+        if self.wants_percent_touching_image.value:
+            result += [self.touching_image_name, self.touching_colormap]
         return result
 
     @property
@@ -503,36 +502,39 @@ available colormaps can be seen `here`_.
                 if nc > 0:
                     first_objects.append(np.ones(nc, int) * object_number)
                     second_objects.append(neighbors)
+                #
+                # Find the # of overlapping pixels. Dilate the neighbors
+                # and see how many pixels overlap our image. Use a 3x3
+                # structuring element to expand the overlapping edge
+                # into the perimeter.
+                #
+                if dimensions == 2:
+                    outline_patch = (
+                        perimeter_outlines[
+                            minimums_i[index] : maximums_i[index],
+                            minimums_j[index] : maximums_j[index],
+                        ]
+                        == object_number
+                    )
+                else:
+                    outline_patch = (
+                        perimeter_outlines[
+                            minimums_k[index] : maximums_k[index],
+                            minimums_i[index] : maximums_i[index],
+                            minimums_j[index] : maximums_j[index],
+                        ]
+                        == object_number
+                    )
                 if self.neighbors_are_objects:
-                    #
-                    # Find the # of overlapping pixels. Dilate the neighbors
-                    # and see how many pixels overlap our image. Use a 3x3
-                    # structuring element to expand the overlapping edge
-                    # into the perimeter.
-                    #
-                    if dimensions == 2:
-                        outline_patch = (
-                            perimeter_outlines[
-                                minimums_i[index] : maximums_i[index],
-                                minimums_j[index] : maximums_j[index],
-                            ]
-                            == object_number
-                        )
-                    else:
-                        outline_patch = (
-                            perimeter_outlines[
-                                minimums_k[index] : maximums_k[index],
-                                minimums_i[index] : maximums_i[index],
-                                minimums_j[index] : maximums_j[index],
-                            ]
-                            == object_number
-                        )
-
                     extended = scind.binary_dilation(
                         (patch != 0) & (patch != object_number), strel_touching
                     )
-                    overlap = np.sum(outline_patch & extended)
-                    pixel_count[index] = overlap
+                else:
+                    extended = scind.binary_dilation(
+                        (npatch != 0), strel_touching
+                    )
+                overlap = np.sum(outline_patch & extended)
+                pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:
                 first_objects = np.hstack(first_objects)
                 reverse_object_numbers = np.zeros(
@@ -557,10 +559,7 @@ available colormaps can be seen `here`_.
             else:
                 first_objects = np.zeros(0, int)
                 second_objects = np.zeros(0, int)
-            if self.neighbors_are_objects:
-                percent_touching = pixel_count * 100 / perimeters
-            else:
-                percent_touching = pixel_count * 100.0 / areas
+            percent_touching = pixel_count * 100 / perimeters
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
             #
@@ -632,9 +631,8 @@ available colormaps can be seen `here`_.
                 np.sqrt(second_x_vector ** 2 + second_y_vector ** 2),
             ),
             (M_ANGLE_BETWEEN_NEIGHBORS, angle),
+            (M_PERCENT_TOUCHING, percent_touching),
         ]
-        if self.neighbors_are_objects:
-            features_and_data.append((M_PERCENT_TOUCHING, percent_touching))
         for feature_name, data in features_and_data:
             m.add_measurement(
                 self.object_name.value, self.get_measurement_name(feature_name), data
@@ -661,10 +659,9 @@ available colormaps can be seen `here`_.
         neighbor_count_image[object_mask] = neighbor_count[object_indexes]
         workspace.display_data.neighbor_count_image = neighbor_count_image
 
-        if self.neighbors_are_objects:
-            percent_touching_image = np.zeros(labels.shape)
-            percent_touching_image[object_mask] = percent_touching[object_indexes]
-            workspace.display_data.percent_touching_image = percent_touching_image
+        percent_touching_image = np.zeros(labels.shape)
+        percent_touching_image[object_mask] = percent_touching[object_indexes]
+        workspace.display_data.percent_touching_image = percent_touching_image
 
         image_set = workspace.image_set
         if self.wants_count_image.value:
@@ -680,7 +677,7 @@ available colormaps can be seen `here`_.
         else:
             neighbor_cm_name = cpprefs.get_default_colormap()
             neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
-        if self.neighbors_are_objects and self.wants_percent_touching_image:
+        if self.wants_percent_touching_image:
             percent_touching_cm_name = self.touching_colormap.value
             percent_touching_cm = get_colormap(percent_touching_cm_name)
             sm = matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)
@@ -720,16 +717,16 @@ available colormaps can be seen `here`_.
         neighbor_cm = get_colormap(workspace.display_data.neighbor_cm_name)
         neighbor_cm.set_under((0, 0, 0))
         neighbor_cm = matplotlib.cm.ScalarMappable(cmap=neighbor_cm)
-        if self.neighbors_are_objects:
-            expandplot_position = 0
-            percent_touching_cm = get_colormap(
-                workspace.display_data.percent_touching_cm_name
-            )
-            percent_touching_cm.set_under((0, 0, 0))
-            percent_touching_image = workspace.display_data.percent_touching_image
-            percent_touching_image[~object_mask] = -1
-            percent_touching_cm = matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)
-        else:
+        percent_touching_cm = get_colormap(
+            workspace.display_data.percent_touching_cm_name
+        )
+        percent_touching_cm.set_under((0, 0, 0))
+        percent_touching_image = workspace.display_data.percent_touching_image
+        percent_touching_image[~object_mask] = -1
+        percent_touching_cm = matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)
+        expandplot_position = 0
+        if not self.neighbors_are_objects:
+            # Display the neighbor object set, move expanded objects plot out of the way
             expandplot_position = 1
             figure.subplot_imshow_labels(
                 1,
@@ -798,10 +795,7 @@ available colormaps can be seen `here`_.
 
     @property
     def all_features(self):
-        if self.neighbors_are_objects:
-            return M_ALL
-        else:
-            return [x for x in M_ALL if x != M_PERCENT_TOUCHING]
+        return M_ALL
 
     def get_measurement_name(self, feature):
         if self.distance_method == D_EXPAND:
@@ -865,14 +859,7 @@ available colormaps can be seen `here`_.
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name and category == C_NEIGHBORS:
-            return list(
-                filter(
-                    lambda x: (
-                        x is not M_PERCENT_TOUCHING or self.neighbors_are_objects
-                    ),
-                    M_ALL,
-                )
-            )
+            return list(M_ALL)
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):

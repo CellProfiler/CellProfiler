@@ -637,10 +637,10 @@ def test_two_neighbors():
     assert round(abs(v[0] - 90), 7) == 0
 
 
-def test_different_neighbors_touching(self):
-    labels = np.zeros((20, 10), int)
+def test_different_neighbors_touching():
+    olabels = numpy.zeros((20, 10), int)
     olabels[2:5, 2:5] = 1
-    nlabels = np.zeros((20, 10), int)
+    nlabels = numpy.zeros((20, 10), int)
     nlabels[3, 5] = 2
     nlabels[5, 2] = 1
     workspace, module = make_workspace(

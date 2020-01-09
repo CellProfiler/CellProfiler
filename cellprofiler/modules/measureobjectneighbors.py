@@ -36,8 +36,7 @@ Measurements made by this module
 -  *NumberOfNeighbors:* Number of neighbor objects.
 -  *PercentTouching:* Percent of the object’s boundary pixels that touch
    neighbors, after the objects have been expanded to the specified
-   distance. Note that this measurement is only available if you use the
-   same set of objects for both objects and neighbors.
+   distance.
 -  *FirstClosestObjectNumber:* The index of the closest object.
 -  *FirstClosestDistance:* The distance to the closest object (in units
    of pixels).
@@ -58,11 +57,11 @@ Technical notes
 ^^^^^^^^^^^^^^^
 
 Objects discarded via modules such as **IdentifyPrimaryObjects** or
-**IdentifySecondaryObjects** will still register as a neighbors for the
+**IdentifySecondaryObjects** will still register as neighbors for the
 purposes of accurate measurement. For instance, if an object touches a
 single object and that object had been discarded, *NumberOfNeighbors*
-will be positive, but there will not be a corresponding
-*ClosestObjectNumber*.
+will be positive, but there may not be a corresponding
+*ClosestObjectNumber*. This can be disabled in module settings.
 
 """
 

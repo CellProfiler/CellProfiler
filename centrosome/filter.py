@@ -1544,7 +1544,7 @@ def permutations(x):
         # 1 - find largest or stop
         ak_lt_ak_next = np.argwhere(a[:-1] < a[1:])
         if len(ak_lt_ak_next) == 0:
-            raise StopIteration()
+            return
         k = ak_lt_ak_next[-1, 0]
         # 2 - find largest a[l] < a[k]
         ak_lt_al = np.argwhere(a[k] < a)

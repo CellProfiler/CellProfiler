@@ -2838,10 +2838,10 @@ def euler_number(labels, indexes=None):
     I01 = np.zeros(I_shape, int)
     I10 = np.zeros(I_shape, int)
     I11 = np.zeros(I_shape, int)
-    slice_00 = [slice(1, labels.shape[0] + 1), slice(1, labels.shape[1] + 1)]
-    slice_01 = [slice(1, labels.shape[0] + 1), slice(0, labels.shape[1])]
-    slice_10 = [slice(labels.shape[0]), slice(1, labels.shape[1] + 1)]
-    slice_11 = [slice(0, labels.shape[0]), slice(0, labels.shape[1])]
+    slice_00 = tuple([slice(1, labels.shape[0] + 1), slice(1, labels.shape[1] + 1)])
+    slice_01 = tuple([slice(1, labels.shape[0] + 1), slice(0, labels.shape[1])])
+    slice_10 = tuple([slice(labels.shape[0]), slice(1, labels.shape[1] + 1)])
+    slice_11 = tuple([slice(0, labels.shape[0]), slice(0, labels.shape[1])])
     I00[slice_00] = labels
     I01[slice_01] = labels
     I10[slice_10] = labels
@@ -3071,7 +3071,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
         ), "Footprint dimensions must all be odd"
         offset = np.array([d // 2 for d in footprint.shape])
     # Cross out the center of the footprint
-    footprint[[slice(d, d + 1) for d in offset]] = False
+    footprint[tuple([slice(d, d + 1) for d in offset])] = False
     #
     # Construct an array that's padded on the edges so we can ignore boundaries
     # The array is a dstack of the image and the mask; this lets us interleave
@@ -3240,12 +3240,12 @@ def table_lookup(image, table, border_value, iterations=None):
     center_is_zero = np.array([(x & 2 ** 4) == 0 for x in range(2 ** 9)])
     use_index_trick = False
     if not np.any(table[center_is_zero]) and (
-        np.issubdtype(image.dtype, bool) or np.issubdtype(image.dtype, int)
+        np.issubdtype(image.dtype, np.bool) or np.issubdtype(image.dtype, np.integer)
     ):
         # Use the index trick
         use_index_trick = True
         invert = False
-    elif np.all(table[~center_is_zero]) and np.issubdtype(image.dtype, bool):
+    elif np.all(table[~center_is_zero]) and np.issubdtype(image.dtype, np.bool):
         # All ones stay ones, invert the table and the image and do the trick
         use_index_trick = True
         invert = True
@@ -4682,7 +4682,7 @@ def is_local_maximum(image, labels, footprint):
     # hit by the footprint.
     #
     big_labels = np.zeros(np.array(labels.shape) + footprint_extent * 2, labels.dtype)
-    big_labels[[slice(fe, -fe) for fe in footprint_extent]] = labels
+    big_labels[tuple(slice(fe, -fe) for fe in footprint_extent)] = labels
     #
     # Find the relative indexes of each footprint element
     #

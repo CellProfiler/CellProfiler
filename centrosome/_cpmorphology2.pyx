@@ -479,7 +479,7 @@ def prepare_for_index_lookup(image, border_value):
     pixels... evilly, the index, 0 - 1, lands on the border because of Python's
     negative indexing convention.
     '''
-    if np.issubdtype(image.dtype, float):
+    if np.issubdtype(image.dtype, np.floating):
         image = image.astype(bool)
     image_i, image_j = np.argwhere(image.astype(bool)).transpose().astype(np.int32) + 1
     output_image = (np.ones(np.array(image.shape)+2,image.dtype) if border_value

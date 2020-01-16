@@ -151,7 +151,7 @@ HasImagePlaneDetails:False"""
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 9)
+        self.assertEqual(len(columns), 10)
         self.assertTrue(
             any(
                 [

@@ -2157,21 +2157,26 @@ class Pipeline(object):
 
         if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
             # Legacy pipelines don't populate group # or index
+            # Nor do pipelines that don't use the Group module
             key_names, groupings = self.get_groupings(workspace)
             image_numbers = m.get_image_numbers()
             indexes = np.zeros(np.max(image_numbers) + 1, int)
             indexes[image_numbers] = np.arange(len(image_numbers))
             group_numbers = np.zeros(len(image_numbers), int)
             group_indexes = np.zeros(len(image_numbers), int)
+            group_lengths = np.ones(len(image_numbers), int)
             for i, (key, group_image_numbers) in enumerate(groupings):
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i+1
                 group_indexes[iii] = np.arange(
                     len(iii)) + 1
+                group_lengths[iii] = np.ones(len(iii), int) * len(iii)
             m.add_all_measurements(
                 cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
             m.add_all_measurements(
                 cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+            m.add_all_measurements(
+                cpmeas.IMAGE, "Group_Length", group_lengths)
             #
             # The grouping for legacy pipelines may not be monotonically
             # increasing by group number and index.
@@ -3298,7 +3303,8 @@ class Pipeline(object):
             (cpmeas.EXPERIMENT, M_MODIFICATION_TIMESTAMP,
              cpmeas.COLTYPE_VARCHAR, {cpmeas.MCA_AVAILABLE_POST_RUN:True}),
             (cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
+            (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER),
+            (cpmeas.IMAGE, "Group_Length", cpmeas.COLTYPE_INTEGER)]
         should_write_columns = True
         for module in self.modules():
             if (terminating_module is not None and

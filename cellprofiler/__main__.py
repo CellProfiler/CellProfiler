@@ -6,6 +6,7 @@ import sys
 import os
 import numpy as np
 import tempfile
+import urlparse
 from cStringIO import StringIO
 
 OMERO_CK_HOST = "host"
@@ -80,6 +81,41 @@ def main(args = None):
         sys.exit(0)
 
     options, args = parse_args(args)
+
+    o = urlparse.urlparse(options.pipeline_filename)
+    if o[0] in ("ftp", "http", "https"):
+        import urllib2
+        temp_pipe_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.cppipe')
+        downloaded_pipeline = urllib2.urlopen(options.pipeline_filename)
+        with open(temp_pipe_file.name,'w') as a:
+            for line in downloaded_pipeline:
+                a.write(line)
+        options.pipeline_filename = temp_pipe_file.name
+
+    if options.image_set_file:
+        o = urlparse.urlparse(options.image_set_file)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+            downloaded_set_csv = urllib2.urlopen(options.image_set_file)
+            with open(temp_set_file.name,'w') as a:
+                for line in downloaded_set_csv:
+                    a.write(line)
+            options.image_set_file = temp_set_file.name
+
+    if options.data_file:
+        o = urlparse.urlparse(options.data_file)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv')
+            downloaded_data_csv = urllib2.urlopen(options.data_file)
+            with open(temp_data_file.name,'w') as a:
+                for line in downloaded_data_csv:
+                    a.write(line)
+            options.data_file = temp_data_file.name
+
+
+
     if options.print_version:
         from cellprofiler.utilities.version import \
              dotted_version, version_string, git_hash, version_number

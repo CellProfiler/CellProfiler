@@ -604,9 +604,19 @@ class SaveImages(cpm.CPModule):
         if (self.when_to_save == WS_LAST_CYCLE and
             self.save_image_or_figure != IF_MOVIE):
             if self.save_image_or_figure == IF_OBJECTS:
-                self.save_objects(workspace)
+                try:
+                    self.save_objects(workspace)
+                except ValueError:
+                    raise ValueError(
+                        'You have tried to save %s on the last cycle but that cycle failed FlagImages. Please adjust the FlagImages settings and rerun'
+                        % (self.objects_name.value))
             else:
-                self.save_image(workspace)
+                try:
+                    self.save_image(workspace)
+                except ValueError:
+                    raise ValueError(
+                        'You have tried to save %s on the last cycle but that cycle failed FlagImages. Please adjust the FlagImages settings and rerun'
+                        % (self.image_name.value))
 
     def do_save_image(self, workspace, filename, pixels, pixel_type,
                    c = 0, z = 0, t = 0,

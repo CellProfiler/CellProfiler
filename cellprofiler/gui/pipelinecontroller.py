@@ -2808,9 +2808,11 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             image_set_number = self.__debug_measurements.image_set_number
             self.__debug_measurements.add_image_measurement(
-                cpp.GROUP_NUMBER, self.__grouping_index)
+                cpp.GROUP_NUMBER, self.__grouping_index+1) #in the analysis mode version, it starts at 1
             self.__debug_measurements.add_image_measurement(
-                cpp.GROUP_INDEX, self.__within_group_index)
+                cpp.GROUP_INDEX, self.__within_group_index+1) #in the analysis mode version, it starts at 1
+            self.__debug_measurements.add_image_measurement(
+                "Group_Length", len(self.__groupings[self.__grouping_index][1]))
             workspace = cpw.Workspace(self.__pipeline,
                                       module,
                                       self.__debug_measurements,

@@ -484,11 +484,15 @@ class Groups(cpm.CPModule):
         group_indexes = np.hstack([
             np.arange(len(image_numbers)) + 1
             for keys, image_numbers in groupings])
+        group_lens = np.hstack([
+            np.ones(len(image_numbers), int) * (len(image_numbers))
+            for i, (keys, image_numbers) in enumerate(groupings)])
         image_numbers = np.hstack([
             image_numbers for keys, image_numbers in groupings])
         order = np.lexsort((group_indexes, group_numbers ))
         group_numbers = group_numbers[order]
         group_indexes = group_indexes[order]
+        group_lens = group_lens[order]
 
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -501,6 +505,7 @@ class Groups(cpm.CPModule):
         m.reorder_image_measurements(new_image_numbers)
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+        m.add_all_measurements(cpmeas.IMAGE, "Group_Length", group_lens)
         m.set_grouping_tags(self.get_grouping_tags())
         return True
 
@@ -517,6 +522,7 @@ class Groups(cpm.CPModule):
             result.append((cpmeas.EXPERIMENT,
                            cpmeas.M_GROUPING_TAGS,
                            cpmeas.COLTYPE_VARCHAR))
+            result.append((cpmeas.IMAGE, "Group_Length", cpmeas.COLTYPE_INTEGER))
             #
             # These are bound to be produced elsewhere, but it is quite
             # computationally expensive to find that out. If they are

@@ -1145,6 +1145,14 @@ safe to press it.""",
                 for k in self.metadata_fields.selections
             ]
             m.set_grouping_tags(keys)
+            groupkeys, groupvals = self.get_groupings(workspace)
+            group_lengths = []
+            for eachval in groupvals:
+                group_lengths += [len(eachval[1])] * len(eachval[1])
+            m.add_all_measurements(cellprofiler.measurement.IMAGE, "Group_Length", group_lengths)
+        else:
+            group_lengths = [len(rows)] * len(rows)
+            m.add_all_measurements(cellprofiler.measurement.IMAGE, "Group_Length", group_lengths)
 
         return True
 

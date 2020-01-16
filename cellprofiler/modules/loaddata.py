@@ -1055,7 +1055,7 @@ safe to press it.""")
                 group_lengths += [len(eachval[1])] * len(eachval[1])
             m.add_all_measurements(cellprofiler.measurement.IMAGE, "Group_Length", group_lengths)
         else:
-            group_lengths = [numpy.max(image_numbers)] * numpy.max(image_numbers)
+            group_lengths = [len(rows)] * len(rows)
             m.add_all_measurements(cellprofiler.measurement.IMAGE, "Group_Length", group_lengths)
 
         return True

@@ -1038,7 +1038,6 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             m = cellprofiler.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet(),
                                                          m, cellprofiler.image.ImageSetList())
-
             self.assertTrue(module.prepare_run(workspace))
             self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
                              self.test_filename)

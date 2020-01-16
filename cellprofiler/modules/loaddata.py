@@ -1056,7 +1056,6 @@ safe to press it.""")
             m.add_all_measurements(cellprofiler.measurement.IMAGE, "Group_Length", group_lengths)
         else:
             group_lengths = [len(rows)] * len(rows)
-            m.add_all_measurements(cellprofiler.measurement.IMAGE, "Group_Length", group_lengths)
 
         return True
 

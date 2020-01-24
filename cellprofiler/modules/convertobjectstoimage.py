@@ -65,7 +65,7 @@ following options:
    all background pixels will be assigned 0, creating a binary image.
 -  *Grayscale:* Assigns all background pixels to 0 and assigns each object's pixels with a number 
    specific to that object. Object numbers can range from 1 to 255 (the maximum value that you can put
-   in an 8-bit integer, use **uint18** if you expect more than 255 objects).
+   in an 8-bit integer, use **uint16** if you expect more than 255 objects).
    This creates an image where objects in the top left corner of the image are
    very dark and the colors progress to white toward the bottom right corner of the image.
    Use **SaveImages** to save the resulting image as a .npy file or .tiff file if you want

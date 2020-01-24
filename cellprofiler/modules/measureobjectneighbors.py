@@ -889,7 +889,7 @@ previously discarded objects.""",
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
+        self, setting_values, variable_revision_number, module_name, from_matlab
     ):
         if variable_revision_number == 1:
             # Added neighbor objects
@@ -901,7 +901,7 @@ previously discarded objects.""",
             # Added border object exclusion
             setting_values = setting_values[:4] + [True] + setting_values[4:]
             variable_revision_number = 3
-        return setting_values, variable_revision_number
+        return setting_values, variable_revision_number, from_matlab
 
     def volumetric(self):
         return True

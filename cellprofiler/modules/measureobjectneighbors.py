@@ -112,7 +112,7 @@ S_ADJACENT = "Adjacent"
 class MeasureObjectNeighbors(cpm.Module):
     module_name = "MeasureObjectNeighbors"
     category = "Measurement"
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
@@ -245,12 +245,16 @@ available colormaps can be seen `here`_.
 .. _here: http://matplotlib.org/examples/color/colormaps_reference.html""",
         )
 
-        self.wants_excluded_objects = cps.Binary('Consider objects discarded for touching image border?',
-                                                 True, doc="""\
-        When set to *%(YES)s*, objects which were previously discarded for touching the image borders will be considered
-        as potential object neighbours in this analysis. You may want to disable this if using object sets which were
-        further filtered, since those filters won't have been applied to the previously discarded objects.
-        """)
+        self.wants_excluded_objects = cps.Binary(
+           "Consider objects discarded for touching image border?",
+           True,
+           doc="""\
+When set to *%(YES)s*, objects which were previously discarded for touching
+the image borders will be considered as potential object neighbours in this
+analysis. You may want to disable this if using object sets which were
+further filtered, since those filters won't have been applied to the
+previously discarded objects.""",
+        )
 
     def settings(self):
         return [
@@ -885,31 +889,19 @@ available colormaps can be seen `here`_.
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 5:
-            wants_image = setting_values[2] != cps.DO_NOT_USE
-            distance_method = D_EXPAND if setting_values[1] == "0" else D_WITHIN
-            setting_values = [
-                setting_values[0],
-                distance_method,
-                setting_values[1],
-                cps.YES if wants_image else cps.NO,
-                setting_values[2],
-                cps.DEFAULT,
-                cps.NO,
-                "PercentTouching",
-                cps.DEFAULT,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
         if variable_revision_number == 1:
             # Added neighbor objects
             # To upgrade, repeat object_name twice
             #
             setting_values = setting_values[:1] * 2 + setting_values[1:]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        if variable_revision_number == 2:
+            # Added border object exclusion
+            setting_values = setting_values[:4] + [True] + setting_values[4:]
+            variable_revision_number = 3
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

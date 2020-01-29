@@ -189,7 +189,7 @@ class HDF5Dict(object):
                     "See http://code.google.com/p/h5py/issues/detail?id=215"
                 )
             name = "%s.h5" % uuid.uuid4()
-            self.hdf5_file = h5py.File(name, driver="core", backing_store=False)
+            self.hdf5_file = h5py.File(name, 'a', driver="core", backing_store=False)
         else:
             self.hdf5_file = h5py.File(self.filename, mode)
         try:

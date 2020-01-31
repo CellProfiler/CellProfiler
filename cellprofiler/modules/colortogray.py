@@ -614,7 +614,7 @@ Select the name of the output grayscale image.""",
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
         ncols = int(np.ceil((ndisp + 1) ** 0.5))
-        subplots = (ncols, (ndisp / ncols) + 1)
+        subplots = (ncols, (ndisp // ncols) + 1)
         figure.set_subplots(subplots)
         figure.subplot_imshow_color(0, 0, input_image, title="Original image")
 
@@ -622,7 +622,7 @@ Select the name of the output grayscale image.""",
             placenum = eachplot + 1
             figure.subplot_imshow(
                 placenum % ncols,
-                placenum / ncols,
+                placenum // ncols,
                 disp_collection[eachplot][0],
                 title="%s" % (disp_collection[eachplot][1]),
                 colormap=matplotlib.cm.Greys_r,

@@ -3357,10 +3357,10 @@ Enter a name to give the color-coded image of tracked labels.""",
         area = np.hstack(m[object_name, self.measurement_name(F_AREA), image_numbers])
         parent_image_number = np.hstack(
             m[object_name, self.measurement_name(F_PARENT_IMAGE_NUMBER), image_numbers]
-        )
+        ).astype(int)
         parent_object_number = np.hstack(
             m[object_name, self.measurement_name(F_PARENT_OBJECT_NUMBER), image_numbers]
-        )
+        ).astype(int)
         link_type = np.hstack(
             m[object_name, self.measurement_name(F_LINK_TYPE), image_numbers]
         )

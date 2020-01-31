@@ -3632,7 +3632,7 @@ class PipelineController(object):
         self.__within_group_index = (image_number_index - 1) % len(image_numbers)
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.reset_debug_module()
+        self.debug_init_imageset()
         self.__debug_outlines = {}
 
     def debug_choose_group(self, index):

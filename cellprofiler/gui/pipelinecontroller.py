@@ -15,7 +15,7 @@ import string
 import sys
 import threading
 import traceback
-from functools import reduce
+from functools import reduce, cmp_to_key
 
 import h5py
 import numpy
@@ -3756,7 +3756,7 @@ class PipelineController(object):
                     cellprofiler.measurement.C_FRAME,
                 )
             ],
-            cmp=feature_cmp,
+            key=cmp_to_key(feature_cmp),
         )
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict(
@@ -3864,7 +3864,7 @@ class PipelineController(object):
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(
-                    self, self.list_ctrl.GetCol
+                    self, self.list_ctrl.GetColumnCount()
                 )
                 super_sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 10)
                 super_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 5)

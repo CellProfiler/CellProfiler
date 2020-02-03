@@ -335,6 +335,12 @@ class PipelineController(object):
         )
 
         frame.Bind(
+            wx.EVT_MENU,
+            self.on_step_from_this_module,
+            id=cellprofiler.gui.cpframe.ID_DEBUG_STEP_FROM_THIS_MODULE,
+        )
+
+        frame.Bind(
             wx.EVT_MENU, self.on_sample_init, id=cellprofiler.gui.cpframe.ID_SAMPLE_INIT
         )
 
@@ -3952,6 +3958,13 @@ class PipelineController(object):
         active_module = self.__pipeline_list_view.get_active_module()
         self.__pipeline_list_view.set_current_debug_module(active_module)
         self.on_debug_continue(event)
+
+    def on_step_from_this_module(self, event):
+        active_module = self.__pipeline_list_view.get_active_module()
+        self.__pipeline_list_view.set_current_debug_module(active_module)
+        success = self.do_step(active_module)
+        if success:
+            self.next_debug_module()
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

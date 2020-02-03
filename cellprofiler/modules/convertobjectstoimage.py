@@ -120,6 +120,7 @@ Preferences*.
             pixel_data = numpy.zeros(objects.shape)
         elif self.image_mode == "uint16":
             pixel_data = numpy.zeros(objects.shape, numpy.int32)
+            convert = False
         else:
             pixel_data = numpy.zeros(objects.shape + (3,))
 
@@ -175,8 +176,6 @@ Preferences*.
                 pixel_data[mask] = labels[mask]
 
                 alpha[mask] = 1
-
-                convert = False
 
         mask = alpha > 0
 

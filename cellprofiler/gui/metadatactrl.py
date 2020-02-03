@@ -389,7 +389,7 @@ class MetadataControl(wx.Control):
 
     def on_char(self, event):
         self.delete_selection()
-        c = six.chr(event.GetUnicodeKey())
+        c = chr(event.GetUnicodeKey())
         self.__tokens.insert(self.__cursor_pos, c)
         self.move_cursor_pos(self.__cursor_pos + 1)
         self.on_token_change()

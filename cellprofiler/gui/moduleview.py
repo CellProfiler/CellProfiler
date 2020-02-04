@@ -1150,7 +1150,7 @@ class ModuleView(object):
             if cm.N < 128:
                 j *= int((cm.N + 128) / 128)
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
-            bitmap = wx.BitmapFromBufferRGBA(128, 12, image.tostring())
+            bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tostring())
         except:
             logger.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None

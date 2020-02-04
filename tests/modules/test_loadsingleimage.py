@@ -25,7 +25,7 @@ OUTLINES_NAME = "myoutlines"
 
 
 class TestLoadSingleImage(
-    unittest.TestCase, tests.modules.test_loadimages.ConvtesterMixin
+    unittest.TestCase
 ):
     @classmethod
     def setUpClass(cls):

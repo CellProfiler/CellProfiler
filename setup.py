@@ -74,7 +74,7 @@ setuptools.setup(
         "scikit-learn>=0.20",
         "scipy>=1.2",
         "six",
-        "wxPython>=4.0.6",
+        "wxPython>=4.0.7",
     ],
     license="BSD",
     name="CellProfiler",

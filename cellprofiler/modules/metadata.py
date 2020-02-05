@@ -7,6 +7,7 @@ import time
 import javabridge
 import six
 import six.moves
+import wx
 
 import cellprofiler.gui.help
 import cellprofiler.measurement
@@ -192,6 +193,7 @@ class Metadata(cellprofiler.module.Module):
     def create_settings(self):
         self.pipeline = None
         self.ipds = []
+        self.need_metadata_extraction = []
         module_explanation = [
             "The %s module optionally allows you to extract information"
             % self.module_name,
@@ -288,7 +290,7 @@ See **NamesAndTypes** for more details.
     def add_extraction_method(self, can_remove=True):
         group = cellprofiler.setting.SettingsGroup()
 
-        self.extraction_methods.append(group)
+
 
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider())
@@ -690,6 +692,8 @@ not being applied, your choice on this setting may be the culprit.
                     "", "Remove this extraction method", self.extraction_methods, group
                 ),
             )
+        group.metadata_autoextracted = False
+        self.extraction_methods.append(group)
 
     def csv_path(self, group):
         return os.path.join(
@@ -1121,17 +1125,23 @@ not being applied, your choice on this setting may be the culprit.
                 if metadata is None:
                     metadata = get_omexml_metadata(url=url)
                     filelist.add_metadata(url, metadata)
+        group.metadata_autoextracted = True
 
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
+        needextract = []
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 self.refresh_group_joiner(group)
+            elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
+                if not group.metadata_autoextracted:
+                    needextract.append(True)
         self.table.clear_rows()
         self.table.clear_columns()
         if workspace.pipeline.has_cached_image_plane_details():
-            self.update_table()
+            if not any(needextract):
+                self.update_table()
 
     def on_setting_changed(self, setting, pipeline):
         """Update the imported extraction joiners on setting changes"""
@@ -1164,6 +1174,19 @@ not being applied, your choice on this setting may be the culprit.
                 self.refresh_group_joiner(group)
 
     def update_table(self):
+        for group in self.extraction_methods:
+            if group.extraction_method == X_AUTOMATIC_EXTRACTION and not group.metadata_autoextracted:
+                    response = wx.MessageBox(
+                        "Metadata extraction from file headers is enabled\n"
+                        "but as not been performed.\n"
+                        "Extract metadata now?",
+                        "Metadata extraction needed.",
+                        wx.OK | wx.CANCEL | wx.ICON_INFORMATION,
+                    )
+                    if response == wx.OK:
+                        self.do_update_metadata(group)
+                    else:
+                        return
         columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)

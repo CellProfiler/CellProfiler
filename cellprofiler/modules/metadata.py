@@ -193,7 +193,6 @@ class Metadata(cellprofiler.module.Module):
     def create_settings(self):
         self.pipeline = None
         self.ipds = []
-        self.need_metadata_extraction = []
         module_explanation = [
             "The %s module optionally allows you to extract information"
             % self.module_name,
@@ -1094,7 +1093,6 @@ not being applied, your choice on this setting may be the culprit.
         def msg(url):
             return "Processing %s" % url
 
-        import wx
         from bioformats.formatreader import get_omexml_metadata
 
         with wx.ProgressDialog(

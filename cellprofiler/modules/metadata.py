@@ -673,7 +673,7 @@ not being applied, your choice on this setting may be the culprit.
             "update_metadata",
             cellprofiler.setting.DoSomething(
                 "",
-                "Update metadata",
+                "Extract metadata",
                 lambda: self.do_update_metadata(group),
                 doc="Press this button to automatically extract metadata from your image files.",
             ),
@@ -1094,7 +1094,7 @@ not being applied, your choice on this setting may be the culprit.
         from bioformats.formatreader import get_omexml_metadata
 
         with wx.ProgressDialog(
-            "Updating metadata",
+            "Extracting metadata",
             msg(list(urls)[0]),
             len(urls),
             style=wx.PD_CAN_ABORT

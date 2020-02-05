@@ -1143,8 +1143,7 @@ not being applied, your choice on this setting may be the culprit.
         else:
             # File list has changed, reset 'needs metadata extraction' flag
             for group in self.extraction_methods:
-                if group.extraction_method == X_AUTOMATIC_EXTRACTION:
-                    group.metadata_autoextracted = False
+                group.metadata_autoextracted = False
 
 
     def on_setting_changed(self, setting, pipeline):

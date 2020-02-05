@@ -1140,6 +1140,12 @@ not being applied, your choice on this setting may be the culprit.
         if workspace.pipeline.has_cached_image_plane_details():
             if not any(needextract):
                 self.update_table()
+        else:
+            # File list has changed, reset 'needs metadata extraction' flag
+            for group in self.extraction_methods:
+                if group.extraction_method == X_AUTOMATIC_EXTRACTION:
+                    group.metadata_autoextracted = False
+
 
     def on_setting_changed(self, setting, pipeline):
         """Update the imported extraction joiners on setting changes"""

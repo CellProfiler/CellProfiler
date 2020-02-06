@@ -1093,7 +1093,7 @@ not being applied, your choice on this setting may be the culprit.
             return "Processing %s" % url
 
         import wx
-        from bioformats.formatreader import get_omexml_metadata~
+        from bioformats.formatreader import get_omexml_metadata
 
         with wx.ProgressDialog(
             "Extracting metadata",

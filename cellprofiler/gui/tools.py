@@ -8,7 +8,7 @@ import matplotlib.figure
 import matplotlib.transforms
 import numpy
 import imageio
-import six.moves
+import io
 
 
 def figure_to_image(figure, *args, **kwargs):
@@ -16,12 +16,11 @@ def figure_to_image(figure, *args, **kwargs):
     #
     # Save the figure as a .PNG and then load it using imageio.imread
     #
-    fd = six.moves.StringIO()
+    fd = io.BytesIO()
     kwargs = kwargs.copy()
     kwargs["format"] = "png"
     figure.savefig(fd, *args, **kwargs)
-    fd.seek(0)
-    image = imageio.imread(fd)
+    image = imageio.imread(fd.getvalue())
     return image[:, :, :3]
 
 

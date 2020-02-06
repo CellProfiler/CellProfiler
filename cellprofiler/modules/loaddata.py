@@ -804,7 +804,7 @@ safe to press it.""",
                 entry["URLDATA"] = fd.getvalue()
             return fd
         else:
-            return open(self.csv_path, "rb")
+            return open(self.csv_path, "rt")
 
     def browse_csv(self):
         import wx

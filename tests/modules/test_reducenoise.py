@@ -1,6 +1,7 @@
-import cellprofiler.modules.reducenoise
 import numpy.testing
 import skimage.restoration
+
+import cellprofiler.modules.reducenoise
 
 instance = cellprofiler.modules.reducenoise.ReduceNoise()
 

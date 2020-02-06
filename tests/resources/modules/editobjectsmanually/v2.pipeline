@@ -1,0 +1,12 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9120
+
+EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the objects to be edited:Nuclei
+Name the edited objects:EditedNuclei
+Retain outlines of the edited objects?:No
+Name the outline image:EditedObjectOutlines
+Numbering of the edited objects:Retain
+Display a guiding image?:Yes
+Image name\x3A:DNA

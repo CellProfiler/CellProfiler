@@ -1,8 +1,3 @@
-import io
-import base64
-import unittest
-import zlib
-
 import numpy
 import pytest
 import scipy.sparse.coo
@@ -202,105 +197,100 @@ def test_run_uint16(workspace, module):
     assert numpy.all(pixel_data == expected)
 
 
-class TestConvertObjectsToImage(unittest.TestCase):
-    def make_workspace_ijv(self):
-        module = cellprofiler.modules.convertobjectstoimage.ConvertToImage()
-        shape = (14, 16)
-        r = numpy.random.RandomState()
-        r.seed(0)
-        i = r.randint(0, shape[0], size=numpy.prod(shape))
-        j = r.randint(0, shape[1], size=numpy.prod(shape))
-        v = r.randint(1, 8, size=numpy.prod(shape))
-        order = numpy.lexsort((i, j, v))
-        ijv = numpy.column_stack((i, j, v))
-        ijv = ijv[order, :]
-        same = numpy.all(ijv[:-1, :] == ijv[1:, :], 1)
+def make_workspace_ijv():
+    module = cellprofiler.modules.convertobjectstoimage.ConvertToImage()
+    shape = (14, 16)
+    r = numpy.random.RandomState()
+    r.seed(0)
+    i = r.randint(0, shape[0], size=numpy.prod(shape))
+    j = r.randint(0, shape[1], size=numpy.prod(shape))
+    v = r.randint(1, 8, size=numpy.prod(shape))
+    order = numpy.lexsort((i, j, v))
+    ijv = numpy.column_stack((i, j, v))
+    ijv = ijv[order, :]
+    same = numpy.all(ijv[:-1, :] == ijv[1:, :], 1)
 
-        ijv = ijv[: numpy.prod(shape) - 1][~same, :]
+    ijv = ijv[: numpy.prod(shape) - 1][~same, :]
 
-        pipeline = cellprofiler.pipeline.Pipeline()
-        object_set = cellprofiler.object.ObjectSet()
-        image_set_list = cellprofiler.image.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        workspace = cellprofiler.workspace.Workspace(
-            pipeline,
-            module,
-            image_set,
-            object_set,
-            cellprofiler.measurement.Measurements(),
-            image_set_list,
-        )
-        objects = cellprofiler.object.Objects()
-        objects.set_ijv(ijv, shape)
-        object_set.add_objects(objects, OBJECTS_NAME)
-        self.assertGreater(len(objects.get_labels()), 1)
-        module.image_name.value = IMAGE_NAME
-        module.object_name.value = OBJECTS_NAME
-        return workspace, module, ijv
+    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler.object.ObjectSet()
+    image_set_list = cellprofiler.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    workspace = cellprofiler.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        object_set,
+        cellprofiler.measurement.Measurements(),
+        image_set_list,
+    )
+    objects = cellprofiler.object.Objects()
+    objects.set_ijv(ijv, shape)
+    object_set.add_objects(objects, OBJECTS_NAME)
+    assert len(objects.get_labels()) > 1
+    module.image_name.value = IMAGE_NAME
+    module.object_name.value = OBJECTS_NAME
+    return workspace, module, ijv
 
-    def test_03_01_binary_ijv(self):
-        workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(
-            isinstance(
-                module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
-            )
-        )
-        module.image_mode.value = "Binary (black & white)"
-        module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        self.assertEqual(
-            len(numpy.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
-            numpy.sum(pixel_data),
-        )
-        self.assertTrue(numpy.all(pixel_data[ijv[:, 0], ijv[:, 1]]))
 
-    def test_03_02_gray_ijv(self):
-        workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(
-            isinstance(
-                module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
-            )
-        )
-        module.image_mode.value = "Grayscale"
-        module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+def test_binary_ijv():
+    workspace, module, ijv = make_workspace_ijv()
+    assert isinstance(
+        module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
+    )
+    module.image_mode.value = "Binary (black & white)"
+    module.run(workspace)
+    pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+    assert len(numpy.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])) == numpy.sum(
+        pixel_data
+    )
+    assert numpy.all(pixel_data[ijv[:, 0], ijv[:, 1]])
 
-        counts = scipy.sparse.coo.coo_matrix(
-            (numpy.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))
-        ).toarray()
-        self.assertTrue(numpy.all(pixel_data[counts == 0] == 0))
-        pd_values = numpy.unique(pixel_data)
-        pd_labels = numpy.zeros(pixel_data.shape, int)
-        for i in range(1, len(pd_values)):
-            pd_labels[pixel_data == pd_values[i]] = i
 
-        dest_v = numpy.zeros(numpy.max(ijv[:, 2] + 1), int)
-        dest_v[ijv[:, 2]] = pd_labels[ijv[:, 0], ijv[:, 1]]
-        pd_ok = numpy.zeros(pixel_data.shape, bool)
-        ok = pd_labels[ijv[:, 0], ijv[:, 1]] == dest_v[ijv[:, 2]]
-        pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
-        self.assertTrue(numpy.all(pd_ok[counts > 0]))
+def test_gray_ijv():
+    workspace, module, ijv = make_workspace_ijv()
+    assert isinstance(
+        module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
+    )
+    module.image_mode.value = "Grayscale"
+    module.run(workspace)
+    pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
 
-    def test_03_03_color_ijv(self):
-        workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(
-            isinstance(
-                module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
-            )
-        )
-        module.image_mode.value = "Color"
-        module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        #
-        # convert the labels into individual bits (1, 2, 4, 8)
-        # the labels matrix is a matrix of bits that are on
-        #
-        vbit = 2 ** (ijv[:, 2] - 1)
-        vbit_color = numpy.zeros((numpy.max(vbit) * 2, 3))
-        bits = scipy.sparse.coo.coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
-        #
-        # Get some color for every represented bit combo
-        #
-        vbit_color[bits[ijv[:, 0], ijv[:, 1]], :] = pixel_data[ijv[:, 0], ijv[:, 1], :]
+    counts = scipy.sparse.coo.coo_matrix(
+        (numpy.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))
+    ).toarray()
+    assert numpy.all(pixel_data[counts == 0] == 0)
+    pd_values = numpy.unique(pixel_data)
+    pd_labels = numpy.zeros(pixel_data.shape, int)
+    for i in range(1, len(pd_values)):
+        pd_labels[pixel_data == pd_values[i]] = i
 
-        self.assertTrue(numpy.all(pixel_data == vbit_color[bits, :]))
+    dest_v = numpy.zeros(numpy.max(ijv[:, 2] + 1), int)
+    dest_v[ijv[:, 2]] = pd_labels[ijv[:, 0], ijv[:, 1]]
+    pd_ok = numpy.zeros(pixel_data.shape, bool)
+    ok = pd_labels[ijv[:, 0], ijv[:, 1]] == dest_v[ijv[:, 2]]
+    pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
+    assert numpy.all(pd_ok[counts > 0])
+
+
+def test_color_ijv():
+    workspace, module, ijv = make_workspace_ijv()
+    assert isinstance(
+        module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
+    )
+    module.image_mode.value = "Color"
+    module.run(workspace)
+    pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+    #
+    # convert the labels into individual bits (1, 2, 4, 8)
+    # the labels matrix is a matrix of bits that are on
+    #
+    vbit = 2 ** (ijv[:, 2] - 1)
+    vbit_color = numpy.zeros((numpy.max(vbit) * 2, 3))
+    bits = scipy.sparse.coo.coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
+    #
+    # Get some color for every represented bit combo
+    #
+    vbit_color[bits[ijv[:, 0], ijv[:, 1]], :] = pixel_data[ijv[:, 0], ijv[:, 1], :]
+
+    assert numpy.all(pixel_data == vbit_color[bits, :])

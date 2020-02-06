@@ -4,25 +4,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 import base64
-from bioformats.formatwriter import write_image, convert_pixels_to_buffer
+from bioformats.formatwriter import write_image
 from bioformats import PT_UINT8, PT_UINT16
-from bioformats import OMEXML
-from bioformats.omexml import DO_XYCZT, OM_SAMPLES_PER_PIXEL, OM_BITS_PER_SAMPLE
 import hashlib
-import javabridge
 import numpy as np
 import os
 import unittest
-from urllib.request import urlretrieve, URLopener
-from urllib.error import HTTPError
+from urllib.request import URLopener
 import tempfile
+import functools
 
 import scipy.io.matlab.mio
-from cellprofiler.preferences import set_headless
 import cellprofiler.utilities.legacy
-
-set_headless()
-from cellprofiler.modules import builtin_modules, all_modules
 
 __temp_example_images_folder = None
 
@@ -96,12 +89,11 @@ def testimages_url():
     return svn_mirror_url() + "/" + "TestImages"
 
 
-class testExampleImagesDirectory(unittest.TestCase):
-    def test_00_00_got_something(self):
-        self.assertTrue(
-            example_images_directory(),
-            "You need to have the example images checked out to run these tests",
-        )
+class testExampleImagesDirectory:
+    def test_got_something(self):
+        assert (
+            example_images_directory()
+        ), "You need to have the example images checked out to run these tests"
 
 
 def load_pipeline(test_case, encoded_data):
@@ -166,14 +158,10 @@ def maybe_download_example_image(folders, file_name, shape=None):
         directory = os.path.join(*tuple([example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        r = np.random.RandomState()
-        r.seed(
-            np.frombuffer(
-                hashlib.sha1("/".join(folders) + file_name).digest(), np.uint8
-            )
-        )
-        img = (r.uniform(size=shape) * 255).astype(np.uint8)
-        write_image(local_path, img, PT_UINT8)
+        random_state = np.random.RandomState()
+        random_state.seed()
+        image = (random_state.uniform(size=shape) * 255).astype(np.uint8)
+        write_image(local_path, image, PT_UINT8)
     return local_path
 
 
@@ -186,7 +174,11 @@ def make_12_bit_image(folder, filename, shape):
             is i, j, c or y, x, c
     """
     r = np.random.RandomState()
-    r.seed(np.frombuffer(hashlib.sha1("/".join([folder, filename])).digest(), np.uint8))
+    r.seed(
+        np.frombuffer(
+            hashlib.sha1("/".join([folder, filename]).encode()).digest(), np.uint8
+        )
+    )
     img = (r.uniform(size=shape) * 4095).astype(np.uint16)
     path = os.path.join(example_images_directory(), folder, filename)
     if not os.path.isdir(os.path.dirname(path)):
@@ -216,7 +208,9 @@ def make_12_bit_image(folder, filename, shape):
     ]
     ifds = sorted(
         ifds,
-        cmp=(lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())),
+        key=functools.cmp_to_key(
+            lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())
+        ),
     )
     old_end = offset + 2 + nentries * 12
     new_end = offset + 2 + len(ifds) * 12

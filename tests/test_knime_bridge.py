@@ -268,7 +268,7 @@ class TestKnimeBridge(unittest.TestCase):
     #     pipeline.add_module(identify)
     #
     #     flag_module = cellprofiler.modules.flagimage.FlagImage()
-    #     flag_module.module_num = 3
+    #     flag_module.set_module_num(3)
     #     flag = flag_module.flags[0]
     #     flag.wants_skip.value = True
     #     criterion = flag.measurement_settings[0]

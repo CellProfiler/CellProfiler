@@ -613,7 +613,7 @@ is applied before other operations.""",
 
         display_names = workspace.display_data.display_names
 
-        columns = (len(pixel_data) + 1) / 2
+        columns = (len(pixel_data) + 1) // 2
 
         figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
 

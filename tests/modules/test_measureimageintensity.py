@@ -1,5 +1,7 @@
-import io
-import base64
+import numpy
+import numpy.testing
+import pytest
+import skimage.morphology
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -9,10 +11,6 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import numpy
-import numpy.testing
-import pytest
-import skimage.morphology
 
 cellprofiler.preferences.set_headless()
 
@@ -90,7 +88,7 @@ def test_volume_zeros(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 0.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -119,7 +117,7 @@ def test_volume(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 0.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -152,7 +150,7 @@ def test_volume_and_mask(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 1.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -187,7 +185,7 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
         "Intensity_LowerQuartileIntensity_image_objects": 1.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -226,7 +224,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
         "Intensity_LowerQuartileIntensity_image_objects": 1.0,
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE, feature
         )
@@ -234,7 +232,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
 
 
-def test_00_00_zeros(image, measurements, module, workspace):
+def test_zeros(image, measurements, module, workspace):
     """Test operation on a completely-masked image"""
     image.pixel_data = numpy.zeros((10, 10))
 
@@ -263,7 +261,7 @@ def test_00_00_zeros(image, measurements, module, workspace):
         assert column[1] in features
 
 
-def test_01_01_image(image, measurements, module, workspace):
+def test_image(image, measurements, module, workspace):
     """Test operation on a single unmasked image"""
     numpy.random.seed(0)
 
@@ -307,7 +305,7 @@ def test_01_01_image(image, measurements, module, workspace):
     )
 
 
-def test_01_02_image_and_mask(image, measurements, module, workspace):
+def test_image_and_mask(image, measurements, module, workspace):
     """Test operation on a masked image"""
     numpy.random.seed(0)
 
@@ -351,7 +349,7 @@ def test_01_02_image_and_mask(image, measurements, module, workspace):
     )
 
 
-def test_01_03_image_and_objects(image, measurements, module, objects, workspace):
+def test_image_and_objects(image, measurements, module, objects, workspace):
     """Test operation on an image masked by objects"""
     numpy.random.seed(0)
 
@@ -412,9 +410,7 @@ def test_01_03_image_and_objects(image, measurements, module, objects, workspace
         assert column[1] in features
 
 
-def test_01_04_image_and_objects_and_mask(
-    image, measurements, module, objects, workspace
-):
+def test_image_and_objects_and_mask(image, measurements, module, objects, workspace):
     """Test operation on an image masked by objects and a mask"""
     numpy.random.seed(0)
 
@@ -459,148 +455,7 @@ def test_01_04_image_and_objects_and_mask(
     )
 
 
-def test_02_01_load_v1():
-    """Test loading an measure image intensity module saved in V1"""
-    data = (
-        "TUFUTEFCIDUuMCBNQVQtZmlsZSBQbGF0Zm9ybTogbnQsIENyZWF0ZWQg"
-        "b246IEZyaSBBcHIgMjQgMTY6MTM6MjQgMjAwOQAAAAAAAAAAAAAAAAAA"
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
-        "SU0OAAAACBIAAAYAAAAIAAAAAgAAAAAAAAAFAAAACAAAAAEAAAABAAAA"
-        "AQAAAAgAAABTZXR0aW5ncwUABAAYAAAAAQAAAMAAAABWYXJpYWJsZVZh"
-        "bHVlcwAAAAAAAAAAAABWYXJpYWJsZUluZm9UeXBlcwAAAAAAAABNb2R1"
-        "bGVOYW1lcwAAAAAAAAAAAAAAAABOdW1iZXJzT2ZWYXJpYWJsZXMAAAAA"
-        "AABQaXhlbFNpemUAAAAAAAAAAAAAAAAAAABWYXJpYWJsZVJldmlzaW9u"
-        "TnVtYmVycwBNb2R1bGVSZXZpc2lvbk51bWJlcnMAAABNb2R1bGVOb3Rl"
-        "cwAAAAAAAAAAAAAAAAAOAAAAkAcAAAYAAAAIAAAAAQAAAAAAAAAFAAAA"
-        "CAAAAAIAAAAPAAAAAQAAAAAAAAAOAAAASAAAAAYAAAAIAAAABAAAAAAA"
-        "AAAFAAAACAAAAAEAAAARAAAAAQAAAAAAAAAQAAAAEQAAAGluZGl2aWR1"
-        "YWwgaW1hZ2VzAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAEAAAAAAAAAAUA"
-        "AAAIAAAAAQAAAAMAAAABAAAAAAAAABAAAwBETkEADgAAAEAAAAAGAAAA"
-        "CAAAAAQAAAAAAAAABQAAAAgAAAABAAAAEAAAAAEAAAAAAAAAEAAAABAA"
-        "AABUZXh0LUV4YWN0IG1hdGNoDgAAADAAAAAGAAAACAAAAAQAAAAAAAAA"
-        "BQAAAAgAAAABAAAAAgAAAAEAAAAAAAAAEAACAE5vAAAOAAAAMAAAAAYA"
-        "AAAIAAAABAAAAAAAAAAFAAAACAAAAAEAAAABAAAAAQAAAAAAAAAQAAEA"
-        "MwAAAA4AAAAwAAAABgAAAAgAAAAEAAAAAAAAAAUAAAAIAAAAAQAAAAQA"
-        "AAABAAAAAAAAABAABABOb25lDgAAAEAAAAAGAAAACAAAAAQAAAAAAAAA"
-        "BQAAAAgAAAABAAAACgAAAAEAAAAAAAAAEAAAAAoAAABEbyBub3QgdXNl"
-        "AAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAA"
-        "AAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABAAAAAAA"
-        "AAAFAAAACAAAAAEAAAACAAAAAQAAAAAAAAAQAAIATm8AAA4AAAAwAAAA"
-        "BgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkA"
-        "AAAAAAAADgAAAEgAAAAGAAAACAAAAAQAAAAAAAAABQAAAAgAAAABAAAA"
-        "FwAAAAEAAAAAAAAAEAAAABcAAABEZWZhdWx0IEltYWdlIERpcmVjdG9y"
-        "eQAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAA"
-        "AQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUA"
-        "AAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAA"
-        "CAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAA"
-        "AAAOAAAAMAAAAAYAAAAIAAAABAAAAAAAAAAFAAAACAAAAAEAAAADAAAA"
-        "AQAAAAAAAAAQAAMAWWVzAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUA"
-        "AAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAA"
-        "CAAAAAQAAAAAAAAABQAAAAgAAAABAAAAAwAAAAEAAAAAAAAAEAADAFll"
-        "cwAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAA"
-        "AQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUA"
-        "AAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAA"
-        "CAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAA"
-        "AAAOAAAAMAAAAAYAAAAIAAAABAAAAAAAAAAFAAAACAAAAAEAAAADAAAA"
-        "AQAAAAAAAAAQAAMARE5BAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUA"
-        "AAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAA"
-        "CAAAAAQAAAAAAAAABQAAAAgAAAABAAAAAQAAAAEAAAAAAAAAEAABADEA"
-        "AAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAA"
-        "AQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAEAAAAAAAAAAUA"
-        "AAAIAAAAAQAAAAQAAAABAAAAAAAAABAABABOb25lDgAAADAAAAAGAAAA"
-        "CAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAA"
-        "AAAOAAAAgAAAAAYAAAAIAAAABAAAAAAAAAAFAAAACAAAAAEAAABLAAAA"
-        "AQAAAAAAAAAQAAAASwAAAF4oP1A8UGxhdGU+LispXyg/UDxXZWxsUm93"
-        "PltBLVBdKSg/UDxXZWxsQ29sdW1uPlswLTldezEsMn0pXyg/UDxTaXRl"
-        "PlswLTldKQAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgA"
-        "AAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAaAAAAAYAAAAIAAAA"
-        "BAAAAAAAAAAFAAAACAAAAAEAAAA4AAAAAQAAAAAAAAAQAAAAOAAAACg/"
-        "UDxZZWFyPlswLTldezR9KS0oP1A8TW9udGg+WzAtOV17Mn0pLSg/UDxE"
-        "YXk+WzAtOV17Mn0pDgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgA"
-        "AAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAA6AYAAAYAAAAIAAAA"
-        "AQAAAAAAAAAFAAAACAAAAAIAAAAPAAAAAQAAAAAAAAAOAAAAMAAAAAYA"
-        "AAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAA"
-        "AAAAAA4AAABAAAAABgAAAAgAAAAEAAAAAAAAAAUAAAAIAAAAAQAAAAoA"
-        "AAABAAAAAAAAABAAAAAKAAAAaW1hZ2Vncm91cAAAAAAAAA4AAAAwAAAA"
-        "BgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkA"
-        "AAAAAAAADgAAADAAAAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAA"
-        "AAAAAAEAAAAAAAAACQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAA"
-        "AAAFAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAABAAAAA"
-        "BgAAAAgAAAAEAAAAAAAAAAUAAAAIAAAAAQAAAAsAAAABAAAAAAAAABAA"
-        "AAALAAAAb2JqZWN0Z3JvdXAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAA"
-        "AAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAA"
-        "AAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAA"
-        "CQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAA"
-        "AAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAA"
-        "AAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAA"
-        "AAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAA"
-        "CQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAA"
-        "AAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAA"
-        "AAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAA"
-        "AAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAA"
-        "CQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAA"
-        "AAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAA"
-        "AAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAA"
-        "AAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAA"
-        "CQAAAAAAAAAOAAAAMAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAA"
-        "AAAAAAAAAQAAAAAAAAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAA"
-        "AAAAAAUAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAA"
-        "AAAGAAAACAAAAAYAAAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAA"
-        "CQAAAAAAAAAOAAAAQAAAAAYAAAAIAAAABAAAAAAAAAAFAAAACAAAAAEA"
-        "AAAQAAAAAQAAAAAAAAAQAAAAEAAAAGltYWdlZ3JvdXAgaW5kZXAOAAAA"
-        "MAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAA"
-        "AAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAA"
-        "AAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYA"
-        "AAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAA"
-        "MAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAA"
-        "AAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAA"
-        "AAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYA"
-        "AAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAA"
-        "MAAAAAYAAAAIAAAABgAAAAAAAAAFAAAACAAAAAAAAAAAAAAAAQAAAAAA"
-        "AAAJAAAAAAAAAA4AAAAwAAAABgAAAAgAAAAGAAAAAAAAAAUAAAAIAAAA"
-        "AAAAAAAAAAABAAAAAAAAAAkAAAAAAAAADgAAADAAAAAGAAAACAAAAAYA"
-        "AAAAAAAABQAAAAgAAAAAAAAAAAAAAAEAAAAAAAAACQAAAAAAAAAOAAAA"
-        "CAEAAAYAAAAIAAAAAQAAAAAAAAAFAAAACAAAAAEAAAACAAAAAQAAAAAA"
-        "AAAOAAAAYAAAAAYAAAAIAAAABAAAAAAAAAAFAAAACAAAAAEAAAAqAAAA"
-        "AQAAAAAAAAAQAAAAKgAAAGNlbGxwcm9maWxlci5tb2R1bGVzLmxvYWRp"
-        "bWFnZXMuTG9hZEltYWdlcwAAAAAAAA4AAABwAAAABgAAAAgAAAAEAAAA"
-        "AAAAAAUAAAAIAAAAAQAAAEAAAAABAAAAAAAAABAAAABAAAAAY2VsbHBy"
-        "b2ZpbGVyLm1vZHVsZXMubWVhc3VyZWltYWdlaW50ZW5zaXR5Lk1lYXN1"
-        "cmVJbWFnZUludGVuc2l0eQ4AAAAwAAAABgAAAAgAAAAJAAAAAAAAAAUA"
-        "AAAIAAAAAQAAAAIAAAABAAAAAAAAAAIAAgAPAwAADgAAADAAAAAGAAAA"
-        "CAAAAAYAAAAAAAAABQAAAAAAAAABAAAAAAAAAAkAAAAIAAAAAAAAAAAA"
-        "8D8OAAAAMAAAAAYAAAAIAAAACQAAAAAAAAAFAAAACAAAAAEAAAACAAAA"
-        "AQAAAAAAAAACAAIAAgEAAA4AAAAwAAAABgAAAAgAAAALAAAAAAAAAAUA"
-        "AAAIAAAAAQAAAAIAAAABAAAAAAAAAAQABAAAAAAADgAAAIgAAAAGAAAA"
-        "CAAAAAEAAAAAAAAABQAAAAgAAAABAAAAAgAAAAEAAAAAAAAADgAAACgA"
-        "AAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEAAAAAAAAA"
-        "DgAAACgAAAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEA"
-        "AAAAAAAA"
-    )
-
-    fd = io.StringIO(base64.b64decode(data))
-
-    p = cellprofiler.pipeline.Pipeline()
-
-    def error_handler(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-
-    p.add_listener(error_handler)
-
-    p.load(fd)
-
-    assert len(p.modules()) == 2
-
-    module = p.modules()[1]
-
-    assert len(module.images) == 1
-
-    assert module.images[0].image_name.value == "DNA"
-
-    assert not module.images[0].wants_objects.value
-
-
-def test_03_01_get_measurement_columns(module):
+def test_get_measurement_columns(module):
     image_names = ["image%d" % i for i in range(3)]
 
     object_names = ["object%d" % i for i in range(3)]

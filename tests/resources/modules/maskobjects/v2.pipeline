@@ -1,0 +1,16 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9193
+
+MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Objects to be masked\x3A:Nuclei
+Name the masked objects\x3A:MaskedNuclei
+Mask using other objects or binary image?:Objects
+Masking objects\x3A:Wells
+Masking image\x3A:None
+How do you want to handle objects that are partially masked?:Keep overlapping region
+How much of the object must overlap?:0.5
+Retain original numbering or renumber objects?:Renumber
+Save outlines for the resulting objects?:No
+Outlines name\x3A:MaskedOutlines
+Invert the mask?:Yes

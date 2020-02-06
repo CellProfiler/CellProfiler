@@ -1,0 +1,28 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10308
+
+ColorToGray:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:DNA
+Conversion method:Combine
+Image type\x3A:Channels
+Name the output image:OrigGrayw
+Relative weight of the red channel:1
+Relative weight of the green channel:3
+Relative weight of the blue channel:5
+Convert red to gray?:Yes
+Name the output image:OrigRedx
+Convert green to gray?:Yes
+Name the output image:OrigGreeny
+Convert blue to gray?:Yes
+Name the output image:OrigBluez
+Channel count:3
+Channel number\x3A:Red\x3A 1
+Relative weight of the channel:1
+Image name\x3A:RedChannel1
+Channel number\x3A:Blue\x3A 3
+Relative weight of the channel:2
+Image name\x3A:GreenChannel2
+Channel number\x3A:Green\x3A 2
+Relative weight of the channel:3
+Image name\x3A:BlueChannel3

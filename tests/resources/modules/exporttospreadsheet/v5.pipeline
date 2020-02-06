@@ -1,0 +1,38 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9434
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:5|show_window:False|notes:\x5B\x5D]
+Select or enter the column delimiter:Tab
+Prepend the output file name to the data file names?:Yes
+Add image metadata columns to your object data file?:No
+No longer used, always saved:No
+Limit output to a size that is allowed in Excel?:No
+Select the columns of measurements to export?:Yes
+Calculate the per-image mean values for object measurements?:No
+Calculate the per-image median values for object measurements?:Yes
+Calculate the per-image standard deviation values for object measurements?:No
+Output file location:Default Output Folder
+Folder name://iodine/imaging_analysis/People/Lee
+Export all measurements?:No
+Press button to select measurements to export:Image\x7CFileName_rawGFP,Image\x7CFileName_IllumGFP,Image\x7CFileName_IllumDNA,Image\x7CFileName_rawDNA,Image\x7CMetadata_SBS_Doses,Image\x7CMetadata_Well,Image\x7CMetadata_Controls
+Data to export:Image
+Combine these object measurements with those of the previous object?:No
+File name:Image.csv
+Use the object name for the file name?:No
+Data to export:Nuclei
+Combine these object measurements with those of the previous object?:No
+File name:Nuclei.csv
+Use the object name for the file name?:No
+Data to export:PropCells
+Combine these object measurements with those of the previous object?:No
+File name:PropCells.csv
+Use the object name for the file name?:No
+Data to export:DistanceCells
+Combine these object measurements with those of the previous object?:No
+File name:DistanceCells.csv
+Use the object name for the file name?:No
+Data to export:DistCytoplasm
+Combine these object measurements with those of the previous object?:No
+File name:DistCytoplasm.csv
+Use the object name for the file name?:No

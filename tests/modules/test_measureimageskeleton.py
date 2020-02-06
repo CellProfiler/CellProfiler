@@ -1,10 +1,8 @@
 import numpy
 import pytest
-import skimage.morphology
 
 import cellprofiler.measurement
 import cellprofiler.modules.measureimageskeleton
-
 
 instance = cellprofiler.modules.measureimageskeleton.MeasureImageSkeleton()
 

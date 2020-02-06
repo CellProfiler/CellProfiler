@@ -1,0 +1,27 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9207
+
+MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+Select an image to measure:Alpha
+Check for blur?:Yes
+Window size for blur measurements:25
+Check for saturation?:Yes
+Calculate threshold?:Yes
+Select a thresholding method:Otsu Global
+Typical fraction of the image covered by objects:0.2
+Calculate quartiles and sum of radial power spectrum?:Yes
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Weighted variance
+Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+Select an image to measure:Beta
+Check for blur?:No
+Window size for blur measurements:15
+Check for saturation?:No
+Calculate threshold?:No
+Select a thresholding method:MoG Global
+Typical fraction of the image covered by objects:0.3
+Calculate quartiles and sum of radial power spectrum?:No
+Two-class or three-class thresholding?:Two classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background

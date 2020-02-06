@@ -577,10 +577,13 @@ Select the objects to be measured.""",
                     Thr_fi_c = i
                     Thr_si_c = (a * i) + b
                     combt = (fi < Thr_fi_c) | (si < Thr_si_c)
-                    costReg = scipy.stats.pearsonr(fi[combt], si[combt])
-                    if costReg[0] <= 0:
+                    try:
+                        costReg = scipy.stats.pearsonr(fi[combt], si[combt])
+                        if costReg[0] <= 0:
+                            break
+                        i = i - 0.003921568627
+                    except ValueError:
                         break
-                    i = i - 0.003921568627
 
                 # Costes' thershold calculation
                 combined_thresh_c = (fi > Thr_fi_c) & (si > Thr_si_c)
@@ -1126,10 +1129,13 @@ Select the objects to be measured.""",
                     thr_fi_c = i
                     thr_si_c = (a * i) + b
                     combt = (fi < thr_fi_c) | (si < thr_si_c)
-                    costReg = scipy.stats.pearsonr(fi[combt], si[combt])
-                    if costReg[0] <= 0:
+                    try:
+                        costReg = scipy.stats.pearsonr(fi[combt], si[combt])
+                        if costReg[0] <= 0:
+                            break
+                        i = i - 0.003921568627
+                    except ValueError:
                         break
-                    i = i - 0.003921568627
 
                 # Costes' thershold for entire image is applied to each object
                 fi_above_thr = first_pixels > thr_fi_c

@@ -1,6 +1,22 @@
 # coding=utf-8
 
+import centrosome.cpmorphology
+import centrosome.propagate
+import centrosome.zernike
+import matplotlib.cm
+import numpy
+import numpy.ma
+import scipy.ndimage
+import scipy.sparse
+
 import cellprofiler.gui.help.content
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.object
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.workspace
 
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
     "MeasureObjectIntensityDistribution_Magnitude_Phase.png"
@@ -73,23 +89,6 @@ Measurements made by this module
         "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers,
     }
 )
-
-import centrosome.cpmorphology
-import centrosome.propagate
-import centrosome.zernike
-import matplotlib.cm
-import numpy
-import numpy.ma
-import scipy.ndimage
-import scipy.sparse
-
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
 
 C_SELF = "These objects"
 C_CENTERS_OF_OTHER_V2 = "Other objects"
@@ -878,9 +877,13 @@ be selected in a later **SaveImages** or other module.
                 ] = numpy.zeros(labels.shape)
 
         if nobjects == 0:
-            for bin in range(1, bin_count + 1):
+            for bin_index in range(1, bin_count + 1):
                 for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
-                    feature_name = (feature + FF_GENERIC) % (image_name, bin, bin_count)
+                    feature_name = (feature + FF_GENERIC) % (
+                        image_name,
+                        bin_index,
+                        bin_count,
+                    )
 
                     measurements.add_measurement(
                         object_name,
@@ -1186,9 +1189,9 @@ be selected in a later **SaveImages** or other module.
                     object_name,
                     bin_name,
                     str(bin_count),
-                    round(numpy.mean(masked_fraction_at_distance[:, bin]), 4),
-                    round(numpy.mean(masked_mean_pixel_fraction[:, bin]), 4),
-                    round(numpy.mean(radial_cv), 4),
+                    numpy.round(numpy.mean(masked_fraction_at_distance[:, bin]), 4),
+                    numpy.round(numpy.mean(masked_mean_pixel_fraction[:, bin]), 4),
+                    numpy.round(numpy.mean(radial_cv), 4),
                 )
             ]
 

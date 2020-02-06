@@ -575,7 +575,7 @@ class PreferencesView(object):
 
     def __on_browse(self, event, edit_box, text):
         dir_dialog = wx.DirDialog(
-            self.__panel, string.capitalize(text), edit_box.GetValue()
+            self.__panel, str.capitalize(text), edit_box.GetValue()
         )
         if dir_dialog.ShowModal() == wx.ID_OK:
             edit_box.SetValue(dir_dialog.GetPath())

@@ -1,0 +1,336 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130226215424
+ModuleCount:11
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+:
+Filter based on rules:No
+Filter:or (file does contain "")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Extract metadata?:Yes
+Extraction method count:2
+Extraction method:Automatic
+Source:From file name
+Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+Filter images:All images
+:or (file does contain "")
+Metadata file location\x3A:
+Match file and image metadata:\x5B\x5D
+Case insensitive matching:No
+Extraction method:Manual
+Source:From file name
+Regular expression:^(?P<StackName>\x5B^.\x5D+).flex
+Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+Filter images:All images
+:or (file does contain "")
+Metadata file location\x3A:
+Match file and image metadata:\x5B\x5D
+Case insensitive matching:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Assignment method:Assign all images
+Load as:Grayscale image
+Image name:Channel0
+:\x5B\x5D
+Assign channels by:Order
+Assignments count:1
+Match this rule:or (metadata does StackName "")
+Image name:DNA
+Objects name:Cell
+Load as:Grayscale image
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Do you want to group your images?:Yes
+grouping metadata count:1
+Metadata category:StackName
+
+IdentifyPrimaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel0
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:Yes
+Try to merge too small objects with nearby larger objects?:No
+Discard objects touching the border of the image?:Yes
+Method to distinguish clumped objects:Intensity
+Method to draw dividing lines between clumped objects:Intensity
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:Yes
+Name the outline image:CellOutlines
+Fill holes in identified objects?:Yes
+Automatically calculate size of smoothing filter?:Yes
+Automatically calculate minimum allowed distance between local maxima?:Yes
+Retain outlines of the identified objects?:No
+Automatically calculate the threshold using the Otsu method?:Yes
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Continue
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Adaptive
+Threshold method:Otsu
+Smoothing for threshold:Automatic
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.90
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Two classes
+Minimize the weighted variance or the entropy?:Weighted variance
+Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+Method to calculate adaptive window size:Image size
+Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel1
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:No
+Try to merge too small objects with nearby larger objects?:Yes
+Discard objects touching the border of the image?:No
+Method to distinguish clumped objects:Laplacian of Gaussian
+Method to draw dividing lines between clumped objects:None
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:No
+Name the outline image:CellOutlines
+Fill holes in identified objects?:No
+Automatically calculate size of smoothing filter?:No
+Automatically calculate minimum allowed distance between local maxima?:No
+Retain outlines of the identified objects?:Yes
+Automatically calculate the threshold using the Otsu method?:No
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Erase
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Automatic
+Threshold method:MCT
+Smoothing for threshold:Manual
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.09
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background
+Method to calculate adaptive window size:Custom
+Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel2
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:No
+Try to merge too small objects with nearby larger objects?:Yes
+Discard objects touching the border of the image?:No
+Method to distinguish clumped objects:None
+Method to draw dividing lines between clumped objects:Propagate
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:No
+Name the outline image:CellOutlines
+Fill holes in identified objects?:No
+Automatically calculate size of smoothing filter?:No
+Automatically calculate minimum allowed distance between local maxima?:No
+Retain outlines of the identified objects?:Yes
+Automatically calculate the threshold using the Otsu method?:No
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Truncate
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Binary image
+Threshold method:MoG
+Smoothing for threshold:No smoothing
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.09
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background
+Method to calculate adaptive window size:Custom
+Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel3
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:No
+Try to merge too small objects with nearby larger objects?:Yes
+Discard objects touching the border of the image?:No
+Method to distinguish clumped objects:Shape
+Method to draw dividing lines between clumped objects:Shape
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:No
+Name the outline image:CellOutlines
+Fill holes in identified objects?:No
+Automatically calculate size of smoothing filter?:No
+Automatically calculate minimum allowed distance between local maxima?:No
+Retain outlines of the identified objects?:Yes
+Automatically calculate the threshold using the Otsu method?:No
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Truncate
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Global
+Threshold method:Background
+Smoothing for threshold:No smoothing
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.09
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background
+Method to calculate adaptive window size:Custom
+Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:9|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel4
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:No
+Try to merge too small objects with nearby larger objects?:Yes
+Discard objects touching the border of the image?:No
+Method to distinguish clumped objects:Shape
+Method to draw dividing lines between clumped objects:Shape
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:No
+Name the outline image:CellOutlines
+Fill holes in identified objects?:No
+Automatically calculate size of smoothing filter?:No
+Automatically calculate minimum allowed distance between local maxima?:No
+Retain outlines of the identified objects?:Yes
+Automatically calculate the threshold using the Otsu method?:No
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Truncate
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Manual
+Threshold method:Kapur
+Smoothing for threshold:No smoothing
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.09
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background
+Method to calculate adaptive window size:Custom
+Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:10|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel4
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:No
+Try to merge too small objects with nearby larger objects?:Yes
+Discard objects touching the border of the image?:No
+Method to distinguish clumped objects:Shape
+Method to draw dividing lines between clumped objects:Shape
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:No
+Name the outline image:CellOutlines
+Fill holes in identified objects?:No
+Automatically calculate size of smoothing filter?:No
+Automatically calculate minimum allowed distance between local maxima?:No
+Retain outlines of the identified objects?:Yes
+Automatically calculate the threshold using the Otsu method?:No
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Truncate
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Measurement
+Threshold method:RidlerCalvard
+Smoothing for threshold:No smoothing
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.09
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background
+Method to calculate adaptive window size:Custom
+Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+Select the input image:Channel4
+Name the primary objects to be identified:Cells
+Typical diameter of objects, in pixel units (Min,Max):15,45
+Discard objects outside the diameter range?:No
+Try to merge too small objects with nearby larger objects?:Yes
+Discard objects touching the border of the image?:No
+Method to distinguish clumped objects:Shape
+Method to draw dividing lines between clumped objects:Shape
+Size of smoothing filter:11
+Suppress local maxima that are closer than this minimum allowed distance:9
+Speed up by using lower-resolution image to find local maxima?:No
+Name the outline image:CellOutlines
+Fill holes in identified objects?:No
+Automatically calculate size of smoothing filter?:No
+Automatically calculate minimum allowed distance between local maxima?:No
+Retain outlines of the identified objects?:Yes
+Automatically calculate the threshold using the Otsu method?:No
+Enter Laplacian of Gaussian threshold:0.2
+Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+Enter LoG filter diameter:3
+Handling of objects if excessive number of objects identified:Truncate
+Maximum number of objects:499
+Threshold setting version:1
+Threshold strategy:Per object
+Threshold method:RobustBackground
+Smoothing for threshold:No smoothing
+Threshold smoothing scale:2.0
+Threshold correction factor:.80
+Lower and upper bounds on threshold:0.01,0.09
+Approximate fraction of image covered by objects?:0.05
+Manual threshold:0.03
+Select the measurement to threshold with:Metadata_Threshold
+Select binary image:Segmentation
+Masking objects:Wells
+Two-class or three-class thresholding?:Three classes
+Minimize the weighted variance or the entropy?:Entropy
+Assign pixels in the middle intensity class to the foreground or the background?:Background
+Method to calculate adaptive window size:Custom
+Size of adaptive window:12

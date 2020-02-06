@@ -1,0 +1,128 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10125
+
+CorrectIlluminationCalculate:[module_num:1|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:Masked
+Name the output image:Illum
+Select how the illumination function is calculated:Background
+Dilate objects in the final averaged image?:No
+Dilation radius:2
+Block size:55
+Rescale the illumination function?:No
+Calculate function for each image individually, or based on all images?:Each
+Smoothing method:Splines
+Method to calculate smoothing filter size:Automatic
+Approximate object size:11
+Smoothing filter size:12
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:IllumAverage
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+Name the dilated image:IllumDilated
+Automatically calculate spline parameters?:No
+Background mode:bright
+# of spline points:4
+Background threshold:2
+Image resampling factor:2
+Max # of iterations:40
+Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:2|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:Masked
+Name the output image:Illum
+Select how the illumination function is calculated:Background
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:No
+Calculate function for each image individually, or based on all images?:Each
+Smoothing method:Splines
+Method to calculate smoothing filter size:Automatic
+Approximate object size:10
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:IllumBlueAvg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+Name the dilated image:IllumBlueDilated
+Automatically calculate spline parameters?:Yes
+Background mode:auto
+# of spline points:3
+Background threshold:2
+Image resampling factor:2
+Max # of iterations:40
+Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:3|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:Masked
+Name the output image:Illum
+Select how the illumination function is calculated:Background
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:No
+Calculate function for each image individually, or based on all images?:Each
+Smoothing method:Splines
+Method to calculate smoothing filter size:Automatic
+Approximate object size:10
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:IllumBlueAvg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+Name the dilated image:IllumBlueDilated
+Automatically calculate spline parameters?:Yes
+Background mode:dark
+# of spline points:3
+Background threshold:2
+Image resampling factor:2
+Max # of iterations:40
+Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:4|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:Masked
+Name the output image:Illum
+Select how the illumination function is calculated:Background
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:No
+Calculate function for each image individually, or based on all images?:Each
+Smoothing method:Splines
+Method to calculate smoothing filter size:Automatic
+Approximate object size:10
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:IllumBlueAvg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+Name the dilated image:IllumBlueDilated
+Automatically calculate spline parameters?:No
+Background mode:gray
+# of spline points:3
+Background threshold:2
+Image resampling factor:2
+Max # of iterations:40
+Convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:5|svn_version:\'10063\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:Masked
+Name the output image:Illum
+Select how the illumination function is calculated:Background
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:No
+Calculate function for each image individually, or based on all images?:Each
+Smoothing method:Convex Hull
+Method to calculate smoothing filter size:Automatic
+Approximate object size:10
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:IllumBlueAvg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+Name the dilated image:IllumBlueDilated
+Automatically calculate spline parameters?:No
+Background mode:gray
+# of spline points:3
+Background threshold:2
+Image resampling factor:2
+Max # of iterations:40
+Convergence:0.001

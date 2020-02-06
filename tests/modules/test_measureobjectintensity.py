@@ -1,7 +1,4 @@
-import io
-import base64
 import math
-import zlib
 
 import centrosome.outline
 import numpy
@@ -98,7 +95,6 @@ def workspace(image, measurements, module, objects):
     )
 
 
-@pytest.fixture()
 def assert_features_and_columns_match(measurements, module):
     object_names = [
         x
@@ -810,7 +806,7 @@ def test_median_intensity_masked(image, measurements, module, objects, workspace
 
     objects.segmented = labels
 
-    expected = numpy.sort(pixel_data[mask])[numpy.sum(mask) / 2]
+    expected = numpy.sort(pixel_data[mask])[numpy.sum(mask) // 2]
 
     assert not expected == numpy.median(pixel_data)
 
@@ -973,7 +969,7 @@ def test_ijv(image, module, objects, workspace):
 
         measurements1 = workspace.measurements
 
-        for mname, m0 in expected.items():
+        for mname, m0 in list(expected.items()):
             m1 = measurements1.get_measurement(OBJECT_NAME, mname)
 
             assert len(m0) == 3, "{} feature expected 3 measurements, got {}".format(
@@ -1085,7 +1081,7 @@ def test_image(measurements, module, objects, image, workspace):
         "Location_MaxIntensity_Z_MyImage": [0.0, 0.0],
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_measurement(OBJECT_NAME, feature)
 
         numpy.testing.assert_array_almost_equal(
@@ -1145,7 +1141,7 @@ def test_image_masked(measurements, module, objects, image, workspace):
         "Location_MaxIntensity_Z_MyImage": [0.0, 0.0],
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_measurement(OBJECT_NAME, feature)
 
         numpy.testing.assert_array_almost_equal(
@@ -1186,7 +1182,7 @@ def test_volume(measurements, module, objects, volume, workspace):
         "Location_MaxIntensity_Z_MyImage": [5.0, 5.0],
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_measurement(OBJECT_NAME, feature)
 
         numpy.testing.assert_array_almost_equal(
@@ -1233,7 +1229,7 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
         "Location_MaxIntensity_Z_MyImage": [5.0, 0.0],
     }
 
-    for feature, value in expected.items():
+    for feature, value in list(expected.items()):
         actual = measurements.get_measurement(OBJECT_NAME, feature)
 
         numpy.testing.assert_array_almost_equal(

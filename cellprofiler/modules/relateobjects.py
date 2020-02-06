@@ -828,17 +828,37 @@ parents or children of the parent object.""",
 
         return columns
 
-    def get_measurement_columns(self, pipeline):
-        """Return the column definitions for this module's measurements"""
+    def get_saved_child_measurement_columns(self, pipeline):
+        """Return measurements for saved child objects"""
+        columns_to_return = []
         if self.wants_child_objects_saved:
             columns = super(RelateObjects, self).get_measurement_columns(
                 pipeline,
-                additional_objects=[
-                    (self.y_name.value, self.output_child_objects_name.value)
-                ],
+                additional_objects=[(self.y_name.value, self.output_child_objects_name.value)])
+            columns_to_return = []
+            for column in columns:
+                if column[0] == self.output_child_objects_name.value or self.output_child_objects_name.value in column[1]:
+                    columns_to_return.append(column)
+        return columns_to_return
+   
+    def get_measurement_columns(self, pipeline):
+        """Return the column definitions for this module's measurements"""
+
+        columns = [
+            (
+                self.y_name.value,
+                cellprofiler.measurement.FF_PARENT % self.x_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
+            ),
+            (
+                self.x_name.value,
+                cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                cellprofiler.measurement.COLTYPE_INTEGER
             )
-        else:
-            columns = super(RelateObjects, self).get_measurement_columns(pipeline)
+        ]
+
+        if self.wants_child_objects_saved:
+            columns += self.get_saved_child_measurement_columns(pipeline)
 
         if self.wants_per_parent_means.value:
             child_columns = self.get_child_columns(pipeline)

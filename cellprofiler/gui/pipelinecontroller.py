@@ -2531,7 +2531,7 @@ class PipelineController(object):
             module_num = len(self.__pipeline.modules()) + 1
         for m in modules:
             module = self.__pipeline.instantiate_module(m.module_name)
-            module.module_num = module_num
+            module.set_module_num(module_num)
             module.set_settings_from_values(
                 cellprofiler.gui.pipeline.Pipeline.capture_module_settings(m),
                 m.variable_revision_number,

@@ -1,11 +1,10 @@
 import numpy
 import numpy.testing
-import skimage.morphology
 import pytest
+import skimage.morphology
 
 import cellprofiler.modules.fillobjects
 import cellprofiler.object
-
 
 instance = cellprofiler.modules.fillobjects.FillObjects()
 
@@ -43,7 +42,7 @@ def volume_labels():
 def test_run(object_set_with_data, module, workspace_with_data):
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
-    module.size.value = 6.
+    module.size.value = 6.0
 
     module.run(workspace_with_data)
 
@@ -68,7 +67,9 @@ def test_run(object_set_with_data, module, workspace_with_data):
     numpy.testing.assert_array_equal(actual, expected)
 
 
-def test_2d_fill_holes(image_labels, module, object_set_empty, objects_empty, workspace_empty):
+def test_2d_fill_holes(
+    image_labels, module, object_set_empty, objects_empty, workspace_empty
+):
     labels = image_labels.copy()
     labels[5, 5] = 0
     labels[2, 15] = 0
@@ -79,7 +80,7 @@ def test_2d_fill_holes(image_labels, module, object_set_empty, objects_empty, wo
 
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
-    module.size.value = 2.
+    module.size.value = 2.0
 
     module.run(workspace_empty)
 
@@ -89,7 +90,9 @@ def test_2d_fill_holes(image_labels, module, object_set_empty, objects_empty, wo
     numpy.testing.assert_array_equal(actual, expected)
 
 
-def test_3d_fill_holes(volume_labels, module, object_set_empty, objects_empty, workspace_empty):
+def test_3d_fill_holes(
+    volume_labels, module, object_set_empty, objects_empty, workspace_empty
+):
     labels = volume_labels.copy()
     labels[5, 5, 5] = 0
     labels[2, 2, 15] = 0
@@ -100,7 +103,7 @@ def test_3d_fill_holes(volume_labels, module, object_set_empty, objects_empty, w
 
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
-    module.size.value = 2.
+    module.size.value = 2.0
 
     module.run(workspace_empty)
 
@@ -110,7 +113,9 @@ def test_3d_fill_holes(volume_labels, module, object_set_empty, objects_empty, w
     numpy.testing.assert_array_equal(actual, expected)
 
 
-def test_fail_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empty, workspace_empty):
+def test_fail_3d_fill_bowl(
+    volume_labels, module, object_set_empty, objects_empty, workspace_empty
+):
     labels = volume_labels.copy()
     # Create a 'bowl' topology
     labels[5:10, 4:6, 4:6] = 0
@@ -119,7 +124,7 @@ def test_fail_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empt
 
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
-    module.size.value = 2.
+    module.size.value = 2.0
 
     module.run(workspace_empty)
 
@@ -131,7 +136,9 @@ def test_fail_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empt
     numpy.testing.assert_array_equal(actual, expected)
 
 
-def test_pass_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empty, workspace_empty):
+def test_pass_3d_fill_bowl(
+    volume_labels, module, object_set_empty, objects_empty, workspace_empty
+):
     labels = volume_labels.copy()
     # Create a 'bowl' topology
     labels[5:10, 4:6, 4:6] = 0
@@ -140,7 +147,7 @@ def test_pass_3d_fill_bowl(volume_labels, module, object_set_empty, objects_empt
 
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
-    module.size.value = 3.
+    module.size.value = 3.0
     # Set to planewise so the bowl is "filled" on each plane
     module.planewise.value = True
 

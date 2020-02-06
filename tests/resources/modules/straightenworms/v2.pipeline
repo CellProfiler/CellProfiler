@@ -1,0 +1,45 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10891
+
+StraightenWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input untangled worm objects:OverlappingWorms
+Name the output straightened worm objects:StraightenedWorms
+Worm width:20
+Training set file location:Default Input Folder\x7CNone
+Training set file name:TrainingSet.mat
+Image count:1
+Measure intensity distribution?:Yes
+Number of segments:4
+Align worms?:Top brightest
+Alignment image:Brightfield
+Select an input image to straighten:Brightfield
+Name the output straightened image:StraightenedImage
+
+StraightenWorms:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input untangled worm objects:OverlappingWorms
+Name the output straightened worm objects:StraightenedWorms
+Worm width:20
+Training set file location:Default Input Folder\x7CNone
+Training set file name:TrainingSet.mat
+Image count:1
+Measure intensity distribution?:Yes
+Number of segments:4
+Align worms?:Bottom brightest
+Alignment image:Brightfield
+Select an input image to straighten:Brightfield
+Name the output straightened image:StraightenedImage
+
+StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input untangled worm objects:OverlappingWorms
+Name the output straightened worm objects:StraightenedWorms
+Worm width:20
+Training set file location:Default Input Folder\x7CNone
+Training set file name:TrainingSet.mat
+Image count:1
+Measure intensity distribution?:Yes
+Number of segments:4
+Align worms?:Do not align
+Alignment image:Brightfield
+Select an input image to straighten:Brightfield
+Name the output straightened image:StraightenedImage

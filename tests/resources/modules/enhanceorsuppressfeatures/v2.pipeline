@@ -1,0 +1,43 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10583
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:Initial
+Name the output image:EnhancedSpeckles
+Select the operation:Enhance
+Feature size:11
+Feature type:Speckles
+Range of hole sizes:1,10
+
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:EnhancedSpeckles
+Name the output image:EnhancedNeurites
+Select the operation:Enhance
+Feature size:9
+Feature type:Neurites
+Range of hole sizes:1,10
+
+EnhanceOrSuppressFeatures:[module_num:3|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:EnhancedNeurites
+Name the output image:EnhancedDarkHoles
+Select the operation:Enhance
+Feature size:9
+Feature type:Dark holes
+Range of hole sizes:4,11
+
+EnhanceOrSuppressFeatures:[module_num:4|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:EnhancedDarkHoles
+Name the output image:EnhancedCircles
+Select the operation:Enhance
+Feature size:9
+Feature type:Circles
+Range of hole sizes:4,11
+
+EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:EnhancedCircles
+Name the output image:Suppressed
+Select the operation:Suppress
+Feature size:13
+Feature type:Circles
+Range of hole sizes:4,11

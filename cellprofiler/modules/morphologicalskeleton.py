@@ -14,13 +14,14 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          NO
 ============ ============ ===============
 
-.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/xx_applications/plot_morphology.html#skeletonize
+.. _this tutorial: https://scikit-image.org/docs/0.14.x/auto_examples/xx_applications/plot_morphology.html#skeletonize
 
 """
 
+import skimage.morphology
+
 import cellprofiler.image
 import cellprofiler.module
-import skimage.morphology
 
 
 class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
@@ -52,9 +53,7 @@ class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
             y_data = skimage.morphology.skeletonize(x_data)
 
         y = cellprofiler.image.Image(
-            dimensions=dimensions,
-            image=y_data,
-            parent_image=x
+            dimensions=dimensions, image=y_data, parent_image=x
         )
 
         images.add(y_name, y)

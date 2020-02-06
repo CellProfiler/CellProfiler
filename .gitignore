@@ -14,3 +14,9 @@ plugins/
 docs/source/help
 docs/source/images
 .pytest_cache/
+*venv/
+settings.json
+venv/
+*venv/
+.vscode/
+pip-wheel-metadata/

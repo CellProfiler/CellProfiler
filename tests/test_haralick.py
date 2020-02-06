@@ -8,16 +8,18 @@ import numpy as np
 
 gray4 = np.array([[0, 0, 1, 1], [0, 0, 1, 1], [0, 2, 2, 2], [2, 2, 3, 3]])
 gray = gray4 / (1.0 * gray4.max())
-labels = np.ones((4, 4), dtype='int32')
+labels = np.ones((4, 4), dtype="int32")
 
 
 # labels = np.array[[1,1,1,1],[1,1,1,2],[1,1,2,2],[1,2,2,2]], dtype=int32)
 
+
 class TestHaralick(unittest.TestCase):
     def test_quantize(self):
         q = haralick.quantize(gray, 7)
-        correct = np.array([[0, 0, 2, 2], [0, 0, 2, 2], [0, 4, 4, 4], [4, 4, 6, 6]],
-                           dtype='i4')
+        correct = np.array(
+            [[0, 0, 2, 2], [0, 0, 2, 2], [0, 4, 4, 4], [4, 4, 6, 6]], dtype="i4"
+        )
         self.assertTrue((q == correct).all())
 
     def test_quantize_fixpoint(self):
@@ -30,7 +32,9 @@ class TestHaralick(unittest.TestCase):
 
     def test_cooccurrence(self):
         P, levels = haralick.cooccurrence(gray4, labels, 0, 1)
-        correct = np.array([[[2, 2, 1, 0], [0, 2, 0, 0], [0, 0, 3, 1], [0, 0, 0, 1]]], float)
+        correct = np.array(
+            [[[2, 2, 1, 0], [0, 2, 0, 0], [0, 0, 3, 1], [0, 0, 0, 1]]], float
+        )
         correct = correct / np.sum(correct)
         self.assertEqual(levels, 4)
         self.assertTrue((P == correct).all())
@@ -94,16 +98,16 @@ class TestHaralick(unittest.TestCase):
     def test_all_01(self):
         h = haralick.Haralick(gray, labels, 0, 1, nlevels=4)
         fv = h.all()
-        self.assertTrue((np.array(map(len, fv)) == 1).all())
+        self.assertTrue((np.array(list(map(len, fv))) == 1).all())
 
     def test_01_01_regression_edge(self):
-        '''Test coocurrence with an object smaller than the scal near the edge.
+        """Test coocurrence with an object smaller than the scal near the edge.
 
         There's a corner case here where the co-occurrence is being done
         on pixels "scale" to the right of objects and all objects are
         within "scale" of the right edge. That means that all objects get
         compared to nothing and the histogram code blows up.
-        '''
+        """
         labels = np.zeros((100, 100), int)
         labels[90:99, 90:99] = 1
         np.random.seed(0)
@@ -112,11 +116,11 @@ class TestHaralick(unittest.TestCase):
         self.assertTrue(np.all(c == 0))
 
     def test_01_02_mask(self):
-        '''Test with a masked image'''
+        """Test with a masked image"""
         labels = np.ones((10, 20), int)
         np.random.seed(12)
         image = np.random.uniform(size=(10, 20)).astype(np.float32)
-        image[:, :10] *= .5
+        image[:, :10] *= 0.5
         mask = np.ones((10, 20), bool)
         mask[:, 10:] = False
         # Masked haralick
@@ -127,7 +131,7 @@ class TestHaralick(unittest.TestCase):
             self.assertEqual(measured, expected)
 
     def test_02_01_angles(self):
-        '''Test that measurements are stable on i,j swap'''
+        """Test that measurements are stable on i,j swap"""
 
         labels = np.ones((10, 20), int)
         np.random.seed(12)

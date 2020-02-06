@@ -1,0 +1,112 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9411
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D]
+What type of files are you loading?:individual images
+How do you want to load these files?:Text-Exact match
+How many images are there in each group?:3
+Type the text that the excluded images have in common:Do not use
+Analyze all subfolders within the selected folder?:No
+Image location:Default Image Folder
+Enter the full path to the images:.
+Do you want to check image sets for missing or duplicate files?:No
+Do you want to group image sets by metadata?:No
+Do you want to exclude certain files?:No
+What metadata fields do you want to group by?:
+Type the text that these images have in common (case-sensitive):D.TIF
+What do you want to call this image in CellProfiler?:Image1
+What is the position of this image in each group?:D.TIF
+Do you want to extract metadata from the file name, the subfolder path or both?:None
+Type the regular expression that finds metadata in the file name\x3A:None
+Type the regular expression that finds metadata in the subfolder path\x3A:None
+
+CorrectIlluminationCalculate:[module_num:2|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+Select the input image:Image1
+Name the output image:Illum1
+Select how the illumination function is calculated:Regular
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:Yes
+Calculate function for each image individually, or based on all images?:All
+Smoothing method:No smoothing
+Method to calculate smoothing filter size:Automatic
+Approximate object size:10
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:Yes
+Name the averaged image:Illum1Average
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+Name the dilated image:Illum1Dilated
+
+CorrectIlluminationCalculate:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+Select the input image:Image2
+Name the output image:Illum2
+Select how the illumination function is calculated:Background
+Dilate objects in the final averaged image?:Yes
+Dilation radius:2
+Block size:65
+Rescale the illumination function?:No
+Calculate function for each image individually, or based on all images?:All\x3A First cycle
+Smoothing method:Median Filter
+Method to calculate smoothing filter size:Manually
+Approximate object size:15
+Smoothing filter size:20
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:Yes
+Name the averaged image:Illum2Avg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+Name the dilated image:Illum2Dilated
+
+CorrectIlluminationCalculate:[module_num:4|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+Select the input image:Image3
+Name the output image:Illum3
+Select how the illumination function is calculated:Regular
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:Median
+Calculate function for each image individually, or based on all images?:All\x3A Across cycles
+Smoothing method:Median Filter
+Method to calculate smoothing filter size:Automatic
+Approximate object size:10
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:Illum3Avg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+Name the dilated image:Illum3Dilated
+
+CorrectIlluminationCalculate:[module_num:5|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+Select the input image:Image4
+Name the output image:Illum4
+Select how the illumination function is calculated:Regular
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:Median
+Calculate function for each image individually, or based on all images?:Each
+Smoothing method:Gaussian Filter
+Method to calculate smoothing filter size:Object size
+Approximate object size:15
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:Illum4Avg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:Yes
+Name the dilated image:Illum4Dilated
+
+CorrectIlluminationCalculate:[module_num:6|svn_version:\'9401\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+Select the input image:Image5
+Name the output image:Illum5
+Select how the illumination function is calculated:Regular
+Dilate objects in the final averaged image?:No
+Dilation radius:1
+Block size:60
+Rescale the illumination function?:Median
+Calculate function for each image individually, or based on all images?:All
+Smoothing method:Smooth to Average
+Method to calculate smoothing filter size:Object size
+Approximate object size:15
+Smoothing filter size:10
+Retain the averaged image for use later in the pipeline (for example, in SaveImages)?:No
+Name the averaged image:Illum5Avg
+Retain the dilated image for use later in the pipeline (for example, in SaveImages)?:No
+Name the dilated image:Illum5Dilated

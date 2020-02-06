@@ -3,28 +3,13 @@
 import logging
 
 logger = logging.getLogger(__name__)
-import numpy as np
 import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
 from cellprofiler.modules import _help
-from centrosome.lapjv import lapjv
-import centrosome.filter as cpfilter
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import centers_of_labels
-from centrosome.cpmorphology import associate_by_distance
-from centrosome.cpmorphology import all_connected_components
-from centrosome.index import Indexes
-from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
+from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 __doc__ = """\
 TrackObjects
@@ -187,19 +172,24 @@ tracking method:
 .. |TO_image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |TO_image1| image:: {PROTIP_RECOMMEND_ICON}
 .. |TO_image2| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON,
-    "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS
-})
+""".format(
+    **{
+        "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON,
+        "HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS,
+    }
+)
 
-TM_OVERLAP = 'Overlap'
-TM_DISTANCE = 'Distance'
-TM_MEASUREMENTS = 'Measurements'
+TM_OVERLAP = "Overlap"
+TM_DISTANCE = "Distance"
+TM_MEASUREMENTS = "Measurements"
 TM_LAP = "LAP"
 TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS, TM_LAP]
-RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
-RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
-ONLY_IF_2ND_PHASE_LAP_TEXT = '''*(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)*''' % globals()
+RADIUS_STD_SETTING_TEXT = "Number of standard deviations for search radius"
+RADIUS_LIMIT_SETTING_TEXT = "Search radius limit, in pixel units (Min,Max)"
+ONLY_IF_2ND_PHASE_LAP_TEXT = (
+    """*(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)*"""
+    % globals()
+)
 
 LT_NONE = 0
 LT_PHASE_1 = 1
@@ -226,7 +216,6 @@ import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 from centrosome.lapjv import lapjv
@@ -237,18 +226,21 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES,PROTIP_RECOMMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
 
 try:
-    from centrosome.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
+    from centrosome.neighmovetrack import (
+        NeighbourMovementTracking,
+        NeighbourMovementTrackingParameters,
+    )
 except:
     TM_ALL.remove("Follow Neighbors")
 
-DT_COLOR_AND_NUMBER = 'Color and Number'
-DT_COLOR_ONLY = 'Color Only'
+DT_COLOR_AND_NUMBER = "Color and Number"
+DT_COLOR_ONLY = "Color Only"
 DT_ALL = [DT_COLOR_AND_NUMBER, DT_COLOR_ONLY]
 
 R_PARENT = "Parent"
@@ -289,49 +281,53 @@ F_EXPT_FILT_NUMTRACKS = "%s_FilteredNumberOfTracks" % F_PREFIX
 
 
 def kalman_feature(model, matrix_or_vector, i, j=None):
-    '''Return the feature name for a Kalman feature
+    """Return the feature name for a Kalman feature
 
     model - model used for Kalman feature: velocity or static
     matrix_or_vector - the part of the Kalman state to save, vec, COV or noise
     i - the name for the first (or only for vec and noise) index into the vector
     j - the name of the second index into the matrix
-    '''
+    """
     pieces = [F_KALMAN, model, matrix_or_vector, i]
     if j is not None:
         pieces.append(j)
     return "_".join(pieces)
 
 
-'''# of objects in the current frame without parents in the previous frame'''
+"""# of objects in the current frame without parents in the previous frame"""
 F_NEW_OBJECT_COUNT = "NewObjectCount"
-'''# of objects in the previous frame without parents in the new frame'''
+"""# of objects in the previous frame without parents in the new frame"""
 F_LOST_OBJECT_COUNT = "LostObjectCount"
-'''# of parents that split into more than one child'''
+"""# of parents that split into more than one child"""
 F_SPLIT_COUNT = "SplitObjectCount"
-'''# of children that are merged from more than one parent'''
+"""# of children that are merged from more than one parent"""
 F_MERGE_COUNT = "MergedObjectCount"
-'''Object area measurement for LAP method
+"""Object area measurement for LAP method
 
 The final part of the LAP method needs the object area measurement
-which is stored using this name.'''
+which is stored using this name."""
 F_AREA = "Area"
 
-F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
-                     (F_PARENT_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                     (F_PARENT_IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER),
-                     (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
-                     (F_TRAJECTORY_Y, cpmeas.COLTYPE_INTEGER),
-                     (F_DISTANCE_TRAVELED, cpmeas.COLTYPE_FLOAT),
-                     (F_DISPLACEMENT, cpmeas.COLTYPE_FLOAT),
-                     (F_INTEGRATED_DISTANCE, cpmeas.COLTYPE_FLOAT),
-                     (F_LINEARITY, cpmeas.COLTYPE_FLOAT),
-                     (F_LIFETIME, cpmeas.COLTYPE_INTEGER),
-                     (F_FINAL_AGE, cpmeas.COLTYPE_INTEGER)]
+F_ALL_COLTYPE_ALL = [
+    (F_LABEL, cpmeas.COLTYPE_INTEGER),
+    (F_PARENT_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+    (F_PARENT_IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER),
+    (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
+    (F_TRAJECTORY_Y, cpmeas.COLTYPE_INTEGER),
+    (F_DISTANCE_TRAVELED, cpmeas.COLTYPE_FLOAT),
+    (F_DISPLACEMENT, cpmeas.COLTYPE_FLOAT),
+    (F_INTEGRATED_DISTANCE, cpmeas.COLTYPE_FLOAT),
+    (F_LINEARITY, cpmeas.COLTYPE_FLOAT),
+    (F_LIFETIME, cpmeas.COLTYPE_INTEGER),
+    (F_FINAL_AGE, cpmeas.COLTYPE_INTEGER),
+]
 
-F_IMAGE_COLTYPE_ALL = [(F_NEW_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
-                       (F_LOST_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
-                       (F_SPLIT_COUNT, cpmeas.COLTYPE_INTEGER),
-                       (F_MERGE_COUNT, cpmeas.COLTYPE_INTEGER)]
+F_IMAGE_COLTYPE_ALL = [
+    (F_NEW_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
+    (F_LOST_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
+    (F_SPLIT_COUNT, cpmeas.COLTYPE_INTEGER),
+    (F_MERGE_COUNT, cpmeas.COLTYPE_INTEGER),
+]
 
 F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 
@@ -339,14 +335,15 @@ F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
 
 class TrackObjects(cpm.Module):
-    module_name = 'TrackObjects'
+    module_name = "TrackObjects"
     category = "Object Processing"
     variable_revision_number = 7
 
     def create_settings(self):
         self.tracking_method = cps.Choice(
-            'Choose a tracking method',
-            TM_ALL, doc="""\
+            "Choose a tracking method",
+            TM_ALL,
+            doc="""\
 When trying to track an object in an image, **TrackObjects** will search
 within a maximum specified distance (see the *distance within which to
 search* setting) of the object's location in the previous image, looking
@@ -437,7 +434,7 @@ is most consistent from frame to frame of your movie.
       first phase. Therefore, it is a good idea to optimize the first
       phase settings as the initial step.
 
-      -  You can disable 2nd phase calculation by selecting *%(NO)s* for
+      -  You can disable 2nd phase calculation by selecting *No* for
          "Run the second phase of the LAP algorithm?"
       -  By maximizing the number of correct frame-to-frame links in the
          first phase, the 2nd phase will have less candidates to
@@ -479,16 +476,21 @@ References
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_RECOMMEND_ICON}
 .. |image2| image:: {PROTIP_RECOMMEND_ICON}
-.. |image3| image:: {PROTIP_RECOMMEND_ICON}""".format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+.. |image3| image:: {PROTIP_RECOMMEND_ICON}""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.object_name = cps.ObjectNameSubscriber(
-            'Select the objects to track', cps.NONE, doc="""Select the objects to be tracked by this module.""")
+            "Select the objects to track",
+            cps.NONE,
+            doc="""Select the objects to be tracked by this module.""",
+        )
 
         self.measurement = cps.Measurement(
-            'Select object measurement to use for tracking',
-            lambda: self.object_name.value, doc="""\
+            "Select object measurement to use for tracking",
+            lambda: self.object_name.value,
+            doc="""\
 *(Used only if "Measurements" is the tracking method)*
 
 Select which type of measurement (category) and which specific feature
@@ -496,19 +498,28 @@ from the **Measure** module will be used for tracking. Select the
 feature name from the popup box or see each **Measure** module’s help
 for the list of the features measured by that module. If necessary, you
 will also be asked to specify additional details such as the image from
-which the measurements originated or the measurement scale.""")
+which the measurements originated or the measurement scale.""",
+        )
 
         self.pixel_radius = cps.Integer(
-            'Maximum pixel distance to consider matches', 50, minval=1, doc="""\
+            "Maximum pixel distance to consider matches",
+            50,
+            minval=1,
+            doc="""\
 Objects in the subsequent frame will be considered potential matches if
 they are within this distance. To determine a suitable pixel distance,
 you can look at the axis increments on each image (shown in pixel units)
 or use the distance measurement tool.
 %(HELP_ON_MEASURING_DISTANCES)s
-""" % globals())
+"""
+            % globals(),
+        )
 
         self.model = cps.Choice(
-            "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""\
+            "Select the movement model",
+            [M_RANDOM, M_VELOCITY, M_BOTH],
+            value=M_BOTH,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied)*
 
 This setting controls how to predict an object’s position in the next
@@ -539,13 +550,16 @@ variance in position that follows a Gaussian distribution.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_RECOMMEND_ICON}
 .. |image2| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                    "M_RANDOM": M_RANDOM,
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"M_RANDOM": M_RANDOM, "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.radius_std = cps.Float(
-            "Number of standard deviations for search radius", 3, minval=1, doc="""\
+            "Number of standard deviations for search radius",
+            3,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied)*
 
 **TrackObjects** derives a search radius from an error estimation
@@ -563,12 +577,16 @@ error times the number of standard deviations that you enter here.
    increase the search area and thereby make the frame-to-frame linkage.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.radius_limit = cps.FloatRange(
-            "Search radius limit, in pixel units (Min,Max)", (2, 10), minval=0, doc="""\
+            "Search radius limit, in pixel units (Min,Max)",
+            (2, 10),
+            minval=0,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied)*
 
 **TrackObjects** derives a search radius from an error estimation
@@ -602,16 +620,19 @@ constrains the search radius to reasonable values.
    large displacement, this value may need to be increased.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.wants_second_phase = cps.Binary(
-            "Run the second phase of the LAP algorithm?", True, doc="""\
+            "Run the second phase of the LAP algorithm?",
+            True,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied)*
 
-Select "*%(YES)s*" to run the second phase of the LAP algorithm after
-processing all images. Select *%(NO)s* to omit the second phase or to
+Select "*Yes*" to run the second phase of the LAP algorithm after
+processing all images. Select *No* to omit the second phase or to
 perform the second phase when running the module as a data tool.
 
 Since object tracks may start and end not only because of the true
@@ -621,10 +642,15 @@ run the second phase which attempts to close temporal gaps between
 tracked objects and tries to capture merging and splitting events.
 
 For additional details on optimizing the LAP settings, see the help for
-each the settings.""" % globals())
+each the settings."""
+            % globals(),
+        )
 
         self.gap_cost = cps.Integer(
-            'Gap closing cost', 40, minval=1, doc='''\
+            "Gap closing cost",
+            40,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting assigns a cost to keeping a gap caused when an object is
@@ -642,12 +668,16 @@ pixels, of the displacement of the object between frames.
    to gaps caused by mis-segmentation.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.split_cost = cps.Integer(
-            'Split alternative cost', 40, minval=1, doc='''\
+            "Split alternative cost",
+            40,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the cost of keeping two tracks distinct when the
@@ -674,12 +704,16 @@ is (conceptually) subtracted from the cost of making the split.
    data, the cost can be set to 1 (the minimum value possible)
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.merge_cost = cps.Integer(
-            'Merge alternative cost', 40, minval=1, doc='''\
+            "Merge alternative cost",
+            40,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the cost of keeping two tracks distinct when the
@@ -705,12 +739,16 @@ The merge cost is measured in pixels. The merge alternative cost is
    data, the cost can be set to 1 (the minimum value possible)
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.mitosis_cost = cps.Integer(
-            'Mitosis alternative cost', 80, minval=1, doc='''\
+            "Mitosis alternative cost",
+            80,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the cost of not linking a parent and two daughters via
@@ -732,19 +770,28 @@ Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
    decrease it to prevent more mitoses candidates from being accepted.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.mitosis_max_distance = cps.Integer(
-            'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''\
+            "Maximum mitosis distance, in pixel units",
+            40,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting is the maximum allowed distance in pixels of either of the
-daughter candidate centroids after mitosis from the parent candidate.''' % globals())
+daughter candidate centroids after mitosis from the parent candidate."""
+            % globals(),
+        )
 
         self.max_gap_score = cps.Integer(
-            'Maximum gap displacement, in pixel units', 5, minval=1, doc='''\
+            "Maximum gap displacement, in pixel units",
+            5,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting acts as a filter for unreasonably large displacements
@@ -766,12 +813,16 @@ during the second phase.
    fame-to-frame despite optimizing the LAP first-pass settings.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.max_merge_score = cps.Integer(
-            'Maximum merge score', 50, minval=1, doc='''\
+            "Maximum merge score",
+            50,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting acts as a filter for unreasonably large merge scores. The
@@ -790,12 +841,16 @@ merge score has two components:
    will not be considered for merging.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.max_split_score = cps.Integer(
-            'Maximum split score', 50, minval=1, doc='''\
+            "Maximum split score",
+            50,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 This setting acts as a filter for unreasonably large split scores. The
@@ -813,12 +868,16 @@ split score has two components:
    will not be considered for splitting.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.max_frame_distance = cps.Integer(
-            'Maximum temporal gap, in frames', 5, minval=1, doc='''\
+            "Maximum temporal gap, in frames",
+            5,
+            minval=1,
+            doc="""\
 *(Used only if the "LAP" tracking method is applied and the second phase is run)*
 
 **Care must be taken to adjust this setting appropriate to the data.**
@@ -838,32 +897,41 @@ find an object in one or more frames.
    object (e.g., if the cell dies or moves off-screen).
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.average_cell_diameter = cps.Float(
             "Average cell diameter in pixels",
-            35.0, minval=5, doc='''\
+            35.0,
+            minval=5,
+            doc="""\
 *(Used only if "Follow Neighbors" tracking method is applied)*
 
 The average cell diameter is used to scale many Follow Neighbors
-algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s''' % globals()
+algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s"""
+            % globals(),
         )
 
         self.advanced_parameters = cps.Binary(
-            'Use advanced configuration parameters', False, doc="""\
+            "Use advanced configuration parameters",
+            False,
+            doc="""\
 *(Used only if "Follow Neighbors" tracking method is applied)*
 
 Do you want to use advanced parameters to configure plugin? The default
 values should be sufficient in most cases. You may want to use advanced
 parameters when cells are incorrectly marked missing between frames or
-cells of different sizes are falsely matched."""
+cells of different sizes are falsely matched.""",
         )
 
         self.drop_cost = cps.Float(
             "Cost of cell to empty matching",
-            15, minval=1, maxval=200, doc='''\
+            15,
+            minval=1,
+            maxval=200,
+            doc="""\
 *(Used only if "Follow Neighbors" tracking method is applied)*
 
 The cost of considering cell (from frame t) not present in frame t+1.
@@ -878,22 +946,26 @@ cells (from t+1) rather then classified as missing.
    between the frames.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                })
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
         )
 
         self.area_weight = cps.Float(
             "Weight of area difference in function matching cost",
-            25, minval=1, doc='''\
+            25,
+            minval=1,
+            doc="""\
 *(Used only if "Follow Neighbors" tracking method is applied)*
 Increasing this value will make differences in position favored over
-differences in area when identifying objects between frames.'''
+differences in area when identifying objects between frames.""",
         )
 
         self.wants_lifetime_filtering = cps.Binary(
-            'Filter objects by lifetime?', False, doc='''\
-Select "*%(YES)s*" if you want objects to be filtered by their lifetime,
+            "Filter objects by lifetime?",
+            False,
+            doc="""\
+Select "*Yes*" if you want objects to be filtered by their lifetime,
 i.e., total duration in frames. This is useful for marking objects
 which transiently appear and disappear, such as the results of a
 mis-segmentation.
@@ -908,84 +980,135 @@ mis-segmentation.
    lifetime value does not apply to them.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.wants_minimum_lifetime = cps.Binary(
-            'Filter using a minimum lifetime?', True, doc='''\
+            "Filter using a minimum lifetime?",
+            True,
+            doc="""\
 *(Used only if objects are filtered by lifetime)*
 
-Select "*%(YES)s*" to filter the object on the basis of a minimum number
-of frames.'''.format(**{
-                    "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON
-                }))
+Select "*Yes*" to filter the object on the basis of a minimum number
+of frames.""".format(
+                **{"PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON}
+            ),
+        )
 
         self.min_lifetime = cps.Integer(
-            'Minimum lifetime', 1, minval=1, doc="""\
+            "Minimum lifetime",
+            1,
+            minval=1,
+            doc="""\
 Enter the minimum number of frames an object is permitted to persist. Objects
-which last this number of frames or lower are filtered out.""")
+which last this number of frames or lower are filtered out.""",
+        )
 
         self.wants_maximum_lifetime = cps.Binary(
-            'Filter using a maximum lifetime?', False, doc='''\
+            "Filter using a maximum lifetime?",
+            False,
+            doc="""\
 *(Used only if objects are filtered by lifetime)*
 
-Select "*%(YES)s*" to filter the object on the basis of a maximum number
-of frames.''' % globals())
+Select "*Yes*" to filter the object on the basis of a maximum number
+of frames."""
+            % globals(),
+        )
 
         self.max_lifetime = cps.Integer(
-            'Maximum lifetime', 100, doc="""\
+            "Maximum lifetime",
+            100,
+            doc="""\
 Enter the maximum number of frames an object is permitted to persist. Objects
-which last this number of frames or more are filtered out.""")
+which last this number of frames or more are filtered out.""",
+        )
 
         self.display_type = cps.Choice(
-            'Select display option', DT_ALL, doc="""\
+            "Select display option",
+            DT_ALL,
+            doc="""\
 The output image can be saved as:
 
 -  *%(DT_COLOR_ONLY)s:* A color-labeled image, with each tracked
    object assigned a unique color
 -  *%(DT_COLOR_AND_NUMBER)s:* Same as above but with the tracked
-   object number superimposed.""" % globals())
+   object number superimposed."""
+            % globals(),
+        )
 
         self.wants_image = cps.Binary(
-            "Save color-coded image?", False, doc="""\
-Select "*%(YES)s*" to retain the image showing the tracked objects for
+            "Save color-coded image?",
+            False,
+            doc="""\
+Select "*Yes*" to retain the image showing the tracked objects for
 later use in the pipeline. For example, a common use is for quality
 control purposes saving the image with the **SaveImages** module.
 
 Please note that if you are using the second phase of the LAP method,
 the final labels are not assigned until *after* the pipeline has
 completed the analysis run. That means that saving the color-coded image
-will only show the penultimate result and not the final product.""" % globals())
+will only show the penultimate result and not the final product."""
+            % globals(),
+        )
 
         self.image_name = cps.ImageNameProvider(
-            "Name the output image", "TrackedCells", doc='''\
+            "Name the output image",
+            "TrackedCells",
+            doc="""\
 *(Used only if saving the color-coded image)*
 
-Enter a name to give the color-coded image of tracked labels.''')
+Enter a name to give the color-coded image of tracked labels.""",
+        )
 
     def settings(self):
-        return [self.tracking_method, self.object_name, self.measurement,
-                self.pixel_radius, self.display_type, self.wants_image,
-                self.image_name, self.model,
-                self.radius_std, self.radius_limit,
-                self.wants_second_phase,
-                self.gap_cost, self.split_cost, self.merge_cost,
-                self.max_gap_score, self.max_split_score,
-                self.max_merge_score, self.max_frame_distance,
-                self.wants_lifetime_filtering, self.wants_minimum_lifetime,
-                self.min_lifetime, self.wants_maximum_lifetime,
-                self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance,
-                self.average_cell_diameter, self.advanced_parameters, self.drop_cost, self.area_weight]
+        return [
+            self.tracking_method,
+            self.object_name,
+            self.measurement,
+            self.pixel_radius,
+            self.display_type,
+            self.wants_image,
+            self.image_name,
+            self.model,
+            self.radius_std,
+            self.radius_limit,
+            self.wants_second_phase,
+            self.gap_cost,
+            self.split_cost,
+            self.merge_cost,
+            self.max_gap_score,
+            self.max_split_score,
+            self.max_merge_score,
+            self.max_frame_distance,
+            self.wants_lifetime_filtering,
+            self.wants_minimum_lifetime,
+            self.min_lifetime,
+            self.wants_maximum_lifetime,
+            self.max_lifetime,
+            self.mitosis_cost,
+            self.mitosis_max_distance,
+            self.average_cell_diameter,
+            self.advanced_parameters,
+            self.drop_cost,
+            self.area_weight,
+        ]
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
-        if (self.tracking_method == "LAP" and
-                self.wants_lifetime_filtering.value and
-                (self.wants_minimum_lifetime.value == False and self.wants_minimum_lifetime.value == False)):
+        """Make sure that the user has selected some limits when filtering"""
+        if (
+            self.tracking_method == "LAP"
+            and self.wants_lifetime_filtering.value
+            and (
+                self.wants_minimum_lifetime.value == False
+                and self.wants_minimum_lifetime.value == False
+            )
+        ):
             raise cps.ValidationError(
-                'Please enter a minimum and/or maximum lifetime limit',
-                self.wants_lifetime_filtering)
+                "Please enter a minimum and/or maximum lifetime limit",
+                self.wants_lifetime_filtering,
+            )
 
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
@@ -996,11 +1119,16 @@ Enter a name to give the color-coded image of tracked labels.''')
             result += [self.wants_second_phase]
             if self.wants_second_phase:
                 result += [
-                    self.gap_cost, self.split_cost, self.merge_cost,
+                    self.gap_cost,
+                    self.split_cost,
+                    self.merge_cost,
                     self.mitosis_cost,
-                    self.max_gap_score, self.max_split_score,
-                    self.max_merge_score, self.max_frame_distance,
-                    self.mitosis_max_distance]
+                    self.max_gap_score,
+                    self.max_split_score,
+                    self.max_merge_score,
+                    self.max_frame_distance,
+                    self.mitosis_max_distance,
+                ]
         else:
             result += [self.pixel_radius]
 
@@ -1049,11 +1177,15 @@ Enter a name to give the color-coded image of tracked labels.''')
         group_number = m.get_group_number()
         if "group_number" not in d or d["group_number"] != group_number:
             d["group_number"] = group_number
-            group_indexes = np.array([
-                (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
-                for i in m.get_image_numbers()
-                if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i) ==
-                   group_number], int)
+            group_indexes = np.array(
+                [
+                    (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
+                    for i in m.get_image_numbers()
+                    if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i)
+                    == group_number
+                ],
+                int,
+            )
             order = np.lexsort([group_indexes[:, 0]])
             d["group_image_numbers"] = group_indexes[order, 1]
         return d["group_image_numbers"]
@@ -1071,7 +1203,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         self.__set("coordinates", workspace, value)
 
     def get_orig_coordinates(self, workspace):
-        '''The coordinates of the first occurrence of an object's ancestor'''
+        """The coordinates of the first occurrence of an object's ancestor"""
         return self.__get("orig coordinates", workspace, np.zeros((2, 0), int))
 
     def set_orig_coordinates(self, workspace, value):
@@ -1114,36 +1246,39 @@ Enter a name to give the color-coded image of tracked labels.''')
         self.__set("kalman_states", workspace, value)
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Erase any tracking information at the start of a run'''
+        """Erase any tracking information at the start of a run"""
         d = self.get_dictionary(workspace.image_set_list)
         d.clear()
 
         return True
 
     def measurement_name(self, feature):
-        '''Return a measurement name for the given feature'''
+        """Return a measurement name for the given feature"""
         if self.tracking_method == "LAP":
             return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
-        '''Return a measurement name for an image measurement'''
+        """Return a measurement name for an image measurement"""
         if self.tracking_method == "LAP":
             return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
-        return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
-                                str(self.pixel_radius.value))
+        return "%s_%s_%s_%s" % (
+            F_PREFIX,
+            feature,
+            self.object_name.value,
+            str(self.pixel_radius.value),
+        )
 
     def add_measurement(self, workspace, feature, values):
-        '''Add a measurement to the workspace's measurements
+        """Add a measurement to the workspace's measurements
 
         workspace - current image set's workspace
         feature - name of feature being measured
         values - one value per object
-        '''
+        """
         workspace.measurements.add_measurement(
-            self.object_name.value,
-            self.measurement_name(feature),
-            values)
+            self.object_name.value, self.measurement_name(feature), values
+        )
 
     def add_image_measurement(self, workspace, feature, value):
         measurement_name = self.image_measurement_name(feature)
@@ -1162,8 +1297,9 @@ Enter a name to give the color-coded image of tracked labels.''')
         elif self.tracking_method == "Follow Neighbors":
             self.run_followneighbors(workspace, objects)
         else:
-            raise NotImplementedError("Unimplemented tracking method: %s" %
-                                      self.tracking_method.value)
+            raise NotImplementedError(
+                "Unimplemented tracking method: %s" % self.tracking_method.value
+            )
         if self.wants_image.value:
             import matplotlib.figure
             import matplotlib.axes
@@ -1174,8 +1310,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
             ax = figure.add_subplot(1, 1, 1)
-            self.draw(objects.segmented, ax,
-                      self.get_saved_object_numbers(workspace))
+            self.draw(objects.segmented, ax, self.get_saved_object_numbers(workspace))
             #
             # This is the recipe for just showing the axis
             #
@@ -1185,8 +1320,9 @@ Enter a name to give the color-coded image of tracked labels.''')
             workspace.image_set.add(self.image_name.value, image)
         if self.show_window:
             workspace.display_data.labels = objects.segmented
-            workspace.display_data.object_numbers = \
-                self.get_saved_object_numbers(workspace)
+            workspace.display_data.object_numbers = self.get_saved_object_numbers(
+                workspace
+            )
 
     def display(self, workspace, figure):
         if hasattr(workspace.display_data, "labels"):
@@ -1194,15 +1330,16 @@ Enter a name to give the color-coded image of tracked labels.''')
             subfigure = figure.figure
             subfigure.clf()
             ax = subfigure.add_subplot(1, 1, 1)
-            self.draw(workspace.display_data.labels, ax,
-                      workspace.display_data.object_numbers)
+            self.draw(
+                workspace.display_data.labels, ax, workspace.display_data.object_numbers
+            )
         else:
             # We get here after running as a data tool
-            figure.figure.text(.5, .5, "Analysis complete",
-                               ha="center", va="center")
+            figure.figure.text(0.5, 0.5, "Analysis complete", ha="center", va="center")
 
     def draw(self, labels, ax, object_numbers):
         import matplotlib
+
         indexer = np.zeros(len(object_numbers) + 1, int)
         indexer[1:] = object_numbers
         #
@@ -1211,52 +1348,64 @@ Enter a name to give the color-coded image of tracked labels.''')
         # we reverse the significance of the bits in the indices so
         # that adjacent number (e.g., 0 and 1) differ by 128, roughly
         #
-        pow_of_2 = 2 ** np.mgrid[0:8, 0:len(indexer)][0]
+        pow_of_2 = 2 ** np.mgrid[0:8, 0 : len(indexer)][0]
         bits = (indexer & pow_of_2).astype(bool)
         indexer = np.sum(bits.transpose() * (2 ** np.arange(7, -1, -1)), 1)
         recolored_labels = indexer[labels]
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0, 0, 0))
-        norm = matplotlib.colors.BoundaryNorm(range(256), 256)
-        img = ax.imshow(numpy.ma.array(recolored_labels, mask=(labels == 0)),
-                        cmap=cm, norm=norm)
+        norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
+        img = ax.imshow(
+            numpy.ma.array(recolored_labels, mask=(labels == 0)), cmap=cm, norm=norm
+        )
         if self.display_type == DT_COLOR_AND_NUMBER:
             i, j = centers_of_labels(labels)
             for n, x, y in zip(object_numbers, j, i):
                 if np.isnan(x) or np.isnan(y):
                     # This happens if there are missing labels
                     continue
-                ax.annotate(str(n), xy=(x, y), color='white',
-                            arrowprops=dict(visible=False))
+                ax.annotate(
+                    str(n), xy=(x, y), color="white", arrowprops=dict(visible=False)
+                )
 
     def run_followneighbors(self, workspace, objects):
-        '''Track objects based on following neighbors'''
+        """Track objects based on following neighbors"""
+
         def calculate_iteration_value(param, initial_value):
-            iteration_default = NeighbourMovementTrackingParameters.parameters_cost_iteration[param]
-            initial_default = NeighbourMovementTrackingParameters.parameters_cost_initial[param]
+            iteration_default = NeighbourMovementTrackingParameters.parameters_cost_iteration[
+                param
+            ]
+            initial_default = NeighbourMovementTrackingParameters.parameters_cost_initial[
+                param
+            ]
             return float(iteration_default) / initial_default * initial_value
 
         tracker = NeighbourMovementTracking()
-        tracker.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
+        tracker.parameters_tracking[
+            "avgCellDiameter"
+        ] = self.average_cell_diameter.value
         tracker.parameters_tracking["max_distance"] = self.pixel_radius.value
 
         tracker.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
-        tracker.parameters_cost_iteration["default_empty_cost"] = calculate_iteration_value("default_empty_cost", self.drop_cost.value)
+        tracker.parameters_cost_iteration[
+            "default_empty_cost"
+        ] = calculate_iteration_value("default_empty_cost", self.drop_cost.value)
 
         tracker.parameters_cost_initial["area_weight"] = self.area_weight.value
-        tracker.parameters_cost_iteration["area_weight"] = calculate_iteration_value("area_weight", self.area_weight.value)
+        tracker.parameters_cost_iteration["area_weight"] = calculate_iteration_value(
+            "area_weight", self.area_weight.value
+        )
 
         old_labels = self.get_saved_labels(workspace)
         if old_labels is None:
-            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
             count = len(i)
-            self.map_objects(workspace, np.zeros((0,), int),
-                             np.zeros(count, int), i, j)
+            self.map_objects(workspace, np.zeros((0,), int), np.zeros(count, int), i, j)
         else:
-            old_i, old_j = (centers_of_labels(old_labels) + .5).astype(int)
+            old_i, old_j = (centers_of_labels(old_labels) + 0.5).astype(int)
             old_count = len(old_i)
 
-            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
             count = len(i)
 
             new_labels = objects.segmented
@@ -1269,54 +1418,45 @@ Enter a name to give the color-coded image of tracked labels.''')
                 new_object_numbers[new - 1] = old
                 old_object_numbers[old - 1] = new
 
-            self.map_objects(workspace,
-                             old_object_numbers,
-                             new_object_numbers,
-                             i, j)
+            self.map_objects(workspace, old_object_numbers, new_object_numbers, i, j)
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_distance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         old_i, old_j = self.get_saved_coordinates(workspace)
         if len(old_i):
-            distances, (i, j) = distance_transform_edt(objects.segmented == 0,
-                                                       return_indices=True)
+            distances, (i, j) = distance_transform_edt(
+                objects.segmented == 0, return_indices=True
+            )
             #
             # Look up the coordinates of the nearest new object (given by
             # the transform i,j), then look up the label at that coordinate
             # (objects.segmented[#,#])
             #
-            new_object_numbers = objects.segmented[i[old_i, old_j],
-                                                   j[old_i, old_j]]
+            new_object_numbers = objects.segmented[i[old_i, old_j], j[old_i, old_j]]
             #
             # Mask out any objects at too great of a distance
             #
-            new_object_numbers[distances[old_i, old_j] >
-                               self.pixel_radius.value] = 0
+            new_object_numbers[distances[old_i, old_j] > self.pixel_radius.value] = 0
             #
             # Do the same with the new centers and old objects
             #
-            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
             old_labels = self.get_saved_labels(workspace)
             distances, (old_i, old_j) = distance_transform_edt(
-                old_labels == 0,
-                return_indices=True)
-            old_object_numbers = old_labels[old_i[i, j],
-                                            old_j[i, j]]
+                old_labels == 0, return_indices=True
+            )
+            old_object_numbers = old_labels[old_i[i, j], old_j[i, j]]
             old_object_numbers[distances[i, j] > self.pixel_radius.value] = 0
-            self.map_objects(workspace,
-                             new_object_numbers,
-                             old_object_numbers,
-                             i, j)
+            self.map_objects(workspace, new_object_numbers, old_object_numbers, i, j)
         else:
-            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+            i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
             count = len(i)
-            self.map_objects(workspace, np.zeros((0,), int),
-                             np.zeros(count, int), i, j)
+            self.map_objects(workspace, np.zeros((0,), int), np.zeros(count, int), i, j)
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_lapdistance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -1334,13 +1474,25 @@ Enter a name to give the color-coded image of tracked labels.''')
                 kalman_states = []
             if self.velocity_model:
                 kalman_states.append(cpfilter.velocity_kalman_model())
-        areas = fix(scipy.ndimage.sum(
-            np.ones(objects.segmented.shape), objects.segmented,
-            np.arange(1, np.max(objects.segmented) + 1, dtype=np.int32)))
+        areas = fix(
+            scipy.ndimage.sum(
+                np.ones(objects.segmented.shape),
+                objects.segmented,
+                np.arange(1, np.max(objects.segmented) + 1, dtype=np.int32),
+            )
+        )
         areas = areas.astype(int)
         model_types = np.array(
-            [m for m, s in ((KM_NO_VEL, self.static_model),
-                            (KM_VEL, self.velocity_model)) if s], int)
+            [
+                m
+                for m, s in (
+                    (KM_NO_VEL, self.static_model),
+                    (KM_VEL, self.velocity_model),
+                )
+                if s
+            ],
+            int,
+        )
 
         if n_old > 0:
             new_i, new_j = centers_of_labels(objects.segmented)
@@ -1361,19 +1513,20 @@ Enter a name to give the color-coded image of tracked labels.''')
             for nkalman, kalman_state in enumerate(kalman_states):
                 assert isinstance(kalman_state, cpfilter.KalmanState)
                 obs = kalman_state.predicted_obs_vec
-                dk = np.sqrt((obs[i, 0] - new_i[j]) ** 2 +
-                             (obs[i, 1] - new_j[j]) ** 2)
+                dk = np.sqrt((obs[i, 0] - new_i[j]) ** 2 + (obs[i, 1] - new_j[j]) ** 2)
                 noise_sd = np.sqrt(np.sum(kalman_state.noise_var[:, 0:2], 1))
-                radius = np.maximum(np.minimum(noise_sd * self.radius_std.value,
-                                               self.radius_limit.max),
-                                    self.radius_limit.min)
+                radius = np.maximum(
+                    np.minimum(noise_sd * self.radius_std.value, self.radius_limit.max),
+                    self.radius_limit.min,
+                )
 
-                is_best = ((dk < d) & (dk < radius[:, np.newaxis]))
+                is_best = (dk < d) & (dk < radius[:, np.newaxis])
                 d[is_best] = dk[is_best]
                 minDist[is_best] = radius[i][is_best]
                 kalman_used[is_best] = nkalman
-            minDist = np.maximum(np.minimum(minDist, self.radius_limit.max),
-                                 self.radius_limit.min)
+            minDist = np.maximum(
+                np.minimum(minDist, self.radius_limit.max), self.radius_limit.min
+            )
             #
             #############################
             #
@@ -1384,24 +1537,26 @@ Enter a name to give the color-coded image of tracked labels.''')
             first = np.zeros(n + 10, np.int32)
             cc = np.zeros((n + 10) * (n + 10), np.float)
             t = np.argwhere((d < minDist))
-            x = np.sqrt((old_i[t[0:t.size, 0]] - new_i[t[0:t.size, 1]]) ** 2 + (
-                old_j[t[0:t.size, 0]] - new_j[t[0:t.size, 1]]) ** 2)
+            x = np.sqrt(
+                (old_i[t[0 : t.size, 0]] - new_i[t[0 : t.size, 1]]) ** 2
+                + (old_j[t[0 : t.size, 0]] - new_j[t[0 : t.size, 1]]) ** 2
+            )
             t = t + 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
-            x = np.searchsorted(t[0:(t.size / 2), 0], a)
+            x = np.searchsorted(t[0 : (t.size / 2), 0], a)
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(old_i)) + len(new_i) + 1
             c = np.zeros(len(old_i)) + costDie
             b = np.column_stack((a, b, c))
             t = np.insert(t, x, b, 0)
 
-            i, j = np.mgrid[0:len(new_i), 0:len(old_i) + 1]
+            i, j = np.mgrid[0 : len(new_i), 0 : len(old_i) + 1]
             i = i + len(old_i) + 1
             j = j + len(new_i)
-            j[0:len(new_i) + 1, 0] = i[0:len(new_i) + 1, 0] - len(old_i)
+            j[0 : len(new_i) + 1, 0] = i[0 : len(new_i) + 1, 0] - len(old_i)
             x = np.zeros((len(new_i), len(old_i) + 1))
-            x[0:len(new_i) + 1, 0] = costBorn
+            x[0 : len(new_i) + 1, 0] = costBorn
             i = i.flatten()
             j = j.flatten()
             x = x.flatten()
@@ -1416,12 +1571,12 @@ Enter a name to give the color-coded image of tracked labels.''')
 
             a = np.argwhere(x > len(new_i))
             b = np.argwhere(y > len(old_i))
-            x[a[0:len(a)]] = 0
-            y[b[0:len(b)]] = 0
+            x[a[0 : len(a)]] = 0
+            y[b[0 : len(b)]] = 0
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(new_i)) + 1
-            new_object_numbers = x[a[0:len(a)]].astype(int)
-            old_object_numbers = y[b[0:len(b)]].astype(int)
+            new_object_numbers = x[a[0 : len(a)]].astype(int)
+            old_object_numbers = y[b[0 : len(b)]].astype(int)
 
             ###############################
             #
@@ -1434,11 +1589,9 @@ Enter a name to give the color-coded image of tracked labels.''')
             link_type = np.ones(len(old_object_numbers), int) * LT_NONE
             mask = old_object_numbers > 0
             old_idx = old_object_numbers - 1
-            model_idx[mask] = \
-                kalman_used[old_idx[mask], mask]
+            model_idx[mask] = kalman_used[old_idx[mask], mask]
             linking_distance[mask] = d[old_idx[mask], mask]
-            standard_deviation[mask] = \
-                linking_distance[mask] / noise_sd[old_idx[mask]]
+            standard_deviation[mask] = linking_distance[mask] / noise_sd[old_idx[mask]]
             model_type[mask] = model_types[model_idx[mask]]
             link_type[mask] = LT_PHASE_1
             #
@@ -1452,8 +1605,10 @@ Enter a name to give the color-coded image of tracked labels.''')
             #
             # Broadcast the measurement error into a diagonal matrix
             #
-            r = (measurement_variance[:, np.newaxis, np.newaxis] *
-                 np.eye(2)[np.newaxis, :, :])
+            r = (
+                measurement_variance[:, np.newaxis, np.newaxis]
+                * np.eye(2)[np.newaxis, :, :]
+            )
             new_kalman_states = []
             for kalman_state in kalman_states:
                 #
@@ -1468,22 +1623,16 @@ Enter a name to give the color-coded image of tracked labels.''')
                     #
                     new_idx = np.arange(len(old_idx))[mask]
                     matching_idx = old_idx[new_idx]
-                    i, j = np.mgrid[0:len(matching_idx), 0:state_len]
-                    q[new_idx[i], j, j] = \
-                        kalman_state.noise_var[matching_idx[i], j]
+                    i, j = np.mgrid[0 : len(matching_idx), 0:state_len]
+                    q[new_idx[i], j, j] = kalman_state.noise_var[matching_idx[i], j]
                 new_kalman_state = cpfilter.kalman_filter(
-                    kalman_state,
-                    old_idx,
-                    np.column_stack((new_i, new_j)),
-                    q, r)
+                    kalman_state, old_idx, np.column_stack((new_i, new_j)), q, r
+                )
                 new_kalman_states.append(new_kalman_state)
             self.set_kalman_states(workspace, new_kalman_states)
 
-            i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
-            self.map_objects(workspace,
-                             new_object_numbers,
-                             old_object_numbers,
-                             i, j)
+            i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
+            self.map_objects(workspace, new_object_numbers, old_object_numbers, i, j)
         else:
             i, j = centers_of_labels(objects.segmented)
             count = len(i)
@@ -1499,33 +1648,30 @@ Enter a name to give the color-coded image of tracked labels.''')
             for kalman_state in kalman_states:
                 q = np.zeros((count, kalman_state.state_len, kalman_state.state_len))
                 new_kalman_state = cpfilter.kalman_filter(
-                    kalman_state, -np.ones(count),
-                    np.column_stack((i, j)), q, r)
+                    kalman_state, -np.ones(count), np.column_stack((i, j)), q, r
+                )
                 new_kalman_states.append(new_kalman_state)
             self.set_kalman_states(workspace, new_kalman_states)
 
-            i = (i + .5).astype(int)
-            j = (j + .5).astype(int)
-            self.map_objects(workspace, np.zeros((0,), int),
-                             np.zeros(count, int), i, j)
+            i = (i + 0.5).astype(int)
+            j = (j + 0.5).astype(int)
+            self.map_objects(workspace, np.zeros((0,), int), np.zeros(count, int), i, j)
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        m.add_measurement(self.object_name.value,
-                          self.measurement_name(F_AREA),
-                          areas)
-        m[self.object_name.value,
-          self.measurement_name(F_LINKING_DISTANCE)] = linking_distance
-        m[self.object_name.value,
-          self.measurement_name(F_STANDARD_DEVIATION)] = standard_deviation
-        m[self.object_name.value,
-          self.measurement_name(F_MOVEMENT_MODEL)] = model_type
-        m[self.object_name.value,
-          self.measurement_name(F_LINK_TYPE)] = link_type
+        m.add_measurement(self.object_name.value, self.measurement_name(F_AREA), areas)
+        m[
+            self.object_name.value, self.measurement_name(F_LINKING_DISTANCE)
+        ] = linking_distance
+        m[
+            self.object_name.value, self.measurement_name(F_STANDARD_DEVIATION)
+        ] = standard_deviation
+        m[self.object_name.value, self.measurement_name(F_MOVEMENT_MODEL)] = model_type
+        m[self.object_name.value, self.measurement_name(F_LINK_TYPE)] = link_type
         self.save_kalman_measurements(workspace)
         self.set_saved_labels(workspace, objects.segmented)
 
     def get_kalman_models(self):
-        '''Return tuples of model and names of the vector elements'''
+        """Return tuples of model and names of the vector elements"""
         if self.static_model:
             models = [(F_STATIC_MODEL, (F_Y, F_X))]
         else:
@@ -1535,12 +1681,13 @@ Enter a name to give the color-coded image of tracked labels.''')
         return models
 
     def save_kalman_measurements(self, workspace):
-        '''Save the first-pass state_vec, state_cov and state_noise'''
+        """Save the first-pass state_vec, state_cov and state_noise"""
 
         m = workspace.measurements
         object_name = self.object_name.value
         for (model, elements), kalman_state in zip(
-                self.get_kalman_models(), self.get_kalman_states(workspace)):
+            self.get_kalman_models(), self.get_kalman_states(workspace)
+        ):
             assert isinstance(kalman_state, cpfilter.KalmanState)
             nobjs = len(kalman_state.state_vec)
             if nobjs > 0:
@@ -1552,66 +1699,65 @@ Enter a name to give the color-coded image of tracked labels.''')
                 # a bunch of -1 values so every object will have a "-1"
                 # index.
                 last_idx = scipy.ndimage.maximum(
-                    np.hstack((
-                        -np.ones(nobjs),
-                        np.arange(len(kalman_state.state_noise_idx)))),
-                    np.hstack((
-                        np.arange(nobjs), kalman_state.state_noise_idx)),
-                    np.arange(nobjs))
+                    np.hstack(
+                        (-np.ones(nobjs), np.arange(len(kalman_state.state_noise_idx)))
+                    ),
+                    np.hstack((np.arange(nobjs), kalman_state.state_noise_idx)),
+                    np.arange(nobjs),
+                )
                 last_idx = last_idx.astype(int)
             for i, element in enumerate(elements):
                 #
                 # state_vec
                 #
-                mname = self.measurement_name(
-                    kalman_feature(model, F_STATE, element))
+                mname = self.measurement_name(kalman_feature(model, F_STATE, element))
                 values = np.zeros(0) if nobjs == 0 else kalman_state.state_vec[:, i]
                 m.add_measurement(object_name, mname, values)
                 #
                 # state_noise
                 #
-                mname = self.measurement_name(
-                    kalman_feature(model, F_NOISE, element))
+                mname = self.measurement_name(kalman_feature(model, F_NOISE, element))
                 values = np.zeros(nobjs)
                 if nobjs > 0:
                     values[last_idx == -1] = np.NaN
-                    values[last_idx > -1] = kalman_state.state_noise[last_idx[last_idx > -1], i]
+                    values[last_idx > -1] = kalman_state.state_noise[
+                        last_idx[last_idx > -1], i
+                    ]
                 m.add_measurement(object_name, mname, values)
                 #
                 # state_cov
                 #
                 for j, el2 in enumerate(elements):
                     mname = self.measurement_name(
-                        kalman_feature(model, F_COV, element, el2))
+                        kalman_feature(model, F_COV, element, el2)
+                    )
                     values = kalman_state.state_cov[:, i, j]
                     m.add_measurement(object_name, mname, values)
 
     def run_overlap(self, workspace, objects):
-        '''Track objects by maximum # of overlapping pixels'''
+        """Track objects by maximum # of overlapping pixels"""
         current_labels = objects.segmented
         old_labels = self.get_saved_labels(workspace)
-        i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+        i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
         if old_labels is None:
             count = len(i)
-            self.map_objects(workspace, np.zeros((0,), int),
-                             np.zeros(count, int), i, j)
+            self.map_objects(workspace, np.zeros((0,), int), np.zeros(count, int), i, j)
         else:
-            mask = ((current_labels > 0) & (old_labels > 0))
+            mask = (current_labels > 0) & (old_labels > 0)
             cur_count = np.max(current_labels)
             old_count = np.max(old_labels)
             count = np.sum(mask)
             if count == 0:
                 # There's no overlap.
-                self.map_objects(workspace,
-                                 np.zeros(old_count, int),
-                                 np.zeros(cur_count, int),
-                                 i, j)
+                self.map_objects(
+                    workspace, np.zeros(old_count, int), np.zeros(cur_count, int), i, j
+                )
             else:
                 cur = current_labels[mask]
                 old = old_labels[mask]
                 histogram = scipy.sparse.coo_matrix(
-                    (np.ones(count), (cur, old)),
-                    shape=(cur_count + 1, old_count + 1)).toarray()
+                    (np.ones(count), (cur, old)), shape=(cur_count + 1, old_count + 1)
+                ).toarray()
                 old_of_new = np.argmax(histogram, 1)[1:]
                 new_of_old = np.argmax(histogram, 0)[1:]
                 #
@@ -1622,33 +1768,32 @@ Enter a name to give the color-coded image of tracked labels.''')
                 old_of_new = np.array(old_of_new, np.int32)
                 new_of_old = np.array(new_of_old, np.int16)
                 new_of_old = np.array(new_of_old, np.int32)
-                self.map_objects(workspace,
-                                 new_of_old,
-                                 old_of_new,
-                                 i, j)
+                self.map_objects(workspace, new_of_old, old_of_new, i, j)
         self.set_saved_labels(workspace, current_labels)
 
     def run_measurements(self, workspace, objects):
         current_labels = objects.segmented
         new_measurements = workspace.measurements.get_current_measurement(
-            self.object_name.value,
-            self.measurement.value)
+            self.object_name.value, self.measurement.value
+        )
         old_measurements = self.get_saved_measurements(workspace)
         old_labels = self.get_saved_labels(workspace)
-        i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
+        i, j = (centers_of_labels(objects.segmented) + 0.5).astype(int)
         if old_labels is None:
             count = len(i)
-            self.map_objects(workspace, np.zeros((0,), int),
-                             np.zeros(count, int), i, j)
+            self.map_objects(workspace, np.zeros((0,), int), np.zeros(count, int), i, j)
         else:
-            associations = associate_by_distance(old_labels, current_labels,
-                                                 self.pixel_radius.value)
+            associations = associate_by_distance(
+                old_labels, current_labels, self.pixel_radius.value
+            )
             best_child = np.zeros(len(old_measurements), int)
             best_parent = np.zeros(len(new_measurements), int)
-            best_child_measurement = (np.ones(len(old_measurements), int) *
-                                      np.finfo(float).max)
-            best_parent_measurement = (np.ones(len(new_measurements), int) *
-                                       np.finfo(float).max)
+            best_child_measurement = (
+                np.ones(len(old_measurements), int) * np.finfo(float).max
+            )
+            best_parent_measurement = (
+                np.ones(len(new_measurements), int) * np.finfo(float).max
+            )
             for old, new in associations:
                 diff = abs(old_measurements[old - 1] - new_measurements[new - 1])
                 if diff < best_child_measurement[old - 1]:
@@ -1666,12 +1811,11 @@ Enter a name to give the color-coded image of tracked labels.''')
         assert isinstance(m, cpmeas.Measurements)
         group_numbers = {}
         for i in m.get_image_numbers():
-            group_number = m.get_measurement(cpmeas.IMAGE,
-                                             cpmeas.GROUP_NUMBER, i)
-            group_index = m.get_measurement(cpmeas.IMAGE,
-                                            cpmeas.GROUP_INDEX, i)
-            if ((group_number not in group_numbers) or
-                    (group_numbers[group_number][1] > group_index)):
+            group_number = m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i)
+            group_index = m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i)
+            if (group_number not in group_numbers) or (
+                group_numbers[group_number][1] > group_index
+            ):
                 group_numbers[group_number] = (i, group_index)
 
         for group_number in sorted(group_numbers.keys()):
@@ -1691,7 +1835,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         return z
 
     def is_aggregation_module(self):
-        '''We connect objects across imagesets within a group = aggregation'''
+        """We connect objects across imagesets within a group = aggregation"""
         return True
 
     def post_group(self, workspace, grouping):
@@ -1700,7 +1844,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         image_numbers = self.get_group_image_numbers(workspace)
         if self.tracking_method != "LAP":
             m = workspace.measurements
-            assert (isinstance(m, cpmeas.Measurements))
+            assert isinstance(m, cpmeas.Measurements)
             self.recalculate_group(workspace, image_numbers)
             return
 
@@ -1719,13 +1863,14 @@ Enter a name to give the color-coded image of tracked labels.''')
         max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
-        assert (isinstance(m, cpmeas.Measurements))
+        assert isinstance(m, cpmeas.Measurements)
         image_numbers = self.get_group_image_numbers(workspace)
         object_name = self.object_name.value
-        label, object_numbers, a, b, Area, \
-        parent_object_numbers, parent_image_numbers = [
-            [m.get_measurement(object_name, feature, i).astype(mtype)
-             for i in image_numbers]
+        label, object_numbers, a, b, Area, parent_object_numbers, parent_image_numbers = [
+            [
+                m.get_measurement(object_name, feature, i).astype(mtype)
+                for i in image_numbers
+            ]
             for feature, mtype in (
                 (self.measurement_name(F_LABEL), int),
                 (cpmeas.OBJECT_NUMBER, int),
@@ -1733,17 +1878,22 @@ Enter a name to give the color-coded image of tracked labels.''')
                 (M_LOCATION_CENTER_Y, float),
                 (self.measurement_name(F_AREA), float),
                 (self.measurement_name(F_PARENT_OBJECT_NUMBER), int),
-                (self.measurement_name(F_PARENT_IMAGE_NUMBER), int)
-            )]
-        group_indices, new_object_count, lost_object_count, merge_count, \
-        split_count = [
-            np.array([m.get_measurement(cpmeas.IMAGE, feature, i)
-                      for i in image_numbers], int)
-            for feature in (cpmeas.GROUP_INDEX,
-                            self.image_measurement_name(F_NEW_OBJECT_COUNT),
-                            self.image_measurement_name(F_LOST_OBJECT_COUNT),
-                            self.image_measurement_name(F_MERGE_COUNT),
-                            self.image_measurement_name(F_SPLIT_COUNT))]
+                (self.measurement_name(F_PARENT_IMAGE_NUMBER), int),
+            )
+        ]
+        group_indices, new_object_count, lost_object_count, merge_count, split_count = [
+            np.array(
+                [m.get_measurement(cpmeas.IMAGE, feature, i) for i in image_numbers],
+                int,
+            )
+            for feature in (
+                cpmeas.GROUP_INDEX,
+                self.image_measurement_name(F_NEW_OBJECT_COUNT),
+                self.image_measurement_name(F_LOST_OBJECT_COUNT),
+                self.image_measurement_name(F_MERGE_COUNT),
+                self.image_measurement_name(F_SPLIT_COUNT),
+            )
+        ]
         #
         # Map image number to group index and vice versa
         #
@@ -1775,11 +1925,25 @@ Enter a name to give the color-coded image of tracked labels.''')
         LIDX = 5
         AIDX = 6
         PIDX = 7
-        P = np.vstack([
-            np.column_stack((x, y, np.ones(len(x)) * i, np.arange(len(x)),
-                             o, l, area, np.zeros(len(x))))
-            for i, (x, y, o, l, area)
-            in enumerate(zip(a, b, object_numbers, label, Area))])
+        P = np.vstack(
+            [
+                np.column_stack(
+                    (
+                        x,
+                        y,
+                        np.ones(len(x)) * i,
+                        np.arange(len(x)),
+                        o,
+                        l,
+                        area,
+                        np.zeros(len(x)),
+                    )
+                )
+                for i, (x, y, o, l, area) in enumerate(
+                    zip(a, b, object_numbers, label, Area)
+                )
+            ]
+        )
         count_per_label = np.bincount(P[:, LIDX].astype(int))
         idx = np.hstack([0, np.cumsum(count_per_label)])
         unique_label = np.unique(P[:, LIDX].astype(int))
@@ -1877,8 +2041,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         #
         # -------------------------------------------
 
-        for first, second in ((end_nodes, start_nodes),
-                              (start_nodes, end_nodes)):
+        for first, second in ((end_nodes, start_nodes), (start_nodes, end_nodes)):
             first.append(np.arange(start_end_len))
             second.append(np.arange(start_end_len) + gap_off)
             scores.append(np.ones(start_end_len) * gap_cost / 2)
@@ -1926,15 +2089,17 @@ Enter a name to give the color-coded image of tracked labels.''')
             chunks = []
             for lstart in range(0, len(L), lchunk_size):
                 lend = min(len(L), lstart + lchunk_size)
-                merge_p1idx, merge_lidx = \
-                    [_.flatten() for _ in np.mgrid[0:len(P1), lstart:lend]]
+                merge_p1idx, merge_lidx = [
+                    _.flatten() for _ in np.mgrid[0 : len(P1), lstart:lend]
+                ]
                 z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append([_[mask] for _ in (merge_p1idx, merge_lidx, z)])
             if len(chunks) > 0:
                 merge_p1idx, merge_lidx, z = [
-                    np.hstack([_[i] for _ in chunks]) for i in range(3)]
+                    np.hstack([_[i] for _ in chunks]) for i in range(3)
+                ]
             else:
                 merge_p1idx = merge_lidx = z = np.zeros(0, np.int32)
         else:
@@ -1945,13 +2110,13 @@ Enter a name to give the color-coded image of tracked labels.''')
             AreaLast = L[merge_lidx, AIDX]
             AreaBeforeMerge = P[P1[merge_p1idx, PIDX].astype(int) - 1, AIDX]
             AreaAtMerge = P1[merge_p1idx, AIDX]
-            rho = self.calculate_area_penalty(
-                AreaLast + AreaBeforeMerge, AreaAtMerge)
+            rho = self.calculate_area_penalty(AreaLast + AreaBeforeMerge, AreaAtMerge)
             d = np.sqrt(np.sum((L[merge_lidx, :2] - P2[merge_p1idx, :2]) ** 2, 1))
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
             merge_p1idx, merge_lidx, merge_scores = [
-                _[mask] for _ in (merge_p1idx, merge_lidx, merge_scores)]
+                _[mask] for _ in (merge_p1idx, merge_lidx, merge_scores)
+            ]
             merge_len = np.sum(mask)
             if merge_len > 0:
                 #
@@ -1992,16 +2157,17 @@ Enter a name to give the color-coded image of tracked labels.''')
             chunks = []
             for fstart in range(0, len(L), lchunk_size):
                 fend = min(len(L), fstart + lchunk_size)
-                split_p2idx, split_fidx = \
-                    [_.flatten() for _ in np.mgrid[0:len(P2), fstart:fend]]
+                split_p2idx, split_fidx = [
+                    _.flatten() for _ in np.mgrid[0 : len(P2), fstart:fend]
+                ]
                 z = (F[split_fidx, IIDX] - P2[split_p2idx, IIDX]).astype(np.int32)
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
-                    chunks.append(
-                        [_[mask] for _ in (split_p2idx, split_fidx, z)])
+                    chunks.append([_[mask] for _ in (split_p2idx, split_fidx, z)])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
-                    np.hstack([_[i] for _ in chunks]) for i in range(3)]
+                    np.hstack([_[i] for _ in chunks]) for i in range(3)
+                ]
             else:
                 split_p2idx = split_fidx = z = np.zeros(0, np.int32)
         else:
@@ -2012,12 +2178,12 @@ Enter a name to give the color-coded image of tracked labels.''')
             AreaAfterSplit = P[P2[split_p2idx, PIDX].astype(int) + 1, AIDX]
             AreaAtSplit = P2[split_p2idx, AIDX]
             d = np.sqrt(np.sum((F[split_fidx, :2] - P2[split_p2idx, :2]) ** 2, 1))
-            rho = self.calculate_area_penalty(
-                AreaFirst + AreaAfterSplit, AreaAtSplit)
+            rho = self.calculate_area_penalty(AreaFirst + AreaAfterSplit, AreaAtSplit)
             split_scores = d * rho
-            mask = (split_scores <= max_split_score)
-            split_p2idx, split_fidx, split_scores = \
-                [_[mask] for _ in (split_p2idx, split_fidx, split_scores)]
+            mask = split_scores <= max_split_score
+            split_p2idx, split_fidx, split_scores = [
+                _[mask] for _ in (split_p2idx, split_fidx, split_scores)
+            ]
             split_len = np.sum(mask)
             if split_len > 0:
                 #
@@ -2103,7 +2269,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         # Useful debugging diagnostics
         #
         def desc(node):
-            '''Describe a node for graphviz'''
+            """Describe a node for graphviz"""
             fl = F
             if node < start_end_end:
                 fmt = "N%d:%d"
@@ -2123,24 +2289,36 @@ Enter a name to give the color-coded image of tracked labels.''')
                 mitosis = mitoses[node - mitosis_off]
                 (lin, lon), (rin, ron), (pin, pon) = [
                     (image_numbers[fl[idx, IIDX]], fl[idx, ONIDX])
-                    for idx, fl in zip(mitosis, (F, F, L))]
-                return "n%d[label=\"MIT%d:%d->%d:%d+%d:%d\"]" % (
-                    node, pin, pon, lin, lon, rin, ron)
-            return "n%d[label=\"%s\"]" % (
-                node, fmt % (image_numbers[int(fl[idx, IIDX])],
-                             int(fl[idx, ONIDX])))
+                    for idx, fl in zip(mitosis, (F, F, L))
+                ]
+                return 'n%d[label="MIT%d:%d->%d:%d+%d:%d"]' % (
+                    node,
+                    pin,
+                    pon,
+                    lin,
+                    lon,
+                    rin,
+                    ron,
+                )
+            return 'n%d[label="%s"]' % (
+                node,
+                fmt % (image_numbers[int(fl[idx, IIDX])], int(fl[idx, ONIDX])),
+            )
 
         def write_graph(path, x, y):
-            '''Write a graphviz DOT file'''
+            """Write a graphviz DOT file"""
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = np.where(
-                    (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
+                    (x != np.arange(len(x))) & (y != np.arange(len(y)))
+                )[0]
                 for idx in graph_idx:
                     fd.write(desc(idx) + ";\n")
                 for idx in graph_idx:
-                    fd.write("n%d -> n%d [label=%0.2f];\n" %
-                             (idx, x[idx], score_matrix[idx, x[idx]]))
+                    fd.write(
+                        "n%d -> n%d [label=%0.2f];\n"
+                        % (idx, x[idx], score_matrix[idx, x[idx]])
+                    )
                 fd.write("}\n")
 
         #
@@ -2154,9 +2332,9 @@ Enter a name to give the color-coded image of tracked labels.''')
             # If the parent was not accepted or either of the children
             # have been assigned to a mitosis, skip
             #
-            if x[pidx] == midx + mitosis_off and not \
-                    any([y[idx] >= mitosis_off and y[idx] < mitosis_end
-                         for idx in (lidx, ridx)]):
+            if x[pidx] == midx + mitosis_off and not any(
+                [mitosis_off <= y[idx] < mitosis_end for idx in (lidx, ridx)]
+            ):
                 alt_score = sum([score_matrix[y[idx], idx] for idx in (lidx, ridx)])
                 #
                 # Taking the alt score would cost us a mitosis alternative
@@ -2186,8 +2364,10 @@ Enter a name to give the color-coded image of tracked labels.''')
             good_mitoses = np.zeros((0, 3), int)
             good_mitosis_scores = np.zeros(0)
         else:
-            good_mitoses, good_mitosis_scores = \
-                mitoses[good_mitoses], mitosis_scores[good_mitoses]
+            good_mitoses, good_mitosis_scores = (
+                mitoses[good_mitoses],
+                mitosis_scores[good_mitoses],
+            )
         #
         # -------------------------------------
         #
@@ -2202,14 +2382,22 @@ Enter a name to give the color-coded image of tracked labels.''')
             rerun_start[mitosis_off:] = False
             mask = rerun_end[i] & rerun_start[j]
             i, j, c = i[mask], j[mask], c[mask]
-            i = np.hstack((i,
-                           good_mitoses[:, MPIDX],
-                           good_mitoses[:, MDLIDX] + gap_off,
-                           good_mitoses[:, MDRIDX] + gap_off))
-            j = np.hstack((j,
-                           good_mitoses[:, MPIDX] + gap_off,
-                           good_mitoses[:, MDLIDX],
-                           good_mitoses[:, MDRIDX]))
+            i = np.hstack(
+                (
+                    i,
+                    good_mitoses[:, MPIDX],
+                    good_mitoses[:, MDLIDX] + gap_off,
+                    good_mitoses[:, MDRIDX] + gap_off,
+                )
+            )
+            j = np.hstack(
+                (
+                    j,
+                    good_mitoses[:, MPIDX] + gap_off,
+                    good_mitoses[:, MDLIDX],
+                    good_mitoses[:, MDRIDX],
+                )
+            )
             c = np.hstack((c, np.zeros(len(good_mitoses) * 3)))
             x, y = lapjv(i, j, c)
         #
@@ -2259,8 +2447,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         #
         # Discard starts linked to self = "do nothing"
         #
-        start_idxs = np.where(
-            y[:start_end_end] != np.arange(gap_off, gap_end))[0]
+        start_idxs = np.where(y[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in start_idxs:
             my_image_index = int(F[i, IIDX])
             my_image_number = image_numbers[my_image_index]
@@ -2282,19 +2469,26 @@ Enter a name to give the color-coded image of tracked labels.''')
                 parent_image_index = int(L[yi, IIDX])
                 parent_object_number = int(L[yi, ONIDX])
                 parent_image_number = image_numbers[parent_image_index]
-                parent_image_numbers[my_image_index][my_object_index] = \
-                    parent_image_number
-                parent_object_numbers[my_image_index][my_object_index] = \
-                    parent_object_number
+                parent_image_numbers[my_image_index][
+                    my_object_index
+                ] = parent_image_number
+                parent_object_numbers[my_image_index][
+                    my_object_index
+                ] = parent_object_number
                 relationships.append(
-                    ((parent_image_index, parent_object_number),
-                     (my_image_index, my_object_number)))
-                add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
-                          LT_GAP)
-                add_fixup(F_GAP_LENGTH, my_image_number, my_object_number,
-                          my_image_index - parent_image_index)
-                add_fixup(F_GAP_SCORE, my_image_number, my_object_number,
-                          scores[yi])
+                    (
+                        (parent_image_index, parent_object_number),
+                        (my_image_index, my_object_number),
+                    )
+                )
+                add_fixup(F_LINK_TYPE, my_image_number, my_object_number, LT_GAP)
+                add_fixup(
+                    F_GAP_LENGTH,
+                    my_image_number,
+                    my_object_number,
+                    my_image_index - parent_image_index,
+                )
+                add_fixup(F_GAP_SCORE, my_image_number, my_object_number, scores[yi])
                 #
                 # One less new object
                 #
@@ -2304,12 +2498,17 @@ Enter a name to give the color-coded image of tracked labels.''')
                 # the image set after the parent)
                 #
                 lost_object_count[parent_image_index + 1] -= 1
-                logger.debug("Gap closing: %d:%d to %d:%d, score=%f" %
-                             (parent_image_number, parent_object_number,
-                              image_numbers[my_image_index],
-                              object_numbers[my_image_index][my_object_index],
-                              score_matrix[yi, i]))
-            elif yi >= split_off and yi < split_end:
+                logger.debug(
+                    "Gap closing: %d:%d to %d:%d, score=%f"
+                    % (
+                        parent_image_number,
+                        parent_object_number,
+                        image_numbers[my_image_index],
+                        object_numbers[my_image_index][my_object_index],
+                        score_matrix[yi, i],
+                    )
+                )
+            elif split_off <= yi < split_end:
                 # ------------------------------------
                 #
                 #     SPLIT
@@ -2320,17 +2519,25 @@ Enter a name to give the color-coded image of tracked labels.''')
                 parent_object_number = int(P2[p2_idx, ONIDX])
                 b[i + 1] = P2[p2_idx, LIDX]
                 c[b[i + 1]] = i + 1
-                parent_image_numbers[my_image_index][my_object_index] = \
-                    parent_image_number
-                parent_object_numbers[my_image_index][my_object_index] = \
-                    parent_object_number
+                parent_image_numbers[my_image_index][
+                    my_object_index
+                ] = parent_image_number
+                parent_object_numbers[my_image_index][
+                    my_object_index
+                ] = parent_object_number
                 relationships.append(
-                    ((parent_image_index, parent_object_number),
-                     (my_image_index, my_object_number)))
-                add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
-                          LT_SPLIT)
-                add_fixup(F_SPLIT_SCORE, my_image_number, my_object_number,
-                          split_scores[yi - split_off])
+                    (
+                        (parent_image_index, parent_object_number),
+                        (my_image_index, my_object_number),
+                    )
+                )
+                add_fixup(F_LINK_TYPE, my_image_number, my_object_number, LT_SPLIT)
+                add_fixup(
+                    F_SPLIT_SCORE,
+                    my_image_number,
+                    my_object_number,
+                    split_scores[yi - split_off],
+                )
                 #
                 # one less new object
                 #
@@ -2339,22 +2546,26 @@ Enter a name to give the color-coded image of tracked labels.''')
                 # one more split object
                 #
                 split_count[my_image_index] += 1
-                logger.debug("split: %d:%d to %d:%d, score=%f" %
-                             (parent_image_number, parent_object_number,
-                              image_numbers[my_image_index],
-                              object_numbers[my_image_index][my_object_index],
-                              split_scores[y[i] - split_off]))
+                logger.debug(
+                    "split: %d:%d to %d:%d, score=%f"
+                    % (
+                        parent_image_number,
+                        parent_object_number,
+                        image_numbers[my_image_index],
+                        object_numbers[my_image_index][my_object_index],
+                        split_scores[y[i] - split_off],
+                    )
+                )
         # ---------------------
         #
         # Process ends (parents)
         #
-        end_idxs = np.where(
-            x[:start_end_end] != np.arange(gap_off, gap_end))[0]
+        end_idxs = np.where(x[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in end_idxs:
             if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
                 d[a[i + 1]] = i + 1
-            elif x[i] >= merge_off and x[i] < merge_end:
+            elif merge_off <= x[i] < merge_end:
                 # -------------------
                 #
                 #    MERGE
@@ -2371,22 +2582,31 @@ Enter a name to give the color-coded image of tracked labels.''')
                 child_image_index = int(P1[p1_idx, IIDX])
                 child_object_number = int(P1[p1_idx, ONIDX])
                 relationships.append(
-                    ((parent_image_index, parent_object_number),
-                     (child_image_index, child_object_number)))
-                add_fixup(F_MERGE_SCORE, parent_image_number,
-                          parent_object_number,
-                          merge_scores[x[i] - merge_off])
+                    (
+                        (parent_image_index, parent_object_number),
+                        (child_image_index, child_object_number),
+                    )
+                )
+                add_fixup(
+                    F_MERGE_SCORE,
+                    parent_image_number,
+                    parent_object_number,
+                    merge_scores[x[i] - merge_off],
+                )
                 lost_object_count[parent_image_index + 1] -= 1
                 merge_count[child_image_index] += 1
-                logger.debug("Merge: %d:%d to %d:%d, score=%f" %
-                             (image_numbers[parent_image_index]
-                              , parent_object_number,
-                              image_numbers[child_image_index],
-                              child_object_number,
-                              merge_scores[x[i] - merge_off]))
+                logger.debug(
+                    "Merge: %d:%d to %d:%d, score=%f"
+                    % (
+                        image_numbers[parent_image_index],
+                        parent_object_number,
+                        image_numbers[child_image_index],
+                        child_object_number,
+                        merge_scores[x[i] - merge_off],
+                    )
+                )
 
-        for (mlidx, mridx, mpidx), score in \
-                zip(good_mitoses, good_mitosis_scores):
+        for (mlidx, mridx, mpidx), score in zip(good_mitoses, good_mitosis_scores):
             #
             # The parent is attached, one less lost object
             #
@@ -2409,24 +2629,32 @@ Enter a name to give the color-coded image of tracked labels.''')
 
                 b[idx + 1] = int(L[mpidx, LIDX])
                 c[b[idx + 1]] = idx + 1
-                parent_image_numbers[my_image_index][my_object_index] = \
-                    parent_image_number
-                parent_object_numbers[my_image_index][my_object_index] = \
-                    parent_object_number
+                parent_image_numbers[my_image_index][
+                    my_object_index
+                ] = parent_image_number
+                parent_object_numbers[my_image_index][
+                    my_object_index
+                ] = parent_object_number
                 relationships.append(
-                    ((parent_image_index, parent_object_number),
-                     (my_image_index, my_object_number)))
-                add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
-                          LT_MITOSIS)
-                add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number,
-                          score)
+                    (
+                        (parent_image_index, parent_object_number),
+                        (my_image_index, my_object_number),
+                    )
+                )
+                add_fixup(F_LINK_TYPE, my_image_number, my_object_number, LT_MITOSIS)
+                add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number, score)
                 new_object_count[my_image_index] -= 1
-            logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
-                         (parent_image_number, parent_object_number,
-                          image_numbers[int(F[int(mlidx), int(IIDX)])],
-                          F[mlidx, ONIDX],
-                          F[mridx, ONIDX],
-                          score))
+            logger.debug(
+                "Mitosis: %d:%d to %d:%d and %d, score=%f"
+                % (
+                    parent_image_number,
+                    parent_object_number,
+                    image_numbers[int(F[int(mlidx), int(IIDX)])],
+                    F[mlidx, ONIDX],
+                    F[mridx, ONIDX],
+                    score,
+                )
+            )
         #
         # At this point a gives the label # of the track that connects
         # to the end of the indexed track. b gives the label # of the
@@ -2436,10 +2664,10 @@ Enter a name to give the color-coded image of tracked labels.''')
         # aa and bb are the vertices of an edge list and aa[i],bb[i]
         # make up an edge
         #
-        connect_mask = (a != -1)
+        connect_mask = a != -1
         aa = a[connect_mask]
         bb = np.argwhere(connect_mask).flatten()
-        connect_mask = (b != -1)
+        connect_mask = b != -1
         aa = np.hstack((aa, b[connect_mask]))
         bb = np.hstack((bb, np.argwhere(connect_mask).flatten()))
         #
@@ -2457,57 +2685,80 @@ Enter a name to give the color-coded image of tracked labels.''')
         m_link_type = self.measurement_name(F_LINK_TYPE)
         for i, image_number in enumerate(image_numbers):
             n_objects = len(newlabel[i])
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_LOST_OBJECT_COUNT),
-                              lost_object_count[i], True, image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_NEW_OBJECT_COUNT),
-                              new_object_count[i], True, image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_MERGE_COUNT),
-                              merge_count[i], True, image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_SPLIT_COUNT),
-                              split_count[i], True, image_number)
+            m.add_measurement(
+                cpmeas.IMAGE,
+                self.image_measurement_name(F_LOST_OBJECT_COUNT),
+                lost_object_count[i],
+                True,
+                image_number,
+            )
+            m.add_measurement(
+                cpmeas.IMAGE,
+                self.image_measurement_name(F_NEW_OBJECT_COUNT),
+                new_object_count[i],
+                True,
+                image_number,
+            )
+            m.add_measurement(
+                cpmeas.IMAGE,
+                self.image_measurement_name(F_MERGE_COUNT),
+                merge_count[i],
+                True,
+                image_number,
+            )
+            m.add_measurement(
+                cpmeas.IMAGE,
+                self.image_measurement_name(F_SPLIT_COUNT),
+                split_count[i],
+                True,
+                image_number,
+            )
             if n_objects == 0:
                 continue
-            m.add_measurement(object_name,
-                              self.measurement_name(F_LABEL),
-                              newlabel[i], can_overwrite=True,
-                              image_set_number=image_number)
-            m.add_measurement(object_name,
-                              self.measurement_name(F_PARENT_IMAGE_NUMBER),
-                              parent_image_numbers[i],
-                              can_overwrite=True,
-                              image_set_number=image_number)
-            m.add_measurement(object_name,
-                              self.measurement_name(F_PARENT_OBJECT_NUMBER),
-                              parent_object_numbers[i],
-                              can_overwrite=True,
-                              image_set_number=image_number)
+            m.add_measurement(
+                object_name,
+                self.measurement_name(F_LABEL),
+                newlabel[i],
+                can_overwrite=True,
+                image_set_number=image_number,
+            )
+            m.add_measurement(
+                object_name,
+                self.measurement_name(F_PARENT_IMAGE_NUMBER),
+                parent_image_numbers[i],
+                can_overwrite=True,
+                image_set_number=image_number,
+            )
+            m.add_measurement(
+                object_name,
+                self.measurement_name(F_PARENT_OBJECT_NUMBER),
+                parent_object_numbers[i],
+                can_overwrite=True,
+                image_set_number=image_number,
+            )
             is_fixups = fixups.get(image_number, None)
             if (is_fixups is not None) and (F_LINK_TYPE in is_fixups):
                 link_types = m[object_name, m_link_type, image_number]
-                object_numbers, values = [
-                    np.array(_) for _ in is_fixups[F_LINK_TYPE]]
+                object_numbers, values = [np.array(_) for _ in is_fixups[F_LINK_TYPE]]
                 link_types[object_numbers - 1] = values
                 m[object_name, m_link_type, image_number] = link_types
             for feature, data_type in (
-                    (F_GAP_LENGTH, np.int32),
-                    (F_GAP_SCORE, np.float32),
-                    (F_MERGE_SCORE, np.float32),
-                    (F_SPLIT_SCORE, np.float32),
-                    (F_MITOSIS_SCORE, np.float32)):
+                (F_GAP_LENGTH, np.int32),
+                (F_GAP_SCORE, np.float32),
+                (F_MERGE_SCORE, np.float32),
+                (F_SPLIT_SCORE, np.float32),
+                (F_MITOSIS_SCORE, np.float32),
+            ):
                 if data_type == np.int32:
                     values = np.zeros(n_objects, data_type)
                 else:
                     values = np.ones(n_objects, data_type) * np.NaN
                 if (is_fixups is not None) and (feature in is_fixups):
                     object_numbers, fixup_values = [
-                        np.array(_) for _ in is_fixups[feature]]
+                        np.array(_) for _ in is_fixups[feature]
+                    ]
                     values[object_numbers - 1] = fixup_values.astype(data_type)
-                m[object_name, self.measurement_name(feature), image_number] = \
-                    values
+                m[object_name, self.measurement_name(feature), image_number] = values
         #
         # Write the relationships.
         #
@@ -2518,14 +2769,20 @@ Enter a name to give the color-coded image of tracked labels.''')
             parent_object_numbers = relationships[:, 0, 1]
             child_object_numbers = relationships[:, 1, 1]
             m.add_relate_measurement(
-                self.module_num, R_PARENT, object_name, object_name,
-                parent_image_numbers, parent_object_numbers,
-                child_image_numbers, child_object_numbers)
+                self.module_num,
+                R_PARENT,
+                object_name,
+                object_name,
+                parent_image_numbers,
+                parent_object_numbers,
+                child_image_numbers,
+                child_object_numbers,
+            )
 
         self.recalculate_group(workspace, image_numbers)
 
     def calculate_area_penalty(self, a1, a2):
-        '''Calculate a penalty for areas that don't match
+        """Calculate a penalty for areas that don't match
 
         Ideally, area should be conserved while tracking. We divide the larger
         of the two by the smaller of the two to get the area penalty
@@ -2535,14 +2792,14 @@ Enter a name to give the color-coded image of tracked labels.''')
         penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for
         a1+a2 < b. I can't think of a good reason why they should be
         asymmetric.
-        '''
+        """
         result = a1 / a2
         result[result < 1] = 1 / result[result < 1]
         result[np.isnan(result)] = np.inf
         return result
 
     def get_gap_pair_scores(self, F, L, max_gap):
-        '''Compute scores for matching last frame with first to close gaps
+        """Compute scores for matching last frame with first to close gaps
 
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
@@ -2557,7 +2814,7 @@ Enter a name to give the color-coded image of tracked labels.''')
                  the track whose index is the second element of the array.
 
                  an M-element vector of scores.
-        '''
+        """
         #
         # There have to be at least two things to match
         #
@@ -2590,15 +2847,13 @@ Enter a name to give the color-coded image of tracked labels.''')
         #
         # The lowest possible F for each L is 1+L
         #
-        j_self = np.minimum(np.arange(len(i_counts)),
-                            len(j_counts) - 1)
+        j_self = np.minimum(np.arange(len(i_counts)), len(j_counts) - 1)
         j_first_idx = j_indexes.fwd_idx[j_self] + j_counts[j_self]
         #
         # The highest possible F for each L is L + max_gap. j_end is the
         # first illegal value... just past that.
         #
-        j_last = np.minimum(np.arange(len(i_counts)) + max_gap,
-                            len(j_counts) - 1)
+        j_last = np.minimum(np.arange(len(i_counts)) + max_gap, len(j_counts) - 1)
         j_end_idx = j_indexes.fwd_idx[j_last] + j_counts[j_last]
         #
         # Structure the i and j block ranges
@@ -2618,8 +2873,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         #
         # The distances
         #
-        d = np.sqrt((L[ai, X] - F[aj, X]) ** 2 +
-                    (L[ai, Y] - F[aj, Y]) ** 2)
+        d = np.sqrt((L[ai, X] - F[aj, X]) ** 2 + (L[ai, Y] - F[aj, Y]) ** 2)
         #
         # Rho... the area penalty
         #
@@ -2627,7 +2881,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         return np.column_stack((ai, aj)), d * rho
 
     def get_mitotic_triple_scores(self, F, L):
-        '''Compute scores for matching a parent to two daughters
+        """Compute scores for matching a parent to two daughters
 
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
@@ -2640,7 +2894,7 @@ Enter a name to give the color-coded image of tracked labels.''')
                  columns are the indices of the daughters in the F array
 
                  an M-element vector of distances of the parent from the expected
-        '''
+        """
         X = 0
         Y = 1
         IIDX = 2
@@ -2672,29 +2926,27 @@ Enter a name to give the color-coded image of tracked labels.''')
 
         # Find all parent-daughter pairs where the parent
         # is in the frame previous to the daughters
-        ij, k = [_.flatten() for _ in np.mgrid[0:len(i), 0:len(L)]]
+        ij, k = [_.flatten() for _ in np.mgrid[0 : len(i), 0 : len(L)]]
         mask = F[i[ij], IIDX] == L[k, IIDX] + 1
         ij, k = ij[mask], k[mask]
         if len(ij) == 0:
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
 
-        d = np.sqrt((center_x[ij] - L[k, X]) ** 2 +
-                    (center_y[ij] - L[k, Y]) ** 2)
+        d = np.sqrt((center_x[ij] - L[k, X]) ** 2 + (center_y[ij] - L[k, Y]) ** 2)
         mask = d <= dmax[ij]
         ij, k, d = ij[mask], k[mask], d[mask]
         if len(ij) == 0:
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
 
-        rho = self.calculate_area_penalty(
-            F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
+        rho = self.calculate_area_penalty(F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
         return np.column_stack((i[ij], j[ij], k)), d * rho
 
     def recalculate_group(self, workspace, image_numbers):
-        '''Recalculate all measurements once post_group has run
+        """Recalculate all measurements once post_group has run
 
         workspace - the workspace being operated on
         image_numbers - the image numbers of the group's image sets' measurements
-        '''
+        """
         m = workspace.measurements
         object_name = self.object_name.value
 
@@ -2706,10 +2958,14 @@ Enter a name to give the color-coded image of tracked labels.''')
         index_to_imgnum = np.array(image_numbers)
 
         parent_image_numbers, parent_object_numbers = [
-            [m.get_measurement(
-                object_name, self.measurement_name(feature), image_number)
-                for image_number in image_numbers]
-            for feature in (F_PARENT_IMAGE_NUMBER, F_PARENT_OBJECT_NUMBER)]
+            [
+                m.get_measurement(
+                    object_name, self.measurement_name(feature), image_number
+                )
+                for image_number in image_numbers
+            ]
+            for feature in (F_PARENT_IMAGE_NUMBER, F_PARENT_OBJECT_NUMBER)
+        ]
 
         #
         # Do all_connected_components on the graph of parents to find groups
@@ -2736,11 +2992,11 @@ Enter a name to give the color-coded image of tracked labels.''')
         # Set the ancestral index for each label
         #
         ancestral_index = np.zeros(nlabels, int)
-        ancestral_index[labels[parent_image_numbers == 0]] = \
+        ancestral_index[labels[parent_image_numbers == 0]] = (
             np.argwhere(parent_image_numbers == 0).flatten().astype(int)
+        )
         ancestral_image_index = idx.rev_idx[ancestral_index]
-        ancestral_object_index = \
-            ancestral_index - idx.fwd_idx[ancestral_image_index]
+        ancestral_object_index = ancestral_index - idx.fwd_idx[ancestral_image_index]
         #
         # Blow these up to one per object for convenience
         #
@@ -2749,37 +3005,43 @@ Enter a name to give the color-coded image of tracked labels.''')
         ancestral_object_index = ancestral_object_index[labels]
 
         def start(image_index):
-            '''Return the start index in the array for the given image index'''
+            """Return the start index in the array for the given image index"""
             return idx.fwd_idx[image_index]
 
         def end(image_index):
-            '''Return the end index in the array for the given image index'''
+            """Return the end index in the array for the given image index"""
             return start(image_index) + idx.counts[0][image_index]
 
         def slyce(image_index):
             return slice(start(image_index), end(image_index))
 
         class wrapped(object):
-            '''make an indexable version of a measurement, with parent and ancestor fetching'''
+            """make an indexable version of a measurement, with parent and ancestor fetching"""
 
             def __init__(self, feature_name):
                 self.feature_name = feature_name
-                self.backing_store = np.hstack([
-                    m.get_measurement(object_name, feature_name, i)
-                    for i in image_numbers])
+                self.backing_store = np.hstack(
+                    [
+                        m.get_measurement(object_name, feature_name, i)
+                        for i in image_numbers
+                    ]
+                )
 
             def __getitem__(self, index):
                 return self.backing_store[slyce(index)]
 
             def __setitem__(self, index, val):
                 self.backing_store[slyce(index)] = val
-                m.add_measurement(object_name, self.feature_name, val,
-                                  image_set_number=image_numbers[index],
-                                  can_overwrite=True)
+                m.add_measurement(
+                    object_name,
+                    self.feature_name,
+                    val,
+                    image_set_number=image_numbers[index],
+                    can_overwrite=True,
+                )
 
             def get_parent(self, index, no_parent=None):
-                result = np.zeros(idx.counts[0][index],
-                                  self.backing_store.dtype)
+                result = np.zeros(idx.counts[0][index], self.backing_store.dtype)
                 my_slice = slyce(index)
                 mask = parent_image_numbers[my_slice] != 0
                 if not np.all(mask):
@@ -2789,8 +3051,9 @@ Enter a name to give the color-coded image of tracked labels.''')
                         result[~mask] = no_parent[~mask]
                 if np.any(mask):
                     result[mask] = self.backing_store[
-                        idx.fwd_idx[parent_image_indexes[my_slice][mask]] +
-                        parent_object_indexes[my_slice][mask]]
+                        idx.fwd_idx[parent_image_indexes[my_slice][mask]]
+                        + parent_object_indexes[my_slice][mask]
+                    ]
                 return result
 
             def get_ancestor(self, index):
@@ -2813,8 +3076,14 @@ Enter a name to give the color-coded image of tracked labels.''')
 
         age = {}  # Dictionary of per-label ages
         if self.wants_lifetime_filtering.value:
-            minimum_lifetime = self.min_lifetime.value if self.wants_minimum_lifetime.value else -np.Inf
-            maximum_lifetime = self.max_lifetime.value if self.wants_maximum_lifetime.value else np.Inf
+            minimum_lifetime = (
+                self.min_lifetime.value
+                if self.wants_minimum_lifetime.value
+                else -np.Inf
+            )
+            maximum_lifetime = (
+                self.max_lifetime.value if self.wants_maximum_lifetime.value else np.Inf
+            )
 
         for image_number in image_numbers:
             index = image_index[image_number]
@@ -2844,8 +3113,7 @@ Enter a name to give the color-coded image of tracked labels.''')
             #
             x_tot_diff = this_x - x.get_ancestor(index)
             y_tot_diff = this_y - y.get_ancestor(index)
-            tot_distance = np.sqrt(x_tot_diff * x_tot_diff +
-                                   y_tot_diff * y_tot_diff)
+            tot_distance = np.sqrt(x_tot_diff * x_tot_diff + y_tot_diff * y_tot_diff)
             displ[index] = tot_distance
             #
             # Linearity = ratio of displacement and integrated
@@ -2863,10 +3131,14 @@ Enter a name to give the color-coded image of tracked labels.''')
             for this_label, this_lifetime in zip(label[index], lifetimes[index]):
                 age[this_label] = this_lifetime
 
-        all_labels = age.keys()
-        all_ages = age.values()
+        all_labels = list(age.keys())
+        all_ages = list(age.values())
         if self.wants_lifetime_filtering.value:
-            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime or v >= maximum_lifetime]
+            labels_to_filter = [
+                k
+                for k, v in list(age.items())
+                if v <= minimum_lifetime or v >= maximum_lifetime
+            ]
         for image_number in image_numbers:
             index = image_index[image_number]
 
@@ -2887,16 +3159,18 @@ Enter a name to give the color-coded image of tracked labels.''')
                     label[index] = this_label
         m.add_experiment_measurement(F_EXPT_ORIG_NUMTRACKS, nlabels)
         if self.wants_lifetime_filtering.value:
-            m.add_experiment_measurement(F_EXPT_FILT_NUMTRACKS, nlabels - len(labels_to_filter))
+            m.add_experiment_measurement(
+                F_EXPT_FILT_NUMTRACKS, nlabels - len(labels_to_filter)
+            )
 
     def map_objects(self, workspace, new_of_old, old_of_new, i, j):
-        '''Record the mapping of old to new objects and vice-versa
+        """Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
         i, j - the coordinates for each new object.
-        '''
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_number = m.get_current_image_measurement(cpp.IMAGE_NUMBER)
@@ -2910,20 +3184,21 @@ Enter a name to give the color-coded image of tracked labels.''')
         # Record the new objects' parents
         #
         parents = old_of_new.copy()
-        parents[parents != 0] = \
-            old_object_numbers[(old_of_new[parents != 0] - 1)].astype(parents.dtype)
+        parents[parents != 0] = old_object_numbers[
+            (old_of_new[parents != 0] - 1)
+        ].astype(parents.dtype)
         self.add_measurement(workspace, F_PARENT_OBJECT_NUMBER, old_of_new)
         parent_image_numbers = np.zeros(len(old_of_new))
         parent_image_numbers[parents != 0] = image_number - 1
-        self.add_measurement(workspace, F_PARENT_IMAGE_NUMBER,
-                             parent_image_numbers)
+        self.add_measurement(workspace, F_PARENT_IMAGE_NUMBER, parent_image_numbers)
         #
         # Assign object IDs to the new objects
         #
         mapping = np.zeros(new_count, int)
         if old_count > 0 and new_count > 0:
-            mapping[old_of_new != 0] = \
-                old_object_numbers[old_of_new[old_of_new != 0] - 1]
+            mapping[old_of_new != 0] = old_object_numbers[
+                old_of_new[old_of_new != 0] - 1
+            ]
             miss_count = np.sum(old_of_new == 0)
             lost_object_count = np.sum(new_of_old == 0)
         else:
@@ -2931,8 +3206,9 @@ Enter a name to give the color-coded image of tracked labels.''')
             lost_object_count = old_count
         nunmapped = np.sum(mapping == 0)
         new_max_object_number = max_object_number + nunmapped
-        mapping[mapping == 0] = np.arange(max_object_number + 1,
-                                          new_max_object_number + 1)
+        mapping[mapping == 0] = np.arange(
+            max_object_number + 1, new_max_object_number + 1
+        )
         self.set_max_object_number(workspace, new_max_object_number)
         self.add_measurement(workspace, F_LABEL, mapping)
         self.set_saved_object_numbers(workspace, mapping)
@@ -2950,7 +3226,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         old_i, old_j = self.get_saved_coordinates(workspace)
         old_distance = self.get_saved_distances(workspace)
         old_orig_i, old_orig_j = self.get_orig_coordinates(workspace)
-        has_old = (old_of_new != 0)
+        has_old = old_of_new != 0
         if np.any(has_old):
             old_indexes = old_of_new[has_old] - 1
             orig_i[has_old] = old_orig_i[old_indexes]
@@ -2958,8 +3234,11 @@ Enter a name to give the color-coded image of tracked labels.''')
             diff_i[has_old] = i[has_old] - old_i[old_indexes]
             diff_j[has_old] = j[has_old] - old_j[old_indexes]
             distance[has_old] = np.sqrt(diff_i[has_old] ** 2 + diff_j[has_old] ** 2)
-            integrated_distance[has_old] = (old_distance[old_indexes] + distance[has_old])
-            displacement[has_old] = np.sqrt((i[has_old] - orig_i[has_old]) ** 2 + (j[has_old] - orig_j[has_old]) ** 2)
+            integrated_distance[has_old] = old_distance[old_indexes] + distance[has_old]
+            displacement[has_old] = np.sqrt(
+                (i[has_old] - orig_i[has_old]) ** 2
+                + (j[has_old] - orig_j[has_old]) ** 2
+            )
             linearity[has_old] = displacement[has_old] / integrated_distance[has_old]
         self.add_measurement(workspace, F_TRAJECTORY_X, diff_j)
         self.add_measurement(workspace, F_TRAJECTORY_Y, diff_i)
@@ -2978,17 +3257,17 @@ Enter a name to give the color-coded image of tracked labels.''')
             old_age = self.get_saved_ages(workspace)
             age[has_old] = old_age[old_of_new[has_old] - 1] + 1
         self.add_measurement(workspace, F_LIFETIME, age)
-        final_age = np.NaN * np.ones(new_count, float)  # Initialize to NaN; will re-calc later
+        final_age = np.NaN * np.ones(
+            new_count, float
+        )  # Initialize to NaN; will re-calc later
         self.add_measurement(workspace, F_FINAL_AGE, final_age)
         self.set_saved_ages(workspace, age)
         self.set_saved_object_numbers(workspace, mapping)
         #
         # Add image measurements
         #
-        self.add_image_measurement(workspace, F_NEW_OBJECT_COUNT,
-                                   np.sum(parents == 0))
-        self.add_image_measurement(workspace, F_LOST_OBJECT_COUNT,
-                                   lost_object_count)
+        self.add_image_measurement(workspace, F_NEW_OBJECT_COUNT, np.sum(parents == 0))
+        self.add_image_measurement(workspace, F_LOST_OBJECT_COUNT, lost_object_count)
         #
         # Find parents with more than one child. These are the progenitors
         # for daughter cells.
@@ -3015,11 +3294,12 @@ Enter a name to give the color-coded image of tracked labels.''')
         #########################################
         last_object_numbers = np.arange(1, len(new_of_old) + 1)
         new_object_numbers = np.arange(1, len(old_of_new) + 1)
-        r_parent_object_numbers = np.hstack((
-            old_of_new[old_of_new != 0],
-            last_object_numbers[new_of_old != 0]))
-        r_child_object_numbers = np.hstack((
-            new_object_numbers[parents != 0], new_of_old[new_of_old != 0]))
+        r_parent_object_numbers = np.hstack(
+            (old_of_new[old_of_new != 0], last_object_numbers[new_of_old != 0])
+        )
+        r_child_object_numbers = np.hstack(
+            (new_object_numbers[parents != 0], new_of_old[new_of_old != 0])
+        )
         if len(r_child_object_numbers) > 0:
             #
             # Find unique pairs
@@ -3027,24 +3307,33 @@ Enter a name to give the color-coded image of tracked labels.''')
             order = np.lexsort((r_child_object_numbers, r_parent_object_numbers))
             r_child_object_numbers = r_child_object_numbers[order]
             r_parent_object_numbers = r_parent_object_numbers[order]
-            to_keep = np.hstack((
-                [True],
-                (r_parent_object_numbers[1:] != r_parent_object_numbers[:-1]) |
-                (r_child_object_numbers[1:] != r_child_object_numbers[:-1])))
+            to_keep = np.hstack(
+                (
+                    [True],
+                    (r_parent_object_numbers[1:] != r_parent_object_numbers[:-1])
+                    | (r_child_object_numbers[1:] != r_child_object_numbers[:-1]),
+                )
+            )
             r_child_object_numbers = r_child_object_numbers[to_keep]
             r_parent_object_numbers = r_parent_object_numbers[to_keep]
-            r_image_numbers = np.ones(
-                r_parent_object_numbers.shape[0],
-                r_parent_object_numbers.dtype) * image_number
+            r_image_numbers = (
+                np.ones(r_parent_object_numbers.shape[0], r_parent_object_numbers.dtype)
+                * image_number
+            )
             if len(r_child_object_numbers) > 0:
                 m.add_relate_measurement(
-                    self.module_num, R_PARENT,
-                    self.object_name.value, self.object_name.value,
-                    r_image_numbers - 1, r_parent_object_numbers,
-                    r_image_numbers, r_child_object_numbers)
+                    self.module_num,
+                    R_PARENT,
+                    self.object_name.value,
+                    self.object_name.value,
+                    r_image_numbers - 1,
+                    r_parent_object_numbers,
+                    r_image_numbers,
+                    r_child_object_numbers,
+                )
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
-        '''Rerun the kalman filters to improve the motion models'''
+        """Rerun the kalman filters to improve the motion models"""
         m = workspace.measurements
         object_name = self.object_name.value
         object_number = m[object_name, cpmeas.OBJECT_NUMBER, image_numbers]
@@ -3065,40 +3354,36 @@ Enter a name to give the color-coded image of tracked labels.''')
         idx = Indexes(counts)
         x = np.hstack(x)
         y = np.hstack(m[object_name, M_LOCATION_CENTER_Y, image_numbers])
-        area = np.hstack(
-            m[object_name,
-              self.measurement_name(F_AREA),
-              image_numbers])
+        area = np.hstack(m[object_name, self.measurement_name(F_AREA), image_numbers])
         parent_image_number = np.hstack(
-            m[object_name,
-              self.measurement_name(F_PARENT_IMAGE_NUMBER),
-              image_numbers])
+            m[object_name, self.measurement_name(F_PARENT_IMAGE_NUMBER), image_numbers]
+        ).astype(int)
         parent_object_number = np.hstack(
-            m[object_name,
-              self.measurement_name(F_PARENT_OBJECT_NUMBER),
-              image_numbers])
+            m[object_name, self.measurement_name(F_PARENT_OBJECT_NUMBER), image_numbers]
+        ).astype(int)
         link_type = np.hstack(
-            m[object_name,
-              self.measurement_name(F_LINK_TYPE),
-              image_numbers])
+            m[object_name, self.measurement_name(F_LINK_TYPE), image_numbers]
+        )
         link_distance = np.hstack(
-            m[object_name,
-              self.measurement_name(F_LINKING_DISTANCE),
-              image_numbers])
+            m[object_name, self.measurement_name(F_LINKING_DISTANCE), image_numbers]
+        )
         movement_model = np.hstack(
-            m[object_name,
-              self.measurement_name(F_MOVEMENT_MODEL),
-              image_numbers])
+            m[object_name, self.measurement_name(F_MOVEMENT_MODEL), image_numbers]
+        )
 
         models = self.get_kalman_models()
         kalman_models = [
-            cpfilter.static_kalman_model() if model == F_STATIC_MODEL
+            cpfilter.static_kalman_model()
+            if model == F_STATIC_MODEL
             else cpfilter.velocity_kalman_model()
-            for model, elements in models]
+            for model, elements in models
+        ]
         kalman_states = [
-            cpfilter.KalmanState(kalman_model.observation_matrix,
-                                 kalman_model.translation_matrix)
-            for kalman_model in kalman_models]
+            cpfilter.KalmanState(
+                kalman_model.observation_matrix, kalman_model.translation_matrix
+            )
+            for kalman_model in kalman_models
+        ]
         #
         # Initialize the last image set's states using no information
         #
@@ -3113,14 +3398,23 @@ Enter a name to give the color-coded image of tracked labels.''')
             jj = x[this_slice]
             new_kalman_states = []
             r = np.column_stack(
-                (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
-                 np.zeros(n_objects), area[this_slice].astype(float))) \
-                .reshape(n_objects, 2, 2)
+                (
+                    area[this_slice].astype(float) / np.pi,
+                    np.zeros(n_objects),
+                    np.zeros(n_objects),
+                    area[this_slice].astype(float),
+                )
+            ).reshape(n_objects, 2, 2)
             for kalman_state in kalman_states:
-                new_kalman_states.append(cpfilter.kalman_filter(
-                    kalman_state, -np.ones(n_objects, int),
-                    np.column_stack((ii, jj)),
-                    np.zeros(n_objects), r))
+                new_kalman_states.append(
+                    cpfilter.kalman_filter(
+                        kalman_state,
+                        -np.ones(n_objects, int),
+                        np.column_stack((ii, jj)),
+                        np.zeros(n_objects),
+                        r,
+                    )
+                )
             kalman_states = new_kalman_states
         else:
             this_slice = slice(idx.fwd_idx[-1], idx.fwd_idx[-1])
@@ -3135,21 +3429,26 @@ Enter a name to give the color-coded image of tracked labels.''')
             next_slice = this_slice
             this_slice = slice(idx.fwd_idx[i], idx.fwd_idx[i] + counts[i])
             next_links = link_type[next_slice]
-            next_has_link = (next_links == LT_PHASE_1)
+            next_has_link = next_links == LT_PHASE_1
             if any(next_has_link):
                 next_parents = parent_object_number[next_slice]
                 next_object_number = np.arange(counts[i + 1]) + 1
-                child_object_number[next_parents[next_has_link] - 1] = \
-                    next_object_number[next_has_link]
+                child_object_number[
+                    next_parents[next_has_link] - 1
+                ] = next_object_number[next_has_link]
             has_child = child_object_number != 0
             if np.any(has_child):
                 kid_idx = child_object_number[has_child] - 1
             ii = y[this_slice]
             jj = x[this_slice]
             r = np.column_stack(
-                (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
-                 np.zeros(n_objects), area[this_slice].astype(float))) \
-                .reshape(n_objects, 2, 2)
+                (
+                    area[this_slice].astype(float) / np.pi,
+                    np.zeros(n_objects),
+                    np.zeros(n_objects),
+                    area[this_slice].astype(float),
+                )
+            ).reshape(n_objects, 2, 2)
             new_kalman_states = []
             errors = link_distance[next_slice]
             model_used = movement_model[next_slice]
@@ -3159,20 +3458,25 @@ Enter a name to give the color-coded image of tracked labels.''')
                 q = np.zeros((n_objects, n_elements, n_elements))
                 if np.any(has_child):
                     obs = kalman_state.predicted_obs_vec
-                    dk = np.sqrt((obs[kid_idx, 0] - ii[has_child]) ** 2 +
-                                 (obs[kid_idx, 1] - jj[has_child]) ** 2)
+                    dk = np.sqrt(
+                        (obs[kid_idx, 0] - ii[has_child]) ** 2
+                        + (obs[kid_idx, 1] - jj[has_child]) ** 2
+                    )
                     this_model = np.where(dk < errors[kid_idx])[0]
                     if len(this_model) > 0:
-                        km_model = KM_NO_VEL if model == F_STATIC_MODEL \
-                            else KM_VEL
+                        km_model = KM_NO_VEL if model == F_STATIC_MODEL else KM_VEL
                         model_used[kid_idx[this_model]] = km_model
                         errors[kid_idx[this_model]] = dk[this_model]
 
                     for j in range(n_elements):
                         q[has_child, j, j] = kalman_state.noise_var[kid_idx, j]
                 updated_state = cpfilter.kalman_filter(
-                    kalman_state, child_object_number - 1,
-                    np.column_stack((ii, jj)), q, r)
+                    kalman_state,
+                    child_object_number - 1,
+                    np.column_stack((ii, jj)),
+                    q,
+                    r,
+                )
                 new_kalman_states.append(updated_state)
             if np.any(has_child):
                 # fix child linking distances and models
@@ -3186,35 +3490,52 @@ Enter a name to give the color-coded image of tracked labels.''')
         if self.tracking_method != "LAP":
             return []
         return sum(
-            [sum(
-                [[kalman_feature(model, F_STATE, element),
-                  kalman_feature(model, F_NOISE, element)] +
-                 [kalman_feature(model, F_COV, element, e2)
-                  for e2 in elements]
-                 for element in elements], [])
-                for model, elements in self.get_kalman_models()], [])
+            [
+                sum(
+                    [
+                        [
+                            kalman_feature(model, F_STATE, element),
+                            kalman_feature(model, F_NOISE, element),
+                        ]
+                        + [kalman_feature(model, F_COV, element, e2) for e2 in elements]
+                        for element in elements
+                    ],
+                    [],
+                )
+                for model, elements in self.get_kalman_models()
+            ],
+            [],
+        )
 
     def get_measurement_columns(self, pipeline):
-        result = [(self.object_name.value,
-                   self.measurement_name(feature),
-                   coltype)
-                  for feature, coltype in F_ALL_COLTYPE_ALL]
-        result += [(cpmeas.IMAGE, self.image_measurement_name(feature), coltype)
-                   for feature, coltype in F_IMAGE_COLTYPE_ALL]
+        result = [
+            (self.object_name.value, self.measurement_name(feature), coltype)
+            for feature, coltype in F_ALL_COLTYPE_ALL
+        ]
+        result += [
+            (cpmeas.IMAGE, self.image_measurement_name(feature), coltype)
+            for feature, coltype in F_IMAGE_COLTYPE_ALL
+        ]
         attributes = {cpmeas.MCA_AVAILABLE_POST_GROUP: True}
         if self.tracking_method == "LAP":
-            result += [(self.object_name.value,
-                        self.measurement_name(name),
-                        coltype) for name, coltype in (
-                           (F_AREA, cpmeas.COLTYPE_INTEGER),
-                           (F_LINK_TYPE, cpmeas.COLTYPE_INTEGER),
-                           (F_LINKING_DISTANCE, cpmeas.COLTYPE_FLOAT),
-                           (F_STANDARD_DEVIATION, cpmeas.COLTYPE_FLOAT),
-                           (F_MOVEMENT_MODEL, cpmeas.COLTYPE_INTEGER))]
-            result += [(self.object_name.value,
-                        self.measurement_name(name),
-                        cpmeas.COLTYPE_FLOAT) for name in
-                       list(self.get_kalman_feature_names())]
+            result += [
+                (self.object_name.value, self.measurement_name(name), coltype)
+                for name, coltype in (
+                    (F_AREA, cpmeas.COLTYPE_INTEGER),
+                    (F_LINK_TYPE, cpmeas.COLTYPE_INTEGER),
+                    (F_LINKING_DISTANCE, cpmeas.COLTYPE_FLOAT),
+                    (F_STANDARD_DEVIATION, cpmeas.COLTYPE_FLOAT),
+                    (F_MOVEMENT_MODEL, cpmeas.COLTYPE_INTEGER),
+                )
+            ]
+            result += [
+                (
+                    self.object_name.value,
+                    self.measurement_name(name),
+                    cpmeas.COLTYPE_FLOAT,
+                )
+                for name in list(self.get_kalman_feature_names())
+            ]
             if self.wants_second_phase:
                 result += [
                     (self.object_name.value, self.measurement_name(name), coltype)
@@ -3223,21 +3544,25 @@ Enter a name to give the color-coded image of tracked labels.''')
                         (F_GAP_SCORE, cpmeas.COLTYPE_FLOAT),
                         (F_MERGE_SCORE, cpmeas.COLTYPE_FLOAT),
                         (F_SPLIT_SCORE, cpmeas.COLTYPE_FLOAT),
-                        (F_MITOSIS_SCORE, cpmeas.COLTYPE_FLOAT))]
+                        (F_MITOSIS_SCORE, cpmeas.COLTYPE_FLOAT),
+                    )
+                ]
                 # Add the post-group attribute to all measurements
                 result = [(c[0], c[1], c[2], attributes) for c in result]
             else:
                 pg_meas = [
                     self.measurement_name(feature)
-                    for feature in (F_LINKING_DISTANCE, F_MOVEMENT_MODEL)]
+                    for feature in (F_LINKING_DISTANCE, F_MOVEMENT_MODEL)
+                ]
                 result = [
                     c if c[1] not in pg_meas else (c[0], c[1], c[2], attributes)
-                    for c in result]
+                    for c in result
+                ]
 
         return result
 
     def get_object_relationships(self, pipeline):
-        '''Return the object relationships produced by this module'''
+        """Return the object relationships produced by this module"""
         object_name = self.object_name.value
         if self.wants_second_phase and self.tracking_method == "LAP":
             when = cpmeas.MCA_AVAILABLE_POST_GROUP
@@ -3257,11 +3582,21 @@ Enter a name to give the color-coded image of tracked labels.''')
         if object_name == self.object_name.value and category == F_PREFIX:
             result = list(F_ALL)
             if self.tracking_method == "LAP":
-                result += [F_AREA, F_LINKING_DISTANCE, F_STANDARD_DEVIATION,
-                           F_LINK_TYPE, F_MOVEMENT_MODEL]
+                result += [
+                    F_AREA,
+                    F_LINKING_DISTANCE,
+                    F_STANDARD_DEVIATION,
+                    F_LINK_TYPE,
+                    F_MOVEMENT_MODEL,
+                ]
                 if self.wants_second_phase:
-                    result += [F_GAP_LENGTH, F_GAP_SCORE, F_MERGE_SCORE,
-                               F_SPLIT_SCORE, F_MITOSIS_SCORE]
+                    result += [
+                        F_GAP_LENGTH,
+                        F_GAP_SCORE,
+                        F_MERGE_SCORE,
+                        F_SPLIT_SCORE,
+                        F_MITOSIS_SCORE,
+                    ]
                 result += self.get_kalman_feature_names()
             return result
         if object_name == cpmeas.IMAGE:
@@ -3271,14 +3606,18 @@ Enter a name to give the color-coded image of tracked labels.''')
             return [F_EXPT_ORIG_NUMTRACKS, F_EXPT_FILT_NUMTRACKS]
         return []
 
-    def get_measurement_objects(self, pipeline, object_name, category,
-                                measurement):
-        if (object_name == cpmeas.IMAGE and category == F_PREFIX and
-                    measurement in F_IMAGE_ALL):
+    def get_measurement_objects(self, pipeline, object_name, category, measurement):
+        if (
+            object_name == cpmeas.IMAGE
+            and category == F_PREFIX
+            and measurement in F_IMAGE_ALL
+        ):
             return [self.object_name.value]
         return []
 
-    def get_measurement_scales(self, pipeline, object_name, category, feature, image_name):
+    def get_measurement_scales(
+        self, pipeline, object_name, category, feature, image_name
+    ):
         if self.tracking_method == "LAP":
             return []
 
@@ -3286,24 +3625,24 @@ Enter a name to give the color-coded image of tracked labels.''')
             return [str(self.pixel_radius.value)]
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
             variable_revision_number = 2
         if variable_revision_number == 2:
             # Added phase 2 parameters
-            setting_values = setting_values + [
-                "40", "40", "40", "50", "50", "50", "5"]
+            setting_values = setting_values + ["40", "40", "40", "50", "50", "50", "5"]
             variable_revision_number = 3
         if variable_revision_number == 3:
             # Added Kalman choices:
             # Model
             # radius std
             # radius limit
-            setting_values = (setting_values[:7] +
-                              [M_BOTH, "3", "2,10"] +
-                              setting_values[9:])
+            setting_values = (
+                setting_values[:7] + [M_BOTH, "3", "2,10"] + setting_values[9:]
+            )
             variable_revision_number = 4
 
         if variable_revision_number == 4:
@@ -3319,7 +3658,7 @@ Enter a name to give the color-coded image of tracked labels.''')
         # added after integration of FOLLOWNEIGHBORS
         if variable_revision_number == 6:
             # adding new settings for FOLLOWNEIGHBORS
-            setting_values = setting_values + [30., False, 15., 25.]
+            setting_values = setting_values + [30.0, False, 15.0, 25.0]
             # order of params in settings
             # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight
             variable_revision_number = 7

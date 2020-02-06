@@ -1,0 +1,75 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10016
+
+Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Select the input image:InputImage
+Name the output image:MorphImage
+Select the operation to perform:branchpoints
+Repeat operation:Forever
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:bridge
+Repeat operation:Custom
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:clean
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:convex hull
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:diag
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:distance
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:endpoints
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:fill
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:hbreak
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:majority
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:remove
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:shrink
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:skelpe
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:spur
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:thicken
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:thin
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3
+Select the operation to perform:vbreak
+Repeat operation:Once
+Custom # of repeats:2
+Scale\x3A:3

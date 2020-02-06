@@ -31,7 +31,6 @@ import cellprofiler.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
-
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
 
@@ -95,11 +94,13 @@ The choices for the threshold strategy are:
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
-                "TS_ADAPTIVE": TS_ADAPTIVE,
-                "TS_GLOBAL": TS_GLOBAL
-            })
+""".format(
+                **{
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                    "TS_ADAPTIVE": TS_ADAPTIVE,
+                    "TS_GLOBAL": TS_GLOBAL,
+                }
+            ),
         )
 
         self.global_operation = cellprofiler.setting.Choice(
@@ -109,7 +110,7 @@ The choices for the threshold strategy are:
                 TM_MEASUREMENT,
                 TM_LI,
                 centrosome.threshold.TM_OTSU,
-                centrosome.threshold.TM_ROBUST_BACKGROUND
+                centrosome.threshold.TM_ROBUST_BACKGROUND,
             ],
             value=TM_LI,
             doc="""\
@@ -224,25 +225,25 @@ There are a number of methods for finding thresholds automatically:
 .. |image3| image:: {TECH_NOTE_ICON}
 .. |image4| image:: {PROTIP_RECOMMEND_ICON}
 .. |image5| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
-                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
-                "TECH_NOTE_ICON":_help.TECH_NOTE_ICON,
-                "TM_LI": TM_LI,
-                "TM_OTSU": centrosome.threshold.TM_OTSU,
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
-                "TM_MANUAL": TM_MANUAL,
-                "TM_MEASUREMENT": TM_MEASUREMENT,
-                "TS_GLOBAL": TS_GLOBAL
-            })
+""".format(
+                **{
+                    "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
+                    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                    "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
+                    "TM_LI": TM_LI,
+                    "TM_OTSU": centrosome.threshold.TM_OTSU,
+                    "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
+                    "TM_MANUAL": TM_MANUAL,
+                    "TM_MEASUREMENT": TM_MEASUREMENT,
+                    "TS_GLOBAL": TS_GLOBAL,
+                }
+            ),
         )
 
         self.local_operation = cellprofiler.setting.Choice(
             "Thresholding method",
-            [
-                centrosome.threshold.TM_OTSU
-            ],
+            [centrosome.threshold.TM_OTSU],
             value=centrosome.threshold.TM_OTSU,
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
@@ -303,14 +304,16 @@ threshold value.
    Imaging*, 13(1), 146-165. (`link`_)
 
 .. _link: https://doi.org/10.1117/1.1631315
-""".format(**{
-                "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
-                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
-                "TECH_NOTE_ICON":_help.TECH_NOTE_ICON,
-                "TM_OTSU": centrosome.threshold.TM_OTSU,
-                "TS_ADAPTIVE": TS_ADAPTIVE
-            })
+""".format(
+                **{
+                    "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
+                    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                    "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
+                    "TM_OTSU": centrosome.threshold.TM_OTSU,
+                    "TS_ADAPTIVE": TS_ADAPTIVE,
+                }
+            ),
         )
 
         self.threshold_smoothing_scale = cellprofiler.setting.Float(
@@ -331,7 +334,7 @@ that 1/2 of the Gaussian’s distribution falls within the diameter given
 by the scale (sigma = scale / 0.674)
 Use a value of 0 for no smoothing. Use a value of 1.3488 for smoothing
 with a sigma of 1.
-"""
+""",
         )
 
         self.threshold_correction_factor = cellprofiler.setting.Float(
@@ -355,10 +358,12 @@ slightly biased threshold that may have to be corrected using this
 setting.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-""".format(**{
-                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON,
-                "TM_OTSU": centrosome.threshold.TM_OTSU
-            })
+""".format(
+                **{
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                    "TM_OTSU": centrosome.threshold.TM_OTSU,
+                }
+            ),
         )
 
         self.threshold_range = cellprofiler.setting.FloatRange(
@@ -383,10 +388,12 @@ empirically-determined value.
 {HELP_ON_PIXEL_INTENSITIES}
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
-            """.format(**{
-                "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
-                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON
-            })
+            """.format(
+                **{
+                    "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                }
+            ),
         )
 
         self.manual_threshold = cellprofiler.setting.Float(
@@ -399,7 +406,7 @@ empirically-determined value.
 
 Enter the value that will act as an absolute threshold for the images, a
 value from 0 to 1.
-"""
+""",
         )
 
         self.thresholding_measurement = cellprofiler.setting.Measurement(
@@ -411,7 +418,7 @@ value from 0 to 1.
 Choose the image measurement that will act as an absolute threshold for
 the images, for example, the mean intensity calculated from an image in
 a prior module.
-"""
+""",
         )
 
         self.two_class_otsu = cellprofiler.setting.Choice(
@@ -449,12 +456,14 @@ objects, three-class thresholding may perform worse than two-class.
 
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 .. |image1| image:: {PROTIP_AVOID_ICON}
-""".format(**{
-                "O_THREE_CLASS": O_THREE_CLASS,
-                "O_TWO_CLASS": O_TWO_CLASS,
-                "PROTIP_AVOID_ICON":_help.PROTIP_AVOID_ICON,
-                "PROTIP_RECOMMEND_ICON":_help.PROTIP_RECOMMEND_ICON
-            })
+""".format(
+                **{
+                    "O_THREE_CLASS": O_THREE_CLASS,
+                    "O_TWO_CLASS": O_TWO_CLASS,
+                    "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
+                    "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
+                }
+            ),
         )
 
         self.assign_middle_to_foreground = cellprofiler.setting.Choice(
@@ -465,7 +474,7 @@ objects, three-class thresholding may perform worse than two-class.
 
 Choose whether you want the pixels with middle grayscale intensities to
 be assigned to the foreground class or the background class.
-"""
+""",
         )
 
         self.lower_outlier_fraction = cellprofiler.setting.Float(
@@ -478,9 +487,9 @@ be assigned to the foreground class or the background class.
 
 Discard this fraction of the pixels in the image starting with those of
 the lowest intensity.
-""".format(**{
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
-            })
+""".format(
+                **{"TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND}
+            ),
         )
 
         self.upper_outlier_fraction = cellprofiler.setting.Float(
@@ -493,9 +502,9 @@ the lowest intensity.
 
 Discard this fraction of the pixels in the image starting with those of
 the highest intensity.
-""".format(**{
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
-            })
+""".format(
+                **{"TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND}
+            ),
         )
 
         self.averaging_method = cellprofiler.setting.Choice(
@@ -517,12 +526,14 @@ This setting determines how the intensity midpoint is determined.
    intensities into bins (the number of bins is the square root of the
    number of pixels in the unmasked portion of the image) and chooses
    the intensity associated with the bin with the most pixels.
-""".format(**{
-                "RB_MEAN": RB_MEAN,
-                "RB_MEDIAN": RB_MEDIAN,
-                "RB_MODE": RB_MODE,
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
-            })
+""".format(
+                **{
+                    "RB_MEAN": RB_MEAN,
+                    "RB_MEDIAN": RB_MEDIAN,
+                    "RB_MODE": RB_MODE,
+                    "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
+                }
+            ),
         )
 
         self.variance_method = cellprofiler.setting.Choice(
@@ -536,11 +547,13 @@ average to get the final background. This setting chooses the method
 used to assess the variance in the pixels, after removing outliers.
 Choose one of *{RB_SD}* or *{RB_MAD}* (the median of the absolute
 difference of the pixel intensities from their median).
-""".format(**{
-                "RB_MAD": RB_MAD,
-                "RB_SD": RB_SD,
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
-            })
+""".format(
+                **{
+                    "RB_MAD": RB_MAD,
+                    "RB_SD": RB_SD,
+                    "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND,
+                }
+            ),
         )
 
         self.number_of_deviations = cellprofiler.setting.Float(
@@ -556,9 +569,9 @@ Use a larger number to be more stringent about identifying foreground pixels.
 Use a smaller number to be less stringent. It’s even possible to
 use a negative number if you want the threshold to be lower than the average
 (e.g., for images that are densely covered by foreground).
-""".format(**{
-                "TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND
-            })
+""".format(
+                **{"TM_ROBUST_BACKGROUND": centrosome.threshold.TM_ROBUST_BACKGROUND}
+            ),
         )
 
         self.adaptive_window_size = cellprofiler.setting.Integer(
@@ -569,9 +582,9 @@ use a negative number if you want the threshold to be lower than the average
 
 Enter the size of the window (in pixels) to be used for the adaptive method.
 Often a good choice is some multiple of the largest expected object size.
-""".format(**{
-                "TS_ADAPTIVE": TS_ADAPTIVE
-            })
+""".format(
+                **{"TS_ADAPTIVE": TS_ADAPTIVE}
+            ),
         )
 
     @property
@@ -606,7 +619,7 @@ Often a good choice is some multiple of the largest expected object size.
                 self.upper_outlier_fraction,
                 self.averaging_method,
                 self.variance_method,
-                self.number_of_deviations
+                self.number_of_deviations,
             ]
 
         if self.threshold_operation not in [TM_MEASUREMENT, TM_MANUAL]:
@@ -639,7 +652,7 @@ Often a good choice is some multiple of the largest expected object size.
             self.averaging_method,
             self.variance_method,
             self.number_of_deviations,
-            self.local_operation
+            self.local_operation,
         ]
 
     def help_settings(self):
@@ -661,7 +674,7 @@ Often a good choice is some multiple of the largest expected object size.
             self.adaptive_window_size,
             self.threshold_correction_factor,
             self.threshold_range,
-            self.threshold_smoothing_scale
+            self.threshold_smoothing_scale,
         ]
 
     def run(self, workspace):
@@ -675,7 +688,7 @@ Often a good choice is some multiple of the largest expected object size.
             self.get_measurement_objects_name(),
             workspace.measurements,
             local_threshold,
-            global_threshold
+            global_threshold,
         )
 
         binary_image, _ = self.apply_threshold(input, local_threshold)
@@ -684,10 +697,12 @@ Often a good choice is some multiple of the largest expected object size.
             self.get_measurement_objects_name(),
             workspace.measurements,
             input,
-            binary_image
+            binary_image,
         )
 
-        output = cellprofiler.image.Image(binary_image, parent_image=input, dimensions=dimensions)
+        output = cellprofiler.image.Image(
+            binary_image, parent_image=input, dimensions=dimensions
+        )
 
         workspace.image_set.add(self.y_name.value, output)
 
@@ -700,7 +715,7 @@ Often a good choice is some multiple of the largest expected object size.
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
-                statistics += [(column[1].split('_')[1], str(value))]
+                statistics += [(column[1].split("_")[1], str(value))]
 
     def apply_threshold(self, image, threshold, automatic=False):
         data = image.pixel_data
@@ -722,7 +737,7 @@ Often a good choice is some multiple of the largest expected object size.
         blurred_image = centrosome.smooth.smooth_with_function_and_mask(
             data,
             lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
-            mask
+            mask,
         )
 
         return (blurred_image >= threshold) & mask, sigma
@@ -738,11 +753,16 @@ Often a good choice is some multiple of the largest expected object size.
             m = workspace.measurements
 
             # Thresholds are stored as single element arrays.  Cast to float to extract the value.
-            t_global = float(m.get_current_image_measurement(self.thresholding_measurement.value))
+            t_global = float(
+                m.get_current_image_measurement(self.thresholding_measurement.value)
+            )
 
             t_local = t_global * self.threshold_correction_factor.value
 
-            return min(max(t_local, self.threshold_range.min), self.threshold_range.max), t_global
+            return (
+                min(max(t_local, self.threshold_range.min), self.threshold_range.max),
+                t_global,
+            )
 
         if self.threshold_operation == centrosome.threshold.TM_ROBUST_BACKGROUND:
             return self._threshold_robust_background(image)
@@ -822,8 +842,10 @@ Often a good choice is some multiple of the largest expected object size.
         if image.volumetric:
             t_local = numpy.zeros_like(data)
 
-            for index, plane, in enumerate(data):
-                t_local[index] = skimage.filters.rank.otsu(plane, selem, mask=image.mask[index])
+            for index, plane in enumerate(data):
+                t_local[index] = skimage.filters.rank.otsu(
+                    plane, selem, mask=image.mask[index]
+                )
         else:
             t_local = skimage.filters.rank.otsu(data, selem, mask=image.mask)
 
@@ -838,7 +860,8 @@ Often a good choice is some multiple of the largest expected object size.
             data,
             mask,
             two_class_otsu=False,
-            assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
+            assign_middle_to_foreground=self.assign_middle_to_foreground.value
+            == O_FOREGROUND,
         )
 
         t_global = self._correct_global_threshold(t_global)
@@ -855,7 +878,8 @@ Often a good choice is some multiple of the largest expected object size.
                         mask=mask[index],
                         adaptive_window_size=self.adaptive_window_size.value,
                         two_class_otsu=False,
-                        assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
+                        assign_middle_to_foreground=self.assign_middle_to_foreground.value
+                        == O_FOREGROUND,
                     )
             else:
                 t_local = centrosome.threshold.get_adaptive_threshold(
@@ -865,7 +889,8 @@ Often a good choice is some multiple of the largest expected object size.
                     mask=mask,
                     adaptive_window_size=self.adaptive_window_size.value,
                     two_class_otsu=False,
-                    assign_middle_to_foreground=self.assign_middle_to_foreground.value == O_FOREGROUND
+                    assign_middle_to_foreground=self.assign_middle_to_foreground.value
+                    == O_FOREGROUND,
                 )
 
             t_local = self._correct_local_threshold(t_local, t_global)
@@ -878,13 +903,12 @@ Often a good choice is some multiple of the largest expected object size.
         average_fn = {
             RB_MEAN: numpy.mean,
             RB_MEDIAN: numpy.median,
-            RB_MODE: centrosome.threshold.binned_mode
+            RB_MODE: centrosome.threshold.binned_mode,
         }.get(self.averaging_method.value, numpy.mean)
 
-        variance_fn = {
-            RB_SD: numpy.std,
-            RB_MAD: centrosome.threshold.mad
-        }.get(self.variance_method.value, numpy.std)
+        variance_fn = {RB_SD: numpy.std, RB_MAD: centrosome.threshold.mad}.get(
+            self.variance_method.value, numpy.std
+        )
 
         threshold = centrosome.threshold.get_robust_background_threshold(
             image.pixel_data,
@@ -893,7 +917,7 @@ Often a good choice is some multiple of the largest expected object size.
             upper_outlier_fraction=self.upper_outlier_fraction.value,
             deviations_above_average=self.number_of_deviations.value,
             average_fn=average_fn,
-            variance_fn=variance_fn
+            variance_fn=variance_fn,
         )
 
         threshold = self._correct_global_threshold(threshold)
@@ -909,33 +933,40 @@ Often a good choice is some multiple of the largest expected object size.
             0,
             0,
             workspace.display_data.input_pixel_data,
-            title=u"Original image: {}".format(self.x_name.value)
+            title="Original image: {}".format(self.x_name.value),
         )
 
         figure.subplot_imshow_grayscale(
             1,
             0,
             workspace.display_data.output_pixel_data,
-            title=u"Thresholded image: {}".format(self.y_name.value),
-            sharexy=figure.subplot(0, 0)
+            title="Thresholded image: {}".format(self.y_name.value),
+            sharexy=figure.subplot(0, 0),
         )
 
         figure.subplot_table(
-            2,
-            0,
-            workspace.display_data.statistics,
-            workspace.display_data.col_labels
+            2, 0, workspace.display_data.statistics, workspace.display_data.col_labels
         )
 
     def get_measurement_objects_name(self):
         return self.y_name.value
 
-    def add_threshold_measurements(self, objname, measurements, local_threshold, global_threshold):
+    def add_threshold_measurements(
+        self, objname, measurements, local_threshold, global_threshold
+    ):
         ave_threshold = numpy.mean(numpy.atleast_1d(local_threshold))
 
-        measurements.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_FINAL_THRESHOLD % objname, ave_threshold)
+        measurements.add_measurement(
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.FF_FINAL_THRESHOLD % objname,
+            ave_threshold,
+        )
 
-        measurements.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_ORIG_THRESHOLD % objname, global_threshold)
+        measurements.add_measurement(
+            cellprofiler.measurement.IMAGE,
+            cellprofiler.measurement.FF_ORIG_THRESHOLD % objname,
+            global_threshold,
+        )
 
     def add_fg_bg_measurements(self, objname, measurements, image, binary_image):
         data = image.pixel_data
@@ -947,7 +978,7 @@ Often a good choice is some multiple of the largest expected object size.
         measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_WEIGHTED_VARIANCE % objname,
-            numpy.array([wv], dtype=float)
+            numpy.array([wv], dtype=float),
         )
 
         entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
@@ -955,7 +986,7 @@ Often a good choice is some multiple of the largest expected object size.
         measurements.add_measurement(
             cellprofiler.measurement.IMAGE,
             cellprofiler.measurement.FF_SUM_OF_ENTROPIES % objname,
-            numpy.array([entropies], dtype=float)
+            numpy.array([entropies], dtype=float),
         )
 
     def get_measurement_columns(self, pipeline, object_name=None):
@@ -966,23 +997,23 @@ Often a good choice is some multiple of the largest expected object size.
             (
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.FF_FINAL_THRESHOLD % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT
+                cellprofiler.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.FF_ORIG_THRESHOLD % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT
+                cellprofiler.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.FF_WEIGHTED_VARIANCE % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT
+                cellprofiler.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.FF_SUM_OF_ENTROPIES % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT
-            )
+                cellprofiler.measurement.COLTYPE_FLOAT,
+            ),
         ]
 
     def get_categories(self, pipeline, object_name):
@@ -992,12 +1023,15 @@ Often a good choice is some multiple of the largest expected object size.
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_THRESHOLD:
+        if (
+            object_name == cellprofiler.measurement.IMAGE
+            and category == cellprofiler.measurement.C_THRESHOLD
+        ):
             return [
                 cellprofiler.measurement.FTR_ORIG_THRESHOLD,
                 cellprofiler.measurement.FTR_FINAL_THRESHOLD,
                 cellprofiler.measurement.FTR_SUM_OF_ENTROPIES,
-                cellprofiler.measurement.FTR_WEIGHTED_VARIANCE
+                cellprofiler.measurement.FTR_WEIGHTED_VARIANCE,
             ]
 
         return []
@@ -1008,17 +1042,25 @@ Often a good choice is some multiple of the largest expected object size.
 
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab:
-            raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
+            raise NotImplementedError(
+                "There is no automatic upgrade path for this module from MatLab pipelines."
+            )
 
         if variable_revision_number < 7:
-            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
+            raise NotImplementedError(
+                "Automatic upgrade for this module is not supported in CellProfiler 3.0."
+            )
 
         if variable_revision_number == 7:
             setting_values = setting_values[:2] + setting_values[6:]
 
-            setting_values = setting_values[:2] + self.upgrade_threshold_settings(setting_values[2:])
+            setting_values = setting_values[:2] + self.upgrade_threshold_settings(
+                setting_values[2:]
+            )
 
             variable_revision_number = 8
 
@@ -1033,8 +1075,10 @@ Often a good choice is some multiple of the largest expected object size.
 
                 setting_values[2] = TS_GLOBAL
 
-            if setting_values[2] == TS_ADAPTIVE and \
-                    setting_values[3] in [centrosome.threshold.TM_MCT, centrosome.threshold.TM_ROBUST_BACKGROUND]:
+            if setting_values[2] == TS_ADAPTIVE and setting_values[3] in [
+                centrosome.threshold.TM_MCT,
+                centrosome.threshold.TM_ROBUST_BACKGROUND,
+            ]:
                 setting_values[2] = TS_GLOBAL
 
             if setting_values[3] == centrosome.threshold.TM_MCT:
@@ -1048,11 +1092,11 @@ Often a good choice is some multiple of the largest expected object size.
         return setting_values, variable_revision_number, False
 
     def upgrade_threshold_settings(self, setting_values):
-        '''Upgrade the threshold settings to the current version
+        """Upgrade the threshold settings to the current version
 
         use the first setting which is the version to determine the
         threshold settings version and upgrade as appropriate
-        '''
+        """
         version = int(setting_values[0])
 
         if version == 1:
@@ -1060,10 +1104,12 @@ Often a good choice is some multiple of the largest expected object size.
             #
             setting_values = setting_values + [
                 "Default",  # Robust background custom choice
-                .05, .05,  # lower and upper outlier fractions
+                0.05,
+                0.05,  # lower and upper outlier fractions
                 RB_MEAN,  # averaging method
                 RB_SD,  # variance method
-                2]  # of standard deviations
+                2,
+            ]  # of standard deviations
             version = 2
 
         if version == 2:
@@ -1081,7 +1127,7 @@ Often a good choice is some multiple of the largest expected object size.
             removed_threshold_methods = [
                 centrosome.threshold.TM_KAPUR,
                 centrosome.threshold.TM_MOG,
-                centrosome.threshold.TM_RIDLER_CALVARD
+                centrosome.threshold.TM_RIDLER_CALVARD,
             ]
 
             if setting_values[2] in removed_threshold_methods:
@@ -1131,16 +1177,18 @@ Often a good choice is some multiple of the largest expected object size.
         return setting_values
 
     def validate_module(self, pipeline):
-        if self.threshold_scope in [TS_ADAPTIVE, TS_GLOBAL] and \
-                self.global_operation.value == centrosome.threshold.TM_ROBUST_BACKGROUND and \
-                self.lower_outlier_fraction.value + self.upper_outlier_fraction.value >= 1:
+        if (
+            self.threshold_scope in [TS_ADAPTIVE, TS_GLOBAL]
+            and self.global_operation.value == centrosome.threshold.TM_ROBUST_BACKGROUND
+            and self.lower_outlier_fraction.value + self.upper_outlier_fraction.value
+            >= 1
+        ):
             raise cellprofiler.setting.ValidationError(
                 """
                 The sum of the lower robust background outlier fraction ({0:f}) and the upper fraction ({1:f}) must be
                 less than one.
                 """.format(
-                    self.lower_outlier_fraction.value,
-                    self.upper_outlier_fraction.value
+                    self.lower_outlier_fraction.value, self.upper_outlier_fraction.value
                 ),
-                self.upper_outlier_fraction
+                self.upper_outlier_fraction,
             )

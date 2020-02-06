@@ -26,9 +26,13 @@ def get_cp_image():
         try:
             cp_image = cellprofiler.icons.image_cache["CellProfiler"]
         except KeyError:
-            pathname = pkg_resources.resource_filename("cellprofiler", os.path.join("data", "icons", "CellProfiler.png"))
+            pathname = pkg_resources.resource_filename(
+                "cellprofiler", os.path.join("data", "icons", "CellProfiler.png")
+            )
 
-            cellprofiler.icons.image_cache["CellProfiler"] = cp_image = wx.Image(pathname)
+            cellprofiler.icons.image_cache["CellProfiler"] = cp_image = wx.Image(
+                pathname
+            )
 
     return cp_image
 
@@ -36,27 +40,31 @@ def get_cp_image():
 def get_cp_bitmap(size=None):
     """The CellProfiler icon as a wx.Bitmap"""
     import wx
+
     img = get_cp_image()
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
-    return wx.BitmapFromImage(img)
+    return wx.Bitmap(img)
 
 
 def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     import wx
-    if sys.platform.startswith('win'):
-        path = pkg_resources.resource_filename("cellprofiler", os.path.join("data", "icons", "CellProfiler.ico"))
-        icon = wx.EmptyIcon()
+
+    if sys.platform.startswith("win"):
+        path = pkg_resources.resource_filename(
+            "cellprofiler", os.path.join("data", "icons", "CellProfiler.ico")
+        )
+        icon = wx.Icon()
         icon.LoadFile(path, wx.BITMAP_TYPE_ICO)
         return icon
-    icon = wx.EmptyIcon()
+    icon = wx.Icon()
     icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 
 
 BV_DOWN = "down"
-BV_UP   = "up"
+BV_UP = "up"
 
 
 def draw_item_selection_rect(window, dc, rect, flags):
@@ -82,9 +90,9 @@ def draw_item_selection_rect(window, dc, rect, flags):
     # might work in Cocoa
     #
     import wx
-    if sys.platform != 'darwin':
-        wx.RendererNative.Get().DrawItemSelectionRect(
-                window, dc, rect, flags)
+
+    if sys.platform != "darwin":
+        wx.RendererNative.Get().DrawItemSelectionRect(window, dc, rect, flags)
     elif flags & wx.CONTROL_SELECTED:
         if flags & wx.CONTROL_FOCUSED:
             color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
@@ -94,7 +102,7 @@ def draw_item_selection_rect(window, dc, rect, flags):
         new_brush = wx.Brush(color)
         dc.Brush = new_brush
         dc.Pen = wx.TRANSPARENT_PEN
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
         dc.Brush = old_brush
         new_brush.Destroy()
     elif flags & wx.CONTROL_CURRENT:

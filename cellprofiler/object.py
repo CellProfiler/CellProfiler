@@ -11,6 +11,179 @@ import cellprofiler.preferences
 OBJECT_TYPE_NAME = "objects"
 
 
+def downsample_labels(labels):
+    """Convert a labels matrix to the smallest possible integer format"""
+    labels_max = numpy.max(labels)
+    if labels_max < 128:
+        return labels.astype(numpy.int8)
+    elif labels_max < 32768:
+        return labels.astype(numpy.int16)
+    return labels.astype(numpy.int32)
+
+
+def check_consistency(segmented, unedited_segmented, small_removed_segmented):
+    """Check the three components of Objects to make sure they are consistent
+    """
+    assert segmented is None or numpy.all(segmented >= 0)
+    assert unedited_segmented is None or numpy.all(unedited_segmented >= 0)
+    assert small_removed_segmented is None or numpy.all(small_removed_segmented >= 0)
+    assert (
+        segmented is None or segmented.ndim == 2
+    ), "Segmented label matrix must have two dimensions, has {:d}".format(
+        segmented.ndim
+    )
+    assert (
+        unedited_segmented is None or unedited_segmented.ndim == 2
+    ), "Unedited segmented label matrix must have two dimensions, has {:d}".format(
+        unedited_segmented.ndim
+    )
+    assert (
+        small_removed_segmented is None or small_removed_segmented.ndim == 2
+    ), "Small removed segmented label matrix must have two dimensions, has {:d}".format(
+        small_removed_segmented.ndim
+    )
+    assert (
+        segmented is None
+        or unedited_segmented is None
+        or segmented.shape == unedited_segmented.shape
+    ), "Segmented {} and unedited segmented {} shapes differ".format(
+        repr(segmented.shape), repr(unedited_segmented.shape)
+    )
+    assert (
+        segmented is None
+        or small_removed_segmented is None
+        or segmented.shape == small_removed_segmented.shape
+    ), "Segmented {} and small removed segmented {} shapes differ".format(
+        repr(segmented.shape), repr(small_removed_segmented.shape)
+    )
+
+
+def crop_labels_and_image(labels, image):
+    """Crop a labels matrix and an image to the lowest common size
+
+    labels - a n x m labels matrix
+    image - a 2-d or 3-d image
+
+    Assumes that points outside of the common boundary should be masked.
+    """
+    min_dim1 = min(labels.shape[0], image.shape[0])
+    min_dim2 = min(labels.shape[1], image.shape[1])
+
+    if labels.ndim == 3:  # volume
+        min_dim3 = min(labels.shape[2], image.shape[2])
+
+        if image.ndim == 4:  # multichannel volume
+            return (
+                labels[:min_dim1, :min_dim2, :min_dim3],
+                image[:min_dim1, :min_dim2, :min_dim3, :],
+            )
+
+        return (
+            labels[:min_dim1, :min_dim2, :min_dim3],
+            image[:min_dim1, :min_dim2, :min_dim3],
+        )
+
+    if image.ndim == 3:  # multichannel image
+        return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2, :]
+
+    return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2]
+
+
+def size_similarly(labels, secondary):
+    """Size the secondary matrix similarly to the labels matrix
+
+    labels - labels matrix
+    secondary - a secondary image or labels matrix which might be of
+                different size.
+    Return the resized secondary matrix and a mask indicating what portion
+    of the secondary matrix is bogus (manufactured values).
+
+    Either the mask is all ones or the result is a copy, so you can
+    modify the output within the unmasked region w/o destroying the original.
+    """
+    if labels.shape[:2] == secondary.shape[:2]:
+        return secondary, numpy.ones(secondary.shape, bool)
+    if labels.shape[0] <= secondary.shape[0] and labels.shape[1] <= secondary.shape[1]:
+        if secondary.ndim == 2:
+            return (
+                secondary[: labels.shape[0], : labels.shape[1]],
+                numpy.ones(labels.shape, bool),
+            )
+        else:
+            return (
+                secondary[: labels.shape[0], : labels.shape[1], :],
+                numpy.ones(labels.shape, bool),
+            )
+
+    #
+    # Some portion of the secondary matrix does not cover the labels
+    #
+    result = numpy.zeros(
+        list(labels.shape) + list(secondary.shape[2:]), secondary.dtype
+    )
+    i_max = min(secondary.shape[0], labels.shape[0])
+    j_max = min(secondary.shape[1], labels.shape[1])
+    if secondary.ndim == 2:
+        result[:i_max, :j_max] = secondary[:i_max, :j_max]
+    else:
+        result[:i_max, :j_max, :] = secondary[:i_max, :j_max, :]
+    mask = numpy.zeros(labels.shape, bool)
+    mask[:i_max, :j_max] = 1
+    return result, mask
+
+
+def overlay_labels(pixel_data, labels, opacity=0.7, max_label=None, seed=None):
+    colors = _colors(labels, max_label=max_label, seed=seed)
+
+    if labels.ndim == 3:
+        overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
+
+        for index, plane in enumerate(pixel_data):
+            unique_labels = numpy.unique(labels[index])
+
+            if unique_labels[0] == 0:
+                unique_labels = unique_labels[1:]
+
+            overlay[index] = skimage.color.label2rgb(
+                labels[index],
+                alpha=opacity,
+                bg_color=[0, 0, 0],
+                bg_label=0,
+                colors=colors[unique_labels - 1],
+                image=plane,
+            )
+
+        return overlay
+
+    return skimage.color.label2rgb(
+        labels,
+        alpha=opacity,
+        bg_color=[0, 0, 0],
+        bg_label=0,
+        colors=colors,
+        image=pixel_data,
+    )
+
+
+def _colors(labels, max_label=None, seed=None):
+    mappable = matplotlib.cm.ScalarMappable(
+        cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+    )
+
+    colors = mappable.to_rgba(
+        numpy.arange(labels.max() if max_label is None else max_label)
+    )[:, :3]
+
+    if seed is not None:
+        # Resetting the random seed helps keep object label colors consistent in displays
+        # where consistency is important, like RelateObjects.
+        numpy.random.seed(seed)
+
+    numpy.random.shuffle(colors)
+
+    return colors
+
+
 class Objects(object):
     """Represents a segmentation of an image.
 
@@ -96,11 +269,15 @@ class Objects(object):
 
     @staticmethod
     def __segmentation_to_labels(segmentation):
-        assert isinstance(segmentation, Segmentation), "Operation failed because objects were not initialized"
+        assert isinstance(
+            segmentation, Segmentation
+        ), "Operation failed because objects were not initialized"
 
         dense, indices = segmentation.get_dense()
 
-        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
+        assert (
+            len(dense) == 1
+        ), "Operation failed because objects overlapped. Please try with non-overlapping objects"
 
         if dense.shape[3] == 1:
             return dense.reshape(dense.shape[-2:])
@@ -120,14 +297,7 @@ class Objects(object):
 
     @property
     def count(self):
-        """The number of objects labeled"""
-        sparse_labels = self.__segmented.sparse['label']
-        unique = numpy.unique(sparse_labels)
-        count = len(unique)
-        # Don't count the background
-        if 0 in unique:
-            count -= 1
-        return count
+        return len(self.indices)
 
     @property
     def areas(self):
@@ -145,9 +315,8 @@ class Objects(object):
         """
         sparse = numpy.core.records.fromarrays(
             (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-            [("y", ijv.dtype, 1),
-             ("x", ijv.dtype, 1),
-             ("label", ijv.dtype, 1)])
+            [("y", ijv.dtype, 1), ("x", ijv.dtype, 1), ("label", ijv.dtype, 1)],
+        )
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
         self.__segmented = Segmentation(sparse=sparse, shape=shape)
@@ -159,10 +328,7 @@ class Objects(object):
         and the label at the pixel in slot 2.
         """
         sparse = self.__segmented.sparse
-        return numpy.column_stack(
-            [sparse[axis] for axis in
-             ("y", "x",
-             "label")])
+        return numpy.column_stack([sparse[axis] for axis in ("y", "x", "label")])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -237,9 +403,19 @@ class Objects(object):
     @parent_image.setter
     def parent_image(self, parent_image):
         self.__parent_image = parent_image
-        for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
+        for segmentation in (
+            self.__segmented,
+            self.__small_removed_segmented,
+            self.__unedited_segmented,
+        ):
             if segmentation is not None and not segmentation.has_shape():
-                shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
+                shape = (
+                    1,
+                    1,
+                    1,
+                    parent_image.pixel_data.shape[0],
+                    parent_image.pixel_data.shape[1],
+                )
                 segmentation.shape = shape
 
     @property
@@ -270,7 +446,10 @@ class Objects(object):
         # the most similar colors in the color space for objects that
         # don't overlap.
         #
-        all_labels = [(centrosome.outline.outline(label), indexes) for label, indexes in self.get_labels()]
+        all_labels = [
+            (centrosome.outline.outline(label), indexes)
+            for label, indexes in self.get_labels()
+        ]
         image = numpy.zeros(list(all_labels[0][0].shape) + [3], numpy.float32)
         #
         # Find out how many unique labels in each
@@ -297,8 +476,9 @@ class Objects(object):
             my_labels, indexes = all_labels[i]
             color_idx = numpy.zeros(numpy.max(indexes) + 1, int)
             color_idx[indexes] = numpy.arange(len(indexes)) % ncolors
-            image[my_labels != 0, :] += \
-                my_colors[color_idx[my_labels[my_labels != 0]], :]
+            image[my_labels != 0, :] += my_colors[
+                color_idx[my_labels[my_labels != 0]], :
+            ]
             alpha[my_labels != 0] += 1
         image[alpha > 0, :] /= alpha[alpha > 0][:, numpy.newaxis]
         return image
@@ -345,7 +525,9 @@ class Objects(object):
         parents_of_children = numpy.argmax(histogram, axis=0)
         #
         # Create a histogram of # of children per parent
-        children_per_parent = numpy.histogram(parents_of_children[1:], numpy.arange(parent_count + 2))[0][1:]
+        children_per_parent = numpy.histogram(
+            parents_of_children[1:], numpy.arange(parent_count + 2)
+        )[0][1:]
 
         #
         # Make sure to remove the background elements at index 0
@@ -372,11 +554,15 @@ class Objects(object):
         common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
 
         if parent_labels.ndim == 3:
-            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
-            child_labels = child_labels[0:common_shape[0], 0:common_shape[1], 0:common_shape[2]]
+            parent_labels = parent_labels[
+                0 : common_shape[0], 0 : common_shape[1], 0 : common_shape[2]
+            ]
+            child_labels = child_labels[
+                0 : common_shape[0], 0 : common_shape[1], 0 : common_shape[2]
+            ]
         else:
-            parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
-            child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+            parent_labels = parent_labels[0 : common_shape[0], 0 : common_shape[1]]
+            child_labels = child_labels[0 : common_shape[0], 0 : common_shape[1]]
 
         #
         # Only look at points that are labeled in parent and child
@@ -389,8 +575,11 @@ class Objects(object):
         # each column (axis = 1) is a child
         #
         return scipy.sparse.coo_matrix(
-            (numpy.ones((not_zero_count,)), (parent_labels[not_zero], child_labels[not_zero])),
-            shape=(parent_count + 1, child_count + 1)
+            (
+                numpy.ones((not_zero_count,)),
+                (parent_labels[not_zero], child_labels[not_zero]),
+            ),
+            shape=(parent_count + 1, child_count + 1),
         ).toarray()
 
     @staticmethod
@@ -414,15 +603,19 @@ class Objects(object):
 
         dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
         dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
-        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
+        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
+            numpy.uint64
+        )
         child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
-        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)),
-                                                 (parent_ijv[:, 2], parent_linear_ij)),
-                                                shape=(parent_count + 1, dim_i * dim_j))
-        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)),
-                                                (child_linear_ij, child_ijv[:, 2])),
-                                               shape=(dim_i * dim_j, child_count + 1))
+        parent_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
+            shape=(parent_count + 1, dim_i * dim_j),
+        )
+        child_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
+            shape=(dim_i * dim_j, child_count + 1),
+        )
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
@@ -459,7 +652,9 @@ class Objects(object):
         if index[0] == 0:
             index = index[1:]
 
-        return numpy.array(scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, index))
+        return numpy.array(
+            scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, index)
+        )
 
 
 class Segmentation(object):
@@ -468,6 +663,7 @@ class Segmentation(object):
     Supports overlapping objects and cacheing. Retrieval can be as a
     single plane (legacy), as multiple planes and as sparse ijv.
     """
+
     SEGMENTED = "segmented"
     UNEDITED_SEGMENTED = "unedited segmented"
     SMALL_REMOVED_SEGMENTED = "small removed segmented"
@@ -493,8 +689,7 @@ class Segmentation(object):
 
         if dense is not None:
             self.__indices = [numpy.unique(d) for d in dense]
-            self.__indices = [
-                idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+            self.__indices = [idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
 
     @property
     def shape(self):
@@ -515,9 +710,13 @@ class Segmentation(object):
                 self.__shape = (1, 1, 1, 1, 1)
             else:
                 self.__shape = tuple(
-                    [numpy.max(sparse[axis]) + 2
-                     if axis in sparse.dtype.fields.keys() else 1
-                     for axis in ("c", "t", "z", "y", "x")])
+                    [
+                        numpy.max(sparse[axis]) + 2
+                        if axis in list(sparse.dtype.fields.keys())
+                        else 1
+                        for axis in ("c", "t", "z", "y", "x")
+                    ]
+                )
         return self.__shape
 
     @shape.setter
@@ -557,7 +756,9 @@ class Segmentation(object):
 
         if not self.has_dense():
             raise ValueError(
-                "Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
+                'Can\'t find object, "%s", segmentation, "%s".'
+                % (self.__objects_name, self.__segmentation_name)
+            )
 
         return self.__convert_dense_to_sparse()
 
@@ -580,7 +781,9 @@ class Segmentation(object):
 
         if not self.has_sparse():
             raise ValueError(
-                "Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
+                'Can\'t find object, "%s", segmentation, "%s".'
+                % (self.__objects_name, self.__segmentation_name)
+            )
 
         return self.__convert_sparse_to_dense()
 
@@ -588,8 +791,8 @@ class Segmentation(object):
         dense, indices = self.get_dense()
         axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
-            [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in (axes, self.shape)]
+            [a for a, s in zip(aa, self.shape) if s > 1] for aa in (axes, self.shape)
+        ]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -626,15 +829,13 @@ class Segmentation(object):
             self.__indices = indices
         else:
             self.__indices = [numpy.unique(d) for d in dense]
-            self.__indices = [
-                idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+            self.__indices = [idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
         sparse = self.sparse
         if len(sparse) == 0:
-            return self.__set_dense(
-                numpy.zeros([1] + list(self.shape), numpy.uint16))
+            return self.__set_dense(numpy.zeros([1] + list(self.shape), numpy.uint16))
 
         #
         # The code below assigns a "color" to each label so that no
@@ -644,7 +845,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
         for axis in ("c", "t", "z", "y", "x"):
-            if axis in sparse.dtype.fields.keys():
+            if axis in list(sparse.dtype.fields.keys()):
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
@@ -658,10 +859,12 @@ class Segmentation(object):
         #
         # Find the first of a run that's different from the rest
         #
-        mask = available_columns[0][sort_order[:-1]] != available_columns[0][sort_order[1:]]
+        mask = (
+            available_columns[0][sort_order[:-1]]
+            != available_columns[0][sort_order[1:]]
+        )
         for column in available_columns[1:]:
-            mask = mask | (column[sort_order[:-1]] !=
-                           column[sort_order[1:]])
+            mask = mask | (column[sort_order[:-1]] != column[sort_order[1:]])
         breaks = numpy.hstack(([0], numpy.where(mask)[0] + 1, [len(labels)]))
         firsts = breaks[:-1]
         counts = breaks[1:] - firsts
@@ -703,9 +906,9 @@ class Segmentation(object):
         #
         # Eliminate dupes
         #
-        to_keep = numpy.hstack(([True],
-                                (first[1:] != first[:-1]) |
-                                (second[1:] != second[:-1])))
+        to_keep = numpy.hstack(
+            ([True], (first[1:] != first[:-1]) | (second[1:] != second[:-1]))
+        )
         to_keep = to_keep & (first != second)
         pair_idx = pair_sort_order[to_keep]
         first = first[pair_idx]
@@ -739,8 +942,7 @@ class Segmentation(object):
         processing_order = numpy.lexsort((ol_labels, overlap_counts[ol_labels]))
 
         for index in ol_labels[processing_order]:
-            neighbors = second[
-                        indexes[index]:indexes[index] + overlap_counts[index]]
+            neighbors = second[indexes[index] : indexes[index] + overlap_counts[index]]
             colors = numpy.unique(v_color[neighbors])
             if colors[0] == 0:
                 if len(colors) == 1:
@@ -767,30 +969,9 @@ class Segmentation(object):
         dense = numpy.zeros([numpy.max(v_color)] + list(self.shape), labels.dtype)
         slices = tuple([v_color[labels] - 1] + positional_columns)
         dense[slices] = labels
-        indices = [
-            numpy.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
+        indices = [numpy.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
 
         return self.__set_dense(dense, indices)
-
-
-def check_consistency(segmented, unedited_segmented, small_removed_segmented):
-    """Check the three components of Objects to make sure they are consistent
-    """
-    assert segmented is None or numpy.all(segmented >= 0)
-    assert unedited_segmented is None or numpy.all(unedited_segmented >= 0)
-    assert small_removed_segmented is None or numpy.all(small_removed_segmented >= 0)
-    assert segmented is None or segmented.ndim == 2, \
-        "Segmented label matrix must have two dimensions, has {:d}".format(segmented.ndim)
-    assert unedited_segmented is None or unedited_segmented.ndim == 2, \
-        "Unedited segmented label matrix must have two dimensions, has {:d}".format(unedited_segmented.ndim)
-    assert small_removed_segmented is None or small_removed_segmented.ndim == 2, \
-        "Small removed segmented label matrix must have two dimensions, has {:d}".format(small_removed_segmented.ndim)
-    assert segmented is None or unedited_segmented is None or segmented.shape == unedited_segmented.shape, \
-        "Segmented {} and unedited segmented {} shapes differ".format(repr(segmented.shape),
-                                                                      repr(unedited_segmented.shape))
-    assert segmented is None or small_removed_segmented is None or segmented.shape == small_removed_segmented.shape, \
-        "Segmented {} and small removed segmented {} shapes differ".format(repr(segmented.shape),
-                                                                           repr(small_removed_segmented.shape))
 
 
 class ObjectSet(object):
@@ -814,15 +995,20 @@ class ObjectSet(object):
         return self.__types_and_instances[OBJECT_TYPE_NAME]
 
     def add_objects(self, objects, name):
-        assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
-        assert ((name not in self.__objects_by_name.keys()) or
-                self.__can_overwrite), "The object, {}, is already in the object set".format(name)
+        assert isinstance(
+            objects, Objects
+        ), "objects must be an instance of CellProfiler.Objects"
+        assert (
+            name not in list(self.__objects_by_name.keys())
+        ) or self.__can_overwrite, (
+            "The object, {}, is already in the object set".format(name)
+        )
         self.__objects_by_name[name] = objects
 
     def get_object_names(self):
         """Return the names of all of the objects
         """
-        return self.__objects_by_name.keys()
+        return list(self.__objects_by_name.keys())
 
     object_names = property(get_object_names)
 
@@ -835,7 +1021,7 @@ class ObjectSet(object):
     def all_objects(self):
         """Return a list of name / objects tuples
         """
-        return self.__objects_by_name.items()
+        return list(self.__objects_by_name.items())
 
     def get_types(self):
         """Get then names of types of per-image set "things"
@@ -844,7 +1030,7 @@ class ObjectSet(object):
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
         """
-        return self.__types_and_instances.keys()
+        return list(self.__types_and_instances.keys())
 
     def add_type_instance(self, type_name, instance_name, instance):
         """Add a named instance of a type
@@ -867,145 +1053,9 @@ class ObjectSet(object):
         type_name - the name of the type of instance
         instance_name - the name of the instance to retrieve
         """
-        if (type_name not in self.__types_and_instance or
-                instance_name not in self.__types_and_instances[type_name]):
+        if (
+            type_name not in self.__types_and_instance
+            or instance_name not in self.__types_and_instances[type_name]
+        ):
             return None
         return self.__types_and_instances[type_name][instance_name]
-
-
-def downsample_labels(labels):
-    """Convert a labels matrix to the smallest possible integer format"""
-    labels_max = numpy.max(labels)
-    if labels_max < 128:
-        return labels.astype(numpy.int8)
-    elif labels_max < 32768:
-        return labels.astype(numpy.int16)
-    return labels.astype(numpy.int32)
-
-
-def crop_labels_and_image(labels, image):
-    """Crop a labels matrix and an image to the lowest common size
-
-    labels - a n x m labels matrix
-    image - a 2-d or 3-d image
-
-    Assumes that points outside of the common boundary should be masked.
-    """
-    min_dim1 = min(labels.shape[0], image.shape[0])
-    min_dim2 = min(labels.shape[1], image.shape[1])
-
-    if labels.ndim == 3:  # volume
-        min_dim3 = min(labels.shape[2], image.shape[2])
-
-        if image.ndim == 4:  # multichannel volume
-            return (
-                labels[:min_dim1, :min_dim2, :min_dim3],
-                image[:min_dim1, :min_dim2, :min_dim3, :],
-            )
-
-        return (
-            labels[:min_dim1, :min_dim2, :min_dim3],
-            image[:min_dim1, :min_dim2, :min_dim3],
-        )
-
-    if image.ndim == 3:  # multichannel image
-        return (
-            labels[:min_dim1, :min_dim2],
-            image[:min_dim1, :min_dim2, :]
-        )
-
-    return (
-        labels[:min_dim1, :min_dim2],
-        image[:min_dim1, :min_dim2]
-    )
-
-
-def size_similarly(labels, secondary):
-    """Size the secondary matrix similarly to the labels matrix
-
-    labels - labels matrix
-    secondary - a secondary image or labels matrix which might be of
-                different size.
-    Return the resized secondary matrix and a mask indicating what portion
-    of the secondary matrix is bogus (manufactured values).
-
-    Either the mask is all ones or the result is a copy, so you can
-    modify the output within the unmasked region w/o destroying the original.
-    """
-    if labels.shape[:2] == secondary.shape[:2]:
-        return secondary, numpy.ones(secondary.shape, bool)
-    if (labels.shape[0] <= secondary.shape[0] and
-            labels.shape[1] <= secondary.shape[1]):
-        if secondary.ndim == 2:
-            return (secondary[:labels.shape[0], :labels.shape[1]],
-                    numpy.ones(labels.shape, bool))
-        else:
-            return (secondary[:labels.shape[0], :labels.shape[1], :],
-                    numpy.ones(labels.shape, bool))
-
-    #
-    # Some portion of the secondary matrix does not cover the labels
-    #
-    result = numpy.zeros(list(labels.shape) + list(secondary.shape[2:]),
-                         secondary.dtype)
-    i_max = min(secondary.shape[0], labels.shape[0])
-    j_max = min(secondary.shape[1], labels.shape[1])
-    if secondary.ndim == 2:
-        result[:i_max, :j_max] = secondary[:i_max, :j_max]
-    else:
-        result[:i_max, :j_max, :] = secondary[:i_max, :j_max, :]
-    mask = numpy.zeros(labels.shape, bool)
-    mask[:i_max, :j_max] = 1
-    return result, mask
-
-
-def overlay_labels(pixel_data, labels, opacity=0.7, max_label=None, seed=None):
-    colors = _colors(labels, max_label=max_label, seed=seed)
-
-    if labels.ndim == 3:
-        overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
-
-        for index, plane in enumerate(pixel_data):
-            unique_labels = numpy.unique(labels[index])
-
-            if unique_labels[0] == 0:
-                unique_labels = unique_labels[1:]
-
-            overlay[index] = skimage.color.label2rgb(
-                labels[index],
-                alpha=opacity,
-                bg_color=[0, 0, 0],
-                bg_label=0,
-                colors=colors[unique_labels - 1],
-                image=plane
-            )
-
-        return overlay
-
-    return skimage.color.label2rgb(
-        labels,
-        alpha=opacity,
-        bg_color=[0, 0, 0],
-        bg_label=0,
-        colors=colors,
-        image=pixel_data
-    )
-
-
-def _colors(labels, max_label=None, seed=None):
-    mappable = matplotlib.cm.ScalarMappable(
-        cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-    )
-
-    colors = mappable.to_rgba(
-        numpy.arange(labels.max() if max_label is None else max_label)
-    )[:, :3]
-
-    if seed is not None:
-        # Resetting the random seed helps keep object label colors consistent in displays
-        # where consistency is important, like RelateObjects.
-        numpy.random.seed(seed)
-
-    numpy.random.shuffle(colors)
-
-    return colors

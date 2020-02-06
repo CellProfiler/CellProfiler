@@ -1,10 +1,3 @@
-import numpy
-import numpy.testing
-import skimage.color
-import skimage.filters
-import skimage.measure
-
-import cellprofiler.image
 import cellprofiler.modules.overlayobjects
 import cellprofiler.object
 

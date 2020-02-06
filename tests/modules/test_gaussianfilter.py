@@ -1,6 +1,7 @@
-import cellprofiler.modules.gaussianfilter
 import numpy.testing
 import skimage.filters
+
+import cellprofiler.modules.gaussianfilter
 
 instance = cellprofiler.modules.gaussianfilter.GaussianFilter()
 
@@ -14,9 +15,6 @@ def test_run(image, module, image_set, workspace):
 
     actual = image_set.get_image("GaussianFilter")
 
-    desired = skimage.filters.gaussian(
-        image=image.pixel_data,
-        sigma=1
-    )
+    desired = skimage.filters.gaussian(image=image.pixel_data, sigma=1)
 
     numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)

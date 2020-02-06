@@ -1,0 +1,63 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10400
+
+TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+Choose a tracking method:Measurements
+Select the objects to track:Objs
+Select object measurement to use for tracking:Slothfulness
+Maximum pixel distance to consider matches:50
+Select display option:Color and Number
+Save color-coded image?:Yes
+Name the output image:TrackByLAP
+Motion model(s)\x3A:Both
+# standard deviations for radius:3
+Radius limit:3.0,10.0
+Run the second phase of the LAP algorithm?:Yes
+Gap cost:40
+Split alternative cost:1
+Merge alternative cost:1
+Maximum gap displacement:51
+Maximum split score:52
+Maximum merge score:53
+Maximum gap:4
+
+TrackObjects:[module_num:2|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+Choose a tracking method:Overlap
+Select the objects to track:Objs
+Select object measurement to use for tracking:Prescience
+Maximum pixel distance to consider matches:50
+Select display option:Color Only
+Save color-coded image?:No
+Name the output image:TrackByLAP
+Motion model(s)\x3A:Random
+# standard deviations for radius:3
+Radius limit:3.0,10.0
+Run the second phase of the LAP algorithm?:No
+Gap cost:40
+Split alternative cost:1
+Merge alternative cost:1
+Maximum gap displacement:51
+Maximum split score:52
+Maximum merge score:53
+Maximum gap:4
+
+TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D]
+Choose a tracking method:Distance
+Select the objects to track:Objs
+Select object measurement to use for tracking:Trepidation
+Maximum pixel distance to consider matches:50
+Select display option:Color and Number
+Save color-coded image?:Yes
+Name the output image:TrackByLAP
+Motion model(s)\x3A:Velocity
+# standard deviations for radius:3
+Radius limit:3.0,10.0
+Run the second phase of the LAP algorithm?:Yes
+Gap cost:40
+Split alternative cost:1
+Merge alternative cost:1
+Maximum gap displacement:51
+Maximum split score:52
+Maximum merge score:53
+Maximum gap:4

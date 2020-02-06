@@ -3,9 +3,9 @@ import os.path
 
 import numpy.testing
 import pytest
+import skimage
 import skimage.measure
 import skimage.morphology
-from skimage import img_as_ubyte
 
 import cellprofiler.image
 import cellprofiler.modules.savecroppedobjects
@@ -32,7 +32,9 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
 
     module.objects_name.value = "example"
 
-    module.directory.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+    module.directory.value = "{}|{}".format(
+        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+    )
 
     module.run(workspace)
 
@@ -46,32 +48,38 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
     for label in unique_labels:
         mask_in = obj.segmented == label
 
-        properties = skimage.measure.regionprops(mask_in.astype(int), intensity_image=image.pixel_data)
+        properties = skimage.measure.regionprops(
+            mask_in.astype(int), intensity_image=image.pixel_data
+        )
 
         mask = properties[0].intensity_image
 
-        filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[0]
+        filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[
+            0
+        ]
 
-        numpy.testing.assert_array_equal(skimage.io.imread(filename), img_as_ubyte(mask))
+        numpy.testing.assert_array_equal(
+            skimage.io.imread(filename), skimage.img_as_ubyte(mask)
+        )
 
 
 def test_defaults(module):
     module.create_settings()
 
-    assert module.directory.get_dir_choice() == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+    assert (
+        module.directory.get_dir_choice()
+        == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+    )
 
 
 @pytest.mark.parametrize(
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)),
-            id="grayscale_image"
+            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
-    ]
+    ],
 )
-
-
 def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     directory = str(tmpdir.mkdir("example"))
 
@@ -87,7 +95,9 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
 
     module.objects_name.value = "example"
 
-    module.directory.value = "{}|{}".format(cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory)
+    module.directory.value = "{}|{}".format(
+        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+    )
 
     module.run(workspace)
 
@@ -103,7 +113,9 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
 
         mask = skimage.img_as_ubyte(mask)
 
-        filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[0]
+        filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[
+            0
+        ]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
 
@@ -112,13 +124,10 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)),
-            id="grayscale_image"
+            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
-    ]
+    ],
 )
-
-
 def test_create_subfolders(image, module, image_set, workspace, object_set, tmpdir):
     directory = str(tmpdir.mkdir("example"))
 
@@ -136,7 +145,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
 
     module.directory.value = "{}|{}".format(
         cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
-        os.path.join(directory, "subdirectory")
+        os.path.join(directory, "subdirectory"),
     )
 
     module.run(workspace)
@@ -153,7 +162,9 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
 
         mask = skimage.img_as_ubyte(mask)
 
-        filename = glob.glob(os.path.join(directory, "subdirectory", "example_{}.tiff".format(label)))[0]
+        filename = glob.glob(
+            os.path.join(directory, "subdirectory", "example_{}.tiff".format(label))
+        )[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
 
@@ -162,12 +173,13 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)),
-            id="grayscale_image"
+            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
-    ]
+    ],
 )
-def test_create_subfolders_from_metadata(image, module, image_set, workspace, object_set, tmpdir):
+def test_create_subfolders_from_metadata(
+    image, module, image_set, workspace, object_set, tmpdir
+):
     directory = str(tmpdir.mkdir("example"))
 
     segmented = skimage.measure.label(image.pixel_data > 0.5)
@@ -188,7 +200,7 @@ def test_create_subfolders_from_metadata(image, module, image_set, workspace, ob
 
     module.directory.value = "{}|{}".format(
         cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
-        os.path.join(directory, "\\g<Plate>", "\\g<Well>")
+        os.path.join(directory, "\\g<Plate>", "\\g<Well>"),
     )
 
     module.run(workspace)
@@ -207,6 +219,8 @@ def test_create_subfolders_from_metadata(image, module, image_set, workspace, ob
 
         mask = skimage.img_as_ubyte(mask)
 
-        filename = glob.glob(os.path.join(directory, "002", "D", "example_{}.tiff".format(label)))[0]
+        filename = glob.glob(
+            os.path.join(directory, "002", "D", "example_{}.tiff".format(label))
+        )[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)

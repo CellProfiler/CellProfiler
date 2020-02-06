@@ -1,7 +1,8 @@
-import cellprofiler.modules.erosion
 import numpy
 import numpy.testing
 import skimage.morphology
+
+import cellprofiler.modules.erosion
 
 instance = cellprofiler.modules.erosion.Erosion()
 
@@ -37,7 +38,6 @@ def test_run(image, module, image_set, workspace):
         desired = numpy.zeros_like(image.pixel_data)
 
         for index, plane in enumerate(image.pixel_data):
-            
             desired[index] = skimage.morphology.erosion(plane, selem)
 
         numpy.testing.assert_array_equal(actual.pixel_data, desired)

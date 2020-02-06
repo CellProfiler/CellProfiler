@@ -25,7 +25,7 @@ directory to the folder containing your new module(s).  Once you've done so,
 simply restart CellProfiler; if the module loads correctly then you should be 
 able to see it in the list of modules and add it to your pipeline. 
 If it does not load correctly, we encourage you to please check the log (see 
-*Help > Configuring Logging* ) for more information then check for known issues 
+*Help > Other Features > Configuring Logging* ) for more information then check for known issues 
 and/or notify us on the `issues`_ page or the CellProfiler `forum`_.
 
 Additionally, if you write your own module based on our `recommendations`_, you

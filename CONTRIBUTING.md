@@ -1,8 +1,11 @@
 # Contributing Guidelines
 
-Hello! We're glad you're interested in contributing to CellProfiler.
+Hello! We're so glad you're interested in contributing to CellProfiler!
 
-This document provides guidelines for contributing to our project. You'll find information on what you can contribute, choosing what to contribute, setting up your local workstation for development, and submitting your contribution for review and acceptance.
+We rarely have a full software engineer devoted to the CellProfiler project, so the "team" consists of mostly small bits of many people. 
+We would love for you to be a part of the community of mostly volunteers who maintain this well-loved tool for biologists.
+
+This document provides guidelines for contributing to CellProfiler. You'll find information on what you can contribute, choosing what to contribute, setting up your local workstation for development, and submitting your contribution for review and acceptance.
 
 We'd like to ensure this document is always accurate and understandable. Please [file an issue](https://github.com/CellProfiler/CellProfiler/issues/new) if any information is missing, unclear, or incorrect.  
 

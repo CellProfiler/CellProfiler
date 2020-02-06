@@ -1,30 +1,27 @@
 # coding=utf-8
 
-from __future__ import print_function
+
 import csv
 import logging
 import os
-import urllib2
+from functools import reduce
 
 import matplotlib.mlab
 import numpy
+import six
+import six.moves.urllib.request
 
-from cellprofiler.modules import _help
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
+from cellprofiler.modules import _help
 from cellprofiler.modules import identify, loadimages
-from functools import reduce
-import six
 
 logger = logging.getLogger(__name__)
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import StringIO
 
 __doc__ = """\
 LoadData
@@ -230,21 +227,29 @@ Measurements made by this module
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
 """
 
-IMAGE_CATEGORIES = (cellprofiler.measurement.C_URL,
-                    cellprofiler.measurement.C_FILE_NAME,
-                    cellprofiler.measurement.C_PATH_NAME)
-OBJECTS_CATEGORIES = (cellprofiler.measurement.C_OBJECTS_URL,
-                      cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                      cellprofiler.measurement.C_OBJECTS_PATH_NAME)
-DIR_NONE = 'None'
-DIR_OTHER = 'Elsewhere...'
-DIR_ALL = [cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
-           cellprofiler.preferences.NO_FOLDER_NAME, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME]
+IMAGE_CATEGORIES = (
+    cellprofiler.measurement.C_URL,
+    cellprofiler.measurement.C_FILE_NAME,
+    cellprofiler.measurement.C_PATH_NAME,
+)
+OBJECTS_CATEGORIES = (
+    cellprofiler.measurement.C_OBJECTS_URL,
+    cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+    cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+)
+DIR_NONE = "None"
+DIR_OTHER = "Elsewhere..."
+DIR_ALL = [
+    cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+    cellprofiler.preferences.NO_FOLDER_NAME,
+    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+]
 
-'''Reserve extra space in pathnames for batch processing name rewrites'''
+"""Reserve extra space in pathnames for batch processing name rewrites"""
 PATH_PADDING = 20
 
-'''Cache of header columns for files'''
+"""Cache of header columns for files"""
 header_cache = {}
 
 
@@ -257,32 +262,35 @@ header_cache = {}
 # PathName_<image-name> internally.
 ###################################################################
 
+
 def header_to_column(field):
-    '''Convert the field name in the header to a column name
+    """Convert the field name in the header to a column name
 
     This function converts Image_FileName to FileName and
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
-    '''
-    for name in (cellprofiler.measurement.C_PATH_NAME,
-                 cellprofiler.measurement.C_FILE_NAME,
-                 cellprofiler.measurement.C_URL,
-                 cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                 cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                 cellprofiler.measurement.C_OBJECTS_URL):
-        if field.startswith(cellprofiler.measurement.IMAGE + '_' + name + '_'):
-            return field[len(cellprofiler.measurement.IMAGE) + 1:]
+    """
+    for name in (
+        cellprofiler.measurement.C_PATH_NAME,
+        cellprofiler.measurement.C_FILE_NAME,
+        cellprofiler.measurement.C_URL,
+        cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+        cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+        cellprofiler.measurement.C_OBJECTS_URL,
+    ):
+        if field.startswith(cellprofiler.measurement.IMAGE + "_" + name + "_"):
+            return field[len(cellprofiler.measurement.IMAGE) + 1 :]
     return field
 
 
 def is_path_name_feature(feature):
-    '''Return true if the feature name is a path name'''
-    return feature.startswith(cellprofiler.measurement.C_PATH_NAME + '_')
+    """Return true if the feature name is a path name"""
+    return feature.startswith(cellprofiler.measurement.C_PATH_NAME + "_")
 
 
 def is_file_name_feature(feature):
-    '''Return true if the feature name is a file name'''
-    return feature.startswith(cellprofiler.measurement.C_FILE_NAME + '_')
+    """Return true if the feature name is a file name"""
+    return feature.startswith(cellprofiler.measurement.C_FILE_NAME + "_")
 
 
 def is_url_name_feature(feature):
@@ -290,12 +298,12 @@ def is_url_name_feature(feature):
 
 
 def is_objects_path_name_feature(feature):
-    '''Return true if the feature name is the path to a labels file'''
+    """Return true if the feature name is the path to a labels file"""
     return feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
-    '''Return true if the feature name is a labels file name'''
+    """Return true if the feature name is a labels file name"""
     return feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_")
 
 
@@ -304,79 +312,84 @@ def is_objects_url_name_feature(feature):
 
 
 def get_image_name(feature):
-    '''Extract the image name from a feature name'''
+    """Extract the image name from a feature name"""
     if is_path_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_PATH_NAME + '_'):]
+        return feature[len(cellprofiler.measurement.C_PATH_NAME + "_") :]
     if is_file_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_FILE_NAME + '_'):]
+        return feature[len(cellprofiler.measurement.C_FILE_NAME + "_") :]
     if is_url_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_URL + '_'):]
+        return feature[len(cellprofiler.measurement.C_URL + "_") :]
     raise ValueError('"%s" is not a path feature or file name feature' % feature)
 
 
 def get_objects_name(feature):
-    '''Extract the objects name from a feature name'''
+    """Extract the objects name from a feature name"""
     if is_objects_path_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_"):]
+        return feature[len(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_") :]
     if is_objects_file_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_"):]
+        return feature[len(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_") :]
     if is_objects_url_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_OBJECTS_URL + "_"):]
-    raise ValueError('"%s" is not a objects path feature or file name feature' % feature)
+        return feature[len(cellprofiler.measurement.C_OBJECTS_URL + "_") :]
+    raise ValueError(
+        '"%s" is not a objects path feature or file name feature' % feature
+    )
 
 
 def make_path_name_feature(image):
-    '''Return the path name feature, given an image name
+    """Return the path name feature, given an image name
 
     The path name feature is the name of the measurement that stores
     the image's path name.
-    '''
-    return cellprofiler.measurement.C_PATH_NAME + '_' + image
+    """
+    return cellprofiler.measurement.C_PATH_NAME + "_" + image
 
 
 def make_file_name_feature(image):
-    '''Return the file name feature, given an image name
+    """Return the file name feature, given an image name
 
     The file name feature is the name of the measurement that stores
     the image's file name.
-    '''
-    return cellprofiler.measurement.C_FILE_NAME + '_' + image
+    """
+    return cellprofiler.measurement.C_FILE_NAME + "_" + image
 
 
 def make_objects_path_name_feature(objects_name):
-    '''Return the path name feature, given an object name
+    """Return the path name feature, given an object name
 
     The path name feature is the name of the measurement that stores
     the objects file path name.
-    '''
-    return cellprofiler.measurement.C_OBJECTS_PATH_NAME + '_' + objects_name
+    """
+    return cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + objects_name
 
 
 def make_objects_file_name_feature(objects_name):
-    '''Return the file name feature, given an object name
+    """Return the file name feature, given an object name
 
     The file name feature is the name of the measurement that stores
     the objects file name.
-    '''
-    return cellprofiler.measurement.C_OBJECTS_FILE_NAME + '_' + objects_name
+    """
+    return cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + objects_name
 
 
 class LoadData(cellprofiler.module.Module):
     module_name = "LoadData"
-    category = 'File Processing'
+    category = "File Processing"
     variable_revision_number = 6
 
     def create_settings(self):
         self.csv_directory = cellprofiler.setting.DirectoryPath(
-                "Input data file location", allow_metadata=False, support_urls=True,
-                doc="""\
+            "Input data file location",
+            allow_metadata=False,
+            support_urls=True,
+            doc="""\
 Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_TEXT}
-""".format(**{
-                    "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
-                }))
+""".format(
+                **{"IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT}
+            ),
+        )
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.csv_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -390,18 +403,23 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
             get_directory_fn=get_directory_fn,
             set_directory_fn=set_directory_fn,
             browse_msg="Choose CSV file",
-            exts=[("Data file (*.csv)", "*.csv"), ("All files (*.*)", "*.*")]
+            exts=[("Data file (*.csv)", "*.csv"), ("All files (*.*)", "*.*")],
         )
 
         self.browse_csv_button = cellprofiler.setting.DoSomething(
-                "Press to view CSV file contents", "View...", self.browse_csv)
+            "Press to view CSV file contents", "View...", self.browse_csv
+        )
 
-        self.wants_images = cellprofiler.setting.Binary("Load images based on this data?", True, doc="""\
+        self.wants_images = cellprofiler.setting.Binary(
+            "Load images based on this data?",
+            True,
+            doc="""\
 Select *{YES}* to have **LoadData** load images based on the
 *Image\_FileName* column and the *Image\_PathName* column (if specified).
-""".format(**{
-            "YES": cellprofiler.setting.YES
-        }))
+""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
+        )
 
         self.rescale = cellprofiler.setting.Binary(
             "Rescale intensities?",
@@ -422,15 +440,16 @@ image metadata).
 Select *{NO}* to ignore the image metadata and rescale the image to a
 maximum of 1.0 by dividing by 255 or 65535, depending on the maximum possible
 intensity value of the image file format.
-""".format(**{
-                "YES": cellprofiler.setting.YES,
-                "NO": cellprofiler.setting.NO
-            })
+""".format(
+                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+            ),
         )
 
         self.image_directory = cellprofiler.setting.DirectoryPath(
-                "Base image location",
-                dir_choices=DIR_ALL, allow_metadata=False, doc="""\
+            "Base image location",
+            dir_choices=DIR_ALL,
+            allow_metadata=False,
+            doc="""\
 The parent (base) folder where images are located. If images are
 contained in subfolders, then the file you load with this module should
 contain a column with path names relative to the base image folder (see
@@ -441,7 +460,8 @@ the following options:
 -  *Default Output Folder:* Use the Default Output Folder.
 -  *None:* You have an *Image\_PathName* field that supplies an absolute
    path.
--  *Elsewhere…*: Use a particular folder you specify.""")
+-  *Elsewhere…*: Use a particular folder you specify.""",
+        )
 
         self.wants_image_groupings = cellprofiler.setting.Binary(
             "Group images by metadata?",
@@ -452,20 +472,23 @@ Each set of files that share your selected metadata tags will be processed
 together. For example, see **CreateBatchFiles** for details on submitting a
 CellProfiler pipeline to a computing cluster for processing groups
 separately, and see the **Groups** module for other examples.
-""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.metadata_fields = cellprofiler.setting.MultiChoice(
-                "Select metadata tags for grouping", None, doc="""\
+            "Select metadata tags for grouping",
+            None,
+            doc="""\
 *(Used only if images are to be grouped by metadata)*
 
 Select the tags by which you want to group the image files. You can
 select multiple tags. For example, if a set of images had metadata for
 “Run”, “Plate”, “Well”, and “Site”, selecting *Run* and *Plate* will
 create groups containing images that share the same [*Run*,\ *Plate*]
-pair of tags.""")
+pair of tags.""",
+        )
 
         self.wants_rows = cellprofiler.setting.Binary(
             "Process just a range of rows?",
@@ -476,17 +499,20 @@ file. In the boxes below, enter the number of the row you want to begin processi
 with in the box on the left. Then, enter the number of the row you want to
 end processing with in the box on the right. Rows are numbered starting at 1
 (but do not count the header line). **LoadData** will process up to and including the end row.
-""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.row_range = cellprofiler.setting.IntegerRange(
-                "Rows to process",
-                (1, 100000), 1, doc="""\
+            "Rows to process",
+            (1, 100000),
+            1,
+            doc="""\
 *(Used only if a range of rows is to be specified)*
 
-Enter the row numbers of the first and last row to be processed.""")
+Enter the row numbers of the first and last row to be processed.""",
+        )
 
         def do_reload():
             global header_cache
@@ -497,7 +523,10 @@ Enter the row numbers of the first and last row to be processed.""")
                 pass
 
         self.clear_cache_button = cellprofiler.setting.DoSomething(
-                "Reload cached information", "Reload", do_reload, doc="""\
+            "Reload cached information",
+            "Reload",
+            do_reload,
+            doc="""\
 *(Used only if the CSV is loaded from a URL)*
 
 Press this button to reload header information saved inside
@@ -509,79 +538,99 @@ accessed through HTTP or FTP. In this case, you will have to use this
 button to reload the header information after changing the file.
 
 This button will never destroy any information on disk. It is always
-safe to press it.""")
+safe to press it.""",
+        )
 
     def settings(self):
-        return [self.csv_directory,
-                self.csv_file_name, self.wants_images, self.image_directory,
-                self.wants_rows,
-                self.row_range, self.wants_image_groupings,
-                self.metadata_fields, self.rescale]
+        return [
+            self.csv_directory,
+            self.csv_file_name,
+            self.wants_images,
+            self.image_directory,
+            self.wants_rows,
+            self.row_range,
+            self.wants_image_groupings,
+            self.metadata_fields,
+            self.rescale,
+        ]
 
     def validate_module(self, pipeline):
         csv_path = self.csv_path
 
         if self.csv_directory.dir_choice != cellprofiler.setting.URL_FOLDER_NAME:
             if not os.path.isfile(csv_path):
-                raise cellprofiler.setting.ValidationError("No such CSV file: %s" % csv_path,
-                                                           self.csv_file_name)
+                raise cellprofiler.setting.ValidationError(
+                    "No such CSV file: %s" % csv_path, self.csv_file_name
+                )
 
         try:
             self.open_csv()
         except IOError as e:
             import errno
+
             if e.errno == errno.EWOULDBLOCK:
-                raise cellprofiler.setting.ValidationError("Another program (Excel?) is locking the CSV file %s." %
-                                                           self.csv_path, self.csv_file_name)
+                raise cellprofiler.setting.ValidationError(
+                    "Another program (Excel?) is locking the CSV file %s."
+                    % self.csv_path,
+                    self.csv_file_name,
+                )
             else:
-                raise cellprofiler.setting.ValidationError("Could not open CSV file %s (error: %s)" %
-                                                           (self.csv_path, e), self.csv_file_name)
+                raise cellprofiler.setting.ValidationError(
+                    "Could not open CSV file %s (error: %s)" % (self.csv_path, e),
+                    self.csv_file_name,
+                )
 
         try:
             self.get_header()
         except Exception as e:
             raise cellprofiler.setting.ValidationError(
-                "The CSV file, %s, is not in the proper format." 
-                " See this module's help for details on CSV format. (error: %s)" % (self.csv_path, e),
-                self.csv_file_name
+                "The CSV file, %s, is not in the proper format."
+                " See this module's help for details on CSV format. (error: %s)"
+                % (self.csv_path, e),
+                self.csv_file_name,
             )
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings
+        """Check for potentially dangerous settings
 
         The best practice is to have a single LoadImages or LoadData module.
-        '''
+        """
         for module in pipeline.modules():
             if id(module) == id(self):
                 return
             if isinstance(module, LoadData):
                 raise cellprofiler.setting.ValidationError(
-                        "Your pipeline has two or more LoadData modules.\n"
-                        "The best practice is to have only one LoadData module.\n"
-                        "Consider combining the CSV files from all of your\n"
-                        "LoadData modules into one and using only a single\n"
-                        "LoadData module", self.csv_file_name)
+                    "Your pipeline has two or more LoadData modules.\n"
+                    "The best practice is to have only one LoadData module.\n"
+                    "Consider combining the CSV files from all of your\n"
+                    "LoadData modules into one and using only a single\n"
+                    "LoadData module",
+                    self.csv_file_name,
+                )
             if isinstance(module, loadimages.LoadImages):
                 raise cellprofiler.setting.ValidationError(
-                        "Your pipeline has a LoadImages and LoadData module.\n"
-                        "The best practice is to have only a single LoadImages\n"
-                        "or LoadData module. This LoadData module will match its\n"
-                        "metadata against that of the previous LoadImages module\n"
-                        "in an attempt to reconcile the two modules' image\n"
-                        "set lists and this can result in image sets with\n"
-                        "missing images or metadata.", self.csv_file_name)
+                    "Your pipeline has a LoadImages and LoadData module.\n"
+                    "The best practice is to have only a single LoadImages\n"
+                    "or LoadData module. This LoadData module will match its\n"
+                    "metadata against that of the previous LoadImages module\n"
+                    "in an attempt to reconcile the two modules' image\n"
+                    "set lists and this can result in image sets with\n"
+                    "missing images or metadata.",
+                    self.csv_file_name,
+                )
 
         # check that user has selected fields for grouping if grouping is turned on
-        if self.wants_image_groupings.value and (len(self.metadata_fields.selections) == 0):
+        if self.wants_image_groupings.value and (
+            len(self.metadata_fields.selections) == 0
+        ):
             raise cellprofiler.setting.ValidationError(
-                "Group images by metadata is True, but no metadata " 
+                "Group images by metadata is True, but no metadata "
                 "tags have been chosen for grouping.",
-                self.metadata_fields
+                self.metadata_fields,
             )
 
     def visible_settings(self):
-        result = [self.csv_directory, self.csv_file_name,
-                  self.browse_csv_button]
+        result = [self.csv_directory, self.csv_file_name, self.browse_csv_button]
         if self.csv_directory.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
             result += [self.clear_cache_button]
             self.csv_file_name.text = "URL of the file"
@@ -591,14 +640,15 @@ safe to press it.""")
             self.csv_file_name.set_browsable(True)
         result += [self.wants_images]
         if self.wants_images.value:
-            result += [self.rescale, self.image_directory,
-                       self.wants_image_groupings]
+            result += [self.rescale, self.image_directory, self.wants_image_groupings]
             if self.wants_image_groupings.value:
                 result += [self.metadata_fields]
                 try:
-                    fields = [field[len("Metadata_"):]
-                              for field in self.get_header()
-                              if field.startswith("Metadata_")]
+                    fields = [
+                        field[len("Metadata_") :]
+                        for field in self.get_header()
+                        if field.startswith("Metadata_")
+                    ]
                     if self.has_synthetic_well_metadata():
                         fields += [cellprofiler.measurement.FTR_WELL]
                     self.metadata_fields.choices = fields
@@ -612,7 +662,7 @@ safe to press it.""")
 
     def convert(self):
         data = matplotlib.mlab.csv2rec(self.csv_path)
-        src_dsc = data['source_description']
+        src_dsc = data["source_description"]
 
         def uniquewaves(seq):
             output = []
@@ -629,29 +679,36 @@ safe to press it.""")
         wave_fnames = []
 
         for i in range(len(waves)):
-            mask = data['source_description'] == waves[i]
-            pathname.append(data[mask]['file_path'])
-            filename.append(data[mask]['file_name'])
-            wave_pnames.append('PathName_%s' % (waves[i].strip('"')))
-            wave_fnames.append('FileName_%s' % (waves[i].strip('"')))
+            mask = data["source_description"] == waves[i]
+            pathname.append(data[mask]["file_path"])
+            filename.append(data[mask]["file_name"])
+            wave_pnames.append("PathName_%s" % (waves[i].strip('"')))
+            wave_fnames.append("FileName_%s" % (waves[i].strip('"')))
 
         for i in range(len(waves)):
             if len(filename[i]) != len(filename[0]):
-                raise RuntimeError("Image %s has %d files, but image %s has %d files" %
-                                   (wave_fnames[i], len(filename[i]), wave_fnames[0], len(filename[0])))
+                raise RuntimeError(
+                    "Image %s has %d files, but image %s has %d files"
+                    % (
+                        wave_fnames[i],
+                        len(filename[i]),
+                        wave_fnames[0],
+                        len(filename[0]),
+                    )
+                )
 
         def metadatacols(header):
             output = []
             for h in header:
-                if not h.startswith('file_'):
+                if not h.startswith("file_"):
                     if isinstance(h, six.text_type):
-                        output.append(h.encode("utf-8"))
+                        output.append(h)
                     else:
                         output.append(h)
             return output
 
         def data_for_one_wave(data):
-            mask = data['source_description'] == waves[0]
+            mask = data["source_description"] == waves[0]
             data_onewave = data[mask]
             return data_onewave
 
@@ -660,23 +717,31 @@ safe to press it.""")
 
         data_onewave = data_for_one_wave(data)
         strdate = []
-        for date in data_onewave['date_created']:
+        for date in data_onewave["date_created"]:
             strdate += [str(date)]
-        metadata_names.remove('source_description')
-        metadata_names.remove('date_created')
-        data_onewave_nofilepaths = matplotlib.mlab.rec_keep_fields(data_onewave, metadata_names)
-        metadata_names = ['Metadata_' + m for m in metadata_names]
+        metadata_names.remove("source_description")
+        metadata_names.remove("date_created")
+        data_onewave_nofilepaths = matplotlib.mlab.rec_keep_fields(
+            data_onewave, metadata_names
+        )
+        metadata_names = ["Metadata_" + m for m in metadata_names]
         data_onewave_nofilepaths.dtype.names = metadata_names
         final_data = data_onewave_nofilepaths
-        final_data = matplotlib.mlab.rec_append_fields(final_data, 'Metadata_date_created', strdate)
+        final_data = matplotlib.mlab.rec_append_fields(
+            final_data, "Metadata_date_created", strdate
+        )
         for i in range(len(waves)):
-            final_data = matplotlib.mlab.rec_append_fields(final_data, wave_pnames[i], pathname[i])
-            final_data = matplotlib.mlab.rec_append_fields(final_data, wave_fnames[i], filename[i])
+            final_data = matplotlib.mlab.rec_append_fields(
+                final_data, wave_pnames[i], pathname[i]
+            )
+            final_data = matplotlib.mlab.rec_append_fields(
+                final_data, wave_fnames[i], filename[i]
+            )
         return final_data
 
     @property
     def csv_path(self):
-        '''The path and file name of the CSV file to be loaded'''
+        """The path and file name of the CSV file to be loaded"""
         if cellprofiler.preferences.get_data_file() is not None:
             return cellprofiler.preferences.get_data_file()
         if self.csv_directory.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
@@ -691,11 +756,11 @@ safe to press it.""")
 
     @property
     def legacy_field_key(self):
-        '''The key to use to retrieve the metadata from the image set list'''
-        return 'LoadTextMetadata_%d' % self.module_num
+        """The key to use to retrieve the metadata from the image set list"""
+        return "LoadTextMetadata_%d" % self.module_num
 
     def get_cache_info(self):
-        '''Get the cached information for the data file'''
+        """Get the cached information for the data file"""
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
         if cellprofiler.preferences.is_url_path(self.csv_path):
@@ -709,7 +774,7 @@ safe to press it.""")
         return entry
 
     def open_csv(self, do_not_cache=False):
-        '''Open the csv file or URL, returning a file descriptor'''
+        """Open the csv file or URL, returning a file descriptor"""
         global header_cache
 
         if cellprofiler.preferences.is_url_path(self.csv_path):
@@ -722,10 +787,10 @@ safe to press it.""")
                 fd = StringIO(entry["URLDATA"])
             else:
                 if do_not_cache:
-                    raise RuntimeError('Need to fetch URL manually.')
+                    raise RuntimeError("Need to fetch URL manually.")
                 try:
                     url = cellprofiler.misc.generate_presigned_url(self.csv_path)
-                    url_fd = urllib2.urlopen(url)
+                    url_fd = six.moves.urllib.request.urlopen(url)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
@@ -739,11 +804,12 @@ safe to press it.""")
                 entry["URLDATA"] = fd.getvalue()
             return fd
         else:
-            return open(self.csv_path, 'rb')
+            return open(self.csv_path, "rt")
 
     def browse_csv(self):
         import wx
         from cellprofiler.gui import get_cp_icon
+
         try:
             fd = self.open_csv()
         except:
@@ -759,19 +825,20 @@ safe to press it.""")
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append([s.encode('utf8') if isinstance(s, str) else s
-                             for s in line[:len(header)]])
+            list_ctl.Append(
+                [s if isinstance(s, str) else s for s in line[: len(header)]]
+            )
         frame.SetMinSize((640, 480))
         frame.SetIcon(get_cp_icon())
         frame.Fit()
         frame.Show()
 
     def get_header(self, do_not_cache=False):
-        '''Read the header fields from the csv file
+        """Read the header fields from the csv file
 
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
-        '''
+        """
         entry = self.get_cache_info()
         if "header" in entry:
             return entry["header"]
@@ -780,7 +847,7 @@ safe to press it.""")
         reader = csv.reader(fd)
         header = next(reader)
         fd.close()
-        if header[0].startswith('ELN_RUN_ID'):
+        if header[0].startswith("ELN_RUN_ID"):
             try:
                 data = self.convert()
             except Exception as e:
@@ -791,29 +858,36 @@ safe to press it.""")
 
     def get_image_names(self, do_not_cache=False):
         header = self.get_header(do_not_cache=do_not_cache)
-        image_names = set([
-                              get_image_name(field)
-                              for field in header
-                              if is_file_name_feature(field) or is_url_name_feature(field)])
+        image_names = set(
+            [
+                get_image_name(field)
+                for field in header
+                if is_file_name_feature(field) or is_url_name_feature(field)
+            ]
+        )
         return list(image_names)
 
     def get_object_names(self, do_not_cache=False):
         header = self.get_header(do_not_cache=do_not_cache)
-        object_names = set([get_objects_name(field)
-                            for field in header
-                            if is_objects_file_name_feature(field) or
-                            is_objects_url_name_feature(field)])
+        object_names = set(
+            [
+                get_objects_name(field)
+                for field in header
+                if is_objects_file_name_feature(field)
+                or is_objects_url_name_feature(field)
+            ]
+        )
         return list(object_names)
 
     def other_providers(self, group):
-        '''Get name providers from the CSV header'''
-        if group == 'imagegroup' and self.wants_images.value:
+        """Get name providers from the CSV header"""
+        if group == "imagegroup" and self.wants_images.value:
             try:
                 # do not load URLs automatically
                 return self.get_image_names(do_not_cache=True)
             except Exception as e:
                 return []
-        elif group == 'objectgroup' and self.wants_images:
+        elif group == "objectgroup" and self.wants_images:
             try:
                 # do not load URLs automatically
                 return self.get_object_names(do_not_cache=True)
@@ -823,25 +897,25 @@ safe to press it.""")
         return []
 
     def is_image_from_file(self, image_name):
-        '''Return True if LoadData provides the given image name'''
-        providers = self.other_providers('imagegroup')
+        """Return True if LoadData provides the given image name"""
+        providers = self.other_providers("imagegroup")
         return image_name in providers
 
     def is_load_module(self):
-        '''LoadData can make image sets so it's a load module'''
+        """LoadData can make image sets so it's a load module"""
         return True
 
     def prepare_run(self, workspace):
         pipeline = workspace.pipeline
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
-        '''Load the CSV file at the outset and populate the image set list'''
+        """Load the CSV file at the outset and populate the image set list"""
         if pipeline.in_batch_mode():
             return True
         fd = self.open_csv()
         reader = csv.reader(fd)
         header = [header_to_column(column) for column in next(reader)]
-        if header[0].startswith('ELN_RUN_ID'):
+        if header[0].startswith("ELN_RUN_ID"):
             reader = self.convert()
             header = list(reader.dtype.names)
         if self.wants_rows.value:
@@ -854,16 +928,19 @@ safe to press it.""")
                     break
                 if len(row) == 0:
                     continue
-                row = [s.encode('utf8') if isinstance(s, str) else s
-                       for s in row]
+                row = [s if isinstance(s, str) else s for s in row]
                 if len(row) != len(header):
-                    raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d" %
-                                     (idx, len(row), len(header)))
+                    raise ValueError(
+                        "Row # %d has the wrong number of elements: %d. Expected %d"
+                        % (idx, len(row), len(header))
+                    )
                 rows.append(row)
         else:
-            rows = [[s.encode('utf8') if isinstance(s, str) else s
-                     for s in row] for row in reader
-                    if len(row) > 0]
+            rows = [
+                [s if isinstance(s, str) else s for s in row]
+                for row in reader
+                if len(row) > 0
+            ]
         fd.close()
         #
         # Check for correct # of columns
@@ -871,12 +948,9 @@ safe to press it.""")
         n_fields = len(header)
         for i, row in enumerate(rows):
             if len(row) < n_fields:
-                text = ('Error on line %d of %s.\n'
-                        '\n"%s"\n'
-                        '%d rows found, expected %d') % (
-                           i + 2, self.csv_file_name.value,
-                           ','.join(row),
-                           len(row), n_fields)
+                text = (
+                    "Error on line %d of %s.\n" '\n"%s"\n' "%d rows found, expected %d"
+                ) % (i + 2, self.csv_file_name.value, ",".join(row), len(row), n_fields)
                 raise ValueError(text)
             elif len(row) > n_fields:
                 del row[n_fields:]
@@ -911,7 +985,11 @@ safe to press it.""")
                     elif cellprofiler.measurement.is_well_column_token(feature):
                         well_column_column = i
 
-        if (well_row_column is not None and well_column_column is not None and well_well_column is None):
+        if (
+            well_row_column is not None
+            and well_column_column is not None
+            and well_well_column is None
+        ):
             # add a synthetic well column
             metadata_columns[cellprofiler.measurement.M_WELL] = len(header)
             header.append(cellprofiler.measurement.M_WELL)
@@ -926,15 +1004,20 @@ safe to press it.""")
             else:
                 path_base = self.image_path
             for d, url_category, file_name_category, path_name_category in (
-                    (image_columns,
-                     cellprofiler.measurement.C_URL,
-                     cellprofiler.measurement.C_FILE_NAME,
-                     cellprofiler.measurement.C_PATH_NAME),
-                    (object_columns,
-                     cellprofiler.measurement.C_OBJECTS_URL,
-                     cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                     cellprofiler.measurement.C_OBJECTS_PATH_NAME)):
-                for name in d.keys():
+                (
+                    image_columns,
+                    cellprofiler.measurement.C_URL,
+                    cellprofiler.measurement.C_FILE_NAME,
+                    cellprofiler.measurement.C_PATH_NAME,
+                ),
+                (
+                    object_columns,
+                    cellprofiler.measurement.C_OBJECTS_URL,
+                    cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                    cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                ),
+            ):
+                for name in list(d.keys()):
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
                         if header[k].startswith(url_category):
@@ -946,9 +1029,12 @@ safe to press it.""")
                     if url_column is None:
                         if file_name_column is None:
                             raise ValueError(
-                                    ("LoadData needs a %s_%s column to match the "
-                                     "%s_%s column") % (file_name_category, name,
-                                                        path_name_category, name))
+                                (
+                                    "LoadData needs a %s_%s column to match the "
+                                    "%s_%s column"
+                                )
+                                % (file_name_category, name, path_name_category, name)
+                            )
                         #
                         # Add URL column
                         #
@@ -957,13 +1043,16 @@ safe to press it.""")
                         header.append(url_feature)
                         for row in rows:
                             if path_name_column is None:
-                                fullname = os.path.join(path_base,
-                                                        row[file_name_column])
+                                fullname = os.path.join(
+                                    path_base, row[file_name_column]
+                                )
                             else:
                                 row_path_name = os.path.join(
-                                        path_base, row[path_name_column])
+                                    path_base, row[path_name_column]
+                                )
                                 fullname = os.path.join(
-                                        row_path_name, row[file_name_column])
+                                    row_path_name, row[file_name_column]
+                                )
                                 row[path_name_column] = row_path_name
                             url = loadimages.pathname2url(fullname)
                             row.append(url)
@@ -996,17 +1085,21 @@ safe to press it.""")
                                 if idx == -1:
                                     row += ["", url]
                                 else:
-                                    row += [url[:(idx + 1)], url[(idx + 1):]]
+                                    row += [url[: (idx + 1)], url[(idx + 1) :]]
                             else:
-                                row += [url[:idx], url[(idx + 1):]]
+                                row += [url[:idx], url[(idx + 1) :]]
 
         column_type = {}
         for column in self.get_measurement_columns(pipeline):
             column_type[column[1]] = column[2]
 
-        previous_column_types = dict([
-                                         (c[1], c[2]) for c in pipeline.get_measurement_columns(self)
-                                         if c[0] == cellprofiler.measurement.IMAGE])
+        previous_column_types = dict(
+            [
+                (c[1], c[2])
+                for c in pipeline.get_measurement_columns(self)
+                if c[0] == cellprofiler.measurement.IMAGE
+            ]
+        )
         #
         # Arrange the metadata into columns
         #
@@ -1032,28 +1125,31 @@ safe to press it.""")
             #  loadimages)
             #
             image_numbers = m.match_metadata(
-                    metadata_columns.keys(),
-                    [columns[k] for k in metadata_columns.keys()])
+                list(metadata_columns.keys()),
+                [columns[k] for k in list(metadata_columns.keys())],
+            )
             image_numbers = numpy.array(image_numbers, int).flatten()
             max_image_number = numpy.max(image_numbers)
             new_columns = {}
-            for key, values in columns.iteritems():
+            for key, values in list(columns.items()):
                 new_values = [None] * max_image_number
                 for image_number, value in zip(image_numbers, values):
                     new_values[image_number - 1] = value
                 new_columns[key] = new_values
             columns = new_columns
-        for feature, values in columns.iteritems():
+        for feature, values in list(columns.items()):
             m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, values)
         if self.wants_image_groupings and len(self.metadata_fields.selections) > 0:
-            keys = ["_".join((cellprofiler.measurement.C_METADATA, k))
-                    for k in self.metadata_fields.selections]
+            keys = [
+                "_".join((cellprofiler.measurement.C_METADATA, k))
+                for k in self.metadata_fields.selections
+            ]
             m.set_grouping_tags(keys)
 
         return True
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -1067,7 +1163,7 @@ safe to press it.""")
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
 
         if self.wants_images:
             m = workspace.measurements
@@ -1075,14 +1171,19 @@ safe to press it.""")
             image_numbers = m.get_image_numbers()
             all_image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
             for url_category, file_category, path_category, names in (
-                    (cellprofiler.measurement.C_URL,
-                     cellprofiler.measurement.C_FILE_NAME,
-                     cellprofiler.measurement.C_PATH_NAME,
-                     self.get_image_names()),
-                    (cellprofiler.measurement.C_OBJECTS_URL,
-                     cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                     cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                     self.get_object_names())):
+                (
+                    cellprofiler.measurement.C_URL,
+                    cellprofiler.measurement.C_FILE_NAME,
+                    cellprofiler.measurement.C_PATH_NAME,
+                    self.get_image_names(),
+                ),
+                (
+                    cellprofiler.measurement.C_OBJECTS_URL,
+                    cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                    cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                    self.get_object_names(),
+                ),
+            ):
                 for name in names:
                     url_feature = "_".join((url_category, name))
                     path_feature = "_".join((path_category, name))
@@ -1091,27 +1192,38 @@ safe to press it.""")
                     file_feature = "_".join((file_category, name))
                     if file_feature not in all_image_features:
                         file_feature = None
-                    urls = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                             url_feature,
-                                             image_set_number=image_numbers)
+                    urls = m.get_measurement(
+                        cellprofiler.measurement.IMAGE,
+                        url_feature,
+                        image_set_number=image_numbers,
+                    )
                     for image_number, url in zip(image_numbers, urls):
-                        url = url.encode("utf-8")
+                        url = url
                         if url.lower().startswith("file:"):
                             fullname = loadimages.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = str(loadimages.pathname2url(fullname)).encode("utf-8")
-                            m.add_measurement(cellprofiler.measurement.IMAGE, url_feature, url,
-                                              image_set_number=image_number)
+                            url = str(loadimages.pathname2url(fullname))
+                            m.add_measurement(
+                                cellprofiler.measurement.IMAGE,
+                                url_feature,
+                                url,
+                                image_set_number=image_number,
+                            )
                             if file_feature is not None:
                                 m.add_measurement(
-                                        cellprofiler.measurement.IMAGE, file_feature,
-                                        filename,
-                                        image_set_number=image_number)
+                                    cellprofiler.measurement.IMAGE,
+                                    file_feature,
+                                    filename,
+                                    image_set_number=image_number,
+                                )
                             if path_feature is not None:
                                 m.add_measurement(
-                                        cellprofiler.measurement.IMAGE, path_feature,
-                                        path, image_set_number=image_number)
+                                    cellprofiler.measurement.IMAGE,
+                                    path_feature,
+                                    path,
+                                    image_set_number=image_number,
+                                )
 
         self.csv_directory.alter_for_create_batch_files(fn_alter_path)
         self.image_directory.alter_for_create_batch_files(fn_alter_path)
@@ -1128,7 +1240,7 @@ safe to press it.""")
             series_feature = cellprofiler.measurement.C_OBJECTS_SERIES + "_" + name
             frame_feature = cellprofiler.measurement.C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cellprofiler.measurement.IMAGE, url_feature)
-        url = url.encode('utf-8')
+        url = url
         full_filename = loadimages.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(cellprofiler.measurement.IMAGE, series_feature):
@@ -1140,49 +1252,57 @@ safe to press it.""")
         else:
             frame = None
         return loadimages.LoadImagesImageProvider(
-                name, path, filename,
-                rescale=self.rescale.value and is_image_name,
-                series=series,
-                index=frame)
+            name,
+            path,
+            filename,
+            rescale=self.rescale.value and is_image_name,
+            series=series,
+            index=frame,
+        )
 
     def run(self, workspace):
-        '''Populate the images and objects'''
+        """Populate the images and objects"""
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
         image_set = workspace.image_set
         object_set = workspace.object_set
         statistics = []
-        features = [x[1] for x in
-                    self.get_measurement_columns(workspace.pipeline)
-                    if x[0] == cellprofiler.measurement.IMAGE]
+        features = [
+            x[1]
+            for x in self.get_measurement_columns(workspace.pipeline)
+            if x[0] == cellprofiler.measurement.IMAGE
+        ]
 
         if self.wants_images:
             #
             # Load the image. Calculate the MD5 hash of every image
             #
             image_size = None
-            for image_name in self.other_providers('imagegroup'):
+            for image_name in self.other_providers("imagegroup"):
                 provider = self.fetch_provider(image_name, m)
                 image_set.providers.append(provider)
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
-                m.add_image_measurement("_".join((loadimages.C_MD5_DIGEST, image_name)),
-                                        provider.get_md5_hash(m))
-                m.add_image_measurement("_".join((loadimages.C_SCALING, image_name)),
-                                        image.scale)
-                m.add_image_measurement("_".join((loadimages.C_HEIGHT, image_name)),
-                                        int(pixel_data.shape[0]))
-                m.add_image_measurement("_".join((loadimages.C_WIDTH, image_name)),
-                                        int(pixel_data.shape[1]))
+                m.add_image_measurement(
+                    "_".join((loadimages.C_MD5_DIGEST, image_name)),
+                    provider.get_md5_hash(m),
+                )
+                m.add_image_measurement(
+                    "_".join((loadimages.C_SCALING, image_name)), image.scale
+                )
+                m.add_image_measurement(
+                    "_".join((loadimages.C_HEIGHT, image_name)),
+                    int(pixel_data.shape[0]),
+                )
+                m.add_image_measurement(
+                    "_".join((loadimages.C_WIDTH, image_name)), int(pixel_data.shape[1])
+                )
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
                     first_filename = image.file_name
                 elif tuple(pixel_data.shape[:2]) != image_size:
                     warning = loadimages.bad_sizes_warning(
-                        image_size,
-                        first_filename,
-                        pixel_data.shape,
-                        image.file_name
+                        image_size, first_filename, pixel_data.shape, image.file_name
                     )
                     if self.show_window:
                         workspace.display_data.warning = warning
@@ -1193,8 +1313,7 @@ safe to press it.""")
                         #
             objects_names = self.get_object_names()
             for objects_name in objects_names:
-                provider = self.fetch_provider(
-                        objects_name, m, is_image_name=False)
+                provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = loadimages.convert_image_to_objects(image.pixel_data)
                 o = cellprofiler.object.Objects()
@@ -1222,13 +1341,19 @@ safe to press it.""")
         figure.subplot_table(0, 0, workspace.display_data.statistics)
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets
+        """Return the image groupings of the image sets
 
         See CPModule for documentation
-        '''
-        if (self.wants_images.value and self.wants_image_groupings.value and len(self.metadata_fields.selections) > 0):
-            keys = ["_".join((cellprofiler.measurement.C_METADATA, k))
-                    for k in self.metadata_fields.selections]
+        """
+        if (
+            self.wants_images.value
+            and self.wants_image_groupings.value
+            and len(self.metadata_fields.selections) > 0
+        ):
+            keys = [
+                "_".join((cellprofiler.measurement.C_METADATA, k))
+                for k in self.metadata_fields.selections
+            ]
             if len(keys) == 0:
                 return None
             m = workspace.measurements
@@ -1237,7 +1362,7 @@ safe to press it.""")
         return None
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements produced by this module'''
+        """Return column definitions for measurements produced by this module"""
         entry = None
         try:
             entry = self.get_cache_info()
@@ -1246,7 +1371,7 @@ safe to press it.""")
             fd = self.open_csv()
             reader = csv.reader(fd)
             header = [header_to_column(x) for x in next(reader)]
-            if header[0].startswith('ELN_RUN_ID'):
+            if header[0].startswith("ELN_RUN_ID"):
                 reader = self.convert()
                 header = reader.dtype.names
         except:
@@ -1254,41 +1379,59 @@ safe to press it.""")
                 entry["measurement_columns"] = []
             return []
         previous_columns = pipeline.get_measurement_columns(self)
-        previous_fields = set([x[1] for x in previous_columns
-                               if x[0] == cellprofiler.measurement.IMAGE])
+        previous_fields = set(
+            [x[1] for x in previous_columns if x[0] == cellprofiler.measurement.IMAGE]
+        )
         already_output = [x in previous_fields for x in header]
         coltypes = [cellprofiler.measurement.COLTYPE_INTEGER] * len(header)
         #
         # Make sure the well_column column type is a string
         #
         for i in range(len(header)):
-            if (header[i].startswith(cellprofiler.measurement.C_METADATA + "_") and
-                    cellprofiler.measurement.is_well_column_token(header[i].split("_")[1])):
+            if header[i].startswith(
+                cellprofiler.measurement.C_METADATA + "_"
+            ) and cellprofiler.measurement.is_well_column_token(
+                header[i].split("_")[1]
+            ):
                 coltypes[i] = cellprofiler.measurement.COLTYPE_VARCHAR
-            if any([header[i].startswith(x)
-                    for x in (cellprofiler.measurement.C_PATH_NAME,
-                              cellprofiler.measurement.C_FILE_NAME,
-                              cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                              cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                              cellprofiler.measurement.C_URL,
-                              cellprofiler.measurement.C_OBJECTS_URL)]):
+            if any(
+                [
+                    header[i].startswith(x)
+                    for x in (
+                        cellprofiler.measurement.C_PATH_NAME,
+                        cellprofiler.measurement.C_FILE_NAME,
+                        cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                        cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                        cellprofiler.measurement.C_URL,
+                        cellprofiler.measurement.C_OBJECTS_URL,
+                    )
+                ]
+            ):
                 coltypes[i] = cellprofiler.measurement.COLTYPE_VARCHAR
 
         collen = [0] * len(header)
         key_is_path_or_file_name = [
-            (key.startswith(cellprofiler.measurement.C_PATH_NAME) or
-             key.startswith(cellprofiler.measurement.C_FILE_NAME) or
-             key.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME) or
-             key.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)) for key in header]
+            (
+                key.startswith(cellprofiler.measurement.C_PATH_NAME)
+                or key.startswith(cellprofiler.measurement.C_FILE_NAME)
+                or key.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME)
+                or key.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)
+            )
+            for key in header
+        ]
         key_is_path_or_url = [
-            (key.startswith(cellprofiler.measurement.C_PATH_NAME) or
-             key.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME) or
-             key.startswith(cellprofiler.measurement.C_URL) or
-             key.startswith(cellprofiler.measurement.C_OBJECTS_URL)) for key in header]
+            (
+                key.startswith(cellprofiler.measurement.C_PATH_NAME)
+                or key.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)
+                or key.startswith(cellprofiler.measurement.C_URL)
+                or key.startswith(cellprofiler.measurement.C_OBJECTS_URL)
+            )
+            for key in header
+        ]
 
         for row in reader:
             if len(row) > len(header):
-                row = row[:len(header)]
+                row = row[: len(header)]
             for index, field in enumerate(row):
                 if already_output[index]:
                     continue
@@ -1302,14 +1445,18 @@ safe to press it.""")
                 if key_is_path_or_url[index]:
                     # Account for possible rewrite of the pathname
                     # in batch data
-                    len_field = max(cellprofiler.measurement.PATH_NAME_LENGTH,
-                                    len_field + PATH_PADDING)
+                    len_field = max(
+                        cellprofiler.measurement.PATH_NAME_LENGTH,
+                        len_field + PATH_PADDING,
+                    )
                 if coltypes[index] != cellprofiler.measurement.COLTYPE_VARCHAR:
                     ldtype = get_loaddata_type(field)
                     if coltypes[index] == cellprofiler.measurement.COLTYPE_INTEGER:
                         coltypes[index] = ldtype
-                    elif (coltypes[index] == cellprofiler.measurement.COLTYPE_FLOAT and
-                          ldtype != cellprofiler.measurement.COLTYPE_INTEGER):
+                    elif (
+                        coltypes[index] == cellprofiler.measurement.COLTYPE_FLOAT
+                        and ldtype != cellprofiler.measurement.COLTYPE_INTEGER
+                    ):
                         coltypes[index] = ldtype
 
                 if collen[index] < len(field):
@@ -1317,37 +1464,63 @@ safe to press it.""")
 
         for index in range(len(header)):
             if coltypes[index] == cellprofiler.measurement.COLTYPE_VARCHAR:
-                coltypes[index] = cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % collen[index]
+                coltypes[index] = (
+                    cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % collen[index]
+                )
 
-        image_names = self.other_providers('imagegroup')
-        result = [(cellprofiler.measurement.IMAGE, colname, coltype)
-                  for colname, coltype in zip(header, coltypes)
-                  if colname not in previous_fields]
+        image_names = self.other_providers("imagegroup")
+        result = [
+            (cellprofiler.measurement.IMAGE, colname, coltype)
+            for colname, coltype in zip(header, coltypes)
+            if colname not in previous_fields
+        ]
         if self.wants_images:
             for feature, coltype in (
-                    (cellprofiler.measurement.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                    (cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                    (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                    (loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                    (loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
-                    (loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER)):
+                (
+                    cellprofiler.measurement.C_URL,
+                    cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                ),
+                (
+                    cellprofiler.measurement.C_PATH_NAME,
+                    cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                ),
+                (
+                    cellprofiler.measurement.C_FILE_NAME,
+                    cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME,
+                ),
+                (
+                    loadimages.C_MD5_DIGEST,
+                    cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32,
+                ),
+                (loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
+                (loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                (loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
+            ):
                 for image_name in image_names:
-                    measurement = feature + '_' + image_name
+                    measurement = feature + "_" + image_name
                     if not any([measurement == c[1] for c in result]):
-                        result.append((cellprofiler.measurement.IMAGE, measurement, coltype))
+                        result.append(
+                            (cellprofiler.measurement.IMAGE, measurement, coltype)
+                        )
             #
             # Add the object features
             #
             for object_name in self.get_object_names():
                 result += identify.get_object_measurement_columns(object_name)
                 for feature, coltype in (
-                        (cellprofiler.measurement.C_OBJECTS_URL,
-                         cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                        (cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                         cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                        (cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                         cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)):
+                    (
+                        cellprofiler.measurement.C_OBJECTS_URL,
+                        cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                    ),
+                    (
+                        cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                        cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                    ),
+                    (
+                        cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                        cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME,
+                    ),
+                ):
                     mname = cellprofiler.measurement.C_OBJECTS_URL + "_" + object_name
                     result.append((cellprofiler.measurement.IMAGE, mname, coltype))
         #
@@ -1359,33 +1532,50 @@ safe to press it.""")
         for column in result:
             if not column[1].startswith(cellprofiler.measurement.C_METADATA + "_"):
                 continue
-            category, feature = column[1].split('_', 1)
+            category, feature = column[1].split("_", 1)
             if cellprofiler.measurement.is_well_column_token(feature):
                 well_col_column = column
             elif cellprofiler.measurement.is_well_row_token(feature):
                 well_row_column = column
             elif feature.lower() == cellprofiler.measurement.FTR_WELL.lower():
                 well_column = column
-        if (well_column is None and well_row_column is not None and well_col_column is not None):
-            length = cellprofiler.measurement.get_length_from_varchar(well_row_column[2])
-            length += cellprofiler.measurement.get_length_from_varchar(well_col_column[2])
-            result += [(cellprofiler.measurement.IMAGE,
-                        '_'.join((cellprofiler.measurement.C_METADATA, cellprofiler.measurement.FTR_WELL)),
-                        cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % length)]
+        if (
+            well_column is None
+            and well_row_column is not None
+            and well_col_column is not None
+        ):
+            length = cellprofiler.measurement.get_length_from_varchar(
+                well_row_column[2]
+            )
+            length += cellprofiler.measurement.get_length_from_varchar(
+                well_col_column[2]
+            )
+            result += [
+                (
+                    cellprofiler.measurement.IMAGE,
+                    "_".join(
+                        (
+                            cellprofiler.measurement.C_METADATA,
+                            cellprofiler.measurement.FTR_WELL,
+                        )
+                    ),
+                    cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % length,
+                )
+            ]
         entry["measurement_columns"] = result
         return result
 
     def has_synthetic_well_metadata(self):
-        '''Determine if we should synthesize a well metadata feature
+        """Determine if we should synthesize a well metadata feature
 
-        '''
+        """
         fields = self.get_header()
         has_well_col = False
         has_well_row = False
         for field in fields:
             if not field.startswith(cellprofiler.measurement.C_METADATA + "_"):
                 continue
-            category, feature = field.split('_', 1)
+            category, feature = field.split("_", 1)
             if cellprofiler.measurement.is_well_column_token(feature):
                 has_well_col = True
             elif cellprofiler.measurement.is_well_row_token(feature):
@@ -1397,54 +1587,72 @@ safe to press it.""")
     def get_categories(self, pipeline, object_name):
         try:
             columns = self.get_measurement_columns(pipeline)
-            result = set([column[1].split('_')[0] for column in columns
-                          if column[0] == object_name])
+            result = set(
+                [
+                    column[1].split("_")[0]
+                    for column in columns
+                    if column[0] == object_name
+                ]
+            )
             return list(result)
         except:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
         columns = self.get_measurement_columns(pipeline)
-        return [feature for c, feature in
-                [column[1].split('_', 1) for column in columns
-                 if column[0] == object_name
-                 and column[1].startswith(category + "_")]]
+        return [
+            feature
+            for c, feature in [
+                column[1].split("_", 1)
+                for column in columns
+                if column[0] == object_name and column[1].startswith(category + "_")
+            ]
+        ]
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
+        """Check to see if changing the given setting means you have to restart
 
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
-        '''
+        """
         if self.wants_images or setting == self.wants_images:
             return True
         return False
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
 
-        dir_default_image = 'Default input folder'
-        dir_default_output = 'Default Output Folder'
+        dir_default_image = "Default input folder"
+        dir_default_output = "Default Output Folder"
 
         if from_matlab and variable_revision_number == 2:
             logging.warning(
-                    "Warning: the format and purpose of LoadText "
-                    "has changed substantially.")
+                "Warning: the format and purpose of LoadText "
+                "has changed substantially."
+            )
             text_file_name = setting_values[0]
             field_name = setting_values[1]
             path_name = setting_values[2]
-            if path_name == '.':
+            if path_name == ".":
                 path_choice = dir_default_image
-            elif path_name == '&':
+            elif path_name == "&":
                 path_choice = dir_default_output
             else:
                 path_choice = DIR_OTHER
-            setting_values = [path_choice, path_name, text_file_name,
-                              cellprofiler.setting.NO, dir_default_image, '.',
-                              cellprofiler.setting.NO, "1,100000"]
+            setting_values = [
+                path_choice,
+                path_name,
+                text_file_name,
+                cellprofiler.setting.NO,
+                dir_default_image,
+                ".",
+                cellprofiler.setting.NO,
+                "1,100000",
+            ]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
@@ -1458,11 +1666,13 @@ safe to press it.""")
             elif setting_values[0].startswith("Default Output"):
                 setting_values = [dir_default_output] + setting_values[1:]
             if setting_values[4].startswith("Default Image"):
-                setting_values = (setting_values[:4] + [dir_default_image] +
-                                  setting_values[5:])
+                setting_values = (
+                    setting_values[:4] + [dir_default_image] + setting_values[5:]
+                )
             elif setting_values[4].startswith("Default Output"):
-                setting_values = (setting_values[:4] + [dir_default_output] +
-                                  setting_values[5:])
+                setting_values = (
+                    setting_values[:4] + [dir_default_output] + setting_values[5:]
+                )
             variable_revision_number = 3
         if variable_revision_number == 3 and (not from_matlab):
             module_name = self.module_name
@@ -1470,37 +1680,56 @@ safe to press it.""")
         if variable_revision_number == 3 and (not from_matlab):
             # directory choice, custom directory merged
             # input_directory_choice, custom_input_directory merged
-            csv_directory_choice, csv_custom_directory, csv_file_name, wants_images, image_directory_choice, \
-                image_custom_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = setting_values
+            csv_directory_choice, csv_custom_directory, csv_file_name, wants_images, image_directory_choice, image_custom_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
+                setting_values
+            )
             csv_directory = cellprofiler.setting.DirectoryPath.static_join_string(
-                csv_directory_choice,
-                csv_custom_directory
+                csv_directory_choice, csv_custom_directory
             )
             image_directory = cellprofiler.setting.DirectoryPath.static_join_string(
-                    image_directory_choice, image_custom_directory)
+                image_directory_choice, image_custom_directory
+            )
             setting_values = [
-                csv_directory, csv_file_name, wants_images,
-                image_directory, wants_rows, row_range, wants_image_groupings,
-                metadata_fields]
+                csv_directory,
+                csv_file_name,
+                wants_images,
+                image_directory,
+                wants_rows,
+                row_range,
+                wants_image_groupings,
+                metadata_fields,
+            ]
             variable_revision_number = 4
 
         # Standardize input/output directory name references
         setting_values = list(setting_values)
         for index in (0, 3):
             setting_values[index] = cellprofiler.setting.DirectoryPath.upgrade_setting(
-                    setting_values[index])
+                setting_values[index]
+            )
 
         if variable_revision_number == 4 and (not from_matlab):
-            csv_directory, csv_file_name, wants_images, image_directory, \
-                wants_rows, row_range, wants_image_groupings, metadata_fields = setting_values
-            dir_choice, custom_dir = cellprofiler.setting.DirectoryPath.split_string(csv_directory)
+            csv_directory, csv_file_name, wants_images, image_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
+                setting_values
+            )
+            dir_choice, custom_dir = cellprofiler.setting.DirectoryPath.split_string(
+                csv_directory
+            )
             if dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
-                csv_file_name = custom_dir + '/' + csv_file_name
-                csv_directory = cellprofiler.setting.DirectoryPath.static_join_string(dir_choice, '')
+                csv_file_name = custom_dir + "/" + csv_file_name
+                csv_directory = cellprofiler.setting.DirectoryPath.static_join_string(
+                    dir_choice, ""
+                )
             setting_values = [
-                csv_directory, csv_file_name, wants_images,
-                image_directory, wants_rows, row_range, wants_image_groupings,
-                metadata_fields]
+                csv_directory,
+                csv_file_name,
+                wants_images,
+                image_directory,
+                wants_rows,
+                row_range,
+                wants_image_groupings,
+                metadata_fields,
+            ]
             variable_revision_number = 5
         if variable_revision_number == 5 and (not from_matlab):
             # Added rescaling option
@@ -1513,15 +1742,16 @@ LoadText = LoadData
 
 
 def best_cast(sequence, coltype=None):
-    '''Return the best cast (integer, float or string) of the sequence
+    """Return the best cast (integer, float or string) of the sequence
 
     sequence - a sequence of strings
 
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
-    '''
-    if (isinstance(coltype, six.string_types) and
-            coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR)):
+    """
+    if isinstance(coltype, six.string_types) and coltype.startswith(
+        cellprofiler.measurement.COLTYPE_VARCHAR
+    ):
         # Cast columns already defined as strings as same
         return numpy.array(sequence)
 
@@ -1532,8 +1762,11 @@ def best_cast(sequence, coltype=None):
             return cellprofiler.measurement.COLTYPE_FLOAT
         return cellprofiler.measurement.COLTYPE_INTEGER
 
-    ldtype = reduce(fn, [get_loaddata_type(x) for x in sequence],
-                    cellprofiler.measurement.COLTYPE_INTEGER)
+    ldtype = reduce(
+        fn,
+        [get_loaddata_type(x) for x in sequence],
+        cellprofiler.measurement.COLTYPE_INTEGER,
+    )
     if ldtype == cellprofiler.measurement.COLTYPE_VARCHAR:
         return numpy.array(sequence)
     elif ldtype == cellprofiler.measurement.COLTYPE_FLOAT:
@@ -1547,13 +1780,13 @@ int32_min = numpy.iinfo(numpy.int32).min
 
 
 def get_loaddata_type(x):
-    '''Return the type to use to represent x
+    """Return the type to use to represent x
 
     If x is a 32-bit integer, return cpmeas.COLTYPE_INTEGER.
     If x cannot be represented in 32 bits but is an integer,
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
-    '''
+    """
     global int32_max, int32_min
 
     try:

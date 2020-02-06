@@ -7,7 +7,6 @@ import cellprofiler.measurement
 import cellprofiler.modules.shrinktoobjectcenters
 import cellprofiler.object
 
-
 instance = cellprofiler.modules.shrinktoobjectcenters.ShrinkToObjectCenters()
 
 
@@ -77,7 +76,9 @@ def test_shrink_image_labels(image_labels, module, object_set, objects, workspac
 
     expected_labels[15, 15] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ShrinkToObjectCenters").segmented, expected_labels)
+    numpy.testing.assert_array_equal(
+        object_set.get_objects("ShrinkToObjectCenters").segmented, expected_labels
+    )
 
 
 def test_shrink_volume_labels(module, object_set, objects, volume_labels, workspace):
@@ -97,5 +98,6 @@ def test_shrink_volume_labels(module, object_set, objects, volume_labels, worksp
 
     expected_labels[4, 15, 15] = 4
 
-    numpy.testing.assert_array_equal(object_set.get_objects("ShrinkToObjectCenters").segmented, expected_labels)
-
+    numpy.testing.assert_array_equal(
+        object_set.get_objects("ShrinkToObjectCenters").segmented, expected_labels
+    )

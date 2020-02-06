@@ -43,8 +43,8 @@ class FillObjects(cellprofiler.module.ObjectProcessing):
 
         self.size = cellprofiler.setting.Float(
             text="Minimum hole size",
-            value=64.,
-            doc="Holes smaller than this diameter will be filled."
+            value=64.0,
+            doc="Holes smaller than this diameter will be filled.",
         )
 
         self.planewise = cellprofiler.setting.Binary(
@@ -57,30 +57,25 @@ volumetric image, rather than on the image as a whole.
 This may be helpful for removing seed artifacts that 
 are the result of segmentation.
 **Note**: Planewise operations will be considerably slower.
-""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
     def settings(self):
         __settings__ = super(FillObjects, self).settings()
 
-        return __settings__ + [
-            self.size,
-            self.planewise
-        ]
+        return __settings__ + [self.size, self.planewise]
 
     def visible_settings(self):
         __settings__ = super(FillObjects, self).visible_settings()
 
-        return __settings__ + [
-            self.size,
-            self.planewise
-        ]
+        return __settings__ + [self.size, self.planewise]
 
     def run(self, workspace):
-        self.function = lambda labels, diameter, planewise: \
-            fill_object_holes(labels, diameter, planewise)
+        self.function = lambda labels, diameter, planewise: fill_object_holes(
+            labels, diameter, planewise
+        )
 
         super(FillObjects, self).run(workspace)
 
@@ -111,4 +106,3 @@ def fill_object_holes(labels, diameter, planewise):
     if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
         return numpy.array([_fill_holes(x, min_obj_size) for x in labels])
     return _fill_holes(labels, min_obj_size)
-

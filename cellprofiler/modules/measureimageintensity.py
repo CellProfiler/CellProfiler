@@ -2,10 +2,9 @@
 
 import numpy as np
 
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 from cellprofiler.modules import _help
 
 __doc__ = """
@@ -53,61 +52,72 @@ Measurements made by this module
 -  *TotalArea:* Number of pixels measured, e.g., the area of the image
    excluding masked regions.
 
-""".format(**{
-    "HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES
-})
+""".format(
+    **{"HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES}
+)
 
-'''Number of settings saved/loaded per image measured'''
+"""Number of settings saved/loaded per image measured"""
 SETTINGS_PER_IMAGE = 3
 
-'''Measurement feature name format for the TotalIntensity measurement'''
+"""Measurement feature name format for the TotalIntensity measurement"""
 F_TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
 
-'''Measurement feature name format for the MeanIntensity measurement'''
-F_MEAN_INTENSITY = 'Intensity_MeanIntensity_%s'
+"""Measurement feature name format for the MeanIntensity measurement"""
+F_MEAN_INTENSITY = "Intensity_MeanIntensity_%s"
 
-'''Measurement feature name format for the MeanIntensity measurement'''
-F_MEDIAN_INTENSITY = 'Intensity_MedianIntensity_%s'
+"""Measurement feature name format for the MeanIntensity measurement"""
+F_MEDIAN_INTENSITY = "Intensity_MedianIntensity_%s"
 
-'''Measurement feature name format for the StdIntensity measurement'''
-F_STD_INTENSITY = 'Intensity_StdIntensity_%s'
+"""Measurement feature name format for the StdIntensity measurement"""
+F_STD_INTENSITY = "Intensity_StdIntensity_%s"
 
-'''Measurement feature name format for the MedAbsDevIntensity measurement'''
-F_MAD_INTENSITY = 'Intensity_MADIntensity_%s'
+"""Measurement feature name format for the MedAbsDevIntensity measurement"""
+F_MAD_INTENSITY = "Intensity_MADIntensity_%s"
 
-'''Measurement feature name format for the MaxIntensity measurement'''
-F_MAX_INTENSITY = 'Intensity_MaxIntensity_%s'
+"""Measurement feature name format for the MaxIntensity measurement"""
+F_MAX_INTENSITY = "Intensity_MaxIntensity_%s"
 
-'''Measurement feature name format for the MinIntensity measurement'''
-F_MIN_INTENSITY = 'Intensity_MinIntensity_%s'
+"""Measurement feature name format for the MinIntensity measurement"""
+F_MIN_INTENSITY = "Intensity_MinIntensity_%s"
 
-'''Measurement feature name format for the TotalArea measurement'''
-F_TOTAL_AREA = 'Intensity_TotalArea_%s'
+"""Measurement feature name format for the TotalArea measurement"""
+F_TOTAL_AREA = "Intensity_TotalArea_%s"
 
-'''Measurement feature name format for the PercentMaximal measurement'''
-F_PERCENT_MAXIMAL = 'Intensity_PercentMaximal_%s'
+"""Measurement feature name format for the PercentMaximal measurement"""
+F_PERCENT_MAXIMAL = "Intensity_PercentMaximal_%s"
 
-'''Measurement feature name format for the Quartile measurements'''
-F_UPPER_QUARTILE = 'Intensity_UpperQuartileIntensity_%s'
-F_LOWER_QUARTILE = 'Intensity_LowerQuartileIntensity_%s'
+"""Measurement feature name format for the Quartile measurements"""
+F_UPPER_QUARTILE = "Intensity_UpperQuartileIntensity_%s"
+F_LOWER_QUARTILE = "Intensity_LowerQuartileIntensity_%s"
 
-ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADIntensity", "MedianIntensity",
-                    "MinIntensity", "MaxIntensity", "TotalArea", "PercentMaximal",
-                    "LowerQuartileIntensity", "UpperQuartileIntensity"]
+ALL_MEASUREMENTS = [
+    "TotalIntensity",
+    "MeanIntensity",
+    "StdIntensity",
+    "MADIntensity",
+    "MedianIntensity",
+    "MinIntensity",
+    "MaxIntensity",
+    "TotalArea",
+    "PercentMaximal",
+    "LowerQuartileIntensity",
+    "UpperQuartileIntensity",
+]
 
 
 class MeasureImageIntensity(cpm.Module):
-    module_name = 'MeasureImageIntensity'
+    module_name = "MeasureImageIntensity"
     category = "Measurement"
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings & name the module'''
+        """Create the settings & name the module"""
         self.divider_top = cps.Divider(line=False)
         self.images = []
         self.add_image_measurement(can_remove=False)
-        self.add_button = cps.DoSomething("", "Add another image",
-                                          self.add_image_measurement)
+        self.add_button = cps.DoSomething(
+            "", "Add another image", self.add_image_measurement
+        )
         self.divider_bottom = cps.Divider(line=False)
 
     def add_image_measurement(self, can_remove=True):
@@ -115,51 +125,83 @@ class MeasureImageIntensity(cpm.Module):
         if can_remove:
             group.append("divider", cps.Divider())
 
-        group.append("image_name", cps.ImageNameSubscriber(
+        group.append(
+            "image_name",
+            cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE, doc="""\
+                cps.NONE,
+                doc="""\
 Choose an image name from the drop-down menu to calculate intensity for
 that image. Use the *Add another image* button below to add additional
 images to be measured. You can add the same image multiple times
 if you want to measure the intensity within several different
-objects."""))
+objects.""",
+            ),
+        )
 
-        group.append("wants_objects", cps.Binary(
+        group.append(
+            "wants_objects",
+            cps.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
-                False, doc="""\
-Select *%(YES)s* to measure only those pixels within an object type you
+                False,
+                doc="""\
+Select *Yes* to measure only those pixels within an object type you
 choose, identified by a prior module. Note that this module will
 aggregate intensities across all objects in the image: to measure each
 object individually, see **MeasureObjectIntensity** instead.
-""" % globals()))
+"""
+                % globals(),
+            ),
+        )
 
-        group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc="""\
+        group.append(
+            "object_name",
+            cps.ObjectNameSubscriber(
+                "Select the input objects",
+                cps.NONE,
+                doc="""\
 *(Used only when measuring intensity from area occupied by objects)*
 
 Select the objects that the intensity will be aggregated within. The
 intensity measurement will be restricted to the pixels within these
-objects."""))
+objects.""",
+            ),
+        )
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("",
-                                                            "Remove this image", self.images, group))
+            group.append(
+                "remover",
+                cps.RemoveSettingButton("", "Remove this image", self.images, group),
+            )
         self.images.append(group)
 
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
         settings = {}
         for group in self.images:
-            if (group.image_name.value, group.wants_objects.value, group.object_name.value) in settings:
+            if (
+                group.image_name.value,
+                group.wants_objects.value,
+                group.object_name.value,
+            ) in settings:
                 if not group.wants_objects.value:
                     raise cps.ValidationError(
-                            "%s has already been selected" % group.image_name.value,
-                            group.image_name)
+                        "%s has already been selected" % group.image_name.value,
+                        group.image_name,
+                    )
                 else:
                     raise cps.ValidationError(
-                            "%s has already been selected with %s" % (group.object_name.value, group.image_name.value),
-                            group.object_name)
-            settings[(group.image_name.value, group.wants_objects.value, group.object_name.value)] = True
+                        "%s has already been selected with %s"
+                        % (group.object_name.value, group.image_name.value),
+                        group.object_name,
+                    )
+            settings[
+                (
+                    group.image_name.value,
+                    group.wants_objects.value,
+                    group.object_name.value,
+                )
+            ] = True
 
     def settings(self):
         result = []
@@ -186,16 +228,19 @@ objects."""))
             self.remove_image_measurement(self.images[-1].key)
 
     def get_non_redundant_image_measurements(self):
-        '''Return a non-redundant sequence of image measurement objects'''
+        """Return a non-redundant sequence of image measurement objects"""
         dict = {}
         for im in self.images:
-            key = ((im.image_name, im.object_name) if im.wants_objects.value
-                   else (im.image_name,))
+            key = (
+                (im.image_name.value, im.object_name.value)
+                if im.wants_objects.value
+                else (im.image_name.value,)
+            )
             dict[key] = im
-        return dict.values()
+        return list(dict.values())
 
     def run(self, workspace):
-        '''Perform the measurements on the imageset'''
+        """Perform the measurements on the imageset"""
         #
         # Then measure each
         #
@@ -208,18 +253,22 @@ objects."""))
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0,
-                             workspace.display_data.statistics,
-                             col_labels=workspace.display_data.col_labels)
+        figure.subplot_table(
+            0,
+            0,
+            workspace.display_data.statistics,
+            col_labels=workspace.display_data.col_labels,
+        )
 
     def measure(self, im, workspace):
-        '''Perform measurements according to the image measurement in im
+        """Perform measurements according to the image measurement in im
 
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
-        '''
-        image = workspace.image_set.get_image(im.image_name.value,
-                                              must_be_grayscale=True)
+        """
+        image = workspace.image_set.get_image(
+            im.image_name.value, must_be_grayscale=True
+        )
         pixels = image.pixel_data
 
         measurement_name = im.image_name.value
@@ -227,8 +276,7 @@ objects."""))
             measurement_name += "_" + im.object_name.value
             objects = workspace.get_objects(im.object_name.value)
             if image.has_mask:
-                pixels = pixels[np.logical_and(objects.segmented != 0,
-                                               image.mask)]
+                pixels = pixels[np.logical_and(objects.segmented != 0, image.mask)]
             else:
                 pixels = pixels[objects.segmented != 0]
         elif image.has_mask:
@@ -258,8 +306,9 @@ objects."""))
             pixel_mad = np.median(np.abs(pixels - pixel_median))
             pixel_min = np.min(pixels)
             pixel_max = np.max(pixels)
-            pixel_pct_max = (100.0 * float(np.sum(pixels == pixel_max)) /
-                             float(pixel_count))
+            pixel_pct_max = (
+                100.0 * float(np.sum(pixels == pixel_max)) / float(pixel_count)
+            )
             sorted_pixel_data = sorted(pixels)
             pixel_lower_qrt = sorted_pixel_data[int(len(sorted_pixel_data) * 0.25)]
             pixel_upper_qrt = sorted_pixel_data[int(len(sorted_pixel_data) * 0.75)]
@@ -276,38 +325,48 @@ objects."""))
         m.add_image_measurement(F_PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
         m.add_image_measurement(F_LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
         m.add_image_measurement(F_UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
-        return [[im.image_name.value,
-                 im.object_name.value if im.wants_objects.value else "",
-                 feature_name, str(value)]
-                for feature_name, value in (('Total intensity', pixel_sum),
-                                            ('Mean intensity', pixel_mean),
-                                            ('Median intensity', pixel_median),
-                                            ('Std intensity', pixel_std),
-                                            ('MAD intensity', pixel_mad),
-                                            ('Min intensity', pixel_min),
-                                            ('Max intensity', pixel_max),
-                                            ('Pct maximal', pixel_pct_max),
-                                            ('Lower quartile', pixel_lower_qrt),
-                                            ('Upper quartile', pixel_upper_qrt),
-                                            ('Total area', pixel_count))]
+        return [
+            [
+                im.image_name.value,
+                im.object_name.value if im.wants_objects.value else "",
+                feature_name,
+                str(value),
+            ]
+            for feature_name, value in (
+                ("Total intensity", pixel_sum),
+                ("Mean intensity", pixel_mean),
+                ("Median intensity", pixel_median),
+                ("Std intensity", pixel_std),
+                ("MAD intensity", pixel_mad),
+                ("Min intensity", pixel_min),
+                ("Max intensity", pixel_max),
+                ("Pct maximal", pixel_pct_max),
+                ("Lower quartile", pixel_lower_qrt),
+                ("Upper quartile", pixel_upper_qrt),
+                ("Total area", pixel_count),
+            )
+        ]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = []
         for im in self.get_non_redundant_image_measurements():
-            for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_MEDIAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_STD_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
-                                     (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
-                                     (F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
-                                     (F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT)):
+            for feature, coltype in (
+                (F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_MEDIAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_STD_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
+                (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
+                (F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
+                (F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT),
+            ):
                 measurement_name = im.image_name.value + (
-                    ("_" + im.object_name.value) if im.wants_objects.value else "")
+                    ("_" + im.object_name.value) if im.wants_objects.value else ""
+                )
                 columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
 
@@ -318,16 +377,16 @@ objects."""))
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (object_name == cpmeas.IMAGE and
-                    category == "Intensity"):
+        if object_name == cpmeas.IMAGE and category == "Intensity":
             return ALL_MEASUREMENTS
         return []
 
-    def get_measurement_images(self, pipeline, object_name,
-                               category, measurement):
-        if (object_name == cpmeas.IMAGE and
-                    category == "Intensity" and
-                    measurement in ALL_MEASUREMENTS):
+    def get_measurement_images(self, pipeline, object_name, category, measurement):
+        if (
+            object_name == cpmeas.IMAGE
+            and category == "Intensity"
+            and measurement in ALL_MEASUREMENTS
+        ):
             result = []
             for im in self.images:
                 image_name = im.image_name.value
@@ -337,18 +396,20 @@ objects."""))
             return result
         return []
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
-        '''Account for prior versions when loading
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        """Account for prior versions when loading
 
         We handle Matlab revision # 2 here. We don't support thresholding
         because it was generally unused. The first setting is the image name.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
-            setting_values = [setting_values[0],  # image name
-                              cps.NO,  # wants objects
-                              cps.NONE]  # object name
+            setting_values = [
+                setting_values[0],  # image name
+                cps.NO,  # wants objects
+                cps.NONE,
+            ]  # object name
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 1:

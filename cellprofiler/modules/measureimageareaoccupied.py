@@ -89,15 +89,11 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
         self.add_operand(can_remove=False)
 
         self.add_operand_button = cellprofiler.setting.DoSomething(
-            "",
-            "Add another area",
-            self.add_operand
+            "", "Add another area", self.add_operand
         )
 
         self.remover = cellprofiler.setting.DoSomething(
-            "",
-            "Remove this area",
-            self.remove
+            "", "Remove this area", self.remove
         )
 
     def add_operand(self, can_remove=True):
@@ -107,19 +103,15 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
 
                 self.__operand_choice = cellprofiler.setting.Choice(
                     "Measure the area occupied in a binary image, or in objects?",
-                    [
-                        O_BINARY_IMAGE,
-                        O_OBJECTS
-                    ],
+                    [O_BINARY_IMAGE, O_OBJECTS],
                     doc="""\
 The area can be measured in two ways:
 
 -  *{O_BINARY_IMAGE}:* The area occupied by the foreground in a binary (black and white) image.
 -  *{O_OBJECTS}:* The area occupied by previously-identified objects.
-                    """.format(**{
-                        "O_BINARY_IMAGE": O_BINARY_IMAGE,
-                        "O_OBJECTS": O_OBJECTS
-                    })
+                    """.format(
+                        **{"O_BINARY_IMAGE": O_BINARY_IMAGE, "O_OBJECTS": O_OBJECTS}
+                    ),
                 )
 
                 self.__operand_objects = cellprofiler.setting.ObjectNameSubscriber(
@@ -129,9 +121,9 @@ The area can be measured in two ways:
 *(Used only if ‘{O_OBJECTS}’ are to be measured)*
 
 Select the previously identified objects you would like to measure.
-                    """.format(**{
-                        "O_OBJECTS": O_OBJECTS
-                    })
+                    """.format(
+                        **{"O_OBJECTS": O_OBJECTS}
+                    ),
                 )
 
                 self.__binary_name = cellprofiler.setting.ImageNameSubscriber(
@@ -142,9 +134,9 @@ Select the previously identified objects you would like to measure.
 
 This is a binary image created earlier in the pipeline, where you would
 like to measure the area occupied by the foreground in the image.
-                    """.format(**{
-                        "O_BINARY_IMAGE": O_BINARY_IMAGE
-                    })
+                    """.format(
+                        **{"O_BINARY_IMAGE": O_BINARY_IMAGE}
+                    ),
                 )
 
             @property
@@ -188,8 +180,10 @@ like to measure the area occupied by the foreground in the image.
             if (group.operand_choice.value, group.operand_objects.value) in settings:
                 if group.operand_choice.value == O_OBJECTS:
                     raise cellprofiler.setting.ValidationError(
-                        u"{} has already been selected".format(group.operand_objects.value),
-                        group.operand_objects
+                        "{} has already been selected".format(
+                            group.operand_objects.value
+                        ),
+                        group.operand_objects,
                     )
 
             settings[(group.operand_choice.value, group.operand_objects.value)] = True
@@ -199,19 +193,16 @@ like to measure the area occupied by the foreground in the image.
             if (group.operand_choice.value, group.binary_name.value) in settings:
                 if group.operand_choice.value == O_BINARY_IMAGE:
                     raise cellprofiler.setting.ValidationError(
-                            "%s has already been selected" % group.binary_name.value,
-                            group.binary_name)
+                        "%s has already been selected" % group.binary_name.value,
+                        group.binary_name,
+                    )
             settings[(group.operand_choice.value, group.binary_name.value)] = True
 
     def settings(self):
         result = [self.count]
 
         for op in self.operands:
-            result += [
-                op.operand_choice,
-                op.operand_objects,
-                op.binary_name
-            ]
+            result += [op.operand_choice, op.operand_objects, op.binary_name]
 
         return result
 
@@ -235,7 +226,11 @@ like to measure the area occupied by the foreground in the image.
 
             result += [op.operand_choice]
 
-            result += [op.operand_objects] if op.operand_choice == O_OBJECTS else [op.binary_name]
+            result += (
+                [op.operand_objects]
+                if op.operand_choice == O_OBJECTS
+                else [op.binary_name]
+            )
 
         result.append(self.add_operand_button)
 
@@ -262,18 +257,23 @@ like to measure the area occupied by the foreground in the image.
                 "Objects or Image",
                 "Area Occupied",
                 "Perimeter",
-                "Total Area"
+                "Total Area",
             ]
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
 
-        figure.subplot_table(0, 0, workspace.display_data.statistics, col_labels=workspace.display_data.col_labels)
+        figure.subplot_table(
+            0,
+            0,
+            workspace.display_data.statistics,
+            col_labels=workspace.display_data.col_labels,
+        )
 
     def _add_image_measurement(self, name, feature_name, features, measurements):
         measurements.add_image_measurement(
             "{:s}_{:s}_{:s}".format(C_AREA_OCCUPIED, feature_name, name),
-            numpy.array([features], dtype=float)
+            numpy.array([features], dtype=float),
         )
 
     def measure_objects(self, operand, workspace):
@@ -307,7 +307,9 @@ like to measure the area occupied by the foreground in the image.
 
             perimeter = surface_area(label_image, spacing=spacing, index=labels)
         else:
-            perimeter = numpy.sum([numpy.round(region["perimeter"]) for region in region_properties])
+            perimeter = numpy.sum(
+                [numpy.round(region["perimeter"]) for region in region_properties]
+            )
 
         measurements = workspace.measurements
         pipeline = workspace.pipeline
@@ -316,32 +318,36 @@ like to measure the area occupied by the foreground in the image.
             operand.operand_objects.value,
             F_VOLUME_OCCUPIED if pipeline.volumetric() else F_AREA_OCCUPIED,
             area_occupied,
-            measurements
+            measurements,
         )
 
         self._add_image_measurement(
             operand.operand_objects.value,
             F_SURFACE_AREA if pipeline.volumetric() else F_PERIMETER,
             perimeter,
-            measurements
+            measurements,
         )
 
         self._add_image_measurement(
             operand.operand_objects.value,
             F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA,
             total_area,
-            measurements
+            measurements,
         )
 
-        return [[
-            operand.operand_objects.value,
-            str(area_occupied),
-            str(perimeter),
-            str(total_area)
-        ]]
+        return [
+            [
+                operand.operand_objects.value,
+                str(area_occupied),
+                str(perimeter),
+                str(total_area),
+            ]
+        ]
 
     def measure_images(self, operand, workspace):
-        image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
+        image = workspace.image_set.get_image(
+            operand.binary_name.value, must_be_binary=True
+        )
 
         area_occupied = numpy.sum(image.pixel_data > 0)
 
@@ -359,29 +365,31 @@ like to measure the area occupied by the foreground in the image.
             operand.binary_name.value,
             F_VOLUME_OCCUPIED if pipeline.volumetric() else F_AREA_OCCUPIED,
             area_occupied,
-            measurements
+            measurements,
         )
 
         self._add_image_measurement(
             operand.binary_name.value,
             F_SURFACE_AREA if pipeline.volumetric() else F_PERIMETER,
             perimeter,
-            measurements
+            measurements,
         )
 
         self._add_image_measurement(
             operand.binary_name.value,
             F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA,
             total_area,
-            measurements
+            measurements,
         )
 
-        return [[
-            operand.binary_name.value,
-            str(area_occupied),
-            str(perimeter),
-            str(total_area)
-        ]]
+        return [
+            [
+                operand.binary_name.value,
+                str(area_occupied),
+                str(perimeter),
+                str(total_area),
+            ]
+        ]
 
     def _get_feature_names(self, pipeline):
         if pipeline.volumetric():
@@ -390,20 +398,24 @@ like to measure the area occupied by the foreground in the image.
         return [F_AREA_OCCUPIED, F_PERIMETER, F_TOTAL_AREA]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = []
 
         for op in self.operands:
             for feature in self._get_feature_names(pipeline):
-                columns.append((
-                    cellprofiler.measurement.IMAGE,
-                    "{:s}_{:s}_{:s}".format(
-                        C_AREA_OCCUPIED,
-                        feature,
-                        op.operand_objects.value if op.operand_choice == O_OBJECTS else op.binary_name.value
-                    ),
-                    cellprofiler.measurement.COLTYPE_FLOAT
-                ))
+                columns.append(
+                    (
+                        cellprofiler.measurement.IMAGE,
+                        "{:s}_{:s}_{:s}".format(
+                            C_AREA_OCCUPIED,
+                            feature,
+                            op.operand_objects.value
+                            if op.operand_choice == O_OBJECTS
+                            else op.binary_name.value,
+                        ),
+                        cellprofiler.measurement.COLTYPE_FLOAT,
+                    )
+                )
 
         return columns
 
@@ -414,31 +426,54 @@ like to measure the area occupied by the foreground in the image.
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler.measurement.IMAGE and category == C_AREA_OCCUPIED:
+        if (
+            object_name == cellprofiler.measurement.IMAGE
+            and category == C_AREA_OCCUPIED
+        ):
             return self._get_feature_names(pipeline)
 
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if object_name == "Image" and category == "AreaOccupied" and measurement in self._get_feature_names(pipeline):
-            return [op.operand_objects.value for op in self.operands if op.operand_choice == O_OBJECTS]
+        if (
+            object_name == "Image"
+            and category == "AreaOccupied"
+            and measurement in self._get_feature_names(pipeline)
+        ):
+            return [
+                op.operand_objects.value
+                for op in self.operands
+                if op.operand_choice == O_OBJECTS
+            ]
 
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        if object_name == "Image" and category == "AreaOccupied" and measurement in self._get_feature_names(pipeline):
-            return [op.binary_name.value for op in self.operands if op.operand_choice == O_BINARY_IMAGE]
+        if (
+            object_name == "Image"
+            and category == "AreaOccupied"
+            and measurement in self._get_feature_names(pipeline)
+        ):
+            return [
+                op.binary_name.value
+                for op in self.operands
+                if op.operand_choice == O_BINARY_IMAGE
+            ]
 
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if from_matlab:
-            raise NotImplementedError("The MeasureImageAreaOccupied module has changed substantially. \n"
-                                      "You should use this module by either:\n"
-                                      "(1) Thresholding your image using an Identify module\n"
-                                      "and then measure the resulting objects' area; or\n"
-                                      "(2) Create a binary image with Threshold and then measure the\n"
-                                      "resulting foreground image area.")
+            raise NotImplementedError(
+                "The MeasureImageAreaOccupied module has changed substantially. \n"
+                "You should use this module by either:\n"
+                "(1) Thresholding your image using an Identify module\n"
+                "and then measure the resulting objects' area; or\n"
+                "(2) Create a binary image with Threshold and then measure the\n"
+                "resulting foreground image area."
+            )
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but
             # the settings for v1 miraculously map to v2
@@ -452,11 +487,11 @@ like to measure the area occupied by the foreground in the image.
 
             for i in range(0, count):
                 new_setting_values += [
-                    'Objects',
+                    "Objects",
                     setting_values[(i * 3)],
                     setting_values[(i * 3) + 1],
                     setting_values[(i * 3) + 2],
-                    cellprofiler.setting.NONE
+                    cellprofiler.setting.NONE,
                 ]
 
             setting_values = new_setting_values
@@ -471,8 +506,11 @@ like to measure the area occupied by the foreground in the image.
             binary_name = setting_values[5::5][:n_objects]
 
             object_settings = sum(
-                [list(settings) for settings in zip(operand_choices, operand_objects, binary_name)],
-                []
+                [
+                    list(settings)
+                    for settings in zip(operand_choices, operand_objects, binary_name)
+                ],
+                [],
             )
 
             setting_values = [setting_values[0]] + object_settings
@@ -490,14 +528,23 @@ def surface_area(label_image, spacing=None, index=None):
         spacing = (1.0,) * label_image.ndim
 
     if index is None:
-        verts, faces = skimage.measure.marching_cubes_classic(label_image, spacing=spacing, level=0)
+        verts, faces = skimage.measure.marching_cubes_classic(
+            label_image, spacing=spacing, level=0
+        )
 
         return skimage.measure.mesh_surface_area(verts, faces)
 
-    return numpy.sum([numpy.round(_label_surface_area(label_image, label, spacing)) for label in index])
+    return numpy.sum(
+        [
+            numpy.round(_label_surface_area(label_image, label, spacing))
+            for label in index
+        ]
+    )
 
 
 def _label_surface_area(label_image, label, spacing):
-    verts, faces = skimage.measure.marching_cubes_classic(label_image == label, spacing=spacing, level=0)
+    verts, faces = skimage.measure.marching_cubes_classic(
+        label_image == label, spacing=spacing, level=0
+    )
 
     return skimage.measure.mesh_surface_area(verts, faces)

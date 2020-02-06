@@ -255,7 +255,6 @@ tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
 """
 
 import logging
-import sys
 
 import numpy as np
 import scipy.ndimage as scind
@@ -264,37 +263,52 @@ logger = logging.getLogger(__name__)
 
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 import cellprofiler.image as cpi
 import centrosome.cpmorphology as morph
 from centrosome.filter import poisson_equation
 
-F_BRANCHPOINTS = 'branchpoints'
-F_BRIDGE = 'bridge'
-F_CLEAN = 'clean'
-F_CONVEX_HULL = 'convex hull'
-F_DIAG = 'diag'
-F_DISTANCE = 'distance'
-F_ENDPOINTS = 'endpoints'
-F_FILL = 'fill'
-F_HBREAK = 'hbreak'
-F_MAJORITY = 'majority'
-F_OPENLINES = 'openlines'
-F_REMOVE = 'remove'
-F_SHRINK = 'shrink'
-F_SKELPE = 'skelpe'
-F_SPUR = 'spur'
-F_THICKEN = 'thicken'
-F_THIN = 'thin'
-F_VBREAK = 'vbreak'
-F_ALL = [F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CONVEX_HULL,
-         F_DIAG, F_DISTANCE, F_ENDPOINTS, F_FILL,
-         F_HBREAK, F_MAJORITY, F_OPENLINES, F_REMOVE,
-         F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_VBREAK]
+F_BRANCHPOINTS = "branchpoints"
+F_BRIDGE = "bridge"
+F_CLEAN = "clean"
+F_CONVEX_HULL = "convex hull"
+F_DIAG = "diag"
+F_DISTANCE = "distance"
+F_ENDPOINTS = "endpoints"
+F_FILL = "fill"
+F_HBREAK = "hbreak"
+F_MAJORITY = "majority"
+F_OPENLINES = "openlines"
+F_REMOVE = "remove"
+F_SHRINK = "shrink"
+F_SKELPE = "skelpe"
+F_SPUR = "spur"
+F_THICKEN = "thicken"
+F_THIN = "thin"
+F_VBREAK = "vbreak"
+F_ALL = [
+    F_BRANCHPOINTS,
+    F_BRIDGE,
+    F_CLEAN,
+    F_CONVEX_HULL,
+    F_DIAG,
+    F_DISTANCE,
+    F_ENDPOINTS,
+    F_FILL,
+    F_HBREAK,
+    F_MAJORITY,
+    F_OPENLINES,
+    F_REMOVE,
+    F_SHRINK,
+    F_SKELPE,
+    F_SPUR,
+    F_THICKEN,
+    F_THIN,
+    F_VBREAK,
+]
 
-R_ONCE = 'Once'
-R_FOREVER = 'Forever'
-R_CUSTOM = 'Custom'
+R_ONCE = "Once"
+R_FOREVER = "Forever"
+R_CUSTOM = "Custom"
 R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 
 FUNCTION_SETTING_COUNT_V1 = 3
@@ -310,22 +324,31 @@ class Morph(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""\
+            "Select the input image",
+            cps.NONE,
+            doc="""\
 Select the image that you want to perform a morphological operation on.
 A grayscale image can be converted to binary using the **Threshold**
 module. Objects can be converted to binary using the **ConvertToImage**
-module.""")
+module.""",
+        )
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "MorphBlue", doc="""Enter the name for the output image. It will be of the same type as the input image.""")
+            "Name the output image",
+            "MorphBlue",
+            doc="""Enter the name for the output image. It will be of the same type as the input image.""",
+        )
 
-        self.add_button = cps.DoSomething("",
-                                          "Add another operation",
-                                          self.add_function, doc="""\
+        self.add_button = cps.DoSomething(
+            "",
+            "Add another operation",
+            self.add_function,
+            doc="""\
 Press this button to add an operation that will be applied to the
 image resulting from the previous operation(s). The module repeats
 the previous operation the number of times you select before applying
-the operation added by this button.""")
+the operation added by this button.""",
+        )
 
         self.functions = []
         self.add_function(can_remove=False)
@@ -341,43 +364,68 @@ Enter the number of times to repeat the operation."""
         group.can_remove = can_remove
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("function", cps.Choice(
+        group.append(
+            "function",
+            cps.Choice(
                 "Select the operation to perform",
-                F_ALL, doc="""Choose one of the operations described in this module's help."""))
+                F_ALL,
+                doc="""Choose one of the operations described in this module's help.""",
+            ),
+        )
 
-        group.append("repeats_choice", cps.Choice(
+        group.append(
+            "repeats_choice",
+            cps.Choice(
                 "Number of times to repeat operation",
-                R_ALL, doc="""\
+                R_ALL,
+                doc="""\
 This setting controls the number of times that the same operation is
 applied successively to the image.
 
 -  *%(R_ONCE)s:* Perform the operation once on the image.
 -  *%(R_FOREVER)s:* Perform the operation on the image until successive
    iterations yield the same image.
--  *%(R_CUSTOM)s:* Perform the operation a custom number of times.""" % globals()))
+-  *%(R_CUSTOM)s:* Perform the operation a custom number of times."""
+                % globals(),
+            ),
+        )
 
-        group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
-                                                   doc=self.CUSTOM_REPEATS_DOC))
+        group.append(
+            "custom_repeats",
+            cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1, doc=self.CUSTOM_REPEATS_DOC),
+        )
 
-        group.append("rescale_values", cps.Binary(
-                "Rescale values from 0 to 1?", True, doc="""\
+        group.append(
+            "rescale_values",
+            cps.Binary(
+                "Rescale values from 0 to 1?",
+                True,
+                doc="""\
 *(Used only for the "%(F_DISTANCE)s" operation).*
 
-Select "*%(YES)s*" to rescale the transformed values to lie between 0 and
+Select "*Yes*" to rescale the transformed values to lie between 0 and
 1. This is the option to use if the distance transformed image is to be
 used for thresholding by an **Identify** module or the like, which
 assumes a 0-1 scaling.
 
-Select "*%(NO)s*" to leave the values in absolute pixel units. This useful
+Select "*No*" to leave the values in absolute pixel units. This useful
 in cases where the actual pixel distances are to be used downstream as
-input for a measurement module.""" % globals()))
+input for a measurement module."""
+                % globals(),
+            ),
+        )
 
         if can_remove:
-            group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
+            group.append(
+                "remove",
+                cps.RemoveSettingButton(
+                    "", "Remove this operation", self.functions, group
+                ),
+            )
         self.functions.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Adjust the # of functions to match the # of setting values'''
+        """Adjust the # of functions to match the # of setting values"""
         assert (len(setting_values) - 2) % FUNCTION_SETTING_COUNT == 0
         function_count = (len(setting_values) - 2) / FUNCTION_SETTING_COUNT
         del self.functions[function_count:]
@@ -385,14 +433,19 @@ input for a measurement module.""" % globals()))
             self.add_function()
 
     def settings(self):
-        '''Return the settings as saved in the pipeline file'''
+        """Return the settings as saved in the pipeline file"""
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += [function.function, function.repeats_choice, function.custom_repeats, function.rescale_values]
+            result += [
+                function.function,
+                function.repeats_choice,
+                function.custom_repeats,
+                function.rescale_values,
+            ]
         return result
 
     def visible_settings(self):
-        '''Return the settings as displayed to the user'''
+        """Return the settings as displayed to the user"""
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
             if function.can_remove:
@@ -402,7 +455,9 @@ input for a measurement module.""" % globals()))
                 result.append(function.rescale_values)
             elif function.function == F_OPENLINES:
                 function.custom_repeats.text = "Line length"
-                function.custom_repeats.doc = """Only keep lines that have this many pixels or more."""
+                function.custom_repeats.doc = (
+                    """Only keep lines that have this many pixels or more."""
+                )
                 result.append(function.custom_repeats)
             elif function.repeats_choice != R_CUSTOM:
                 result.append(function.repeats_choice)
@@ -424,8 +479,12 @@ input for a measurement module.""" % globals()))
             mask = None
         pixel_data = image.pixel_data
         if pixel_data.ndim == 3:
-            if any([np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
-                    for plane in range(1, pixel_data.shape[2])]):
+            if any(
+                [
+                    np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
+                    for plane in range(1, pixel_data.shape[2])
+                ]
+            ):
                 logger.warn("Image is color, converting to grayscale")
             pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
@@ -440,43 +499,86 @@ input for a measurement module.""" % globals()))
         image = workspace.display_data.image
         pixel_data = workspace.display_data.pixel_data
         figure.set_subplots((2, 1))
-        if pixel_data.dtype.kind == 'b':
-            figure.subplot_imshow_bw(0, 0, image,
-                                     'Original image: %s' %
-                                     self.image_name.value)
-            figure.subplot_imshow_bw(1, 0, pixel_data,
-                                     self.output_image_name.value,
-                                     sharexy=figure.subplot(0, 0))
+        if pixel_data.dtype.kind == "b":
+            figure.subplot_imshow_bw(
+                0, 0, image, "Original image: %s" % self.image_name.value
+            )
+            figure.subplot_imshow_bw(
+                1,
+                0,
+                pixel_data,
+                self.output_image_name.value,
+                sharexy=figure.subplot(0, 0),
+            )
         else:
-            figure.subplot_imshow_grayscale(0, 0, image,
-                                            'Original image: %s' %
-                                            self.image_name.value)
-            figure.subplot_imshow_grayscale(1, 0, pixel_data,
-                                            self.output_image_name.value,
-                                            sharexy=figure.subplot(0, 0))
+            figure.subplot_imshow_grayscale(
+                0, 0, image, "Original image: %s" % self.image_name.value
+            )
+            figure.subplot_imshow_grayscale(
+                1,
+                0,
+                pixel_data,
+                self.output_image_name.value,
+                sharexy=figure.subplot(0, 0),
+            )
 
     def run_function(self, function, pixel_data, mask):
-        '''Apply the function once to the image, returning the result'''
+        """Apply the function once to the image, returning the result"""
         count = function.repeat_count
         function_name = function.function.value
         custom_repeats = function.custom_repeats.value
 
-        is_binary = pixel_data.dtype.kind == 'b'
+        is_binary = pixel_data.dtype.kind == "b"
 
-        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
-                              F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_HBREAK, F_MAJORITY,
-                              F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR,
-                              F_THICKEN, F_THIN, F_VBREAK)
-            and not is_binary):
+        if (
+            function_name
+            in (
+                F_BRANCHPOINTS,
+                F_BRIDGE,
+                F_CLEAN,
+                F_DIAG,
+                F_CONVEX_HULL,
+                F_DISTANCE,
+                F_ENDPOINTS,
+                F_FILL,
+                F_HBREAK,
+                F_MAJORITY,
+                F_REMOVE,
+                F_SHRINK,
+                F_SKELPE,
+                F_SPUR,
+                F_THICKEN,
+                F_THIN,
+                F_VBREAK,
+            )
+            and not is_binary
+        ):
             # Apply a very crude threshold to the image for binary algorithms
-            logger.warning("Warning: converting image to binary for %s\n" %
-                           function_name)
+            logger.warning(
+                "Warning: converting image to binary for %s\n" % function_name
+            )
             pixel_data = pixel_data != 0
 
-        if function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                             F_HBREAK, F_MAJORITY, F_REMOVE, F_SHRINK, F_SKELPE, F_SPUR, F_THICKEN,
-                             F_THIN, F_VBREAK, F_OPENLINES):
+        if function_name in (
+            F_BRANCHPOINTS,
+            F_BRIDGE,
+            F_CLEAN,
+            F_DIAG,
+            F_CONVEX_HULL,
+            F_DISTANCE,
+            F_ENDPOINTS,
+            F_FILL,
+            F_HBREAK,
+            F_MAJORITY,
+            F_REMOVE,
+            F_SHRINK,
+            F_SKELPE,
+            F_SPUR,
+            F_THICKEN,
+            F_THIN,
+            F_VBREAK,
+            F_OPENLINES,
+        ):
             # All of these have an iterations argument or it makes no
             # sense to iterate
             if function_name == F_BRANCHPOINTS:
@@ -513,9 +615,11 @@ input for a measurement module.""" % globals()))
                 return morph.binary_shrink(pixel_data, count)
             elif function_name == F_SKELPE:
                 return morph.skeletonize(
-                        pixel_data, mask,
-                        scind.distance_transform_edt(pixel_data) *
-                        poisson_equation(pixel_data))
+                    pixel_data,
+                    mask,
+                    scind.distance_transform_edt(pixel_data)
+                    * poisson_equation(pixel_data),
+                )
             elif function_name == F_SPUR:
                 return morph.spur(pixel_data, mask, count)
             elif function_name == F_THICKEN:
@@ -525,14 +629,15 @@ input for a measurement module.""" % globals()))
             elif function_name == F_VBREAK:
                 return morph.vbreak(pixel_data, mask)
             else:
-                raise NotImplementedError("Unimplemented morphological function: %s" %
-                                          function_name)
+                raise NotImplementedError(
+                    "Unimplemented morphological function: %s" % function_name
+                )
             return pixel_data
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number, module_name,
-                         from_matlab):
-        '''Adjust the setting_values of previous revisions to match this one'''
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        """Adjust the setting_values of previous revisions to match this one"""
         if from_matlab and variable_revision_number in (1, 2):
             # Settings:
             # image name
@@ -542,8 +647,10 @@ input for a measurement module.""" % globals()))
             for i in range(6):
                 if setting_values[i * 2 + 2] != cps.DO_NOT_USE:
                     new_setting_values.append(setting_values[i * 2 + 2])
-                    if (setting_values[i * 2 + 3].isdigit() and
-                                int(setting_values[i * 2 + 3]) == 1):
+                    if (
+                        setting_values[i * 2 + 3].isdigit()
+                        and int(setting_values[i * 2 + 3]) == 1
+                    ):
                         new_setting_values += [R_ONCE, "1"]
                     elif setting_values[i * 2 + 3].lower() == "inf":
                         new_setting_values += [R_FOREVER, "2"]
@@ -556,7 +663,7 @@ input for a measurement module.""" % globals()))
         if (not from_matlab) and variable_revision_number == 1:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V1):
-                new_setting_values += setting_values[i:i + FUNCTION_SETTING_COUNT_V1]
+                new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V1]
                 new_setting_values += ["3"]
             setting_values = new_setting_values
             variable_revision_number = 2
@@ -564,7 +671,7 @@ input for a measurement module.""" % globals()))
         if (not from_matlab) and variable_revision_number == 2:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V2):
-                new_setting_values += setting_values[i:i + FUNCTION_SETTING_COUNT_V2]
+                new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V2]
                 new_setting_values += ["disk", "1", "1", "0", "3", "3", "3,3,111111111"]
             setting_values = new_setting_values
             variable_revision_number = 3
@@ -572,7 +679,7 @@ input for a measurement module.""" % globals()))
         if (not from_matlab) and variable_revision_number == 3:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V3):
-                new_setting_values += setting_values[i:i + FUNCTION_SETTING_COUNT_V3]
+                new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V3]
                 new_setting_values += [cps.YES]
             setting_values = new_setting_values
             variable_revision_number = 4
@@ -586,7 +693,9 @@ input for a measurement module.""" % globals()))
 
             rescale = setting_values[13::12]
 
-            new_setting_values = list(sum(zip(functions, repeats, repeat_counts, rescale), ()))
+            new_setting_values = list(
+                sum(list(zip(functions, repeats, repeat_counts, rescale)), ())
+            )
 
             setting_values = setting_values[:2] + new_setting_values
 
@@ -607,7 +716,7 @@ input for a measurement module.""" % globals()))
 class MorphSettingsGroup(cps.SettingsGroup):
     @property
     def repeat_count(self):
-        ''  # of times to repeat'''
+        """"""  # of times to repeat'''
         if self.repeats_choice == R_ONCE:
             return 1
         elif self.repeats_choice == R_FOREVER:
@@ -615,8 +724,9 @@ class MorphSettingsGroup(cps.SettingsGroup):
         elif self.repeats_choice == R_CUSTOM:
             return self.custom_repeats.value
         else:
-            raise ValueError("Unsupported repeat choice: %s" %
-                             self.repeats_choice.value)
+            raise ValueError(
+                "Unsupported repeat choice: %s" % self.repeats_choice.value
+            )
 
-        '''The thresholding algorithm to run'''
-        return self.threshold_method.value.split(' ')[0]
+        """The thresholding algorithm to run"""
+        return self.threshold_method.value.split(" ")[0]

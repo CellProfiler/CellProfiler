@@ -33,7 +33,6 @@ See also **NamesAndTypes**.
 
 import os
 import os.path
-import sys
 
 import bioformats.formatwriter
 import bioformats.omexml
@@ -48,7 +47,6 @@ import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
 from cellprofiler.modules import _help
-
 
 IF_IMAGE = "Image"
 IF_MASK = "Mask"
@@ -126,12 +124,14 @@ The following types of images can be saved as a file on the hard drive:
    removal of the rows and columns that are left blank, the cropping can
    be of a different size than the mask.
 -  *{IF_MOVIE}:* A sequence of images can be saved as a TIFF stack.
-            """.format(**{
-                "IF_CROPPING": IF_CROPPING,
-                "IF_IMAGE": IF_IMAGE,
-                "IF_MASK": IF_MASK,
-                "IF_MOVIE": IF_MOVIE
-            })
+            """.format(
+                **{
+                    "IF_CROPPING": IF_CROPPING,
+                    "IF_IMAGE": IF_IMAGE,
+                    "IF_MASK": IF_MASK,
+                    "IF_MOVIE": IF_MOVIE,
+                }
+            ),
         )
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
@@ -140,11 +140,7 @@ The following types of images can be saved as a file on the hard drive:
 
         self.file_name_method = cellprofiler.setting.Choice(
             "Select method for constructing file names",
-            [
-                FN_FROM_IMAGE,
-                FN_SEQUENTIAL,
-                FN_SINGLE_NAME
-            ],
+            [FN_FROM_IMAGE, FN_SEQUENTIAL, FN_SINGLE_NAME],
             FN_FROM_IMAGE,
             doc="""\
 *(Used only if saving non-movie files)*
@@ -174,13 +170,15 @@ Several choices are available for constructing the image file name:
 {USING_METADATA_TAGS_REF}
 
 {USING_METADATA_HELP_REF}
-""".format(**{
-                "FN_FROM_IMAGE": FN_FROM_IMAGE,
-                "FN_SEQUENTIAL": FN_SEQUENTIAL,
-                "FN_SINGLE_NAME": FN_SINGLE_NAME,
-                "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
-                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
-            })
+""".format(
+                **{
+                    "FN_FROM_IMAGE": FN_FROM_IMAGE,
+                    "FN_SEQUENTIAL": FN_SEQUENTIAL,
+                    "FN_SINGLE_NAME": FN_SINGLE_NAME,
+                    "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
+                    "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF,
+                }
+            ),
         )
 
         self.file_image_name = cellprofiler.setting.FileImageNameSubscriber(
@@ -190,9 +188,9 @@ Several choices are available for constructing the image file name:
 *(Used only when “{FN_FROM_IMAGE}” is selected for constructing the filename)*
 
 Select an image loaded using **NamesAndTypes**. The original filename
-will be used as the prefix for the output filename.""".format(**{
-                "FN_FROM_IMAGE": FN_FROM_IMAGE
-            })
+will be used as the prefix for the output filename.""".format(
+                **{"FN_FROM_IMAGE": FN_FROM_IMAGE}
+            ),
         )
 
         self.single_file_name = cellprofiler.setting.Text(
@@ -207,11 +205,13 @@ Specify the filename text here. If you have metadata associated with
 your images, enter the filename text with the metadata tags.
 {USING_METADATA_TAGS_REF}
 Do not enter the file extension in this setting; it will be appended
-automatically.""".format(**{
-                "FN_SEQUENTIAL": FN_SEQUENTIAL,
-                "FN_SINGLE_NAME": FN_SINGLE_NAME,
-                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
-            })
+automatically.""".format(
+                **{
+                    "FN_SEQUENTIAL": FN_SEQUENTIAL,
+                    "FN_SINGLE_NAME": FN_SINGLE_NAME,
+                    "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF,
+                }
+            ),
         )
 
         self.number_of_digits = cellprofiler.setting.Integer(
@@ -223,9 +223,9 @@ automatically.""".format(**{
 Specify the number of digits to be used for the sequential numbering.
 Zeros will be used to left-pad the digits. If the number specified here
 is less than that needed to contain the number of image sets, the latter
-will override the value entered.""".format(**{
-                "FN_SEQUENTIAL": FN_SEQUENTIAL
-            })
+will override the value entered.""".format(
+                **{"FN_SEQUENTIAL": FN_SEQUENTIAL}
+            ),
         )
 
         self.wants_file_name_suffix = cellprofiler.setting.Binary(
@@ -234,10 +234,9 @@ will override the value entered.""".format(**{
             doc="""\
 Select "*{YES}*" to add a suffix to the image’s file name. Select "*{NO}*"
 to use the image name as-is.
-            """.format(**{
-                "NO": cellprofiler.setting.NO,
-                "YES": cellprofiler.setting.YES
-            })
+            """.format(
+                **{"NO": cellprofiler.setting.NO, "YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.file_name_suffix = cellprofiler.setting.Text(
@@ -254,9 +253,9 @@ If you have metadata associated with your images, you may use metadata tags.
 
 Do not enter the file extension in this setting; it will be appended
 automatically.
-""".format(**{
-                "USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF
-            })
+""".format(
+                **{"USING_METADATA_TAGS_REF": _help.USING_METADATA_TAGS_REF}
+            ),
         )
 
         self.file_format = cellprofiler.setting.Choice(
@@ -319,19 +318,17 @@ can specify the additional folders separated with slashes. For example,
 folder, which in turn is under the Default Input/Output Folder. The use
 of a forward slash (“/”) as a folder separator will avoid ambiguity
 between the various operating systems.
-""".format(**{
-                "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
-                "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT
-            })
+""".format(
+                **{
+                    "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
+                    "IO_WITH_METADATA_HELP_TEXT": _help.IO_WITH_METADATA_HELP_TEXT,
+                }
+            ),
         )
 
         self.bit_depth = cellprofiler.setting.Choice(
             "Image bit depth",
-            [
-                BIT_DEPTH_8,
-                BIT_DEPTH_16,
-                BIT_DEPTH_FLOAT
-            ],
+            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT],
             doc="""\
 Select the bit-depth at which you want to save the images.
 
@@ -341,10 +338,9 @@ values are scaled within the range (0, 1). Floating point data is not
 rescaled.
 
 {BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
-TIFF formats.""".format(**{
-                "BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT,
-                "BIT_DEPTH_16": BIT_DEPTH_16
-            })
+TIFF formats.""".format(
+                **{"BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT, "BIT_DEPTH_16": BIT_DEPTH_16}
+            ),
         )
 
         self.overwrite = cellprofiler.setting.Binary(
@@ -356,19 +352,14 @@ Select "*{NO}*" to be prompted for confirmation first.
 
 If you are running the pipeline on a computing cluster, select "*{YES}*"
 since you will not be able to intervene and answer the confirmation
-prompt.""".format(**{
-                "NO": cellprofiler.setting.NO,
-                "YES": cellprofiler.setting.YES
-            })
+prompt.""".format(
+                **{"NO": cellprofiler.setting.NO, "YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.when_to_save = cellprofiler.setting.Choice(
             "When to save",
-            [
-                WS_EVERY_CYCLE,
-                WS_FIRST_CYCLE,
-                WS_LAST_CYCLE
-            ],
+            [WS_EVERY_CYCLE, WS_FIRST_CYCLE, WS_LAST_CYCLE],
             WS_EVERY_CYCLE,
             doc="""\
 *(Used only when saving non-movie files)*
@@ -385,11 +376,13 @@ Specify at what point during pipeline execution to save file(s).
 -  *{WS_LAST_CYCLE}:* Useful for when you are saving an aggregate image
    completed on the last cycle, e.g., **CorrectIlluminationCalculate**
    with the *All* setting used on intermediate images generated during
-   each cycle.""".format(**{
-                "WS_EVERY_CYCLE": WS_EVERY_CYCLE,
-                "WS_FIRST_CYCLE": WS_FIRST_CYCLE,
-                "WS_LAST_CYCLE": WS_LAST_CYCLE
-            })
+   each cycle.""".format(
+                **{
+                    "WS_EVERY_CYCLE": WS_EVERY_CYCLE,
+                    "WS_FIRST_CYCLE": WS_FIRST_CYCLE,
+                    "WS_LAST_CYCLE": WS_LAST_CYCLE,
+                }
+            ),
         )
 
         self.update_file_names = cellprofiler.setting.Binary(
@@ -405,16 +398,17 @@ Instances in which this information may be useful include:
    image. If you are using the machine-learning tools or image viewer in
    CellProfiler Analyst, for example, you will want to enable this
    setting if you want the saved images to be displayed along with the
-   original images.""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+   original images.""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.create_subdirectories = cellprofiler.setting.Binary(
             "Create subfolders in the output folder?",
-            False, doc="""Select "*{YES}*" to create subfolders to match the input image folder structure.""".format(**{
-                "YES": cellprofiler.setting.YES
-            })
+            False,
+            doc="""Select "*{YES}*" to create subfolders to match the input image folder structure.""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
         )
 
         self.root_dir = cellprofiler.setting.DirectoryPath(
@@ -430,27 +424,33 @@ example, input images might be stored in a folder structure of
 the image folder is "images", **SaveImages** will store images in the
 subfolder, "*experiment-name*\/*date*\/*plate-name*". If the
 image folder is "images\/*experiment-name*", **SaveImages** will
-store images in the subfolder, "*date*\/*plate-name*".""")
+store images in the subfolder, "*date*\/*plate-name*".""",
+        )
 
     def settings(self):
         """Return the settings in the order to use when saving"""
-        return [self.save_image_or_figure, self.image_name,
-                self.file_name_method, self.file_image_name,
-                self.single_file_name, self.number_of_digits,
-                self.wants_file_name_suffix,
-                self.file_name_suffix, self.file_format,
-                self.pathname, self.bit_depth,
-                self.overwrite, self.when_to_save,
-                self.update_file_names, self.create_subdirectories,
-                self.root_dir]
+        return [
+            self.save_image_or_figure,
+            self.image_name,
+            self.file_name_method,
+            self.file_image_name,
+            self.single_file_name,
+            self.number_of_digits,
+            self.wants_file_name_suffix,
+            self.file_name_suffix,
+            self.file_format,
+            self.pathname,
+            self.bit_depth,
+            self.overwrite,
+            self.when_to_save,
+            self.update_file_names,
+            self.create_subdirectories,
+            self.root_dir,
+        ]
 
     def visible_settings(self):
         """Return only the settings that should be shown"""
-        result = [
-            self.save_image_or_figure,
-            self.image_name,
-            self.file_name_method
-        ]
+        result = [self.save_image_or_figure, self.image_name, self.file_name_method]
 
         if self.file_name_method == FN_FROM_IMAGE:
             result += [self.file_image_name, self.wants_file_name_suffix]
@@ -465,7 +465,9 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             self.single_file_name.text = SINGLE_NAME_TEXT
             result.append(self.single_file_name)
         else:
-            raise NotImplementedError("Unhandled file name method: %s" % self.file_name_method)
+            raise NotImplementedError(
+                "Unhandled file name method: %s" % self.file_name_method
+            )
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.file_format)
         supports_16_bit = (self.file_format in (FF_TIFF, FF_H5) and self.save_image_or_figure == IF_IMAGE) or \
@@ -491,8 +493,8 @@ store images in the subfolder, "*date*\/*plate-name*".""")
     def prepare_group(self, workspace, grouping, image_numbers):
         d = self.get_dictionary(workspace.image_set_list)
         if self.save_image_or_figure == IF_MOVIE:
-            d['N_FRAMES'] = len(image_numbers)
-            d['CURRENT_FRAME'] = 0
+            d["N_FRAMES"] = len(image_numbers)
+            d["CURRENT_FRAME"] = 0
         return True
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -513,27 +515,30 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
             should_save = self.run_image(workspace)
         elif self.save_image_or_figure == IF_MOVIE:
-            should_save = self.run_movie(workspace)
+            self.run_movie(workspace)
         else:
-            raise NotImplementedError(("Saving a %s is not yet supported" %
-                                       self.save_image_or_figure))
+            raise NotImplementedError(
+                ("Saving a %s is not yet supported" % self.save_image_or_figure)
+            )
         workspace.display_data.filename = self.get_filename(
-                workspace, make_dirs=False, check_overwrite=False)
+            workspace, make_dirs=False, check_overwrite=False
+        )
 
     def is_aggregation_module(self):
-        '''SaveImages is an aggregation module when it writes movies'''
-        return self.save_image_or_figure == IF_MOVIE or \
-               self.when_to_save == WS_LAST_CYCLE
+        """SaveImages is an aggregation module when it writes movies"""
+        return (
+            self.save_image_or_figure == IF_MOVIE or self.when_to_save == WS_LAST_CYCLE
+        )
 
     def display(self, workspace, figure):
         if self.show_window:
             if self.save_image_or_figure == IF_MOVIE:
                 return
             figure.set_subplots((1, 1))
-            outcome = ("Wrote %s" if workspace.display_data.wrote_image
-                       else "Did not write %s")
-            figure.subplot_table(0, 0, [[outcome %
-                                         workspace.display_data.filename]])
+            outcome = (
+                "Wrote %s" if workspace.display_data.wrote_image else "Did not write %s"
+            )
+            figure.subplot_table(0, 0, [[outcome % workspace.display_data.filename]])
 
     def run_image(self, workspace):
         """Handle saving an image"""
@@ -542,7 +547,12 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         #
         if self.when_to_save == WS_FIRST_CYCLE:
             d = self.get_dictionary(workspace.image_set_list)
-            if workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1:
+            if (
+                workspace.measurements[
+                    cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX
+                ]
+                > 1
+            ):
                 workspace.display_data.wrote_image = False
                 self.save_filename_measurements(workspace)
                 return
@@ -572,21 +582,37 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
         pixels = pixels * 255
-        frames = d['N_FRAMES']
+        frames = d["N_FRAMES"]
         current_frame = d["CURRENT_FRAME"]
         d["CURRENT_FRAME"] += 1
-        self.do_save_image(workspace, out_file, pixels, bioformats.omexml.PT_UINT8,
-                           t=current_frame, size_t=frames)
+        self.do_save_image(
+            workspace,
+            out_file,
+            pixels,
+            bioformats.omexml.PT_UINT8,
+            t=current_frame,
+            size_t=frames,
+        )
 
     def post_group(self, workspace, *args):
-        if (self.when_to_save == WS_LAST_CYCLE and self.save_image_or_figure != IF_MOVIE):
+        if self.when_to_save == WS_LAST_CYCLE and self.save_image_or_figure != IF_MOVIE:
             self.save_image(workspace)
 
-    def do_save_image(self, workspace, filename, pixels, pixel_type,
-                      c=0, z=0, t=0,
-                      size_c=1, size_z=1, size_t=1,
-                      channel_names=None):
-        '''Save image using bioformats
+    def do_save_image(
+        self,
+        workspace,
+        filename,
+        pixels,
+        pixel_type,
+        c=0,
+        z=0,
+        t=0,
+        size_c=1,
+        size_z=1,
+        size_t=1,
+        channel_names=None,
+    ):
+        """Save image using bioformats
 
         workspace - the current workspace
 
@@ -609,11 +635,19 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         sizeT - # of timepoints in the stack
 
         channel_names - names of the channels (make up names if not present
-        '''
-        bioformats.formatwriter.write_image(filename, pixels, pixel_type,
-                                            c=c, z=z, t=t,
-                                            size_c=size_c, size_z=size_z, size_t=size_t,
-                                            channel_names=channel_names)
+        """
+        bioformats.formatwriter.write_image(
+            filename,
+            pixels,
+            pixel_type,
+            c=c,
+            z=z,
+            t=t,
+            size_c=size_c,
+            size_z=size_z,
+            size_t=size_t,
+            channel_names=channel_names,
+        )
 
     def save_image(self, workspace):
         if self.show_window:
@@ -630,8 +664,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         if image.volumetric and self.file_format.value not in volumetric_extensions:
             raise RuntimeError(
                 "Unsupported file format {} for 3D pipeline. Use {} format when processing images as 3D.".format(
-                    self.file_format.value,
-                    ", or ".join(volumetric_extensions)
+                    self.file_format.value, ", or ".join(volumetric_extensions)
                 )
             )
 
@@ -663,7 +696,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             save_kwargs = {}
 
             if image.volumetric and self.file_format.value == FF_TIFF:
-                save_kwargs.update({'compress': 6})
+                save_kwargs.update({"compress": 6})
 
             if self.file_format.value == FF_H5:
                 save_h5(filename, pixels, volumetric=image.volumetric)
@@ -677,94 +710,125 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             self.save_filename_measurements(workspace)
 
     def check_overwrite(self, filename, workspace):
-        '''Check to see if it's legal to overwrite a file
+        """Check to see if it's legal to overwrite a file
 
         Throws an exception if can't overwrite and no interaction available.
         Returns False if can't overwrite, otherwise True.
-        '''
+        """
         if not self.overwrite.value and os.path.isfile(filename):
             try:
-                return workspace.interaction_request(self, workspace.measurements.image_set_number, filename) == "Yes"
+                return (
+                    workspace.interaction_request(
+                        self, workspace.measurements.image_set_number, filename
+                    )
+                    == "Yes"
+                )
             except workspace.NoInteractionException:
                 raise ValueError(
-                        'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"' % (
-                            filename))
+                    'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'
+                    % filename
+                )
         return True
 
     def handle_interaction(self, image_set_number, filename):
-        '''handle an interaction request from check_overwrite()'''
+        """handle an interaction request from check_overwrite()"""
         import wx
-        dlg = wx.MessageDialog(wx.GetApp().TopWindow,
-                               "%s #%d, set #%d - Do you want to overwrite %s?" % \
-                               (self.module_name, self.module_num, image_set_number, filename),
-                               "Warning: overwriting file", wx.YES_NO | wx.ICON_QUESTION)
+
+        dlg = wx.MessageDialog(
+            wx.GetApp().TopWindow,
+            "%s #%d, set #%d - Do you want to overwrite %s?"
+            % (self.module_name, self.module_num, image_set_number, filename),
+            "Warning: overwriting file",
+            wx.YES_NO | wx.ICON_QUESTION,
+        )
         result = dlg.ShowModal() == wx.ID_YES
         return "Yes" if result else "No"
 
     def save_filename_measurements(self, workspace):
         if self.update_file_names.value:
-            filename = self.get_filename(workspace, make_dirs=False,
-                                         check_overwrite=False)
+            filename = self.get_filename(
+                workspace, make_dirs=False, check_overwrite=False
+            )
             pn, fn = os.path.split(filename)
             url = cellprofiler.modules.loadimages.pathname2url(filename)
-            workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
-                                                   self.file_name_feature,
-                                                   fn,
-                                                   can_overwrite=True)
-            workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
-                                                   self.path_name_feature,
-                                                   pn,
-                                                   can_overwrite=True)
-            workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
-                                                   self.url_feature,
-                                                   url,
-                                                   can_overwrite=True)
+            workspace.measurements.add_measurement(
+                cellprofiler.measurement.IMAGE,
+                self.file_name_feature,
+                fn,
+                can_overwrite=True,
+            )
+            workspace.measurements.add_measurement(
+                cellprofiler.measurement.IMAGE,
+                self.path_name_feature,
+                pn,
+                can_overwrite=True,
+            )
+            workspace.measurements.add_measurement(
+                cellprofiler.measurement.IMAGE,
+                self.url_feature,
+                url,
+                can_overwrite=True,
+            )
 
     @property
     def file_name_feature(self):
-        return '_'.join((cellprofiler.measurement.C_FILE_NAME, self.image_name.value))
+        return "_".join((cellprofiler.measurement.C_FILE_NAME, self.image_name.value))
 
     @property
     def path_name_feature(self):
-        return '_'.join((cellprofiler.measurement.C_PATH_NAME, self.image_name.value))
+        return "_".join((cellprofiler.measurement.C_PATH_NAME, self.image_name.value))
 
     @property
     def url_feature(self):
-        return '_'.join((cellprofiler.measurement.C_URL, self.image_name.value))
+        return "_".join((cellprofiler.measurement.C_URL, self.image_name.value))
 
     @property
     def source_file_name_feature(self):
-        '''The file name measurement for the exemplar disk image'''
-        return '_'.join((cellprofiler.measurement.C_FILE_NAME, self.file_image_name.value))
+        """The file name measurement for the exemplar disk image"""
+        return "_".join(
+            (cellprofiler.measurement.C_FILE_NAME, self.file_image_name.value)
+        )
 
     def source_path(self, workspace):
-        '''The path for the image data, or its first parent with a path'''
+        """The path for the image data, or its first parent with a path"""
         if self.file_name_method.value == FN_FROM_IMAGE:
-            path_feature = '%s_%s' % (cellprofiler.measurement.C_PATH_NAME, self.file_image_name.value)
-            assert workspace.measurements.has_feature(cellprofiler.measurement.IMAGE, path_feature), \
-                "Image %s does not have a path!" % self.file_image_name.value
+            path_feature = "%s_%s" % (
+                cellprofiler.measurement.C_PATH_NAME,
+                self.file_image_name.value,
+            )
+            assert workspace.measurements.has_feature(
+                cellprofiler.measurement.IMAGE, path_feature
+            ), ("Image %s does not have a path!" % self.file_image_name.value)
             return workspace.measurements.get_current_image_measurement(path_feature)
 
         # ... otherwise, chase the cpimage hierarchy looking for an image with a path
         cur_image = workspace.image_set.get_image(self.image_name.value)
         while cur_image.path_name is None:
             cur_image = cur_image.parent_image
-            assert cur_image is not None, "Could not determine source path for image %s' % (self.image_name.value)"
+            assert (
+                cur_image is not None
+            ), "Could not determine source path for image %s' % (self.image_name.value)"
         return cur_image.path_name
 
     def get_measurement_columns(self, pipeline):
         if self.update_file_names.value:
-            return [(cellprofiler.measurement.IMAGE,
-                     self.file_name_feature,
-                     cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                    (cellprofiler.measurement.IMAGE,
-                     self.path_name_feature,
-                     cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME)]
+            return [
+                (
+                    cellprofiler.measurement.IMAGE,
+                    self.file_name_feature,
+                    cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME,
+                ),
+                (
+                    cellprofiler.measurement.IMAGE,
+                    self.path_name_feature,
+                    cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                ),
+            ]
         else:
             return []
 
     def get_filename(self, workspace, make_dirs=True, check_overwrite=True):
-        "Concoct a filename for the current image based on the user settings"
+        """Concoct a filename for the current image based on the user settings"""
 
         measurements = workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:
@@ -777,11 +841,10 @@ store images in the subfolder, "*date*\/*plate-name*".""")
             ndigits = int(numpy.ceil(numpy.log10(n_image_sets + 1)))
             ndigits = max((ndigits, self.number_of_digits.value))
             padded_num_string = str(measurements.image_set_number).zfill(ndigits)
-            filename = '%s%s' % (filename, padded_num_string)
+            filename = "%s%s" % (filename, padded_num_string)
         else:
             file_name_feature = self.source_file_name_feature
-            filename = measurements.get_current_measurement('Image',
-                                                            file_name_feature)
+            filename = measurements.get_current_measurement("Image", file_name_feature)
             filename = os.path.splitext(filename)[0]
             if self.wants_file_name_suffix:
                 suffix = self.file_name_suffix.value
@@ -813,6 +876,7 @@ store images in the subfolder, "*date*\/*plate-name*".""")
                 os.remove(result)
             except:
                 import bioformats
+
                 bioformats.clear_image_reader_cache()
                 os.remove(result)
         return result
@@ -832,7 +896,9 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         else:
             return BIT_DEPTH_8
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
         if variable_revision_number == 11:
             if setting_values[0] == "Objects":
                 raise NotImplementedError(
@@ -840,7 +906,9 @@ store images in the subfolder, "*date*\/*plate-name*".""")
                 )
 
             if setting_values[10] in ("bmp", "mat"):
-                raise NotImplementedError("Unsupported file format: {}".format(setting_values[10]))
+                raise NotImplementedError(
+                    "Unsupported file format: {}".format(setting_values[10])
+                )
             elif setting_values[10] == "tif":
                 setting_values[10] = FF_TIFF
             elif setting_values[10] == "jpg":
@@ -868,55 +936,77 @@ store images in the subfolder, "*date*\/*plate-name*".""")
         return setting_values, variable_revision_number, False
 
     def validate_module(self, pipeline):
-        if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and
-                    self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
+        if self.save_image_or_figure in (
+            IF_IMAGE,
+            IF_MASK,
+            IF_CROPPING,
+        ) and self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE):
             #
             # Make sure that the image name is available on every cycle
             #
-            for setting in cellprofiler.setting.get_name_providers(pipeline,
-                                                                   self.image_name):
-                if setting.provided_attributes.get(cellprofiler.setting.AVAILABLE_ON_LAST_ATTRIBUTE):
+            for setting in cellprofiler.setting.get_name_providers(
+                pipeline, self.image_name
+            ):
+                if setting.provided_attributes.get(
+                    cellprofiler.setting.AVAILABLE_ON_LAST_ATTRIBUTE
+                ):
                     #
                     # If we fell through, then you can only save on the last cycle
                     #
-                    raise cellprofiler.setting.ValidationError("%s is only available after processing all images in an image group" %
-                                                               self.image_name.value,
-                                                               self.when_to_save)
+                    raise cellprofiler.setting.ValidationError(
+                        "%s is only available after processing all images in an image group"
+                        % self.image_name.value,
+                        self.when_to_save,
+                    )
 
         # XXX - should check that if file_name_method is
         # FN_FROM_IMAGE, that the named image actually has the
         # required path measurement
 
         # Make sure metadata tags exist
-        if self.file_name_method == FN_SINGLE_NAME or \
-                (self.file_name_method == FN_FROM_IMAGE and self.wants_file_name_suffix.value):
-            text_str = self.single_file_name.value if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix.value
+        if self.file_name_method == FN_SINGLE_NAME or (
+            self.file_name_method == FN_FROM_IMAGE and self.wants_file_name_suffix.value
+        ):
+            text_str = (
+                self.single_file_name.value
+                if self.file_name_method == FN_SINGLE_NAME
+                else self.file_name_suffix.value
+            )
             undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
             if len(undefined_tags) > 0:
                 raise cellprofiler.setting.ValidationError(
-                        "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
-                        undefined_tags[0],
-                        self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
+                    "%s is not a defined metadata tag. Check the metadata specifications in your load modules"
+                    % undefined_tags[0],
+                    self.single_file_name
+                    if self.file_name_method == FN_SINGLE_NAME
+                    else self.file_name_suffix,
+                )
 
     def volumetric(self):
         return True
 
 
 class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
-    '''A specialized version of DirectoryPath to handle saving in the image dir'''
+    """A specialized version of DirectoryPath to handle saving in the image dir"""
 
     def __init__(self, text, file_image_name, doc):
-        '''Constructor
+        """Constructor
         text - explanatory text to display
         file_image_name - the file_image_name setting so we can save in same dir
         doc - documentation for user
-        '''
+        """
         super(SaveImagesDirectoryPath, self).__init__(
-                text, dir_choices=[
-                    cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
-                    PC_WITH_IMAGE, cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
-                    cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
+            text,
+            dir_choices=[
+                cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
+                cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+                PC_WITH_IMAGE,
+                cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
+                cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+            ],
+            doc=doc,
+        )
         self.file_image_name = file_image_name
 
     def get_absolute_path(self, measurements=None, image_set_index=None):
@@ -924,7 +1014,8 @@ class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
             path_name_feature = "PathName_%s" % self.file_image_name.value
             return measurements.get_current_image_measurement(path_name_feature)
         return super(SaveImagesDirectoryPath, self).get_absolute_path(
-                measurements, image_set_index)
+            measurements, image_set_index
+        )
 
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices:

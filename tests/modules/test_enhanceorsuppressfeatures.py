@@ -1,7 +1,5 @@
-import StringIO
-import base64
+import io
 import os.path
-import zlib
 
 import centrosome.filter
 import numpy
@@ -53,7 +51,7 @@ def workspace(image, module):
         image_set=image_set,
         object_set=cellprofiler.object.ObjectSet(),
         measurements=cellprofiler.measurement.Measurements(),
-        image_set_list=image_set_list
+        image_set_list=image_set_list,
     )
 
 
@@ -89,10 +87,7 @@ def test_suppress_zero(image, module, workspace):
     assert numpy.all(actual == 0)
 
 
-@pytest.fixture(
-    params=["Slow", "Fast"],
-    scope="function"
-)
+@pytest.fixture(params=["Slow", "Fast"], scope="function")
 def accuracy(request):
     return request.param
 
@@ -378,7 +373,9 @@ def test_suppress_masked_volume(image, module, workspace):
 
 
 def test_enhance_neurites_gradient(image, module, workspace):
-    resources = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "resources"))
+    resources = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "resources")
+    )
 
     data = numpy.load(os.path.join(resources, "neurite.npy"))
 
@@ -406,7 +403,9 @@ def test_enhance_neurites_gradient(image, module, workspace):
 
 
 def test_enhance_neurites_gradient_volume(image, module, workspace):
-    resources = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "resources"))
+    resources = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "resources")
+    )
 
     data = numpy.load(os.path.join(resources, "neurite.npy"))
 
@@ -463,7 +462,7 @@ def test_enhance_neurites_tubeness_positive(image, module, workspace):
     expected = centrosome.filter.hessian(
         scipy.ndimage.gaussian_filter(data, 1.0),
         return_hessian=False,
-        return_eigenvectors=False
+        return_eigenvectors=False,
     )
 
     expected = -expected[:, :, 0] * (expected[:, :, 0] < 0)
@@ -497,7 +496,7 @@ def test_enhance_neurites_tubeness_negative(image, module, workspace):
     expected = centrosome.filter.hessian(
         scipy.ndimage.gaussian_filter(data, 1.0),
         return_hessian=False,
-        return_eigenvectors=False
+        return_eigenvectors=False,
     )
 
     expected = -expected[:, :, 0] * (expected[:, :, 0] < 0)
@@ -536,9 +535,7 @@ def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
 
     for index, plane in enumerate(smoothed):
         hessian = centrosome.filter.hessian(
-            plane,
-            return_hessian=False,
-            return_eigenvectors=False
+            plane, return_hessian=False, return_eigenvectors=False
         )
 
         expected[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0)
@@ -577,9 +574,7 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
 
     for index, plane in enumerate(smoothed):
         hessian = centrosome.filter.hessian(
-            plane,
-            return_hessian=False,
-            return_eigenvectors=False
+            plane, return_hessian=False, return_eigenvectors=False
         )
 
         expected[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0)
@@ -608,7 +603,7 @@ def test_enhance_circles(image, module, workspace):
 
     assert actual[15, 15] == 1
 
-    assert numpy.all(actual[numpy.abs(numpy.sqrt(i * i + j * j) - 6) < 1.5] < .25)
+    assert numpy.all(actual[numpy.abs(numpy.sqrt(i * i + j * j) - 6) < 1.5] < 0.25)
 
 
 def test_enhance_circles_masked(image, module, workspace):
@@ -699,7 +694,9 @@ def test_enhance_circles_masked_volume(image, module, workspace):
 
     module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
 
-    module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
+    module.enhance_method.value = (
+        cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
+    )
 
     module.object_size.value = 12
 
@@ -740,11 +737,15 @@ def test_enhance_texture(image, module, workspace):
 
     module.run(workspace)
 
-    gaussian_mask = skimage.filters.gaussian(numpy.ones_like(data), sigma, mode='constant')
+    gaussian_mask = skimage.filters.gaussian(
+        numpy.ones_like(data), sigma, mode="constant"
+    )
 
-    gaussian = skimage.filters.gaussian(data, sigma, mode='constant') / gaussian_mask
+    gaussian = skimage.filters.gaussian(data, sigma, mode="constant") / gaussian_mask
 
-    squared_gaussian = skimage.filters.gaussian(data ** 2, sigma, mode='constant') / gaussian_mask
+    squared_gaussian = (
+        skimage.filters.gaussian(data ** 2, sigma, mode="constant") / gaussian_mask
+    )
 
     expected = squared_gaussian - gaussian ** 2
 
@@ -760,7 +761,7 @@ def test_enhance_texture_masked(image, module, workspace):
 
     data = r.uniform(size=(19, 24))
 
-    mask = r.uniform(size=data.shape) > .25
+    mask = r.uniform(size=data.shape) > 0.25
 
     image.pixel_data = data
 
@@ -780,11 +781,16 @@ def test_enhance_texture_masked(image, module, workspace):
 
     masked_data[mask] = data[mask]
 
-    gaussian_mask = skimage.filters.gaussian(mask, sigma, mode='constant')
+    gaussian_mask = skimage.filters.gaussian(mask, sigma, mode="constant")
 
-    gaussian = skimage.filters.gaussian(masked_data, sigma, mode='constant') / gaussian_mask
+    gaussian = (
+        skimage.filters.gaussian(masked_data, sigma, mode="constant") / gaussian_mask
+    )
 
-    squared_gaussian = skimage.filters.gaussian(masked_data ** 2, sigma, mode='constant') / gaussian_mask
+    squared_gaussian = (
+        skimage.filters.gaussian(masked_data ** 2, sigma, mode="constant")
+        / gaussian_mask
+    )
 
     expected = squared_gaussian - gaussian ** 2
 
@@ -816,11 +822,15 @@ def test_enhance_texture_volume(image, module, workspace):
 
     module.run(workspace)
 
-    gaussian_mask = skimage.filters.gaussian(numpy.ones_like(data), sigma, mode='constant')
+    gaussian_mask = skimage.filters.gaussian(
+        numpy.ones_like(data), sigma, mode="constant"
+    )
 
-    gaussian = skimage.filters.gaussian(data, sigma, mode='constant') / gaussian_mask
+    gaussian = skimage.filters.gaussian(data, sigma, mode="constant") / gaussian_mask
 
-    squared_gaussian = skimage.filters.gaussian(data ** 2, sigma, mode='constant') / gaussian_mask
+    squared_gaussian = (
+        skimage.filters.gaussian(data ** 2, sigma, mode="constant") / gaussian_mask
+    )
 
     expected = squared_gaussian - gaussian ** 2
 
@@ -836,7 +846,7 @@ def test_enhance_texture_masked_volume(image, module, workspace):
 
     data = r.uniform(size=(8, 19, 24))
 
-    mask = r.uniform(size=data.shape) > .25
+    mask = r.uniform(size=data.shape) > 0.25
 
     image.pixel_data = data
 
@@ -858,11 +868,16 @@ def test_enhance_texture_masked_volume(image, module, workspace):
 
     masked_data[mask] = data[mask]
 
-    gaussian_mask = skimage.filters.gaussian(mask, sigma, mode='constant')
+    gaussian_mask = skimage.filters.gaussian(mask, sigma, mode="constant")
 
-    gaussian = skimage.filters.gaussian(masked_data, sigma, mode='constant') / gaussian_mask
+    gaussian = (
+        skimage.filters.gaussian(masked_data, sigma, mode="constant") / gaussian_mask
+    )
 
-    squared_gaussian = skimage.filters.gaussian(masked_data ** 2, sigma, mode='constant') / gaussian_mask
+    squared_gaussian = (
+        skimage.filters.gaussian(masked_data ** 2, sigma, mode="constant")
+        / gaussian_mask
+    )
 
     expected = squared_gaussian - gaussian ** 2
 
@@ -874,7 +889,7 @@ def test_enhance_texture_masked_volume(image, module, workspace):
 
 
 def test_enhance_dic(image, module, workspace):
-    data = numpy.ones((21, 43)) * .5
+    data = numpy.ones((21, 43)) * 0.5
 
     data[5:15, 10] = 1
 
@@ -898,15 +913,15 @@ def test_enhance_dic(image, module, workspace):
 
     expected = numpy.zeros(data.shape)
 
-    expected[5:15, 10] = .5
+    expected[5:15, 10] = 0.5
 
     expected[5:15, 11:15] = 1
 
-    expected[5:15, 15] = .5
+    expected[5:15, 15] = 0.5
 
     numpy.testing.assert_almost_equal(actual, expected)
 
-    module.decay.value = .9
+    module.decay.value = 0.9
 
     module.run(workspace)
 
@@ -920,107 +935,89 @@ def test_enhance_dic(image, module, workspace):
 
     actual = workspace.image_set.get_image("output").pixel_data
 
-    assert numpy.all(actual[4, 11:15] > .1)
-
-
-def test_load_v1():
-    data = ('eJztWNFO2zAUdUqBsUkr28v26Ee60aotQ4NqKu0oEtUIVLRiQohtpnXba'
-            'EkcOQlrNyHtcZ+0x33OHvcJs4NDUhMIbccmpqay2nt9zz3Xx0lsV600dy'
-            'qv4Wo2B9VKM9PRdAzrOnI6hBpFaDrLcJNi5OA2JGYRqsSEKhrAfB7mV4o'
-            'rheLqOizkcutgvEupqQ/Z19pjAObY9z3WEqJrVthKqHG7gR1HM7v2LEiC'
-            'p8L/g7UDRDV0ouMDpLvYDih8f83skObAuuhSSdvV8S4ywsHs2nWNE0ztv'
-            'Y4PFN11rY/1hvYZS0Pww/bxqWZrxBR4kV/2XvASR+LlOnyfD3RQJB24Lq'
-            'mQn8dvgyA+GaHbo1D8orA1s62dam0X6VAzUPeiCm8eYvLNS/m4rQ5qPI2'
-            'HL8fgFyU8b03cdzJbfdRyoIGcVu8meVJSnpRXx5bZQ2YLt4N6cjF5lKE8'
-            'CliZQAfBfiMd7kt4blcJNIkDXRsH8xFXf2IoTwLkX46H2yWXcXMSzr983'
-            'AII6oy7D59I4+V2FXeQqzvQmy1Y1ShuOYQOJqrjX+Kixj0zNO4ZcMietr'
-            'vK9zdwk75/bktX+T2R/4P6RPElh/iS7Pk08SR8X2P43oBhXbn9bmmj/op'
-            'vBHAp+zz9nltvsa7vk0+lo0qmfpz2PZtEdw2zdJTLrB9/yS8Xzs6DGxpD'
-            'es505LhHqb8XU/+aVD+3eQ2HGFFR2IuzdIa72AbG6QlfQfiqaBB4Jqnz5'
-            '9xo6/e4POUYPaLWF2+x71LiWrfPH7XOB/yQbUGwdZfeS1PcFPc/4soh3P'
-            'Q5nuJGxS0qV6938jmDx38A199vz8Dw/cbtFttiWJTw/yVo1vAOz3ZWJ6h'
-            '9fnrN7rCftdBBlvP0Y3i2JZ7tq3jw+aGOUNu1LIpt27Zw6yPvEce9PdoQ'
-            'PQ3RI+u5EMEf1iXBPqnk9fMg6x/My6+NcfgSymW+BzG4pFCS476B0eZ96'
-            'Zp4f2zjxv8G/FcCeg==')
-    pipeline = cellprofiler.pipeline.Pipeline()
-
-    def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-
-    pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-    assert len(pipeline.modules()) == 2
-    module = pipeline.modules()[1]
-    assert module.module_name == 'EnhanceOrSuppressFeatures'
-    assert module.x_name.value == 'MyImage'
-    assert module.y_name.value == 'MyEnhancedImage'
-    assert module.method.value == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-    assert module.object_size == 17
+    assert numpy.all(actual[4, 11:15] > 0.1)
 
 
 def test_load_v2():
-    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10583
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v2.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:Initial
-Name the output image:EnhancedSpeckles
-Select the operation:Enhance
-Feature size:11
-Feature type:Speckles
-Range of hole sizes:1,10
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedSpeckles
-Name the output image:EnhancedNeurites
-Select the operation:Enhance
-Feature size:9
-Feature type:Neurites
-Range of hole sizes:1,10
-
-EnhanceOrSuppressFeatures:[module_num:3|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedNeurites
-Name the output image:EnhancedDarkHoles
-Select the operation:Enhance
-Feature size:9
-Feature type:Dark holes
-Range of hole sizes:4,11
-
-EnhanceOrSuppressFeatures:[module_num:4|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedDarkHoles
-Name the output image:EnhancedCircles
-Select the operation:Enhance
-Feature size:9
-Feature type:Circles
-Range of hole sizes:4,11
-
-EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedCircles
-Name the output image:Suppressed
-Select the operation:Suppress
-Feature size:13
-Feature type:Circles
-Range of hole sizes:4,11
-"""
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 5
-    for module, (input_name, output_name, operation, feature_size,
-                 feature_type, min_range, max_range) in zip(
-            pipeline.modules(), (
-                    ("Initial", "EnhancedSpeckles", cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE, 11, cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES, 1, 10),
-                    ("EnhancedSpeckles", "EnhancedNeurites", cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE, 9, cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES, 1, 10),
-                    ("EnhancedNeurites", "EnhancedDarkHoles", cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE, 9, cellprofiler.modules.enhanceorsuppressfeatures.E_DARK_HOLES, 4, 11),
-                    ("EnhancedDarkHoles", "EnhancedCircles", cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE, 9, cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES, 4, 11),
-                    ("EnhancedCircles", "Suppressed", cellprofiler.modules.enhanceorsuppressfeatures.SUPPRESS, 13, cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES, 4, 11))):
-        assert module.module_name == 'EnhanceOrSuppressFeatures'
-        assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
+    for (
+        module,
+        (
+            input_name,
+            output_name,
+            operation,
+            feature_size,
+            feature_type,
+            min_range,
+            max_range,
+        ),
+    ) in zip(
+        pipeline.modules(),
+        (
+            (
+                "Initial",
+                "EnhancedSpeckles",
+                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                11,
+                cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES,
+                1,
+                10,
+            ),
+            (
+                "EnhancedSpeckles",
+                "EnhancedNeurites",
+                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                9,
+                cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES,
+                1,
+                10,
+            ),
+            (
+                "EnhancedNeurites",
+                "EnhancedDarkHoles",
+                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                9,
+                cellprofiler.modules.enhanceorsuppressfeatures.E_DARK_HOLES,
+                4,
+                11,
+            ),
+            (
+                "EnhancedDarkHoles",
+                "EnhancedCircles",
+                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                9,
+                cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES,
+                4,
+                11,
+            ),
+            (
+                "EnhancedCircles",
+                "Suppressed",
+                cellprofiler.modules.enhanceorsuppressfeatures.SUPPRESS,
+                13,
+                cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES,
+                4,
+                11,
+            ),
+        ),
+    ):
+        assert module.module_name == "EnhanceOrSuppressFeatures"
+        assert isinstance(
+            module,
+            cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures,
+        )
         assert module.x_name == input_name
         assert module.y_name == output_name
         assert module.method == operation
@@ -1031,172 +1028,136 @@ Range of hole sizes:4,11
 
 
 def test_test_load_v3():
-    data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:10999
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v3.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the input image:DNA
-Name the output image:EnhancedTexture
-Select the operation:Enhance
-Feature size:10
-Feature type:Texture
-Range of hole sizes:1,10
-Smoothing scale:3.5
-Shear angle:45
-Decay:0.90
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
-Select the input image:EnhancedTexture
-Name the output image:EnhancedDIC
-Select the operation:Enhance
-Feature size:10
-Feature type:DIC
-Range of hole sizes:1,10
-Smoothing scale:1.5
-Shear angle:135
-Decay:0.99
-'''
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
+    assert isinstance(
+        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+    )
     assert module.x_name == "DNA"
     assert module.y_name == "EnhancedTexture"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-    assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
+    assert (
+        module.enhance_method
+        == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
+    )
     assert module.smoothing == 3.5
     assert module.object_size == 10
     assert module.hole_size.min == 1
     assert module.hole_size.max == 10
     assert module.angle == 45
-    assert module.decay == .9
-    assert module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+    assert module.decay == 0.9
+    assert (
+        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+    )
 
     module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
+    assert isinstance(
+        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+    )
     assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_DIC
 
 
-def test_01_05_load_v4():
-    data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
-Version:2
-DateRevision:20120516145742
+def test_load_v4():
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v4.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Select the input image:Dendrite
-Name the output image:EnhancedDendrite
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Tubeness
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-Select the input image:Axon
-Name the output image:EnhancedAxon
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Line structures
-'''
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
+    assert isinstance(
+        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+    )
     assert module.x_name == "Dendrite"
     assert module.y_name == "EnhancedDendrite"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-    assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+    assert (
+        module.enhance_method
+        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+    )
     assert module.smoothing == 2.0
     assert module.object_size == 10
     assert module.hole_size.min == 1
     assert module.hole_size.max == 10
     assert module.angle == 0
-    assert module.decay == .95
-    assert module.neurite_choice == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+    assert module.decay == 0.95
+    assert (
+        module.neurite_choice
+        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+    )
 
     module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
-    assert module.neurite_choice == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
+    assert isinstance(
+        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+    )
+    assert (
+        module.neurite_choice
+        == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
+    )
 
 
 def test_load_v5():
-    data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20150414135713
-GitHash:3bad577
-ModuleCount:2
-HasImagePlaneDetails:False
+    with open(
+        "./tests/resources/modules/enhanceorsuppressfeatures/v5.pipeline", "r"
+    ) as fd:
+        data = fd.read()
 
-EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input image:Dendrite
-Name the output image:EnhancedDendrite
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Tubeness
-Speed and accuracy:Slow / circular
-
-EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-Select the input image:Axon
-Name the output image:EnhancedAxon
-Select the operation:Enhance
-Feature size:10
-Feature type:Neurites
-Range of hole sizes:1,10
-Smoothing scale:2.0
-Shear angle:0
-Decay:0.95
-Enhancement method:Line structures
-Speed and accuracy:Fast / hexagonal
-'''
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
         assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
 
     pipeline.add_listener(callback)
-    pipeline.load(StringIO.StringIO(data))
+    pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
+    assert isinstance(
+        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+    )
     assert module.x_name == "Dendrite"
     assert module.y_name == "EnhancedDendrite"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-    assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+    assert (
+        module.enhance_method
+        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+    )
     assert module.smoothing == 2.0
     assert module.object_size == 10
     assert module.hole_size.min == 1
     assert module.hole_size.max == 10
     assert module.angle == 0
-    assert module.decay == .95
-    assert module.neurite_choice == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
-    assert module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+    assert module.decay == 0.95
+    assert (
+        module.neurite_choice
+        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+    )
+    assert (
+        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+    )
 
     module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
-    assert module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
+    assert isinstance(
+        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+    )
+    assert (
+        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
+    )

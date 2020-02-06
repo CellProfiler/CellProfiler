@@ -1,0 +1,12 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:8905
+
+MeasureColocalization:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+Hidden:2
+Hidden:2
+Select an image to measure:DNA
+Select an image to measure:Cytoplasm
+Select where to measure correlation:Both
+Select an object to measure:Nuclei
+Select an object to measure:Cells

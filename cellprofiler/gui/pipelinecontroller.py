@@ -3662,7 +3662,7 @@ class PipelineController(object):
         key, image_numbers = self.__groupings[self.__grouping_index]
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.reset_debug_module()
+        self.debug_init_imageset()
         self.__debug_outlines = {}
 
     def on_debug_choose_group(self, event):

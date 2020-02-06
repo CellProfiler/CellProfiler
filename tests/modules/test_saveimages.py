@@ -1,6 +1,7 @@
 import io
 import os.path
 
+import h5py
 import numpy
 import numpy.random
 import numpy.testing
@@ -492,13 +493,37 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 
     numpy.testing.assert_array_equal(data, volume.pixel_data)
 
-
 @pytest.mark.parametrize(
-    "volume", [cellprofiler.image.Image(image=numpy.ones((100, 100, 5)))]
+    "volume,outshape",
+    [# an yxc image
+    (cellprofiler.image.Image(image=numpy.random.rand(100, 200, 8), dimensions=2),
+        (1, 100, 200, 8)),
+     # an zyx image
+    (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
+        (5, 100, 200, 1)),
+     # an yx image
+    (cellprofiler.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
+        (1, 100, 200, 1)),
+     # an zyxc image
+    (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
+        (5, 100, 200, 8))
+]
 )
-def test_save_5_plus_channel_tiff_uint16(tmpdir, volume, module, workspace):
-    directory = str(tmpdir.mkdir("images"))
+@pytest.mark.parametrize(
+    "bit_depth,dtype,convfun",
+    [
+        (cellprofiler.modules.saveimages.BIT_DEPTH_16, numpy.uint16,
+         skimage.util.img_as_uint),
+        (cellprofiler.modules.saveimages.BIT_DEPTH_8, numpy.uint8,
+         skimage.util.img_as_ubyte),
+        (cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT, numpy.float32,
+         lambda x: x)
 
+]
+)
+def test_save_hdf5_saving(tmpdir, volume, module, workspace,
+                              outshape, bit_depth, dtype, convfun):
+    directory = str(tmpdir.mkdir("images"))
     workspace.image_set.add("example_volume", volume)
 
     module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
@@ -513,18 +538,33 @@ def test_save_5_plus_channel_tiff_uint16(tmpdir, volume, module, workspace):
         cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_H5
 
-    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
+    module.bit_depth.value = bit_depth
 
     module.run(workspace)
 
-    assert os.path.exists(os.path.join(directory, "example_volume.tiff"))
+    assert os.path.exists(os.path.join(directory, "example_volume.h5"))
 
-    data = skimage.io.imread(os.path.join(directory, "example_volume.tiff"))
+    fn = (os.path.join(directory, "example_volume.h5"))
+    data = get_h5_dataset(fn)
+    assert data.dtype == dtype
+    numpy.testing.assert_array_equal(data, numpy.reshape(
+                                     convfun(volume.pixel_data),
+                                     outshape))
 
-    assert data.dtype == numpy.uint16
-
-    numpy.testing.assert_array_equal(
-        data, numpy.transpose(skimage.util.img_as_uint(volume.pixel_data), (2, 0, 1))
-    )
+def get_h5_dataset(fn):
+    """
+    Hdf loading ilastik style is copied from:
+    https://github.com/ilastik/ilastik/blob/master/bin/concatenate-hdf5-volumes.py
+    Return the only dataset in the hdf5 file.
+    If there's more than one, it's an error.
+    """
+    with h5py.File(fn, 'r') as f:
+        dataset_names = []
+        f.visit(dataset_names.append)
+        assert len(dataset_names) == 1, (
+            "Input HDF5 file should have exactly 1 dataset, but {} has {} datasets\n"
+                    .format(f.filename, len(dataset_names)))
+        data = f[dataset_names[0]][:]
+    return data

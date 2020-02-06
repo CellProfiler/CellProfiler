@@ -7,7 +7,6 @@ import time
 import javabridge
 import six
 import six.moves
-import wx
 
 import cellprofiler.gui.help
 import cellprofiler.measurement
@@ -1093,7 +1092,8 @@ not being applied, your choice on this setting may be the culprit.
         def msg(url):
             return "Processing %s" % url
 
-        from bioformats.formatreader import get_omexml_metadata
+        import wx
+        from bioformats.formatreader import get_omexml_metadata~
 
         with wx.ProgressDialog(
             "Extracting metadata",
@@ -1179,6 +1179,7 @@ not being applied, your choice on this setting may be the culprit.
     def update_table(self):
         for group in self.extraction_methods:
             if group.extraction_method == X_AUTOMATIC_EXTRACTION and not group.metadata_autoextracted:
+                    import wx
                     response = wx.MessageBox(
                         "Metadata extraction from file headers is enabled\n"
                         "but as not been performed.\n"

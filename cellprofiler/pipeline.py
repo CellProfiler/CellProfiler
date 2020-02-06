@@ -2438,13 +2438,12 @@ class Pipeline(object):
             )
         self.write_experiment_measurements(m)
 
-        prepare_run_error_detected = [False]
+        prepare_run_error_detected = False
 
-        def on_pipeline_event(pipeline, event, prepare_run_error_detected=None):
-            if prepare_run_error_detected is None:
-                prepare_run_error_detected = prepare_run_error_detected
+        def on_pipeline_event(pipeline, event):
+            global prepare_run_error_detected
             if isinstance(event, PrepareRunErrorEvent):
-                prepare_run_error_detected[0] = True
+                prepare_run_error_detected = True
 
         had_image_sets = False
         with self.PipelineListener(self, on_pipeline_event):
@@ -2456,7 +2455,7 @@ class Pipeline(object):
                     workspace.show_frame(module.show_window)
                     if (
                         not module.prepare_run(workspace)
-                    ) or prepare_run_error_detected[0]:
+                    ) or prepare_run_error_detected:
                         if workspace.measurements.image_set_count > 0:
                             had_image_sets = True
                         self.clear_measurements(workspace.measurements)

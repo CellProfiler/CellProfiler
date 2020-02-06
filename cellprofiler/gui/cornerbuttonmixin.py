@@ -120,7 +120,8 @@ class CornerButtonMixin(object):
                 if hit_code == self.CORNER_HIT_UPDATE:
                     self.fn_clicked()
             self.corner_hitcode = self.CORNER_HIT_NONE
-            corner.ReleaseMouse()
+            if corner.HasCapture():
+                corner.ReleaseMouse()
             corner.Refresh(eraseBackground=False)
 
     def on_corner_motion(self, event):

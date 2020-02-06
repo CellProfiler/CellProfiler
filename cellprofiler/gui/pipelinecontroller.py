@@ -15,7 +15,7 @@ import string
 import sys
 import threading
 import traceback
-from functools import reduce
+from functools import reduce, cmp_to_key
 
 import h5py
 import numpy
@@ -332,6 +332,12 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_run_from_this_module,
             id=cellprofiler.gui.cpframe.ID_DEBUG_RUN_FROM_THIS_MODULE,
+        )
+
+        frame.Bind(
+            wx.EVT_MENU,
+            self.on_step_from_this_module,
+            id=cellprofiler.gui.cpframe.ID_DEBUG_STEP_FROM_THIS_MODULE,
         )
 
         frame.Bind(
@@ -3632,7 +3638,7 @@ class PipelineController(object):
         self.__within_group_index = (image_number_index - 1) % len(image_numbers)
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.reset_debug_module()
+        self.debug_init_imageset()
         self.__debug_outlines = {}
 
     def debug_choose_group(self, index):
@@ -3756,7 +3762,7 @@ class PipelineController(object):
                     cellprofiler.measurement.C_FRAME,
                 )
             ],
-            cmp=feature_cmp,
+            key=cmp_to_key(feature_cmp),
         )
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict(
@@ -3864,7 +3870,7 @@ class PipelineController(object):
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(
-                    self, self.list_ctrl.GetCol
+                    self, self.list_ctrl.GetColumnCount()
                 )
                 super_sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 10)
                 super_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 5)
@@ -3952,6 +3958,13 @@ class PipelineController(object):
         active_module = self.__pipeline_list_view.get_active_module()
         self.__pipeline_list_view.set_current_debug_module(active_module)
         self.on_debug_continue(event)
+
+    def on_step_from_this_module(self, event):
+        active_module = self.__pipeline_list_view.get_active_module()
+        self.__pipeline_list_view.set_current_debug_module(active_module)
+        success = self.do_step(active_module)
+        if success:
+            self.next_debug_module()
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

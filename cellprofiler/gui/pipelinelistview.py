@@ -595,6 +595,7 @@ class PipelineListView(object):
             ID_HELP_MODULE,
             ID_EDIT_ENABLE_MODULE,
             ID_DEBUG_RUN_FROM_THIS_MODULE,
+            ID_DEBUG_STEP_FROM_THIS_MODULE,
         )
 
         if event.EventObject is not self.list_ctrl:
@@ -629,6 +630,10 @@ class PipelineListView(object):
                         menu.Append(
                             ID_DEBUG_RUN_FROM_THIS_MODULE,
                             "&Run from module {}".format(module.module_num),
+                        )
+                        menu.Append(
+                            ID_DEBUG_STEP_FROM_THIS_MODULE,
+                            "&Step from module {}".format(module.module_num),
                         )
             else:
                 self.__controller.populate_edit_menu(menu)

@@ -189,7 +189,7 @@ class HDF5Dict(object):
                     "See http://code.google.com/p/h5py/issues/detail?id=215"
                 )
             name = "%s.h5" % uuid.uuid4()
-            self.hdf5_file = h5py.File(name, driver="core", backing_store=False)
+            self.hdf5_file = h5py.File(name, 'a', driver="core", backing_store=False)
         else:
             self.hdf5_file = h5py.File(self.filename, mode)
         try:
@@ -2166,7 +2166,7 @@ class VStringArray(object):
             if self.data.shape[0] < end:
                 self.data.resize(end, 0)
             if begin != end:
-                self.data[begin:end] = numpy.frombuffer(value, "S1")
+                self.data[begin:end] = numpy.frombuffer(value.encode(), "S1")
 
     def __getitem__(self, idx):
         """Retrieve a single string through the indexing interface.

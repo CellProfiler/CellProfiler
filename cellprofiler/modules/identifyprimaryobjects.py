@@ -1121,6 +1121,8 @@ If "*{NO}*" is selected, the following settings are used:
                     statistics.append(
                         ["Maxima suppression size", "%.1f" % maxima_suppression_size]
                     )
+            else:
+                statistics.append(["Threshold", "%0.3g" % global_threshold])
             workspace.display_data.image = image.pixel_data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.size_excluded_labels = size_excluded_labeled_image

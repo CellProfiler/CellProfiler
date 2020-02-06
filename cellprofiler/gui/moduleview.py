@@ -1150,7 +1150,7 @@ class ModuleView(object):
             if cm.N < 128:
                 j *= int((cm.N + 128) / 128)
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
-            bitmap = wx.BitmapFromBufferRGBA(128, 12, image.tostring())
+            bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tostring())
         except:
             logger.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None
@@ -2171,13 +2171,14 @@ class ModuleView(object):
                 grid = self.CornerButtonGrid(
                     control, name=grid_control_name(v), **v.corner_button
                 )
-            grid.SetTable(TableController(v))
+            data_table = TableController(v)
+            grid.SetTable(data_table)
             grid.Table.bind_to_grid(grid)
         else:
             grid = control.FindWindowByName(grid_control_name(v))
             grid.Table.update_grid()
         grid.ForceRefresh()
-        grid.SetBestFittingSize(v.min_size)
+        grid.SetInitialSize(v.min_size)
         control.AdjustToSize(
             (
                 v.min_size[0] + wx.lib.resizewidget.RW_THICKNESS,
@@ -4484,7 +4485,7 @@ class TableController(wx.grid.GridTableBase):
             )
         field_size = self.column_size[col]
         if len(s) > field_size:
-            half = int(field_size - 3) / 2
+            half = int(field_size - 3) // 2
             s = s[:half] + "..." + s[-half:]
         return s
 

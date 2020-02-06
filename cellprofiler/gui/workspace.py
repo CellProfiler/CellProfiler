@@ -68,6 +68,7 @@ class Workspace(cellprofiler.workspace.Workspace):
             figure = cellprofiler.gui.figure.create_or_find(
                 parent=parent or self.__frame, name=window_name, title=title
             )
+            figure.Title = title
 
         if figure not in self.__windows_used:
             self.__windows_used.append(figure)

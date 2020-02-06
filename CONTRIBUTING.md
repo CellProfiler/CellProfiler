@@ -165,7 +165,7 @@ See the "Installation" subsection of our [Wiki](https://github.com/CellProfiler/
 We strongly encourage contributions with tests. We use [pytest](doc.pytest.org/en/latest/) as our test framework and have designed a set of test fixtures for unit testing CellProfiler modules. To execute the full test suite, run:
 
 ```
-$ python setup.py test
+$ pytest tests
 ```
 
 You can run individual tests by providing the option `-a PATH_TO_TEST_FILE`.
@@ -183,4 +183,5 @@ Once the repository is tagged with the new version, a new version will need to b
 
 ## Building CellProfiler
 
+See our [distribution repository](https://github.com/CellProfiler/distribution) for more information for building CellProfiler on your platform.
 

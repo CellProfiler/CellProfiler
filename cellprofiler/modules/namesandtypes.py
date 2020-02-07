@@ -279,6 +279,11 @@ You can specify how these images should be treated:
       of which consists of a grayscale label matrix. The frames are
       constructed so that objects that overlap are placed in different
       frames.
+      
+Please note that *{LOAD_AS_ILLUMINATION_FUNCTION}* and *{LOAD_AS_OBJECTS}* are
+only available when assigning names to *{ASSIGN_RULES}*. If you'd only like to
+import a single object set, this can be achieved by creating a rule that matches
+all images.
 """.format(
     **{
         "LOAD_AS_COLOR_IMAGE": LOAD_AS_COLOR_IMAGE,
@@ -286,6 +291,7 @@ You can specify how these images should be treated:
         "LOAD_AS_ILLUMINATION_FUNCTION": LOAD_AS_ILLUMINATION_FUNCTION,
         "LOAD_AS_MASK": LOAD_AS_MASK,
         "LOAD_AS_OBJECTS": LOAD_AS_OBJECTS,
+        "ASSIGN_RULES": ASSIGN_RULES,
     }
 )
 

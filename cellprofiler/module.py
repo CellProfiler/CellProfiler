@@ -1266,9 +1266,11 @@ class ObjectProcessing(ImageSegmentation):
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions, subplots=layout
         )
+        cmap = figure.return_cmap()
 
         figure.subplot_imshow_labels(
-            image=workspace.display_data.x_data, title=self.x_name.value, x=0, y=0
+            image=workspace.display_data.x_data, title=self.x_name.value, x=0, y=0,
+            colormap=cmap,
         )
 
         figure.subplot_imshow_labels(
@@ -1277,6 +1279,7 @@ class ObjectProcessing(ImageSegmentation):
             title=self.y_name.value,
             x=1,
             y=0,
+            colormap=cmap,
         )
 
     def get_categories(self, pipeline, object_name):

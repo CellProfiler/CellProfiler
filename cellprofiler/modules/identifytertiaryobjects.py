@@ -384,9 +384,12 @@ but the results will be zero or not-a-number (NaN).
         # and the outlines
         #
         figure.set_subplots((2, 2))
+         
+        cmap = figure.return_cmap()
 
         figure.subplot_imshow_labels(
-            0, 0, primary_labels, self.primary_objects_name.value
+            0, 0, primary_labels, self.primary_objects_name.value,
+            colormap=cmap,
         )
         figure.subplot_imshow_labels(
             1,
@@ -394,6 +397,7 @@ but the results will be zero or not-a-number (NaN).
             secondary_labels,
             self.secondary_objects_name.value,
             sharexy=figure.subplot(0, 0),
+            colormap=cmap,
         )
         figure.subplot_imshow_labels(
             0,
@@ -401,6 +405,7 @@ but the results will be zero or not-a-number (NaN).
             tertiary_labels,
             self.subregion_objects_name.value,
             sharexy=figure.subplot(0, 0),
+            colormap=cmap,
         )
         figure.subplot_imshow_bw(
             1, 1, tertiary_outlines, "Outlines", sharexy=figure.subplot(0, 0)

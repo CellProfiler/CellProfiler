@@ -412,7 +412,6 @@ controls how remaining objects are associated with their predecessors:
     def display(self, workspace, figure):
         """Create an informative display for the module"""
         import matplotlib
-        from cellprofiler.gui.tools import renumber_labels_for_display
 
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
@@ -420,15 +419,14 @@ controls how remaining objects are associated with their predecessors:
         #
         # Create a composition of the final labels and mask
         #
-        final_labels = renumber_labels_for_display(final_labels)
         outlines = outline(original_labels) > 0
 
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm = figure.return_cmap()
         sm = matplotlib.cm.ScalarMappable(cmap=cm)
         #
         # Paint the labels in color
         #
-        image = sm.to_rgba(final_labels)[:, :, :3]
+        image = sm.to_rgba(final_labels, norm=False)[:, :, :3]
         image[final_labels == 0, :] = 0
         #
         # Make the mask a dark gray
@@ -446,7 +444,8 @@ controls how remaining objects are associated with their predecessors:
 
         figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(
-            0, 0, original_labels, title=self.object_name.value
+            0, 0, original_labels, title=self.object_name.value,
+            colormap=sm,
         )
         figure.subplot_imshow_color(
             1,
@@ -454,6 +453,7 @@ controls how remaining objects are associated with their predecessors:
             image,
             title=self.remaining_objects.value,
             sharexy=figure.subplot(0, 0),
+            colormap=sm,
         )
 
     def get_measurement_columns(self, pipeline):

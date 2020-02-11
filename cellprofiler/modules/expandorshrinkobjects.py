@@ -244,9 +244,11 @@ order to keep from breaking up the object or breaking the hole.
         output_objects_segmented = workspace.display_data.output_objects_segmented
 
         figure.set_subplots((2, 1))
+        cmap = figure.return_cmap()
 
         figure.subplot_imshow_labels(
-            0, 0, input_objects_segmented, self.object_name.value
+            0, 0, input_objects_segmented, self.object_name.value,
+            colormap=cmap,
         )
 
         figure.subplot_imshow_labels(
@@ -255,6 +257,7 @@ order to keep from breaking up the object or breaking the hole.
             output_objects_segmented,
             self.output_object_name.value,
             sharexy=figure.subplot(0, 0),
+            colormap=cmap
         )
 
     def do_labels(self, labels):

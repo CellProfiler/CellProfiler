@@ -593,6 +593,7 @@ Enter the power by which you would like to raise the result.
             0,
             workspace.display_data.statistics,
             col_labels=workspace.display_data.col_labels,
+            title="If per-object values were calculated, use an Export module to view their results"
         )
 
     def get_operands(self):

@@ -263,7 +263,9 @@ object at the requested scales.""",
         statistics = workspace.display_data.statistics
         col_labels = workspace.display_data.col_labels
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, statistics, col_labels=col_labels)
+        figure.subplot_table(0, 0, statistics, col_labels=col_labels,
+                             title="If individual objects were measured, use an Export module to view their results"
+                             )
 
     def run_on_image_setting(self, workspace, image):
         assert isinstance(workspace, cpw.Workspace)

@@ -537,12 +537,16 @@ measured and will result in a undefined value in the output file.
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-
+        if self.wants_object_measurements():
+            helptext = "default"
+        else:
+            helptext = None
         figure.subplot_table(
             0,
             0,
             workspace.display_data.statistics,
             col_labels=workspace.display_data.col_labels,
+            title=helptext,
         )
 
     def run_one(self, image_name, object_name, scale, workspace):

@@ -588,6 +588,7 @@ module.""".format(
             0,
             workspace.display_data.statistics,
             col_labels=workspace.display_data.col_labels,
+            title="default",
         )
 
     def perform_measurement(self, workspace, function, object_name, feature_name):

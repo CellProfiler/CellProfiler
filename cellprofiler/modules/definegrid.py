@@ -243,7 +243,7 @@ entering the coordinates of the cells.
         )
 
         self.manual_image = cps.ImageNameSubscriber(
-            "Select the image to display",
+            "Select the image to display when drawing",
             cps.NONE,
             doc="""\
 *(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_MOUSE)s" to define
@@ -571,7 +571,9 @@ first image.
             workspace.image_set.add(self.save_image_name.value, image)
 
     def get_background_image(self, workspace, gridding):
-        if self.display_image_name.value == cps.LEAVE_BLANK:
+        if self.auto_or_manual == AM_MANUAL and self.manual_choice == MAN_MOUSE and gridding is None:
+            image = workspace.image_set.get_image(self.manual_image.value).pixel_data
+        elif self.display_image_name.value == cps.LEAVE_BLANK:
             if gridding is None:
                 return None
             image = np.zeros(

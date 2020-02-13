@@ -710,7 +710,7 @@ first image.
         #    status bar
         #
         figure = matplotlib.figure.Figure()
-        frame = wx.Dialog(wx.GetApp().TopWindow, title="Select grid cells")
+        frame = wx.Dialog(wx.GetApp().TopWindow, title="Select grid cells, image cycle #%d:" % (image_set_number))
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(top_sizer)
         canvas = backend.FigureCanvasWxAgg(frame, -1, figure)

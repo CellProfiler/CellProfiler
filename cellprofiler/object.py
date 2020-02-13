@@ -876,7 +876,7 @@ class Segmentation(object):
         counts = counts[mask]
         if len(counts) == 0:
             dense = numpy.zeros([1] + list(self.shape), labels.dtype)
-            dense[[0] + positional_columns] = labels
+            dense[tuple([0] + positional_columns)] = labels
             return self.__set_dense(dense)
         #
         # There are n * n-1 pairs for each coordinate (n = # labels)

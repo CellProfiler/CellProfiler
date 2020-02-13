@@ -1020,7 +1020,7 @@ requests an object selection.
                 ):
                     result += [assignment.rescale]
                     if assignment.rescale == INTENSITY_MANUAL:
-                        result += [self.manual_rescale]
+                        result += [assignment.manual_rescale]
                 result += [assignment.copy_button]
                 if assignment.can_remove:
                     result += [assignment.remover]

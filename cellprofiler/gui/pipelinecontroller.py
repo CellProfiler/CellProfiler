@@ -3473,7 +3473,7 @@ class PipelineController(object):
 
             def cancel_handler(cancelled=None):
                 if cancelled is None:
-                    cancelled = cancelled
+                    cancelled = []
                 cancelled[0] = True
 
             workspace.cancel_handler = cancel_handler

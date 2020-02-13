@@ -474,7 +474,7 @@ negative as clockwise."""
                 )
             )
             buff = x.astype(np.uint8).tostring()
-            bitmap = wx.BitmapFromBuffer(x.shape[1], x.shape[0], buff)
+            bitmap = wx.Bitmap.FromBuffer(x.shape[1], x.shape[0], buff)
             canvas.SetBitmap(bitmap)
 
         imshow()
@@ -483,12 +483,12 @@ negative as clockwise."""
         #
         dragging = [False]
         initial_angle = [0]
-        hand_cursor = wx.StockCursor(wx.CURSOR_HAND)
-        arrow_cursor = wx.StockCursor(wx.CURSOR_ARROW)
+        hand_cursor = wx.Cursor(wx.CURSOR_HAND)
+        arrow_cursor = wx.Cursor(wx.CURSOR_ARROW)
 
         def get_angle(event):
             center = np.array(canvas.Size) / 2
-            point = np.array(event.GetPositionTuple())
+            point = np.array(event.GetPosition())
             offset = point - center
             return -np.arctan2(offset[1], offset[0]) * 180.0 / np.pi
 

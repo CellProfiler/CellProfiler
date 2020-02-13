@@ -37,7 +37,7 @@ class EditObjectsDialog(wx.Dialog):
     no labels matrix is provided, initially, there are no objects. If there
     is no guide image, a black background is displayed.
 
-    The resutls of EditObjectsDialog are available in the "labels" attribute
+    The results of EditObjectsDialog are available in the "labels" attribute
     if the return code is wx.OK.
     """
 

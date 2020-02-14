@@ -279,7 +279,7 @@ negative as clockwise."""
                 ):
                     angle = d[D_ANGLE]
                 else:
-                    angle = workspace.interaction_request(self, pixel_data)
+                    angle = workspace.interaction_request(self, pixel_data, workspace.measurements.image_set_number)
                 if self.how_often == IO_ONCE:
                     d[D_ANGLE] = angle
             else:
@@ -404,7 +404,7 @@ negative as clockwise."""
                 sharexy=figure.subplot(0, 0),
             )
 
-    def handle_interaction(self, pixel_data):
+    def handle_interaction(self, pixel_data, image_set_number):
         """Run a UI that gets an angle from the user"""
         import wx
 
@@ -430,7 +430,8 @@ negative as clockwise."""
         #
         # Make a dialog box that contains the image
         #
-        dialog = wx.Dialog(None, title="Rotate image")
+        dialog_title = "Rotate image - Cycle #%d:" % (image_set_number)
+        dialog = wx.Dialog(None, title=dialog_title)
         sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(sizer)
         sizer.Add(
@@ -473,7 +474,7 @@ negative as clockwise."""
                 )
             )
             buff = x.astype(np.uint8).tostring()
-            bitmap = wx.BitmapFromBuffer(x.shape[1], x.shape[0], buff)
+            bitmap = wx.Bitmap.FromBuffer(x.shape[1], x.shape[0], buff)
             canvas.SetBitmap(bitmap)
 
         imshow()
@@ -482,12 +483,12 @@ negative as clockwise."""
         #
         dragging = [False]
         initial_angle = [0]
-        hand_cursor = wx.StockCursor(wx.CURSOR_HAND)
-        arrow_cursor = wx.StockCursor(wx.CURSOR_ARROW)
+        hand_cursor = wx.Cursor(wx.CURSOR_HAND)
+        arrow_cursor = wx.Cursor(wx.CURSOR_ARROW)
 
         def get_angle(event):
             center = np.array(canvas.Size) / 2
-            point = np.array(event.GetPositionTuple())
+            point = np.array(event.GetPosition())
             offset = point - center
             return -np.arctan2(offset[1], offset[0]) * 180.0 / np.pi
 

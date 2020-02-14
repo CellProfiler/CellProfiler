@@ -1369,9 +1369,9 @@ class Figure(wx.Frame):
 
         z = image.shape[0]
 
-        vmin = min(image[position * (z - 1) / 8].min() for position in range(9))
+        vmin = min(image[position * (z - 1) // 8].min() for position in range(9))
 
-        vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
+        vmax = max(image[position * (z - 1) // 8].max() for position in range(9))
 
         cmap = colormap
 
@@ -1400,9 +1400,9 @@ class Figure(wx.Frame):
                 else None
             )
 
-            ax.imshow(image[position * (z - 1) / 8], cmap=cmap, norm=norm)
+            ax.imshow(image[position * (z - 1) // 8], cmap=cmap, norm=norm)
 
-            ax.set_xlabel("Z: {:d}".format(position * (z - 1) / 8))
+            ax.set_xlabel("Z: {:d}".format(position * (z - 1) // 8))
 
             self.figure.add_subplot(ax)
 

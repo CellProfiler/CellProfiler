@@ -2720,6 +2720,10 @@ class PipelineController(object):
             % (str(event))
         )
         setting = event.get_setting()
+        if setting == "module_notes":
+            self.__dirty_workspace = True
+            self.set_title()
+            return
         proposed_value = event.get_proposed_value()
         setting.set_value_text(proposed_value)
         module = event.get_module()

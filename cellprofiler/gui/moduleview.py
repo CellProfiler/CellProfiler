@@ -775,6 +775,7 @@ class ModuleView(object):
             if self.__module is not None:
                 notes = self.module_notes_control.GetValue()
                 self.__module.notes = notes.split("\n")
+                self.notify(SettingEditedEvent("module_notes", self.__module, notes, event))
 
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed, self.module_notes_control)
 

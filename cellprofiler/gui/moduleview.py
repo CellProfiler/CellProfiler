@@ -1832,6 +1832,9 @@ class ModuleView(object):
             )
             sizer.Add(absrel_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
 
+            def ignore_mousewheel(event):
+                return
+
             def on_min_change(event, setting=v, control=min_ctrl):
                 if not self.__handle_change:
                     return
@@ -1843,6 +1846,7 @@ class ModuleView(object):
                 self.fit_ctrl(control)
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_min_change, min_ctrl)
+            absrel_ctrl.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
 
             def on_max_change(
                 event, setting=v, control=max_ctrl, absrel_ctrl=absrel_ctrl
@@ -2715,6 +2719,7 @@ class FilterPanelController(object):
             wx.EVT_CHOICE,
             lambda event: self.on_predicate_changed(event, index, address),
         )
+        choice_ctrl.Bind(wx.EVT_MOUSEWHEEL, self.ignore_mousewheel)
         self.add_to_sizer(sizer, choice_ctrl, index, address)
         return choice_ctrl
 
@@ -2832,6 +2837,7 @@ class FilterPanelController(object):
             name=self.anyall_choice_name(address),
         )
         anyall.Bind(wx.EVT_CHOICE, lambda event: self.on_anyall_changed(event, address))
+        anyall.Bind(wx.EVT_MOUSEWHEEL, self.ignore_mousewheel)
         return anyall
 
     def on_anyall_changed(self, event, address):
@@ -2984,6 +2990,9 @@ class FilterPanelController(object):
 
     def static_text_name(self, index, address):
         return "%s_static_text_%d_%s" % (self.key, index, self.saddress(address))
+
+    def ignore_mousewheel(self, event):
+        return
 
 
 class FileCollectionDisplayController(object):

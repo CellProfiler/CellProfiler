@@ -39,7 +39,7 @@ class TreeCheckboxDialog(wx.Dialog):
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)
         root_id = self.tree_ctrl.AddRoot(
-            "All", image_index, selected_image_index, wx.TreeItemData(d)
+            "All", image_index, selected_image_index, d
         )
         self.tree_ctrl.SetItemImage(root_id, image_index, wx.TreeItemIcon_Normal)
         self.tree_ctrl.SetItemImage(
@@ -100,8 +100,7 @@ class TreeCheckboxDialog(wx.Dialog):
 
     def get_item_data(self, item_id):
         x = self.tree_ctrl.GetItemData(item_id)
-        d = x.GetData()
-        return d
+        return x
 
     def on_expanding(self, event):
         """Populate subitems on expansion"""
@@ -125,7 +124,7 @@ class TreeCheckboxDialog(wx.Dialog):
                         d[key] = d1
                     image_index, selected_index = self.img_idx(d1)
                     sub_id = self.tree_ctrl.AppendItem(
-                        item_id, key, image_index, selected_index, wx.TreeItemData(d1)
+                        item_id, key, image_index, selected_index, d1
                     )
                     self.tree_ctrl.SetItemImage(
                         sub_id, image_index, wx.TreeItemIcon_Normal
@@ -144,7 +143,7 @@ class TreeCheckboxDialog(wx.Dialog):
             self.SetCursor(wx.NullCursor)
 
     def on_left_down(self, event):
-        item_id, where = self.tree_ctrl.HitTest(event.Position, wx.TREE_HITTEST_ABOVE)
+        item_id, where = self.tree_ctrl.HitTest(event.Position)
         if where & wx.TREE_HITTEST_ONITEMICON == 0:
             event.Skip()
             return

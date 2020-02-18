@@ -2723,6 +2723,7 @@ class PipelineController(object):
         if setting == "module_notes":
             self.__dirty_workspace = True
             self.set_title()
+            self.__pipeline.edit_module(event.get_module().module_num, False)
             return
         proposed_value = event.get_proposed_value()
         setting.set_value_text(proposed_value)

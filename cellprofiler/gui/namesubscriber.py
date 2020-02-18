@@ -75,10 +75,14 @@ class NameSubscriberComboBox(wx.Panel):
 
         self.combo_dlg.Bind(wx.EVT_COMBOBOX, self.choice_made)
         self.combo_dlg.Bind(wx.EVT_RIGHT_DOWN, self.right_menu)
+        self.combo_dlg.Bind(wx.EVT_MOUSEWHEEL, self.ignore_mousewheel)
         for child in self.combo_dlg.Children:
             # Mac implements read_only combobox as a choice in a child
             child.Bind(wx.EVT_RIGHT_DOWN, self.right_menu)
         self.callbacks = []
+
+    def ignore_mousewheel(self, event):
+        return
 
     def choice_made(self, evt):
         choice = self.orig_choices[self.combo_dlg.GetSelection()]

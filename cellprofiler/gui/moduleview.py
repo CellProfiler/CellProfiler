@@ -857,6 +857,10 @@ class ModuleView(object):
             def callback(event, setting=v, control=control):
                 self.__on_combobox_change(event, setting, control)
 
+            def ignore_mousewheel(event):
+                return
+
+            control.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
             self.__module_panel.Bind(wx.EVT_COMBOBOX, callback, control)
             if style == wx.CB_DROPDOWN:
 
@@ -1176,6 +1180,10 @@ class ModuleView(object):
             def callback(event, setting=v, control=combo):
                 self.__on_combobox_change(event, setting, combo)
 
+            def ignore_mousewheel(event):
+                return
+
+            combo.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
             self.__module_panel.Bind(wx.EVT_COMBOBOX, callback, combo)
         else:
             combo = control.FindWindowByName(combobox_ctrl_name(v))
@@ -2039,7 +2047,11 @@ class ModuleView(object):
                 self.notify(setting_edited_event)
                 self.reset_view()
 
+            def ignore_mousewheel(evt):
+                return
+
             for ctrl in (category_ctrl, feature_ctrl, object_ctrl, scale_ctrl):
+                panel.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
                 panel.Bind(wx.EVT_COMBOBOX, on_change, ctrl)
         else:
             #

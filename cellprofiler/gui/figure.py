@@ -1363,6 +1363,7 @@ class Figure(wx.Frame):
 
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
+        self.figure.set_constrained_layout(False)
 
     def gridshow(
         self, x, y, image, title=None, colormap="gray", colorbar=False, normalize=True

@@ -1596,7 +1596,7 @@ class Figure(wx.Frame):
             subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
             subplot.set_adjustable("box", True)
             subplot.plot([0, 0], list(image.shape[:2]), "k")
-            subplot.set_xlim([-0.5, image.shape[1] - 0.5])
+            subplot.set_xlim([0, image.shape[1]])
             subplot.set_ylim([image.shape[0] - 0.5, -0.5])
             subplot.set_aspect("equal")
 

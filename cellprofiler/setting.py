@@ -503,10 +503,12 @@ class DirectoryPath(Text):
             and self.custom_path.find(r"\g<") != -1
         ):
             raise ValidationError("Metadata not supported for this setting", self)
-        if self.dir_choice == ABSOLUTE_FOLDER_NAME and (
-            (self.custom_path is None) or (len(self.custom_path) == 0)
-        ):
-            raise ValidationError("Please enter a valid path", self)
+        if self.dir_choice == ABSOLUTE_FOLDER_NAME:
+            if self.custom_path is None or len(self.custom_path) == 0:
+                raise ValidationError("Please enter a path", self)
+            elif os.path.join(self.custom_path, self.custom_path) != os.path.join(self.custom_path):
+                # Custom path does not stand alone (path.join removes previous units when adding a full path).
+                raise ValidationError("Please enter a valid, complete path", self)
 
 
 class FilenameText(Text):

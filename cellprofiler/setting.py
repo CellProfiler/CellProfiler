@@ -408,7 +408,7 @@ class DirectoryPath(Text):
         elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
             root_directory = get_default_output_directory()
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
-            root_directory = os.curdir
+            root_directory = get_default_output_directory()
         elif self.dir_choice == URL_FOLDER_NAME:
             root_directory = ""
         elif self.dir_choice == NO_FOLDER_NAME:

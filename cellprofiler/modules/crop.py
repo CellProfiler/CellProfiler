@@ -537,7 +537,6 @@ objects:
             0,
             cropped_pixel_data,
             self.cropped_image_name.value,
-            sharexy=figure.subplot(0, 0),
         )
 
     def get_measurement_columns(self, pipeline):

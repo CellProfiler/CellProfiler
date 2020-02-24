@@ -524,6 +524,17 @@ segmentation.""",
         img = image.pixel_data
         mask = image.mask
         objects = workspace.object_set.get_objects(self.x_name.value)
+        if img.shape != objects.shape:
+            raise ValueError(
+                "This module requires that the input image and object sets are the same size.\n"
+                "The %s image and %s objects are not (%s vs %s)"
+                % (
+                    image_name,
+                    self.x_name.value,
+                    img.shape,
+                    objects.shape,
+                )
+            )
         global_threshold = None
         if self.method == M_DISTANCE_N:
             has_threshold = False

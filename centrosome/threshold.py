@@ -219,6 +219,13 @@ def get_adaptive_threshold(
     # size constraints
     image_size = np.array(image.shape[:2], dtype=int)
     nblocks = image_size // adaptive_window_size
+    if any(n < 2 for n in nblocks):
+        raise ValueError(
+                    "Adaptive window cannot exceed 50%% of an image dimension.\n"
+                    "Window of %dpx is too large for a %sx%s image" % (
+                    adaptive_window_size, image_size[1], image_size[0]
+                    )
+            )
     #
     # Use a floating point block size to apportion the roundoff
     # roughly equally to each block

@@ -439,11 +439,25 @@ Select the measurement value to use as the divisor for the final image.
 
     def stretch(self, input_image):
         data = input_image.pixel_data
-
         mask = input_image.mask
 
-        in_range = (min(data[mask]), max(data[mask]))
+        if len(data.shape) == len(mask.shape) + 1:
+            #Image is multi-channel
+            splitaxis = len(data.shape)-1
+            singlechannels = numpy.split(data, data.shape[-1], splitaxis)
+            newchannels = []
+            for channel in singlechannels:
+                channel = numpy.squeeze(channel, axis=splitaxis)
+                in_range = (min(channel[mask]), max(channel[mask]))
 
+                channelholder = cellprofiler.image.Image(channel, convert=False)
+
+                rescaled = self.rescale(channelholder, in_range)
+                newchannels.append(rescaled)
+            full_rescaled = numpy.stack(newchannels, axis=-1)
+            return full_rescaled
+
+        in_range = (min(data[mask]), max(data[mask]))
         return self.rescale(input_image, in_range)
 
     def manual_input_range(self, input_image, workspace):

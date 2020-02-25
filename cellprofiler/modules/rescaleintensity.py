@@ -428,6 +428,32 @@ Select the measurement value to use as the divisor for the final image.
 
             workspace.display_data.dimensions = input_image.dimensions
 
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions, subplots=(2,1)
+        )
+
+        figure.subplot_imshow(
+            image=workspace.display_data.x_data,
+            title=self.x_name.value,
+            normalize=False,
+            colormap="gray",
+            x=0,
+            y=0,
+        )
+
+        figure.subplot_imshow(
+            image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
+            title=self.y_name.value,
+            colormap="gray",
+            x=1,
+            y=0,
+        )
+
+
     def rescale(self, image, in_range, out_range=(0.0, 1.0)):
         data = 1.0 * image.pixel_data
 

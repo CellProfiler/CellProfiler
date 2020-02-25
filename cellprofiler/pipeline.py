@@ -2357,9 +2357,10 @@ class Pipeline(object):
                 image_set = m
                 object_set = cellprofiler.object.ObjectSet()
                 old_providers = list(image_set.providers)
+                grid_set = {}
                 for module in pipeline.modules():
                     w = cellprofiler.workspace.Workspace(
-                        self, module, image_set, object_set, m, image_set_list
+                        self, module, image_set, object_set, m, image_set_list, grids=grid_set
                     )
                     if module == stop_module:
                         yield w
@@ -2369,6 +2370,7 @@ class Pipeline(object):
                         break
                     else:
                         self.run_module(module, w)
+                        grid_set = w._Workspace__grid
                     if progress_dialog is not None:
                         should_continue, skip = progress_dialog.Update(i + 1)
                         if not should_continue:

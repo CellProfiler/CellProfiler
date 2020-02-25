@@ -450,6 +450,7 @@ Select the measurement value to use as the divisor for the final image.
             sharexy=figure.subplot(0, 0),
             title=self.y_name.value,
             colormap="gray",
+            normalize=False,
             x=1,
             y=0,
         )

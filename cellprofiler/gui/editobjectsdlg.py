@@ -224,7 +224,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
         temp = cellprofiler.object.Objects()
-        temp.ijv = self.last_ijv
+        temp.set_ijv(self.last_ijv, shape=self.shape)
         self.labels = [l for l, c in temp.get_labels()]
         self.init_labels()
         #

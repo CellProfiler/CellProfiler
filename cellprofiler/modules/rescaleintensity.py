@@ -84,7 +84,8 @@ There are a number of options for rescaling the input image:
 -  *%(M_STRETCH)s:* Find the minimum and maximum values within the
    unmasked part of the image (or the whole image if there is no mask)
    and rescale every pixel so that the minimum has an intensity of zero
-   and the maximum has an intensity of one.
+   and the maximum has an intensity of one. If performed on color images
+   each channel will be considered separately.
 -  *%(M_MANUAL_INPUT_RANGE)s:* Pixels are scaled from an original range
    (which you provide) to the range 0 to 1. Options are
    available to handle values outside of the original range.

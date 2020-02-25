@@ -75,7 +75,7 @@ measurements, see *Help > General Help > How Measurements Are Named*.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          YES
 ============ ============ ===============
 
 See also

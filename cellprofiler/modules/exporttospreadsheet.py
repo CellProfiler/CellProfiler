@@ -16,7 +16,7 @@ or several files, as requested.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          YES
 ============ ============ ===============
 
 Using metadata tags for output

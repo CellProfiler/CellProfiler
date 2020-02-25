@@ -364,7 +364,8 @@ class Figure(wx.Frame):
         self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
-        self.figure = matplotlib.pyplot.Figure()
+        self.figure = matplotlib.pyplot.Figure(constrained_layout=True)
+        self.figure.set_constrained_layout_pads(w_pad=0.1, h_pad=0.05, wspace=0, hspace=0)
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(
             self, -1, self.figure
         )
@@ -941,6 +942,7 @@ class Figure(wx.Frame):
         else:
             if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
+                self.gridspec = matplotlib.gridspec.GridSpec(subplots[1], subplots[0], figure=self.figure)
             else:
                 self.set_grids(subplots)
 
@@ -957,13 +959,17 @@ class Figure(wx.Frame):
         """
         if self.dimensions == 3:
             return None
-
         if not self.subplots[x, y]:
-            rows, cols = self.subplots.shape
-
-            plot = self.figure.add_subplot(
-                cols, rows, x + y * rows + 1, sharex=sharex, sharey=sharey
-            )
+            if self.gridspec:
+                # Add the plot to a premade subplot layout
+                plot = self.figure.add_subplot(
+                    self.gridspec[y,x], sharex=sharex, sharey=sharey,
+                )
+            else:
+                rows, cols = self.subplots.shape
+                plot = self.figure.add_subplot(
+                    cols, rows, x + y * rows + 1, sharex=sharex, sharey=sharey
+                )
 
             self.subplots[x, y] = plot
 
@@ -1357,6 +1363,7 @@ class Figure(wx.Frame):
 
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
+        self.figure.set_constrained_layout(False)
 
     def gridshow(
         self, x, y, image, title=None, colormap="gray", colorbar=False, normalize=True
@@ -1596,7 +1603,7 @@ class Figure(wx.Frame):
             subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
             subplot.set_adjustable("box", True)
             subplot.plot([0, 0], list(image.shape[:2]), "k")
-            subplot.set_xlim([-0.5, image.shape[1] - 0.5])
+            subplot.set_xlim([0, image.shape[1]])
             subplot.set_ylim([image.shape[0] - 0.5, -0.5])
             subplot.set_aspect("equal")
 

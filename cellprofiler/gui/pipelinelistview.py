@@ -671,7 +671,7 @@ class PipelineListView(object):
         try:
             result = drop_source.DoDragDrop(wx.Drag_AllowMove)
             self.drag_underway = False
-            if result == wx.DragMove:
+            if result in (wx.DragMove, wx.DragCopy):
                 for identifier in selected_module_ids:
                     for module in self.__pipeline.modules(False):
                         if module.id == identifier:

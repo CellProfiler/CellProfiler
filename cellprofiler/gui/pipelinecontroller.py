@@ -2737,7 +2737,7 @@ class PipelineController(object):
             % (str(event))
         )
         setting = event.get_setting()
-        if setting == "module_notes":
+        if isinstance(setting, str) and setting == "module_notes":
             self.__dirty_workspace = True
             self.set_title()
             self.__pipeline.edit_module(event.get_module().module_num, False)

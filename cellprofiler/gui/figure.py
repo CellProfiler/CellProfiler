@@ -2136,9 +2136,9 @@ class Figure(wx.Frame):
 
         if title is not None:
             if title == "default":
-                title = "Aggregated results, use an Export module for per-object measurements"
+                title = "Per-image means, use an Export module for per-object measurements"
             elif title == "short":
-                title = "Aggregated results"
+                title = "Per-image means"
             ystart += 0.1
             axes = self.subplot(x, y)
             self.figure.tight_layout()

@@ -858,6 +858,10 @@ class ModuleView(object):
             def callback(event, setting=v, control=control):
                 self.__on_combobox_change(event, setting, control)
 
+            def ignore_mousewheel(event):
+                return
+
+            control.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
             self.__module_panel.Bind(wx.EVT_COMBOBOX, callback, control)
             if style == wx.CB_DROPDOWN:
 
@@ -1177,6 +1181,10 @@ class ModuleView(object):
             def callback(event, setting=v, control=combo):
                 self.__on_combobox_change(event, setting, combo)
 
+            def ignore_mousewheel(event):
+                return
+
+            combo.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
             self.__module_panel.Bind(wx.EVT_COMBOBOX, callback, combo)
         else:
             combo = control.FindWindowByName(combobox_ctrl_name(v))
@@ -1825,6 +1833,9 @@ class ModuleView(object):
             )
             sizer.Add(absrel_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
 
+            def ignore_mousewheel(event):
+                return
+
             def on_min_change(event, setting=v, control=min_ctrl):
                 if not self.__handle_change:
                     return
@@ -1836,6 +1847,7 @@ class ModuleView(object):
                 self.fit_ctrl(control)
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_min_change, min_ctrl)
+            absrel_ctrl.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
 
             def on_max_change(
                 event, setting=v, control=max_ctrl, absrel_ctrl=absrel_ctrl
@@ -2040,7 +2052,11 @@ class ModuleView(object):
                 self.notify(setting_edited_event)
                 self.reset_view()
 
+            def ignore_mousewheel(evt):
+                return
+
             for ctrl in (category_ctrl, feature_ctrl, object_ctrl, scale_ctrl):
+                panel.Bind(wx.EVT_MOUSEWHEEL, ignore_mousewheel)
                 panel.Bind(wx.EVT_COMBOBOX, on_change, ctrl)
         else:
             #
@@ -2704,6 +2720,7 @@ class FilterPanelController(object):
             wx.EVT_CHOICE,
             lambda event: self.on_predicate_changed(event, index, address),
         )
+        choice_ctrl.Bind(wx.EVT_MOUSEWHEEL, self.ignore_mousewheel)
         self.add_to_sizer(sizer, choice_ctrl, index, address)
         return choice_ctrl
 
@@ -2821,6 +2838,7 @@ class FilterPanelController(object):
             name=self.anyall_choice_name(address),
         )
         anyall.Bind(wx.EVT_CHOICE, lambda event: self.on_anyall_changed(event, address))
+        anyall.Bind(wx.EVT_MOUSEWHEEL, self.ignore_mousewheel)
         return anyall
 
     def on_anyall_changed(self, event, address):
@@ -2973,6 +2991,9 @@ class FilterPanelController(object):
 
     def static_text_name(self, index, address):
         return "%s_static_text_%d_%s" % (self.key, index, self.saddress(address))
+
+    def ignore_mousewheel(self, event):
+        return
 
 
 class FileCollectionDisplayController(object):

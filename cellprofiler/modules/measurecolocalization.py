@@ -397,8 +397,12 @@ Select the objects to be measured.""",
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
+        if self.wants_objects():
+            helptext = "default"
+        else:
+            helptext = None
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, statistics, workspace.display_data.col_labels)
+        figure.subplot_table(0, 0, statistics, workspace.display_data.col_labels, title=helptext)
 
     def run_image_pair_images(self, workspace, first_image_name, second_image_name):
         """Calculate the correlation between the pixels of two images"""

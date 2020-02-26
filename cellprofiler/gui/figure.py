@@ -2114,6 +2114,7 @@ class Figure(wx.Frame):
         row_labels=None,
         n_cols=1,
         n_rows=1,
+        title=None,
         **kwargs,
     ):
         """Put a table into a subplot
@@ -2139,6 +2140,18 @@ class Figure(wx.Frame):
         height = float(n_rows) / float(ny)
         cw, ch = self.figure.canvas.GetSize()
         ctrl = wx.grid.Grid(self.figure.canvas)
+
+        if title is not None:
+            if title == "default":
+                title = "Per-image means, use an Export module for per-object measurements"
+            elif title == "short":
+                title = "Per-image means"
+            ystart += 0.1
+            axes = self.subplot(x, y)
+            self.figure.tight_layout()
+            axes.axis('off')
+            axes.annotate(title, xy=(0.5, 1.0), ha='center', va='top', fontsize=9)
+
         self.widgets.append(
             (xstart, ystart, width, height, wx.ALIGN_CENTER, wx.ALIGN_CENTER, ctrl)
         )

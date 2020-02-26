@@ -762,9 +762,14 @@ be selected in a later **SaveImages** or other module.
 
         n_horiz = int(numpy.ceil(float(n_plots) / n_vert))
 
+        if len(self.heatmaps) > 0:
+            helptext = "short"
+        else:
+            helptext = "default"
+
         figure.set_subplots((n_horiz, n_vert))
 
-        figure.subplot_table(0, 0, stats, col_labels=header)
+        figure.subplot_table(0, 0, stats, col_labels=header, title=helptext)
 
         idx = 1
 

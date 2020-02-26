@@ -695,6 +695,7 @@ Select the objects whose intensities you want to measure.""",
             0,
             workspace.display_data.statistics,
             col_labels=workspace.display_data.col_labels,
+            title="default",
         )
 
     def volumetric(self):

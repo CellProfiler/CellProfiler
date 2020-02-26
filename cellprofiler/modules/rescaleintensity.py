@@ -13,6 +13,11 @@ texture measurements derived from images that have been rescaled because
 certain options for this module do not preserve the relative intensities
 from image to image.
 
+As this module rescales data it will not attempt to normalize displayed previews
+(as this could appear to undo the scaling). As a result images rescaled
+to large ranges may appear washed out. To normalize values for viewing,
+right-click an image and choose an image contrast transform.
+
 |
 
 ============ ============ ===============

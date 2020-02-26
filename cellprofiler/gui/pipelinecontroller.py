@@ -2598,12 +2598,19 @@ class PipelineController(object):
 
         event - an UpdateUIEvent for the item
         """
+        num_modules = len(self.__pipeline_list_view.get_selected_modules())
         active_module = self.__pipeline_list_view.get_active_module()
-        if active_module is not None:
+        if num_modules > 1:
             event.SetText(
-                "Disable module {}".format(active_module.module_num)
+                "Disable selected modules ({})".format(num_modules)
+                if self.__pipeline_list_view.get_selected_modules()[0].enabled
+                else "Enable selected modules ({})".format(num_modules)
+            )
+        elif active_module is not None:
+            event.SetText(
+                "Disable {} (#{})".format(active_module.module_name, active_module.module_num)
                 if active_module.enabled
-                else "Enable module {}".format(active_module.module_num)
+                else "Enable {} (#{})".format(active_module.module_name, active_module.module_num)
             )
         if active_module is None or active_module.is_input_module():
             event.Enable(False)
@@ -2613,6 +2620,16 @@ class PipelineController(object):
     def on_module_enable(self, event):
         """Toggle the active module's enable state"""
         active_module = self.__pipeline_list_view.get_active_module()
+        selected_modules = self.__pipeline_list_view.get_selected_modules()
+        if len(selected_modules) > 1:
+            if selected_modules[0].enabled:
+                for module in selected_modules:
+                    self.__pipeline.disable_module(module)
+            else:
+                for module in selected_modules:
+                    self.__pipeline.enable_module(module)
+            return
+
         if active_module is None:
             logger.warn(
                 "User managed to fire the enable/disable module event and no module was active"

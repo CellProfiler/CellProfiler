@@ -687,23 +687,23 @@ class CPFrame(wx.Frame):
         self.menu_edit.AppendSeparator()
         self.menu_edit.Append(
             ID_EDIT_MOVE_UP,
-            "Move Module &Up",
-            "Move module toward the start of the pipeline",
+            "Move Selected Modules &Up",
+            "Move selected modules toward the start of the pipeline",
         )
         self.menu_edit.Append(
             ID_EDIT_MOVE_DOWN,
-            "Move Module &Down",
-            "Move module toward the end of the pipeline",
+            "Move Selected Modules &Down",
+            "Move selected modules toward the end of the pipeline",
         )
         self.menu_edit.Append(
-            ID_EDIT_DELETE, "&Delete Module", "Delete selected modules"
+            ID_EDIT_DELETE, "&Delete Selected Modules", "Delete selected modules"
         )
         self.menu_edit.Append(
-            ID_EDIT_DUPLICATE, "Duplicate Module", "Duplicate selected modules"
+            ID_EDIT_DUPLICATE, "Duplicate Selected Modules", "Duplicate selected modules"
         )
         self.menu_edit.Append(
             ID_EDIT_ENABLE_MODULE,
-            "Disable Module",
+            "Disable Selected Modules",
             "Disable a module to skip it when running the pipeline",
         )
         self.menu_edit_add_module = wx.Menu()

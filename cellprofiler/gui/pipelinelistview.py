@@ -604,39 +604,54 @@ class PipelineListView(object):
         menu = wx.Menu()
         try:
             module = self.get_active_module()
+            num_modules = len(self.get_selected_modules())
             if self.list_ctrl.active_item is not None:
-                sub_menu = wx.Menu()
-                self.__controller.populate_edit_menu(sub_menu)
-                menu.AppendSubMenu(sub_menu, "&Add")
-                menu.Append(
-                    ID_EDIT_DELETE, "&Delete module {}".format(module.module_num)
-                )
-                menu.Append(
-                    ID_EDIT_DUPLICATE, "Duplicate module {}".format(module.module_num)
-                )
-                menu.Append(
-                    ID_EDIT_ENABLE_MODULE, "Enable module {}".format(module.module_num)
-                )
-                menu.Append(
-                    ID_HELP_MODULE, "&Help for module {}".format(module.module_num)
-                )
-                if self.__debug_mode:
-                    _, active_index = self.get_ctrl_and_index(module)
-                    _, debug_index = self.get_ctrl_and_index(
-                        self.get_current_debug_module()
+                if num_modules == 1:
+                    sub_menu = wx.Menu()
+                    self.__controller.populate_edit_menu(sub_menu)
+                    menu.AppendSubMenu(sub_menu, "&Add")
+                    menu.Append(
+                        ID_EDIT_DELETE, "&Delete {} (#{})".format(module.module_name, module.module_num)
+                    )
+                    menu.Append(
+                        ID_EDIT_DUPLICATE, "Duplicate {} (#{})".format(module.module_name, module.module_num)
+                    )
+                    menu.Append(
+                        ID_EDIT_ENABLE_MODULE, "Enable {} (#{})".format(module.module_name, module.module_num)
+                    )
+                    menu.Append(
+                        ID_HELP_MODULE, "&Help for {} (#{})".format(module.module_name, module.module_num)
+                    )
+                    if self.__debug_mode:
+                        _, active_index = self.get_ctrl_and_index(module)
+                        _, debug_index = self.get_ctrl_and_index(
+                            self.get_current_debug_module()
+                        )
+
+                        if active_index <= debug_index:
+                            menu.Append(
+                                ID_DEBUG_RUN_FROM_THIS_MODULE,
+                                "&Run from {} (#{})".format(module.module_name, module.module_num),
+                            )
+                            menu.Append(
+                                ID_DEBUG_STEP_FROM_THIS_MODULE,
+                                "&Step from {} (#{})".format(module.module_name, module.module_num),
+                            )
+                elif num_modules > 1:
+                    # Multiple modules are selected
+                    menu.Append(
+                        ID_EDIT_DELETE, "&Delete selected modules ({})".format(num_modules)
+                    )
+                    menu.Append(
+                        ID_EDIT_DUPLICATE, "Duplicate selected modules ({})".format(num_modules)
+                    )
+                    menu.Append(
+                        ID_EDIT_ENABLE_MODULE, "Enable selected modules ({})".format(num_modules)
                     )
 
-                    if active_index <= debug_index:
-                        menu.Append(
-                            ID_DEBUG_RUN_FROM_THIS_MODULE,
-                            "&Run from module {}".format(module.module_num),
-                        )
-                        menu.Append(
-                            ID_DEBUG_STEP_FROM_THIS_MODULE,
-                            "&Step from module {}".format(module.module_num),
-                        )
             else:
                 self.__controller.populate_edit_menu(menu)
+
             self.__frame.PopupMenu(menu)
         finally:
             menu.Destroy()

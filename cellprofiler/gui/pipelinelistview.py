@@ -1201,6 +1201,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
         self.Bind(wx.EVT_KILL_FOCUS, self.on_focus_change)
         self.Bind(wx.EVT_SET_FOCUS, self.on_focus_change)
 
+    def AdjustScrollbars(self):
+        self.SetScrollbars(1, self.line_height, self.BestSize[0], len(self.items))
+
     def on_focus_change(self, event):
         self.Refresh(eraseBackground=False)
 

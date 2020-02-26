@@ -469,9 +469,8 @@ Select the measurement value to use as the divisor for the final image.
         data = input_image.pixel_data
         mask = input_image.mask
 
-        if len(data.shape) == len(mask.shape) + 1:
-            #Image is multi-channel
-            splitaxis = len(data.shape)-1
+        if input_image.multichannel:
+            splitaxis = data.ndim - 1
             singlechannels = numpy.split(data, data.shape[-1], splitaxis)
             newchannels = []
             for channel in singlechannels:

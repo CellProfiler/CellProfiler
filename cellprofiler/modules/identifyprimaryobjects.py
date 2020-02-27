@@ -275,7 +275,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 """The number of settings, exclusive of threshold settings"""
-N_SETTINGS = 16
+N_SETTINGS = 18
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -290,6 +290,8 @@ WA_NONE = "None"
 LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
+
+DEFAULT_MAXIMA_COLOR = "Blue"
 
 """Never fill holes"""
 FH_NEVER = "Never"
@@ -319,7 +321,7 @@ SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource(
 
 
 class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
-    variable_revision_number = 13
+    variable_revision_number = 14
 
     category = "Object Processing"
 
@@ -794,7 +796,7 @@ documentation for the previous setting for details.""",
 
         self.maxima_color = cellprofiler.setting.Color(
             "Select maxima color",
-            "Blue",
+            DEFAULT_MAXIMA_COLOR,
             doc="Maxima will be displayed in this color.",
         )
 
@@ -872,10 +874,10 @@ If "*{NO}*" is selected, the following settings are used:
             self.fill_holes,
             self.automatic_smoothing,
             self.automatic_suppression,
-            self.want_plot_maxima,
-            self.maxima_color,
             self.limit_choice,
             self.maximum_object_count,
+            self.want_plot_maxima,
+            self.maxima_color,
             self.use_advanced,
         ]
 
@@ -931,6 +933,15 @@ If "*{NO}*" is selected, the following settings are used:
             setting_values = new_setting_values
 
             variable_revision_number = 13
+
+        if variable_revision_number == 13:
+            new_setting_values = setting_values[: N_SETTINGS - 3]
+            new_setting_values += [cellprofiler.setting.NO, DEFAULT_MAXIMA_COLOR]
+            new_setting_values += setting_values[N_SETTINGS - 3 :]
+
+            setting_values = new_setting_values
+
+            variable_revision_number = 14
 
         threshold_setting_values = setting_values[N_SETTINGS:]
 

@@ -95,7 +95,6 @@ ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT = wx.NewId()
 ID_FILE_PLATEVIEWER = wx.NewId()
 ID_FILE_RUN_MULTIPLE_PIPELINES = wx.NewId()
-ID_FILE_NEW_CP = wx.NewId()
 
 ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
@@ -657,8 +656,6 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
             ID_FILE_RUN_MULTIPLE_PIPELINES, "Run Multiple Pipelines"
         )
-        if os.name == "posix":
-            self.__menu_file.Append(ID_FILE_NEW_CP, "Open a New CP Window")
         self.__menu_file.Append(
             ID_FILE_RESTART,
             "Resume Pipeline",
@@ -841,7 +838,6 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_open_image, id=ID_FILE_OPEN_IMAGE)
         self.Bind(wx.EVT_MENU, lambda event: self.Close(), id=ID_FILE_EXIT)
         self.Bind(wx.EVT_MENU, self.__on_widget_inspector, id=ID_FILE_WIDGET_INSPECTOR)
-        self.Bind(wx.EVT_MENU, self.__on_new_cp, id=ID_FILE_NEW_CP)
 
         self.Bind(wx.EVT_MENU, self.on_cut, id=wx.ID_CUT)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_cut_ui, id=wx.ID_CUT)
@@ -1102,15 +1098,6 @@ class CPFrame(wx.Frame):
 
     def __on_close_all(self, event):
         cellprofiler.gui.figure.close_all(self)
-
-    @staticmethod
-    def __on_new_cp(event):
-        import os
-
-        if not hasattr(sys, "frozen"):
-            os.system("open CellProfiler_python.command")
-        else:
-            os.system("open -na CellProfiler.app")
 
     def __on_help_path_list(self, event):
         import cellprofiler.gui.htmldialog

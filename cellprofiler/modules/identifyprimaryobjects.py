@@ -1549,7 +1549,7 @@ If "*{NO}*" is selected, the following settings are used:
                     labels=[border_excluded_labeled_image],
                 ),
             ]
-            if self.want_plot_maxima:
+            if self.unclump_method != UN_NONE and self.watershed_method != WA_NONE and self.want_plot_maxima:
                 # Generate static colormap for alpha overlay
                 from matplotlib.colors import ListedColormap
                 cmap = ListedColormap(self.maxima_color.value)

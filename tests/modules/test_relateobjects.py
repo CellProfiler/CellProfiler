@@ -40,7 +40,7 @@ class TestRelateObjects(unittest.TestCase):
                     ]
 
             module = FakeModule()
-            module.module_num = 1
+            module.set_module_num(1)
             pipeline.add_module(module)
         module = cellprofiler.modules.relateobjects.Relate()
         module.x_name.value = PARENT_OBJECTS
@@ -94,7 +94,7 @@ class TestRelateObjects(unittest.TestCase):
             for object_name in object_names
         ]
         columns = [
-            x 
+            x
             for x in module.get_measurement_columns(pipeline)
             if x[0] != cellprofiler.measurement.IMAGE
         ]
@@ -294,262 +294,221 @@ class TestRelateObjects(unittest.TestCase):
             cellprofiler.modules.relateobjects.D_BOTH
         )
         module.run(workspace)
-        features_and_columns_match(workspace)
+        self.features_and_columns_match(workspace)
         meas = workspace.measurements
-        for feature in (
-            cellprofiler.modules.relateobjects.FF_CENTROID,
-            cellprofiler.modules.relateobjects.FF_MINIMUM,
-        ):
-            m = feature % PARENT_OBJECTS
-            v = meas.get_current_measurement(CHILD_OBJECTS, m)
-            assert len(v) == n
-            if n > 0:
-                assert numpy.all(numpy.isnan(v))
-
-
-def test_distance_centroids():
-    """Check centroid-centroid distance calculation"""
-    i, j = numpy.mgrid[0:14, 0:30]
-    parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
-    # Centers should be at i=3 and j=7
-    parent_centers = numpy.array([[3, 7], [10, 7], [3, 22], [10, 22]], float)
-    child_labels = numpy.zeros(i.shape)
-    numpy.random.seed(0)
-    # Take 12 random points and label them
-    child_centers = numpy.random.permutation(numpy.prod(i.shape))[:12]
-    child_centers = numpy.vstack(
-        (i.flatten()[child_centers], j.flatten()[child_centers])
-    )
-    child_labels[child_centers[0], child_centers[1]] = numpy.arange(1, 13)
-    parent_indexes = parent_labels[child_centers[0], child_centers[1]] - 1
-    expected = numpy.sqrt(
-        numpy.sum(
-            (parent_centers[parent_indexes, :] - child_centers.transpose()) ** 2, 1
+        v = meas.get_current_measurement(
+            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
         )
-    )
+        assert v.shape[0] == 12
+        assert numpy.all(numpy.abs(v - expected) < 0.0001)
 
-    workspace, module = make_workspace(parent_labels, child_labels)
-    assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
-    module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_CENTROID
-    )
-    module.run(workspace)
-    features_and_columns_match(workspace)
-    meas = workspace.measurements
-    v = meas.get_current_measurement(
-        CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
-    )
-    assert v.shape[0] == 12
-    assert numpy.all(numpy.abs(v - expected) < 0.0001)
+    def test_distance_minima(self):
+        parents = numpy.zeros((11, 11), dtype=numpy.uint8)
 
+        children = numpy.zeros_like(parents)
 
-def test_distance_minima():
-    parents = numpy.zeros((11, 11), dtype=numpy.uint8)
+        parents[1:10, 1:10] = 1
 
-    children = numpy.zeros_like(parents)
+        children[2:3, 2:3] = 1
 
-    parents[1:10, 1:10] = 1
+        children[3:8, 3:8] = 2
 
-    children[2:3, 2:3] = 1
+        workspace, module = self.make_workspace(parents, children)
 
-    children[3:8, 3:8] = 2
-
-    workspace, module = make_workspace(parents, children)
-
-    module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_MINIMUM
-    )
-
-    module.run(workspace)
-
-    expected = [1, 4]
-
-    actual = workspace.measurements.get_current_measurement(
-        CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
-    )
-
-    numpy.testing.assert_array_equal(actual, expected)
-
-
-def test_means_of_distances():
-    #
-    # Regression test of issue #1409
-    #
-    # Make sure means of minimum and mean distances of children
-    # are recorded properly
-    #
-    i, j = numpy.mgrid[0:14, 0:30]
-    #
-    # Make the objects different sizes to exercise more code
-    #
-    parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
-    child_labels = numpy.zeros(i.shape)
-    numpy.random.seed(0)
-    # Take 12 random points and label them
-    child_centers = numpy.random.permutation(numpy.prod(i.shape))[:12]
-    child_centers = numpy.vstack(
-        (i.flatten()[child_centers], j.flatten()[child_centers])
-    )
-    child_labels[child_centers[0], child_centers[1]] = numpy.arange(1, 13)
-    parent_centers = numpy.array([[3, 7], [10, 7], [3, 22], [10, 22]], float)
-    parent_indexes = parent_labels[child_centers[0], child_centers[1]] - 1
-    expected = numpy.sqrt(
-        numpy.sum(
-            (parent_centers[parent_indexes, :] - child_centers.transpose()) ** 2, 1
+        module.find_parent_child_distances.value = (
+            cellprofiler.modules.relateobjects.D_MINIMUM
         )
-    )
 
-    workspace, module = make_workspace(parent_labels, child_labels)
-    assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
-    module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_CENTROID
-    )
-    module.wants_per_parent_means.value = True
-    mnames = module.get_measurements(
-        workspace.pipeline,
-        PARENT_OBJECTS,
-        "_".join((cellprofiler.modules.relateobjects.C_MEAN, CHILD_OBJECTS)),
-    )
-    assert cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
-    feat_mean = cellprofiler.modules.relateobjects.FF_MEAN % (
-        CHILD_OBJECTS,
-        cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
-    )
-    mcolumns = module.get_measurement_columns(workspace.pipeline)
-    assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
-    m = workspace.measurements
-    m[CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, 1] = child_centers[1]
-    m[CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, 1] = child_centers[0]
-    module.run(workspace)
+        module.run(workspace)
 
-    v = m[PARENT_OBJECTS, feat_mean, 1]
+        expected = [1, 4]
 
-    plabel = m[
-        CHILD_OBJECTS, "_".join((cellprofiler.measurement.C_PARENT, PARENT_OBJECTS)), 1
-    ]
+        actual = workspace.measurements.get_current_measurement(
+            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+        )
 
-    assert len(v) == 4
-    for idx in range(4):
-        if numpy.any(plabel == idx + 1):
-            assert round(abs(v[idx] - numpy.mean(expected[plabel == idx + 1])), 4) == 0
+        numpy.testing.assert_array_equal(actual, expected)
 
 
-def test_calculate_centroid_distances_volume():
-    parents = numpy.zeros((9, 11, 11), dtype=numpy.uint8)
+    def test_means_of_distances(self):
+        #
+        # Regression test of issue #1409
+        #
+        # Make sure means of minimum and mean distances of children
+        # are recorded properly
+        #
+        i, j = numpy.mgrid[0:14, 0:30]
+        #
+        # Make the objects different sizes to exercise more code
+        #
+        parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
+        child_labels = numpy.zeros(i.shape)
+        numpy.random.seed(0)
+        # Take 12 random points and label them
+        child_centers = numpy.random.permutation(numpy.prod(i.shape))[:12]
+        child_centers = numpy.vstack(
+            (i.flatten()[child_centers], j.flatten()[child_centers])
+        )
+        child_labels[child_centers[0], child_centers[1]] = numpy.arange(1, 13)
+        parent_centers = numpy.array([[3, 7], [10, 7], [3, 22], [10, 22]], float)
+        parent_indexes = parent_labels[child_centers[0], child_centers[1]] - 1
+        expected = numpy.sqrt(
+            numpy.sum(
+                (parent_centers[parent_indexes, :] - child_centers.transpose()) ** 2, 1
+            )
+        )
 
-    children = numpy.zeros_like(parents)
+        workspace, module = self.make_workspace(parent_labels, child_labels)
+        assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
+        module.find_parent_child_distances.value = (
+            cellprofiler.modules.relateobjects.D_CENTROID
+        )
+        module.wants_per_parent_means.value = True
+        mnames = module.get_measurements(
+            workspace.pipeline,
+            PARENT_OBJECTS,
+            "_".join((cellprofiler.modules.relateobjects.C_MEAN, CHILD_OBJECTS)),
+        )
+        assert cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
+        feat_mean = cellprofiler.modules.relateobjects.FF_MEAN % (
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
+        )
+        mcolumns = module.get_measurement_columns(workspace.pipeline)
+        assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
+        m = workspace.measurements
+        m[CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_X, 1] = child_centers[1]
+        m[CHILD_OBJECTS, cellprofiler.measurement.M_LOCATION_CENTER_Y, 1] = child_centers[0]
+        module.run(workspace)
 
-    k, i, j = numpy.mgrid[0:9, 0:11, 0:11]
+        v = m[PARENT_OBJECTS, feat_mean, 1]
 
-    parents[(k - 4) ** 2 + (i - 5) ** 2 + (j - 5) ** 2 <= 16] = 1
+        plabel = m[
+            CHILD_OBJECTS, "_".join((cellprofiler.measurement.C_PARENT, PARENT_OBJECTS)), 1
+        ]
 
-    children[(k - 3) ** 2 + (i - 3) ** 2 + (j - 3) ** 2 <= 4] = 1
-
-    children[(k - 4) ** 2 + (i - 7) ** 2 + (j - 7) ** 2 <= 4] = 2
-
-    workspace, module = make_workspace(parents, children)
-
-    module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_CENTROID
-    )
-
-    module.run(workspace)
-
-    expected = [3, numpy.sqrt(8)]
-
-    actual = workspace.measurements.get_current_measurement(
-        CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
-    )
-
-    numpy.testing.assert_array_equal(actual, expected)
-
-
-def test_calculate_minimum_distances_volume():
-    parents = numpy.zeros((9, 11, 11), dtype=numpy.uint8)
-
-    children = numpy.zeros_like(parents)
-
-    parents[1:8, 1:10, 1:10] = 1
-
-    children[3:6, 2:3, 2:3] = 1
-
-    children[4:7, 3:8, 3:8] = 2
-
-    workspace, module = make_workspace(parents, children)
-
-    module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_MINIMUM
-    )
-
-    module.run(workspace)
-
-    expected = [1, 2]
-
-    actual = workspace.measurements.get_current_measurement(
-        CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
-    )
-
-    numpy.testing.assert_array_equal(actual, expected)
+        assert len(v) == 4
+        for idx in range(4):
+            if numpy.any(plabel == idx + 1):
+                assert round(abs(v[idx] - numpy.mean(expected[plabel == idx + 1])), 4) == 0
 
 
-def test_relate_zeros_with_step_parent():
-    # https://github.com/CellProfiler/CellProfiler/issues/2441
-    parents = numpy.zeros((10, 10), dtype=numpy.uint8)
+    def test_calculate_centroid_distances_volume(self):
+        parents = numpy.zeros((9, 11, 11), dtype=numpy.uint8)
 
-    children = numpy.zeros_like(parents)
+        children = numpy.zeros_like(parents)
 
-    step_parents = numpy.zeros_like(parents)
+        k, i, j = numpy.mgrid[0:9, 0:11, 0:11]
 
-    step_parents_object = cellprofiler.object.Objects()
+        parents[(k - 4) ** 2 + (i - 5) ** 2 + (j - 5) ** 2 <= 16] = 1
 
-    step_parents_object.segmented = step_parents
+        children[(k - 3) ** 2 + (i - 3) ** 2 + (j - 3) ** 2 <= 4] = 1
 
-    workspace, module = make_workspace(parents, children)
+        children[(k - 4) ** 2 + (i - 7) ** 2 + (j - 7) ** 2 <= 4] = 2
 
-    workspace.measurements.add_measurement(
-        "Step", cellprofiler.measurement.FF_PARENT % PARENT_OBJECTS, []
-    )
+        workspace, module = self.make_workspace(parents, children)
 
-    module.step_parent_names[0].step_parent_name.value = "Step"
+        module.find_parent_child_distances.value = (
+            cellprofiler.modules.relateobjects.D_CENTROID
+        )
 
-    workspace.object_set.add_objects(step_parents_object, "Step")
+        module.run(workspace)
 
-    module.wants_step_parent_distances.value = True
+        expected = [3, numpy.sqrt(8)]
 
-    module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_MINIMUM
-    )
+        actual = workspace.measurements.get_current_measurement(
+            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
+        )
 
-    module.run(workspace)
+        numpy.testing.assert_array_equal(actual, expected)
 
-    expected = []
 
-    actual = workspace.measurements.get_current_measurement(
-        CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % "Step"
-    )
-    numpy.testing.assert_array_equal(actual, expected)
+    def test_calculate_minimum_distances_volume(self):
+        parents = numpy.zeros((9, 11, 11), dtype=numpy.uint8)
 
-def test_relate_and_make_new_objects(self):
-    '''Relate one parent to one child, but save children as a new set'''
-    parent_labels = numpy.ones((10, 10), int)
-    child_labels = numpy.zeros((10, 10), int)
-    child_labels[3:5, 4:7] = 1
-    workspace, module = self.make_workspace(parent_labels, child_labels)
-    module.wants_child_objects_saved.value = True
-    module.output_child_objects_name.value = 'outputobjects'
-    module.wants_per_parent_means.value = False
-    module.run(workspace)
-    m = workspace.measurements
-    parents_of = m.get_current_measurement(CHILD_OBJECTS,
-                                           "Parent_%s" % PARENT_OBJECTS)
-    self.assertEqual(numpy.product(parents_of.shape), 1)
-    self.assertEqual(parents_of[0], 1)
-    child_count = m.get_current_measurement(PARENT_OBJECTS,
-                                            "Children_%s_Count" %
-                                            CHILD_OBJECTS)
-    self.assertEqual(numpy.product(child_count.shape), 1)
-    self.assertEqual(child_count[0], 1)
-    self.features_and_columns_match(workspace)
+        children = numpy.zeros_like(parents)
+
+        parents[1:8, 1:10, 1:10] = 1
+
+        children[3:6, 2:3, 2:3] = 1
+
+        children[4:7, 3:8, 3:8] = 2
+
+        workspace, module = self.make_workspace(parents, children)
+
+        module.find_parent_child_distances.value = (
+            cellprofiler.modules.relateobjects.D_MINIMUM
+        )
+
+        module.run(workspace)
+
+        expected = [1, 2]
+
+        actual = workspace.measurements.get_current_measurement(
+            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+        )
+
+        numpy.testing.assert_array_equal(actual, expected)
+
+
+    def test_relate_zeros_with_step_parent(self):
+        # https://github.com/CellProfiler/CellProfiler/issues/2441
+        parents = numpy.zeros((10, 10), dtype=numpy.uint8)
+
+        children = numpy.zeros_like(parents)
+
+        step_parents = numpy.zeros_like(parents)
+
+        step_parents_object = cellprofiler.object.Objects()
+
+        step_parents_object.segmented = step_parents
+
+        workspace, module = self.make_workspace(parents, children)
+
+        workspace.measurements.add_measurement(
+            "Step", cellprofiler.measurement.FF_PARENT % PARENT_OBJECTS, []
+        )
+
+        module.step_parent_names[0].step_parent_name.value = "Step"
+
+        workspace.object_set.add_objects(step_parents_object, "Step")
+
+        module.wants_step_parent_distances.value = True
+
+        module.find_parent_child_distances.value = (
+            cellprofiler.modules.relateobjects.D_MINIMUM
+        )
+
+        module.run(workspace)
+
+        expected = []
+
+        actual = workspace.measurements.get_current_measurement(
+            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % "Step"
+        )
+        numpy.testing.assert_array_equal(actual, expected)
+
+    def test_relate_and_make_new_objects(self):
+        '''Relate one parent to one child, but save children as a new set'''
+        parent_labels = numpy.ones((10, 10), int)
+        child_labels = numpy.zeros((10, 10), int)
+        child_labels[3:5, 4:7] = 1
+        workspace, module = self.make_workspace(parent_labels, child_labels)
+        module.wants_child_objects_saved.value = True
+        module.output_child_objects_name.value = 'outputobjects'
+        module.wants_per_parent_means.value = False
+        module.run(workspace)
+        m = workspace.measurements
+        parents_of = m.get_current_measurement(CHILD_OBJECTS,
+                                               "Parent_%s" % PARENT_OBJECTS)
+        self.assertEqual(numpy.product(parents_of.shape), 1)
+        self.assertEqual(parents_of[0], 1)
+        child_count = m.get_current_measurement(PARENT_OBJECTS,
+                                                "Children_%s_Count" %
+                                                CHILD_OBJECTS)
+        self.assertEqual(numpy.product(child_count.shape), 1)
+        self.assertEqual(child_count[0], 1)
+        self.features_and_columns_match(workspace)
 
 
 

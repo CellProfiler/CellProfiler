@@ -27,11 +27,19 @@ import cellprofiler.worker
 import cellprofiler.workspace
 
 if sys.platform.startswith("win") and hasattr(sys, "frozen"):
-    # For Windows builds, if JAVA_HOME is not already set, use the copy of Java packaged with CP
-    # We specify this location by setting 'CP_JAVA_HOME' at install.
+    # For Windows builds, use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
+    # Users can use a custom java installation by removing CP_JAVA_HOME.
     # JAVA_HOME must be set before bioformats import.
-    if "JAVA_HOME" not in os.environ and "CP_JAVA_HOME" in os.environ:
-        os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
+    try:
+        if "CP_JAVA_HOME" in os.environ:
+            os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
+        assert "JAVA_HOME" in os.environ
+    except AssertionError:
+        print("CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
+              "Please set the CP_JAVA_HOME system environment variable.\n"
+              "Visit http://broad.io/cpjava for instructions.")
+        os.system("pause")  # Keep console window open until keypress.
+        os._exit(1)
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"

@@ -325,6 +325,11 @@ class PipelineController(object):
         )
         frame.Bind(
             wx.EVT_MENU,
+            self.on_debug_random_image_group,
+            id=cellprofiler.gui.cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP,
+        )
+        frame.Bind(
+            wx.EVT_MENU,
             self.on_debug_reload,
             id=cellprofiler.gui.cpframe.ID_DEBUG_RELOAD,
         )
@@ -3647,21 +3652,30 @@ class PipelineController(object):
             )
 
     def on_debug_random_image_set(self, event):
-        group_index = (
-            0
-            if len(self.__groupings) == 1
-            else numpy.random.randint(0, len(self.__groupings) - 1, size=1)
-        )
-        keys, image_numbers = self.__groupings[group_index]
+        keys, image_numbers = self.__groupings[self.__grouping_index]
+        numpy.random.seed()
         if len(image_numbers) == 0:
             return
-        numpy.random.seed()
-        image_number_index = numpy.random.randint(1, len(image_numbers), size=1)[0]
-        self.__within_group_index = (image_number_index - 1) % len(image_numbers)
+        elif len(image_numbers) == 1:
+            self.__within_group_index = 0
+        else:
+            self.__within_group_index = numpy.random.randint(0, len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
         self.debug_init_imageset()
         self.__debug_outlines = {}
+
+    def on_debug_random_image_group(self, event):
+        """Choose a group"""
+        if len(self.__groupings) < 2:
+            wx.MessageBox(
+                "There is only one group and it is currently running in test mode",
+                "Random image group",
+            )
+            return
+        numpy.random.seed()
+        group_index = numpy.random.randint(0, len(self.__groupings))
+        self.debug_choose_group(group_index)
 
     def debug_choose_group(self, index):
         self.__grouping_index = index

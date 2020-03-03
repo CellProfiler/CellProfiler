@@ -444,8 +444,6 @@ desired behavior.
         if is_valid:
             if needs_prepare_run:
                 result = self.prepare_run(self.workspace)
-                if not result:
-                    return
             self.update_tables()
 
     def update_tables(self):

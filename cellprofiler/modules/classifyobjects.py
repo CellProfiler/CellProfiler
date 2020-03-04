@@ -852,7 +852,7 @@ example, to be saved by a **SaveImages** module).
         mapping[1:] = np.arange(1, nobjects + 1)
         for i in range(2):
             saved_values = workspace.display_data.saved_values[i]
-            mapping[np.isnan(saved_values)] = 0
+            mapping[1:][np.isnan(saved_values)] = 0
         labels = object_codes[mapping[workspace.display_data.labels]]
         figure.subplot_imshow_labels(0, 1, labels, title=object_name)
         #

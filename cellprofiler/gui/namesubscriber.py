@@ -177,3 +177,88 @@ class NameSubscriberComboBox(wx.Panel):
         self.Refresh()
 
     Value = property(GetValue, SetValue)
+
+class NameSubscriberListBox(wx.Panel):
+    """A list of checkboxes with extra annotation, and a context menu.
+
+    Designed as an alternative to NameSubscriberCombobox, but choices is a list of (Name,
+    Parent, modulenum).
+    """
+
+    def __init__(self, annotation, choices=None, checked="", name=""):
+        wx.Panel.__init__(self, annotation, name=name)
+        if choices is None:
+            choices = []
+        self.checked = checked
+        self.choice_names = self.get_choice_names(choices)
+
+        self.list_dlg = wx.CheckListBox(
+            self,
+            choices=[self.get_choice_label(choice) for choice in choices],
+        )
+        self.SetChecked(self.checked)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.AddStretchSpacer()
+        sizer.Add(self.list_dlg, flag=wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, border=3)
+        sizer.Add((5, 5))
+        sizer.AddStretchSpacer()
+        self.SetSizer(sizer)
+        self.callbacks = []
+        self.list_dlg.Bind(wx.EVT_CHECKLISTBOX, self.choice_made)
+
+    def add_callback(self, cb):
+        self.callbacks.append(cb)
+
+    def choice_made(self, evt):
+        for cb in self.callbacks:
+            cb(evt)
+        self.Refresh()
+        self.checked = self.GetChecked()
+
+    def get_choice_label(self, choice):
+        name, module_name, module_num, is_input_module = choice[:4]
+        if module_name:
+            if is_input_module:
+                end = "(from %s)" % (module_name)
+            else:
+                end = "(from %s #%02d)" % (module_name, module_num)
+        else:
+            end = "(Module Missing!)"
+        whitespace = " "*max(10, (90 - len(name) - len(end)))
+        return "".join((name, whitespace, end))
+
+
+
+    def get_choice_names(self, choices):
+        choice_names = [choice[0] for choice in choices]
+        if self.checked != 'None':
+            for item in self.checked:
+                if item not in choice_names:
+                    choice_names.append(item)
+                    choices.append((item, None, 0, True))
+        return choice_names
+
+    def GetItems(self):
+        return self.list_dlg.GetItems()
+
+    def SetItems(self, choices):
+        self.choice_names = self.get_choice_names(choices)
+        self.list_dlg.SetItems([self.get_choice_label(choice) for choice in choices])
+        # on Mac, changing the items clears the current selection
+        self.SetChecked(self.checked)
+        self.Refresh()
+
+    Items = property(GetItems, SetItems)
+
+    def GetChecked(self):
+        checked_indexes = self.list_dlg.GetCheckedItems()
+        named_items = [self.choice_names[i] for i in checked_indexes]
+        return named_items
+
+    def SetChecked(self, values):
+        if values != "None":
+            selections = [self.choice_names.index(i) for i in values]
+            self.list_dlg.SetCheckedItems(selections)
+        self.Refresh()
+
+    Checked = property(GetChecked, SetChecked)

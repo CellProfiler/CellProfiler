@@ -275,7 +275,7 @@ OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
 """The number of settings, exclusive of threshold settings"""
-N_SETTINGS = 16
+N_SETTINGS = 18
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -290,6 +290,8 @@ WA_NONE = "None"
 LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
+
+DEFAULT_MAXIMA_COLOR = "Blue"
 
 """Never fill holes"""
 FH_NEVER = "Never"
@@ -319,7 +321,7 @@ SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource(
 
 
 class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
-    variable_revision_number = 13
+    variable_revision_number = 14
 
     category = "Object Processing"
 
@@ -773,6 +775,31 @@ This setting limits the number of objects in the image. See the
 documentation for the previous setting for details.""",
         )
 
+        self.want_plot_maxima = cellprofiler.setting.Binary(
+            "Display accepted local maxima?",
+            False,
+            doc="""\
+            *(Used only when distinguishing between clumped objects)*
+
+            Select "*{YES}*" to display detected local maxima on the object outlines plot. This can be
+            helpful for fine-tuning segmentation parameters.
+
+            Local maxima are small cluster of pixels from which objects are 'grown' during segmentation.
+            Each object in a declumped segmentation will have a single maxima.
+            
+            For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
+            If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
+                **{"YES": cellprofiler.setting.YES}
+            ),
+        )
+
+
+        self.maxima_color = cellprofiler.setting.Color(
+            "Select maxima color",
+            DEFAULT_MAXIMA_COLOR,
+            doc="Maxima will be displayed in this color.",
+        )
+
         self.use_advanced = cellprofiler.setting.Binary(
             "Use advanced settings?",
             value=False,
@@ -849,6 +876,8 @@ If "*{NO}*" is selected, the following settings are used:
             self.automatic_suppression,
             self.limit_choice,
             self.maximum_object_count,
+            self.want_plot_maxima,
+            self.maxima_color,
             self.use_advanced,
         ]
 
@@ -904,6 +933,15 @@ If "*{NO}*" is selected, the following settings are used:
             setting_values = new_setting_values
 
             variable_revision_number = 13
+
+        if variable_revision_number == 13:
+            new_setting_values = setting_values[: N_SETTINGS - 3]
+            new_setting_values += [cellprofiler.setting.NO, DEFAULT_MAXIMA_COLOR]
+            new_setting_values += setting_values[N_SETTINGS - 3 :]
+
+            setting_values = new_setting_values
+
+            variable_revision_number = 14
 
         threshold_setting_values = setting_values[N_SETTINGS:]
 
@@ -985,7 +1023,11 @@ If "*{NO}*" is selected, the following settings are used:
                 if not self.automatic_suppression.value:
                     visible_settings += [self.maxima_suppression_size]
 
-                visible_settings += [self.low_res_maxima]
+                visible_settings += [self.low_res_maxima, self.want_plot_maxima]
+
+                if self.want_plot_maxima.value:
+                    visible_settings += [self.maxima_color]
+
             else:  # self.unclump_method == UN_NONE or self.watershed_method == WA_NONE
                 visible_settings = visible_settings[:-2]
 
@@ -1310,13 +1352,13 @@ If "*{NO}*" is selected, the following settings are used:
         # makes the watershed algorithm use FIFO for the pixels which
         # yields fair boundaries when markers compete for pixels.
         #
-        labeled_maxima, object_count = scipy.ndimage.label(
+        self.labeled_maxima, object_count = scipy.ndimage.label(
             maxima_image, numpy.ones((3, 3), bool)
         )
         if self.advanced and self.watershed_method == WA_PROPAGATE:
             watershed_boundaries, distance = centrosome.propagate.propagate(
-                numpy.zeros(labeled_maxima.shape),
-                labeled_maxima,
+                numpy.zeros(self.labeled_maxima.shape),
+                self.labeled_maxima,
                 labeled_image != 0,
                 1.0,
             )
@@ -1327,7 +1369,7 @@ If "*{NO}*" is selected, the following settings are used:
                 else numpy.int32
             )
             markers = numpy.zeros(watershed_image.shape, markers_dtype)
-            markers[labeled_maxima > 0] = -labeled_maxima[labeled_maxima > 0]
+            markers[self.labeled_maxima > 0] = -self.labeled_maxima[self.labeled_maxima > 0]
 
             #
             # Some labels have only one maker in them, some have multiple and
@@ -1507,6 +1549,12 @@ If "*{NO}*" is selected, the following settings are used:
                     labels=[border_excluded_labeled_image],
                 ),
             ]
+            if self.unclump_method != UN_NONE and self.watershed_method != WA_NONE and self.want_plot_maxima:
+                # Generate static colormap for alpha overlay
+                from matplotlib.colors import ListedColormap
+                cmap = ListedColormap(self.maxima_color.value)
+                cplabels.append(dict(name="Detected maxima", labels=[self.labeled_maxima],
+                                     mode="alpha", alpha_value=1, alpha_colormap=cmap))
             title = "%s outlines" % self.y_name.value
             figure.subplot_imshow_grayscale(
                 0, 1, image, title, cplabels=cplabels, sharexy=ax

@@ -658,14 +658,15 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
             ID_FILE_RUN_MULTIPLE_PIPELINES, "Run Multiple Pipelines"
         )
-        if os.name == "posix":
-            self.__menu_file.Append(ID_FILE_NEW_CP, "Open a New CP Window")
         self.__menu_file.Append(
             ID_FILE_RESTART,
             "Resume Pipeline",
             "Resume a pipeline from a saved measurements file.",
         )
         self.__menu_file.AppendSeparator()
+        if sys.platform == "darwin":
+            self.__menu_file.Append(ID_FILE_NEW_CP, "Open A New CP Window")
+            self.__menu_file.AppendSeparator()
         self.__menu_file.Append(
             ID_OPTIONS_PREFERENCES,
             "&Preferences...",
@@ -1113,12 +1114,10 @@ class CPFrame(wx.Frame):
 
     @staticmethod
     def __on_new_cp(event):
-        import os
-
-        if not hasattr(sys, "frozen"):
-            os.system("open CellProfiler_python.command")
+        if hasattr(sys, "frozen"):
+            os.system("open -na /Applications/CellProfiler-{}.app".format(cellprofiler.__version__))
         else:
-            os.system("open -na CellProfiler.app")
+            os.system("cellprofiler")
 
     def __on_help_path_list(self, event):
         import cellprofiler.gui.htmldialog

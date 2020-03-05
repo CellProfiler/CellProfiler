@@ -62,6 +62,7 @@ class Workspace(object):
         frame=None,
         create_new_window=False,
         outlines=None,
+        grids={},
     ):
         """Workspace constructor
 
@@ -88,7 +89,7 @@ class Workspace(object):
         self.__outlines = outlines
         self.__windows_used = []
         self.__create_new_window = create_new_window
-        self.__grid = {}
+        self.__grid = grids
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = (

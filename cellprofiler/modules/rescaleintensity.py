@@ -13,6 +13,11 @@ texture measurements derived from images that have been rescaled because
 certain options for this module do not preserve the relative intensities
 from image to image.
 
+As this module rescales data it will not attempt to normalize displayed previews
+(as this could make it appear that the scaling had done nothing). As a result images rescaled
+to large ranges may appear dim after scaling. To normalize values for viewing,
+right-click an image and choose an image contrast transform.
+
 |
 
 ============ ============ ===============
@@ -84,7 +89,8 @@ There are a number of options for rescaling the input image:
 -  *%(M_STRETCH)s:* Find the minimum and maximum values within the
    unmasked part of the image (or the whole image if there is no mask)
    and rescale every pixel so that the minimum has an intensity of zero
-   and the maximum has an intensity of one.
+   and the maximum has an intensity of one. If performed on color images
+   each channel will be considered separately.
 -  *%(M_MANUAL_INPUT_RANGE)s:* Pixels are scaled from an original range
    (which you provide) to the range 0 to 1. Options are
    available to handle values outside of the original range.
@@ -428,6 +434,33 @@ Select the measurement value to use as the divisor for the final image.
 
             workspace.display_data.dimensions = input_image.dimensions
 
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions, subplots=(2,1)
+        )
+
+        figure.subplot_imshow(
+            image=workspace.display_data.x_data,
+            title=self.x_name.value,
+            normalize=False,
+            colormap="gray",
+            x=0,
+            y=0,
+        )
+
+        figure.subplot_imshow(
+            image=workspace.display_data.y_data,
+            sharexy=figure.subplot(0, 0),
+            title=self.y_name.value,
+            colormap="gray",
+            normalize=False,
+            x=1,
+            y=0,
+        )
+
+
     def rescale(self, image, in_range, out_range=(0.0, 1.0)):
         data = 1.0 * image.pixel_data
 
@@ -439,11 +472,24 @@ Select the measurement value to use as the divisor for the final image.
 
     def stretch(self, input_image):
         data = input_image.pixel_data
-
         mask = input_image.mask
 
-        in_range = (min(data[mask]), max(data[mask]))
+        if input_image.multichannel:
+            splitaxis = data.ndim - 1
+            singlechannels = numpy.split(data, data.shape[-1], splitaxis)
+            newchannels = []
+            for channel in singlechannels:
+                channel = numpy.squeeze(channel, axis=splitaxis)
+                in_range = (min(channel[mask]), max(channel[mask]))
 
+                channelholder = cellprofiler.image.Image(channel, convert=False)
+
+                rescaled = self.rescale(channelholder, in_range)
+                newchannels.append(rescaled)
+            full_rescaled = numpy.stack(newchannels, axis=-1)
+            return full_rescaled
+
+        in_range = (min(data[mask]), max(data[mask]))
         return self.rescale(input_image, in_range)
 
     def manual_input_range(self, input_image, workspace):

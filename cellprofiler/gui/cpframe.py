@@ -125,6 +125,7 @@ ID_DEBUG_NEXT_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
+ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_PDB = wx.NewId()
 ID_DEBUG_RUN_FROM_THIS_MODULE = wx.NewId()
@@ -773,14 +774,19 @@ class CPFrame(wx.Frame):
             "Advance to a random image set",
         )
         self.__menu_debug.Append(
-            ID_DEBUG_CHOOSE_GROUP,
-            "Choose Image Group",
-            "Choose which image set group to process in test-mode",
+            ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP,
+            "Random Image Group",
+            "Advance to a random image group",
         )
         self.__menu_debug.Append(
             ID_DEBUG_CHOOSE_IMAGE_SET,
             "Choose Image Set",
             "Choose any of the available image sets",
+        )
+        self.__menu_debug.Append(
+            ID_DEBUG_CHOOSE_GROUP,
+            "Choose Image Group",
+            "Choose which image set group to process in test-mode",
         )
         if not hasattr(sys, "frozen") or os.getenv("CELLPROFILER_DEBUG"):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
@@ -796,6 +802,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, False)
+        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP, False)
 
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(
@@ -1050,6 +1057,7 @@ class CPFrame(wx.Frame):
         ID_DEBUG_CHOOSE_GROUP,
         ID_DEBUG_CHOOSE_IMAGE_SET,
         ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
+        ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP,
     )
 
     def enable_debug_commands(self):

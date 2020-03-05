@@ -2562,13 +2562,6 @@ class PipelineController(object):
             self.__pipeline.move_module(
                 module.module_num, cellprofiler.pipeline.DIRECTION_UP
             )
-        #
-        # Major event - restart from scratch
-        #
-        if self.is_in_debug_mode():
-            self.stop_debugging()
-            if cellprofiler.preferences.get_show_exiting_test_mode_dlg():
-                self.show_exiting_test_mode()
 
     def on_module_down(self, event):
         """Move the currently selected modules down"""
@@ -2585,13 +2578,6 @@ class PipelineController(object):
             self.__pipeline.move_module(
                 module.module_num, cellprofiler.pipeline.DIRECTION_DOWN
             )
-        #
-        # Major event - restart from scratch
-        #
-        if self.is_in_debug_mode():
-            self.stop_debugging()
-            if cellprofiler.preferences.get_show_exiting_test_mode_dlg():
-                self.show_exiting_test_mode()
 
     def on_update_module_enable(self, event):
         """Update the UI for the ENABLE_MODULE menu item / button

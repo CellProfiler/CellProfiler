@@ -4274,6 +4274,7 @@ class ValidationError(ValueError):
         """Initialize with an explanatory message and the setting that caused the problem
         """
         super(ValidationError, self).__init__(message)
+        self.message = message
         self.__setting = setting
 
     def get_setting(self):

@@ -181,11 +181,11 @@ class NameSubscriberComboBox(wx.Panel):
 class NameSubscriberListBox(wx.Panel):
     """A list of checkboxes with extra annotation, and a context menu.
 
-    Designed as an alternative to NameSubscriberCombobox, but choices is a list of (Name,
-    Parent, modulenum).
+    Designed as an alternative to NameSubscriberCombobox which simplifies selection of
+    multiple items.
     """
 
-    def __init__(self, annotation, choices=None, checked="", name=""):
+    def __init__(self, annotation, choices=None, checked=[], name=""):
         wx.Panel.__init__(self, annotation, name=name)
         if choices is None:
             choices = []
@@ -195,6 +195,7 @@ class NameSubscriberListBox(wx.Panel):
         self.list_dlg = wx.CheckListBox(
             self,
             choices=[self.get_choice_label(choice) for choice in choices],
+            style=wx.LB_MULTIPLE,
         )
         self.SetChecked(self.checked)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -205,9 +206,49 @@ class NameSubscriberListBox(wx.Panel):
         self.SetSizer(sizer)
         self.callbacks = []
         self.list_dlg.Bind(wx.EVT_CHECKLISTBOX, self.choice_made)
+        self.list_dlg.Bind(wx.EVT_CONTEXT_MENU, self.right_menu)
+        self.list_dlg.Bind(wx.EVT_LISTBOX, self.item_selected)
 
     def add_callback(self, cb):
         self.callbacks.append(cb)
+
+    def right_menu(self, evt):
+        menu = wx.Menu()
+        sel_all = wx.MenuItem(menu, wx.NewId(), 'Select All')
+        sel_none = wx.MenuItem(menu, wx.NewId(), 'Select None')
+        menu.Append(sel_all)
+        menu.Append(sel_none)
+        menu.Bind(wx.EVT_MENU, self.select_all, sel_all)
+        menu.Bind(wx.EVT_MENU, self.select_none, sel_none)
+        self.PopupMenu(menu)
+        menu.Destroy()
+
+    def select_all(self, evt):
+        print("Selecting all")
+        self.SetChecked(self.choice_names)
+        self.checked = self.GetChecked()
+        for cb in self.callbacks:
+            cb(evt)
+
+    def select_none(self, evt):
+        self.SetChecked([])
+        self.checked = self.GetChecked()
+        for cb in self.callbacks:
+            cb(evt)
+
+    def item_selected(self, evt):
+        print("Selected item")
+        selected = self.choice_names[evt.Selection]
+        if self.list_dlg.IsChecked(evt.Selection):
+            self.checked.remove(selected)
+        else:
+            self.checked.append(selected)
+        self.SetChecked(self.checked)
+        self.checked = self.GetChecked()
+        for cb in self.callbacks:
+            cb(evt)
+        self.list_dlg.Deselect(evt.Selection)
+
 
     def choice_made(self, evt):
         for cb in self.callbacks:

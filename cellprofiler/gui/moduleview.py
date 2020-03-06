@@ -516,7 +516,8 @@ class ModuleView(object):
                         v, v.get_choices(), control_name, wx.CB_READONLY, control
                     )
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.ListImageNameSubscriber):
+                elif isinstance(v, (cellprofiler.setting.ListImageNameSubscriber,
+                                   cellprofiler.setting.ListObjectNameSubscriber)):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_list_name_subscriber_control(
                         v, choices, control_name, control
@@ -835,7 +836,7 @@ class ModuleView(object):
         return control
 
     def make_list_name_subscriber_control(self, v, choices, control_name, control):
-        """Make a read-only combobox with extra feedback about source modules,
+        """Make a read-only combnobox with extra feedback about source modules,
         and a context menu with choices navigable by module name.
 
         v            - the setting
@@ -843,13 +844,12 @@ class ModuleView(object):
         control_name - assign this name to the control
         """
         if not control:
+            namelabel = "Image" if isinstance(v, cellprofiler.setting.ListImageNameSubscriber) else "Object"
             control = namesubscriber.NameSubscriberListBox(
-                self.__module_panel, checked=v.value, choices=choices, name=control_name
+                self.__module_panel, checked=v.value, choices=choices, name=control_name, nametype=namelabel,
             )
             def callback(event, setting=v, control=control):
-                # the NameSubscriberComboBox behaves like a combobox
                 self.__on_checklistbox_change(event, setting, control)
-
             control.add_callback(callback)
         else:
             if list(choices) != list(control.Items):

@@ -178,6 +178,7 @@ class NameSubscriberComboBox(wx.Panel):
 
     Value = property(GetValue, SetValue)
 
+
 class NameSubscriberListBox(wx.Panel):
     """A list of checkboxes with extra annotation, and a context menu.
 
@@ -185,13 +186,13 @@ class NameSubscriberListBox(wx.Panel):
     multiple items.
     """
 
-    def __init__(self, annotation, choices=None, checked=[], name=""):
+    def __init__(self, annotation, choices=None, checked=[], name="", nametype="Image"):
         wx.Panel.__init__(self, annotation, name=name)
         if choices is None:
             choices = []
         self.checked = checked
         self.choice_names = self.get_choice_names(choices)
-
+        self.nametype = nametype
         self.list_dlg = wx.CheckListBox(
             self,
             choices=[self.get_choice_label(choice) for choice in choices],
@@ -224,7 +225,6 @@ class NameSubscriberListBox(wx.Panel):
         menu.Destroy()
 
     def select_all(self, evt):
-        print("Selecting all")
         self.SetChecked(self.choice_names)
         self.checked = self.GetChecked()
         for cb in self.callbacks:
@@ -237,7 +237,6 @@ class NameSubscriberListBox(wx.Panel):
             cb(evt)
 
     def item_selected(self, evt):
-        print("Selected item")
         selected = self.choice_names[evt.Selection]
         if self.list_dlg.IsChecked(evt.Selection):
             self.checked.remove(selected)
@@ -248,7 +247,6 @@ class NameSubscriberListBox(wx.Panel):
         for cb in self.callbacks:
             cb(evt)
         self.list_dlg.Deselect(evt.Selection)
-
 
     def choice_made(self, evt):
         for cb in self.callbacks:
@@ -264,11 +262,9 @@ class NameSubscriberListBox(wx.Panel):
             else:
                 end = "(from %s #%02d)" % (module_name, module_num)
         else:
-            end = "(Module Missing!)"
+            end = "(%s Missing!)" % self.nametype
         whitespace = " "*max(10, (90 - len(name) - len(end)))
         return "".join((name, whitespace, end))
-
-
 
     def get_choice_names(self, choices):
         choice_names = [choice[0] for choice in choices]

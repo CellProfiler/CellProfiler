@@ -136,10 +136,15 @@ ALL_LOCATION_MEASUREMENTS = [
 
 class MeasureObjectIntensity(cellprofiler.module.Module):
     module_name = "MeasureObjectIntensity"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Measurement"
 
     def create_settings(self):
+        self.images_list = cellprofiler.setting.ListImageNameSubscriber(
+            "Select images to measure",
+            "",
+            doc="""Select the grayscale images whose intensity you want to measure.""",
+        )
         self.images = []
         self.add_image(can_remove=False)
         self.image_count = cellprofiler.setting.HiddenCount(self.images)
@@ -147,6 +152,12 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
             "", "Add another image", self.add_image
         )
         self.divider = cellprofiler.setting.Divider()
+        self.objects_list = cellprofiler.setting.ListObjectNameSubscriber(
+            "Select objects to measure",
+            "",
+            doc="""Select the object sets whose intensity you want to measure.""",
+        )
+
         self.objects = []
         self.add_object(can_remove=False)
         self.add_object_button = cellprofiler.setting.DoSomething(
@@ -210,20 +221,26 @@ Select the objects whose intensities you want to measure.""",
         self.objects.append(group)
 
     def settings(self):
-        result = [self.image_count]
-        result += [im.name for im in self.images]
-        result += [obj.name for obj in self.objects]
+        #result = [self.image_count]
+        result = [self.images_list, self.objects_list]
+        #result += [self.objects_list]
+        #result += [im.name for im in self.images]
+        #result += [obj.name for obj in self.objects]
         return result
 
     def visible_settings(self):
-        result = []
-        for im in self.images:
-            result += im.visible_settings()
-        result += [self.add_image_button, self.divider]
-        for im in self.objects:
-            result += im.visible_settings()
-        result += [self.add_object_button]
+        result = [self.images_list, self.divider, self.objects_list]
         return result
+        #result += [self.images_list]
+        #result += [self.objects_list]
+        #for im in self.images:
+        #    result += im.visible_settings()
+        #result += [self.add_image_button, self.divider]
+
+        #for im in self.objects:
+         #   result += im.visible_settings()
+        #result += [self.add_object_button]
+        #return result
 
     def upgrade_settings(
         self, setting_values, variable_revision_number, module_name, from_matlab
@@ -266,6 +283,17 @@ Select the objects whose intensities you want to measure.""",
                 + setting_values[num_imgs + 1 :]
             )
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            assert not from_matlab
+            num_imgs = int(setting_values[0])
+            images_list = setting_values[1:num_imgs+1]
+            objects_list = setting_values[num_imgs+1:]
+            setting_values = [images_list, objects_list]
+            variable_revision_number = 4
+        else:
+            # Convert saved image and object lists back into python lists
+            setting_values[0] = setting_values[0].replace('\'', '').strip('][').split(', ')
+            setting_values[1] = setting_values[1].replace('\'', '').strip('][').split(', ')
         return setting_values, variable_revision_number, from_matlab
 
     def prepare_settings(self, setting_values):
@@ -284,6 +312,7 @@ Select the objects whose intensities you want to measure.""",
         # The settings have two parts - images, then objects
         # The parts are divided by the string, cps.DO_NOT_USE
         #
+        return
         image_count = int(setting_values[0])
         object_count = len(setting_values) - image_count - 1
         del self.images[image_count:]
@@ -382,9 +411,10 @@ Select the objects whose intensities you want to measure.""",
                 "STD",
             )
             workspace.display_data.statistics = statistics = []
-        for image_name in [img.name for img in self.images]:
+        #for image_name in [img.name for img in self.images]:
+        for image_name in self.images_list.value:
             image = workspace.image_set.get_image(
-                image_name.value, must_be_grayscale=True
+                image_name, must_be_grayscale=True
             )
             for object_name in [obj.name for obj in self.objects]:
                 # Need to refresh image after each iteration...
@@ -673,13 +703,13 @@ Select the objects whose intensities you want to measure.""",
                     (cellprofiler.measurement.C_LOCATION, LOC_MAX_Z, max_z),
                 ):
                     measurement_name = "{}_{}_{}".format(
-                        category, feature_name, image_name.value
+                        category, feature_name, image_name
                     )
                     m.add_measurement(object_name.value, measurement_name, measurement)
                     if self.show_window and len(measurement) > 0:
                         statistics.append(
                             (
-                                image_name.value,
+                                image_name,
                                 object_name.value,
                                 feature_name,
                                 numpy.round(numpy.mean(measurement), 3),

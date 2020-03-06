@@ -296,32 +296,6 @@ Select the objects whose intensities you want to measure.""",
             setting_values[1] = setting_values[1].replace('\'', '').strip('][').split(', ')
         return setting_values, variable_revision_number, from_matlab
 
-    def prepare_settings(self, setting_values):
-        """Do any sort of adjustment to the settings required for the given values
-
-        setting_values - the values for the settings
-
-        This method allows a module to specialize itself according to
-        the number of settings and their value. For instance, a module that
-        takes a variable number of images or objects can increase or decrease
-        the number of relevant settings so they map correctly to the values.
-
-        See cellprofiler.modules.measureobjectsizeshape for an example.
-        """
-        #
-        # The settings have two parts - images, then objects
-        # The parts are divided by the string, cps.DO_NOT_USE
-        #
-        return
-        image_count = int(setting_values[0])
-        object_count = len(setting_values) - image_count - 1
-        del self.images[image_count:]
-        while len(self.images) < image_count:
-            self.add_image()
-        del self.objects[object_count:]
-        while len(self.objects) < object_count:
-            self.add_object()
-
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
         images = set()
@@ -343,8 +317,8 @@ Select the objects whose intensities you want to measure.""",
     def get_measurement_columns(self, pipeline):
         """Return the column definitions for measurements made by this module"""
         columns = []
-        for image_name in [im.name for im in self.images]:
-            for object_name in [obj.name for obj in self.objects]:
+        for image_name in self.images_list.value:
+            for object_name in self.objects_list.value:
                 for category, features in (
                     (INTENSITY, ALL_MEASUREMENTS),
                     (cellprofiler.measurement.C_LOCATION, ALL_LOCATION_MEASUREMENTS),
@@ -352,8 +326,8 @@ Select the objects whose intensities you want to measure.""",
                     for feature in features:
                         columns.append(
                             (
-                                object_name.value,
-                                "%s_%s_%s" % (category, feature, image_name.value),
+                                object_name,
+                                "%s_%s_%s" % (category, feature, image_name),
                                 cellprofiler.measurement.COLTYPE_FLOAT,
                             )
                         )
@@ -411,12 +385,11 @@ Select the objects whose intensities you want to measure.""",
                 "STD",
             )
             workspace.display_data.statistics = statistics = []
-        #for image_name in [img.name for img in self.images]:
         for image_name in self.images_list.value:
             image = workspace.image_set.get_image(
                 image_name, must_be_grayscale=True
             )
-            for object_name in [obj.name for obj in self.objects]:
+            for object_name in self.objects_list.value:
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
                 if image.has_mask:
@@ -432,7 +405,7 @@ Select the objects whose intensities you want to measure.""",
                     masked_image = masked_image.reshape(1, *masked_image.shape)
                     image_mask = image_mask.reshape(1, *image_mask.shape)
 
-                objects = workspace.object_set.get_objects(object_name.value)
+                objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
                 integrated_intensity = numpy.zeros((nobjects,))
                 integrated_intensity_edge = numpy.zeros((nobjects,))
@@ -705,12 +678,12 @@ Select the objects whose intensities you want to measure.""",
                     measurement_name = "{}_{}_{}".format(
                         category, feature_name, image_name
                     )
-                    m.add_measurement(object_name.value, measurement_name, measurement)
+                    m.add_measurement(object_name, measurement_name, measurement)
                     if self.show_window and len(measurement) > 0:
                         statistics.append(
                             (
                                 image_name,
-                                object_name.value,
+                                object_name,
                                 feature_name,
                                 numpy.round(numpy.mean(measurement), 3),
                                 numpy.round(numpy.median(measurement), 3),

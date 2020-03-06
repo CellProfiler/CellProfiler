@@ -1591,6 +1591,7 @@ class ImageNameSubscriber(NameSubscriber):
             text, IMAGE_GROUP, value, can_be_blank, blank_text, *args, **kwargs
         )
 
+
 class ListImageNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
@@ -1606,6 +1607,24 @@ class ListImageNameSubscriber(NameSubscriber):
     ):
         super(ListImageNameSubscriber, self).__init__(
             text, IMAGE_GROUP, value, can_be_blank, blank_text, *args, **kwargs
+        )
+
+
+class ListObjectNameSubscriber(NameSubscriber):
+    """A setting that provides an image name
+    """
+
+    def __init__(
+        self,
+        text,
+        value=None,
+        can_be_blank=False,
+        blank_text=LEAVE_BLANK,
+        *args,
+        **kwargs,
+    ):
+        super(ListObjectNameSubscriber, self).__init__(
+            text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs
         )
 
 

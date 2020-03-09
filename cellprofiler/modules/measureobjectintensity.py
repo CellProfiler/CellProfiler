@@ -142,13 +142,13 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
     def create_settings(self):
         self.images_list = cellprofiler.setting.ListImageNameSubscriber(
             "Select images to measure",
-            "",
+            [],
             doc="""Select the grayscale images whose intensity you want to measure.""",
         )
         self.divider = cellprofiler.setting.Divider()
         self.objects_list = cellprofiler.setting.ListObjectNameSubscriber(
             "Select objects to measure",
-            "",
+            [],
             doc="""Select the object sets whose intensity you want to measure.""",
         )
 
@@ -210,13 +210,21 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
             variable_revision_number = 4
         else:
             # Convert saved image and object lists back into python lists
-            setting_values[0] = setting_values[0].replace('\'', '').strip('][').split(', ')
-            setting_values[1] = setting_values[1].replace('\'', '').strip('][').split(', ')
+            for i in (0, 1):
+                to_convert = setting_values[i]
+                if to_convert == '[]':
+                    setting_values[i] = []
+                else:
+                    setting_values[i] = to_convert.replace('\'', '').strip('][').split(', ')
         return setting_values, variable_revision_number, from_matlab
 
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
         images = set()
+        if len(self.images_list.value) == 0:
+            raise cellprofiler.setting.ValidationError("No images selected", self.images_list)
+        elif len(self.objects_list.value) == 0:
+            raise cellprofiler.setting.ValidationError("No objects selected", self.objects_list)
         for image_name in self.images_list.value:
             if image_name in images:
                 raise cellprofiler.setting.ValidationError(
@@ -303,6 +311,8 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
                 "STD",
             )
             workspace.display_data.statistics = statistics = []
+        if len(self.images_list.value) == 0 or len(self.objects_list.value) == 0:
+            raise ValueError("This module needs at least 1 image and object set selected")
         for image_name in self.images_list.value:
             image = workspace.image_set.get_image(
                 image_name, must_be_grayscale=True

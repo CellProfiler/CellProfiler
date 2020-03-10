@@ -59,7 +59,7 @@ ellipse with the same second-moments as each object.
 -  *Volume:* *(3D only)* The number of voxels in the region.
 -  *Perimeter:* *(2D only)* The total number of pixels around the boundary of each
    region in the image.
--  *SurfaceArea:* *(3D only)# The total number of voxels around the boundary of
+-  *SurfaceArea:* *(3D only)* The total number of voxels around the boundary of
    each region in the image.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.

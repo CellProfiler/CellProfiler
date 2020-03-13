@@ -235,6 +235,18 @@ somewhat empirical.
         else:
             if illum_function_pixel_data.ndim == 2:
                 illum_function_pixel_data = illum_function_pixel_data[:, :, np.newaxis]
+        # Throw an error if image and illum data are incompatible
+        if orig_image.pixel_data.shape != illum_function_pixel_data.shape:
+            raise ValueError(
+                "This module requires that the image and illumination function have equal dimensions.\n"
+                "The %s image and %s illumination function do not (%s vs %s)"
+                % (
+                    image_name,
+                    illum_correct_name,
+                    orig_image.pixel_data.shape,
+                    illum_function_pixel_data.shape,
+                )
+            )
         #
         # Either divide or subtract the illumination image from the original
         #

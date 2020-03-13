@@ -220,6 +220,7 @@ class PreferencesDlg(wx.Dialog):
 
         top_sizer.Add(wx.StaticLine(scrollpanel), 0, wx.EXPAND | wx.ALL, 2)
         btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+        btnsizer.Children[1].Window.Label = "Save"
         self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_OK)
 
         scrollpanel_sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)

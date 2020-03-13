@@ -256,7 +256,8 @@ but the results will be zero or not-a-number (NaN).
         # If size/shape differences were too extreme, raise an error.
         if primary_labels.shape != secondary_labels.shape:
             raise ValueError(
-                "The first object set (%s) cannot come from a bigger image than the second object set (%s) - %s vs %s"
+                "This module requires that the object sets have matching widths and matching heights.\n"
+                "The %s and %s objects do not (%s vs %s)"
                 % (
                     self.secondary_objects_name,
                     self.primary_objects_name,

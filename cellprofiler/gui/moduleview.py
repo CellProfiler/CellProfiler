@@ -4808,17 +4808,15 @@ class ValidationRequest(object):
 #     return result
 
 
-def validate_module(pipeline, module_num, test_mode, callback):
+def validate_module(pipeline, module_num, callback):
     """Validate a module and execute the callback on error on the main thread
 
     pipeline - a pipeline to be validated
     module_num - the module number of the module to be validated
-    test_mode - whether pipeline is in test mode
     callback - a callback with the signature, "fn(setting, message, pipeline_data)"
     where setting is the setting that is in error and message is the message to
     display.
     """
-    pipeline.test_mode = test_mode
     modules = [m for m in pipeline.modules() if m.module_num == module_num]
     if len(modules) != 1:
         return
@@ -4855,7 +4853,6 @@ def validation_queue_handler():
                 validate_module(
                     request.pipeline,
                     request.module_num,
-                    request.test_mode,
                     request.callback,
                 )
             except:

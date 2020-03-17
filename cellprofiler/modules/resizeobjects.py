@@ -42,14 +42,14 @@ See also
 class ResizeObjects(cellprofiler.module.ObjectProcessing):
     module_name = "ResizeObjects"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(ResizeObjects, self).create_settings()
 
         self.method = cellprofiler.setting.Choice(
             "Method",
-            ["Dimensions", "Factor"],
+            ["Dimensions", "Factor", "Match Image"],
             doc="""\
 The following options are available:
 
@@ -89,10 +89,19 @@ Enter the desired width of the final objects, in pixels.""",
 Enter the desired height of the final objects, in pixels.""",
         )
 
+        self.specific_image = cellprofiler.setting.ImageNameSubscriber(
+            "Select the image with the desired dimensions",
+            cellprofiler.setting.NONE,
+            doc="""\
+        *(Used only if resizing by specifying desired final dimensions using an image)*
+
+        The input object set will be resized to the dimensions of the specified image.""",
+        )
+
     def settings(self):
         settings = super(ResizeObjects, self).settings()
 
-        settings += [self.method, self.factor, self.width, self.height]
+        settings += [self.method, self.factor, self.width, self.height, self.specific_image]
 
         return settings
 
@@ -103,19 +112,45 @@ Enter the desired height of the final objects, in pixels.""",
 
         if self.method.value == "Dimensions":
             visible_settings += [self.width, self.height]
-        else:
+        elif self.method.value == "Factor":
             visible_settings += [self.factor]
-
+        else:
+            visible_settings += [self.specific_image]
         return visible_settings
 
     def run(self, workspace):
-        self.function = (
-            lambda data, method, factor, width, height: resize(data, (height, width))
-            if method == "Dimensions"
-            else rescale(data, factor)
-        )
+        x_name = self.x_name.value
+        y_name = self.y_name.value
+        objects = workspace.object_set
+        x = objects.get_objects(x_name)
+        dimensions = x.dimensions
+        x_data = x.segmented
 
-        super(ResizeObjects, self).run(workspace)
+        if self.method.value == "Dimensions":
+            y_data = resize(x_data, (self.height.value, self.width.value))
+        elif self.method.value == "Match Image":
+            target_image = workspace.image_set.get_image(self.specific_image.value)
+            if target_image.volumetric:
+                tgt_height, tgt_width = target_image.pixel_data.shape[1:3]
+            else:
+                tgt_height, tgt_width = target_image.pixel_data.shape[:2]
+            size = (tgt_height, tgt_width)
+            y_data = resize(x_data, size)
+        else:
+            y_data = rescale(x_data, self.factor.value)
+
+        y = cellprofiler.object.Objects()
+        y.segmented = y_data
+        y.parent_image = x.parent_image
+        objects.add_objects(y, y_name)
+        self.add_measurements(workspace)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
 
     def add_measurements(
         self, workspace, input_object_name=None, output_object_name=None

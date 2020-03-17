@@ -253,6 +253,21 @@ but the results will be zero or not-a-number (NaN).
                     tertiary_image, _ = cpo.size_similarly(
                         secondary_labels, tertiary_image
                     )
+        # If size/shape differences were too extreme, raise an error.
+        if primary_labels.shape != secondary_labels.shape:
+            raise ValueError(
+                "This module requires that the object sets have matching widths and matching heights.\n"
+                "The %s and %s objects do not (%s vs %s).\n"
+                "If they are paired correctly you may want to use the ResizeObjects module "
+                "to make them the same size."
+                % (
+                    self.secondary_objects_name,
+                    self.primary_objects_name,
+                    secondary_labels.shape,
+                    primary_labels.shape,
+                )
+            )
+
         #
         # Find the outlines of the primary image and use this to shrink the
         # primary image by one. This guarantees that there is something left

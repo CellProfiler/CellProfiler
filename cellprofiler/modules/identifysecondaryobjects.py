@@ -527,7 +527,9 @@ segmentation.""",
         if img.shape != objects.shape:
             raise ValueError(
                 "This module requires that the input image and object sets are the same size.\n"
-                "The %s image and %s objects are not (%s vs %s)"
+                "The %s image and %s objects are not (%s vs %s).\n"
+                "If they are paired correctly you may want to use the Resize, ResizeObjects or "
+                "Crop module(s) to make them the same size."
                 % (
                     image_name,
                     self.x_name.value,

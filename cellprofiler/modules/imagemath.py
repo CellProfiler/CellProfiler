@@ -72,12 +72,12 @@ IMAGE_SETTING_COUNT_1 = 2
 IMAGE_SETTING_COUNT = 4
 
 # The number of settings other than for images
-FIXED_SETTING_COUNT_1 = 7
-FIXED_SETTING_COUNT = 8
+FIXED_SETTING_COUNT_1 = 8
+FIXED_SETTING_COUNT = 9
 
 
 class ImageMath(cellprofiler.module.ImageProcessing):
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     module_name = "ImageMath"
 
@@ -209,6 +209,20 @@ value of 1.
             % globals(),
         )
 
+        self.replace_nan = cellprofiler.setting.Binary(
+            "Replace invalid values with 0?",
+            True,
+            doc="""\
+        Certain operations are mathematically invalid (divide by zero, 
+        raise a negative number to the power of a fraction, etc.).
+        This setting will set pixels with invalid values to zero.
+        Disabling this setting will represent these pixels as "nan" 
+        ("Not A Number"). "nan" pixels cannot be displayed properly and 
+        may cause errors in other modules.
+        """
+            % globals(),
+        )
+
         self.ignore_mask = cellprofiler.setting.Binary(
             "Ignore the image masks?",
             False,
@@ -319,6 +333,7 @@ is applied before other operations.""",
             self.addend,
             self.truncate_low,
             self.truncate_high,
+            self.replace_nan,
             self.ignore_mask,
             self.output_image_name,
         ]
@@ -378,6 +393,7 @@ is applied before other operations.""",
                 self.addend,
                 self.truncate_low,
                 self.truncate_high,
+                self.replace_nan,
             ]
         result += [self.ignore_mask]
         return result
@@ -395,6 +411,7 @@ is applied before other operations.""",
             self.addend,
             self.truncate_low,
             self.truncate_high,
+            self.replace_nan,
             self.ignore_mask,
         ]
 
@@ -571,6 +588,8 @@ is applied before other operations.""",
                 output_pixel_data[output_pixel_data < 0] = 0
             if self.truncate_high.value:
                 output_pixel_data[output_pixel_data > 1] = 1
+            if self.replace_nan.value:
+                output_pixel_data[numpy.isnan(output_pixel_data)] = 0
 
         #
         # add the output image to the workspace
@@ -864,4 +883,10 @@ is applied before other operations.""",
             if setting_values[0] == O_LOG_TRANSFORM:
                 setting_values = [O_LOG_TRANSFORM_LEGACY] + setting_values[1:]
             variable_revision_number = 4
+        if (not from_matlab) and variable_revision_number == 4:
+            # Add NaN handling
+            new_setting_values = setting_values
+            new_setting_values.insert(6, "Yes")
+            setting_values = new_setting_values
+            variable_revision_number = 5
         return setting_values, variable_revision_number, from_matlab

@@ -257,7 +257,9 @@ but the results will be zero or not-a-number (NaN).
         if primary_labels.shape != secondary_labels.shape:
             raise ValueError(
                 "This module requires that the object sets have matching widths and matching heights.\n"
-                "The %s and %s objects do not (%s vs %s)"
+                "The %s and %s objects do not (%s vs %s).\n"
+                "If they are paired correctly you may want to use the ResizeObjects module "
+                "to make them the same size."
                 % (
                     self.secondary_objects_name,
                     self.primary_objects_name,

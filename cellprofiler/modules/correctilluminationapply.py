@@ -239,7 +239,8 @@ somewhat empirical.
         if orig_image.pixel_data.shape != illum_function_pixel_data.shape:
             raise ValueError(
                 "This module requires that the image and illumination function have equal dimensions.\n"
-                "The %s image and %s illumination function do not (%s vs %s)"
+                "The %s image and %s illumination function do not (%s vs %s).\n"
+                "If they are paired correctly you may want to use the Resize or Crop module to make them the same size.
                 % (
                     image_name,
                     illum_correct_name,

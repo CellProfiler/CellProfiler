@@ -3301,6 +3301,14 @@ class PipelineController(object):
 
     def on_stop_running(self, event):
         """Handle a user interface request to stop running"""
+        result = wx.MessageBox(
+            "Are you sure you want to abort this analysis run?",
+            "Stop analysis run",
+            wx.YES_NO | wx.ICON_QUESTION,
+            self.__frame,
+        )
+        if result == wx.NO:
+            return
         self.__stop_analysis_button.Enable(False)
         self.pipeline_list = []
         if (self.__analysis is not None) and self.__analysis.check_running():

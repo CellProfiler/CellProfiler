@@ -382,3 +382,77 @@ def test_resize_by_dimensions_enlarge_volume_labels(
         ),
         [1, 2, 3, 4],
     )
+
+
+def test_resize_by_image(
+    module, object_set_empty, objects_empty, image_labels, workspace_empty
+):
+    objects_empty.segmented = image_labels
+    pixel_data = numpy.zeros((10, 5))
+    workspace_empty.image_set.add("TestImage", cellprofiler.image.Image(pixel_data))
+    module.x_name.value = "InputObjects"
+    module.method.value = "Match Image"
+    module.specific_image.value = "TestImage"
+
+    module.run(workspace_empty)
+
+    expected_labels = numpy.zeros((10, 5), dtype=numpy.uint8)
+    expected_labels[1:4, 1:2] = 1
+    expected_labels[0:4, 3:4] = 2
+    expected_labels[6:9, 0:2] = 3
+    expected_labels[6:10, 3:5] = 4
+
+    numpy.testing.assert_array_equal(
+        object_set_empty.get_objects("ResizeObjects").segmented, expected_labels
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+        ),
+        [1, 1, 1, 1],
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+        ),
+        [1, 2, 3, 4],
+    )
+
+
+def test_resize_by_image_volume(
+    module, object_set_empty, objects_empty, volume_labels, workspace_empty
+):
+    objects_empty.segmented = volume_labels
+    pixel_data = numpy.zeros((9, 10, 5))
+    workspace_empty.image_set.add("TestImage", cellprofiler.image.Image(pixel_data, dimensions=3))
+    module.x_name.value = "InputObjects"
+    module.method.value = "Match Image"
+    module.specific_image.value = "TestImage"
+
+    module.run(workspace_empty)
+
+    expected_labels = numpy.zeros((9, 10, 5), dtype=numpy.uint8)
+    expected_labels[0:9, 1:4, 1:2] = 1
+    expected_labels[0:5, 0:4, 3:4] = 2
+    expected_labels[4:9, 6:9, 0:2] = 3
+    expected_labels[1:8, 6:10, 3:5] = 4
+
+    numpy.testing.assert_array_equal(
+        object_set_empty.get_objects("ResizeObjects").segmented, expected_labels
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+        ),
+        [1, 1, 1, 1],
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+        ),
+        [1, 2, 3, 4],
+    )

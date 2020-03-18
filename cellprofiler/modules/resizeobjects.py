@@ -178,6 +178,14 @@ Enter the desired height of the final objects, in pixels.""",
             unique_labels,
         )
 
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name, from_matlab
+    ):
+        if variable_revision_number == 1:
+            setting_values += [cellprofiler.setting.NONE]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
+
 
 def resize(data, size):
     if data.ndim == 3:
@@ -199,3 +207,4 @@ def rescale(data, factor):
         factor = (1,) + factor
 
     return scipy.ndimage.zoom(data, factor, order=0, mode="nearest")
+

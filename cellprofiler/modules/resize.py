@@ -354,7 +354,7 @@ resized with the same settings as the first image.""",
                 )
         else:
             output_pixels = skimage.transform.resize(
-                image_pixels / img_scale_fac, new_shape, order=order, mode="symmetric"
+                image_pixels.astype(numpy.float64) / img_scale_fac, new_shape, order=order, mode="symmetric"
             )
 
         if image.multichannel and len(new_shape) > image.dimensions:
@@ -364,6 +364,8 @@ resized with the same settings as the first image.""",
             # if the image intensities were scaled,
             # scale them back in the output
             output_pixels = output_pixels * img_scale_fac
+        
+        output_pixels = output_pixels.astype(image_pixels.dtype)
 
         mask = skimage.transform.resize(image.mask, new_shape, order=0, mode="constant")
 

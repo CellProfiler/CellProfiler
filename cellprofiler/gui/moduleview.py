@@ -2267,7 +2267,7 @@ class ModuleView(object):
     def __on_checklistbox_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        self.on_value_change(setting, control, control.GetChecked(), event)
+        self.on_value_change(setting, control, control.GetChecked(), event, timeout=CHECK_TIMEOUT_SEC * 1000)
 
     def __on_multichoice_change(self, event, setting, control):
         if not self.__handle_change:

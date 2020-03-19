@@ -36,9 +36,9 @@ def measurements():
 def module():
     module = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
 
-    module.images_list.value = [IMAGE_NAME]
+    module.images_list.value = IMAGE_NAME
 
-    module.objects_list.value = [OBJECT_NAME]
+    module.objects_list.value = OBJECT_NAME
 
     return module
 
@@ -122,9 +122,9 @@ def assert_features_and_columns_match(measurements, module):
 
 def test_supplied_measurements(module):
     """Test the get_category / get_measurements, get_measurement_images functions"""
-    module.images_list.value = ["MyImage"]
+    module.images_list.value = "MyImage"
 
-    module.objects_list.value = ["MyObjects1", "MyObjects2"]
+    module.objects_list.value = "MyObjects1, MyObjects2"
 
     expected_categories = tuple(
         sorted(
@@ -174,9 +174,9 @@ def test_supplied_measurements(module):
 
 def test_get_measurement_columns(module):
     """test the get_measurement_columns method"""
-    module.images_list.value = ["MyImage"]
+    module.images_list.value = "MyImage"
 
-    module.objects_list.value = ["MyObjects1", "MyObjects2"]
+    module.objects_list.value = "MyObjects1, MyObjects2"
 
     columns = module.get_measurement_columns(None)
 

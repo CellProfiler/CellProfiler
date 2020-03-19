@@ -28,7 +28,7 @@ def make_workspace(labels):
     m = cellprofiler.measurement.Measurements()
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
-    module.object_groups[0].name.value = OBJECTS_NAME
+    module.objects_list.value = OBJECTS_NAME
     pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -60,8 +60,8 @@ def test_01_load_v1():
     assert isinstance(
         module, cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape
     )
-    assert len(module.object_groups) == 2
-    for og, expected in zip(module.object_groups, ("Nuclei", "Cells")):
+    assert len(module.objects_list.value) == 2
+    for og, expected in zip(module.objects_list.value, ("Nuclei", "Cells")):
         assert og.name == expected
     assert module.calculate_zernikes
 
@@ -226,7 +226,7 @@ def test_measurements_no_zernike():
 def test_non_contiguous():
     """make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects"""
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
-    module.object_groups[0].name.value = "SomeObjects"
+    module.objects_list.value.append("SomeObjects")
     module.calculate_zernikes.value = True
     object_set = cellprofiler.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
@@ -274,7 +274,7 @@ def test_zernikes_are_different():
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(objects, "SomeObjects")
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
-    module.object_groups[0].name.value = "SomeObjects"
+    module.objects_list.value.append("SomeObjects")
     module.calculate_zernikes.value = True
     module.set_module_num(1)
     image_set_list = cellprofiler.image.ImageSetList()
@@ -308,7 +308,7 @@ def test_zernikes_are_different():
 
 def test_extent():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
-    module.object_groups[0].name.value = "SomeObjects"
+    module.objects_list.value.append("SomeObjects")
     module.calculate_zernikes.value = True
     object_set = cellprofiler.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
@@ -375,7 +375,7 @@ def test_overlapping():
     olist.append(objects)
     for objects in olist:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
-        module.object_groups[0].name.value = "SomeObjects"
+        module.objects_list.value.append("SomeObjects")
         module.calculate_zernikes.value = True
         object_set = cellprofiler.object.ObjectSet()
         object_set.add_objects(objects, "SomeObjects")

@@ -1515,9 +1515,13 @@ class ListNameSubscriber(NameSubscriber):
         *args,
         **kwargs,
     ):
+        if value is None:
+            value = ""
         super(ListNameSubscriber, self).__init__(
             text, group, value, can_be_blank, blank_text, *args, **kwargs
         )
+        self.value = value
+        self.value_text = value
 
     def get_value_text(self):
         """Convert the underlying list to a string"""
@@ -1525,6 +1529,9 @@ class ListNameSubscriber(NameSubscriber):
 
     def __internal_set_value_text(self, value):
         self.set_value_text(value)
+
+    def set_value_text(self, value):
+        self.value = value
 
     value_text = property(get_value_text, __internal_set_value_text)
 

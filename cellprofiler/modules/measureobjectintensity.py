@@ -206,16 +206,8 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
             num_imgs = int(setting_values[0])
             images_list = setting_values[1:num_imgs+1]
             objects_list = setting_values[num_imgs+1:]
-            setting_values = [images_list, objects_list]
+            setting_values = [", ".join(map(str, images_list)), ", ".join(map(str, objects_list))]
             variable_revision_number = 4
-        else:
-            # Convert saved image and object lists back into python lists
-            for i in (0, 1):
-                to_convert = setting_values[i]
-                if to_convert == '[]':
-                    setting_values[i] = []
-                else:
-                    setting_values[i] = to_convert.replace('\'', '').strip('][').split(', ')
         return setting_values, variable_revision_number, from_matlab
 
     def validate_module(self, pipeline):

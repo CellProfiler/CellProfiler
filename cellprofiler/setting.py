@@ -1502,6 +1502,47 @@ class NameSubscriber(Setting):
             )
 
 
+class ListNameSubscriber(NameSubscriber):
+    """Stores name provider names as a list"""
+
+    def __init__(
+        self,
+        text,
+        group,
+        value=None,
+        can_be_blank=False,
+        blank_text=LEAVE_BLANK,
+        *args,
+        **kwargs,
+    ):
+        super(ListNameSubscriber, self).__init__(
+            text, group, value, can_be_blank, blank_text, *args, **kwargs
+        )
+
+    def get_value_text(self):
+        """Convert the underlying list to a string"""
+        return ", ".join(map(str, self._Setting__value))
+
+    def __internal_set_value_text(self, value):
+        self.set_value_text(value)
+
+    value_text = property(get_value_text, __internal_set_value_text)
+
+    def __internal_set_value(self, value):
+        """Convert a saved string into a list"""
+        if len(value) == 0:
+            value = []
+        else:
+            value = value.split(", ")
+        self._Setting__value = value
+        print("Internally setting ", self._Setting__value)
+
+    def __internal_get_value(self):
+        return self.get_value()
+
+    value = property(__internal_get_value, __internal_set_value)
+
+
 def filter_duplicate_names(name_list):
     """remove any repeated names from a list of (name, ...) keeping the last occurrence."""
     name_dict = dict(list(zip((n[0] for n in name_list), name_list)))
@@ -1592,7 +1633,7 @@ class ImageNameSubscriber(NameSubscriber):
         )
 
 
-class ListImageNameSubscriber(NameSubscriber):
+class ListImageNameSubscriber(ListNameSubscriber):
     """A setting that provides an image name
     """
 
@@ -1607,24 +1648,6 @@ class ListImageNameSubscriber(NameSubscriber):
     ):
         super(ListImageNameSubscriber, self).__init__(
             text, IMAGE_GROUP, value, can_be_blank, blank_text, *args, **kwargs
-        )
-
-
-class ListObjectNameSubscriber(NameSubscriber):
-    """A setting that provides an image name
-    """
-
-    def __init__(
-        self,
-        text,
-        value=None,
-        can_be_blank=False,
-        blank_text=LEAVE_BLANK,
-        *args,
-        **kwargs,
-    ):
-        super(ListObjectNameSubscriber, self).__init__(
-            text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs
         )
 
 
@@ -1701,6 +1724,24 @@ class ObjectNameSubscriber(NameSubscriber):
         **kwargs,
     ):
         super(ObjectNameSubscriber, self).__init__(
+            text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs
+        )
+
+
+class ListObjectNameSubscriber(ListNameSubscriber):
+    """A setting that provides an image name
+    """
+
+    def __init__(
+        self,
+        text,
+        value=None,
+        can_be_blank=False,
+        blank_text=LEAVE_BLANK,
+        *args,
+        **kwargs,
+    ):
+        super(ListObjectNameSubscriber, self).__init__(
             text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs
         )
 

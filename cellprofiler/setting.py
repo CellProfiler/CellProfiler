@@ -1535,7 +1535,6 @@ class ListNameSubscriber(NameSubscriber):
         else:
             value = value.split(", ")
         self._Setting__value = value
-        print("Internally setting ", self._Setting__value)
 
     def __internal_get_value(self):
         return self.get_value()

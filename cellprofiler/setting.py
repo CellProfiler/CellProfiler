@@ -1547,6 +1547,20 @@ class ListNameSubscriber(NameSubscriber):
 
     value = property(__internal_get_value, __internal_set_value)
 
+    def test_valid(self, pipeline):
+        choices = self.get_choices(pipeline)
+        if len(choices) == 0:
+            raise ValidationError(
+                "No prior instances of %s were defined" % self.group, self
+            )
+        for name in self.value:
+            if name not in [c[0] for c in choices]:
+                raise ValidationError(
+                    "%s not in %s"
+                    % (name, ", ".join(c[0] for c in self.get_choices(pipeline))),
+                    self,
+                )
+
 
 def filter_duplicate_names(name_list):
     """remove any repeated names from a list of (name, ...) keeping the last occurrence."""

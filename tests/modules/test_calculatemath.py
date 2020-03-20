@@ -45,6 +45,8 @@ def run_workspace(
             measurements.add_measurement(OBJECT[i], measurement, data)
         operand.operand_measurement.value = measurement
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
+    module.rounding = "Not rounded"
+    module.rounding_digit = 0
     pipeline = cellprofiler.pipeline.Pipeline()
     image_set_list = cellprofiler.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
@@ -662,3 +664,61 @@ def test_constrain_upper():
         cellprofiler.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
+    
+def test_round_digit_1():
+    """Test if rounding to the first decimal place works"""
+    def fn(module, workspace):
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[1]
+        module.rounding_digit.value = 1
+    measurements = run_workspace(
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+    )
+    assert not measurements.has_feature(
+        cellprofiler.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+    )
+    assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    numpy.testing.assert_almost_equal(data, numpy.array([3.1,6.1,11.1]))
+    
+def test_round_digit_0():
+    """Test if rounding to the zeroth decimal place works"""
+    def fn(module, workspace):
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[1]
+        module.rounding_digit.value = 0
+    measurements = run_workspace(
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+    )
+    assert not measurements.has_feature(
+        cellprofiler.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+    )
+    assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    numpy.testing.assert_almost_equal(data, numpy.array([3,6,11]))
+    
+def test_round_floor():
+    """Test if floor rounding works"""
+    def fn(module, workspace):
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[2]
+    measurements = run_workspace(
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+    )
+    assert not measurements.has_feature(
+        cellprofiler.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+    )
+    assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    numpy.testing.assert_almost_equal(data, numpy.array([3,6,11]))
+    
+def test_round_ceil():
+    """Test if ceiling rounding works"""
+    def fn(module, workspace):
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[3]
+    measurements = run_workspace(
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+    )
+    assert not measurements.has_feature(
+        cellprofiler.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+    )
+    assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+    numpy.testing.assert_almost_equal(data, numpy.array([4,7,12]))

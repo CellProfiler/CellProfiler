@@ -179,9 +179,21 @@ class MeasureImageIntensity(cpm.Module):
             measurement_name = im
             if self.wants_objects.value:
                 for object_set in self.objects_list.value:
-
                     measurement_name += "_" + object_set
                     objects = workspace.get_objects(object_set)
+                    if objects.shape != input_pixels.shape:
+                        raise ValueError(
+                            "This module requires that the image and object sets have matching dimensions.\n"
+                            "The %s image and %s objects do not (%s vs %s).\n"
+                            "If they are paired correctly you may want to use the Resize, ResizeObjects or "
+                            "Crop module(s) to make them the same size."
+                            % (
+                                im,
+                                object_set,
+                                input_pixels.shape,
+                                objects.shape,
+                            )
+                        )
                     if image.has_mask:
                         pixels = input_pixels[np.logical_and(objects.segmented != 0, image.mask)]
                     else:

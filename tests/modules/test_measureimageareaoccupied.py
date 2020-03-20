@@ -24,7 +24,8 @@ def make_workspace(labels, parent_image=None):
     pipeline = cellprofiler.pipeline.Pipeline()
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.set_module_num(1)
-    module.operands[0].operand_objects.value = OBJECTS_NAME
+    module.operand_choice.value = cellprofiler.modules.measureimageareaoccupied.O_OBJECTS
+    module.objects_list.value = OBJECTS_NAME
     pipeline.add_module(module)
     image_set_list = cellprofiler.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
@@ -41,12 +42,12 @@ def make_workspace(labels, parent_image=None):
 def test_zeros():
     workspace = make_workspace(numpy.zeros((10, 10), int))
     module = workspace.module
-    module.operands[0].operand_choice.value = "Objects"
+    module.operand_choice.value = "Objects"
     module.run(workspace)
     m = workspace.measurements
 
     def mn(x):
-        return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+        return "AreaOccupied_%s_%s" % (x, module.objects_list.value[0])
 
     assert m.get_current_measurement("Image", mn("AreaOccupied")) == 0.0
     assert m.get_current_measurement("Image", mn("TotalArea")) == 100
@@ -64,12 +65,12 @@ def test_one_object():
     area_occupied = numpy.sum(labels)
     workspace = make_workspace(labels)
     module = workspace.module
-    module.operands[0].operand_choice.value = "Objects"
+    module.operand_choice.value = "Objects"
     module.run(workspace)
     m = workspace.measurements
 
     def mn(x):
-        return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+        return "AreaOccupied_%s_%s" % (x, module.objects_list.value[0])
 
     assert m.get_current_measurement("Image", mn("AreaOccupied")) == area_occupied
     assert m.get_current_measurement("Image", mn("TotalArea")) == 100
@@ -86,12 +87,12 @@ def test_object_with_cropping():
     total_area = 64
     workspace = make_workspace(labels, image)
     module = workspace.module
-    module.operands[0].operand_choice.value = "Objects"
+    module.operand_choice.value = "Objects"
     module.run(workspace)
     m = workspace.measurements
 
     def mn(x):
-        return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+        return "AreaOccupied_%s_%s" % (x, module.objects_list.value[0])
 
     assert m.get_current_measurement("Image", mn("AreaOccupied")) == area_occupied
     assert m.get_current_measurement("Image", mn("Perimeter")) == perimeter
@@ -100,8 +101,8 @@ def test_object_with_cropping():
 
 def test_get_measurement_columns():
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
-    module.operands[0].operand_objects.value = OBJECTS_NAME
-    module.operands[0].operand_choice.value = "Objects"
+    module.objects_list.value = OBJECTS_NAME
+    module.operand_choice.value = "Objects"
     columns = module.get_measurement_columns(cellprofiler.pipeline.Pipeline())
     expected = (
         (
@@ -138,12 +139,12 @@ def test_objects_volume():
     workspace.pipeline.set_volumetric(True)
 
     module = workspace.module
-    module.operands[0].operand_choice.value = "Objects"
+    module.operand_choice.value = "Objects"
 
     module.run(workspace)
 
     def mn(x):
-        return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+        return "AreaOccupied_%s_%s" % (x, module.objects_list.value[0])
 
     numpy.testing.assert_array_equal(
         workspace.measurements.get_current_measurement("Image", mn("VolumeOccupied")),
@@ -178,13 +179,13 @@ def test_image_volume():
     workspace.image_set.add("MyBinaryImage", image)
 
     module = workspace.module
-    module.operands[0].operand_choice.value = "Binary Image"
-    module.operands[0].binary_name.value = "MyBinaryImage"
+    module.operand_choice.value = "Binary Image"
+    module.images_list.value = "MyBinaryImage"
 
     module.run(workspace)
 
     def mn(x):
-        return "AreaOccupied_%s_%s" % (x, module.operands[0].binary_name.value)
+        return "AreaOccupied_%s_%s" % (x, module.images_list.value[0])
 
     numpy.testing.assert_array_equal(
         workspace.measurements.get_current_measurement("Image", mn("VolumeOccupied")),
@@ -205,7 +206,7 @@ def test_image_volume():
 
 def test_load_v3():
     with open(
-        "./tests/resources/modules/measureimageareaoccupied/v3.pipeline", "r"
+        "./resources/modules/measureimageareaoccupied/v3.pipeline", "r"
     ) as fd:
         data = fd.read()
 
@@ -218,12 +219,6 @@ def test_load_v3():
 
     module = pipeline.modules()[0]
 
-    assert module.count.value == 3
-
-    assert module.operands[0].operand_choice == "Binary Image"
-
-    assert module.operands[1].operand_choice == "Objects"
-    assert module.operands[1].operand_objects == "Cells"
-
-    assert module.operands[2].operand_choice == "Objects"
-    assert module.operands[2].operand_objects == "Nuclei"
+    assert module.operand_choice.value == "Both"
+    assert module.images_list.value_text == "DNA"
+    assert module.objects_list.value_text == "Nuclei, Cells"

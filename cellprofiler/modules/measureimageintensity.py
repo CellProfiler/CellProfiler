@@ -2,9 +2,9 @@
 
 import numpy as np
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
 from cellprofiler.modules import _help
 
 __doc__ = """
@@ -102,21 +102,21 @@ ALL_MEASUREMENTS = [
 ]
 
 
-class MeasureImageIntensity(cpm.Module):
+class MeasureImageIntensity(cellprofiler.module.Module):
     module_name = "MeasureImageIntensity"
     category = "Measurement"
     variable_revision_number = 3
 
     def create_settings(self):
         """Create the settings & name the module"""
-        self.images_list = cps.ListImageNameSubscriber(
+        self.images_list = cellprofiler.setting.ListImageNameSubscriber(
             "Select images to measure",
             [],
             doc="""Select the grayscale images whose intensity you want to measure.""",
         )
 
-        self.divider = cps.Divider(line=False)
-        self.wants_objects = cps.Binary(
+        self.divider = cellprofiler.setting.Divider(line=False)
+        self.wants_objects = cellprofiler.setting.Binary(
             "Measure the intensity only from areas enclosed by objects?",
             False,
             doc="""\
@@ -127,7 +127,7 @@ class MeasureImageIntensity(cpm.Module):
         """
         )
 
-        self.objects_list = cps.ListObjectNameSubscriber(
+        self.objects_list = cellprofiler.setting.ListObjectNameSubscriber(
             "Select input object sets",
             [],
             doc="""Select the object sets whose intensity you want to measure.""",
@@ -295,41 +295,41 @@ class MeasureImageIntensity(cpm.Module):
         columns = []
         for im in self.images_list.value:
             for feature, coltype in (
-                (F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_MEDIAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_STD_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
-                (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
-                (F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
-                (F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT),
+                (F_TOTAL_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_MEAN_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_MEDIAN_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_STD_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_MAD_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_MIN_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_MAX_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_TOTAL_AREA, cellprofiler.measurement.COLTYPE_INTEGER),
+                (F_PERCENT_MAXIMAL, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_LOWER_QUARTILE, cellprofiler.measurement.COLTYPE_FLOAT),
+                (F_UPPER_QUARTILE, cellprofiler.measurement.COLTYPE_FLOAT),
             ):
                 if self.wants_objects:
                     for object_set in self.objects_list.value:
                         measurement_name = im + "_" + object_set
-                        columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
+                        columns.append((cellprofiler.measurement.IMAGE, feature % measurement_name, coltype))
                 else:
                     measurement_name = im
-                    columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
+                    columns.append((cellprofiler.measurement.IMAGE, feature % measurement_name, coltype))
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             return ["Intensity"]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == "Intensity":
+        if object_name == cellprofiler.measurement.IMAGE and category == "Intensity":
             return ALL_MEASUREMENTS
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if (
-            object_name == cpmeas.IMAGE
+            object_name == cellprofiler.measurement.IMAGE
             and category == "Intensity"
             and measurement in ALL_MEASUREMENTS
         ):
@@ -356,8 +356,8 @@ class MeasureImageIntensity(cpm.Module):
         if from_matlab and variable_revision_number == 2:
             setting_values = [
                 setting_values[0],  # image name
-                cps.NO,  # wants objects
-                cps.NONE,
+                cellprofiler.setting.NO,  # wants objects
+                cellprofiler.setting.NONE,
             ]  # object name
             variable_revision_number = 1
             from_matlab = False

@@ -202,6 +202,8 @@ class MeasureImageIntensity(cpm.Module):
             else:
                 if image.has_mask:
                     pixels = input_pixels[image.mask]
+                else:
+                    pixels = input_pixels
                 statistics += self.measure(pixels, im, None, measurement_name, workspace)
         workspace.display_data.statistics = statistics
         workspace.display_data.col_labels = col_labels
@@ -307,10 +309,10 @@ class MeasureImageIntensity(cpm.Module):
             ):
                 if self.wants_objects:
                     for object_set in self.objects_list.value:
-                        measurement_name = im.image_name.value + "_" + object_set
+                        measurement_name = im + "_" + object_set
                         columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
                 else:
-                    measurement_name = im.image_name.value
+                    measurement_name = im
                     columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
 

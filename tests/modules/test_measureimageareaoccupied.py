@@ -206,7 +206,7 @@ def test_image_volume():
 
 def test_load_v3():
     with open(
-        "./resources/modules/measureimageareaoccupied/v3.pipeline", "r"
+        "./tests/resources/modules/measureimageareaoccupied/v3.pipeline", "r"
     ) as fd:
         data = fd.read()
 

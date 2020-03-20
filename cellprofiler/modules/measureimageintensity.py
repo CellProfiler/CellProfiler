@@ -56,9 +56,6 @@ Measurements made by this module
     **{"HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES}
 )
 
-"""Number of settings saved/loaded per image measured"""
-SETTINGS_PER_IMAGE = 3
-
 """Measurement feature name format for the TotalIntensity measurement"""
 F_TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
 
@@ -108,146 +105,92 @@ ALL_MEASUREMENTS = [
 class MeasureImageIntensity(cpm.Module):
     module_name = "MeasureImageIntensity"
     category = "Measurement"
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         """Create the settings & name the module"""
-        self.divider_top = cps.Divider(line=False)
-        self.images = []
-        self.add_image_measurement(can_remove=False)
-        self.add_button = cps.DoSomething(
-            "", "Add another image", self.add_image_measurement
-        )
-        self.divider_bottom = cps.Divider(line=False)
-
-    def add_image_measurement(self, can_remove=True):
-        group = cps.SettingsGroup()
-        if can_remove:
-            group.append("divider", cps.Divider())
-
-        group.append(
-            "image_name",
-            cps.ImageNameSubscriber(
-                "Select the image to measure",
-                cps.NONE,
-                doc="""\
-Choose an image name from the drop-down menu to calculate intensity for
-that image. Use the *Add another image* button below to add additional
-images to be measured. You can add the same image multiple times
-if you want to measure the intensity within several different
-objects.""",
-            ),
+        self.images_list = cps.ListImageNameSubscriber(
+            "Select images to measure",
+            [],
+            doc="""Select the grayscale images whose intensity you want to measure.""",
         )
 
-        group.append(
-            "wants_objects",
-            cps.Binary(
-                "Measure the intensity only from areas enclosed by objects?",
-                False,
-                doc="""\
-Select *Yes* to measure only those pixels within an object type you
-choose, identified by a prior module. Note that this module will
-aggregate intensities across all objects in the image: to measure each
-object individually, see **MeasureObjectIntensity** instead.
-"""
-                % globals(),
-            ),
+        self.divider = cps.Divider(line=False)
+        self.wants_objects = cps.Binary(
+            "Measure the intensity only from areas enclosed by objects?",
+            False,
+            doc="""\
+        Select *Yes* to measure only those pixels within an object type you
+        choose, identified by a prior module. Note that this module will
+        aggregate intensities across all objects in the image: to measure each
+        object individually, see **MeasureObjectIntensity** instead.
+        """
         )
 
-        group.append(
-            "object_name",
-            cps.ObjectNameSubscriber(
-                "Select the input objects",
-                cps.NONE,
-                doc="""\
-*(Used only when measuring intensity from area occupied by objects)*
-
-Select the objects that the intensity will be aggregated within. The
-intensity measurement will be restricted to the pixels within these
-objects.""",
-            ),
+        self.objects_list = cps.ListObjectNameSubscriber(
+            "Select input object sets",
+            [],
+            doc="""Select the object sets whose intensity you want to measure.""",
         )
-
-        if can_remove:
-            group.append(
-                "remover",
-                cps.RemoveSettingButton("", "Remove this image", self.images, group),
-            )
-        self.images.append(group)
 
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
-        settings = {}
-        for group in self.images:
-            if (
-                group.image_name.value,
-                group.wants_objects.value,
-                group.object_name.value,
-            ) in settings:
-                if not group.wants_objects.value:
-                    raise cps.ValidationError(
-                        "%s has already been selected" % group.image_name.value,
-                        group.image_name,
-                    )
-                else:
-                    raise cps.ValidationError(
-                        "%s has already been selected with %s"
-                        % (group.object_name.value, group.image_name.value),
-                        group.object_name,
-                    )
-            settings[
-                (
-                    group.image_name.value,
-                    group.wants_objects.value,
-                    group.object_name.value,
+        images = set()
+        if len(self.images_list.value) == 0:
+            raise cellprofiler.setting.ValidationError("No images selected", self.images_list)
+        for image_name in self.images_list.value:
+            if image_name in images:
+                raise cellprofiler.setting.ValidationError(
+                    "%s has already been selected" % image_name, image_name
                 )
-            ] = True
+            images.add(image_name)
+        if self.wants_objects:
+            objects = set()
+            if len(self.objects_list.value) == 0:
+                raise cellprofiler.setting.ValidationError("No objects selected", self.objects_list)
+            for object_name in self.objects_list.value:
+                if object_name in objects:
+                    raise cellprofiler.setting.ValidationError(
+                        "%s has already been selected" % object_name, object_name
+                    )
+                objects.add(object_name)
+
 
     def settings(self):
-        result = []
-        for image in self.images:
-            result += [image.image_name, image.wants_objects, image.object_name]
+        result = [self.images_list, self.wants_objects, self.objects_list]
         return result
 
     def visible_settings(self):
-        result = []
-        for index, image in enumerate(self.images):
-            temp = image.visible_settings()
-            if not image.wants_objects:
-                temp.remove(image.object_name)
-            result += temp
-        result += [self.add_button]
+        result = [self.images_list, self.wants_objects]
+        if self.wants_objects:
+            result += [self.objects_list]
         return result
 
-    def prepare_settings(self, setting_values):
-        assert len(setting_values) % SETTINGS_PER_IMAGE == 0
-        image_count = len(setting_values) / SETTINGS_PER_IMAGE
-        while image_count > len(self.images):
-            self.add_image_measurement()
-        while image_count < len(self.images):
-            self.remove_image_measurement(self.images[-1].key)
-
-    def get_non_redundant_image_measurements(self):
-        """Return a non-redundant sequence of image measurement objects"""
-        dict = {}
-        for im in self.images:
-            key = (
-                (im.image_name.value, im.object_name.value)
-                if im.wants_objects.value
-                else (im.image_name.value,)
-            )
-            dict[key] = im
-        return list(dict.values())
-
     def run(self, workspace):
-        """Perform the measurements on the imageset"""
-        #
-        # Then measure each
-        #
+        """Perform the measurements on the image sets"""
         col_labels = ["Image", "Masking object", "Feature", "Value"]
         statistics = []
-        for im in self.get_non_redundant_image_measurements():
-            statistics += self.measure(im, workspace)
+        for im in self.images_list.value:
+            image = workspace.image_set.get_image(
+                im, must_be_grayscale=True
+            )
+            input_pixels = image.pixel_data
+
+            measurement_name = im
+            if self.wants_objects.value:
+                for object_set in self.objects_list.value:
+
+                    measurement_name += "_" + object_set
+                    objects = workspace.get_objects(object_set)
+                    if image.has_mask:
+                        pixels = input_pixels[np.logical_and(objects.segmented != 0, image.mask)]
+                    else:
+                        pixels = input_pixels[objects.segmented != 0]
+                    statistics += self.measure(pixels, im, object_set, measurement_name, workspace)
+            else:
+                if image.has_mask:
+                    pixels = input_pixels[image.mask]
+                statistics += self.measure(pixels, im, None, measurement_name, workspace)
         workspace.display_data.statistics = statistics
         workspace.display_data.col_labels = col_labels
 
@@ -260,28 +203,14 @@ objects.""",
             col_labels=workspace.display_data.col_labels,
         )
 
-    def measure(self, im, workspace):
-        """Perform measurements according to the image measurement in im
-
-        im - image measurement info (see ImageMeasurement class above)
+    def measure(self, pixels, image_name, object_name, measurement_name, workspace):
+        """Perform measurements on an array of pixels
+        pixels - image pixel data, masked to objects if applicable
+        image_name - name of the current input image
+        object_name - name of the current object set pixels are masked to
+        measurement_name - group title to be used in data tables
         workspace - has all the details for current image set
         """
-        image = workspace.image_set.get_image(
-            im.image_name.value, must_be_grayscale=True
-        )
-        pixels = image.pixel_data
-
-        measurement_name = im.image_name.value
-        if im.wants_objects.value:
-            measurement_name += "_" + im.object_name.value
-            objects = workspace.get_objects(im.object_name.value)
-            if image.has_mask:
-                pixels = pixels[np.logical_and(objects.segmented != 0, image.mask)]
-            else:
-                pixels = pixels[objects.segmented != 0]
-        elif image.has_mask:
-            pixels = pixels[image.mask]
-
         pixel_count = np.product(pixels.shape)
         if pixel_count == 0:
             pixel_sum = 0
@@ -327,8 +256,8 @@ objects.""",
         m.add_image_measurement(F_UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
         return [
             [
-                im.image_name.value,
-                im.object_name.value if im.wants_objects.value else "",
+                image_name,
+                object_name if self.wants_objects.value else "",
                 feature_name,
                 str(value),
             ]
@@ -350,7 +279,7 @@ objects.""",
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         columns = []
-        for im in self.get_non_redundant_image_measurements():
+        for im in self.images_list.value:
             for feature, coltype in (
                 (F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
                 (F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
@@ -364,10 +293,13 @@ objects.""",
                 (F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
                 (F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT),
             ):
-                measurement_name = im.image_name.value + (
-                    ("_" + im.object_name.value) if im.wants_objects.value else ""
-                )
-                columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
+                if self.wants_objects:
+                    for object_set in self.objects_list.value:
+                        measurement_name = im.image_name.value + "_" + object_set
+                        columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
+                else:
+                    measurement_name = im.image_name.value
+                    columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -388,11 +320,14 @@ objects.""",
             and measurement in ALL_MEASUREMENTS
         ):
             result = []
-            for im in self.images:
-                image_name = im.image_name.value
-                if im.wants_objects:
-                    image_name += "_" + im.object_name.value
-                result += [image_name]
+            for im in self.images_list.value:
+                image_name = im
+                if self.wants_objects:
+                    for object_name in self.objects_list.value:
+                        image_name += "_" + object_name
+                        result += [image_name]
+                else:
+                    result += [image_name]
             return result
         return []
 
@@ -414,6 +349,31 @@ objects.""",
             from_matlab = False
         if variable_revision_number == 1:
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            # Convert to new format, warn if settings will be lost.
+            images_set, use_objects, objects_set = [set(setting_values[i::3]) for i in range(3)]
+            if "None" in images_set:
+                images_set.remove("None")
+            if "None" in objects_set:
+                objects_set.remove("None")
+            images_string = ", ".join(map(str, images_set))
+            wants_objects = "Yes" if "Yes" in use_objects else "No"
+            objects_string = ", ".join(map(str, objects_set))
+            setting_values = [images_string, wants_objects, objects_string]
+            if len(use_objects) > 1 or len(objects_set) > 1:
+                import wx
+                wx.MessageBox(
+                    "The pipeline you loaded was converted from an older version of CellProfiler.\n"
+                    "The MeasureImageIntensity module no longer uses pairs of images and objects.\n"
+                    "Instead, all selected images and objects will be analysed together.\n"
+                    "If you want to limit analysis of particular objects or perform both "
+                    "whole image and object-restricted analysis you should use a second "
+                    "copy of the module.",
+                    "Compatibility Warning - MeasureImageIntensity",
+                    wx.ICON_INFORMATION,
+                )
+            variable_revision_number = 3
+            print(setting_values)
         return setting_values, variable_revision_number, from_matlab
 
     def volumetric(self):

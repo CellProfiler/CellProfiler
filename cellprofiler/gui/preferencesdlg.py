@@ -219,10 +219,13 @@ class PreferencesDlg(wx.Dialog):
         sizer.AddGrowableCol(3, 1)
 
         top_sizer.Add(wx.StaticLine(scrollpanel), 0, wx.EXPAND | wx.ALL, 2)
-        btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
-        btnsizer.Children[1].Window.Label = "Save"
-        self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_OK)
-
+        btnsizer = wx.StdDialogButtonSizer()
+        btnSave = wx.Button(self, wx.ID_SAVE)
+        btnCancel = wx.Button(self, wx.ID_CANCEL)
+        btnsizer.SetAffirmativeButton(btnSave)
+        btnsizer.SetCancelButton(btnCancel)
+        self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_SAVE)
+        btnsizer.Realize()
         scrollpanel_sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         scrollpanel.SetupScrolling(scrollToTop=False)
         self.Fit()
@@ -248,6 +251,7 @@ class PreferencesDlg(wx.Dialog):
                 value = control.Value
             if value != getter():
                 setter(value)
+        self.Close()
 
     def get_preferences(self):
         """Get the list of preferences.

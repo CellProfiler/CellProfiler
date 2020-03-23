@@ -127,36 +127,38 @@ IO_BOTH = "Both"
 class MeasureTexture(cellprofiler.module.Module):
     module_name = "MeasureTexture"
 
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     category = "Measurement"
 
     def create_settings(self):
-        self.image_groups = []
+        self.images_list = cellprofiler.setting.ListImageNameSubscriber(
+            "Select images to measure",
+            [],
+            doc="""Select the grayscale images whose intensity you want to measure.""",
+        )
 
-        self.object_groups = []
+        self.objects_list = cellprofiler.setting.ListObjectNameSubscriber(
+            "Select objects to measure",
+            [],
+            doc="""\
+        Select the objects whose texture you want to measure. If you only want
+        to measure the texture for the image overall, you can remove all objects
+        using the “Remove this object” button.
+
+        Objects specified here will have their texture measured against *all*
+        images specified above, which may lead to image-object combinations that
+        are unnecessary. If you do not want this behavior, use multiple
+        **MeasureTexture** modules to specify the particular image-object
+        measures that you want.
+        """,
+        )
 
         self.scale_groups = []
 
-        self.image_count = cellprofiler.setting.HiddenCount(self.image_groups)
-
-        self.object_count = cellprofiler.setting.HiddenCount(self.object_groups)
-
         self.scale_count = cellprofiler.setting.HiddenCount(self.scale_groups)
 
-        self.add_image(removable=False)
-
-        self.add_images = cellprofiler.setting.DoSomething(
-            callback=self.add_image, label="Add another image", text=""
-        )
-
         self.image_divider = cellprofiler.setting.Divider()
-
-        self.add_object(removable=True)
-
-        self.add_objects = cellprofiler.setting.DoSomething(
-            callback=self.add_object, label="Add another object", text=""
-        )
 
         self.object_divider = cellprofiler.setting.Divider()
 
@@ -166,10 +168,8 @@ class MeasureTexture(cellprofiler.module.Module):
             callback=self.add_scale, label="Add another scale", text=""
         )
 
-        self.scale_divider = cellprofiler.setting.Divider()
-
         self.images_or_objects = cellprofiler.setting.Choice(
-            "Measure images or objects?",
+            "Measure whole images or objects?",
             [IO_IMAGES, IO_OBJECTS, IO_BOTH],
             value=IO_BOTH,
             doc="""\
@@ -187,57 +187,34 @@ measurements, per-object measurements or both.
         )
 
     def settings(self):
-        settings = [self.image_count, self.object_count, self.scale_count]
+        settings = [self.images_list, self.objects_list, self.scale_count, self.images_or_objects]
 
-        groups = [self.image_groups, self.object_groups, self.scale_groups]
-
-        elements = [["image_name"], ["object_name"], ["scale"]]
-
-        for groups, elements in zip(groups, elements):
-            for group in groups:
-                for element in elements:
-                    settings += [getattr(group, element)]
-
-        settings += [self.images_or_objects]
+        for group in self.scale_groups:
+            settings += [getattr(group, "scale")]
 
         return settings
 
     def prepare_settings(self, setting_values):
         counts_and_sequences = [
-            (int(setting_values[0]), self.image_groups, self.add_image),
-            (int(setting_values[1]), self.object_groups, self.add_object),
             (int(setting_values[2]), self.scale_groups, self.add_scale),
         ]
 
         for count, sequence, fn in counts_and_sequences:
             del sequence[count:]
-
             while len(sequence) < count:
                 fn()
 
     def visible_settings(self):
-        visible_settings = []
+        visible_settings = [self.images_list, self.image_divider, self.images_or_objects]
 
         if self.wants_object_measurements():
-            vs_groups = [
-                (self.image_groups, self.add_images, self.image_divider),
-                (self.object_groups, self.add_objects, self.object_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider),
-            ]
-        else:
-            vs_groups = [
-                (self.image_groups, self.add_images, self.image_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider),
-            ]
+            visible_settings += [self.objects_list]
+        visible_settings += [self.object_divider]
 
-        for groups, add_button, div in vs_groups:
-            for group in groups:
-                visible_settings += group.visible_settings()
+        for group in self.scale_groups:
+            visible_settings += group.visible_settings()
 
-            visible_settings += [add_button, div]
-
-            if groups == self.image_groups:
-                visible_settings += [self.images_or_objects]
+        visible_settings += [self.add_scales]
 
         return visible_settings
 
@@ -246,83 +223,6 @@ measurements, per-object measurements or both.
 
     def wants_object_measurements(self):
         return self.images_or_objects in (IO_OBJECTS, IO_BOTH)
-
-    def add_image(self, removable=True):
-        """
-
-        Add an image to the image_groups collection
-
-        :param removable: set this to False to keep from showing the "remove" button for images that must be present.
-
-        """
-        group = cellprofiler.setting.SettingsGroup()
-
-        if removable:
-            divider = cellprofiler.setting.Divider(line=False)
-
-            group.append("divider", divider)
-
-        image = cellprofiler.setting.ImageNameSubscriber(
-            doc="Select the grayscale images whose texture you want to measure.",
-            text="Select an image to measure",
-            value=cellprofiler.setting.NONE,
-        )
-
-        group.append("image_name", image)
-
-        if removable:
-            remove_setting = cellprofiler.setting.RemoveSettingButton(
-                entry=group, label="Remove this image", list=self.image_groups, text=""
-            )
-
-            group.append("remover", remove_setting)
-
-        self.image_groups.append(group)
-
-    def add_object(self, removable=True):
-        """
-
-        Add an object to the object_groups collection
-
-        :param removable: set this to False to keep from showing the "remove" button for objects that must be present.
-
-        """
-        group = cellprofiler.setting.SettingsGroup()
-
-        if removable:
-            divider = cellprofiler.setting.Divider(line=False)
-
-            group.append("divider", divider)
-
-        object_subscriber = cellprofiler.setting.ObjectNameSubscriber(
-            doc="""\
-Select the objects whose texture you want to measure. If you only want
-to measure the texture for the image overall, you can remove all objects
-using the “Remove this object” button.
-
-Objects specified here will have their texture measured against *all*
-images specified above, which may lead to image-object combinations that
-are unnecessary. If you do not want this behavior, use multiple
-**MeasureTexture** modules to specify the particular image-object
-measures that you want.
-""",
-            text="Select objects to measure",
-            value=cellprofiler.setting.NONE,
-        )
-
-        group.append("object_name", object_subscriber)
-
-        if removable:
-            remove_setting = cellprofiler.setting.RemoveSettingButton(
-                entry=group,
-                label="Remove this object",
-                list=self.object_groups,
-                text="",
-            )
-
-            group.append("remover", remove_setting)
-
-        self.object_groups.append(group)
 
     def add_scale(self, removable=True):
         """
@@ -366,30 +266,27 @@ measured and will result in a undefined value in the output file.
 
     def validate_module(self, pipeline):
         images = set()
-
-        for group in self.image_groups:
-            if group.image_name.value in images:
+        if len(self.images_list.value) == 0:
+            raise cellprofiler.setting.ValidationError("No images selected", self.images_list)
+        for image_name in self.images_list.value:
+            if image_name in images:
                 raise cellprofiler.setting.ValidationError(
-                    "{} has already been selected".format(group.image_name.value),
-                    group.image_name,
+                    "%s has already been selected" % image_name, image_name
                 )
-
-            images.add(group.image_name.value)
+            images.add(image_name)
 
         if self.wants_object_measurements():
             objects = set()
-
-            for group in self.object_groups:
-                if group.object_name.value in objects:
+            if len(self.objects_list.value) == 0:
+                raise cellprofiler.setting.ValidationError("No objects selected", self.objects_list)
+            for object_name in self.objects_list.value:
+                if object_name in objects:
                     raise cellprofiler.setting.ValidationError(
-                        "{} has already been selected".format(group.object_name.value),
-                        group.object_name,
+                        "%s has already been selected" % object_name, object_name
                     )
-
-                objects.add(group.object_name.value)
+                objects.add(object_name)
 
         scales = set()
-
         for group in self.scale_groups:
             if group.scale.value in scales:
                 raise cellprofiler.setting.ValidationError(
@@ -400,12 +297,7 @@ measured and will result in a undefined value in the output file.
             scales.add(group.scale.value)
 
     def get_categories(self, pipeline, object_name):
-        object_name_exists = any(
-            [
-                object_name == object_group.object_name
-                for object_group in self.object_groups
-            ]
-        )
+        object_name_exists = object_name in self.objects_list.value
 
         if self.wants_object_measurements() and object_name_exists:
             return [TEXTURE]
@@ -431,7 +323,7 @@ measured and will result in a undefined value in the output file.
         measurements = self.get_measurements(pipeline, object_name, category)
 
         if measurement in measurements:
-            return [x.image_name.value for x in self.image_groups]
+            return self.images_list.value
 
         return []
 
@@ -465,7 +357,7 @@ measured and will result in a undefined value in the output file.
 
         if self.wants_image_measurements():
             for feature in self.get_features():
-                for image_group in self.image_groups:
+                for image_name in self.images_list.value:
                     for scale_group in self.scale_groups:
                         for angle in range(13 if pipeline.volumetric() else 4):
                             columns += [
@@ -474,7 +366,7 @@ measured and will result in a undefined value in the output file.
                                     "{}_{}_{}_{:d}_{:02d}".format(
                                         TEXTURE,
                                         feature,
-                                        image_group.image_name.value,
+                                        image_name,
                                         scale_group.scale.value,
                                         angle,
                                     ),
@@ -483,18 +375,18 @@ measured and will result in a undefined value in the output file.
                             ]
 
         if self.wants_object_measurements():
-            for object_group in self.object_groups:
+            for object_name in self.objects_list.value:
                 for feature in self.get_features():
-                    for image_group in self.image_groups:
+                    for image_name in self.images_list.value:
                         for scale_group in self.scale_groups:
                             for angle in range(13 if pipeline.volumetric() else 4):
                                 columns += [
                                     (
-                                        object_group.object_name.value,
+                                        object_name,
                                         "{}_{}_{}_{:d}_{:02d}".format(
                                             TEXTURE,
                                             feature,
-                                            image_group.image_name.value,
+                                            image_name,
                                             scale_group.scale.value,
                                             angle,
                                         ),
@@ -515,9 +407,7 @@ measured and will result in a undefined value in the output file.
 
         statistics = []
 
-        for image_group in self.image_groups:
-            image_name = image_group.image_name.value
-
+        for image_name in self.images_list.value:
             for scale_group in self.scale_groups:
                 scale = scale_group.scale.value
 
@@ -525,9 +415,7 @@ measured and will result in a undefined value in the output file.
                     statistics += self.run_image(image_name, scale, workspace)
 
                 if self.wants_object_measurements():
-                    for object_group in self.object_groups:
-                        object_name = object_group.object_name.value
-
+                    for object_name in self.objects_list.value:
                         statistics += self.run_one(
                             image_name, object_name, scale, workspace
                         )
@@ -762,6 +650,26 @@ measured and will result in a undefined value in the output file.
 
             setting_values = new_setting_values
             variable_revision_number = 5
+        if variable_revision_number == 5:
+            num_images = int(setting_values[0])
+            num_objects = int(setting_values[1])
+            num_scales = setting_values[2]
+            div_img = 3 + num_images
+            div_obj = div_img + num_objects
+            images_set = set(setting_values[3:div_img])
+            objects_set = set(setting_values[div_img:div_obj])
+            scales_list = setting_values[div_obj:-1]
+
+            if "None" in images_set:
+                images_set.remove("None")
+            if "None" in objects_set:
+                objects_set.remove("None")
+            images_string = ", ".join(map(str, images_set))
+            objects_string = ", ".join(map(str, objects_set))
+
+            module_mode = setting_values[-1]
+            setting_values = [images_string, objects_string, num_scales, module_mode] + scales_list
+            variable_revision_number = 6
 
         return setting_values, variable_revision_number, False
 

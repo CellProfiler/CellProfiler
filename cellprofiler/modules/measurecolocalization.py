@@ -112,20 +112,27 @@ F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 class MeasureColocalization(cellprofiler_core.module.Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
         """Create the initial settings for the module"""
-        self.image_groups = []
-        self.add_image(can_delete=False)
-        self.spacer_1 = cellprofiler_core.setting.Divider()
-        self.add_image(can_delete=False)
-        self.image_count = cellprofiler_core.setting.HiddenCount(self.image_groups)
 
-        self.add_image_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another image", self.add_image
+        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+            "Select images to measure",
+            [],
+            doc="""Select images to measure the correlation/colocalization in.""",
         )
-        self.spacer_2 = cellprofiler_core.setting.Divider()
+
+        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+            "Select objects to measure",
+            [],
+            doc="""\
+*(Used only when "Within objects" or "Both" are selected)*
+
+Select the objects to be measured.""",
+        )
+
+
         self.thr = cellprofiler_core.setting.Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
@@ -152,15 +159,8 @@ All methods measure correlation on a pixel by pixel basis.
             % globals(),
         )
 
-        self.object_groups = []
-        self.add_object(can_delete=False)
-        self.object_count = cellprofiler_core.setting.HiddenCount(self.object_groups)
+        self.spacer = cellprofiler_core.setting.Divider(line=True)
 
-        self.spacer_2 = cellprofiler_core.setting.Divider(line=True)
-
-        self.add_object_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another object", self.add_object
-        )
         self.do_all = cellprofiler_core.setting.Binary(
             "Run all metrics?",
             True,
@@ -224,115 +224,30 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             ),
         )
 
-    def add_image(self, can_delete=True):
-        """Add an image to the image_groups collection
-
-        can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present.
-        """
-        group = cellprofiler_core.setting.SettingsGroup()
-        if can_delete:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
-        group.append(
-            "image_name",
-            cellprofiler_core.setting.ImageNameSubscriber(
-                "Select an image to measure",
-                "None",
-                doc="Select an image to measure the correlation/colocalization in.",
-            ),
-        )
-
-        if (
-            len(self.image_groups) == 0
-        ):  # Insert space between 1st two images for aesthetics
-            group.append("extra_divider", cellprofiler_core.setting.Divider(line=False))
-
-        if can_delete:
-            group.append(
-                "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this image", self.image_groups, group
-                ),
-            )
-
-        self.image_groups.append(group)
-
-    def add_object(self, can_delete=True):
-        """Add an object to the object_groups collection"""
-        group = cellprofiler_core.setting.SettingsGroup()
-        if can_delete:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
-
-        group.append(
-            "object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
-                "Select an object to measure",
-                "None",
-                doc="""\
-*(Used only when "Within objects" or "Both" are selected)*
-
-Select the objects to be measured.""",
-            ),
-        )
-
-        if can_delete:
-            group.append(
-                "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this object", self.object_groups, group
-                ),
-            )
-        self.object_groups.append(group)
 
     def settings(self):
         """Return the settings to be saved in the pipeline"""
-        result = [self.image_count, self.object_count]
-        result += [image_group.image_name for image_group in self.image_groups]
-        result += [self.thr]
-        result += [self.images_or_objects]
-        result += [object_group.object_name for object_group in self.object_groups]
-        result += [
-            self.do_all,
-            self.do_corr_and_slope,
-            self.do_manders,
-            self.do_rwc,
-            self.do_overlap,
-            self.do_costes,
+        result = [self.images_list,
+                  self.thr,
+                  self.images_or_objects,
+                  self.objects_list,
+                  self.do_all,
+                  self.do_corr_and_slope,
+                  self.do_manders,
+                  self.do_rwc,
+                  self.do_overlap,
+                  self.do_costes,
         ]
         return result
 
-    def prepare_settings(self, setting_values):
-        """Make sure there are the right number of image and object slots for the incoming settings"""
-        image_count = int(setting_values[0])
-        object_count = int(setting_values[1])
-        if image_count < 2:
-            raise ValueError(
-                "The MeasureColocalization module must have at least two input images. %d found in pipeline file"
-                % image_count
-            )
-
-        del self.image_groups[image_count:]
-        while len(self.image_groups) < image_count:
-            self.add_image()
-
-        del self.object_groups[object_count:]
-        while len(self.object_groups) < object_count:
-            self.add_object()
-
     def visible_settings(self):
-        result = []
-        for image_group in self.image_groups:
-            result += image_group.visible_settings()
-        result += [
-            self.add_image_button,
-            self.spacer_2,
-            self.thr,
-            self.images_or_objects,
+        result = [self.images_list,
+                  self.spacer,
+                  self.thr,
+                  self.images_or_objects,
         ]
         if self.wants_objects():
-            for object_group in self.object_groups:
-                result += object_group.visible_settings()
-            result += [self.add_object_button]
+            result += [self.objects_list]
         result += [self.do_all]
         if not self.do_all:
             result += [
@@ -349,8 +264,8 @@ Select the objects to be measured.""",
         help_settings = [
             self.images_or_objects,
             self.thr,
-            self.image_groups[0].image_name,
-            self.object_groups[0].object_name,
+            self.images_list,
+            self.objects_list,
             self.do_all,
         ]
         return help_settings
@@ -360,11 +275,11 @@ Select the objects to be measured.""",
 
         Yields the pairs of images in a canonical order.
         """
-        for i in range(self.image_count.value - 1):
-            for j in range(i + 1, self.image_count.value):
+        for i in range(len(self.images_list.value) - 1):
+            for j in range(i + 1, len(self.images_list.value)):
                 yield (
-                    self.image_groups[i].image_name.value,
-                    self.image_groups[j].image_name.value,
+                    self.images_list.value[i],
+                    self.images_list.value[j],
                 )
 
     def wants_images(self):
@@ -385,9 +300,7 @@ Select the objects to be measured.""",
                     workspace, first_image_name, second_image_name
                 )
             if self.wants_objects():
-                for object_name in [
-                    group.object_name.value for group in self.object_groups
-                ]:
+                for object_name in self.objects_list.value:
                     statistics += self.run_image_pair_objects(
                         workspace, first_image_name, second_image_name, object_name
                     )
@@ -1405,8 +1318,8 @@ Select the objects to be measured.""",
                     ]
 
             if self.wants_objects():
-                for i in range(self.object_count.value):
-                    object_name = self.object_groups[i].object_name.value
+                for i in range(len(self.objects_list.value)):
+                    object_name = self.objects_list.value[i]
                     if self.do_corr_and_slope:
                         columns += [
                             (
@@ -1482,7 +1395,7 @@ Select the objects to be measured.""",
         if (object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()) or (
             (object_name != cellprofiler_core.measurement.IMAGE)
             and self.wants_objects()
-            and (object_name in [x.object_name.value for x in self.object_groups])
+            and (object_name in self.objects_list.value)
         ):
             return ["Correlation"]
         return []
@@ -1534,6 +1447,23 @@ Select the objects to be measured.""",
             )
             variable_revision_number = 3
 
+        if variable_revision_number == 3:
+            num_images = int(setting_values[0])
+            num_objects = int(setting_values[1])
+            div_img = 2 + num_images
+            div_obj = div_img + 2 + num_objects
+            images_set = set(setting_values[2:div_img])
+            thr_mode = setting_values[div_img:div_img + 2]
+            objects_set = set(setting_values[div_img + 2:div_obj])
+            other_settings = setting_values[div_obj:]
+            if "None" in images_set:
+                images_set.remove("None")
+            if "None" in objects_set:
+                objects_set.remove("None")
+            images_string = ", ".join(map(str, images_set))
+            objects_string = ", ".join(map(str, objects_set))
+            setting_values = [images_string] + thr_mode + [objects_string] + other_settings
+            variable_revision_number = 4
         return setting_values, variable_revision_number
 
     def volumetric(self):

@@ -18,10 +18,10 @@ def make_workspace(image1, image2, objects=None):
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
     image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    for image_group, name, image in zip(
-        module.image_groups, (IMAGE1_NAME, IMAGE2_NAME), (image1, image2)
+    module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+    for image_name, name, image in zip(
+        module.images_list.value, (IMAGE1_NAME, IMAGE2_NAME), (image1, image2)
     ):
-        image_group.image_name.value = name
         image_set.add(name, image)
     object_set = cellprofiler.object.ObjectSet()
     if objects is None:
@@ -32,7 +32,7 @@ def make_workspace(image1, image2, objects=None):
         module.images_or_objects.value = (
             cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
         )
-        module.object_groups[0].object_name.value = OBJECTS_NAME
+        module.objects_list.value = OBJECTS_NAME
         object_set.add_objects(objects, OBJECTS_NAME)
     pipeline = cellprofiler.pipeline.Pipeline()
     workspace = cellprofiler.workspace.Workspace(
@@ -64,13 +64,13 @@ def test_load_v2():
         module.images_or_objects.value
         == cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
-    assert module.image_count.value == 2
+    assert len(module.images_list.value) == 2
     assert module.thr == 15.0
-    for name in [x.image_name.value for x in module.image_groups]:
+    for name in module.images_list.value:
         assert name in ["DNA", "Cytoplasm"]
 
-    assert module.object_count.value == 2
-    for name in [x.object_name.value for x in module.object_groups]:
+    assert len(module.objects_list.value) == 2
+    for name in module.objects_list.value:
         assert name in ["Nuclei", "Cells"]
 
 
@@ -92,13 +92,13 @@ def test_load_v3():
         module.images_or_objects.value
         == cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
-    assert module.image_count.value == 2
+    assert len(module.images_list.value) == 2
     assert module.thr == 25.0
-    for name in [x.image_name.value for x in module.image_groups]:
+    for name in module.images_list.value:
         assert name in ["DNA", "Cytoplasm"]
 
-    assert module.object_count.value == 2
-    for name in [x.object_name.value for x in module.object_groups]:
+    assert len(module.objects_list.value) == 2
+    for name in module.objects_list.value:
         assert name in ["Nuclei", "Cells"]
 
 
@@ -124,9 +124,8 @@ asymmetrical_measurement_formats = [
 def test_get_categories():
     """Test the get_categories function for some different cases"""
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-    module.image_groups[0].image_name.value = IMAGE1_NAME
-    module.image_groups[1].image_name.value = IMAGE2_NAME
-    module.object_groups[0].object_name.value = OBJECTS_NAME
+    module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+    module.objects_list.value = OBJECTS_NAME
     module.images_or_objects.value = cellprofiler.modules.measurecolocalization.M_IMAGES
 
     def cat(name):
@@ -149,9 +148,8 @@ def test_get_categories():
 def test_get_measurements():
     """Test the get_measurements function for some different cases"""
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-    module.image_groups[0].image_name.value = IMAGE1_NAME
-    module.image_groups[1].image_name.value = IMAGE2_NAME
-    module.object_groups[0].object_name.value = OBJECTS_NAME
+    module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+    module.objects_list.value = OBJECTS_NAME
     module.images_or_objects.value = cellprofiler.modules.measurecolocalization.M_IMAGES
 
     def meas(name):
@@ -192,9 +190,8 @@ def test_get_measurement_images():
         ),
     ):
         module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-        module.image_groups[0].image_name.value = IMAGE1_NAME
-        module.image_groups[1].image_name.value = IMAGE2_NAME
-        module.object_groups[0].object_name.value = OBJECTS_NAME
+        module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+        module.objects_list.value = OBJECTS_NAME
         module.images_or_objects.value = iocase
         for name, mfs in (
             (cellprofiler.measurement.IMAGE, all_image_measurement_formats),
@@ -220,9 +217,8 @@ def test_get_measurement_images():
 
 def test_01_get_measurement_columns_images():
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-    module.image_groups[0].image_name.value = IMAGE1_NAME
-    module.image_groups[1].image_name.value = IMAGE2_NAME
-    module.object_groups[0].object_name.value = OBJECTS_NAME
+    module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+    module.objects_list.value = OBJECTS_NAME
     module.images_or_objects.value = cellprofiler.modules.measurecolocalization.M_IMAGES
     columns = module.get_measurement_columns(None)
     expected = [
@@ -247,9 +243,8 @@ def test_01_get_measurement_columns_images():
 
 def test_02_get_measurement_columns_objects():
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-    module.image_groups[0].image_name.value = IMAGE1_NAME
-    module.image_groups[1].image_name.value = IMAGE2_NAME
-    module.object_groups[0].object_name.value = OBJECTS_NAME
+    module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+    module.objects_list.value = OBJECTS_NAME
     module.images_or_objects.value = (
         cellprofiler.modules.measurecolocalization.M_OBJECTS
     )
@@ -276,9 +271,8 @@ def test_02_get_measurement_columns_objects():
 
 def test_03_get_measurement_columns_both():
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-    module.image_groups[0].image_name.value = IMAGE1_NAME
-    module.image_groups[1].image_name.value = IMAGE2_NAME
-    module.object_groups[0].object_name.value = OBJECTS_NAME
+    module.images_list.value = ', '.join((IMAGE1_NAME, IMAGE2_NAME))
+    module.objects_list.value = OBJECTS_NAME
     module.images_or_objects.value = (
         cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
     )

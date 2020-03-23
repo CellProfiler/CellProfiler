@@ -103,7 +103,7 @@ Area occupied can be measured in two ways:
             [],
             doc="""*(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
 
-This is a binary image created earlier in the pipeline, where you would
+These should be binary images created earlier in the pipeline, where you would
 like to measure the area occupied by the foreground in the image.
                     """.format(
                         **{"O_BINARY_IMAGE": O_BINARY_IMAGE}

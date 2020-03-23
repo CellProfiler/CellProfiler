@@ -125,7 +125,7 @@ Maximum radius:50
     )
     assert module.object_count.value == 2
     assert module.bin_counts_count.value == 2
-    assert module.images_list.value_text == "OrigBlue, EnhancedGreen"
+    assert {'OrigBlue', 'EnhancedGreen'}.issubset(module.images_list.value)
     assert module.objects[0].object_name == "Nuclei"
     assert (
         module.objects[0].center_choice
@@ -166,7 +166,7 @@ def test_load_v3():
     )
     assert module.object_count.value == 3
     assert module.bin_counts_count.value == 2
-    assert module.images_list.value_text == "OrigBlue, EnhancedGreen"
+    assert {'OrigBlue', 'EnhancedGreen'}.issubset(module.images_list.value)
     assert module.objects[0].object_name == "Nuclei"
     assert (
         module.objects[0].center_choice
@@ -217,7 +217,7 @@ def test_load_v4():
     )
     assert module.zernike_degree == 9
     assert len(module.images_list.value) == 2
-    assert module.images_list.value_text == "CropGreen, CropRed"
+    assert {'CropGreen', 'CropRed'}.issubset(module.images_list.value)
     assert len(module.objects) == 2
     for group, (object_name, center_choice, center_object_name) in zip(
         module.objects,
@@ -321,7 +321,7 @@ def test_load_v5():
     )
     assert module.zernike_degree == 7
     assert len(module.images_list.value) == 2
-    assert module.images_list.value_text == "CropGreen, CropRed"
+    assert {'CropGreen', 'CropRed'}.issubset(module.images_list.value)
     assert len(module.objects) == 2
     for group, (object_name, center_choice, center_object_name) in zip(
         module.objects,

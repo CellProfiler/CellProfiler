@@ -1117,7 +1117,7 @@ class CPFrame(wx.Frame):
         if hasattr(sys, "frozen"):
             os.system("open -na /Applications/CellProfiler-{}.app".format(cellprofiler.__version__))
         else:
-            os.system("cellprofiler")
+            os.system("python3 -m cellprofiler")
 
     def __on_help_path_list(self, event):
         import cellprofiler.gui.htmldialog

@@ -10,9 +10,9 @@ setuptools.setup(
         "Programming Language :: Python :: 3.7",
     ],
     extras_require={
-        "dev": ["black==19.3b0", "pre-commit==1.18.3"],
-        "test": ["pytest==5.1.3"],
-        "wx": ["wxPython==4.0.6"],
+        "dev": ["black==19.10b0", "pre-commit==2.2.0", "twine==3.1.1"],
+        "test": ["pytest==5.4.1"],
+        "wx": ["wxPython==4.0.7"],
     },
     install_requires=[
         "boto3==1.9.233",
@@ -32,5 +32,5 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.7, <4",
     url="https://github.com/CellProfiler/core",
-    version="4.0.0rc1"
+    version="4.0.0rc1",
 )

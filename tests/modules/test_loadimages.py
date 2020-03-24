@@ -207,9 +207,8 @@ def test_load_url():
 
 def test_load_Nikon_tif():
     """This is the Nikon format TIF file from IMG-838"""
-    tests.modules.maybe_download_tesst_image("NikonTIF.tif")
     lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
-        "nikon", tests.modules.testimages_directory(), "NikonTIF.tif", True
+        "nikon", "tests/data/modules/loadimages", "NikonTIF.tif", True
     )
     image = lip.provide_image(None).pixel_data
     assert tuple(image.shape) == (731, 805, 3)

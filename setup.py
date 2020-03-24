@@ -19,7 +19,7 @@ setuptools.setup(
         "centrosome==1.1.6",
         "docutils==0.15.2",
         "h5py==2.10.0",
-        "javabridge@https://github.com/CellProfiler/python-javabridge/tarball/master",
+        "python-javabridge==4.0.0rc1",
         "matplotlib==3.1.1",
         "numpy==1.17.2",
         "prokaryote==2.4.1",

@@ -220,13 +220,10 @@ def test_load_Metamorph_tif():
 
     This file generated a null-pointer exception in the MetamorphReader
     """
-    tests.modules.maybe_download_tesst_image(
-        "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif"
-    )
     lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
         "nikon",
-        tests.modules.testimages_directory(),
-        "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",
+        "tests/data/modules/loadimages",
+        "MetamorphImage.tif",
         True,
     )
     image = lip.provide_image(None).pixel_data

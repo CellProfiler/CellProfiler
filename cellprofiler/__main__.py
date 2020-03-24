@@ -221,6 +221,10 @@ def main(args=None):
             exit_code = run_pipeline_headless(options, args)
 
     finally:
+        # Cleanup the temp files we made, if any
+        if len(to_clean) > 0:
+            for each_temp in to_clean:
+                os.remove(each_temp)
         # If anything goes wrong during the startup sequence headlessly, the JVM needs
         # to be explicitly closed
         if not options.show_gui:

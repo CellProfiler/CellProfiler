@@ -383,7 +383,7 @@ pass the current filter.
 
         Returns upgraded setting values, revision number and matlab flag
         """
-        if variable_revision_number == 1:
+        if variable_revision_number == '1':
             # Changed from yes/no for filter to a choice
             filter_choice = (
                 FILTER_CHOICE_CUSTOM

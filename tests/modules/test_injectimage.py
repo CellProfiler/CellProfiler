@@ -18,7 +18,7 @@ def test_get_from_image_set():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, ii, measurements, None, measurements, cellprofiler_core.image()
+        pipeline, ii, measurements, None, measurements, cellprofiler_core.image.Image()
     )
     ii.prepare_run(workspace)
     ii.prepare_group(workspace, {}, [1])

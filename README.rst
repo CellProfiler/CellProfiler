@@ -1,2 +1,3 @@
-nucleus
-=======
+CellProfiler-core
+=================
+

@@ -25,9 +25,9 @@ setuptools.setup(
         "scikit-image==0.15.0",
         "scipy==1.3.1",
     ],
-    name="nucleus",
+    name="cellprofiler-core",
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.7, <4",
-    url="https://github.com/CellProfiler/nucleus",
+    url="https://github.com/CellProfiler/core",
     version="4.0.0",
 )

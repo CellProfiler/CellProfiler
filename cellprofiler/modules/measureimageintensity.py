@@ -23,6 +23,13 @@ module. If the image has a mask, only unmasked pixels will be measured.
 
 {HELP_ON_MEASURING_INTENSITIES}
 
+As of **CellProfiler 4.0** the settings for this module have been changed to simplify
+configuration. All selected images and objects are now analysed together rather
+than needing to be matched in pairs.
+Pipelines from older versions will be converted to match this format, which may
+create extra computational work. Specific pairing can still be achieved by running
+multiple copies of this module.
+
 |
 
 ============ ============ ===============

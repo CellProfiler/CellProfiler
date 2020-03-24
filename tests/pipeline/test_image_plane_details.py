@@ -1,28 +1,28 @@
 import unittest
 
-import nucleus.pipeline
+import cellprofiler_core.pipeline
 
 
 class TestImagePlaneDetails(unittest.TestCase):
     def get_ipd(
         self, url="http://nucleus.org", series=0, index=0, channel=0, metadata={}
     ):
-        d = nucleus.pipeline.J.make_map(**metadata)
-        jipd = nucleus.pipeline.J.run_script(
+        d = cellprofiler_core.pipeline.J.make_map(**metadata)
+        jipd = cellprofiler_core.pipeline.J.run_script(
             """
             var uri = new java.net.URI(url);
-            var f = new Packages.org.nucleus.imageset.ImageFile(uri);
-            var fd = new Packages.org.nucleus.imageset.ImageFileDetails(f);
-            var s = new Packages.org.nucleus.imageset.ImageSeries(f, series);
-            var sd = new Packages.org.nucleus.imageset.ImageSeriesDetails(s, fd);
-            var p = new Packages.org.nucleus.imageset.ImagePlane(s, index, channel);
-            var ipd = new Packages.org.nucleus.imageset.ImagePlaneDetails(p, sd);
+            var f = new Packages.org.cellprofiler_core.imageset.ImageFile(uri);
+            var fd = new Packages.org.cellprofiler_core.imageset.ImageFileDetails(f);
+            var s = new Packages.org.cellprofiler_core.imageset.ImageSeries(f, series);
+            var sd = new Packages.org.cellprofiler_core.imageset.ImageSeriesDetails(s, fd);
+            var p = new Packages.org.cellprofiler_core.imageset.ImagePlane(s, index, channel);
+            var ipd = new Packages.org.cellprofiler_core.imageset.ImagePlaneDetails(p, sd);
             ipd.putAll(d);
             ipd;
             """,
             dict(url=url, series=series, index=index, channel=channel, d=d),
         )
-        return nucleus.pipeline.ImagePlane(jipd)
+        return cellprofiler_core.pipeline.ImagePlane(jipd)
 
         # def test_01_01_init(self):
         #     self.get_ipd();

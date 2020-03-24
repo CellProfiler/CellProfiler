@@ -1,54 +1,54 @@
 import numpy
 
-import nucleus.image
-import nucleus.measurement
-import nucleus.module
-import nucleus.module.image_segmentation._image_segmentation
-import nucleus.module.image_segmentation._object_processing
-import nucleus.object
-import nucleus.workspace
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.module.image_segmentation._image_segmentation
+import cellprofiler_core.module.image_segmentation._object_processing
+import cellprofiler_core.object
+import cellprofiler_core.workspace
 
 
 class TestObjectProcessing:
     def test_get_categories_image(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
-        actual = module.get_categories(None, nucleus.measurement.IMAGE)
+        actual = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
 
-        expected = [nucleus.measurement.C_COUNT]
+        expected = [cellprofiler_core.measurement.C_COUNT]
 
         assert actual == expected
 
     def test_get_categories_input_object(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_categories(None, "Objects")
 
-        expected = [nucleus.measurement.C_CHILDREN]
+        expected = [cellprofiler_core.measurement.C_CHILDREN]
 
         assert actual == expected
 
     def test_get_categories_output_object(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_categories(None, "ObjectProcessing")
 
         expected = [
-            nucleus.measurement.C_LOCATION,
-            nucleus.measurement.C_NUMBER,
-            nucleus.measurement.C_PARENT,
+            cellprofiler_core.measurement.C_LOCATION,
+            cellprofiler_core.measurement.C_NUMBER,
+            cellprofiler_core.measurement.C_PARENT,
         ]
 
         assert actual == expected
 
     def test_get_categories_other(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -59,7 +59,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurement_columns(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -68,45 +68,45 @@ class TestObjectProcessing:
         expected = [
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_LOCATION_CENTER_X,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_LOCATION_CENTER_Y,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_LOCATION_CENTER_Z,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_NUMBER_OBJECT_NUMBER,
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.FF_COUNT % "ObjectProcessing",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "Objects",
-                nucleus.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.FF_PARENT % "Objects",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_PARENT % "Objects",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
         ]
 
         assert actual == expected
 
     def test_get_measurement_columns_additional_objects(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -117,85 +117,85 @@ class TestObjectProcessing:
         expected = [
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_LOCATION_CENTER_X,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_LOCATION_CENTER_Y,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_LOCATION_CENTER_Z,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.M_NUMBER_OBJECT_NUMBER,
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.FF_COUNT % "ObjectProcessing",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "Objects",
-                nucleus.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "ObjectProcessing",
-                nucleus.measurement.FF_PARENT % "Objects",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_PARENT % "Objects",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "additional_output",
-                nucleus.measurement.M_LOCATION_CENTER_X,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "additional_output",
-                nucleus.measurement.M_LOCATION_CENTER_Y,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "additional_output",
-                nucleus.measurement.M_LOCATION_CENTER_Z,
-                nucleus.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 "additional_output",
-                nucleus.measurement.M_NUMBER_OBJECT_NUMBER,
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.FF_COUNT % "additional_output",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_COUNT % "additional_output",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "additional_input",
-                nucleus.measurement.FF_CHILDREN_COUNT % "additional_output",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % "additional_output",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 "additional_output",
-                nucleus.measurement.FF_PARENT % "additional_input",
-                nucleus.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_PARENT % "additional_input",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
         ]
 
         assert actual == expected
 
     def test_get_measurements_image_count(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, nucleus.measurement.IMAGE, nucleus.measurement.C_COUNT
+            None, cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_COUNT
         )
 
         expected = ["ObjectProcessing"]
@@ -203,31 +203,31 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_image_other(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
-        actual = module.get_measurements(None, nucleus.measurement.IMAGE, "foo")
+        actual = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "foo")
 
         expected = []
 
         assert actual == expected
 
     def test_get_measurements_input_object_children(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "Objects", nucleus.measurement.C_CHILDREN
+            None, "Objects", cellprofiler_core.measurement.C_CHILDREN
         )
 
-        expected = [nucleus.measurement.FF_COUNT % "ObjectProcessing"]
+        expected = [cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing"]
 
         assert actual == expected
 
     def test_get_measurements_input_object_other(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -238,42 +238,42 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_location(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "ObjectProcessing", nucleus.measurement.C_LOCATION
+            None, "ObjectProcessing", cellprofiler_core.measurement.C_LOCATION
         )
 
         expected = [
-            nucleus.measurement.FTR_CENTER_X,
-            nucleus.measurement.FTR_CENTER_Y,
-            nucleus.measurement.FTR_CENTER_Z,
+            cellprofiler_core.measurement.FTR_CENTER_X,
+            cellprofiler_core.measurement.FTR_CENTER_Y,
+            cellprofiler_core.measurement.FTR_CENTER_Z,
         ]
 
         assert actual == expected
 
     def test_get_measurements_output_object_number(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "ObjectProcessing", nucleus.measurement.C_NUMBER
+            None, "ObjectProcessing", cellprofiler_core.measurement.C_NUMBER
         )
 
-        expected = [nucleus.measurement.FTR_OBJECT_NUMBER]
+        expected = [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
         assert actual == expected
 
     def test_get_measurements_output_object_parent(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "ObjectProcessing", nucleus.measurement.C_PARENT
+            None, "ObjectProcessing", cellprofiler_core.measurement.C_PARENT
         )
 
         expected = ["Objects"]
@@ -281,7 +281,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_other(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -292,7 +292,7 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_other_other(self):
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
@@ -303,13 +303,13 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_add_measurements(self):
-        measurements = nucleus.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
 
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
-        object_set = nucleus.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
 
         labels = numpy.zeros((30, 30), dtype=numpy.uint8)
 
@@ -319,7 +319,7 @@ class TestObjectProcessing:
         i, j = numpy.mgrid[-15:15, -22:8]
         labels[i ** 2 + j ** 2 <= 16] = 2
 
-        objects = nucleus.object.Objects()
+        objects = cellprofiler_core.object.Objects()
 
         objects.segmented = labels
 
@@ -330,13 +330,13 @@ class TestObjectProcessing:
         i, j = numpy.mgrid[-15:15, -15:15]
         parent_labels[i ** 2 + j ** 2 <= 196] = 1
 
-        parent_objects = nucleus.object.Objects()
+        parent_objects = cellprofiler_core.object.Objects()
 
         parent_objects.segmented = parent_labels
 
         object_set.add_objects(parent_objects, "Objects")
 
-        workspace = nucleus.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline=None,
             module=module,
             image_set=None,
@@ -350,7 +350,7 @@ class TestObjectProcessing:
         expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
-            "ObjectProcessing", nucleus.measurement.M_LOCATION_CENTER_X
+            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_X
         )
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
@@ -358,7 +358,7 @@ class TestObjectProcessing:
         expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
-            "ObjectProcessing", nucleus.measurement.M_LOCATION_CENTER_Y
+            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
         )
 
         numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
@@ -366,7 +366,7 @@ class TestObjectProcessing:
         expected_center_z = [0.0, 0.0]
 
         actual_center_z = measurements.get_measurement(
-            "ObjectProcessing", nucleus.measurement.M_LOCATION_CENTER_Z
+            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
         )
 
         numpy.testing.assert_array_equal(actual_center_z, expected_center_z)
@@ -374,7 +374,7 @@ class TestObjectProcessing:
         expected_object_number = [1.0, 2.0]
 
         actual_object_number = measurements.get_measurement(
-            "ObjectProcessing", nucleus.measurement.M_NUMBER_OBJECT_NUMBER
+            "ObjectProcessing", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
         )
 
         numpy.testing.assert_array_equal(actual_object_number, expected_object_number)
@@ -382,7 +382,7 @@ class TestObjectProcessing:
         expected_count = [2.0]
 
         actual_count = measurements.get_measurement(
-            nucleus.measurement.IMAGE, nucleus.measurement.FF_COUNT % "ObjectProcessing"
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing"
         )
 
         numpy.testing.assert_array_equal(actual_count, expected_count)
@@ -390,7 +390,7 @@ class TestObjectProcessing:
         expected_children_count = [2]
 
         actual_children_count = measurements.get_measurement(
-            "Objects", nucleus.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
+            "Objects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
         )
 
         numpy.testing.assert_array_equal(actual_children_count, expected_children_count)
@@ -398,27 +398,27 @@ class TestObjectProcessing:
         expected_parents = [1, 1]
 
         actual_parents = measurements.get_measurement(
-            "ObjectProcessing", nucleus.measurement.FF_PARENT % "Objects"
+            "ObjectProcessing", cellprofiler_core.measurement.FF_PARENT % "Objects"
         )
 
         numpy.testing.assert_array_equal(actual_parents, expected_parents)
 
     def test_run(self):
-        measurements = nucleus.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
 
-        module = nucleus.module.image_segmentation._object_processing.ObjectProcessing()
+        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
 
         module.x_name.value = "Objects"
 
-        object_set = nucleus.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
 
-        parent_objects = nucleus.object.Objects()
+        parent_objects = cellprofiler_core.object.Objects()
 
         parent_objects.segmented = numpy.ones((10, 10), dtype=numpy.uint8)
 
         object_set.add_objects(parent_objects, "Objects")
 
-        workspace = nucleus.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline=None,
             module=module,
             image_set=None,
@@ -432,29 +432,29 @@ class TestObjectProcessing:
         module.run(workspace)
 
         assert measurements.has_feature(
-            "ObjectProcessing", nucleus.measurement.M_LOCATION_CENTER_X
+            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_X
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", nucleus.measurement.M_LOCATION_CENTER_Y
+            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", nucleus.measurement.M_LOCATION_CENTER_Z
+            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", nucleus.measurement.M_NUMBER_OBJECT_NUMBER
+            "ObjectProcessing", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
         )
 
         assert measurements.has_feature(
-            nucleus.measurement.IMAGE, nucleus.measurement.FF_COUNT % "ObjectProcessing"
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing"
         )
 
         assert measurements.has_feature(
-            "Objects", nucleus.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
+            "Objects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", nucleus.measurement.FF_PARENT % "Objects"
+            "ObjectProcessing", cellprofiler_core.measurement.FF_PARENT % "Objects"
         )

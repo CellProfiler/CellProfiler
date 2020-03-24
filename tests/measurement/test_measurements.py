@@ -8,7 +8,7 @@ import unittest
 import numpy
 import six.moves
 
-import nucleus.measurement
+import cellprofiler_core.measurement
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"
@@ -16,7 +16,7 @@ FEATURE_NAME = "feature"
 
 class TestMeasurements:
     def test_00_00_init(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
 
     def test_00_01_wrap_unwrap(self):
         test0 = ["foo", "foo\\", "foo\\u0384", "foo\\u0384"]
@@ -24,37 +24,37 @@ class TestMeasurements:
         # numpy.object_
         test += numpy.array(test0, object).tolist()
         for case in test:
-            result = nucleus.measurement.Measurements.unwrap_string(
-                nucleus.measurement.Measurements.wrap_string(case)
+            result = cellprofiler_core.measurement.Measurements.unwrap_string(
+                cellprofiler_core.measurement.Measurements.wrap_string(case)
             )
 
             assert result == case
 
     def test_01_01_image_number_is_zero(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         assert x.image_set_number == 1
 
     def test_01_01_next_image(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.next_image_set()
         assert x.image_set_number == 2
 
     def test_02_01_add_image_measurement(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.add_measurement("Image", "Feature", "Value")
         assert x.get_current_measurement("Image", "Feature") == "Value"
         assert "Image" in x.get_object_names()
         assert "Feature" in x.get_feature_names("Image")
 
     def test_02_01b_add_image_measurement_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x["Image", "Feature"] = "Value"
         assert x["Image", "Feature"] == "Value"
         assert "Image" in x.get_object_names()
         assert "Feature" in x.get_feature_names("Image")
 
     def test_02_02_add_object_measurement(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         numpy.random.seed(0)
         m = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m)
@@ -63,7 +63,7 @@ class TestMeasurements:
         assert "Feature" in x.get_feature_names("Nuclei")
 
     def test_02_02b_add_object_measurement_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         numpy.random.seed(0)
         m = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m
@@ -72,7 +72,7 @@ class TestMeasurements:
         assert "Feature" in x.get_feature_names("Nuclei")
 
     def test_02_03_add_two_measurements(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.add_measurement("Image", "Feature", "Value")
         numpy.random.seed(0)
         m = numpy.random.rand(10)
@@ -84,7 +84,7 @@ class TestMeasurements:
         assert "Feature" in x.get_feature_names("Image")
 
     def test_02_03b_add_two_measurements_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x["Image", "Feature"] = "Value"
         numpy.random.seed(0)
         m = numpy.random.rand(10)
@@ -96,7 +96,7 @@ class TestMeasurements:
         assert "Feature" in x.get_feature_names("Image")
 
     def test_02_04_add_two_measurements_to_object(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.add_measurement("Image", "Feature1", "Value1")
         x.add_measurement("Image", "Feature2", "Value2")
         assert x.get_current_measurement("Image", "Feature1") == "Value1"
@@ -106,7 +106,7 @@ class TestMeasurements:
         assert "Feature2" in x.get_feature_names("Image")
 
     def test_02_04b_add_two_measurements_to_object_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x["Image", "Feature1"] = "Value1"
         x["Image", "Feature2"] = "Value2"
         assert x["Image", "Feature1"] == "Value1"
@@ -117,7 +117,7 @@ class TestMeasurements:
 
     def test_03_03_MultipleImageSets(self):
         numpy.random.seed(0)
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.add_measurement("Image", "Feature", "Value1")
         m1 = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m1)
@@ -136,7 +136,7 @@ class TestMeasurements:
 
     def test_03_03b_MultipleImageSets_arrayinterface(self):
         numpy.random.seed(0)
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x["Image", "Feature"] = "Value1"
         m1 = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m1
@@ -153,97 +153,97 @@ class TestMeasurements:
 
     def test_04_01_get_all_image_measurements_float(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(41)
         vals = r.uniform(size=100)
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Feature",
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(nucleus.measurement.IMAGE, "Feature")
+        result = m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "Feature")
         numpy.testing.assert_equal(result, vals)
 
     def test_04_01b_get_all_image_measurements_float_arrayinterface(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(41)
         vals = r.uniform(size=100)
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[nucleus.measurement.IMAGE, "Feature", image_number] = vals[
+            m[cellprofiler_core.measurement.IMAGE, "Feature", image_number] = vals[
                 image_number - 1
             ]
-        result = m[nucleus.measurement.IMAGE, "Feature", :]
+        result = m[cellprofiler_core.measurement.IMAGE, "Feature", :]
         numpy.testing.assert_equal(result, vals)
         for image_number in bad_order:
-            result = m[nucleus.measurement.IMAGE, "Feature", image_number]
+            result = m[cellprofiler_core.measurement.IMAGE, "Feature", image_number]
             numpy.testing.assert_equal(result, vals[image_number - 1])
 
     def test_04_02_get_all_image_measurements_string(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(42)
         vals = r.uniform(size=100)
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Feature",
                 six.text_type(vals[image_number - 1]),
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(nucleus.measurement.IMAGE, "Feature")
+        result = m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "Feature")
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(42)
         vals = r.uniform(size=100)
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[nucleus.measurement.IMAGE, "Feature", image_number] = six.text_type(
+            m[cellprofiler_core.measurement.IMAGE, "Feature", image_number] = six.text_type(
                 vals[image_number - 1]
             )
-        result = m[nucleus.measurement.IMAGE, "Feature", :]
+        result = m[cellprofiler_core.measurement.IMAGE, "Feature", :]
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_03_get_all_image_measurements_unicode(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(42)
         vals = ["\\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Feature",
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(nucleus.measurement.IMAGE, "Feature")
+        result = m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "Feature")
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(42)
         vals = ["\\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[nucleus.measurement.IMAGE, "Feature", image_number] = vals[
+            m[cellprofiler_core.measurement.IMAGE, "Feature", image_number] = vals[
                 image_number - 1
             ]
-        result = m[nucleus.measurement.IMAGE, "Feature", :]
+        result = m[cellprofiler_core.measurement.IMAGE, "Feature", :]
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_04_get_all_object_measurements(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(42)
         vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
@@ -261,7 +261,7 @@ class TestMeasurements:
 
     def test_04_04b_get_all_object_measurements_arrayinterface(self):
         r = numpy.random.RandomState()
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r.seed(42)
         vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
@@ -319,10 +319,10 @@ class TestMeasurements:
     def test_04_08_set_one_blob_measurement(self):
         r = numpy.random.RandomState(408)
         test = r.randint(0, 255, 10).astype(numpy.uint8)
-        m = nucleus.measurement.Measurements()
-        m[nucleus.measurement.IMAGE, "Feature", 1, numpy.uint8] = test
+        m = cellprofiler_core.measurement.Measurements()
+        m[cellprofiler_core.measurement.IMAGE, "Feature", 1, numpy.uint8] = test
         numpy.testing.assert_array_equal(
-            test, m[nucleus.measurement.IMAGE, "Feature", 1]
+            test, m[cellprofiler_core.measurement.IMAGE, "Feature", 1]
         )
 
     def test_04_09_set_many_blob_measurements(self):
@@ -334,39 +334,39 @@ class TestMeasurements:
         #
         r = numpy.random.RandomState(408)
         test = [None, r.randint(0, 255, 10).astype(numpy.uint8)]
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         image_numbers = numpy.arange(1, len(test) + 1)
-        m[nucleus.measurement.IMAGE, "Feature", image_numbers, numpy.uint8] = test
-        result = m[nucleus.measurement.IMAGE, "Feature", image_numbers]
+        m[cellprofiler_core.measurement.IMAGE, "Feature", image_numbers, numpy.uint8] = test
+        result = m[cellprofiler_core.measurement.IMAGE, "Feature", image_numbers]
         assert result[0] is None
         numpy.testing.assert_array_equal(test[1], result[1])
 
     def test_05_01_test_has_current_measurements(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         assert not x.has_current_measurements("Image", "Feature")
 
     def test_05_02_test_has_current_measurements(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.add_measurement("Image", "OtherFeature", "Value")
         assert not x.has_current_measurements("Image", "Feature")
 
     def test_05_02b_test_has_current_measurements_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x["Image", "OtherFeature"] = "Value"
         assert not x.has_current_measurements("Image", "Feature")
 
     def test_05_03_test_has_current_measurements(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x.add_measurement("Image", "Feature", "Value")
         assert x.has_current_measurements("Image", "Feature")
 
     def test_05_03b_test_has_current_measurements_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         x["Image", "Feature"] = "Value"
         assert x.has_current_measurements("Image", "Feature")
 
     def test_06_00_00_dont_apply_metadata(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         value = "P12345"
         expected = "pre_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -374,7 +374,7 @@ class TestMeasurements:
         assert x.apply_metadata(pattern) == expected
 
     def test_06_00_00b_dont_apply_metadata_arrayinterface(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         value = "P12345"
         expected = "pre_post"
         x["Image", "Metadata_Plate"] = value
@@ -382,7 +382,7 @@ class TestMeasurements:
         assert x.apply_metadata(pattern) == expected
 
     def test_06_00_01_dont_apply_metadata_with_slash(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         value = "P12345"
         expected = "pre\\post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -390,7 +390,7 @@ class TestMeasurements:
         assert x.apply_metadata(pattern) == expected
 
     def test_06_01_apply_metadata(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         value = "P12345"
         expected = "pre_" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -398,7 +398,7 @@ class TestMeasurements:
         assert x.apply_metadata(pattern) == expected
 
     def test_06_02_apply_metadata_with_slash(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         value = "P12345"
         expected = "\\" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -407,7 +407,7 @@ class TestMeasurements:
 
     def test_06_03_apply_metadata_with_two_slashes(self):
         """Regression test of img-1144"""
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         plate = "P12345"
         well = "A01"
         expected = "\\" + plate + "\\" + well
@@ -417,7 +417,7 @@ class TestMeasurements:
         assert x.apply_metadata(pattern) == expected
 
     def test_06_04_apply_metadata_when_user_messes_with_your_head(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         value = "P12345"
         expected = r"\g<Plate>"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -426,7 +426,7 @@ class TestMeasurements:
 
     def test_06_05_apply_metadata_twice(self):
         """Regression test of img-1144 (second part)"""
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         plate = "P12345"
         well = "A01"
         expected = plate + "_" + well
@@ -436,26 +436,26 @@ class TestMeasurements:
         assert x.apply_metadata(pattern) == expected
 
     def test_06_06_apply_series_and_frame_metadata(self):
-        x = nucleus.measurement.Measurements()
-        x[nucleus.measurement.IMAGE, nucleus.measurement.C_SERIES + "_DNA"] = 1
-        x[nucleus.measurement.IMAGE, nucleus.measurement.C_SERIES + "_DNAIllum"] = 0
-        x[nucleus.measurement.IMAGE, nucleus.measurement.C_FRAME + "_DNA"] = 2
-        x[nucleus.measurement.IMAGE, nucleus.measurement.C_FRAME + "_DNAIllum"] = 0
+        x = cellprofiler_core.measurement.Measurements()
+        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_SERIES + "_DNA"] = 1
+        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_SERIES + "_DNAIllum"] = 0
+        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_FRAME + "_DNA"] = 2
+        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_FRAME + "_DNAIllum"] = 0
         pattern = r"\g<%s>_\g<%s>" % (
-            nucleus.measurement.C_SERIES,
-            nucleus.measurement.C_FRAME,
+            cellprofiler_core.measurement.C_SERIES,
+            cellprofiler_core.measurement.C_FRAME,
         )
         assert x.apply_metadata(pattern) == "1_2"
 
     def test_07_01_copy(self):
-        x = nucleus.measurement.Measurements()
+        x = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(71)
         areas = [r.randint(100, 200, size=r.randint(100, 200)) for _ in range(12)]
 
         for i in range(12):
             x.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Metadata_Well",
                 "A%02d" % (i + 1),
                 image_set_number=(i + 1),
@@ -464,16 +464,16 @@ class TestMeasurements:
                 OBJECT_NAME, "AreaShape_Area", areas[i], image_set_number=(i + 1)
             )
 
-        y = nucleus.measurement.Measurements(copy=x)
+        y = cellprofiler_core.measurement.Measurements(copy=x)
         for i in range(12):
             assert y.get_measurement(
-                nucleus.measurement.IMAGE, "Metadata_Well", (i + 1)
+                cellprofiler_core.measurement.IMAGE, "Metadata_Well", (i + 1)
             ) == "A%02d" % (i + 1)
             values = y.get_measurement(OBJECT_NAME, "AreaShape_Area", (i + 1))
             numpy.testing.assert_equal(values, areas[i])
 
     def test_09_01_group_by_metadata(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(91)
         aa = [None] * 100
@@ -484,13 +484,13 @@ class TestMeasurements:
             b = "A%02d" % r.randint(1, 12)
             bb[image_number - 1] = b
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Metadata_A",
                 a,
                 image_set_number=image_number,
             )
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Metadata_B",
                 b,
                 image_set_number=image_number,
@@ -502,7 +502,7 @@ class TestMeasurements:
                 assert d["B"] == bb[image_number - 1]
 
     def test_09_02_get_groupings(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(91)
         aa = [None] * 100
@@ -513,13 +513,13 @@ class TestMeasurements:
             b = "A%02d" % r.randint(1, 12)
             bb[image_number - 1] = b
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Metadata_A",
                 a,
                 image_set_number=image_number,
             )
             m.add_measurement(
-                nucleus.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Metadata_B",
                 b,
                 image_set_number=image_number,
@@ -531,15 +531,15 @@ class TestMeasurements:
                 assert d["Metadata_B"] == six.text_type(bb[image_number - 1])
 
     def test_10_01_remove_image_measurement(self):
-        m = nucleus.measurement.Measurements()
-        m.add_measurement(nucleus.measurement.IMAGE, "M", "Hello", image_set_number=1)
-        m.add_measurement(nucleus.measurement.IMAGE, "M", "World", image_set_number=2)
-        m.remove_measurement(nucleus.measurement.IMAGE, "M", 1)
-        assert m.get_measurement(nucleus.measurement.IMAGE, "M", 1) is None
-        assert m.get_measurement(nucleus.measurement.IMAGE, "M", 2) == "World"
+        m = cellprofiler_core.measurement.Measurements()
+        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "World", image_set_number=2)
+        m.remove_measurement(cellprofiler_core.measurement.IMAGE, "M", 1)
+        assert m.get_measurement(cellprofiler_core.measurement.IMAGE, "M", 1) is None
+        assert m.get_measurement(cellprofiler_core.measurement.IMAGE, "M", 2) == "World"
 
     def test_10_02_remove_object_measurement(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, "M", numpy.arange(5), image_set_number=1)
         m.add_measurement(OBJECT_NAME, "M", numpy.arange(7), image_set_number=2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
@@ -549,19 +549,19 @@ class TestMeasurements:
         )
 
     def test_10_03_remove_image_number(self):
-        m = nucleus.measurement.Measurements()
-        m.add_measurement(nucleus.measurement.IMAGE, "M", "Hello", image_set_number=1)
-        m.add_measurement(nucleus.measurement.IMAGE, "M", "World", image_set_number=2)
+        m = cellprofiler_core.measurement.Measurements()
+        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "World", image_set_number=2)
         numpy.testing.assert_equal(
             numpy.array(m.get_image_numbers()), numpy.arange(1, 3)
         )
         m.remove_measurement(
-            nucleus.measurement.IMAGE, nucleus.measurement.IMAGE_NUMBER, 1
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER, 1
         )
         numpy.testing.assert_equal(numpy.array(m.get_image_numbers()), numpy.array([2]))
 
     def test_11_00_match_metadata_by_order_nil(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         result = m.match_metadata(
             ("Metadata_foo", "Metadata_bar"), (numpy.zeros(3), numpy.zeros(3))
         )
@@ -569,30 +569,30 @@ class TestMeasurements:
         assert all([len(x) == 1 and x[0] == i + 1 for i, x in enumerate(result)])
 
     def test_11_01_match_metadata_by_order(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=2
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=2
         )
         result = m.match_metadata(("Metadata_bar",), (numpy.zeros(2),))
         assert len(result) == 2
         assert all([len(x) == 1 and x[0] == i + 1 for i, x in enumerate(result)])
 
     def test_11_02_match_metadata_equal_length(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
+            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
+            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
         )
         result = m.match_metadata(
             ("Metadata_foo", "Metadata_bar"),
@@ -605,24 +605,24 @@ class TestMeasurements:
         assert result[1][0] == 1
 
     def test_11_03_match_metadata_different_length(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
+            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
+            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=3
+            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=3
         )
         m.add_measurement(
-            nucleus.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=3
+            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=3
         )
         result = m.match_metadata(("Metadata_foo",), (("Goodbye", "Hello"),))
         assert len(result) == 2
@@ -634,22 +634,22 @@ class TestMeasurements:
 
     def test_15_01_get_object_names(self):
         """Test the get_object_names() function"""
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             object_names = m.get_object_names()
             assert len(object_names) == 2
             assert OBJECT_NAME in object_names
-            assert nucleus.measurement.IMAGE in object_names
+            assert cellprofiler_core.measurement.IMAGE in object_names
         finally:
             del m
 
     def test_15_02_get_object_names_relationships(self):
         """Regression test - don't return Relationships"""
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
-            m.add_image_measurement(nucleus.measurement.GROUP_NUMBER, 1)
-            m.add_image_measurement(nucleus.measurement.GROUP_INDEX, 0)
+            m.add_image_measurement(cellprofiler_core.measurement.GROUP_NUMBER, 1)
+            m.add_image_measurement(cellprofiler_core.measurement.GROUP_INDEX, 0)
             m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             m.add_relate_measurement(
                 1,
@@ -664,16 +664,16 @@ class TestMeasurements:
             object_names = m.get_object_names()
             assert len(object_names) == 2
             assert OBJECT_NAME in object_names
-            assert nucleus.measurement.IMAGE in object_names
+            assert cellprofiler_core.measurement.IMAGE in object_names
         finally:
             del m
 
     def test_15_03_relate_no_objects(self):
         # regression test of issue #886 - add_relate_measurement called
         #                                 with no objects
-        m = nucleus.measurement.Measurements()
-        m.add_image_measurement(nucleus.measurement.GROUP_NUMBER, 1)
-        m.add_image_measurement(nucleus.measurement.GROUP_INDEX, 0)
+        m = cellprofiler_core.measurement.Measurements()
+        m.add_image_measurement(cellprofiler_core.measurement.GROUP_NUMBER, 1)
+        m.add_image_measurement(cellprofiler_core.measurement.GROUP_INDEX, 0)
         m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
         m.add_relate_measurement(
             1,
@@ -697,7 +697,7 @@ class TestMeasurements:
         )
 
     def test_16_01_get_feature_names(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             feature_names = m.get_feature_names(OBJECT_NAME)
@@ -707,7 +707,7 @@ class TestMeasurements:
             del m
 
     def test_16_01b_get_feature_names_arrayinterface(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             m[OBJECT_NAME, "Foo"] = numpy.zeros(3)
             feature_names = m.get_feature_names(OBJECT_NAME)
@@ -717,15 +717,15 @@ class TestMeasurements:
             del m
 
     def test_17_01_aggregate_measurements(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             values = numpy.arange(5).astype(float)
             m.add_measurement(OBJECT_NAME, "Foo", values)
             d = m.compute_aggregate_measurements(1)
             for agg_name, expected in (
-                (nucleus.measurement.AGG_MEAN, numpy.mean(values)),
-                (nucleus.measurement.AGG_MEDIAN, numpy.median(values)),
-                (nucleus.measurement.AGG_STD_DEV, numpy.std(values)),
+                (cellprofiler_core.measurement.AGG_MEAN, numpy.mean(values)),
+                (cellprofiler_core.measurement.AGG_MEDIAN, numpy.median(values)),
+                (cellprofiler_core.measurement.AGG_STD_DEV, numpy.std(values)),
             ):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
                 assert feature in d
@@ -735,30 +735,30 @@ class TestMeasurements:
 
     def test_17_02_aggregate_measurements_with_relate(self):
         """regression test of img-1554"""
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             values = numpy.arange(5).astype(float)
             m.add_measurement(
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 1,
                 image_set_number=1,
             )
             m.add_measurement(
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 1,
                 image_set_number=2,
             )
             m.add_measurement(
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.GROUP_INDEX,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_INDEX,
                 1,
                 image_set_number=1,
             )
             m.add_measurement(
-                nucleus.measurement.IMAGE,
-                nucleus.measurement.GROUP_INDEX,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_INDEX,
                 2,
                 image_set_number=1,
             )
@@ -776,9 +776,9 @@ class TestMeasurements:
             )
             d = m.compute_aggregate_measurements(1)
             for agg_name, expected in (
-                (nucleus.measurement.AGG_MEAN, numpy.mean(values)),
-                (nucleus.measurement.AGG_MEDIAN, numpy.median(values)),
-                (nucleus.measurement.AGG_STD_DEV, numpy.std(values)),
+                (cellprofiler_core.measurement.AGG_MEAN, numpy.mean(values)),
+                (cellprofiler_core.measurement.AGG_MEDIAN, numpy.median(values)),
+                (cellprofiler_core.measurement.AGG_STD_DEV, numpy.std(values)),
             ):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
                 assert feature in d
@@ -787,54 +787,54 @@ class TestMeasurements:
             del m
 
     def test_18_01_test_add_all_measurements_string(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             values = ["Foo", "Bar", "Baz"]
-            m.add_all_measurements(nucleus.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
                 assert expected == value
         finally:
             del m
 
     def test_18_02_test_add_all_measurements_unicode(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             values = ["Foo", "Bar", "Baz", "-\\u221E < \\u221E"]
-            m.add_all_measurements(nucleus.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
                 assert expected == value
         finally:
             del m
 
     def test_18_03_test_add_all_measurements_number(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             r = numpy.random.RandomState()
             r.seed(1803)
             values = r.randint(0, 10, size=5)
-            m.add_all_measurements(nucleus.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
                 assert expected == value
         finally:
             del m
 
     def test_18_04_test_add_all_measurements_nulls(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             values = ["Foo", "Bar", None, "Baz", None, "-\\u221E < \\u221E"]
-            m.add_all_measurements(nucleus.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    nucleus.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
                 )
                 if expected is None:
                     assert value is None
@@ -844,7 +844,7 @@ class TestMeasurements:
             del m
 
     def test_18_05_test_add_all_per_object_measurements(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             r = numpy.random.RandomState()
             r.seed(1803)
@@ -871,8 +871,8 @@ class TestMeasurements:
 
     def test_19_01_load_image_sets(self):
         expected_features = [
-            nucleus.measurement.GROUP_NUMBER,
-            nucleus.measurement.GROUP_INDEX,
+            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.measurement.GROUP_INDEX,
             "URL_DNA",
             "PathName_DNA",
             "FileName_DNA",
@@ -888,13 +888,13 @@ class TestMeasurements:
 1,2,"file://bar/foo.tif","/bar","foo.tif"
 2,1,"file://baz/foobar.tif","/baz","foobar.tif"
 """ % (
-            nucleus.measurement.GROUP_NUMBER,
-            nucleus.measurement.GROUP_INDEX,
+            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.measurement.GROUP_INDEX,
         )
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         try:
             m.load_image_sets(six.moves.StringIO(data))
-            features = m.get_feature_names(nucleus.measurement.IMAGE)
+            features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
 
             unittest.TestCase().assertCountEqual(features, expected_features)
 
@@ -902,7 +902,7 @@ class TestMeasurements:
                 image_number = i + 1
                 for value, feature_name in zip(row_values, expected_features):
                     assert value == m.get_measurement(
-                        nucleus.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         feature_name,
                         image_set_number=image_number,
                     )
@@ -911,83 +911,83 @@ class TestMeasurements:
 
     # FIXME: wxPython 4 PR
     def test_19_02_write_and_load_image_sets(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         m.add_all_measurements(
-            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_NUMBER, [1, 1, 2]
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, [1, 1, 2]
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE, nucleus.measurement.GROUP_INDEX, [1, 2, 1]
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, [1, 2, 1]
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "URL_DNA",
             ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"],
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"]
+            cellprofiler_core.measurement.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"]
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "FileName_DNA",
             ["bar.tif", "foo.tif", "foobar.tif"],
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Metadata_test",
             ['quotetest"', "backslashtest\\", "unicodeescapetest\\u0384"],
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Metadata_testunicode",
             ['quotetest"', "backslashtest\\", "unicodeescapetest\u0384"],
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Metadata_testnull",
             ["Something", None, "SomethingElse"],
         )
         m.add_all_measurements(
-            nucleus.measurement.IMAGE, "Dont_copy", ["do", "not", "copy"]
+            cellprofiler_core.measurement.IMAGE, "Dont_copy", ["do", "not", "copy"]
         )
         fd = six.moves.StringIO()
         m.write_image_sets(fd)
         fd.seek(0)
-        mdest = nucleus.measurement.Measurements()
+        mdest = cellprofiler_core.measurement.Measurements()
         mdest.load_image_sets(fd)
         expected_features = [
             feature_name
-            for feature_name in m.get_feature_names(nucleus.measurement.IMAGE)
+            for feature_name in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
             if feature_name != "Dont_copy"
         ]
         unittest.TestCase().assertCountEqual(
-            expected_features, mdest.get_feature_names(nucleus.measurement.IMAGE)
+            expected_features, mdest.get_feature_names(cellprofiler_core.measurement.IMAGE)
         )
         image_numbers = m.get_image_numbers()
         for feature_name in expected_features:
             src = m.get_measurement(
-                nucleus.measurement.IMAGE, feature_name, image_numbers
+                cellprofiler_core.measurement.IMAGE, feature_name, image_numbers
             )
             dest = mdest.get_measurement(
-                nucleus.measurement.IMAGE, feature_name, image_numbers
+                cellprofiler_core.measurement.IMAGE, feature_name, image_numbers
             )
             unittest.TestCase().assertCountEqual(list(src), list(dest))
 
     def test_19_03_delete_tempfile(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         filename = m.hdf5_dict.filename
         del m
         assert not os.path.exists(filename)
 
     def test_19_04_dont_delete_file(self):
         fd, filename = tempfile.mkstemp(suffix=".h5")
-        m = nucleus.measurement.Measurements(filename=filename)
+        m = cellprofiler_core.measurement.Measurements(filename=filename)
         os.close(fd)
         del m
         assert os.path.exists(filename)
         os.unlink(filename)
 
     def test_20_01_add_one_relationship_measurement(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(2001)
         image_numbers1, object_numbers1 = [x.flatten() for x in numpy.mgrid[1:4, 1:10]]
@@ -1016,10 +1016,10 @@ class TestMeasurements:
         ri1, ro1, ri2, ro2 = [
             r[key]
             for key in (
-                nucleus.measurement.R_FIRST_IMAGE_NUMBER,
-                nucleus.measurement.R_FIRST_OBJECT_NUMBER,
-                nucleus.measurement.R_SECOND_IMAGE_NUMBER,
-                nucleus.measurement.R_SECOND_OBJECT_NUMBER,
+                cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER,
+                cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER,
+                cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER,
+                cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER,
             )
         ]
         order = numpy.lexsort((ro1, ri1))
@@ -1029,7 +1029,7 @@ class TestMeasurements:
         numpy.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_02_add_two_sets_of_relationships(self):
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(2002)
         image_numbers1, object_numbers1 = [x.flatten() for x in numpy.mgrid[1:4, 1:10]]
@@ -1063,10 +1063,10 @@ class TestMeasurements:
         ri1, ro1, ri2, ro2 = [
             r[key]
             for key in (
-                nucleus.measurement.R_FIRST_IMAGE_NUMBER,
-                nucleus.measurement.R_FIRST_OBJECT_NUMBER,
-                nucleus.measurement.R_SECOND_IMAGE_NUMBER,
-                nucleus.measurement.R_SECOND_OBJECT_NUMBER,
+                cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER,
+                cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER,
+                cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER,
+                cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER,
             )
         ]
         order = numpy.lexsort((ro1, ri1))
@@ -1122,7 +1122,7 @@ class TestMeasurements:
         # relationships.
         #
         fd, filename = tempfile.mkstemp(suffix=".h5")
-        m = nucleus.measurement.Measurements(filename=filename)
+        m = cellprofiler_core.measurement.Measurements(filename=filename)
         os.close(fd)
         try:
             r = numpy.random.RandomState()
@@ -1162,7 +1162,7 @@ class TestMeasurements:
                 )
 
             m.close()
-            m = nucleus.measurement.Measurements(filename=filename, mode="r")
+            m = cellprofiler_core.measurement.Measurements(filename=filename, mode="r")
 
             rg = [
                 (x.module_number, x.relationship, x.object_name1, x.object_name2)
@@ -1177,10 +1177,10 @@ class TestMeasurements:
                 ri1, ro1, ri2, ro2 = [
                     r[key]
                     for key in (
-                        nucleus.measurement.R_FIRST_IMAGE_NUMBER,
-                        nucleus.measurement.R_FIRST_OBJECT_NUMBER,
-                        nucleus.measurement.R_SECOND_IMAGE_NUMBER,
-                        nucleus.measurement.R_SECOND_OBJECT_NUMBER,
+                        cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER,
+                        cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER,
+                        cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER,
+                        cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER,
                     )
                 ]
                 order = numpy.lexsort((ro1, ri1))
@@ -1193,8 +1193,8 @@ class TestMeasurements:
             os.unlink(filename)
 
     def test_20_05_copy_relationships(self):
-        m1 = nucleus.measurement.Measurements()
-        m2 = nucleus.measurement.Measurements()
+        m1 = cellprofiler_core.measurement.Measurements()
+        m2 = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(2005)
         image_numbers1, object_numbers1 = [x.flatten() for x in numpy.mgrid[1:4, 1:10]]
@@ -1221,10 +1221,10 @@ class TestMeasurements:
         ri1, ro1, ri2, ro2 = [
             r[key]
             for key in (
-                nucleus.measurement.R_FIRST_IMAGE_NUMBER,
-                nucleus.measurement.R_FIRST_OBJECT_NUMBER,
-                nucleus.measurement.R_SECOND_IMAGE_NUMBER,
-                nucleus.measurement.R_SECOND_OBJECT_NUMBER,
+                cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER,
+                cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER,
+                cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER,
+                cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER,
             )
         ]
         order = numpy.lexsort((ro1, ri1))
@@ -1238,7 +1238,7 @@ class TestMeasurements:
         # Test writing and reading relationships with a variety of ranges
         # over the whole extent of the storage
         #
-        m = nucleus.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         r = numpy.random.RandomState()
         r.seed(2005)
         image_numbers1, image_numbers2 = r.randint(1, 1001, (2, 4000))
@@ -1266,10 +1266,10 @@ class TestMeasurements:
             ri1, ro1, ri2, ro2 = [
                 result[key]
                 for key in (
-                    nucleus.measurement.R_FIRST_IMAGE_NUMBER,
-                    nucleus.measurement.R_FIRST_OBJECT_NUMBER,
-                    nucleus.measurement.R_SECOND_IMAGE_NUMBER,
-                    nucleus.measurement.R_SECOND_OBJECT_NUMBER,
+                    cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER,
+                    cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER,
+                    cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER,
+                    cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER,
                 )
             ]
             rorder = numpy.lexsort((ro2, ri2, ro1, ri1))

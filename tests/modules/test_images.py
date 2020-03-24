@@ -2,11 +2,11 @@ import io
 import os
 import tempfile
 
-import nucleus.measurement
-import nucleus.modules.images
-import nucleus.pipeline
-import nucleus.pipeline.event._load_exception
-import nucleus.workspace
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.images
+import cellprofiler_core.pipeline
+import cellprofiler_core.pipeline.event._load_exception
+import cellprofiler_core.workspace
 
 
 class TestImages:
@@ -15,7 +15,7 @@ class TestImages:
         # an HDF5 file.
         #
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.measurements = nucleus.measurement.Measurements(
+        self.measurements = cellprofiler_core.measurement.Measurements(
             filename=self.temp_filename
         )
         os.close(self.temp_fd)
@@ -29,18 +29,18 @@ class TestImages:
         with open("./tests/data/modules/images/v1.pipeline", "r") as fd:
             data = fd.read()
 
-        pipeline = nucleus.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
 
         def callback(caller, event):
             assert not isinstance(event,
-                                  nucleus.pipeline.event._load_exception.LoadException)
+                                  cellprofiler_core.pipeline.event._load_exception.LoadException)
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        assert isinstance(module, nucleus.modules.images.Images)
-        assert module.filter_choice == nucleus.modules.images.FILTER_CHOICE_CUSTOM
+        assert isinstance(module, cellprofiler_core.modules.images.Images)
+        assert module.filter_choice == cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
         assert (
             module.filter.value
             == 'or (directory does startwith "foo") (file does contain "bar")'
@@ -51,21 +51,21 @@ class TestImages:
             data = fd.read()
 
         for fc, fctext in (
-            (nucleus.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
-            (nucleus.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
-            (nucleus.modules.images.FILTER_CHOICE_NONE, "No filtering"),
+            (cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
+            (cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
+            (cellprofiler_core.modules.images.FILTER_CHOICE_NONE, "No filtering"),
         ):
-            pipeline = nucleus.pipeline.Pipeline()
+            pipeline = cellprofiler_core.pipeline.Pipeline()
 
             def callback(caller, event):
                 assert not isinstance(event,
-                                      nucleus.pipeline.event._load_exception.LoadException)
+                                      cellprofiler_core.pipeline.event._load_exception.LoadException)
 
             pipeline.add_listener(callback)
             pipeline.load(io.StringIO(data % fctext))
             assert len(pipeline.modules()) == 1
             module = pipeline.modules()[0]
-            assert isinstance(module, nucleus.modules.images.Images)
+            assert isinstance(module, cellprofiler_core.modules.images.Images)
             assert module.filter_choice == fc
             assert (
                 module.filter.value
@@ -73,8 +73,8 @@ class TestImages:
             )
 
     def test_filter_url(self):
-        module = nucleus.modules.images.Images()
-        module.filter_choice.value = nucleus.modules.images.FILTER_CHOICE_CUSTOM
+        module = cellprofiler_core.modules.images.Images()
+        module.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
         for url, filter_value, expected in (
             (
                 "file:/TestImages/NikonTIF.tif",
@@ -102,12 +102,12 @@ class TestImages:
 
     def check(self, module, url, expected):
         """Check filtering of one URL using the module as configured"""
-        pipeline = nucleus.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.add_urls([url])
         module.set_module_num(1)
         pipeline.add_module(module)
-        m = nucleus.measurement.Measurements()
-        workspace = nucleus.workspace.Workspace(pipeline, module, None, None, m, None)
+        m = cellprofiler_core.measurement.Measurements()
+        workspace = cellprofiler_core.workspace.Workspace(pipeline, module, None, None, m, None)
         file_list = pipeline.get_filtered_file_list(workspace)
         if expected:
             assert len(file_list) == 1
@@ -116,8 +116,8 @@ class TestImages:
             assert len(file_list) == 0
 
     def test_filter_standard(self):
-        module = nucleus.modules.images.Images()
-        module.filter_choice.value = nucleus.modules.images.FILTER_CHOICE_IMAGES
+        module = cellprofiler_core.modules.images.Images()
+        module.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES
         for url, expected in (
             ("file:/TestImages/NikonTIF.tif", True),
             ("file:/foo/.bar/baz.tif", False),

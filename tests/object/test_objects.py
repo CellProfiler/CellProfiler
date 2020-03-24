@@ -9,12 +9,12 @@ import numpy.testing
 import pytest
 import skimage.measure
 
-import nucleus.image
-import nucleus.image
-import nucleus.object
-import nucleus.object
-import nucleus.utilities.hdf5_dict
-import nucleus.utilities.hdf5_dict
+import cellprofiler_core.image
+import cellprofiler_core.image
+import cellprofiler_core.object
+import cellprofiler_core.object
+import cellprofiler_core.utilities.hdf5_dict
+import cellprofiler_core.utilities.hdf5_dict
 
 
 @pytest.fixture
@@ -51,9 +51,9 @@ def small_removed_segmented10(segmented10, unedited_segmented10):
 
 
 def relate_ijv(parent_ijv, children_ijv):
-    p = nucleus.object.Objects()
+    p = cellprofiler_core.object.Objects()
     p.ijv = parent_ijv
-    c = nucleus.object.Objects()
+    c = cellprofiler_core.object.Objects()
     c.ijv = children_ijv
     return p.relate_children(c)
 
@@ -62,66 +62,66 @@ class TestDownsampleLabels:
     def test_01_01_downsample_127(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int)
-        result = nucleus.object.downsample_labels(labels)
+        result = cellprofiler_core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int8)
         assert numpy.all(result == labels)
 
     def test_01_02_downsample_128(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int) + 1
-        result = nucleus.object.downsample_labels(labels)
+        result = cellprofiler_core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int16)
         assert numpy.all(result == labels)
 
     def test_01_03_downsample_32767(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int)
-        result = nucleus.object.downsample_labels(labels)
+        result = cellprofiler_core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int16)
         assert numpy.all(result == labels)
 
     def test_01_04_downsample_32768(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int) + 1
-        result = nucleus.object.downsample_labels(labels)
+        result = cellprofiler_core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int32)
         assert numpy.all(result == labels)
 
 
 class TestCropLabelsAndImage:
     def test_01_01_crop_same(self):
-        labels, image = nucleus.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((10, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
 
     def test_01_02_crop_image(self):
-        labels, image = nucleus.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((10, 30))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
-        labels, image = nucleus.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((20, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
 
     def test_01_03_crop_labels(self):
-        labels, image = nucleus.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.object.crop_labels_and_image(
             numpy.zeros((10, 30)), numpy.zeros((10, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
-        labels, image = nucleus.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.object.crop_labels_and_image(
             numpy.zeros((20, 20)), numpy.zeros((10, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
 
     def test_01_04_crop_both(self):
-        labels, image = nucleus.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.object.crop_labels_and_image(
             numpy.zeros((10, 30)), numpy.zeros((20, 20))
         )
         assert tuple(labels.shape) == (10, 20)
@@ -133,7 +133,7 @@ class TestCropLabelsAndImage:
         k, i, j = numpy.mgrid[-15:15, -15:15, -15:15]
         parent_labels[k ** 2 + i ** 2 + j ** 2 <= 196] = 1
 
-        parent_object = nucleus.object.Objects()
+        parent_object = cellprofiler_core.object.Objects()
 
         parent_object.segmented = parent_labels
 
@@ -149,7 +149,7 @@ class TestCropLabelsAndImage:
             0, 10:20, 10:20
         ] = 3  # not touching a parent, should not be counted as a child
 
-        object = nucleus.object.Objects()
+        object = cellprofiler_core.object.Objects()
 
         object.segmented = labels
 
@@ -172,7 +172,7 @@ class TestCropLabelsAndImage:
         labels[:, 3:-3, 3:-3] = 2
         labels[-3:, -3:, -3:] = 3
 
-        overlay_pixel_data = nucleus.object.overlay_labels(
+        overlay_pixel_data = cellprofiler_core.object.overlay_labels(
             pixel_data=data, labels=labels
         )
 
@@ -197,7 +197,7 @@ class TestCropLabelsAndImage:
         labels[:3, :3, :3] = 1
         labels[-3:, -3:, -3:] = 3
 
-        overlay_pixel_data = nucleus.object.overlay_labels(
+        overlay_pixel_data = cellprofiler_core.object.overlay_labels(
             pixel_data=data, labels=labels
         )
 
@@ -212,26 +212,26 @@ class TestCropLabelsAndImage:
 
 class TestSizeSimilarly:
     def test_01_01_size_same(self):
-        secondary, mask = nucleus.object.size_similarly(
+        secondary, mask = cellprofiler_core.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((10, 20))
         )
         assert tuple(secondary.shape) == (10, 20)
         assert numpy.all(mask)
 
     def test_01_02_larger_secondary(self):
-        secondary, mask = nucleus.object.size_similarly(
+        secondary, mask = cellprofiler_core.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((10, 30))
         )
         assert tuple(secondary.shape) == (10, 20)
         assert numpy.all(mask)
-        secondary, mask = nucleus.object.size_similarly(
+        secondary, mask = cellprofiler_core.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((20, 20))
         )
         assert tuple(secondary.shape) == (10, 20)
         assert numpy.all(mask)
 
     def test_01_03_smaller_secondary(self):
-        secondary, mask = nucleus.object.size_similarly(
+        secondary, mask = cellprofiler_core.object.size_similarly(
             numpy.zeros((10, 20), int), numpy.zeros((10, 15), numpy.float32)
         )
         assert tuple(secondary.shape) == (10, 20)
@@ -240,7 +240,7 @@ class TestSizeSimilarly:
         assert secondary.dtype == numpy.dtype(numpy.float32)
 
     def test_01_04_size_color(self):
-        secondary, mask = nucleus.object.size_similarly(
+        secondary, mask = cellprofiler_core.object.size_similarly(
             numpy.zeros((10, 20), int), numpy.zeros((10, 15, 3), numpy.float32)
         )
         assert tuple(secondary.shape) == (10, 20, 3)
@@ -251,7 +251,7 @@ class TestSizeSimilarly:
 
 class TestObjects:
     def test_01_01_set_segmented(self, segmented10):
-        objects = nucleus.object.Objects()
+        objects = cellprofiler_core.object.Objects()
 
         segmented = segmented10
 
@@ -260,7 +260,7 @@ class TestObjects:
         numpy.testing.assert_array_equal(segmented, objects.segmented)
 
     def test_01_02_segmented(self, segmented10):
-        objects = nucleus.object.Objects()
+        objects = cellprofiler_core.object.Objects()
 
         segmented = segmented10
 
@@ -274,21 +274,21 @@ class TestObjects:
         segmentation[0:2, 2:4, 2:4] = 1
         segmentation[1:2, 5:7, 5:7] = 2
 
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.segmented = segmentation
 
         numpy.testing.assert_array_equal(x.segmented, segmentation)
 
     def test_01_03_set_unedited_segmented(self, unedited_segmented10):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.unedited_segmented = unedited_segmented10
 
         assert (unedited_segmented10 == x.unedited_segmented).all()
 
     def test_01_04_unedited_segmented(self, unedited_segmented10):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.unedited_segmented = unedited_segmented10
 
@@ -301,14 +301,14 @@ class TestObjects:
 
         segmentation[1:2, 5:7, 5:7] = 2
 
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.unedited_segmented = segmentation
 
         assert numpy.all(x.unedited_segmented == segmentation)
 
     def test_01_05_set_small_removed_segmented(self, small_removed_segmented10):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.small_removed_segmented = small_removed_segmented10
 
@@ -321,14 +321,14 @@ class TestObjects:
 
         segmentation[1:2, 5:7, 5:7] = 2
 
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.small_removed_segmented = segmentation
 
         assert numpy.all(x.small_removed_segmented == segmentation)
 
     def test_01_06_unedited_segmented(self, small_removed_segmented10):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.small_removed_segmented = small_removed_segmented10
 
@@ -337,7 +337,7 @@ class TestObjects:
     def test_02_01_set_all(
         self, segmented10, unedited_segmented10, small_removed_segmented10
     ):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.segmented = segmented10
 
@@ -353,7 +353,7 @@ class TestObjects:
     def test_03_02_default_small_removed_segmented(
         self, segmented10, unedited_segmented10
     ):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.segmented = segmented10
 
@@ -364,21 +364,21 @@ class TestObjects:
         assert (x.small_removed_segmented == unedited_segmented10).all()
 
     def test_shape_image_segmentation(self, segmented10):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.segmented = segmented10
 
         assert x.shape == (10, 10)
 
     def test_shape_volume_segmentation(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.segmented = numpy.ones((5, 10, 10))
 
         assert x.shape == (5, 10, 10)
 
     def test_get_labels_image_segmentation(self, segmented10):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         x.segmented = segmented10
 
@@ -387,7 +387,7 @@ class TestObjects:
         assert numpy.all(labels == segmented10)
 
     def test_get_labels_volume_segmentation(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
 
         segmentation = numpy.ones((5, 10, 10))
 
@@ -401,18 +401,18 @@ class TestObjects:
 
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.segmented = numpy.zeros((10, 10), int)
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
         assert numpy.product(children_per_parent.shape) == 0
         assert numpy.product(parents_of_children.shape) == 0
 
     def test_05_02_relate_zero_parents_one_child(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.segmented = numpy.zeros((10, 10), int)
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         y.segmented = labels
@@ -422,11 +422,11 @@ class TestObjects:
         assert parents_of_children[0] == 0
 
     def test_05_03_relate_one_parent_no_children(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         x.segmented = labels
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
         assert numpy.product(children_per_parent.shape) == 1
@@ -434,11 +434,11 @@ class TestObjects:
         assert numpy.product(parents_of_children.shape) == 0
 
     def test_05_04_relate_one_parent_one_child(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         x.segmented = labels
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
         assert numpy.product(children_per_parent.shape) == 1
@@ -447,12 +447,12 @@ class TestObjects:
         assert parents_of_children[0] == 1
 
     def test_05_05_relate_two_parents_one_child(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 7:9] = 2
         x.segmented = labels
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 5:9] = 1
         y.segmented = labels
@@ -464,11 +464,11 @@ class TestObjects:
         assert parents_of_children[0] == 2
 
     def test_05_06_relate_one_parent_two_children(self):
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 3:9] = 1
         x.segmented = labels
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         labels = numpy.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 7:9] = 2
@@ -612,7 +612,7 @@ class TestObjects:
 
     def test_06_01_segmented_to_ijv(self):
         """Convert the segmented representation to an IJV one"""
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         numpy.random.seed(61)
         labels = numpy.random.randint(0, 10, size=(20, 20))
         x.segmented = labels
@@ -623,7 +623,7 @@ class TestObjects:
 
     def test_06_02_ijv_to_labels_empty(self):
         """Convert a blank ijv representation to labels"""
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.ijv = numpy.zeros((0, 3), int)
         y = x.get_labels()
         assert len(y) == 1
@@ -633,16 +633,16 @@ class TestObjects:
 
     def test_06_03_ijv_to_labels_simple(self):
         """Convert an ijv representation w/o overlap to labels"""
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         numpy.random.seed(63)
         labels = numpy.zeros((20, 20), int)
         labels[1:-1, 1:-1] = numpy.random.randint(0, 10, size=(18, 18))
 
         x.segmented = labels
         ijv = x.get_ijv()
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.ijv = ijv
-        x.parent_image = nucleus.image.Image(numpy.zeros(labels.shape))
+        x.parent_image = cellprofiler_core.image.Image(numpy.zeros(labels.shape))
         labels_out = x.get_labels()
         assert len(labels_out) == 1
         labels_out, indices = labels_out[0]
@@ -667,7 +667,7 @@ class TestObjects:
                 [5, 5, 5],
             ]
         )
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.ijv = ijv
         labels = x.get_labels()
         assert len(labels) == 2
@@ -688,7 +688,7 @@ class TestObjects:
         # of three.
         #
         ijv = numpy.array([[4, 5, 1], [4, 5, 2], [4, 5, 3]])
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.set_ijv(ijv, (8, 9))
         labels = []
         indices = numpy.zeros(3, bool)
@@ -708,14 +708,14 @@ class TestObjects:
 
     def test_07_00_make_ivj_outlines_empty(self):
         numpy.random.seed(70)
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.segmented = numpy.zeros((10, 20), int)
         image = x.make_ijv_outlines(numpy.random.uniform(size=(5, 3)))
         assert numpy.all(image == 0)
 
     def test_07_01_make_ijv_outlines(self):
         numpy.random.seed(70)
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         ii, jj = numpy.mgrid[0:10, 0:20]
         masks = [
             (ii - ic) ** 2 + (jj - jc) ** 2 < r ** 2
@@ -726,7 +726,7 @@ class TestObjects:
         v = numpy.hstack([[k + 1] * numpy.sum(mask) for k, mask in enumerate(masks)])
 
         x.set_ijv(numpy.column_stack((i, j, v)), ii.shape)
-        x.parent_image = nucleus.image.Image(numpy.zeros((10, 20)))
+        x.parent_image = cellprofiler_core.image.Image(numpy.zeros((10, 20)))
         colors = numpy.random.uniform(size=(3, 3)).astype(numpy.float32)
         image = x.make_ijv_outlines(colors)
         i1 = [i for i, color in enumerate(colors) if numpy.all(color == image[0, 5, :])]
@@ -870,9 +870,9 @@ class TestObjects:
             "0586EWcLZ2bTo9dlylZc3P6YeRkHtaKSSX/4u5IpwoSDIuO2gA=="
         )
         stream = io.BytesIO(bz2.decompress(base64.b64decode(d)))
-        x = nucleus.object.Objects()
+        x = cellprofiler_core.object.Objects()
         x.segmented = numpy.load(stream)
-        y = nucleus.object.Objects()
+        y = cellprofiler_core.object.Objects()
         y.segmented = numpy.load(stream)
         labels_children_per_parent, labels_parents_of_children = x.relate_children(y)
         # force generation of ijv
@@ -890,7 +890,7 @@ class TestObjects:
 
         labels[3:8, 3:8] = 1
 
-        objects = nucleus.object.Objects()
+        objects = cellprofiler_core.object.Objects()
 
         objects.segmented = labels
 
@@ -901,7 +901,7 @@ class TestObjects:
     def test_center_of_mass_without_background_label(self):
         labels = numpy.ones((11, 11), dtype=numpy.uint8)
 
-        objects = nucleus.object.Objects()
+        objects = cellprofiler_core.object.Objects()
 
         objects.segmented = labels
 

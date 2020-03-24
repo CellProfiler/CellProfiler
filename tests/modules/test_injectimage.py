@@ -1,24 +1,24 @@
 import numpy
 
-import nucleus.image
-import nucleus.measurement
-import nucleus.modules.injectimage
-import nucleus.pipeline
-import nucleus.workspace
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.injectimage
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 
 def test_init():
     image = numpy.zeros((10, 10), dtype=float)
-    x = nucleus.modules.injectimage.InjectImage("my_image", image)
+    x = cellprofiler_core.modules.injectimage.InjectImage("my_image", image)
 
 
 def test_get_from_image_set():
     image = numpy.zeros((10, 10), dtype=float)
-    ii = nucleus.modules.injectimage.InjectImage("my_image", image)
-    pipeline = nucleus.pipeline.Pipeline()
-    measurements = nucleus.measurement.Measurements()
-    workspace = nucleus.workspace.Workspace(
-        pipeline, ii, measurements, None, measurements, nucleus.image()
+    ii = cellprofiler_core.modules.injectimage.InjectImage("my_image", image)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, ii, measurements, None, measurements, cellprofiler_core.image()
     )
     ii.prepare_run(workspace)
     ii.prepare_group(workspace, {}, [1])

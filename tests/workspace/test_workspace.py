@@ -4,10 +4,10 @@ import tempfile
 
 import h5py
 
-import nucleus.measurement
-import nucleus.pipeline
-import nucleus.workspace
-from nucleus.utilities.hdf5_dict import FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
+import cellprofiler_core.measurement
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
+from cellprofiler_core.utilities.hdf5_dict import FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +25,10 @@ class TestWorkspace:
 
     def make_workspace_file(self):
         """Make a very basic workspace file"""
-        pipeline = nucleus.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.init_modules()
-        m = nucleus.measurement.Measurements()
-        workspace = nucleus.workspace.Workspace(pipeline, None, m, None, m, None)
+        m = cellprofiler_core.measurement.Measurements()
+        workspace = cellprofiler_core.workspace.Workspace(pipeline, None, m, None, m, None)
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()
         file_list.add_files_to_filelist(
@@ -41,21 +41,21 @@ class TestWorkspace:
 
     def test_is_workspace_file(self):
         path = self.make_workspace_file()
-        assert nucleus.workspace.is_workspace_file(path)
+        assert cellprofiler_core.workspace.is_workspace_file(path)
 
     def test_is_not_workspace_file(self):
-        assert not nucleus.workspace.is_workspace_file(__file__)
+        assert not cellprofiler_core.workspace.is_workspace_file(__file__)
         for group in TOP_LEVEL_GROUP_NAME, FILE_LIST_GROUP:
             path = self.make_workspace_file()
             h5file = h5py.File(path)
             del h5file[group]
             h5file.close()
-            assert not nucleus.workspace.is_workspace_file(path)
+            assert not cellprofiler_core.workspace.is_workspace_file(path)
 
     def test_file_handle_closed(self):
         # regression test of issue #1326
         path = self.make_workspace_file()
-        assert nucleus.workspace.is_workspace_file(path)
+        assert cellprofiler_core.workspace.is_workspace_file(path)
         os.remove(path)
         self.workspace_files.remove(path)
         assert not os.path.isfile(path)

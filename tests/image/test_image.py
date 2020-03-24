@@ -2,27 +2,27 @@ import math
 
 import numpy
 
-import nucleus.image
+import cellprofiler_core.image
 
 
 class TestImage:
     def test_init(self):
-        nucleus.image.Image()
+        cellprofiler_core.image.Image()
 
     def test_init_image(self):
-        x = nucleus.image.Image(numpy.zeros((10, 10)))
+        x = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
 
     def test_init_image_mask(self):
-        x = nucleus.image.Image(
+        x = cellprofiler_core.image.Image(
             image=numpy.zeros((10, 10)), mask=numpy.ones((10, 10), dtype=numpy.bool)
         )
 
     def test_set_image(self):
-        x = nucleus.image.Image()
+        x = cellprofiler_core.image.Image()
         x.Image = numpy.ones((10, 10))
 
     def test_set_mask(self):
-        x = nucleus.image.Image()
+        x = cellprofiler_core.image.Image()
         x.Mask = numpy.ones((10, 10))
 
     def test_image_casts(self):
@@ -39,7 +39,7 @@ class TestImage:
             (numpy.int8, -math.pow(2.0, 7.0), math.pow(2.0, 7.0) - 1),
         ]
         for dtype, zval, oval in tests:
-            x = nucleus.image.Image()
+            x = cellprofiler_core.image.Image()
             x.set_image((one_target * zval).astype(dtype))
             assert (x.image == zero_target).all(), "Failed setting %s to min" % (
                 repr(dtype)
@@ -52,12 +52,12 @@ class TestImage:
 
     def test_mask_of3D(self):
         """The mask of a 3-d image should be 2-d"""
-        x = nucleus.image.Image()
+        x = cellprofiler_core.image.Image()
         x.image = numpy.ones((10, 10, 3))
         assert x.mask.ndim == 2
 
     def test_cropping(self):
-        x = nucleus.image.Image()
+        x = cellprofiler_core.image.Image()
         x.image = numpy.ones((7, 7))
         crop_mask = numpy.zeros((10, 10), bool)
         crop_mask[2:-1, 1:-2] = True
@@ -70,7 +70,7 @@ class TestImage:
     def test_init_volume(self):
         data = numpy.ones((5, 10, 10))
 
-        x = nucleus.image.Image(image=data, dimensions=3)
+        x = cellprofiler_core.image.Image(image=data, dimensions=3)
 
         assert numpy.all(x.pixel_data == data)
 
@@ -79,66 +79,66 @@ class TestImage:
     def test_multichannel_grayscale_image(self):
         data = numpy.ones((10, 10))
 
-        x = nucleus.image.Image(image=data)
+        x = cellprofiler_core.image.Image(image=data)
 
         assert not x.multichannel
 
     def test_multichannel_rgb_image(self):
         data = numpy.ones((10, 10, 3))
 
-        x = nucleus.image.Image(image=data)
+        x = cellprofiler_core.image.Image(image=data)
 
         assert x.multichannel
 
     def test_multichannel_grayscale_volume(self):
         data = numpy.ones((5, 10, 10))
 
-        x = nucleus.image.Image(image=data, dimensions=3)
+        x = cellprofiler_core.image.Image(image=data, dimensions=3)
 
         assert not x.multichannel
 
     def test_spacing_image_default(self):
         data = numpy.ones((5, 5))
 
-        x = nucleus.image.Image(image=data)
+        x = cellprofiler_core.image.Image(image=data)
 
         assert x.spacing == (1.0, 1.0)
 
     def test_spacing_image(self):
         data = numpy.ones((5, 5))
 
-        x = nucleus.image.Image(image=data, spacing=(0.33, 0.33))
+        x = cellprofiler_core.image.Image(image=data, spacing=(0.33, 0.33))
 
         assert x.spacing == (1.0, 1.0)
 
     def test_spacing_parent_image(self):
         data = numpy.ones((5, 5))
 
-        px = nucleus.image.Image(image=data, spacing=(0.33, 0.33))
+        px = cellprofiler_core.image.Image(image=data, spacing=(0.33, 0.33))
 
-        x = nucleus.image.Image(image=data, parent_image=px)
+        x = cellprofiler_core.image.Image(image=data, parent_image=px)
 
         assert x.spacing == (1.0, 1.0)
 
     def test_spacing_volume_default(self):
         data = numpy.ones((5, 10, 10))
 
-        x = nucleus.image.Image(image=data, dimensions=3)
+        x = cellprofiler_core.image.Image(image=data, dimensions=3)
 
         assert x.spacing == (1.0, 1.0, 1.0)
 
     def test_spacing_volume(self):
         data = numpy.ones((5, 10, 10))
 
-        x = nucleus.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+        x = cellprofiler_core.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
 
         assert x.spacing == (0.77 / 0.33, 1.0, 1.0)
 
     def test_spacing_volume_parent_image(self):
         data = numpy.ones((5, 10, 10))
 
-        px = nucleus.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+        px = cellprofiler_core.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
 
-        x = nucleus.image.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
+        x = cellprofiler_core.image.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
 
         assert x.spacing == (0.77 / 0.33, 1.0, 1.0)

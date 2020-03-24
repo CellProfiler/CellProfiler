@@ -381,7 +381,7 @@ create a grid that has roughly the same number of rows and columns.
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
-        image = image_set.get_image(self.input_image)
+        image = image_set.get_image(self.input_image.value)
         pixels = image.pixel_data
         if d[TILED_IMAGE] is None:
             tile_width = pixels.shape[1]

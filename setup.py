@@ -1,6 +1,8 @@
 import setuptools
 
 setuptools.setup(
+    author="Allen Goodman",
+    author_email="allen.goodman@icloud.com",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
@@ -25,6 +27,7 @@ setuptools.setup(
         "scikit-image==0.15.0",
         "scipy==1.3.1",
     ],
+    license="BSD",
     name="cellprofiler-core",
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.7, <4",

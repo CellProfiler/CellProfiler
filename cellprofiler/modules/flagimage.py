@@ -84,6 +84,12 @@ class FlagImage(cpm.Module):
         self.add_flag_button = cps.DoSomething("", "Add another flag", self.add_flag)
         self.spacer_1 = cps.Divider()
         self.add_flag(can_delete=False)
+        self.ignore_flag_on_last = cps.Binary('Ignore flag skips on last cycle?', False, doc="""\
+When set to *%(YES)s*, this option allows you to bypass skipping on the last
+cycle of an image group.  This behavior is usually not desired, but may be 
+useful when using SaveImages 'Save on last cycle' option for an image made
+by any other module than MakeProjection, CorrectIlluminationCalculate, and Tile.
+""" % globals())
 
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()
@@ -407,6 +413,7 @@ image is not flagged.
                     mg.rules_file_name,
                     mg.rules_class,
                 ]
+        result += [self.ignore_flag_on_last]
         return result
 
     def prepare_settings(self, setting_values):
@@ -479,6 +486,7 @@ image is not flagged.
             result += flag_visibles(flag)
 
         result += [self.add_flag_button]
+        result += [self.ignore_flag_on_last]
         return result
 
     def validate_module(self, pipeline):
@@ -710,7 +718,10 @@ image is not flagged.
         assert isinstance(m, cpmeas.Measurements)
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         if (not ok) and flag.wants_skip:
-            workspace.disposition = cpw.DISPOSITION_SKIP
+            if self.ignore_flag_on_last and (m.group_length-m.group_index)==0:
+                workspace.disposition = cpw.DISPOSITION_CONTINUE
+            else:
+                workspace.disposition = cpw.DISPOSITION_SKIP
         return statistics
 
     def eval_measurement(self, workspace, ms):

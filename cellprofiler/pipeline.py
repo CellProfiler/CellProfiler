@@ -2489,16 +2489,19 @@ class Pipeline(object):
             cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
         ):
             # Legacy pipelines don't populate group # or index
+            # Nor do pipelines that don't use the Group module
             key_names, groupings = self.get_groupings(workspace)
             image_numbers = m.get_image_numbers()
             indexes = np.zeros(np.max(image_numbers) + 1, int)
             indexes[image_numbers] = np.arange(len(image_numbers))
             group_numbers = np.zeros(len(image_numbers), int)
             group_indexes = np.zeros(len(image_numbers), int)
+            group_lengths = np.ones(len(image_numbers), int)
             for i, (key, group_image_numbers) in enumerate(groupings):
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = np.arange(len(iii)) + 1
+                group_lengths[iii] = np.ones(len(iii), int) * len(iii)
             m.add_all_measurements(
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.GROUP_NUMBER,
@@ -2508,6 +2511,11 @@ class Pipeline(object):
                 cellprofiler.measurement.IMAGE,
                 cellprofiler.measurement.GROUP_INDEX,
                 group_indexes,
+            )
+            m.add_all_measurements(
+                cellprofiler.measurement.IMAGE,
+                "Group_Length",
+                group_lengths,
             )
             #
             # The grouping for legacy pipelines may not be monotonically
@@ -3792,6 +3800,11 @@ class Pipeline(object):
             (
                 cellprofiler.measurement.IMAGE,
                 GROUP_INDEX,
+                cellprofiler.measurement.COLTYPE_INTEGER,
+            ),
+            (
+                cellprofiler.measurement.IMAGE,
+                "Group_Length",
                 cellprofiler.measurement.COLTYPE_INTEGER,
             ),
         ]

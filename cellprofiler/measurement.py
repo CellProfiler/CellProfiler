@@ -562,6 +562,15 @@ class Measurements(object):
 
     group_index = property(get_group_index, set_group_index)
 
+    def get_group_length(self):
+        """The group length of the current image group"""
+        return self.get_current_image_measurement("Group_Length")
+
+    def set_group_length(self, group_length):
+        self.add_image_measurement("Group_Length", group_length)
+
+    group_length = property(get_group_length, set_group_length)
+
     def get_groupings(self, features):
         """Return groupings of image sets based on feature values
 
@@ -1480,7 +1489,7 @@ class Measurements(object):
 
         fd = fd_or_file
 
-        to_save = [GROUP_NUMBER, GROUP_INDEX]
+        to_save = [GROUP_NUMBER, GROUP_INDEX, "Group_Length"]
         to_save_prefixes = [
             C_URL,
             C_PATH_NAME,

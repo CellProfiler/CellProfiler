@@ -3475,10 +3475,13 @@ class PipelineController(object):
         try:
             image_set_number = self.__debug_measurements.image_set_number
             self.__debug_measurements.add_image_measurement(
-                cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index
-            )
+                cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index + 1
+            ) #in the analysis mode version, it starts at 1
             self.__debug_measurements.add_image_measurement(
-                cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index
+                cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index + 1
+            ) #in the analysis mode version, it starts at 1
+            self.__debug_measurements.add_image_measurement(
+                "Group_Length", len(self.__groupings[self.__grouping_index][1])
             )
             workspace = cellprofiler.gui.workspace.Workspace(
                 self.__pipeline,

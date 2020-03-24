@@ -7,6 +7,7 @@ import os.path
 import re
 import sys
 import tempfile
+import urlparse
 
 import bioformats.formatreader
 import h5py
@@ -74,7 +75,49 @@ def main(args=None):
         return exit_code
 
     options, args = parse_args(args)
+    
+    if options.temp_dir is not None:
+        if not os.path.exists(options.temp_dir):
+            os.makedirs(options.temp_dir)
+        cellprofiler.preferences.set_temporary_directory(
+            options.temp_dir, globally=False
+        )
 
+    to_clean = []
+    
+    if options.pipeline_filename:
+        o = urlparse.urlparse(options.pipeline_filename)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_pipe_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.cppipe',dir=temp_dir,delete=False)
+            downloaded_pipeline = urllib2.urlopen(options.pipeline_filename)
+            for line in downloaded_pipeline:
+                temp_pipe_file.write(line)
+            options.pipeline_filename = temp_pipe_file.name
+            to_clean.append(os.path.join(temp_dir, temp_pipe_file.name))
+    
+    if options.image_set_file:
+        o = urlparse.urlparse(options.image_set_file)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv',dir=temp_dir,delete=False)
+            downloaded_set_csv = urllib2.urlopen(options.image_set_file)
+            for line in downloaded_set_csv:
+                temp_set_file.write(line)
+            options.image_set_file = temp_set_file.name
+            to_clean.append(os.path.join(temp_dir, temp_set_file.name))
+    
+    if options.data_file:
+        o = urlparse.urlparse(options.data_file)
+        if o[0] in ("ftp", "http", "https"):
+            import urllib2
+            temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv',dir=temp_dir,delete=False)
+            downloaded_data_csv = urllib2.urlopen(options.data_file)
+            for line in downloaded_data_csv:
+                temp_data_file.write(line)
+            options.data_file = temp_data_file.name
+            to_clean.append(os.path.join(temp_dir, temp_data_file.name))
+    
     if options.print_version:
         __version__(exit_code)
 
@@ -109,13 +152,6 @@ def main(args=None):
     if options.plugins_directory is not None:
         cellprofiler.preferences.set_plugin_directory(
             options.plugins_directory, globally=False
-        )
-
-    if options.temp_dir is not None:
-        if not os.path.exists(options.temp_dir):
-            os.makedirs(options.temp_dir)
-        cellprofiler.preferences.set_temporary_directory(
-            options.temp_dir, globally=False
         )
 
     if not options.allow_schema_write:

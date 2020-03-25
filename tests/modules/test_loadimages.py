@@ -2528,8 +2528,7 @@ Name the outline image:NucleiOutlines
 Channel number:1
 Rescale intensities?:Yes
 """
-    maybe_download_fly()
-    directory = os.path.join(example_images_directory(), "ExampleFlyImages")
+    directory = os.path.join(TEST_IMAGES_PATH, "ExampleFlyImages")
     convtester(pipeline_text, directory)
 
 

@@ -284,10 +284,12 @@ def test_load_5channel_tif():
 
 def test_load_C01():
     """IMG-457: Test loading of a .c01 file"""
-    file_name = "icd002235_090127090001_a01f00d1.c01"
-    tests.modules.maybe_download_tesst_image(file_name)
+    file_name = "iamac01file.c01"
     lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
-        "nikon", tests.modules.testimages_directory(), file_name, True
+        "nikon",
+        "tests/data/modules/loadimages",
+        file_name,
+        True
     )
     image = lip.provide_image(None).pixel_data
     assert tuple(image.shape) == (512, 512)
@@ -1251,7 +1253,7 @@ def test_get_object_measurements():
 def test_get_groupings():
     """Get groupings for the SBS image set"""
     sbs_path = os.path.join(
-        tests.modules.example_images_directory(), "ExampleSBSImages"
+        "tests/data/", "ExampleSBSImages"
     )
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.location.dir_choice = "Elsewhere..."
@@ -1311,8 +1313,7 @@ def test_load_avi():
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    avi_path = tests.modules.testimages_directory()
-    tests.modules.maybe_download_tesst_image(file_name)
+    avi_path = "tests/data/modules/loadimages/"
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     module.images[0].common_text.value = file_name
@@ -1823,12 +1824,12 @@ def test_load_flex_separated():
 #     make_12_bit_image('ExampleSpecklesImages', '1-162hrh2ax2.tif', (21, 31))
 #     path = os.path.join(example_images_directory(),
 #                         "ExampleSpecklesImages")
-#     module = LI.LoadImages()
-#     module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+#     module = cellprofiler_core.modules.loadimages.LoadImages()
+#     module.file_types.value = cellprofiler_core.modules.loadimages.FF_INDIVIDUAL_IMAGES
 #     module.images[0].common_text.value = '1-162hrh2ax2'
 #     module.images[0].channels[0].image_name.value = 'MyImage'
 #     module.images[0].channels[0].rescale.value = False
-#     module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+#     module.location.dir_choice = cellprofiler_core.modules.loadimages.ABSOLUTE_FOLDER_NAME
 #     module.location.custom_path = path
 #     module.set_module_num(1)
 #     pipeline = P.Pipeline()
@@ -1846,7 +1847,7 @@ def test_load_flex_separated():
 #                             image_set_list)
 #     module.run(workspace)
 #     scales = m.get_all_measurements(measurements.IMAGE,
-#                                     LI.C_SCALING + "_MyImage")
+#                                     cellprofiler_core.modules.loadimages.C_SCALING + "_MyImage")
 #     assertEqual(len(scales), 1)
 #     assertEqual(scales[0], 4095)
 #     image = image_set.get_image("MyImage")
@@ -2044,7 +2045,7 @@ def test_batch_images():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_REGEXP
     module.location.dir_choice = "Elsewhere..."
     orig_path = os.path.join(
-        tests.modules.example_images_directory(), "ExampleSBSImages"
+        "tests/data/", "ExampleSBSImages"
     )
     module.location.custom_path = orig_path
     target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
@@ -2257,10 +2258,10 @@ def test_load_unicode():
     fd = open(path, "wb")
     fd.write(data)
     fd.close()
-    module = LI.LoadImages()
+    module = cellprofiler_core.modules.loadimages.LoadImages()
     module.set_module_num(1)
-    module.match_method.value = LI.MS_EXACT_MATCH
-    module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+    module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
+    module.location.dir_choice = cellprofiler_core.modules.loadimages.ABSOLUTE_FOLDER_NAME
     module.location.custom_path = directory
     module.images[0].common_text.value = ".jpg"
     module.images[0].channels[0].image_name.value = IMAGE_NAME
@@ -2378,7 +2379,7 @@ def test_00_load_from_url():
 
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.set_module_num(1)
-    module.location.dir_choice = cellprofiler_core.modules.loadimages.URL_FOLDER_NAME
+    module.location.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
     url_base = "http://www.nucleus.org/ExampleFlyImages"
     module.location.custom_path = url_base
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
@@ -2451,7 +2452,7 @@ def test_00_load_from_url():
         # Unfortunately, MAT files end up in temporary files using a different
         # mechanism than everything else
         #
-        image_provider = LI.LoadImagesImageProviderURL(
+        image_provider = cellprofiler_core.modules.loadimages.LoadImagesImageProviderURL(
             IMAGE_NAME,
             example_images_url() + "/ExampleSBSImages/Channel1ILLUM.mat?r11710",
         )
@@ -2465,24 +2466,24 @@ def test_00_load_from_url():
         assertFalse(os.path.exists(pathname))
 
     def test_load_url_with_groups():
-        module = LI.LoadImages()
+        module = cellprofiler_core.modules.loadimages.LoadImages()
         module.set_module_num(1)
-        module.location.dir_choice = LI.URL_FOLDER_NAME
+        module.location.dir_choice = cellprofiler_core.modules.loadimages.URL_FOLDER_NAME
         url_base = "http://www.nucleus.org/ExampleFlyImages"
         module.location.custom_path = url_base
         module.group_by_metadata.value = True
         module.metadata_fields.set_value("Column")
-        module.match_method.value = LI.MS_EXACT_MATCH
+        module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
         module.add_imagecb()
         module.images[0].common_text.value = "_D.TIF"
         module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.images[0].metadata_choice.value = LI.M_FILE_NAME
+        module.images[0].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
         module.images[
             0
         ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
         module.images[1].common_text.value = "_F.TIF"
         module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
-        module.images[1].metadata_choice.value = LI.M_FILE_NAME
+        module.images[1].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
         module.images[
             1
         ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
@@ -2991,7 +2992,7 @@ Channel number:1
 Rescale intensities?:Yes
 """
     directory = os.path.join(
-        tests.modules.example_images_directory(), "ExampleSBSImages"
+        "tests/data/", "ExampleSBSImages"
     )
     convtester(pipeline_text, directory)
 
@@ -3060,7 +3061,7 @@ def test_provide_npy_volume():
 
 
 class TestLoadImagesImageProviderURL:
-    def test_provide_volume():
+    def test_provide_volume(self):
         import IPython
         IPython.embed()
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
@@ -3084,7 +3085,7 @@ class TestLoadImagesImageProviderURL:
 
         numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
-    def test_provide_volume_3_planes():
+    def test_provide_volume_3_planes(self):
         import IPython
         IPython.embed()
         data = numpy.random.rand(3, 256, 256)

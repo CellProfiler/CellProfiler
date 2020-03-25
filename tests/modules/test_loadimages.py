@@ -2036,9 +2036,9 @@ def test_batch_images():
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_REGEXP
     module.location.dir_choice = "Elsewhere..."
-    orig_path = os.path.join(
+    orig_path = os.path.abspath(os.path.join(
         "tests/data/", "ExampleSBSImages"
-    )
+    ))
     module.location.custom_path = orig_path
     target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
     url_path = cellprofiler_core.modules.loadimages.url2pathname(

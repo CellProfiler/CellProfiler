@@ -2114,15 +2114,14 @@ def test_batch_movies():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.location.dir_choice = "Elsewhere..."
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
-    orig_path = tests.modules.testimages_directory()
+    orig_path = os.path.abspath("tests/data/modules/loadimages/")
     module.location.custom_path = orig_path
-    target_path = os.path.join(orig_path, "Images")
+    target_path = orig_path
     orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
     # Can switch cases in Windows.
     orig_url_path = cellprofiler_core.modules.loadimages.url2pathname(orig_url)
 
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    tests.modules.maybe_download_tesst_image(file_name)
     target_url = cellprofiler_core.modules.loadimages.pathname2url(
         os.path.join(target_path, file_name)
     )
@@ -3062,8 +3061,6 @@ def test_provide_npy_volume():
 
 class TestLoadImagesImageProviderURL:
     def test_provide_volume(self):
-        import IPython
-        IPython.embed()
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
         provider = cellprofiler_core.modules.loadimages.LoadImagesImageProviderURL(

@@ -38,6 +38,7 @@ IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
 OBJECTS_NAME = "objects"
 OUTLINES_NAME = "outlines"
+TEST_IMAGES_PATH = "tests/data/modules/loadimages/"
 
 
 @pytest.fixture
@@ -1313,7 +1314,7 @@ def test_load_avi():
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    avi_path = "tests/data/modules/loadimages/"
+    avi_path = TEST_IMAGES_PATH
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     module.images[0].common_text.value = file_name
@@ -1415,7 +1416,7 @@ def test_load_stk():
 
 def test_01_load_2_stk():
     # Regression test of bug 327
-    path = "tests/data/modules/loadimages/"
+    path = TEST_IMAGES_PATH
     files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
     if not all([os.path.exists(f) for f in files]):
         sys.stderr.write(
@@ -1448,9 +1449,7 @@ def test_01_load_2_stk():
 
 def test_02_load_stk():
     # Regression test of issue #783 - color STK.
-    path = tests.modules.testimages_directory()
-    tests.modules.maybe_download_tesst_image("C0.stk")
-    tests.modules.maybe_download_tesst_image("C1.stk")
+    path = TEST_IMAGES_PATH
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_STK_MOVIES
     module.images[0].common_text.value = "C0.stk"
@@ -1478,8 +1477,7 @@ def test_02_load_stk():
 
 def test_load_flex():
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    tests.modules.maybe_download_tesst_image(file_name)
-    flex_path = tests.modules.testimages_directory()
+    flex_path = TEST_IMAGES_PATH
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
     module.images[0].common_text.value = file_name
@@ -1540,8 +1538,7 @@ def test_group_interleaved_avi_frames():
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    tests.modules.maybe_download_tesst_image(file_name)
-    avi_path = tests.modules.testimages_directory()
+    avi_path = TEST_IMAGES_PATH
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     image = module.images[0]
@@ -1616,8 +1613,7 @@ def test_group_separated_avi_frames():
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    tests.modules.maybe_download_tesst_image(file_name)
-    avi_path = tests.modules.testimages_directory()
+    avi_path = TEST_IMAGES_PATH
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     image = module.images[0]
@@ -1687,8 +1683,7 @@ def test_group_separated_avi_frames():
 def test_load_flex_interleaved():
     # needs better test case file
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    tests.modules.maybe_download_tesst_image(file_name)
-    flex_path = tests.modules.testimages_directory()
+    flex_path = TEST_IMAGES_PATH
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
     module.images[0].common_text.value = file_name
@@ -1752,9 +1747,8 @@ def test_load_flex_interleaved():
 
 def test_load_flex_separated():
     # Needs better test case file
-    flex_path = tests.modules.testimages_directory()
+    flex_path = TEST_IMAGES_PATH
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    tests.modules.maybe_download_tesst_image(file_name)
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
     module.images[0].common_text.value = file_name
@@ -2112,7 +2106,7 @@ def test_batch_movies():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.location.dir_choice = "Elsewhere..."
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
-    orig_path = os.path.abspath("tests/data/modules/loadimages/")
+    orig_path = os.path.abspath(TEST_IMAGES_PATH)
     module.location.custom_path = orig_path
     target_path = orig_path
     orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
@@ -2181,7 +2175,7 @@ def test_batch_flex():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.location.dir_choice = "Elsewhere..."
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
-    orig_path = tests.modules.testimages_directory()
+    orig_path = os.path.abspath(TEST_IMAGES_PATH)
     orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
     module.location.custom_path = orig_path
     target_path = os.path.join(orig_path, "Images")
@@ -2189,7 +2183,6 @@ def test_batch_flex():
     orig_url_path = cellprofiler_core.modules.loadimages.url2pathname(orig_url)
 
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    tests.modules.maybe_download_tesst_image(file_name)
     target_url = cellprofiler_core.modules.loadimages.pathname2url(
         os.path.join(orig_path, file_name)
     )

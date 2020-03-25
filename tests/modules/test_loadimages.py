@@ -1415,9 +1415,7 @@ def test_load_stk():
 
 def test_01_load_2_stk():
     # Regression test of bug 327
-    path = tests.modules.testimages_directory()
-    tests.modules.maybe_download_tesst_image("C0.stk")
-    tests.modules.maybe_download_tesst_image("C1.stk")
+    path = "tests/data/modules/loadimages/"
     files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
     if not all([os.path.exists(f) for f in files]):
         sys.stderr.write(

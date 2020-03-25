@@ -44,6 +44,7 @@ References
    processing”, *Applied Informatics*, v.14, pp. 41-90, Finances and
    Statistics, Moskow, (in Russian)
 """
+import logging
 
 import numpy as np
 import scipy.ndimage as scind
@@ -64,6 +65,8 @@ IMAGE_SETTING_COUNT = IMAGE_SETTING_COUNT_V3
 
 OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
+
+logger = logging.getLogger(__name__)
 
 
 class MeasureGranularity(cellprofiler.module.Module):
@@ -254,7 +257,7 @@ class MeasureGranularity(cellprofiler.module.Module):
         # Remove background pixels using a greyscale tophat filter
         #
         if self.image_sample_size.value < 1:
-            back_shape = new_shape * scale.image_sample_size.value
+            back_shape = new_shape * self.image_sample_size.value
             if im.dimensions is 2:
                 i, j = (
                     np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
@@ -501,7 +504,7 @@ class MeasureGranularity(cellprofiler.module.Module):
             variable_revision_number = 3
         if variable_revision_number == 3:
             n_images = int(setting_values[0])
-            grouplist = setting_values[1:6*n_images+1]
+            grouplist = setting_values[1:]
             images_list = []
             objects_list = []
             setting_groups = []
@@ -521,32 +524,25 @@ class MeasureGranularity(cellprofiler.module.Module):
             if "None" in images_set:
                 images_set.remove("None")
             if len(settings_set) > 1:
-                import wx
-                wx.MessageBox(
+                logger.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module no longer supports different settings for each image.\n"
                     "Instead, all selected images and objects will be analysed together with the same settings.\n"
                     "If you want to perform analysis with additional settings, please use a second "
-                    "copy of the module.",
-                    "Compatibility Warning - MeasureGranularity",
-                    wx.ICON_INFORMATION,
+                    "copy of the module."
                 )
             if len(objects_set) > len(objects_list):
-                import wx
-                wx.MessageBox(
+                logger.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module now analyses all images and object sets together.\n"
                     "Specific pairs of images and objects are no longer supported.\n"
                     "If you want to restrict analysis to specific image/object sets, please use a second "
-                    "copy of the module.",
-                    "Compatibility Warning - MeasureGranularity",
-                    wx.ICON_INFORMATION,
+                    "copy of the module."
                 )
             if len(objects_set) > 0:
                 wants_objects = True
             else:
                 wants_objects = False
-
             images_string = ", ".join(map(str, images_set))
             objects_string = ", ".join(map(str, objects_set))
             setting_values = [images_string, wants_objects, objects_string] + list(setting_groups[0])

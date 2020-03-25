@@ -1,5 +1,7 @@
 # coding=utf-8
 
+import logging
+
 import numpy as np
 
 import cellprofiler.measurement
@@ -100,6 +102,7 @@ ALL_MEASUREMENTS = [
     "LowerQuartileIntensity",
     "UpperQuartileIntensity",
 ]
+logger = logging.getLogger(__name__)
 
 
 class MeasureImageIntensity(cellprofiler.module.Module):
@@ -375,16 +378,13 @@ class MeasureImageIntensity(cellprofiler.module.Module):
             objects_string = ", ".join(map(str, objects_set))
             setting_values = [images_string, wants_objects, objects_string]
             if len(use_objects) > 1 or len(objects_set) > 1:
-                import wx
-                wx.MessageBox(
+                logger.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureImageIntensity module no longer uses pairs of images and objects.\n"
                     "Instead, all selected images and objects will be analysed together.\n"
                     "If you want to limit analysis of particular objects or perform both "
                     "whole image and object-restricted analysis you should use a second "
                     "copy of the module.",
-                    "Compatibility Warning - MeasureImageIntensity",
-                    wx.ICON_INFORMATION,
                 )
             variable_revision_number = 3
             print(setting_values)

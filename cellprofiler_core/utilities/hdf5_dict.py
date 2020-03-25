@@ -712,7 +712,7 @@ class HDF5Dict(object):
         ), "First two indices must be of type str."
         if len(idxs) == 3:
             assert (
-                isinstance(idxs[2], int) and idxs[2] >= 0
+                isinstance(idxs[2], numpy.integer) and idxs[2] >= 0
             ), "Third index must be a non-negative integer"
 
             object_name, feature_name, num_idx = idxs

@@ -1169,20 +1169,20 @@ HasImagePlaneDetails:False"""
 
         content = "\n".join(urls)
 
-        with tempfile.NamedTemporaryFile() as temporary:
-            with open(temporary.name, "w") as fp:
-                fp.write(content)
+        temp_file = tempfile.NamedTemporaryFile(mode='w+b', suffix='.cppipe', delete=False)
+        with open(temp_file.name, "w") as fp:
+            fp.write(content)
 
-                fp.seek(0)
+            fp.seek(0)
+        pipeline = cellprofiler_core.pipeline.Pipeline()
 
-            pipeline = cellprofiler_core.pipeline.Pipeline()
-
-            pipeline.read_file_list(fp.name)
+        pipeline.read_file_list(fp.name)
 
         assert len(pipeline.file_list) == len(urls)
 
         for url in urls:
             assert url in pipeline.file_list
+
 
     def test_read_http_file_list(self):
         url = "https://gist.githubusercontent.com/mcquin/67438dc4e8481c5b1d3881df56e1c4c4/raw/274835d9d3fef990d8bf34c4ee5f991b3880d74f/gistfile1.txt"

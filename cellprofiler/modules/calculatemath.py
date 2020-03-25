@@ -80,6 +80,7 @@ MC_ALL = [MC_IMAGE, MC_OBJECT]
 
 C_MATH = "Math"
 
+ROUNDING = ["Not rounded", "Rounded to a specified number of decimal places", "Rounded down to the next-lowest integer", "Rounded up to the next-highest integer"]
 
 class CalculateMath(cpm.Module):
     module_name = "CalculateMath"
@@ -248,12 +249,29 @@ Enter the power by which you would like to raise the result.
         self.upper_bound = cps.Float(
                 "Enter the upper bound", 1, doc="""Enter the upper bound of the result here.""")
 
+        self.rounding = cps.Choice(
+            "How should the output value be rounded?", ROUNDING, doc="""\
+Choose how the values should be rounded- not at all, to a specified number of decimal places, 
+to the next lowest integer ("floor rounding"), or to the next highest integer ("ceiling rounding").
+
+Note that for rounding to an arbitrary number of decimal places, Python uses "round to even" rounding,
+such that ties round to the nearest even number. Thus, 1.5 and 2.5 both round to to 2 at 0 decimal 
+places, 2.45 rounds to 2.4, 2.451 rounds to 2.5, and 2.55 rounds to 2.6 at 1 decimal place. See the 
+numpy documentation for more information.  
+""")
+
+        self.rounding_digit = cps.Integer(
+            "Enter how many decimal places the value should be rounded to", 0, doc="""\
+Enter how many decimal places the value should be rounded to. 0 will round to an integer (e.g. 1, 2), 1 to 
+one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g. 10, 20), etc.
+""")
+
     def settings(self):
         result = [self.output_feature_name, self.operation]
         result += self.operands[0].settings() + self.operands[1].settings()
         result += [self.wants_log, self.final_multiplicand, self.final_exponent, self.final_addend]
         result += [self.constrain_lower_bound, self.lower_bound, self.constrain_upper_bound, self.upper_bound]
-
+        result += [self.rounding, self.rounding_digit]
         return result
 
     def post_pipeline_load(self, pipeline):
@@ -291,6 +309,9 @@ Enter the power by which you would like to raise the result.
         result += [self.constrain_upper_bound]
         if self.constrain_upper_bound:
             result += [self.upper_bound]
+        result += [self.rounding]
+        if self.rounding == ROUNDING[1]:
+            result += [self.rounding_digit]
 
         return result
 
@@ -457,6 +478,15 @@ Enter the power by which you would like to raise the result.
             # Handle NaNs with np.power instead of **
             result = np.power(result, self.final_exponent.value)
         result += self.final_addend.value
+
+        if self.rounding == ROUNDING[1]:
+            result = np.around(result, self.rounding_digit.value)
+        
+        elif self.rounding == ROUNDING[2]:
+            result = np.floor(result)
+
+        elif self.rounding == ROUNDING[3]:
+            result = np.ceil(result)
 
         if self.constrain_lower_bound:
             if np.isscalar(result):

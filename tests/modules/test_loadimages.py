@@ -2244,49 +2244,49 @@ def test_load_unicode():
     os.mkdir(directory)
     filename = "\u03b1\u00b2.jpg"
     path = os.path.join(directory, filename)
-    data = base64.b64decode(T.jpg_8_1)
+    data = base64.b64decode(tests.modules.jpg_8_1)
     fd = open(path, "wb")
     fd.write(data)
     fd.close()
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.set_module_num(1)
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = cellprofiler_core.modules.loadimages.ABSOLUTE_FOLDER_NAME
+    module.location.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.location.custom_path = directory
     module.images[0].common_text.value = ".jpg"
     module.images[0].channels[0].image_name.value = IMAGE_NAME
-    image_set_list = I.ImageSetList()
-    pipeline = cpp.Pipeline()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        assert (isinstance(event, cellprofiler_core.pipeline.event.RunException)) is False
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    m = measurements.Measurements()
-    workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
-    assertTrue(module.prepare_run(workspace))
-    assertEqual(len(m.get_image_numbers()), 1)
+    m = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
+    assert (module.prepare_run(workspace))
+    assert len(m.get_image_numbers()) == 1
     key_names, group_list = pipeline.get_groupings(workspace)
-    assertEqual(len(group_list), 1)
+    assert len(group_list) == 1
     group_keys, image_numbers = group_list[0]
-    assertEqual(len(image_numbers), 1)
+    assert len(image_numbers) == 1
     module.prepare_group(workspace, group_keys, image_numbers)
     image_set = image_set_list.get_image_set(image_numbers[0] - 1)
-    workspace = W.Workspace(
-        pipeline, module, image_set, cpo.ObjectSet(), m, image_set_list
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     module.run(workspace)
     image_provider = image_set.get_image_provider(IMAGE_NAME)
-    assertEqual(image_provider.get_filename(), filename)
+    assert image_provider.get_filename() == filename
     pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
-    assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
-    file_feature = "_".join((LI.C_FILE_NAME, IMAGE_NAME))
+    assert tuple(pixel_data.shape[:2]) == tuple(tests.modules.raw_8_1_shape)
+    file_feature = "_".join((cellprofiler_core.measurement.C_FILE_NAME, IMAGE_NAME))
     file_measurement = m.get_current_image_measurement(file_feature)
-    assertEqual(file_measurement, filename)
-    path_feature = "_".join((LI.C_PATH_NAME, IMAGE_NAME))
+    assert file_measurement == filename
+    path_feature = "_".join((cellprofiler_core.measurement.C_PATH_NAME, IMAGE_NAME))
     path_measurement = m.get_current_image_measurement(path_feature)
-    assertEqual(os.path.split(directory)[1], os.path.split(path_measurement)[1])
+    assert os.path.split(directory)[1] == os.path.split(path_measurement)[1]
 
 
 def make_prepare_run_workspace(file_names):
@@ -2370,7 +2370,7 @@ def test_00_load_from_url():
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.set_module_num(1)
     module.location.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
-    url_base = "http://www.nucleus.org/ExampleFlyImages"
+    url_base = "http://www.cellprofiler.org/ExampleFlyImages"
     module.location.custom_path = url_base
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.add_imagecb()
@@ -2437,119 +2437,104 @@ def test_00_load_from_url():
     release_image_reader(IMAGE_NAME)
     assert not os.path.exists(pathname)
 
-    def test_01_load_url_mat():
-        #
-        # Unfortunately, MAT files end up in temporary files using a different
-        # mechanism than everything else
-        #
-        image_provider = cellprofiler_core.modules.loadimages.LoadImagesImageProviderURL(
-            IMAGE_NAME,
-            example_images_url() + "/ExampleSBSImages/Channel1ILLUM.mat?r11710",
-        )
-        pathname = image_provider.get_full_name()
-        image = image_provider.provide_image(None)
-        assertEqual(tuple(image.pixel_data.shape), (640, 640))
-        expected_md5 = "f3c4d57ee62fa2fd96e3686179656d82"
-        md5 = image_provider.get_md5_hash(None)
-        assertEqual(expected_md5, md5)
-        image_provider.release_memory()
-        assertFalse(os.path.exists(pathname))
 
-    def test_load_url_with_groups():
-        module = cellprofiler_core.modules.loadimages.LoadImages()
-        module.set_module_num(1)
-        module.location.dir_choice = cellprofiler_core.modules.loadimages.URL_FOLDER_NAME
-        url_base = "http://www.nucleus.org/ExampleFlyImages"
-        module.location.custom_path = url_base
-        module.group_by_metadata.value = True
-        module.metadata_fields.set_value("Column")
-        module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
-        module.add_imagecb()
-        module.images[0].common_text.value = "_D.TIF"
-        module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.images[0].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
-        module.images[
-            0
-        ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
-        module.images[1].common_text.value = "_F.TIF"
-        module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
-        module.images[1].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
-        module.images[
-            1
-        ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
+def test_load_url_with_groups():
+    module = cellprofiler_core.modules.loadimages.LoadImages()
+    module.set_module_num(1)
+    module.location.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
+    url_base = "https://www.cellprofiler.org/ExampleFlyImages"
+    module.location.custom_path = url_base
+    module.group_by_metadata.value = True
+    module.metadata_fields.set_value("Column")
+    module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
+    module.add_imagecb()
+    module.images[0].common_text.value = "_D.TIF"
+    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
+    module.images[
+        0
+    ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
+    module.images[1].common_text.value = "_F.TIF"
+    module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+    module.images[1].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
+    module.images[
+        1
+    ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
 
-        pipeline = cpp.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
-        def callback(caller, event):
-            assertFalse(
-                isinstance(event, (cpp.LoadExceptionEvent, cpp.RunExceptionEvent))
-            )
+    def callback(caller, event):
+        assert (
+            isinstance(event, (cellprofiler_core.pipeline.event.LoadException,
+                               cellprofiler_core.pipeline.event.RunException))
+        ) is False
 
-        pipeline.add_listener(callback)
-        pipeline.add_module(module)
+    pipeline.add_listener(callback)
+    pipeline.add_module(module)
 
-        m = measurements.Measurements()
-        image_set_list = I.ImageSetList()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
-        assertTrue(module.prepare_run(workspace))
-        image_numbers = m.get_image_numbers()
-        assertEqual(len(image_numbers), 3)
+    m = cellprofiler_core.measurement.Measurements()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
+    assert (module.prepare_run(workspace))
+    image_numbers = m.get_image_numbers()
+    assert len(image_numbers) == 3
 
-        key_names, group_list = module.get_groupings(workspace)
-        assertEqual(len(key_names), 1)
-        assertEqual(key_names[0], "Column")
-        assertEqual(len(group_list), 2)
-        assertEqual(group_list[0][0]["Column"], "0")
-        assertEqual(len(group_list[0][1]), 2)
-        assertEqual(tuple(group_list[0][1]), tuple(image_numbers[:2]))
-        assertEqual(group_list[1][0]["Column"], "2")
-        assertEqual(len(group_list[1][1]), 1)
-        assertEqual(group_list[1][1][0], image_numbers[-1])
+    key_names, group_list = module.get_groupings(workspace)
+    assert len(key_names) == 1
+    assert key_names[0] == "Column"
+    assert len(group_list) == 2
+    assert group_list[0][0]["Column"] == "0"
+    assert len(group_list[0][1]) == 2
+    assert tuple(group_list[0][1]) == tuple(image_numbers[:2])
+    assert group_list[1][0]["Column"] == "2"
+    assert len(group_list[1][1]) == 1
+    assert group_list[1][1][0] == image_numbers[-1]
 
-    def test_single_channel():
-        pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+
+def test_single_channel():
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
 ModuleCount:1
 HasImagePlaneDetails:False
 
 LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
-    File type to be loaded:individual images
-    File selection method:Text-Exact match
-    Number of images in each group?:3
-    Type the text that the excluded images have in common:Do not use
-    Analyze all subfolders within the selected folder?:None
-    Input image file location:Default Input Folder\x7C.
-    Check image sets for unmatched or duplicate files?:No
-    Group images by metadata?:No
-    Exclude certain files?:No
-    Specify metadata fields to group by:
-    Select subfolders to analyze:
-    Image count:1
-    Text that these images have in common (case-sensitive):D.TIF
-    Position of this image in each group:D.TIF
-    Extract metadata from where?:None
-    Regular expression that finds metadata in the file name:None
-    Type the regular expression that finds metadata in the subfolder path:None
-    Channel count:1
-    Group the movie frames?:No
-    Grouping method:Interleaved
-    Number of channels per group:2
-    Load the input as images or objects?:Images
-    Name this loaded image:OrigBlue
-    Name this loaded object:Nuclei
-    Retain outlines of loaded objects?:No
-    Name the outline image:NucleiOutlines
-    Channel number:1
-    Rescale intensities?:Yes
+File type to be loaded:individual images
+File selection method:Text-Exact match
+Number of images in each group?:3
+Type the text that the excluded images have in common:Do not use
+Analyze all subfolders within the selected folder?:None
+Input image file location:Default Input Folder\x7C.
+Check image sets for unmatched or duplicate files?:No
+Group images by metadata?:No
+Exclude certain files?:No
+Specify metadata fields to group by:
+Select subfolders to analyze:
+Image count:1
+Text that these images have in common (case-sensitive):D.TIF
+Position of this image in each group:D.TIF
+Extract metadata from where?:None
+Regular expression that finds metadata in the file name:None
+Type the regular expression that finds metadata in the subfolder path:None
+Channel count:1
+Group the movie frames?:No
+Grouping method:Interleaved
+Number of channels per group:2
+Load the input as images or objects?:Images
+Name this loaded image:OrigBlue
+Name this loaded object:Nuclei
+Retain outlines of loaded objects?:No
+Name the outline image:NucleiOutlines
+Channel number:1
+Rescale intensities?:Yes
 """
-        maybe_download_fly()
-        directory = os.path.join(example_images_directory(), "ExampleFlyImages")
-        convtester(pipeline_text, directory)
+    maybe_download_fly()
+    directory = os.path.join(example_images_directory(), "ExampleFlyImages")
+    convtester(pipeline_text, directory)
 
 
 def test_three_channels():
-    pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
 ModuleCount:1
@@ -2625,7 +2610,7 @@ Rescale intensities?:Yes
 
 
 def test_regexp():
-    pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
 ModuleCount:1
@@ -2701,7 +2686,7 @@ Rescale intensities?:Yes
 
 
 def test_order_by_metadata():
-    pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
 ModuleCount:1
@@ -2777,7 +2762,7 @@ Rescale intensities?:Yes
 
 
 def test_directory_metadata():
-    pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
 ModuleCount:1
@@ -2853,7 +2838,7 @@ Rescale intensities?:Yes
 
 
 def test_objects():
-    pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
 ModuleCount:1
@@ -2929,7 +2914,7 @@ Rescale intensities?:Yes
 
 
 def test_group_by_metadata():
-    pipeline_text = r"""CellProfiler Pipeline: http://www.nucleus.org
+    pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120917145632
 ModuleCount:1
@@ -3074,8 +3059,6 @@ class TestLoadImagesImageProviderURL:
         numpy.testing.assert_array_almost_equal(image.pixel_data, expected)
 
     def test_provide_volume_3_planes(self):
-        import IPython
-        IPython.embed()
         data = numpy.random.rand(3, 256, 256)
 
         path = tempfile.NamedTemporaryFile(suffix=".tif", delete=False).name

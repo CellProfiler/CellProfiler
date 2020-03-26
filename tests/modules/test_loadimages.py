@@ -34,11 +34,30 @@ import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.modules
 
-IMAGE_NAME = "image"
-ALT_IMAGE_NAME = "altimage"
-OBJECTS_NAME = "objects"
-OUTLINES_NAME = "outlines"
-TEST_IMAGES_PATH = "tests/data/modules/loadimages/"
+
+@pytest.fixture
+def image_name():
+    return "image"
+
+
+@pytest.fixture
+def alt_image_name():
+    return "altimage"
+
+
+@pytest.fixture
+def objects_name():
+    return "objects"
+
+
+@pytest.fixture
+def outlines_name():
+    return "outlines"
+
+
+@pytest.fixture
+def test_images_path():
+    return "tests/data/modules/loadimages/"
 
 
 @pytest.fixture
@@ -235,7 +254,7 @@ def test_load_Metamorph_tif():
 # With Subimager and the new file_ui framework, you'd load individual
 # planes.
 @unittest.skip
-def test_load_5channel_tif():
+def test_load_5channel_tif(image_name):
     """Load a 5-channel image"""
     tests.modules.maybe_download_tesst_image("5channel.tif")
     path = tests.modules.testimages_directory()
@@ -247,7 +266,7 @@ def test_load_5channel_tif():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = path
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     module.images[0].common_text.value = file_name
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -277,7 +296,7 @@ def test_load_5channel_tif():
         pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     module.run(workspace)
-    image = image_set.get_image(IMAGE_NAME)
+    image = image_set.get_image(image_name)
     pixels = image.pixel_data
     assert pixels.ndim == 3
     assert tuple(pixels.shape) == (64, 64, 5)
@@ -1161,25 +1180,25 @@ def test_get_flex_measurements():
             assert all([feature in expected_features for feature in features])
 
 
-def test_get_object_measurement_columns():
+def test_get_object_measurement_columns(objects_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     channel = module.images[0].channels[0]
     channel.image_object_choice.value = cellprofiler_core.modules.loadimages.IO_OBJECTS
-    channel.object_name.value = OBJECTS_NAME
+    channel.object_name.value = objects_name
     columns = module.get_measurement_columns(None)
     for object_name, feature in (
         (
             "Image",
-            "ObjectsFileName" + "_" + OBJECTS_NAME,
+            "ObjectsFileName" + "_" + objects_name,
         ),
         (
             "Image",
-            "ObjectsPathName" + "_" + OBJECTS_NAME,
+            "ObjectsPathName" + "_" + objects_name,
         ),
-        ("Image", "Count" + "_" + OBJECTS_NAME),
-        (OBJECTS_NAME, "Location_Center_X"),
-        (OBJECTS_NAME, "Location_Center_Y"),
-        (OBJECTS_NAME, "Number_Object_Number"),
+        ("Image", "Count" + "_" + objects_name),
+        (objects_name, "Location_Center_X"),
+        (objects_name, "Location_Center_Y"),
+        (objects_name, "Number_Object_Number"),
     ):
         assert any(
             [
@@ -1190,11 +1209,11 @@ def test_get_object_measurement_columns():
         )
 
 
-def test_get_object_categories():
+def test_get_object_categories(objects_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     channel = module.images[0].channels[0]
     channel.image_object_choice.value = cellprofiler_core.modules.loadimages.IO_OBJECTS
-    channel.object_name.value = OBJECTS_NAME
+    channel.object_name.value = objects_name
     for object_name, expected_categories in (
         (
             "Image",
@@ -1205,7 +1224,7 @@ def test_get_object_categories():
                 "Count",
             ),
         ),
-        (OBJECTS_NAME, ("Location", "Number")),
+        (objects_name, ("Location", "Number")),
         ("Foo", []),
     ):
         categories = module.get_categories(None, object_name)
@@ -1215,22 +1234,22 @@ def test_get_object_categories():
             assert category in expected_categories
 
 
-def test_get_object_measurements():
+def test_get_object_measurements(objects_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     channel = module.images[0].channels[0]
     channel.image_object_choice.value = cellprofiler_core.modules.loadimages.IO_OBJECTS
-    channel.object_name.value = OBJECTS_NAME
+    channel.object_name.value = objects_name
     for object_name, expected in (
         (
             "Image",
             (
-                ("ObjectsFileName", [OBJECTS_NAME]),
-                ("ObjectsPathName", [OBJECTS_NAME]),
-                ("Count", [OBJECTS_NAME]),
+                ("ObjectsFileName", [objects_name]),
+                ("ObjectsPathName", [objects_name]),
+                ("Count", [objects_name]),
             ),
         ),
         (
-            OBJECTS_NAME,
+            objects_name,
             (
                 (
                     "Location",
@@ -1309,12 +1328,12 @@ def test_get_groupings():
             assert row == match.group("ROW")
 
 
-def test_load_avi():
+def test_load_avi(test_images_path):
     if cellprofiler_core.modules.loadimages.FF_AVI_MOVIES not in cellprofiler_core.modules.loadimages.FF:
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    avi_path = TEST_IMAGES_PATH
+    avi_path = test_images_path
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     module.images[0].common_text.value = file_name
@@ -1414,9 +1433,9 @@ def test_load_stk():
     assert numpy.any(img1 != img2)
 
 
-def test_01_load_2_stk():
+def test_01_load_2_stk(test_images_path):
     # Regression test of bug 327
-    path = TEST_IMAGES_PATH
+    path = test_images_path
     files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
     if not all([os.path.exists(f) for f in files]):
         sys.stderr.write(
@@ -1447,9 +1466,9 @@ def test_01_load_2_stk():
     assert m.image_set_count == 7
 
 
-def test_02_load_stk():
+def test_02_load_stk(test_images_path):
     # Regression test of issue #783 - color STK.
-    path = TEST_IMAGES_PATH
+    path = test_images_path
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_STK_MOVIES
     module.images[0].common_text.value = "C0.stk"
@@ -1475,9 +1494,9 @@ def test_02_load_stk():
     assert tuple(pixel_data.shape) == (800, 800, 3)
 
 
-def test_load_flex():
+def test_load_flex(test_images_path):
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    flex_path = TEST_IMAGES_PATH
+    flex_path = test_images_path
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
     module.images[0].common_text.value = file_name
@@ -1530,7 +1549,7 @@ def test_load_flex():
             m.next_image_set()
 
 
-def test_group_interleaved_avi_frames():
+def test_group_interleaved_avi_frames(test_images_path):
     #
     # Test interleaved grouping by movie frames
     #
@@ -1538,7 +1557,7 @@ def test_group_interleaved_avi_frames():
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    avi_path = TEST_IMAGES_PATH
+    avi_path = test_images_path
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     image = module.images[0]
@@ -1605,7 +1624,7 @@ def test_group_interleaved_avi_frames():
     assert m.get_current_image_measurement("Frame_Channel03") == 7
 
 
-def test_group_separated_avi_frames():
+def test_group_separated_avi_frames(test_images_path):
     #
     # Test separated grouping by movie frames
     #
@@ -1613,7 +1632,7 @@ def test_group_separated_avi_frames():
         sys.stderr.write("WARNING: AVI movies not supported\n")
         return
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    avi_path = TEST_IMAGES_PATH
+    avi_path = test_images_path
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
     image = module.images[0]
@@ -1680,10 +1699,10 @@ def test_group_separated_avi_frames():
     assert m.get_current_image_measurement("Frame_Channel03") == 27
 
 
-def test_load_flex_interleaved():
+def test_load_flex_interleaved(test_images_path):
     # needs better test case file
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    flex_path = TEST_IMAGES_PATH
+    flex_path = test_images_path
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
     module.images[0].common_text.value = file_name
@@ -1745,9 +1764,9 @@ def test_load_flex_interleaved():
             m.next_image_set()
 
 
-def test_load_flex_separated():
+def test_load_flex_separated(test_images_path):
     # Needs better test case file
-    flex_path = TEST_IMAGES_PATH
+    flex_path = test_images_path
     file_name = "RLM1 SSN3 300308 008015000.flex"
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
@@ -1879,9 +1898,9 @@ def make_objects_workspace(image, mode="L", filename="myfile.tif"):
     module.images[0].channels[
         0
     ].image_object_choice.value = cellprofiler_core.modules.loadimages.IO_OBJECTS
-    module.images[0].channels[0].object_name.value = OBJECTS_NAME
+    module.images[0].channels[0].object_name.value = "objects"
     module.images[0].channels[0].wants_outlines.value = True
-    module.images[0].channels[0].outlines_name.value = OUTLINES_NAME
+    module.images[0].channels[0].outlines_name.value = "outlines"
     module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = directory
     module.set_module_num(1)
@@ -1906,18 +1925,18 @@ def make_objects_workspace(image, mode="L", filename="myfile.tif"):
     return workspace, module
 
 
-def test_load_empty_objects():
+def test_load_empty_objects(objects_name):
     workspace, module = make_objects_workspace(numpy.zeros((20, 30), int))
     module.run(workspace)
     assert isinstance(module, cellprofiler_core.modules.loadimages.LoadImages)
-    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    o = workspace.object_set.get_objects(objects_name)
     assert numpy.all(o.segmented == 0)
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name, measurement in (
-        ("Image", "Count_%s" % OBJECTS_NAME),
-        (OBJECTS_NAME, "Location_Center_X"),
-        (OBJECTS_NAME, "Location_Center_Y"),
-        (OBJECTS_NAME, "Number_Object_Number"),
+        ("Image", "Count_%s" % objects_name),
+        (objects_name, "Location_Center_X"),
+        (objects_name, "Location_Center_Y"),
+        (objects_name, "Number_Object_Number"),
     ):
         assert any(
             [
@@ -1929,23 +1948,23 @@ def test_load_empty_objects():
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     assert (
-        m.get_current_image_measurement("Count_%s" % OBJECTS_NAME)
+        m.get_current_image_measurement("Count_%s" % objects_name)
         == 0
     )
 
 
-def test_load_indexed_objects():
+def test_load_indexed_objects(objects_name):
     r = numpy.random.RandomState()
     r.seed(1202)
     image = r.randint(0, 10, size=(20, 30))
     workspace, module = make_objects_workspace(image)
     module.run(workspace)
-    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    o = workspace.object_set.get_objects(objects_name)
     assert numpy.all(o.segmented == image)
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     assert (
-        m.get_current_image_measurement("Count_%s" % OBJECTS_NAME)
+        m.get_current_image_measurement("Count_%s" % objects_name)
         == 9
     )
     i, j = numpy.mgrid[0 : image.shape[0], 0 : image.shape[1]]
@@ -1953,26 +1972,26 @@ def test_load_indexed_objects():
     x = numpy.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
     y = numpy.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
     v = m.get_current_measurement(
-        OBJECTS_NAME, "Number_Object_Number"
+        objects_name, "Number_Object_Number"
     )
     assert numpy.all(v == numpy.arange(1, 10))
-    v = m.get_current_measurement(OBJECTS_NAME, "Location_Center_X")
+    v = m.get_current_measurement(objects_name, "Location_Center_X")
     assert numpy.all(v == x)
-    v = m.get_current_measurement(OBJECTS_NAME, "Location_Center_Y")
+    v = m.get_current_measurement(objects_name, "Location_Center_Y")
     assert numpy.all(v == y)
 
 
-def test_load_sparse_objects():
+def test_load_sparse_objects(objects_name):
     r = numpy.random.RandomState()
     r.seed(1203)
     image = r.randint(0, 10, size=(20, 30))
     workspace, module = make_objects_workspace(image * 10)
     module.run(workspace)
-    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    o = workspace.object_set.get_objects(objects_name)
     assert numpy.all(o.segmented == image)
 
 
-def test_load_color_objects():
+def test_load_color_objects(objects_name):
     r = numpy.random.RandomState()
     r.seed(1203)
     image = r.randint(0, 10, size=(20, 30))
@@ -1996,28 +2015,28 @@ def test_load_color_objects():
         cimage, mode="RGB", filename="myimage.png"
     )
     module.run(workspace)
-    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    o = workspace.object_set.get_objects(objects_name)
     assert numpy.all(o.segmented == image)
 
 
-def test_object_outlines():
+def test_object_outlines(objects_name, outlines_name):
     image = numpy.zeros((30, 40), int)
     image[10:15, 20:30] = 1
     workspace, module = make_objects_workspace(image)
     module.run(workspace)
-    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    o = workspace.object_set.get_objects(objects_name)
     assert numpy.all(o.segmented == image)
     expected_outlines = image != 0
     expected_outlines[11:14, 21:29] = False
     image_set = workspace.get_image_set()
-    outlines = image_set.get_image(OUTLINES_NAME)
+    outlines = image_set.get_image(outlines_name)
     numpy.testing.assert_equal(outlines.pixel_data, expected_outlines)
 
 
-def test_overlapped_objects():
+def test_overlapped_objects(objects_name):
     workspace, module = make_objects_workspace(overlapped_objects_data, mode="raw")
     module.run(workspace)
-    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    o = workspace.object_set.get_objects(objects_name)
     assert o.count == 2
     labels_and_indices = o.get_labels()
     for n, mask in enumerate(overlapped_objects_data_masks):
@@ -2032,7 +2051,7 @@ def test_overlapped_objects():
             assert "Object number %d not found" % object_number
 
 
-def test_batch_images():
+def test_batch_images(image_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_REGEXP
     module.location.dir_choice = "Elsewhere..."
@@ -2047,7 +2066,7 @@ def test_batch_images():
 
     file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
     module.images[0].common_text.value = file_regexp
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -2081,19 +2100,19 @@ def test_batch_images():
     for image_number in image_numbers:
         path = m.get_measurement(
             "Image",
-            "PathName" + "_" + IMAGE_NAME,
+            "PathName" + "_" + image_name,
             image_set_number=image_number,
         )
         assert path == target_path
         file_name = m.get_measurement(
             "Image",
-            "FileName" + "_" + IMAGE_NAME,
+            "FileName" + "_" + image_name,
             image_set_number=image_number,
         )
         assert re.match(file_regexp, file_name) is not None
         url = m.get_measurement(
             "Image",
-            "URL" + "_" + IMAGE_NAME,
+            "URL" + "_" + image_name,
             image_set_number=image_number,
         )
         assert url == cellprofiler_core.modules.loadimages.pathname2url(
@@ -2101,12 +2120,12 @@ def test_batch_images():
         )
 
 
-def test_batch_movies():
+def test_batch_movies(test_images_path, image_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.location.dir_choice = "Elsewhere..."
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_AVI_MOVIES
-    orig_path = os.path.abspath(TEST_IMAGES_PATH)
+    orig_path = os.path.abspath(test_images_path)
     module.location.custom_path = orig_path
     target_path = orig_path
     orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
@@ -2118,7 +2137,7 @@ def test_batch_movies():
         os.path.join(target_path, file_name)
     )
     module.images[0].common_text.value = file_name
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -2157,7 +2176,7 @@ def test_batch_movies():
         assert (
             m.get_measurement(
                 "Image",
-                "PathName_" + IMAGE_NAME,
+                "PathName_" + image_name,
                 image_set_number=image_number,
             )
             == target_path
@@ -2170,12 +2189,12 @@ def test_batch_movies():
         )
 
 
-def test_batch_flex():
+def test_batch_flex(test_images_path, image_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.location.dir_choice = "Elsewhere..."
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
-    orig_path = os.path.abspath(TEST_IMAGES_PATH)
+    orig_path = os.path.abspath(test_images_path)
     orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
     module.location.custom_path = orig_path
     target_path = os.path.join(orig_path, "Images")
@@ -2187,7 +2206,7 @@ def test_batch_flex():
         os.path.join(orig_path, file_name)
     )
     module.images[0].common_text.value = file_name
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler_core.measurement.Measurements()
@@ -2223,21 +2242,21 @@ def test_batch_flex():
         for image_number in image_numbers:
             assert (
                 m.get_measurement(
-                    "Image", "PathName_" + IMAGE_NAME, image_number
+                    "Image", "PathName_" + image_name, image_number
                 )
                 == target_path
             )
             assert (
                 m.get_measurement(
                     "Image",
-                    cellprofiler_core.modules.loadimages.C_SERIES + "_" + IMAGE_NAME,
+                    cellprofiler_core.modules.loadimages.C_SERIES + "_" + image_name,
                     image_number,
                 )
                 == i
             )
 
 
-def test_load_unicode():
+def test_load_unicode(image_name):
     """Load an image from a unicode - encoded location"""
     directory = tempfile.mkdtemp()
     directory = os.path.join(directory, "\u2211a")
@@ -2254,7 +2273,7 @@ def test_load_unicode():
     module.location.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.location.custom_path = directory
     module.images[0].common_text.value = ".jpg"
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     image_set_list = cellprofiler_core.image.ImageSetList()
     pipeline = cellprofiler_core.pipeline.Pipeline()
 
@@ -2277,14 +2296,14 @@ def test_load_unicode():
         pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     module.run(workspace)
-    image_provider = image_set.get_image_provider(IMAGE_NAME)
+    image_provider = image_set.get_image_provider(image_name)
     assert image_provider.get_filename() == filename
-    pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
+    pixel_data = image_set.get_image(image_name).pixel_data
     assert tuple(pixel_data.shape[:2]) == tuple(tests.modules.raw_8_1_shape)
-    file_feature = "_".join((cellprofiler_core.measurement.C_FILE_NAME, IMAGE_NAME))
+    file_feature = "_".join((cellprofiler_core.measurement.C_FILE_NAME, image_name))
     file_measurement = m.get_current_image_measurement(file_feature)
     assert file_measurement == filename
-    path_feature = "_".join((cellprofiler_core.measurement.C_PATH_NAME, IMAGE_NAME))
+    path_feature = "_".join((cellprofiler_core.measurement.C_PATH_NAME, image_name))
     path_measurement = m.get_current_image_measurement(path_feature)
     assert os.path.split(directory)[1] == os.path.split(path_measurement)[1]
 
@@ -2328,7 +2347,7 @@ def make_prepare_run_workspace(file_names):
     )
 
 
-def test_prepare_run_measurements():
+def test_prepare_run_measurements(image_name, alt_image_name):
     filenames = [
         "channel1-A01.png",
         "channel2-A01.png",
@@ -2341,14 +2360,14 @@ def test_prepare_run_measurements():
     module.add_imagecb()
     module.images[0].common_text.value = "channel1-"
     module.images[1].common_text.value = "channel2-"
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
-    module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
+    module.images[1].channels[0].image_name.value = alt_image_name
     assert module.prepare_run(workspace)
 
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for i in range(1, 3):
-        for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
+        for j, image_name in ((1, image_name), (2, alt_image_name)):
             filename = "channel%d-A0%d.png" % (j, i)
             full_path = os.path.join(directory, filename)
             url = "file:" + urllib.request.pathname2url(full_path)
@@ -2364,7 +2383,7 @@ def test_prepare_run_measurements():
 
 
 @unittest.expectedFailure  # fly image URLs have moved
-def test_00_load_from_url():
+def test_00_load_from_url(image_name, alt_image_name):
     from bioformats.formatreader import release_image_reader
 
     module = cellprofiler_core.modules.loadimages.LoadImages()
@@ -2375,9 +2394,9 @@ def test_00_load_from_url():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.add_imagecb()
     module.images[0].common_text.value = "_D.TIF"
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     module.images[1].common_text.value = "_F.TIF"
-    module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+    module.images[1].channels[0].image_name.value = alt_image_name
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
 
@@ -2407,14 +2426,14 @@ def test_00_load_from_url():
     for image_number, (filename, alt_filename) in zip(image_numbers, names):
         url = m.get_measurement(
             "Image",
-            "URL" + "_" + IMAGE_NAME,
+            "URL" + "_" + image_name,
             image_set_number=image_number,
         )
         expected = url_base + "/" + filename
         assert expected == url
         url = m.get_measurement(
             "Image",
-            "URL" + "_" + ALT_IMAGE_NAME,
+            "URL" + "_" + alt_image_name,
             image_set_number=image_number,
         )
         expected = url_base + "/" + alt_filename
@@ -2425,20 +2444,20 @@ def test_00_load_from_url():
             pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
         )
     )
-    image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
+    image = image_set.get_image(image_name, must_be_grayscale=True)
     assert tuple(image.pixel_data.shape) == (1006, 1000)
     #
     # Make sure the file on disk goes away
     #
-    provider = image_set.get_image_provider(IMAGE_NAME)
+    provider = image_set.get_image_provider(image_name)
     pathname = provider.get_full_name()
     assert os.path.exists(pathname)
     provider.release_memory()
-    release_image_reader(IMAGE_NAME)
+    release_image_reader(image_name)
     assert not os.path.exists(pathname)
 
 
-def test_load_url_with_groups():
+def test_load_url_with_groups(image_name, alt_image_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.set_module_num(1)
     module.location.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
@@ -2449,13 +2468,13 @@ def test_load_url_with_groups():
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.add_imagecb()
     module.images[0].common_text.value = "_D.TIF"
-    module.images[0].channels[0].image_name.value = IMAGE_NAME
+    module.images[0].channels[0].image_name.value = image_name
     module.images[0].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
     module.images[
         0
     ].file_metadata.value = "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
     module.images[1].common_text.value = "_F.TIF"
-    module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+    module.images[1].channels[0].image_name.value = alt_image_name
     module.images[1].metadata_choice.value = cellprofiler_core.modules.loadimages.M_FILE_NAME
     module.images[
         1
@@ -2491,7 +2510,7 @@ def test_load_url_with_groups():
     assert group_list[1][1][0] == image_numbers[-1]
 
 
-def test_single_channel():
+def test_single_channel(test_images_path):
     pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120830205040
@@ -2528,7 +2547,7 @@ Name the outline image:NucleiOutlines
 Channel number:1
 Rescale intensities?:Yes
 """
-    directory = os.path.join(TEST_IMAGES_PATH, "ExampleFlyImages")
+    directory = os.path.join(test_images_path, "ExampleFlyImages")
     convtester(pipeline_text, directory)
 
 

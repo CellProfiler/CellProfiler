@@ -13,6 +13,14 @@ Granularity is measured as described by Ilya Ravkin (references below).
 The size of the starting structure element as well as the range of the
 spectrum is given as input.
 
+As of **CellProfiler 4.0** the settings for this module have been changed to simplify
+configuration. A single set of parameters is now applied to all images and objects within the module,
+rather than each image needing individual configuration.
+Pipelines from older versions will be converted to match this format. If multiple sets of parameters
+were defined CellProfiler will apply the first set from the older pipeline version.
+Specifying multiple sets of parameters can still be achieved by running multiple copies of this module.
+
+
 |
 
 ============ ============ ===============

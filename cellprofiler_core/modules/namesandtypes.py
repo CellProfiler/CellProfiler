@@ -1179,7 +1179,7 @@ requests an object selection.
             else:
                 m.set_metadata_tags([cellprofiler_core.measurement.IMAGE_NUMBER])
 
-        image_set_channel_descriptor = workspace.pipeline.ImageSetChannelDescriptor
+        image_set_channel_descriptor = cellprofiler_core.pipeline.ImageSetChannelDescriptor
         d = {
             LOAD_AS_COLOR_IMAGE: image_set_channel_descriptor.CT_COLOR,
             LOAD_AS_GRAYSCALE_IMAGE: image_set_channel_descriptor.CT_GRAYSCALE,
@@ -1205,7 +1205,7 @@ requests an object selection.
         ]
         image_set_blobs = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler.imageset);
         ImageSet.convertToColumns(imageSets, channelNames, urls, pathNames,
             fileNames, series, index, channel, dict);
         """,
@@ -1426,7 +1426,7 @@ requests an object selection.
         is the appropriate shape for the channel's image stack, e.g., XYCAxes
         for color.
         """
-        script = "Packages.org.cellprofiler_core.imageset.PlaneStack.%s;"
+        script = "Packages.org.cellprofiler.imageset.PlaneStack.%s;"
         if load_as_choice == LOAD_AS_COLOR_IMAGE:
             return javabridge.run_script(script % "XYCAxes")
         elif load_as_choice == LOAD_AS_OBJECTS:
@@ -1437,10 +1437,10 @@ requests an object selection.
     def make_channel_filter(self, group, name):
         """Make a channel filter to get images for this group"""
         script = """
-        importPackage(Packages.org.cellprofiler_core.imageset);
-        importPackage(Packages.org.cellprofiler_core.imageset.filter);
+        importPackage(Packages.org.cellprofiler.imageset);
+        importPackage(Packages.org.cellprofiler.imageset.filter);
         var ipdscls = java.lang.Class.forName(
-            "org.cellprofiler_core.imageset.ImagePlaneDetailsStack");
+            "org.cellprofiler.imageset.ImagePlaneDetailsStack");
         var filter = new Filter(expr, ipdscls);
         new ChannelFilter(name, filter, axes);
         """
@@ -1457,15 +1457,15 @@ requests an object selection.
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
                 cellprofiler_core.measurement.COLTYPE_INTEGER,
         ):
-            script = """importPackage(Packages.org.cellprofiler_core.imageset);
+            script = """importPackage(Packages.org.cellprofiler.imageset);
                 MetadataKeyPair.getNumericComparator();
                 """
         elif pipeline.use_case_insensitive_metadata_matching(key):
-            script = """importPackage(Packages.org.cellprofiler_core.imageset);
+            script = """importPackage(Packages.org.cellprofiler.imageset);
                 MetadataKeyPair.getCaseInsensitiveComparator();
                 """
         else:
-            script = """importPackage(Packages.org.cellprofiler_core.imageset);
+            script = """importPackage(Packages.org.cellprofiler.imageset);
                 MetadataKeyPair.getCaseSensitiveComparator();
                 """
         return javabridge.run_script(script)
@@ -1474,7 +1474,7 @@ requests an object selection.
         c = self.get_metadata_comparator(workspace, left_key)
         return javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler.imageset);
         new MetadataKeyPair(left_key, right_key, c);
         """,
             dict(left_key=left_key, right_key=right_key, c=c),
@@ -1529,7 +1529,7 @@ requests an object selection.
         )
 
         script = """
-        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler.imageset);
         new Joiner(anchor_cf, keys, comparators)
         """
         joiner = javabridge.run_script(
@@ -1582,7 +1582,7 @@ requests an object selection.
         errors = javabridge.make_list()
         image_sets = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler.imageset);
         var cf = new ChannelFilter(name, axes);
         var cfs = java.util.Collections.singletonList(cf);
         ChannelFilter.makeImageSets(cfs, ipds, errors);
@@ -1610,7 +1610,7 @@ requests an object selection.
         errors = javabridge.make_list()
         image_sets = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler.imageset);
         ChannelFilter.makeImageSets(cfs, ipds, errors);
         """,
             dict(cfs=channel_filters.o, ipds=ipd_list.o, errors=errors),
@@ -1647,7 +1647,7 @@ requests an object selection.
             )
             javabridge.run_script(
                 """
-            importPackage(Packages.org.cellprofiler_core.imageset);
+            importPackage(Packages.org.cellprofiler.imageset);
             importClass(java.net.URI);
             var imageFile = new ImageFile(new URI(url));
             var imageFileDetails = new ImageFileDetails(imageFile);
@@ -1732,7 +1732,7 @@ requests an object selection.
             # Pick somewhere between four and 8 image sets from the whole
             dlist = javabridge.make_list(image_sets[:: int(len(image_sets) / 4)])
         cd = javabridge.run_script(
-            """importPackage(Packages.org.cellprofiler_core.imageset);
+            """importPackage(Packages.org.cellprofiler.imageset);
                    ImageSet.createCompressionDictionary(image_sets, channel_names);
                 """,
             dict(image_sets=dlist, channel_names=javabridge.make_list(channel_names).o),
@@ -1777,7 +1777,7 @@ requests an object selection.
         )
         image_set = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler.imageset);
         ImageSet.decompress(blob, column_names, axes, dictionary);
         """,
             dict(

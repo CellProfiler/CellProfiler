@@ -80,7 +80,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     pipeline.load(io.StringIO(pipeline_text))
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.run_exception._run_exception.RunException)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     m = [
@@ -2461,7 +2461,7 @@ def test_load_url_with_groups(image_name, alt_image_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.set_module_num(1)
     module.location.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
-    url_base = "https://www.cellprofiler.org/ExampleFlyImages"
+    url_base = "http://www.cellprofiler.org/ExampleFlyImages"
     module.location.custom_path = url_base
     module.group_by_metadata.value = True
     module.metadata_fields.set_value("Column")
@@ -2523,7 +2523,7 @@ File selection method:Text-Exact match
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C.
+Input image file location:Default Input Folder|.
 Check image sets for unmatched or duplicate files?:No
 Group images by metadata?:No
 Exclude certain files?:No
@@ -2564,7 +2564,7 @@ File selection method:Text-Exact match
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C.
+Input image file location:Default Input Folder|.
 Check image sets for unmatched or duplicate files?:No
 Group images by metadata?:No
 Exclude certain files?:No
@@ -2640,7 +2640,7 @@ File selection method:Text-Regular expressions
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C.
+Input image file location:Default Input Folder|.
 Check image sets for unmatched or duplicate files?:No
 Group images by metadata?:No
 Exclude certain files?:No
@@ -2716,7 +2716,7 @@ File selection method:Text-Exact match
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C.
+Input image file location:Default Input Folder|.
 Check image sets for unmatched or duplicate files?:No
 Group images by metadata?:No
 Exclude certain files?:No
@@ -2792,7 +2792,7 @@ File selection method:Text-Exact match
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C.
+Input image file location:Default Input Folder|.
 Check image sets for unmatched or duplicate files?:No
 Group images by metadata?:No
 Exclude certain files?:No
@@ -2868,7 +2868,7 @@ File selection method:Text-Exact match
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C.
+Input image file location:Default Input Folder|.
 Check image sets for unmatched or duplicate files?:No
 Group images by metadata?:No
 Exclude certain files?:No
@@ -2944,7 +2944,7 @@ File selection method:Text-Exact match
 Number of images in each group?:3
 Type the text that the excluded images have in common:Do not use
 Analyze all subfolders within the selected folder?:None
-Input image file location:Default Input Folder\x7C
+Input image file location:Default Input Folder|
 Check image sets for unmatched or duplicate files?:Yes
 Group images by metadata?:Yes
 Exclude certain files?:No

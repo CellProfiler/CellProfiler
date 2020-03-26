@@ -49,10 +49,11 @@ from cellprofiler_core.pipeline.dependency._measurement_dependency import Measur
 from cellprofiler_core.pipeline.dependency._image_dependency import ImageDependency
 from cellprofiler_core.pipeline.dependency._object_dependency import ObjectDependency
 from cellprofiler_core.pipeline.dependency._dependency import Dependency
-from ._image_plane import ImagePlane
-from ._pipeline import Pipeline
-from ._image_set_channel_descriptor import ImageSetChannelDescriptor
-from ._listener import Listener
+from cellprofiler_core.pipeline._image_plane import ImagePlane
+from cellprofiler_core.pipeline._pipeline import Pipeline
+from cellprofiler_core.pipeline._image_set_channel_descriptor import \
+    ImageSetChannelDescriptor
+from cellprofiler_core.pipeline._listener import Listener
 
 future.standard_library.install_aliases()
 

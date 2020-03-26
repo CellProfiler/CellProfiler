@@ -1488,7 +1488,7 @@ class Pipeline:
                         module.module_name,
                         exc_info=True,
                     )
-                    event = cellprofiler_core.pipeline.event.PrepareRunExceptionEvent(
+                    event = cellprofiler_core.pipeline.event.run_exception.PrepareRunException(
                         instance, module, sys.exc_info()[2]
                     )
                     self.notify_listeners(event)

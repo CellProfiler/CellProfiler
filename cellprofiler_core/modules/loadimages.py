@@ -1671,6 +1671,7 @@ to store the image.
         #
         # historic rewrites from CP1.0
         #
+        variable_revision_number = int(variable_revision_number)
         def upgrade_1_to_2(setting_values):
             """Upgrade rev 1 LoadImages to rev 2
 
@@ -1792,16 +1793,16 @@ to store the image.
 
         def upgrade_new_4_to_5(setting_values):
             """Combine the location and custom location values"""
-            setting_values = cellprofiler_core.setting.standardize_default_folder_names(
+            setting_values = cellprofiler_core.preferences.standardize_default_folder_names(
                 setting_values, self.SLOT_LOCATION
             )
             custom_location = setting_values[self.SLOT_LOCATION + 1]
             location = setting_values[self.SLOT_LOCATION]
             if location == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME:
                 if custom_location.startswith("."):
-                    location = cellprofiler_core.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                    location = cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif custom_location.startswith("&"):
-                    location = cellprofiler_core.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    location = cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     custom_location = "." + custom_location[1:]
             location = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 location, custom_location

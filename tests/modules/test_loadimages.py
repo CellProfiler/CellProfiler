@@ -2726,7 +2726,7 @@ Image count:3
 Text that these images have in common (case-sensitive):D.TIF
 Position of this image in each group:D.TIF
 Extract metadata from where?:File name
-Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\\.TIF$
+Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\.TIF$
 Type the regular expression that finds metadata in the subfolder path:None
 Channel count:1
 Group the movie frames?:No
@@ -2742,7 +2742,7 @@ Rescale intensities?:Yes
 Text that these images have in common (case-sensitive):F.TIF
 Position of this image in each group:2
 Extract metadata from where?:File name
-Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\\.TIF$
+Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\.TIF$
 Type the regular expression that finds metadata in the subfolder path:.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$
 Channel count:1
 Group the movie frames?:No
@@ -2758,7 +2758,7 @@ Rescale intensities?:Yes
 Text that these images have in common (case-sensitive):R.TIF
 Position of this image in each group:3
 Extract metadata from where?:File name
-Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\\.TIF$
+Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\.TIF$
 Type the regular expression that finds metadata in the subfolder path:.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$
 Channel count:1
 Group the movie frames?:No
@@ -2802,8 +2802,8 @@ Image count:3
 Text that these images have in common (case-sensitive):D.TIF
 Position of this image in each group:D.TIF
 Extract metadata from where?:Both
-Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
-Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>\x5B^I\x5D+?)Images
+Regular expression that finds metadata in the file name:^(?P<field>.+?)_[DFR]\.TIF$'
+Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>[^I]+?)Images
 Channel count:1
 Group the movie frames?:No
 Grouping method:Interleaved
@@ -2818,8 +2818,8 @@ Rescale intensities?:Yes
 Text that these images have in common (case-sensitive):F.TIF
 Position of this image in each group:2
 Extract metadata from where?:Both
-Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
-Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>\x5B^I\x5D+?)Images
+Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\.TIF$
+Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>[^I]+?)Images
 Channel count:1
 Group the movie frames?:No
 Grouping method:Interleaved
@@ -2834,8 +2834,8 @@ Rescale intensities?:Yes
 Text that these images have in common (case-sensitive):R.TIF
 Position of this image in each group:3
 Extract metadata from where?:Both
-Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
-Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>\x5B^I\x5D+?)Images
+Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\.TIF$
+Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>[^I]+?)Images
 Channel count:1
 Group the movie frames?:No
 Grouping method:Interleaved
@@ -2954,7 +2954,7 @@ Image count:2
 Text that these images have in common (case-sensitive):Channel1-
 Position of this image in each group:1
 Extract metadata from where?:File name
-Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\d*)-(?P<Row>.*)-(?P<Column>\\d*)
+Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\d*)-(?P<Row>.*)-(?P<Column>\d*)
 Type the regular expression that finds metadata in the subfolder path:.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$
 Channel count:1
 Group the movie frames?:No
@@ -2970,7 +2970,7 @@ Rescale intensities?:Yes
 Text that these images have in common (case-sensitive):Channel2-
 Position of this image in each group:2
 Extract metadata from where?:File name
-Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\d*)-(?P<Row>.*)-(?P<Column>\\d*)
+Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\d*)-(?P<Row>.*)-(?P<Column>\d*)
 Type the regular expression that finds metadata in the subfolder path:.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$
 Channel count:1
 Group the movie frames?:No

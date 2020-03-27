@@ -494,7 +494,7 @@ def test_experiment_threshold():
     )
     m = workspace.measurements
     assert isinstance(m, cellprofiler.measurement.Measurements)
-    image_name = module.image_groups[0].image_names.get_selections()[0]
+    image_name = module.image_groups[0].image_names.value[0]
     feature = (
         module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
     )
@@ -536,7 +536,7 @@ def test_experiment_threshold_cycle_skipping():
     )
     m = workspace.measurements
     assert isinstance(m, cellprofiler.measurement.Measurements)
-    image_name = module.image_groups[0].image_names.get_selections()[0]
+    image_name = module.image_groups[0].image_names.value[0]
     feature = (
         module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
     )
@@ -560,7 +560,7 @@ def test_experiment_threshold_cycle_skipping():
     # Check threshold algorithms
     threshold_group = module.image_groups[0].threshold_groups[0]
     threshold_algorithm = threshold_group.threshold_algorithm
-    image_name = module.image_groups[0].image_names.value
+    image_name = module.image_groups[0].image_names.value_text
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
@@ -634,7 +634,7 @@ def test_load_v3():
 
     group = module.image_groups[0]
     thr = group.threshold_groups[0]
-    assert group.image_names == "Alpha"
+    assert group.image_names.value_text == "Alpha"
     assert group.check_blur
     assert group.scale_groups[0].scale == 25
     assert group.check_saturation
@@ -649,7 +649,7 @@ def test_load_v3():
 
     group = module.image_groups[1]
     thr = group.threshold_groups[0]
-    assert group.image_names == "Beta"
+    assert group.image_names.value_text == "Beta"
     assert not group.check_blur
     assert group.scale_groups[0].scale == 15
     assert not group.check_saturation
@@ -694,19 +694,21 @@ def test_load_v4():
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
     assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
-    assert group.image_names == "Alpha"
+    assert group.image_names.value_text == "Alpha"
 
     module = pipeline.modules()[2]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
     assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
-    assert group.image_names == "Delta,Beta"
+    assert "Delta" in group.image_names.value
+    assert "Beta" in group.image_names.value
+    assert len(group.image_names.value) == 2
 
     module = pipeline.modules()[3]
     assert len(module.image_groups) == 2
     group = module.image_groups[0]
     assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
-    assert group.image_names == "Delta"
+    assert group.image_names.value_text == "Delta"
     assert group.check_intensity
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
@@ -716,13 +718,13 @@ def test_load_v4():
     )
     assert thr.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
     group = module.image_groups[1]
-    assert group.image_names == "Epsilon"
+    assert group.image_names.value_text == "Epsilon"
 
     module = pipeline.modules()[4]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
     assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
-    assert group.image_names == "Zeta"
+    assert group.image_names.value_text == "Zeta"
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
@@ -780,7 +782,7 @@ def test_check_image_groups():
 
     q = workspace.module
     # Set my_image1 and my_image2 settings: Saturation only
-    q.image_groups[0].image_names.value = "my_image1,my_image2"
+    q.image_groups[0].image_names.value = "my_image1, my_image2"
     q.image_groups[0].include_image_scalings.value = False
     q.image_groups[0].check_blur.value = False
     q.image_groups[0].check_saturation.value = True
@@ -789,7 +791,7 @@ def test_check_image_groups():
 
     # Set my_image3 and my_image4's settings: Blur only
     q.add_image_group()
-    q.image_groups[1].image_names.value = "my_image3,my_image4"
+    q.image_groups[1].image_names.value = "my_image3, my_image4"
     q.image_groups[1].include_image_scalings.value = False
     q.image_groups[1].check_blur.value = True
     q.image_groups[1].check_saturation.value = False

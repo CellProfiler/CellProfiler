@@ -258,6 +258,11 @@ module.""".format(
     def validate_module(self, pipeline):
         """Make sure chosen objects are selected only once"""
         objects = set()
+        if len(self.objects_list.value) == 0:
+            raise cellprofiler.setting.ValidationError(
+                "No object sets selected", self.objects_list
+            )
+
         for object_name in self.objects_list.value:
             if object_name in objects:
                 raise cellprofiler.setting.ValidationError(

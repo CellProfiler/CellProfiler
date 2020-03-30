@@ -181,6 +181,18 @@ class MeasureGranularity(cellprofiler_core.module.Module):
 
     def validate_module(self, pipeline):
         """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
+        if len(self.images_list.value) == 0:
+            raise cellprofiler.setting.ValidationError(
+                "No images selected", self.images_list
+            )
+
+        if self.wants_objects.value:
+            if len(self.objects_list.value) == 0:
+                raise cellprofiler.setting.ValidationError(
+                    "No object sets selected", self.objects_list
+                )
+
+
         measurements, sources = self.get_measurement_columns(
             pipeline, return_sources=True
         )

@@ -1617,9 +1617,6 @@ to the foreground pixels or the background pixels.
     def images_to_process(self, image_group, workspace, pipeline=None):
         """Return a list of input image names appropriate to the setting choice """
         if self.images_choice.value == O_SELECT:
-            print("Images list")
-            print(image_group.image_names.value)
-            #if len(image_group.image_names.value) > 1:
             return image_group.image_names.value
         elif self.images_choice.value == O_ALL_LOADED:
             # Grab all loaded images

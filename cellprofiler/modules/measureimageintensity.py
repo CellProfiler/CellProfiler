@@ -394,7 +394,6 @@ class MeasureImageIntensity(cellprofiler.module.Module):
                     "copy of the module.",
                 )
             variable_revision_number = 3
-            print(setting_values)
         return setting_values, variable_revision_number, from_matlab
 
     def volumetric(self):

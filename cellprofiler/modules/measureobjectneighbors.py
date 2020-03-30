@@ -249,11 +249,12 @@ available colormaps can be seen `here`_.
            "Consider objects discarded for touching image border?",
            True,
            doc="""\
-When set to *%(YES)s*, objects which were previously discarded for touching
+When set to *{YES}*, objects which were previously discarded for touching
 the image borders will be considered as potential object neighbours in this
 analysis. You may want to disable this if using object sets which were
 further filtered, since those filters won't have been applied to the
-previously discarded objects.""",
+previously discarded objects.""".format(
+                **{"YES": cps.YES}),
         )
 
     def settings(self):

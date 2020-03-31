@@ -273,7 +273,7 @@ use the median intensity measurement as the denominator.
             "image_name",
             cellprofiler.setting.ImageNameSubscriber(
                 "Select the image",
-                "",
+                cellprofiler.setting.NONE,
                 doc="""\
 Select the image that you want to use for this operation.""",
             ),

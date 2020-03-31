@@ -59,13 +59,13 @@ class AddModuleFrame(wx.Frame):
         search_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.GetSizer().Add(search_sizer, 0, wx.EXPAND | wx.ALL, 2)
         search_sizer.Add(
-            wx.StaticText(self, label="Search:"),
+            wx.StaticText(self, label="Find Modules:"),
             0,
             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL,
         )
         self.search_text = wx.TextCtrl(self)
         search_sizer.Add(self.search_text, 1, wx.EXPAND)
-        self.search_button = wx.Button(self, label="Search")
+        self.search_button = wx.Button(self, label="Search Help")
         search_sizer.Add(self.search_button, 0, wx.EXPAND)
         self.GetSizer().AddSpacer(2)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -117,6 +117,8 @@ class AddModuleFrame(wx.Frame):
         self.Bind(
             wx.EVT_MENU, self.__on_close, id=cellprofiler.gui.cpframe.ID_FILE_EXIT
         )
+        self.search_text.Bind(wx.EVT_TEXT, self.__on_search_modules)
+        self.search_text.Bind(wx.EVT_TEXT_ENTER, self.__on_add_to_pipeline)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
@@ -179,6 +181,7 @@ class AddModuleFrame(wx.Frame):
         self.__module_categories_list_box.AppendItems(self.__module_files)
 
     def __on_category_selected(self, event):
+        self.__module_list_box.Enable(True)
         category = self.__get_selected_category()
         self.__module_list_box.Clear()
         keys = list(self.__module_dict[category].keys())
@@ -236,6 +239,21 @@ class AddModuleFrame(wx.Frame):
             self.display_helpframe(
                 html, 'Help matching "%s"' % self.search_text.GetValue()
             )
+
+    def __on_search_modules(self, event):
+        self.__module_list_box.Enable(True)
+        if len(self.search_text.GetValue()) == 0 or self.__module_categories_list_box.GetSelection() != -1:
+            self.__module_categories_list_box.Select(-1)
+            self.__on_category_selected(None)
+        keys = list(self.__module_dict['All'].keys())
+        keys = [key for key in keys if self.search_text.GetValue().lower() in key.lower()]
+        self.__module_list_box.Clear()
+        self.__module_list_box.AppendItems(sorted(keys))
+        if len(keys) > 0:
+            self.__module_list_box.Select(0)
+        else:
+            self.__module_list_box.AppendItems("No matching modules")
+            self.__module_list_box.Enable(False)
 
     def __on_getting_started(self, event):
         import cellprofiler.gui.help.content

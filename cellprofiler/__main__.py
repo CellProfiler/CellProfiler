@@ -7,7 +7,7 @@ import os.path
 import re
 import sys
 import tempfile
-import urlparse
+from urllib.parse import urlparse
 
 import bioformats.formatreader
 import h5py
@@ -86,7 +86,7 @@ def main(args=None):
     to_clean = []
     
     if options.pipeline_filename:
-        o = urlparse.urlparse(options.pipeline_filename)
+        o = urlparse(options.pipeline_filename)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
             temp_pipe_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.cppipe',dir=temp_dir,delete=False)
@@ -97,7 +97,7 @@ def main(args=None):
             to_clean.append(os.path.join(temp_dir, temp_pipe_file.name))
     
     if options.image_set_file:
-        o = urlparse.urlparse(options.image_set_file)
+        o = urlparse(options.image_set_file)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
             temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv',dir=temp_dir,delete=False)
@@ -108,7 +108,7 @@ def main(args=None):
             to_clean.append(os.path.join(temp_dir, temp_set_file.name))
     
     if options.data_file:
-        o = urlparse.urlparse(options.data_file)
+        o = urlparse(options.data_file)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
             temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv',dir=temp_dir,delete=False)

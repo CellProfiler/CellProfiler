@@ -85,11 +85,13 @@ class FlagImage(cpm.Module):
         self.spacer_1 = cps.Divider()
         self.add_flag(can_delete=False)
         self.ignore_flag_on_last = cps.Binary('Ignore flag skips on last cycle?', False, doc="""\
-When set to *%(YES)s*, this option allows you to bypass skipping on the last
+When set to *{YES}*, this option allows you to bypass skipping on the last
 cycle of an image group.  This behavior is usually not desired, but may be 
 useful when using SaveImages 'Save on last cycle' option for an image made
 by any other module than MakeProjection, CorrectIlluminationCalculate, and Tile.
-""" % globals())
+""".format(
+            **{"YES": cps.YES}),
+                                              )
 
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()

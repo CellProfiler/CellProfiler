@@ -714,12 +714,15 @@ def test_subfolders():
             fd = open(os.path.join(directory, path, file_name), "wb")
             fd.write(data)
             fd.close()
-        # test recursive symlinks
+        # test recursive symlinks, need to add symlinks to the file list
         try:
             os.symlink(
                 os.path.join(directory, filenames[0][0]),
                 os.path.join(directory, filenames[-1][0], filenames[0][0]),
             )
+            sympath = os.path.join(filenames[-1][0], filenames[0][0])
+            filenames.append((sympath, "bar.tif"))
+            filenames.append((sympath, "foo.tif"))
         except Exception as e:
             print(("ignoring symlink exception:", e))
         load_images = cellprofiler_core.modules.loadimages.LoadImages()

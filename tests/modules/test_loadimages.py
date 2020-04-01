@@ -2291,6 +2291,7 @@ def test_prepare_run_measurements(image_name, alt_image_name):
         "channel2-A02.png",
     ]
     workspace, module = make_prepare_run_workspace(filenames)
+    directory = module.location.custom_path
     assert isinstance(module, cellprofiler_core.modules.loadimages.LoadImages)
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
     module.add_imagecb()
@@ -2303,7 +2304,7 @@ def test_prepare_run_measurements(image_name, alt_image_name):
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for i in range(1, 3):
-        for j, image_name in ((1, image_name), (2, alt_image_name)):
+        for j, tgt_image_name in ((1, image_name), (2, alt_image_name)):
             filename = "channel%d-A0%d.png" % (j, i)
             full_path = os.path.join(directory, filename)
             url = "file:" + urllib.request.pathname2url(full_path)
@@ -2313,7 +2314,7 @@ def test_prepare_run_measurements(image_name, alt_image_name):
                 ("URL", url),
             ):
                 value = m.get_measurement(
-                    "Image", "_".join((category, image_name)), i
+                    "Image", "_".join((category, tgt_image_name)), i
                 )
                 assert value == expected
 

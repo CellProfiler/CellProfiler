@@ -67,10 +67,11 @@ pymodule_to_cpmodule = {
     "align": "Align",
     "images": "Images",
     "loadimages": "LoadImages",
+    "measurementfixture": "MeasurementFixture"
 }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
-builtin_modules = ["align", "images", "loadimages"]
+builtin_modules = ["align", "images", "loadimages", "measurementfixture"]
 
 all_modules = {}
 svn_revisions = {}

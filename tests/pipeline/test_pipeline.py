@@ -2,6 +2,7 @@
 
 
 import cProfile
+import io
 import os
 import pstats
 import sys
@@ -13,7 +14,6 @@ import numpy
 import numpy.lib.index_tricks
 import six
 import six.moves
-import io
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -21,6 +21,7 @@ import cellprofiler_core.module
 import cellprofiler_core.modules
 import cellprofiler_core.modules.injectimage
 import cellprofiler_core.modules.loadimages
+import cellprofiler_core.modules.measurementfixture
 import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.dependency
 import cellprofiler_core.preferences
@@ -146,7 +147,7 @@ HasImagePlaneDetails:False"""
     def test_get_measurement_columns(self):
         """Test the get_measurement_columns method"""
         x = get_empty_pipeline()
-        module = TestModuleWithMeasurement()
+        module = cellprofiler_core.modules.measurementfixture.MeasurementFixture()
         module.set_module_num(1)
         module.my_variable.value = "foo"
         x.add_module(module)
@@ -171,14 +172,14 @@ HasImagePlaneDetails:False"""
         assert any(
             [
                 column[0] == "Image"
-                and column[1] == "ModuleError_01TestModuleWithMeasurement"
+                and column[1] == "ModuleError_01MeasurementFixture"
                 for column in columns
             ]
         )
         assert any(
             [
                 column[0] == "Image"
-                and column[1] == "ExecutionTime_01TestModuleWithMeasurement"
+                and column[1] == "ExecutionTime_01MeasurementFixture"
                 for column in columns
             ]
         )
@@ -218,7 +219,7 @@ HasImagePlaneDetails:False"""
         columns = x.get_measurement_columns()
         assert len(columns) == 9
         assert any([column[1] == "bar" for column in columns])
-        module = TestModuleWithMeasurement()
+        module = cellprofiler_core.modules.measurementfixture.MeasurementFixture()
         module.set_module_num(2)
         module.my_variable.value = "foo"
         x.add_module(module)
@@ -665,7 +666,7 @@ HasImagePlaneDetails:False"""
 
     def test_unicode_save(self):
         pipeline = get_empty_pipeline()
-        module = TestModuleWithMeasurement()
+        module = cellprofiler_core.modules.measurementfixture.MeasurementFixture()
         # Little endian utf-16 encoding
         module.my_variable.value = "∑"
         module.other_variable.value = "∢8"
@@ -690,12 +691,12 @@ HasImagePlaneDetails:False"""
 
     def test_unicode_save_and_load(self):
         #
-        # Put "TestModuleWithMeasurement" into the module list
+        # Put "ModuleWithMeasurement" into the module list
         #
         cellprofiler_core.modules.fill_modules()
         cellprofiler_core.modules.all_modules[
-            TestModuleWithMeasurement.module_name
-        ] = TestModuleWithMeasurement
+            cellprofiler_core.modules.measurementfixture.MeasurementFixture.module_name
+        ] = cellprofiler_core.modules.measurementfixture.MeasurementFixture
         #
         # Continue with test
         #
@@ -705,7 +706,7 @@ HasImagePlaneDetails:False"""
             assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
         pipeline.add_listener(callback)
-        module = TestModuleWithMeasurement()
+        module = cellprofiler_core.modules.measurementfixture.MeasurementFixture()
         module.my_variable.value = "∑"
         module.set_module_num(1)
         module.notes = "∑"
@@ -716,7 +717,7 @@ HasImagePlaneDetails:False"""
         pipeline.loadtxt(fd)
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
-        assert isinstance(result_module, TestModuleWithMeasurement)
+        assert isinstance(result_module, cellprofiler_core.modules.measurementfixture.MeasurementFixture)
         assert module.notes == eval(result_module.notes)
         assert module.my_variable.value == result_module.my_variable.value
 
@@ -726,13 +727,13 @@ HasImagePlaneDetails:False"""
             os.path.join(os.path.dirname(__file__), "../data/pipeline/v3.cppipe")
         )
         pipeline.loadtxt(deprecated_pipeline_file)
-        module = TestModuleWithMeasurement()
-        module.my_variable.value = "\\\\u2211"
+        module = cellprofiler_core.modules.measurementfixture.MeasurementFixture()
+        module.my_variable.value = "∑"
         module.set_module_num(1)
-        module.notes = "\\u03B1\\\\u03B2"
+        module.notes = "\\'αβ\\'"
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
-        assert isinstance(result_module, TestModuleWithMeasurement)
+        assert isinstance(result_module, cellprofiler_core.modules.measurementfixture.MeasurementFixture)
         assert module.notes == result_module.notes
         assert module.my_variable.value == result_module.my_variable.value
 
@@ -1293,27 +1294,6 @@ class ATestModule(cellprofiler_core.module.Module):
                 measurements.add(measurement)
         return list(measurements)
 
-
-class TestModuleWithMeasurement(cellprofiler_core.module.Module):
-    module_name = "Test0801"
-    category = "Test"
-    variable_revision_number = 1
-
-    def create_settings(self):
-        self.my_variable = cellprofiler_core.setting.Text("", "")
-        self.other_variable = cellprofiler_core.setting.Text("", "")
-
-    def settings(self):
-        return [self.my_variable, self.other_variable]
-
-    module_name = "TestModuleWithMeasurement"
-    variable_revision_number = 1
-
-    def module_class(self):
-        return "cellprofiler_core.tests.Test_Pipeline.TestModuleWithMeasurement"
-
-    def get_measurement_columns(self, pipeline):
-        return [(cellprofiler_core.measurement.IMAGE, self.my_variable.value, "varchar(255)")]
 
 
 class MyClassForTest1101(cellprofiler_core.module.Module):

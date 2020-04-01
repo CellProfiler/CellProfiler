@@ -251,57 +251,6 @@ def test_load_Metamorph_tif():
     assert round(abs(numpy.sum(image.astype(numpy.float64)) - 2071.93), 0) == 0
 
 
-# With Subimager and the new file_ui framework, you'd load individual
-# planes.
-@unittest.skip
-def test_load_5channel_tif(image_name):
-    """Load a 5-channel image"""
-    tests.modules.maybe_download_tesst_image("5channel.tif")
-    path = tests.modules.testimages_directory()
-    file_name = "5channel.tif"
-    tests.modules.maybe_download_tesst_image(file_name)
-    module = cellprofiler_core.modules.loadimages.LoadImages()
-    module.set_module_num(1)
-    module.file_types.value = cellprofiler_core.modules.loadimages.FF_INDIVIDUAL_IMAGES
-    module.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
-    module.location.dir_choice = "Elsewhere..."
-    module.location.custom_path = path
-    module.images[0].channels[0].image_name.value = image_name
-    module.images[0].common_text.value = file_name
-
-    pipeline = cellprofiler_core.pipeline.Pipeline()
-
-    def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.run_exception._run_exception.RunException)
-
-    pipeline.add_listener(callback)
-    pipeline.add_module(module)
-
-    image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, module, None, None, m, image_set_list
-    )
-    assert module.prepare_run(workspace)
-    image_numbers = m.get_image_numbers()
-    assert len(image_numbers) == 1
-    key_names, group_list = pipeline.get_groupings(workspace)
-    assert len(group_list) == 1
-    grouping, image_numbers = group_list[0]
-    assert len(image_numbers) == 1
-    module.prepare_group(workspace, grouping, image_numbers)
-
-    image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
-    )
-    module.run(workspace)
-    image = image_set.get_image(image_name)
-    pixels = image.pixel_data
-    assert pixels.ndim == 3
-    assert tuple(pixels.shape) == (64, 64, 5)
-
-
 def test_file_metadata():
     """Test file metadata on two sets of two files
 

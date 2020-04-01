@@ -2483,7 +2483,8 @@ Name the outline image:NucleiOutlines
 Channel number:1
 Rescale intensities?:Yes
 """
-    directory = os.path.join(test_images_path, "ExampleFlyImages")
+    tests.modules.maybe_download_fly()
+    directory = os.path.join(tests.modules.example_images_directory(), "ExampleFlyImages")
     convtester(pipeline_text, directory)
 
 
@@ -2920,9 +2921,7 @@ Name the outline image:NucleiOutlines
 Channel number:1
 Rescale intensities?:Yes
 """
-    directory = os.path.join(
-        "tests/data/", "ExampleSBSImages"
-    )
+    directory = os.path.abspath("tests/data/ExampleSBSImages")
     convtester(pipeline_text, directory)
 
 

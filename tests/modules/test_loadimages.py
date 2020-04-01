@@ -302,22 +302,6 @@ def test_load_5channel_tif(image_name):
     assert tuple(pixels.shape) == (64, 64, 5)
 
 
-def test_load_C01():
-    """IMG-457: Test loading of a .c01 file"""
-    file_name = "iamac01file.c01"
-    lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
-        "nikon",
-        "tests/data/modules/loadimages",
-        file_name,
-        True
-    )
-    image = lip.provide_image(None).pixel_data
-    assert tuple(image.shape) == (512, 512)
-    m = hashlib.md5()
-    m.update((image * 65535).astype(numpy.uint16))
-    assert m.digest() == "SER\r\xc4\xd5\x02\x13@P\x12\x99\xe2(e\x85"
-
-
 def test_file_metadata():
     """Test file metadata on two sets of two files
 

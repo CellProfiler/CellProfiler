@@ -13,9 +13,9 @@ import pytest
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
-import cellprofiler.measurement
-import cellprofiler.measurement
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.exporttodatabase
 import cellprofiler.object
@@ -374,11 +374,11 @@ def test_load_v22():
         (
             module.workspace_measurement_groups[0],
             "ScatterPlot",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Mitochondria",
             "Width_DNA",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Nuclei",
             "Height_DNA",
             "ImageNumber",
@@ -386,11 +386,11 @@ def test_load_v22():
         (
             module.workspace_measurement_groups[1],
             "PlateViewer",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Cells",
             "Height_Actin",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Speckles",
             "Width_Actin",
             "ImageNumber",
@@ -479,11 +479,11 @@ def test_load_v23():
         (
             module.workspace_measurement_groups[0],
             "ScatterPlot",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Mitochondria",
             "Width_DNA",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Nuclei",
             "Height_DNA",
             "ImageNumber",
@@ -491,11 +491,11 @@ def test_load_v23():
         (
             module.workspace_measurement_groups[1],
             "PlateViewer",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Cells",
             "Height_Actin",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Speckles",
             "Width_Actin",
             "ImageNumber",
@@ -584,11 +584,11 @@ def test_load_v24():
         (
             module.workspace_measurement_groups[0],
             "ScatterPlot",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Mitochondria",
             "Width_DNA",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Nuclei",
             "Height_DNA",
             "ImageNumber",
@@ -596,11 +596,11 @@ def test_load_v24():
         (
             module.workspace_measurement_groups[1],
             "PlateViewer",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Cells",
             "Height_Actin",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Speckles",
             "Width_Actin",
             "ImageNumber",
@@ -693,11 +693,11 @@ def test_load_v25():
         (
             module.workspace_measurement_groups[0],
             "ScatterPlot",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Mitochondria",
             "Width_DNA",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Nuclei",
             "Height_DNA",
             "ImageNumber",
@@ -705,11 +705,11 @@ def test_load_v25():
         (
             module.workspace_measurement_groups[1],
             "PlateViewer",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Cells",
             "Height_Actin",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Speckles",
             "Width_Actin",
             "ImageNumber",
@@ -806,11 +806,11 @@ def test_load_v26():
         (
             module.workspace_measurement_groups[0],
             "ScatterPlot",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Mitochondria",
             "Width_DNA",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Nuclei",
             "Height_DNA",
             "ImageNumber",
@@ -818,11 +818,11 @@ def test_load_v26():
         (
             module.workspace_measurement_groups[1],
             "PlateViewer",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Cells",
             "Height_Actin",
             "ImageNumber",
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Speckles",
             "Width_Actin",
             "ImageNumber",
@@ -913,112 +913,112 @@ def make_workspace(
         def get_measurement_columns(self, pipeline):
             columns = [
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     INT_IMG_MEASUREMENT,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     FLOAT_IMG_MEASUREMENT,
-                    cellprofiler.measurement.COLTYPE_FLOAT,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                 ),
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     STRING_IMG_MEASUREMENT,
-                    cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 40,
+                    cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 40,
                 ),
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     OBJECT_COUNT_MEASUREMENT,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
                 (
                     OBJECT_NAME,
-                    cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
-                (OBJECT_NAME, OBJ_MEASUREMENT, cellprofiler.measurement.COLTYPE_FLOAT),
+                (OBJECT_NAME, OBJ_MEASUREMENT, cellprofiler_core.measurement.COLTYPE_FLOAT),
             ]
             if in_module(alt_object):
                 columns += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         ALTOBJECT_COUNT_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         ALTOBJECT_NAME,
-                        cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         ALTOBJECT_NAME,
                         OBJ_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     ),
                 ]
             if in_module(long_measurement):
                 columns += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         LONG_IMG_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         OBJECT_NAME,
                         LONG_OBJ_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     ),
                 ]
             if in_module(wierd_measurement):
                 columns += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         WIERD_IMG_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         OBJECT_NAME,
                         WIERD_OBJ_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     ),
                 ]
             if in_module(well_metadata):
                 columns += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "Metadata_Plate",
-                        cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 20,
+                        cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 20,
                     ),
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "Metadata_Well",
-                        cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 3,
+                        cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 3,
                     ),
                 ]
             if in_module(group_measurement):
-                d = {cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP: True}
+                d = {cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP: True}
                 columns += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         GROUP_IMG_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                         d,
                     ),
                     (
                         OBJECT_NAME,
                         GROUP_OBJ_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                         d,
                     ),
                 ]
             if post_run_test:
                 columns += [
                     (
-                        cellprofiler.measurement.EXPERIMENT,
+                        cellprofiler_core.measurement.EXPERIMENT,
                         STRING_IMG_MEASUREMENT,
-                        cellprofiler.measurement.COLTYPE_VARCHAR,
-                        {cellprofiler.measurement.MCA_AVAILABLE_POST_RUN: True},
+                        cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                        {cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN: True},
                     )
                 ]
             return columns
@@ -1033,13 +1033,13 @@ def make_workspace(
 
         def get_categories(self, pipeline, object_name):
             return (
-                [M_CATEGORY, cellprofiler.measurement.C_NUMBER]
+                [M_CATEGORY, cellprofiler_core.measurement.C_NUMBER]
                 if (
                     object_name == OBJECT_NAME
                     or ((object_name == ALTOBJECT_NAME) and in_module(alt_object))
                 )
                 else [M_CATEGORY, "Count", "Metadata"]
-                if object_name == cellprofiler.measurement.IMAGE
+                if object_name == cellprofiler_core.measurement.IMAGE
                 else []
             )
 
@@ -1061,23 +1061,23 @@ def make_workspace(
                         if in_module(wierd_measurement)
                         else []
                     )
-            elif category == cellprofiler.measurement.C_NUMBER and object_name in (
+            elif category == cellprofiler_core.measurement.C_NUMBER and object_name in (
                 OBJECT_NAME,
                 ALTOBJECT_NAME,
             ):
-                return cellprofiler.measurement.FTR_OBJECT_NUMBER
-            elif category == "Count" and object_name == cellprofiler.measurement.IMAGE:
+                return cellprofiler_core.measurement.FTR_OBJECT_NUMBER
+            elif category == "Count" and object_name == cellprofiler_core.measurement.IMAGE:
                 result = [OBJECT_NAME]
                 if in_module(alt_object):
                     result += [ALTOBJECT_NAME]
                 return result
             elif (
-                category == "Metadata" and object_name == cellprofiler.measurement.IMAGE
+                category == "Metadata" and object_name == cellprofiler_core.measurement.IMAGE
             ):
                 return ["Plate", "Well"]
             return []
 
-    m = cellprofiler.measurement.Measurements(can_overwrite=True)
+    m = cellprofiler_core.measurement.Measurements(can_overwrite=True)
     for i in range(image_set_count):
         if i > 0:
             m.next_image_set()
@@ -1089,14 +1089,14 @@ def make_workspace(
         m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
         m.add_measurement(
             OBJECT_NAME,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
             numpy.arange(len(OBJ_VALUE)) + 1,
         )
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
         if TestModule.in_measurements(alt_object):
             m.add_measurement(
                 ALTOBJECT_NAME,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
                 numpy.arange(100) + 1,
             )
             m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
@@ -1194,7 +1194,7 @@ def load_database(output_dir, module, image_set_count=1):
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_%d" % image_set_count
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
         if (
             module.separate_object_tables
@@ -1204,7 +1204,7 @@ def load_database(output_dir, module, image_set_count=1):
                 output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
             )
         else:
-            object_file = "%s_%s.CSV" % (base_name, cellprofiler.measurement.OBJECT)
+            object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
             object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
             assert os.path.isfile(filename)
@@ -1394,9 +1394,9 @@ def test_write_mysql_db_filter_objs():
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_1"
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
-        object_file = "%s_%s.CSV" % (base_name, cellprofiler.measurement.OBJECT)
+        object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
         object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
             assert os.path.isfile(filename), "Can't find %s" % filename
@@ -1440,7 +1440,7 @@ def test_write_mysql_db_filter_objs():
                 OBJECT_NAME,
                 OBJ_MEASUREMENT,
                 OBJECT_NAME,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
                 module.table_prefix.value,
             )
         )
@@ -1480,9 +1480,9 @@ def test_write_mysql_db_dont_filter_objs():
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_1"
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
-        object_file = "%s_%s.CSV" % (base_name, cellprofiler.measurement.OBJECT)
+        object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
         object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
             assert os.path.isfile(filename), "No such file: " + filename
@@ -1530,11 +1530,11 @@ def test_write_mysql_db_dont_filter_objs():
                 OBJECT_NAME,
                 OBJ_MEASUREMENT,
                 OBJECT_NAME,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
                 ALTOBJECT_NAME,
                 OBJ_MEASUREMENT,
                 ALTOBJECT_NAME,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
                 module.table_prefix.value,
             )
         )
@@ -1798,7 +1798,7 @@ def test_01_write_nulls():
     #
     m = workspace.measurements
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
     )
     om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
     om[0] = numpy.NaN
@@ -1821,9 +1821,9 @@ def test_01_write_nulls():
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_1"
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
-        object_file = "%s_%s.CSV" % (base_name, cellprofiler.measurement.OBJECT)
+        object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
         object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
             assert os.path.isfile(filename)
@@ -1896,7 +1896,7 @@ def test_02_write_inf():
     #
     m = workspace.measurements
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.inf, True, 1
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.inf, True, 1
     )
     om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
     om[0] = numpy.inf
@@ -1919,9 +1919,9 @@ def test_02_write_inf():
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_1"
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
-        object_file = "%s_%s.CSV" % (base_name, cellprofiler.measurement.OBJECT)
+        object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
         object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
             assert os.path.isfile(filename)
@@ -1995,7 +1995,7 @@ def test_mysql_direct_null():
     #
     m = workspace.measurements
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
     )
     om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
     om[0] = numpy.NaN
@@ -2222,7 +2222,7 @@ def test_write_direct_backslash():
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
     try:
         module.prepare_run(workspace)
@@ -2462,12 +2462,12 @@ def test_numpy_float32():
     """
     workspace, module, output_dir, finally_fn = make_workspace(True)
     fim = workspace.measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT
     )
     for i in range(len(fim)):
         fim[i] = numpy.float32(fim[i])
     iim = workspace.measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, INT_IMG_MEASUREMENT
+        cellprofiler_core.measurement.IMAGE, INT_IMG_MEASUREMENT
     )
     for i in range(len(iim)):
         iim[i] = numpy.int32(iim[i])
@@ -2663,12 +2663,12 @@ def per_object_statement(module, object_name, fields):
         "from %sPer_%s order by ImageNumber, %s_%s"
         % (
             object_name,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
             field_string,
             module.table_prefix.value,
             object_name,
             object_name,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
         )
     )
     return statement
@@ -2680,7 +2680,7 @@ def check_experiment_table(cursor, module, m):
         cellprofiler.pipeline.M_PIPELINE,
         cellprofiler.pipeline.M_VERSION,
         cellprofiler.pipeline.M_TIMESTAMP,
-        module.get_table_name(cellprofiler.measurement.EXPERIMENT),
+        module.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
     )
     cursor.execute(statement)
     row = cursor.fetchone()
@@ -2783,7 +2783,7 @@ def test_write_mysql_db_filter_objs():
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_1"
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
         object_file = os.path.join(output_dir, base_name + "_" + OBJECT_NAME + ".CSV")
         for filename in (sql_file, image_file, object_file):
@@ -2972,7 +2972,7 @@ def test_write_nulls():
     #
     m = workspace.measurements
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
     )
     om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
     om[0] = numpy.NaN
@@ -2995,7 +2995,7 @@ def test_write_nulls():
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
         base_name = "SQL_1_1"
         image_file = os.path.join(
-            output_dir, base_name + "_" + cellprofiler.measurement.IMAGE + ".CSV"
+            output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
         )
         object_file = os.path.join(output_dir, "%s_%s.CSV" % (base_name, OBJECT_NAME))
         for filename in (sql_file, image_file, object_file):
@@ -3065,7 +3065,7 @@ def test_01_mysql_direct_null():
     #
     m = workspace.measurements
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
     )
     om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
     om[:] = numpy.NaN
@@ -3137,7 +3137,7 @@ def test_02_mysql_direct_inf():
     #
     m = workspace.measurements
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+        cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
     )
     om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
     om[:] = numpy.inf
@@ -3770,8 +3770,8 @@ def test_well_single_objtable():
         module.post_run(workspace)
         execute_well_sql(output_dir, module)
         meas = (
-            (cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT),
-            (cellprofiler.measurement.IMAGE, INT_IMG_MEASUREMENT),
+            (cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT),
+            (cellprofiler_core.measurement.IMAGE, INT_IMG_MEASUREMENT),
             (OBJECT_NAME, OBJ_MEASUREMENT),
         )
         m = workspace.measurements
@@ -3830,8 +3830,8 @@ def test_well_two_objtables():
         module.post_run(workspace)
         execute_well_sql(output_dir, module)
         meas = (
-            (cellprofiler.measurement.IMAGE, FLOAT_IMG_MEASUREMENT),
-            (cellprofiler.measurement.IMAGE, INT_IMG_MEASUREMENT),
+            (cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT),
+            (cellprofiler_core.measurement.IMAGE, INT_IMG_MEASUREMENT),
             (OBJECT_NAME, OBJ_MEASUREMENT),
             (ALTOBJECT_NAME, OBJ_MEASUREMENT),
         )
@@ -3960,7 +3960,7 @@ def test_post_group_single_object_table():
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     module.wants_agg_mean.value = False
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
@@ -4060,7 +4060,7 @@ def test_post_group_single_object_table_agg():
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     module.wants_agg_mean.value = True
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
@@ -4160,7 +4160,7 @@ def test_post_group_separate_object_tables():
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     module.wants_agg_mean.value = False
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
@@ -4250,7 +4250,7 @@ def test_post_group_separate_table_agg():
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     module.wants_agg_mean.value = True
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
@@ -4347,7 +4347,7 @@ def test_post_group_sqlite():
         )
         assert isinstance(workspace, cellprofiler.workspace.Workspace)
         measurements = workspace.measurements
-        assert isinstance(measurements, cellprofiler.measurement.Measurements)
+        assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
@@ -4455,7 +4455,7 @@ def test_post_group_object_view():
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     module.wants_agg_mean.value = False
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
@@ -4566,14 +4566,14 @@ def test_properties_file():
     ):
         result = [
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
         ] + old_get_measurement_columns(pipeline)
         return result
@@ -4592,14 +4592,14 @@ def test_properties_file():
         m = workspace.measurements
         for image_number in m.get_image_numbers():
             m.add_measurement(
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
                 os.path.join(path, "img%d.tif" % image_number),
                 image_set_number=image_number,
             )
             m.add_measurement(
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
                 os.path.join(path, "img%d.tif" % image_number),
                 image_set_number=image_number,
             )
@@ -4651,8 +4651,8 @@ def test_properties_file():
                 "image_path_cols",
                 "%s_%s_%s"
                 % (
-                    cellprofiler.measurement.IMAGE,
-                    cellprofiler.measurement.C_PATH_NAME,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_PATH_NAME,
                     IMAGE_NAME,
                 ),
             ),
@@ -4660,8 +4660,8 @@ def test_properties_file():
                 "image_file_cols",
                 "%s_%s_%s"
                 % (
-                    cellprofiler.measurement.IMAGE,
-                    cellprofiler.measurement.C_FILE_NAME,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_FILE_NAME,
                     IMAGE_NAME,
                 ),
             ),
@@ -4793,7 +4793,7 @@ def test_write_no_mysql_relationships():
     if not __test_mysql:
         skipTest("Skipping actual DB work, not at the Broad.")
     workspace, module, output_dir, finally_fn = make_workspace(
-        True, relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE
+        True, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
     )
     try:
         assert isinstance(
@@ -4823,7 +4823,7 @@ def test_write_no_mysql_direct_relationships():
         skipTest("Skipping actual DB work, not at the Broad.")
 
     workspace, module = make_workspace(
-        False, relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE
+        False, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
     )
     try:
         assert isinstance(
@@ -4851,7 +4851,7 @@ def test_write_sqlite_no_relationships():
         skipTest("Skipping actual DB work, not at the Broad.")
 
     workspace, module, output_dir, finally_fn = make_workspace(
-        True, relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE
+        True, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
     )
     cursor = None
     try:
@@ -4890,7 +4890,7 @@ def test_write_mysql_relationships():
         skipTest("Skipping actual DB work, not at the Broad.")
     workspace, module, output_dir, finally_fn = make_workspace(
         True,
-        relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+        relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         relationship_test_type=RTEST_SOME,
     )
     try:
@@ -4922,7 +4922,7 @@ def test_write_mysql_direct_relationships():
 
     workspace, module = make_workspace(
         False,
-        relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+        relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         relationship_test_type=RTEST_SOME,
     )
     try:
@@ -4949,7 +4949,7 @@ def test_write_sqlite_relationships():
     for with_interaction_handler in (False, True):
         workspace, module, output_dir, finally_fn = make_workspace(
             True,
-            relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             relationship_test_type=RTEST_SOME,
         )
         ran_interaction_handler = [False]
@@ -4994,7 +4994,7 @@ def test_write_sqlite_duplicates():
 
     workspace, module, output_dir, finally_fn = make_workspace(
         True,
-        relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+        relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         relationship_test_type=RTEST_DUPLICATE,
     )
     try:
@@ -5037,7 +5037,7 @@ def test_add_relationship_id_mysql():
 
     workspace, module = make_workspace(
         False,
-        relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+        relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         relationship_test_type=RTEST_SOME,
     )
     try:
@@ -5082,7 +5082,7 @@ def test_get_relationship_id_mysql():
 
     workspace, module = make_workspace(
         False,
-        relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+        relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         relationship_test_type=RTEST_SOME,
     )
     try:
@@ -5115,7 +5115,7 @@ def test_add_relationship_id_sqlite():
     for with_interaction_handler in (False, True):
         workspace, module, output_dir, finally_fn = make_workspace(
             True,
-            relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             relationship_test_type=RTEST_SOME,
         )
         if with_interaction_handler:
@@ -5166,7 +5166,7 @@ def test_get_relationship_id_sqlite():
     for with_interaction_handler in (False, True):
         workspace, module, output_dir, finally_fn = make_workspace(
             True,
-            relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             relationship_test_type=RTEST_SOME,
         )
         if with_interaction_handler:
@@ -5220,7 +5220,7 @@ def test_write_mysql_direct_relationships():
         skipTest("Skipping actual DB work, no database configured.")
 
     workspace, module = make_workspace(
-        False, relationship_type=cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE
+        False, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
     )
     try:
         assert isinstance(
@@ -5294,7 +5294,7 @@ def test_mysql_keep_schema():
         # There should be no rows in the image table after prepare_run
         #
         how_many = "select count('x') from %s" % module.get_table_name(
-            cellprofiler.measurement.IMAGE
+            cellprofiler_core.measurement.IMAGE
         )
         cursor.execute(how_many)
         assert cursor.fetchall()[0][0] == 0
@@ -5341,7 +5341,7 @@ def test_mysql_drop_schema():
         # There should be no rows in the image table after prepare_run
         #
         how_many = "select count('x') from %s" % module.get_table_name(
-            cellprofiler.measurement.IMAGE
+            cellprofiler_core.measurement.IMAGE
         )
         cursor.execute(how_many)
         assert cursor.fetchall()[0][0] == 0
@@ -5406,7 +5406,7 @@ def test_sqlite_keep_schema():
         # There should be no rows in the image table after prepare_run
         #
         how_many = "select count('x') from %s" % module.get_table_name(
-            cellprofiler.measurement.IMAGE
+            cellprofiler_core.measurement.IMAGE
         )
         cursor.execute(how_many)
         assert cursor.fetchall()[0][0] == 0
@@ -5450,7 +5450,7 @@ def test_sqlite_drop_schema():
         # There should be no rows in the image table after prepare_run
         #
         how_many = "select count('x') from %s" % module.get_table_name(
-            cellprofiler.measurement.IMAGE
+            cellprofiler_core.measurement.IMAGE
         )
         cursor.execute(how_many)
         assert cursor.fetchall()[0][0] == 0
@@ -5534,14 +5534,14 @@ def test_post_run_experiment_measurement_mysql():
             cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         workspace.measurements[
-            cellprofiler.measurement.EXPERIMENT, STRING_IMG_MEASUREMENT
+            cellprofiler_core.measurement.EXPERIMENT, STRING_IMG_MEASUREMENT
         ] = STRING_VALUE
         assert module.prepare_run(workspace)
         cursor.execute(
             "select %s from %s"
             % (
                 STRING_IMG_MEASUREMENT,
-                module.get_table_name(cellprofiler.measurement.EXPERIMENT),
+                module.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
             )
         )
         result = cursor.fetchall()[0][0]
@@ -5552,7 +5552,7 @@ def test_post_run_experiment_measurement_mysql():
             "select %s from %s"
             % (
                 STRING_IMG_MEASUREMENT,
-                module.get_table_name(cellprofiler.measurement.EXPERIMENT),
+                module.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
             )
         )
         assert cursor.fetchall()[0][0] == STRING_VALUE

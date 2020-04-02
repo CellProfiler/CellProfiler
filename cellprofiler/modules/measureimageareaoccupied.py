@@ -49,7 +49,7 @@ import numpy
 import skimage.measure
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -405,7 +405,7 @@ like to measure the area occupied by the foreground in the image.
             for feature in self._get_feature_names(pipeline):
                 columns.append(
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "{:s}_{:s}_{:s}".format(
                             C_AREA_OCCUPIED,
                             feature,
@@ -413,21 +413,21 @@ like to measure the area occupied by the foreground in the image.
                             if op.operand_choice == O_OBJECTS
                             else op.binary_name.value,
                         ),
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     )
                 )
 
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return [C_AREA_OCCUPIED]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_AREA_OCCUPIED
         ):
             return self._get_feature_names(pipeline)

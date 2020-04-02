@@ -39,7 +39,7 @@ See also other **Display** modules and data tools.
 import numpy as np
 import six
 
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.modules._help import USING_METADATA_HELP_REF

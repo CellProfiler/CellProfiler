@@ -2,7 +2,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.makeprojection
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -64,7 +64,7 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     module.projection_type.value = projection_type
     module.frequency.value = frequency
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )

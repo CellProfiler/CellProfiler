@@ -5,7 +5,7 @@ import numpy
 import skimage.io
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.injectimage
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler.object
@@ -25,7 +25,7 @@ def make_workspace(labels):
     objects = cellprofiler.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
     module.object_groups[0].name.value = OBJECTS_NAME
@@ -78,7 +78,7 @@ def test_zeros():
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     workspace = cellprofiler.workspace.Workspace(
@@ -137,7 +137,7 @@ def test_run():
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     workspace = cellprofiler.workspace.Workspace(
@@ -237,7 +237,7 @@ def test_non_contiguous():
     object_set.add_objects(objects, "SomeObjects")
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
 
@@ -278,7 +278,7 @@ def test_zernikes_are_different():
     module.calculate_zernikes.value = True
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
 
@@ -320,7 +320,7 @@ def test_extent():
     object_set.add_objects(objects, "SomeObjects")
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
 
@@ -381,7 +381,7 @@ def test_overlapping():
         object_set.add_objects(objects, "SomeObjects")
         module.set_module_num(1)
         image_set_list = cellprofiler_core.image.ImageSetList()
-        measurements = cellprofiler.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
         mlist.append(measurements)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
@@ -406,7 +406,7 @@ def test_overlapping():
         if oname != "SomeObjects":
             continue
         measurements = mlist[0]
-        assert isinstance(measurements, cellprofiler.measurement.Measurements)
+        assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
         v1 = measurements.get_current_measurement(oname, feature)
         assert len(v1) == 1
         v1 = v1[0]
@@ -448,7 +448,7 @@ def features_and_columns_match(measurements, module, pipeline):
     for column in columns:
         assert column[0] in ["SomeObjects", "OtherObjects"]
         assert column[1] in features
-        assert column[2] == cellprofiler.measurement.COLTYPE_FLOAT
+        assert column[2] == cellprofiler_core.measurement.COLTYPE_FLOAT
 
 
 def test_run_volume():

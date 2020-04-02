@@ -26,7 +26,7 @@ if not hasattr(zmq, "Frame"):
     zmq.Frame = ZmqFrame
 
 import cellprofiler_core.module
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.image
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -219,8 +219,8 @@ class KnimeBridgeServer(threading.Thread):
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
-        m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER] = 1
-        m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] = 1
+        m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER] = 1
+        m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
             workspace = cellprofiler.workspace.Workspace(
@@ -319,7 +319,7 @@ class KnimeBridgeServer(threading.Thread):
     def run_group_request(self, session_id, message_type, message):
         """Handle a run-group request message"""
         pipeline = cellprofiler.pipeline.Pipeline()
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -372,13 +372,13 @@ class KnimeBridgeServer(threading.Thread):
         image_numbers = numpy.arange(1, n_image_sets + 1)
         for image_number in image_numbers:
             m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 image_number,
             ] = 1
             m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_INDEX,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_INDEX,
                 image_number,
             ] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
@@ -453,11 +453,11 @@ class KnimeBridgeServer(threading.Thread):
             int_features.append((object_name, intf))
             sf = []
             string_features.append((object_name, sf))
-            if object_name == cellprofiler.measurement.IMAGE:
+            if object_name == cellprofiler_core.measurement.IMAGE:
                 object_counts = [] * n_image_sets
             else:
                 object_numbers = m[
-                    object_name, cellprofiler.measurement.OBJECT_NUMBER, image_numbers
+                    object_name, cellprofiler_core.measurement.OBJECT_NUMBER, image_numbers
                 ]
                 object_counts = [len(x) for x in object_numbers]
             for feature, data_type in features:
@@ -521,7 +521,7 @@ class KnimeBridgeServer(threading.Thread):
         grouping_allowed - true to allow grouped images
         """
         pipeline = cellprofiler.pipeline.Pipeline()
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         object_set = cellprofiler.object.ObjectSet()
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -632,18 +632,18 @@ class KnimeBridgeServer(threading.Thread):
                 objects, name, dbtype = column[:3]
                 qualifiers = {} if len(column) < 4 else column[3]
                 if (
-                    objects == cellprofiler.measurement.EXPERIMENT
+                    objects == cellprofiler_core.measurement.EXPERIMENT
                     and qualifiers.get(
-                        cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False
+                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False
                     )
                     == True
                 ):
                     continue
-                if dbtype == cellprofiler.measurement.COLTYPE_FLOAT:
+                if dbtype == cellprofiler_core.measurement.COLTYPE_FLOAT:
                     jtype = "java.lang.Double"
-                elif dbtype == cellprofiler.measurement.COLTYPE_INTEGER:
+                elif dbtype == cellprofiler_core.measurement.COLTYPE_INTEGER:
                     jtype = "java.lang.Integer"
-                elif dbtype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+                elif dbtype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                     jtype = "java.lang.String"
                 else:
                     continue
@@ -659,7 +659,7 @@ class KnimeBridgeServer(threading.Thread):
                 if name not in ofeatures:
                     ofeatures[name] = type_idx
         for key in features:
-            features[key][cellprofiler.measurement.IMAGE_NUMBER] = 0
+            features[key][cellprofiler_core.measurement.IMAGE_NUMBER] = 0
         features_out = dict([(k, list(v.items())) for k, v in list(features.items())])
         return jtypes, features_out
 

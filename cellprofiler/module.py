@@ -6,7 +6,7 @@ import numpy
 import six
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler import pipeline
@@ -1051,26 +1051,26 @@ class ImageSegmentation(Module):
                 center_y, center_x = centers.transpose()
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x
+            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
         )
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y
+            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
         )
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler.measurement.M_LOCATION_CENTER_Z, center_z
+            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Z, center_z
         )
 
         workspace.measurements.add_measurement(
             object_name,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
             numpy.arange(1, objects.count + 1),
         )
 
         workspace.measurements.add_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % object_name,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % object_name,
             numpy.array([objects.count], dtype=float),
         )
 
@@ -1110,13 +1110,13 @@ class ImageSegmentation(Module):
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
-            return [cellprofiler.measurement.C_COUNT]
+        if object_name == cellprofiler_core.measurement.IMAGE:
+            return [cellprofiler_core.measurement.C_COUNT]
 
         if object_name == self.y_name.value:
             return [
-                cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER,
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
             ]
 
         return []
@@ -1128,48 +1128,48 @@ class ImageSegmentation(Module):
         return [
             (
                 object_name,
-                cellprofiler.measurement.M_LOCATION_CENTER_X,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_COUNT % object_name,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_COUNT % object_name,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
         ]
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
-            and category == cellprofiler.measurement.C_COUNT
+            object_name == cellprofiler_core.measurement.IMAGE
+            and category == cellprofiler_core.measurement.C_COUNT
         ):
             return [self.y_name.value]
 
         if object_name == self.y_name.value:
-            if category == cellprofiler.measurement.C_LOCATION:
+            if category == cellprofiler_core.measurement.C_LOCATION:
                 return [
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
-                    cellprofiler.measurement.FTR_CENTER_Z,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_Z,
                 ]
 
-            if category == cellprofiler.measurement.C_NUMBER:
-                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            if category == cellprofiler_core.measurement.C_NUMBER:
+                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
         return []
 
@@ -1243,13 +1243,13 @@ class ObjectProcessing(ImageSegmentation):
 
         workspace.measurements.add_measurement(
             input_object_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
             children_per_parent,
         )
 
         workspace.measurements.add_measurement(
             output_object_name,
-            cellprofiler.measurement.FF_PARENT % input_object_name,
+            cellprofiler_core.measurement.FF_PARENT % input_object_name,
             parents_of_children,
         )
 
@@ -1284,12 +1284,12 @@ class ObjectProcessing(ImageSegmentation):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.x_name.value:
-            return [cellprofiler.measurement.C_CHILDREN]
+            return [cellprofiler_core.measurement.C_CHILDREN]
 
         categories = super(ObjectProcessing, self).get_categories(pipeline, object_name)
 
         if object_name == self.y_name.value:
-            return categories + [cellprofiler.measurement.C_PARENT]
+            return categories + [cellprofiler_core.measurement.C_PARENT]
 
         return categories
 
@@ -1305,13 +1305,13 @@ class ObjectProcessing(ImageSegmentation):
             + [
                 (
                     input_object_name,
-                    cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
                 (
                     output_object_name,
-                    cellprofiler.measurement.FF_PARENT % input_object_name,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.FF_PARENT % input_object_name,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
             ]
             for (input_object_name, output_object_name) in object_names
@@ -1322,15 +1322,15 @@ class ObjectProcessing(ImageSegmentation):
     def get_measurements(self, pipeline, object_name, category):
         if (
             object_name == self.x_name.value
-            and category == cellprofiler.measurement.C_CHILDREN
+            and category == cellprofiler_core.measurement.C_CHILDREN
         ):
-            return [cellprofiler.measurement.FF_COUNT % self.y_name.value]
+            return [cellprofiler_core.measurement.FF_COUNT % self.y_name.value]
 
         if object_name == self.y_name.value:
-            if category == cellprofiler.measurement.C_NUMBER:
-                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            if category == cellprofiler_core.measurement.C_NUMBER:
+                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
-            if category == cellprofiler.measurement.C_PARENT:
+            if category == cellprofiler_core.measurement.C_PARENT:
                 return [self.x_name.value]
 
         return super(ObjectProcessing, self).get_measurements(

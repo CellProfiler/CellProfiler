@@ -2,7 +2,7 @@ import numpy
 
 import cellprofiler.grid
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.definegrid
 import cellprofiler.modules.identifyobjectsingrid
 import cellprofiler.object
@@ -38,7 +38,7 @@ def make_workspace(gridding, labels=None):
         module,
         image_set_list.get_image_set(0),
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     workspace.set_grid(GRID_NAME, gridding)
@@ -97,7 +97,7 @@ def test_forced_location():
     # Check measurements
     #
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
     assert numpy.all(xm == x_locations[1:])
     ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
@@ -135,11 +135,11 @@ def test_forced_location():
     categories.sort()
     assert categories[0] == "Location"
     assert categories[1] == "Number"
-    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+    categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 1
     assert categories[0] == "Count"
     measurements = module.get_measurements(
-        None, cellprofiler.measurement.IMAGE, "Count"
+        None, cellprofiler_core.measurement.IMAGE, "Count"
     )
     assert len(measurements) == 1
     assert measurements[0] == OUTPUT_OBJECTS_NAME
@@ -247,7 +247,7 @@ def test_natural_circle():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
     assert numpy.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
     assert numpy.all(xm == x_locations[1:])
     ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
@@ -320,7 +320,7 @@ def test_natural_circle_edges():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
     assert numpy.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
     assert numpy.all(xm == x_locations[1:])
     ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
@@ -377,7 +377,7 @@ def test_img_891():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
     assert numpy.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
     assert len(xm) == 96
     assert numpy.all(xm[:-1] == x_locations[1:-1])
@@ -469,7 +469,7 @@ def test_natural():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
     assert numpy.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
     assert numpy.all(xm == x_locations[1:])
     ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")

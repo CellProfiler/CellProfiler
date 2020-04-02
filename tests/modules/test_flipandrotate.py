@@ -6,7 +6,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.flipandrotate
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -43,7 +43,7 @@ def run_module(image, mask=None, fn=None):
         assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
 
     pipeline.add_listener(error_callback)
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
@@ -54,7 +54,7 @@ def run_module(image, mask=None, fn=None):
     )
     module.run(workspace)
     feature = cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
-    assert feature in measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+    assert feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
     angle = measurements.get_current_image_measurement(feature)
     output_image = image_set.get_image(OUTPUT_IMAGE)
     return output_image, angle
@@ -336,26 +336,26 @@ def test_get_measurements():
     module.output_name.value = OUTPUT_IMAGE
     columns = module.get_measurement_columns(None)
     assert len(columns) == 1
-    assert columns[0][0] == cellprofiler.measurement.IMAGE
+    assert columns[0][0] == cellprofiler_core.measurement.IMAGE
     assert (
         columns[0][1] == cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
     )
-    assert columns[0][2] == cellprofiler.measurement.COLTYPE_FLOAT
+    assert columns[0][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
 
-    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+    categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 1
     assert categories[0] == cellprofiler.modules.flipandrotate.M_ROTATION_CATEGORY
     assert len(module.get_categories(None, "Foo")) == 0
 
     measurements = module.get_measurements(
         None,
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         cellprofiler.modules.flipandrotate.M_ROTATION_CATEGORY,
     )
     assert len(measurements) == 1
     assert measurements[0] == OUTPUT_IMAGE
     assert (
-        len(module.get_measurements(None, cellprofiler.measurement.IMAGE, "Foo")) == 0
+        len(module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Foo")) == 0
     )
     assert (
         len(

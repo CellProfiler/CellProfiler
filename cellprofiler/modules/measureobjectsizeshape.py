@@ -7,7 +7,7 @@ import skimage.measure
 
 import cellprofiler.gui.help.content
 import cellprofiler.icons
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -661,7 +661,7 @@ module.""".format(
                     (
                         oname,
                         AREA_SHAPE + "_" + mname,
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     )
                 ]
         return cols

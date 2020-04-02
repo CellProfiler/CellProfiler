@@ -10,7 +10,7 @@ import skimage.filters
 import skimage.transform
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.enhanceorsuppressfeatures
 import cellprofiler.object
@@ -50,7 +50,7 @@ def workspace(image, module):
         module=module,
         image_set=image_set,
         object_set=cellprofiler.object.ObjectSet(),
-        measurements=cellprofiler.measurement.Measurements(),
+        measurements=cellprofiler_core.measurement.Measurements(),
         image_set_list=image_set_list,
     )
 

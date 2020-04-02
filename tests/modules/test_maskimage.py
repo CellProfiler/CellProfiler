@@ -1,7 +1,7 @@
 import numpy as np
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.maskimage
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -42,7 +42,7 @@ def test_mask_with_objects():
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)
@@ -83,7 +83,7 @@ def test_mask_invert():
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)
@@ -127,7 +127,7 @@ def test_double_mask():
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)
@@ -164,7 +164,7 @@ def test_binary_mask():
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)
@@ -202,7 +202,7 @@ def test_gray_mask():
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)
@@ -241,7 +241,7 @@ def test_color_mask():
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)

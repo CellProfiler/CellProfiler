@@ -1,7 +1,7 @@
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.invertforprinting
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -67,7 +67,7 @@ def run_module(
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)

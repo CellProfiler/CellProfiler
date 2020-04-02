@@ -6,7 +6,7 @@ import six
 import wx
 import wx.lib.masked
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.preferences
 
 __choice_ids = []
@@ -47,12 +47,12 @@ class MetadataControl(wx.Control):
 
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
-        choices = [cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME]
+        choices = [cellprofiler_core.measurement.C_SERIES, cellprofiler_core.measurement.C_FRAME]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurement.C_METADATA) + 1) :]
-            if object_name == cellprofiler.measurement.IMAGE and feature.startswith(
-                cellprofiler.measurement.C_METADATA
+            choice = feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
+            if object_name == cellprofiler_core.measurement.IMAGE and feature.startswith(
+                cellprofiler_core.measurement.C_METADATA
             ):
                 choices.append(choice)
         self.__metadata_choices = choices

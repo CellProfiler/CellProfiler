@@ -6,7 +6,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.measureobjectskeleton
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -61,13 +61,13 @@ def test_load_v1():
 
 
 def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=False):
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, 1
     )
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, 1
     )
     image_set = m
     img = cellprofiler_core.image.Image(image, mask)
@@ -130,10 +130,10 @@ def test_empty():
         )
         assert feature == expected_feature
         coltypes[expected_feature] = (
-            cellprofiler.measurement.COLTYPE_FLOAT
+            cellprofiler_core.measurement.COLTYPE_FLOAT
             if expected
             == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
-            else cellprofiler.measurement.COLTYPE_INTEGER
+            else cellprofiler_core.measurement.COLTYPE_INTEGER
         )
     assert all([c[0] == OBJECT_NAME for c in columns])
     assert all([c[2] == coltypes[c[1]] for c in columns])
@@ -174,7 +174,7 @@ def test_empty():
 
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature in cellprofiler.modules.measureobjectskeleton.F_ALL:
         mname = "_".join(
             (
@@ -196,7 +196,7 @@ def test_trunk():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
@@ -223,7 +223,7 @@ def test_trunks():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
             cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
@@ -255,7 +255,7 @@ def test_branch():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
@@ -286,7 +286,7 @@ def test_img_667():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 2),
@@ -330,7 +330,7 @@ def test_quadrabranch():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 3),
@@ -365,7 +365,7 @@ def test_wrong_size():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
             cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,

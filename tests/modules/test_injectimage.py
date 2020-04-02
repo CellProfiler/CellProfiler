@@ -1,7 +1,7 @@
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.injectimage
 import cellprofiler.pipeline
 import cellprofiler.workspace
@@ -16,7 +16,7 @@ def test_get_from_image_set():
     image = numpy.zeros((10, 10), dtype=float)
     ii = cellprofiler.modules.injectimage.InjectImage("my_image", image)
     pipeline = cellprofiler.pipeline.Pipeline()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
         ii,

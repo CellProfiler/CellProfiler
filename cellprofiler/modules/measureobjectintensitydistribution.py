@@ -11,7 +11,7 @@ import scipy.sparse
 
 import cellprofiler.gui.help.content
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.preferences
@@ -1349,7 +1349,7 @@ be selected in a later **SaveImages** or other module.
                                 (
                                     object_name,
                                     feature % (image_name, bin, bin_count),
-                                    cellprofiler.measurement.COLTYPE_FLOAT,
+                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                                 )
                             )
 
@@ -1358,7 +1358,7 @@ be selected in a later **SaveImages** or other module.
                                 (
                                     object_name,
                                     ofeature % image.image_name.value,
-                                    cellprofiler.measurement.COLTYPE_FLOAT,
+                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                                 )
                             )
 
@@ -1380,7 +1380,7 @@ be selected in a later **SaveImages** or other module.
                                     (
                                         object_name,
                                         ftr,
-                                        cellprofiler.measurement.COLTYPE_FLOAT,
+                                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                                     )
                                 )
 

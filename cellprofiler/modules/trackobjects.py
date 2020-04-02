@@ -216,7 +216,7 @@ import cellprofiler_core.module as cpm
 import cellprofiler_core.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
@@ -225,7 +225,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler_core.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 # if neighmovetrack is not available remove it from options

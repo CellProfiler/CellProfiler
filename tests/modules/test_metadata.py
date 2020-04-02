@@ -2,7 +2,7 @@ import io
 import os
 import tempfile
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.images
 import cellprofiler.modules.metadata
 import cellprofiler.pipeline
@@ -234,7 +234,7 @@ def check(module, url, dd, keys=None, xml=None):
     module.set_module_num(2)
     pipeline.add_module(module)
     pipeline.add_urls([url])
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, None)
     file_list = workspace.file_list
     file_list.add_files_to_filelist([url])
@@ -408,12 +408,12 @@ C10,BRD041618,1.5,2
         columns = module.get_measurement_columns(pipeline)
         assert not any([c[1] == "Counter" for c in columns])
         for feature_name, data_type in (
-            ("Metadata_Treatment", cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-            ("Metadata_Dose", cellprofiler.measurement.COLTYPE_FLOAT),
+            ("Metadata_Treatment", cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME),
+            ("Metadata_Dose", cellprofiler_core.measurement.COLTYPE_FLOAT),
         ):
             assert any(
                 [
-                    c[0] == cellprofiler.measurement.IMAGE
+                    c[0] == cellprofiler_core.measurement.IMAGE
                     and c[1] == feature_name
                     and c[2] == data_type
                     for c in columns
@@ -753,7 +753,7 @@ def test_well_row_column():
                     "Wavelength": "1",
                     row_tag: "C",
                     column_tag: "05",
-                    cellprofiler.measurement.FTR_WELL: "C05",
+                    cellprofiler_core.measurement.FTR_WELL: "C05",
                 }
             ],
         )
@@ -764,7 +764,7 @@ def test_well_row_column():
         pipeline.add_module(imgs)
         module.set_module_num(2)
         pipeline.add_module(module)
-        assert cellprofiler.measurement.M_WELL in [
+        assert cellprofiler_core.measurement.M_WELL in [
             c[1] for c in module.get_measurement_columns(pipeline)
         ]
 
@@ -782,7 +782,7 @@ def test_well_row_column_before_import():
     em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
     em.file_regexp.value = (
         "^Channel(?P<Wavelength>[1-2])-" "(?P<%s>[A-H])-" "(?P<%s>[0-9]{2}).tif$"
-    ) % (cellprofiler.measurement.FTR_ROW, cellprofiler.measurement.FTR_COLUMN)
+    ) % (cellprofiler_core.measurement.FTR_ROW, cellprofiler_core.measurement.FTR_COLUMN)
     em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
     module.add_extraction_method()
     metadata_csv = """WellName,Treatment
@@ -813,10 +813,10 @@ C05,DMSO
             [
                 {
                     "Wavelength": "1",
-                    cellprofiler.measurement.FTR_ROW: "C",
-                    cellprofiler.measurement.FTR_COLUMN: "05",
+                    cellprofiler_core.measurement.FTR_ROW: "C",
+                    cellprofiler_core.measurement.FTR_COLUMN: "05",
                     "Treatment": "DMSO",
-                    cellprofiler.measurement.FTR_WELL: "C05",
+                    cellprofiler_core.measurement.FTR_WELL: "C05",
                 }
             ],
         )

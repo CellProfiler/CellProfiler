@@ -12,7 +12,7 @@ import cellprofiler_core.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 
 __doc__ = """\
 Groups

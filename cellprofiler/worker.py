@@ -148,7 +148,7 @@ from weakref import WeakSet
 import six.moves
 
 import cellprofiler.workspace as cpw
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.analysis import (
     PipelinePreferencesRequest,

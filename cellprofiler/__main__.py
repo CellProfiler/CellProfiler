@@ -17,7 +17,7 @@ import pkg_resources
 import six.moves
 
 import cellprofiler
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -623,7 +623,7 @@ def print_groups(filename):
     """
     path = os.path.expanduser(filename)
 
-    m = cellprofiler.measurement.Measurements(filename=path, mode="r")
+    m = cellprofiler_core.measurement.Measurements(filename=path, mode="r")
 
     metadata_tags = m.get_grouping_tags()
 
@@ -645,22 +645,22 @@ def get_batch_commands(filename, n_per_job=1):
     """
     path = os.path.expanduser(filename)
 
-    m = cellprofiler.measurement.Measurements(filename=path, mode="r")
+    m = cellprofiler_core.measurement.Measurements(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
 
     if m.has_feature(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER
     ):
         group_numbers = m[
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.GROUP_NUMBER,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_NUMBER,
             image_numbers,
         ]
 
         group_indexes = m[
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.GROUP_INDEX,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_INDEX,
             image_numbers,
         ]
 
@@ -730,7 +730,7 @@ def write_schema(pipeline_filename):
             % pipeline_filename
         )
 
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
 
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, m, cellprofiler.object.ObjectSet, m, None
@@ -777,7 +777,7 @@ def run_pipeline_headless(options, args):
 
     try:
         if h5py.is_hdf5(options.pipeline_filename):
-            initial_measurements = cellprofiler.measurement.load_measurements(
+            initial_measurements = cellprofiler_core.measurement.load_measurements(
                 options.pipeline_filename, image_numbers=image_set_numbers
             )
     except:
@@ -871,7 +871,7 @@ def run_pipeline_headless(options, args):
 
     if options.done_file is not None:
         if measurements is not None and measurements.has_feature(
-            cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS
+            cellprofiler_core.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS
         ):
             done_text = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.EXIT_STATUS
@@ -887,7 +887,7 @@ def run_pipeline_headless(options, args):
         fd.write("%s\n" % done_text)
         fd.close()
     elif not measurements.has_feature(
-        cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS
+        cellprofiler_core.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS
     ):
         # The pipeline probably failed
         exit_code = 1

@@ -9,7 +9,7 @@ import hashlib
 import numpy as np
 
 import cellprofiler_core.image
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting

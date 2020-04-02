@@ -39,7 +39,7 @@ import wx
 
 import cellprofiler_core.image as cpimage
 import cellprofiler_core.module as cpm
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.preferences as cpp
 import cellprofiler.setting as cps
 

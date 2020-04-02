@@ -38,7 +38,7 @@ import numpy
 import skimage.util
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -283,7 +283,7 @@ Select the image that you want to use for this operation.""",
             "measurement",
             cellprofiler.setting.Measurement(
                 "Measurement",
-                lambda: cellprofiler.measurement.IMAGE,
+                lambda: cellprofiler_core.measurement.IMAGE,
                 "",
                 doc="""\
 Select a measurement made on the image. The value of the

@@ -7,7 +7,7 @@ import tempfile
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.filterobjects
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -35,7 +35,7 @@ def make_workspace(object_dict={}, image_dict={}):
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     for key in list(image_dict.keys()):
@@ -152,17 +152,17 @@ def test_keep_single_min():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
     assert numpy.all(labels.segmented == expected)
     parents = m.get_current_measurement(
-        OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS
+        OUTPUT_OBJECTS, cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS
     )
     assert len(parents) == 1
     assert parents[0] == 2
     assert (
         m.get_current_image_measurement(
-            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
         )
         == 1
     )
-    feature = cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+    feature = cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
     child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
     assert len(child_count) == 2
     assert child_count[0] == 0
@@ -944,21 +944,21 @@ def test_measurements():
 
     for input_object_name, output_object_name in object_names:
         assert measurements.has_current_measurements(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % output_object_name,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % output_object_name,
         )
 
         assert measurements.has_current_measurements(
             input_object_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
         )
 
         output_object_features = [
-            cellprofiler.measurement.FF_PARENT % input_object_name,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.M_LOCATION_CENTER_Z,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.FF_PARENT % input_object_name,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
         ]
 
         for feature in output_object_features:

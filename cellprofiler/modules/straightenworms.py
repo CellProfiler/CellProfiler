@@ -95,13 +95,13 @@ from scipy.interpolate import interp1d
 from scipy.ndimage import map_coordinates, extrema
 
 import cellprofiler_core.image as cpi
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.utilities.legacy
-from cellprofiler.measurement import (
+from cellprofiler_core.measurement import (
     C_LOCATION,
     C_NUMBER,
     C_COUNT,

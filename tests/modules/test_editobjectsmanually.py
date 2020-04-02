@@ -1,6 +1,6 @@
 import six.moves
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.editobjectsmanually
 import cellprofiler.pipeline
 
@@ -107,34 +107,34 @@ def test_measurements():
     columns = module.get_measurement_columns(None)
     expected_columns = [
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS_NAME,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
     ]
 
@@ -159,22 +159,22 @@ def test_measurements():
     # Check the measurement features
     #
     d = {
-        cellprofiler.measurement.IMAGE: {
-            cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS_NAME],
+        cellprofiler_core.measurement.IMAGE: {
+            cellprofiler_core.measurement.C_COUNT: [OUTPUT_OBJECTS_NAME],
             "Foo": [],
         },
         INPUT_OBJECTS_NAME: {
-            cellprofiler.measurement.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
+            cellprofiler_core.measurement.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
             "Foo": [],
         },
         OUTPUT_OBJECTS_NAME: {
-            cellprofiler.measurement.C_LOCATION: [
-                cellprofiler.measurement.FTR_CENTER_X,
-                cellprofiler.measurement.FTR_CENTER_Y,
+            cellprofiler_core.measurement.C_LOCATION: [
+                cellprofiler_core.measurement.FTR_CENTER_X,
+                cellprofiler_core.measurement.FTR_CENTER_Y,
             ],
-            cellprofiler.measurement.C_PARENT: [INPUT_OBJECTS_NAME],
-            cellprofiler.measurement.C_NUMBER: [
-                cellprofiler.measurement.FTR_OBJECT_NUMBER
+            cellprofiler_core.measurement.C_PARENT: [INPUT_OBJECTS_NAME],
+            cellprofiler_core.measurement.C_NUMBER: [
+                cellprofiler_core.measurement.FTR_OBJECT_NUMBER
             ],
             "Foo": [],
         },

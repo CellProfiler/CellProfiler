@@ -62,8 +62,8 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
@@ -319,17 +319,17 @@ degrees.
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.object_name.value
         m.add_measurement(
-            object_name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x
+            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
         )
         m.add_measurement(
-            object_name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y
+            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
         )
         m.add_measurement(object_name, M_ANGLE, angles * 180 / np.pi)
         m.add_measurement(
-            object_name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, label_indexes
+            object_name, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER, label_indexes
         )
         m.add_image_measurement(
-            cellprofiler.measurement.FF_COUNT % object_name, nlabels
+            cellprofiler_core.measurement.FF_COUNT % object_name, nlabels
         )
         #
         # Make the objects
@@ -619,50 +619,50 @@ degrees.
         return [
             (
                 object_name,
-                cellprofiler.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (
                 object_name,
-                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (object_name, M_ANGLE, cpmeas.COLTYPE_FLOAT),
             (
                 object_name,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (
                 cpmeas.IMAGE,
-                cellprofiler.measurement.FF_COUNT % object_name,
+                cellprofiler_core.measurement.FF_COUNT % object_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
         ]
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [cellprofiler.measurement.C_COUNT]
+            return [cellprofiler_core.measurement.C_COUNT]
         elif object_name == self.object_name:
             return [
-                cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER,
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
                 C_WORMS,
             ]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler_core.measurement.C_COUNT:
             return [self.object_name.value]
         elif object_name == self.object_name:
-            if category == cellprofiler.measurement.C_LOCATION:
+            if category == cellprofiler_core.measurement.C_LOCATION:
                 return [
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler.measurement.C_NUMBER:
-                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler_core.measurement.C_NUMBER:
+                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []

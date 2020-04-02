@@ -2,8 +2,8 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
-import cellprofiler.measurement
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.splitormergeobjects
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -147,12 +147,12 @@ def rruunn(
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     if parents_of is not None:
         m = workspace.measurements
-        ftr = cellprofiler.measurement.FF_PARENT % parent_object
+        ftr = cellprofiler_core.measurement.FF_PARENT % parent_object
         m[INPUT_OBJECTS_NAME, ftr] = parents_of
     module.run(workspace)
     output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -170,14 +170,14 @@ def test_split_zero():
 
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
-        cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
+        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
     )
     assert count == 0
     for feature_name in (
-        cellprofiler.measurement.M_LOCATION_CENTER_X,
-        cellprofiler.measurement.M_LOCATION_CENTER_Y,
+        cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+        cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
     ):
         values = m.get_current_measurement(OUTPUT_OBJECTS_NAME, feature_name)
         assert len(values) == 0
@@ -191,33 +191,33 @@ def test_split_zero():
     for object_name, feature_name, coltype in (
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS_NAME,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
     ):
         assert any(
@@ -227,7 +227,7 @@ def test_split_zero():
             ]
         )
     categories = module.get_categories(
-        workspace.pipeline, cellprofiler.measurement.IMAGE
+        workspace.pipeline, cellprofiler_core.measurement.IMAGE
     )
     assert len(categories) == 1
     assert categories[0] == "Count"
@@ -240,7 +240,7 @@ def test_split_zero():
     assert len(categories) == 1
     assert categories[0] == "Children"
     f = module.get_measurements(
-        workspace.pipeline, cellprofiler.measurement.IMAGE, "Count"
+        workspace.pipeline, cellprofiler_core.measurement.IMAGE, "Count"
     )
     assert len(f) == 1
     assert f[0] == OUTPUT_OBJECTS_NAME
@@ -270,15 +270,15 @@ def test_split_one():
 
     assert isinstance(workspace, cellprofiler.workspace.Workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
-        cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
+        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
     )
     assert count == 1
     for feature_name, value in (
-        (cellprofiler.measurement.M_LOCATION_CENTER_X, 5),
-        (cellprofiler.measurement.M_LOCATION_CENTER_Y, 3),
-        (cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME, 1),
+        (cellprofiler_core.measurement.M_LOCATION_CENTER_X, 5),
+        (cellprofiler_core.measurement.M_LOCATION_CENTER_Y, 3),
+        (cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS_NAME, 1),
     ):
         values = m.get_current_measurement(OUTPUT_OBJECTS_NAME, feature_name)
         assert len(values) == 1
@@ -286,7 +286,7 @@ def test_split_one():
 
     values = m.get_current_measurement(
         INPUT_OBJECTS_NAME,
-        cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+        cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
     )
     assert len(values) == 1
     assert values[0] == 1
@@ -308,13 +308,13 @@ def test_split_one_into_two():
     assert numpy.all(labels_out == expected)
     m = workspace.measurements
     values = m.get_current_measurement(
-        OUTPUT_OBJECTS_NAME, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME
+        OUTPUT_OBJECTS_NAME, cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS_NAME
     )
     assert len(values) == 2
     assert numpy.all(values == 1)
     values = m.get_current_measurement(
         INPUT_OBJECTS_NAME,
-        cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+        cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
     )
     assert len(values) == 1
     assert values[0] == 2

@@ -67,11 +67,11 @@ import re
 import centrosome.outline
 
 import cellprofiler_core.image as cpi
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.measurement import (
+from cellprofiler_core.measurement import (
     C_LOCATION,
     C_NUMBER,
     C_COUNT,
@@ -79,7 +79,7 @@ from cellprofiler.measurement import (
     FTR_CENTER_Y,
     FTR_OBJECT_NUMBER,
 )
-from cellprofiler.measurement import (
+from cellprofiler_core.measurement import (
     C_OBJECTS_FILE_NAME,
     C_OBJECTS_URL,
     C_PATH_NAME,

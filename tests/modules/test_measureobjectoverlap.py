@@ -3,7 +3,7 @@ import numpy.random
 import scipy.ndimage
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureobjectoverlap
 import cellprofiler.object
@@ -64,7 +64,7 @@ def make_obj_workspace(ground_truth_obj, id_obj, ground_truth, id):
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -83,8 +83,8 @@ def test_get_measurement_columns():
     assert len(columns) == len(set([x[1] for x in columns]))
     # All columns should be floats and done on images
     x = columns[-1]
-    assert all([x[0] == cellprofiler.measurement.IMAGE])
-    assert all([x[2] == cellprofiler.measurement.COLTYPE_FLOAT])
+    assert all([x[0] == cellprofiler_core.measurement.IMAGE])
+    assert all([x[2] == cellprofiler_core.measurement.COLTYPE_FLOAT])
     for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
         field = "_".join(
             (
@@ -107,7 +107,7 @@ def test_get_measurement_scales():
 
     scales = module.get_measurement_scales(
         workspace.pipeline,
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
         cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
         None,
@@ -129,7 +129,7 @@ def test_test_measure_overlap_no_objects():
     m = workspace.measurements
     for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
         mname = module.measurement_name(feature)
-        value = m[cellprofiler.measurement.IMAGE, mname, 1]
+        value = m[cellprofiler_core.measurement.IMAGE, mname, 1]
         if feature == cellprofiler.modules.measureobjectoverlap.FTR_TRUE_NEG_RATE:
             assert value == 1
         elif feature == cellprofiler.modules.measureobjectoverlap.FTR_FALSE_POS_RATE:
@@ -172,7 +172,7 @@ def test_test_measure_overlap_objects():
     module.wants_emd.value = False
     module.run(workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
 
 
 def test_test_objects_rand_index():

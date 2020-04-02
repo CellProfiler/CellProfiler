@@ -9,7 +9,7 @@ import cellprofiler.gui.figure
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.identify
 import cellprofiler.preferences
 
@@ -623,7 +623,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -639,8 +639,8 @@ class ViewWorkspace(object):
 
             value = m[object_name, feature]
             if object_name in (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.EXPERIMENT,
             ):
                 if isinstance(value, int):
                     fmt = "%s: %d"
@@ -655,8 +655,8 @@ class ViewWorkspace(object):
                         [
                             not m.has_feature(object_name, lf)
                             for lf in (
-                                cellprofiler.measurement.M_LOCATION_CENTER_X,
-                                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
                             )
                         ]
                     ):
@@ -673,8 +673,8 @@ class ViewWorkspace(object):
             x, y = [
                 m[object_name, ftr]
                 for ftr in (
-                    cellprofiler.measurement.M_LOCATION_CENTER_X,
-                    cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                    cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                    cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
                 )
             ]
             for i in range(len(x)):

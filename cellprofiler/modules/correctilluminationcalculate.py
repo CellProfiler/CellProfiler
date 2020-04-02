@@ -59,7 +59,7 @@ from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler_core.image as cpi
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps

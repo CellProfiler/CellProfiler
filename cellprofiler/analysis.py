@@ -20,7 +20,7 @@ import zmq
 
 import cellprofiler
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.preferences
 import cellprofiler.workspace
 from cellprofiler.utilities.zmqrequest import (
@@ -73,7 +73,7 @@ class Analysis:
         to measurements_filename, optionally starting with previous
         measurements."""
         self.pipeline = pipeline
-        initial_measurements = cellprofiler.measurement.Measurements(
+        initial_measurements = cellprofiler_core.measurement.Measurements(
             copy=initial_measurements
         )
         self.initial_measurements_buf = initial_measurements.file_contents()
@@ -339,10 +339,10 @@ class AnalysisRunner:
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cellprofiler.measurement.Measurements(
+                    initial_measurements = cellprofiler_core.measurement.Measurements(
                         filename=filename, mode="r"
                     )
-                    measurements = cellprofiler.measurement.Measurements(
+                    measurements = cellprofiler_core.measurement.Measurements(
                         image_set_start=None, copy=initial_measurements, mode="a"
                     )
                 finally:
@@ -352,7 +352,7 @@ class AnalysisRunner:
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cellprofiler.measurement.Measurements(
+                measurements = cellprofiler_core.measurement.Measurements(
                     image_set_start=None, filename=self.output_path, mode="a"
                 )
             # The shared dicts are needed in jobserver()
@@ -384,19 +384,19 @@ class AnalysisRunner:
                 overwrite = True
             if has_groups and not overwrite:
                 if not measurements.has_feature(
-                    cellprofiler.measurement.IMAGE, self.STATUS
+                    cellprofiler_core.measurement.IMAGE, self.STATUS
                 ):
                     overwrite = True
                 else:
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.GROUP_NUMBER,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.GROUP_NUMBER,
                             image_number,
                         ]
                         status = measurements[
-                            cellprofiler.measurement.IMAGE, self.STATUS, image_number
+                            cellprofiler_core.measurement.IMAGE, self.STATUS, image_number
                         ]
                         if status != self.STATUS_DONE:
                             group_status[group_number] = self.STATUS_UNPROCESSED
@@ -410,14 +410,14 @@ class AnalysisRunner:
                     overwrite
                     or (
                         not measurements.has_measurements(
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             self.STATUS,
                             image_set_number,
                         )
                     )
                     or (
                         measurements[
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             self.STATUS,
                             image_set_number,
                         ]
@@ -427,15 +427,15 @@ class AnalysisRunner:
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_NUMBER,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_NUMBER,
                         image_set_number,
                     ]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
                     measurements[
-                        cellprofiler.measurement.IMAGE, self.STATUS, image_set_number
+                        cellprofiler_core.measurement.IMAGE, self.STATUS, image_set_number
                     ] = self.STATUS_UNPROCESSED
                     new_image_sets_to_process.append(image_set_number)
             image_sets_to_process = new_image_sets_to_process
@@ -447,13 +447,13 @@ class AnalysisRunner:
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
                     group_number = measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_NUMBER,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_NUMBER,
                         image_set_number,
                     ]
                     group_index = measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_INDEX,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_INDEX,
                         image_set_number,
                     ]
                     job_groups[group_number] = job_groups.get(group_number, []) + [
@@ -497,7 +497,7 @@ class AnalysisRunner:
                 while not self.received_measurements_queue.empty():
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
-                    recd_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+                    recd_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                         buf
                     )
                     self.copy_recieved_measurements(
@@ -511,7 +511,7 @@ class AnalysisRunner:
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
                         measurements[
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             self.STATUS,
                             int(image_set_number),
                         ] = self.STATUS_IN_PROCESS
@@ -520,7 +520,7 @@ class AnalysisRunner:
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         self.STATUS,
                         int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
@@ -538,7 +538,7 @@ class AnalysisRunner:
                 # check progress and report
                 counts = collections.Counter(
                     measurements[
-                        cellprofiler.measurement.IMAGE, self.STATUS, image_set_number
+                        cellprofiler_core.measurement.IMAGE, self.STATUS, image_set_number
                     ]
                     for image_set_number in image_sets_to_process
                 )
@@ -594,22 +594,22 @@ class AnalysisRunner:
         """
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
-            if o == cellprofiler.measurement.EXPERIMENT:
+            if o == cellprofiler_core.measurement.EXPERIMENT:
                 continue  # Written during prepare_run / post_run
-            elif o == cellprofiler.measurement.IMAGE:
+            elif o == cellprofiler_core.measurement.IMAGE:
                 # Some have been previously written. It's worth the time
                 # to check values and only write changes
                 for feature in recd_measurements.get_feature_names(o):
                     if not measurements.has_feature(
-                        cellprofiler.measurement.IMAGE, feature
+                        cellprofiler_core.measurement.IMAGE, feature
                     ):
                         f_image_numbers = image_numbers
                     else:
                         local_values = measurements[
-                            cellprofiler.measurement.IMAGE, feature, image_numbers
+                            cellprofiler_core.measurement.IMAGE, feature, image_numbers
                         ]
                         remote_values = recd_measurements[
-                            cellprofiler.measurement.IMAGE, feature, image_numbers
+                            cellprofiler_core.measurement.IMAGE, feature, image_numbers
                         ]
                         f_image_numbers = [
                             i
@@ -633,7 +633,7 @@ class AnalysisRunner:
                     ]
         for image_set_number in image_numbers:
             measurements[
-                cellprofiler.measurement.IMAGE, self.STATUS, image_set_number
+                cellprofiler_core.measurement.IMAGE, self.STATUS, image_set_number
             ] = self.STATUS_DONE
 
     def jobserver(self, analysis_id, start_signal):

@@ -10,7 +10,7 @@ import skimage.filters.rank
 import skimage.morphology
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.threshold
 import cellprofiler.object
@@ -38,7 +38,7 @@ def make_workspace(image, mask=None, dimensions=2):
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     image_set.add(
@@ -295,8 +295,8 @@ def test_otsu3_low():
     module.run(workspace)
     m = workspace.measurements
     m_threshold = m[
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
 
@@ -326,8 +326,8 @@ def test_otsu3_high():
     module.run(workspace)
     m = workspace.measurements
     m_threshold = m[
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
 

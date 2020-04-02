@@ -4,7 +4,7 @@ import centrosome.threshold
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadsingleimage
 import cellprofiler.modules.measureimagequality
@@ -43,7 +43,7 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace
@@ -75,10 +75,10 @@ def test_zeros():
         ("ImageQuality_MinIntensity_my_image", 0),
     ):
         assert m.has_current_measurements(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         ), ("Missing feature %s" % feature_name)
         m_value = m.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         )
         if not value is None:
             assert m_value == value, "Measured value, %f, for feature %s was not %f" % (
@@ -90,7 +90,7 @@ def test_zeros():
 
 
 def features_and_columns_match(
-    measurements, module, object_name=cellprofiler.measurement.IMAGE, pipeline=None
+    measurements, module, object_name=cellprofiler_core.measurement.IMAGE, pipeline=None
 ):
     assert object_name in measurements.get_object_names()
     features = measurements.get_feature_names(object_name)
@@ -105,9 +105,9 @@ def features_and_columns_match(
             column[1],
             features,
         )
-        assert column[2] == cellprofiler.measurement.COLTYPE_FLOAT, (
+        assert column[2] == cellprofiler_core.measurement.COLTYPE_FLOAT, (
             "features_and_columns_match, %s type not %s"
-            % (column[2], cellprofiler.measurement.COLTYPE_FLOAT)
+            % (column[2], cellprofiler_core.measurement.COLTYPE_FLOAT)
         )
 
 
@@ -137,10 +137,10 @@ def test_zeros_and_mask():
         ("ImageQuality_MinIntensity_my_image", 0),
     ):
         assert m.has_current_measurements(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         ), ("Missing feature %s" % feature_name)
         m_value = m.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         )
         assert m_value == value, "Measured value, %f, for feature %s was not %f" % (
             m_value,
@@ -177,15 +177,15 @@ def test_image_blur():
     ):
         if value is None:
             assert not m.has_current_measurements(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             ), ("Feature %s should not be present" % feature_name)
         else:
             assert m.has_current_measurements(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             ), ("Missing feature %s" % feature_name)
 
             m_value = m.get_current_measurement(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             )
             assert round(abs(m_value - value), 2) == 0, (
                 "Measured value, %f, for feature %s was not %f"
@@ -216,7 +216,7 @@ def test_local_focus_score():
     q.run(workspace)
     m = workspace.measurements
     value = m.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "ImageQuality_LocalFocusScore_my_image_500"
+        cellprofiler_core.measurement.IMAGE, "ImageQuality_LocalFocusScore_my_image_500"
     )
     assert round(abs(value - expected_value), 3) == 0
 
@@ -239,7 +239,7 @@ def test_focus_score_with_mask():
     q.run(workspace)
     m = workspace.measurements
     value = m.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "ImageQuality_FocusScore_my_image"
+        cellprofiler_core.measurement.IMAGE, "ImageQuality_FocusScore_my_image"
     )
     assert round(abs(value - expected_value), 3) == 0
 
@@ -263,7 +263,7 @@ def test_local_focus_score_with_mask():
     q.run(workspace)
     m = workspace.measurements
     value = m.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "ImageQuality_LocalFocusScore_my_image_500"
+        cellprofiler_core.measurement.IMAGE, "ImageQuality_LocalFocusScore_my_image_500"
     )
     assert round(abs(value - expected_value), 3) == 0
 
@@ -286,18 +286,18 @@ def test_saturation():
         "ImageQuality_LocalFocusScore_my_image_20",
     ):
         assert not m.has_current_measurements(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         ), ("%s should not be present" % feature_name)
     for (feature_name, expected_value) in (
         ("ImageQuality_PercentMaximal_my_image", 25),
         ("ImageQuality_PercentMinimal_my_image", 75),
     ):
-        assert m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
         assert (
             round(
                 abs(
                     m.get_current_measurement(
-                        cellprofiler.measurement.IMAGE, feature_name
+                        cellprofiler_core.measurement.IMAGE, feature_name
                     )
                     - expected_value
                 ),
@@ -326,7 +326,7 @@ def test_maximal():
             abs(
                 expected_value
                 - m.get_current_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "ImageQuality_PercentMaximal_my_image",
                 )
             ),
@@ -359,25 +359,25 @@ def test_saturation_mask():
         "ImageQuality_LocalFocusScore_my_image_20",
     ):
         assert not m.has_current_measurements(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         ), ("%s should not be present" % feature_name)
     for (feature_name, expected_value) in (
         ("ImageQuality_PercentMaximal_my_image", 100.0 / 3),
         ("ImageQuality_PercentMinimal_my_image", 200.0 / 3),
     ):
-        assert m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
         print(
             (
                 feature_name,
                 expected_value,
-                m.get_current_measurement(cellprofiler.measurement.IMAGE, feature_name),
+                m.get_current_measurement(cellprofiler_core.measurement.IMAGE, feature_name),
             )
         )
         assert (
             round(
                 abs(
                     m.get_current_measurement(
-                        cellprofiler.measurement.IMAGE, feature_name
+                        cellprofiler_core.measurement.IMAGE, feature_name
                     )
                     - expected_value
                 ),
@@ -407,7 +407,7 @@ def test_maximal_mask():
             abs(
                 expected_value
                 - m.get_current_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "ImageQuality_PercentMaximal_my_image",
                 )
             ),
@@ -467,7 +467,7 @@ def test_threshold():
         "ImageQuality_PercentMaximal_my_image",
     ):
         assert not m.has_current_measurements(
-            cellprofiler.measurement.IMAGE, feature_name
+            cellprofiler_core.measurement.IMAGE, feature_name
         )
     for tm, idx in zip(
         centrosome.threshold.TM_GLOBAL_METHODS,
@@ -479,7 +479,7 @@ def test_threshold():
             feature_name = "ImageQuality_ThresholdMoG_my_image_20"
         else:
             feature_name = "ImageQuality_Threshold%s_my_image" % tm.split(" ")[0]
-        assert m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
     features_and_columns_match(m, q)
 
 
@@ -493,13 +493,13 @@ def test_experiment_threshold():
         module, cellprofiler.modules.measureimagequality.MeasureImageQuality
     )
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     image_name = module.image_groups[0].image_names.get_selections()[0]
     feature = (
         module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
     )
     data = numpy.random.uniform(size=100)
-    m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, data.tolist())
+    m.add_all_measurements(cellprofiler_core.measurement.IMAGE, feature, data.tolist())
     module.post_run(workspace)
 
     # Check threshold algorithms
@@ -535,7 +535,7 @@ def test_experiment_threshold_cycle_skipping():
         module, cellprofiler.modules.measureimagequality.MeasureImageQuality
     )
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     image_name = module.image_groups[0].image_names.get_selections()[0]
     feature = (
         module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
@@ -551,10 +551,10 @@ def test_experiment_threshold_cycle_skipping():
     for e in eraser:
         dlist[e] = None
 
-    m.add_all_measurements(cellprofiler.measurement.IMAGE, feature, dlist)
+    m.add_all_measurements(cellprofiler_core.measurement.IMAGE, feature, dlist)
     module.post_run(workspace)
     features_and_columns_match(
-        m, module, cellprofiler.measurement.EXPERIMENT, pipeline=workspace.pipeline
+        m, module, cellprofiler_core.measurement.EXPERIMENT, pipeline=workspace.pipeline
     )
 
     # Check threshold algorithms
@@ -606,7 +606,7 @@ def test_use_all_thresholding_methods():
         "ImageQuality_ThresholdKapur_my_image",
         "ImageQuality_ThresholdRidlerCalvard_my_image",
     ]:
-        assert m.has_current_measurements(cellprofiler.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
     features_and_columns_match(m, q)
 
 
@@ -753,11 +753,11 @@ def test_intensity_image():
     q.run(workspace)
     m = workspace.measurements
     assert m.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "ImageQuality_TotalIntensity_my_image"
+        cellprofiler_core.measurement.IMAGE, "ImageQuality_TotalIntensity_my_image"
     ) == numpy.sum(pixels)
     assert (
         m.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "ImageQuality_MeanIntensity_my_image"
+            cellprofiler_core.measurement.IMAGE, "ImageQuality_MeanIntensity_my_image"
         )
         == numpy.sum(pixels) / 100.0
     )
@@ -805,7 +805,7 @@ def test_check_image_groups():
             ("ImageQuality_PercentMinimal_my_image%s" % i),
         ):
             assert m.has_current_measurements(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             ), ("Missing feature %s" % feature_name)
 
         for feature_name in (
@@ -814,7 +814,7 @@ def test_check_image_groups():
             ("ImageQuality_PowerLogLogSlope_my_image%s" % i),
         ):
             assert not m.has_current_measurements(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             ), ("Erroneously present feature %s" % feature_name)
     for i in [3, 4]:
         for feature_name in (
@@ -823,14 +823,14 @@ def test_check_image_groups():
             ("ImageQuality_PowerLogLogSlope_my_image%s" % i),
         ):
             assert m.has_current_measurements(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             ), ("Missing feature %s" % feature_name)
         for feature_name in (
             ("ImageQuality_PercentMaximal_my_image%s" % i),
             ("ImageQuality_PercentMinimal_my_image%s" % i),
         ):
             assert not m.has_current_measurements(
-                cellprofiler.measurement.IMAGE, feature_name
+                cellprofiler_core.measurement.IMAGE, feature_name
             ), ("Erroneously present feature %s" % feature_name)
 
 
@@ -930,11 +930,11 @@ def test_volumetric_measurements():
 
     for feature, value in list(expected.items()):
         assert workspace.measurements.has_current_measurements(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         actual = workspace.measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         numpy.testing.assert_almost_equal(actual, value, decimal=5)

@@ -31,7 +31,7 @@ import numpy
 import skimage.exposure
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -271,7 +271,7 @@ Enter the value to use as the divisor for the final image.
 
         self.divisor_measurement = cellprofiler.setting.Measurement(
             "Divisor measurement",
-            lambda: cellprofiler.measurement.IMAGE,
+            lambda: cellprofiler_core.measurement.IMAGE,
             doc="""\
 *(Used only if “%(M_DIVIDE_BY_MEASUREMENT)s” is selected)*
 

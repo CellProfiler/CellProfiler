@@ -3,7 +3,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.displaydataonimage
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -133,7 +133,7 @@ def make_workspace(measurement, labels=None, image=None):
     module.image_name.value = INPUT_IMAGE_NAME
     module.display_image.value = OUTPUT_IMAGE_NAME
     module.objects_name.value = OBJECTS_NAME
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
 
     if labels is None:
         module.objects_or_image.value = cellprofiler.modules.displaydataonimage.OI_IMAGE

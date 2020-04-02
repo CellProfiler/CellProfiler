@@ -8,7 +8,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadsingleimage
@@ -229,7 +229,7 @@ class TestLoadSingleImage(
             module,
             image_set_list.get_image_set(0),
             cellprofiler.object.ObjectSet(),
-            cellprofiler.measurement.Measurements(),
+            cellprofiler_core.measurement.Measurements(),
             image_set_list,
         )
         return workspace, module
@@ -243,10 +243,10 @@ class TestLoadSingleImage(
         module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         assert m.image_set_count == 1
         f = m.get_all_measurements(
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "_".join(
                 (cellprofiler.modules.loadsingleimage.C_FILE_NAME, get_image_name(0))
             ),
@@ -254,7 +254,7 @@ class TestLoadSingleImage(
         assert len(f) == 1
         assert f[0] == file_name
         p = m.get_all_measurements(
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "_".join(
                 (cellprofiler.modules.loadsingleimage.C_PATH_NAME, get_image_name(0))
             ),
@@ -262,7 +262,7 @@ class TestLoadSingleImage(
         assert len(p) == 1
         assert p[0] == test_path
         s = m.get_all_measurements(
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "_".join(
                 (cellprofiler.modules.loadsingleimage.C_SCALING, get_image_name(0))
             ),
@@ -270,7 +270,7 @@ class TestLoadSingleImage(
         assert len(s) == 1
         assert s[0] == 4095
         md = m.get_all_measurements(
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "_".join(
                 (cellprofiler.modules.loadsingleimage.C_MD5_DIGEST, get_image_name(0))
             ),
@@ -320,7 +320,7 @@ class TestLoadSingleImage(
         li.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline,
             lsi,
@@ -340,8 +340,8 @@ class TestLoadSingleImage(
         #
         # Are the measurements populated?
         #
-        m_file = "_".join((cellprofiler.measurement.C_FILE_NAME, get_image_name(0)))
-        assert m[cellprofiler.measurement.IMAGE, m_file, 2] == filename
+        m_file = "_".join((cellprofiler_core.measurement.C_FILE_NAME, get_image_name(0)))
+        assert m[cellprofiler_core.measurement.IMAGE, m_file, 2] == filename
         #
         # Can we retrieve the image?
         #
@@ -354,7 +354,7 @@ class TestLoadSingleImage(
         assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
         columns = module.get_measurement_columns(workspace.pipeline)
         assert len(columns) == 12
-        assert [c[0] == cellprofiler.measurement.IMAGE for c in columns]
+        assert [c[0] == cellprofiler_core.measurement.IMAGE for c in columns]
         for image_name in [get_image_name(i) for i in range(2)]:
             for feature in (
                 cellprofiler.modules.loadsingleimage.C_FILE_NAME,
@@ -374,7 +374,7 @@ class TestLoadSingleImage(
         categories = module.get_categories(workspace.pipeline, "Foo")
         assert len(categories) == 0
         categories = module.get_categories(
-            workspace.pipeline, cellprofiler.measurement.IMAGE
+            workspace.pipeline, cellprofiler_core.measurement.IMAGE
         )
         assert len(categories) == 6
         for category in (
@@ -394,7 +394,7 @@ class TestLoadSingleImage(
         measurements = module.get_measurements(workspace.pipeline, "foo", "bar")
         assert len(measurements) == 0
         measurements = module.get_measurements(
-            workspace.pipeline, cellprofiler.measurement.IMAGE, "bar"
+            workspace.pipeline, cellprofiler_core.measurement.IMAGE, "bar"
         )
         assert len(measurements) == 0
         measurements = module.get_measurements(
@@ -402,12 +402,12 @@ class TestLoadSingleImage(
         )
         assert len(measurements) == 0
         categories = module.get_categories(
-            workspace.pipeline, cellprofiler.measurement.IMAGE
+            workspace.pipeline, cellprofiler_core.measurement.IMAGE
         )
         assert len(categories) == 6
         for category in categories:
             measurements = module.get_measurements(
-                workspace.pipeline, cellprofiler.measurement.IMAGE, category
+                workspace.pipeline, cellprofiler_core.measurement.IMAGE, category
             )
             for i in range(2):
                 assert get_image_name(i) in measurements
@@ -421,38 +421,38 @@ class TestLoadSingleImage(
         columns = module.get_measurement_columns(None)
         expected_columns = (
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME
                 + "_"
                 + OBJECTS_NAME,
             ),
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME
                 + "_"
                 + OBJECTS_NAME,
             ),
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_COUNT + "_" + OBJECTS_NAME,
             ),
             (
                 OBJECTS_NAME,
-                cellprofiler.measurement.C_LOCATION
+                cellprofiler_core.measurement.C_LOCATION
                 + "_"
-                + cellprofiler.measurement.FTR_CENTER_X,
+                + cellprofiler_core.measurement.FTR_CENTER_X,
             ),
             (
                 OBJECTS_NAME,
-                cellprofiler.measurement.C_LOCATION
+                cellprofiler_core.measurement.C_LOCATION
                 + "_"
-                + cellprofiler.measurement.FTR_CENTER_Y,
+                + cellprofiler_core.measurement.FTR_CENTER_Y,
             ),
             (
                 OBJECTS_NAME,
-                cellprofiler.measurement.C_NUMBER
+                cellprofiler_core.measurement.C_NUMBER
                 + "_"
-                + cellprofiler.measurement.FTR_OBJECT_NUMBER,
+                + cellprofiler_core.measurement.FTR_OBJECT_NUMBER,
             ),
         )
         for expected_column in expected_columns:
@@ -479,9 +479,9 @@ class TestLoadSingleImage(
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, expected_categories in (
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 (
-                    cellprofiler.measurement.C_COUNT,
+                    cellprofiler_core.measurement.C_COUNT,
                     cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
                     cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
                 ),
@@ -489,8 +489,8 @@ class TestLoadSingleImage(
             (
                 OBJECTS_NAME,
                 (
-                    cellprofiler.measurement.C_NUMBER,
-                    cellprofiler.measurement.C_LOCATION,
+                    cellprofiler_core.measurement.C_NUMBER,
+                    cellprofiler_core.measurement.C_LOCATION,
                 ),
             ),
         ):
@@ -511,31 +511,31 @@ class TestLoadSingleImage(
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, category, expected_features in (
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_COUNT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_COUNT,
                 (OBJECTS_NAME,),
             ),
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
                 (OBJECTS_NAME,),
             ),
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
                 (OBJECTS_NAME,),
             ),
             (
                 OBJECTS_NAME,
-                cellprofiler.measurement.C_NUMBER,
-                (cellprofiler.measurement.FTR_OBJECT_NUMBER,),
+                cellprofiler_core.measurement.C_NUMBER,
+                (cellprofiler_core.measurement.FTR_OBJECT_NUMBER,),
             ),
             (
                 OBJECTS_NAME,
-                cellprofiler.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_LOCATION,
                 (
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
                 ),
             ),
         ):
@@ -574,7 +574,7 @@ class TestLoadSingleImage(
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            m = cellprofiler.measurement.Measurements()
+            m = cellprofiler_core.measurement.Measurements()
             object_set = cellprofiler.object.ObjectSet()
             image_set_list = cellprofiler_core.image.ImageSetList()
             image_set = image_set_list.get_image_set(0)
@@ -588,7 +588,7 @@ class TestLoadSingleImage(
             numpy.testing.assert_equal(labels, o.segmented)
             assert (
                 m.get_current_image_measurement(
-                    "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
+                    "_".join((cellprofiler_core.measurement.C_COUNT, OBJECTS_NAME))
                 )
                 == 9
             )
@@ -615,9 +615,9 @@ class TestLoadSingleImage(
                 == directory
             )
             for feature in (
-                cellprofiler.measurement.M_LOCATION_CENTER_X,
-                cellprofiler.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
             ):
                 values = m.get_current_measurement(OBJECTS_NAME, feature)
                 assert len(values) == 9
@@ -660,7 +660,7 @@ class TestLoadSingleImage(
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            m = cellprofiler.measurement.Measurements()
+            m = cellprofiler_core.measurement.Measurements()
             object_set = cellprofiler.object.ObjectSet()
             image_set_list = cellprofiler_core.image.ImageSetList()
             image_set = image_set_list.get_image_set(0)

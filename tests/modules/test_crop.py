@@ -1,7 +1,7 @@
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.crop
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -45,19 +45,19 @@ def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=No
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     m.add_measurement(
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.GROUP_INDEX,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_INDEX,
         0,
         image_set_number=1,
     )
     m.add_measurement(
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.GROUP_NUMBER,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_NUMBER,
         1,
         image_set_number=1,
     )
@@ -80,8 +80,8 @@ def test_zeros():
     assert "Image" in m.get_object_names()
     columns = module.get_measurement_columns(workspace.pipeline)
     assert len(columns) == 2
-    assert all([x[0] == cellprofiler.measurement.IMAGE for x in columns])
-    assert all([x[2] == cellprofiler.measurement.COLTYPE_INTEGER for x in columns])
+    assert all([x[0] == cellprofiler_core.measurement.IMAGE for x in columns])
+    assert all([x[2] == cellprofiler_core.measurement.COLTYPE_INTEGER for x in columns])
     feature = "Crop_OriginalImageArea_%s" % OUTPUT_IMAGE
     assert feature in [x[1] for x in columns]
     assert feature in m.get_feature_names("Image")

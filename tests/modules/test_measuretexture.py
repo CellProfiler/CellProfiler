@@ -3,7 +3,7 @@ import io
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.measuretexture
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -27,7 +27,7 @@ def make_workspace(image, labels, convert=True, mask=None):
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     image_set.add(
@@ -256,7 +256,7 @@ def test_many_objects():
     all_columns = module.get_measurement_columns(workspace.pipeline)
     assert all(
         [
-            oname in (INPUT_OBJECTS_NAME, cellprofiler.measurement.IMAGE)
+            oname in (INPUT_OBJECTS_NAME, cellprofiler_core.measurement.IMAGE)
             for oname, feature, coltype in all_columns
         ]
     )
@@ -269,7 +269,7 @@ def test_many_objects():
         [
             any(
                 [
-                    oname == cellprofiler.measurement.IMAGE and feature == afeature
+                    oname == cellprofiler_core.measurement.IMAGE and feature == afeature
                     for oname, feature, coltype in all_columns
                 ]
             )
@@ -332,7 +332,7 @@ def test_categories():
     )
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
     for has_category, object_name in (
-        (True, cellprofiler.measurement.IMAGE),
+        (True, cellprofiler_core.measurement.IMAGE),
         (True, INPUT_OBJECTS_NAME),
         (False, "Foo"),
     ):
@@ -344,14 +344,14 @@ def test_categories():
             assert len(categories) == 0
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
     categories = module.get_categories(
-        workspace.pipeline, cellprofiler.measurement.IMAGE
+        workspace.pipeline, cellprofiler_core.measurement.IMAGE
     )
     assert len(categories) == 1
     categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
     assert len(categories) == 0
     module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
     categories = module.get_categories(
-        workspace.pipeline, cellprofiler.measurement.IMAGE
+        workspace.pipeline, cellprofiler_core.measurement.IMAGE
     )
     assert len(categories) == 0
     categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
@@ -363,7 +363,7 @@ def test_measurements():
         numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
     )
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-    for object_name in (cellprofiler.measurement.IMAGE, INPUT_OBJECTS_NAME):
+    for object_name in (cellprofiler_core.measurement.IMAGE, INPUT_OBJECTS_NAME):
         features = module.get_measurements(
             workspace.pipeline, object_name, cellprofiler.modules.measuretexture.TEXTURE
         )
@@ -382,7 +382,7 @@ def test_zeros():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for f in m.get_feature_names(INPUT_OBJECTS_NAME):
         if f.startswith(cellprofiler.modules.measuretexture.TEXTURE):
             values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
@@ -436,7 +436,7 @@ def test_no_image_measurements():
     module.run(workspace)
     m = workspace.measurements
     assert not m.has_feature(
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
     )
     assert m.has_feature(
@@ -454,7 +454,7 @@ def test_no_object_measurements():
     module.run(workspace)
     m = workspace.measurements
     assert m.has_feature(
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
     )
     assert not m.has_feature(
@@ -499,7 +499,7 @@ def test_volume_image_measurements():
 
     for direction in range(13):
         assert measurements.has_feature(
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Texture_AngularSecondMoment_{}_2_{:02d}".format(
                 INPUT_IMAGE_NAME, direction
             ),

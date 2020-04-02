@@ -12,7 +12,7 @@ import numpy
 import scipy.ndimage
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -553,7 +553,7 @@ radial degree you enter here.
         # for how this works.
         #
         # The first thing in the list is the object being measured. If it's
-        # the whole image, use cellprofiler.measurement.IMAGE as the name.
+        # the whole image, use cellprofiler_core.measurement.IMAGE as the name.
         #
         # The second thing is the measurement name.
         #
@@ -566,7 +566,7 @@ radial degree you enter here.
             (
                 input_object_name,
                 self.get_measurement_name(n, m),
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             )
             for n, m in self.get_zernike_indexes(True)
         ]

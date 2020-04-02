@@ -2,7 +2,7 @@ import numpy
 import pytest
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.correctilluminationapply
 import cellprofiler.modules.injectimage
 import cellprofiler.object
@@ -41,7 +41,7 @@ def test_divide():
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
@@ -87,9 +87,9 @@ def test_subtract():
         cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
@@ -135,9 +135,9 @@ def test_color_by_bw():
         cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
@@ -183,9 +183,9 @@ def test_color_by_color():
         cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )

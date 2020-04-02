@@ -4,7 +4,7 @@ import centrosome.threshold
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
 import cellprofiler.modules.threshold
@@ -115,7 +115,7 @@ def make_workspace(
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -141,7 +141,7 @@ def test_zeros_propagation():
     assert counts == 0
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name in (
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         OUTPUT_OBJECTS_NAME,
         INPUT_OBJECTS_NAME,
     ):
@@ -234,7 +234,7 @@ def test_two_objects_propagation_distance():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -309,7 +309,7 @@ def test_zeros_watershed_gradient():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -343,7 +343,7 @@ def test_one_object_watershed_gradient():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -395,7 +395,7 @@ def test_two_objects_watershed_gradient():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -466,7 +466,7 @@ def test_zeros_watershed_image():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -500,7 +500,7 @@ def test_one_object_watershed_image():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -545,7 +545,7 @@ def test_two_objects_watershed_image():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -608,7 +608,7 @@ def test_zeros_distance_n():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -641,7 +641,7 @@ def test_one_object_distance_n():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -683,7 +683,7 @@ def test_two_objects_distance_n():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -740,7 +740,7 @@ def test_measurements_no_new_primary():
         module.y_name.value = OUTPUT_OBJECTS_NAME
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
 
-        categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+        categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
         assert len(categories) == 2
         assert all([any([x == y for x in categories]) for y in ("Count", "Threshold")])
         categories = module.get_categories(None, OUTPUT_OBJECTS_NAME)
@@ -759,13 +759,13 @@ def test_measurements_no_new_primary():
         assert len(categories) == 0
 
         features = module.get_measurements(
-            None, cellprofiler.measurement.IMAGE, "Count"
+            None, cellprofiler_core.measurement.IMAGE, "Count"
         )
         assert len(features) == 1
         assert features[0] == OUTPUT_OBJECTS_NAME
 
         features = module.get_measurements(
-            None, cellprofiler.measurement.IMAGE, "Threshold"
+            None, cellprofiler_core.measurement.IMAGE, "Threshold"
         )
         threshold_features = (
             "OrigThreshold",
@@ -777,14 +777,14 @@ def test_measurements_no_new_primary():
         assert all([any([x == y for x in features]) for y in threshold_features])
         for threshold_feature in threshold_features:
             objects = module.get_measurement_objects(
-                None, cellprofiler.measurement.IMAGE, "Threshold", threshold_feature
+                None, cellprofiler_core.measurement.IMAGE, "Threshold", threshold_feature
             )
             assert len(objects) == 1
             assert objects[0] == OUTPUT_OBJECTS_NAME
 
         features = module.get_measurements(None, INPUT_OBJECTS_NAME, "Children")
         assert len(features) == 1
-        assert features[0] == cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
+        assert features[0] == cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
 
         features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Parent")
         assert len(features) == 1
@@ -805,47 +805,47 @@ def test_measurements_no_new_primary():
         columns = module.get_measurement_columns(None)
         expected_columns = [
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME),
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             )
             for f in threshold_features
         ]
         expected_columns += [
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Count_%s" % OUTPUT_OBJECTS_NAME,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 INPUT_OBJECTS_NAME,
                 "Children_%s_Count" % OUTPUT_OBJECTS_NAME,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 OUTPUT_OBJECTS_NAME,
                 "Location_Center_X",
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 OUTPUT_OBJECTS_NAME,
                 "Location_Center_Y",
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 OUTPUT_OBJECTS_NAME,
                 "Location_Center_Z",
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 OUTPUT_OBJECTS_NAME,
                 "Number_Object_Number",
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 OUTPUT_OBJECTS_NAME,
                 "Parent_%s" % INPUT_OBJECTS_NAME,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
         ]
         assert len(columns) == len(expected_columns)
@@ -866,7 +866,7 @@ def test_measurements_new_primary():
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.new_primary_objects_name.value = NEW_OBJECTS_NAME
 
-    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+    categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 2
     assert all([any([x == y for x in categories]) for y in ("Count", "Threshold")])
     categories = module.get_categories(None, OUTPUT_OBJECTS_NAME)
@@ -887,13 +887,13 @@ def test_measurements_new_primary():
         ]
     )
 
-    features = module.get_measurements(None, cellprofiler.measurement.IMAGE, "Count")
+    features = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Count")
     assert len(features) == 2
     assert OUTPUT_OBJECTS_NAME in features
     assert NEW_OBJECTS_NAME in features
 
     features = module.get_measurements(
-        None, cellprofiler.measurement.IMAGE, "Threshold"
+        None, cellprofiler_core.measurement.IMAGE, "Threshold"
     )
     threshold_features = (
         "OrigThreshold",
@@ -905,7 +905,7 @@ def test_measurements_new_primary():
     assert all([any([x == y for x in features]) for y in threshold_features])
     for threshold_feature in threshold_features:
         objects = module.get_measurement_objects(
-            None, cellprofiler.measurement.IMAGE, "Threshold", threshold_feature
+            None, cellprofiler_core.measurement.IMAGE, "Threshold", threshold_feature
         )
         assert len(objects) == 1
         assert objects[0] == OUTPUT_OBJECTS_NAME
@@ -916,8 +916,8 @@ def test_measurements_new_primary():
         [
             any([x == y for x in features])
             for y in (
-                cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
-                cellprofiler.measurement.FF_COUNT % NEW_OBJECTS_NAME,
+                cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
+                cellprofiler_core.measurement.FF_COUNT % NEW_OBJECTS_NAME,
             )
         ]
     )
@@ -944,40 +944,40 @@ def test_measurements_new_primary():
     columns = module.get_measurement_columns(None)
     expected_columns = [
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME),
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         )
         for f in threshold_features
     ]
     for oname in (NEW_OBJECTS_NAME, OUTPUT_OBJECTS_NAME):
         expected_columns += [
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_COUNT % oname,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_COUNT % oname,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 INPUT_OBJECTS_NAME,
                 "Children_%s_Count" % oname,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
-            (oname, "Location_Center_X", cellprofiler.measurement.COLTYPE_FLOAT),
-            (oname, "Location_Center_Y", cellprofiler.measurement.COLTYPE_FLOAT),
-            (oname, "Location_Center_Z", cellprofiler.measurement.COLTYPE_FLOAT),
-            (oname, "Number_Object_Number", cellprofiler.measurement.COLTYPE_INTEGER),
-            (oname, "Parent_Primary", cellprofiler.measurement.COLTYPE_INTEGER),
+            (oname, "Location_Center_X", cellprofiler_core.measurement.COLTYPE_FLOAT),
+            (oname, "Location_Center_Y", cellprofiler_core.measurement.COLTYPE_FLOAT),
+            (oname, "Location_Center_Z", cellprofiler_core.measurement.COLTYPE_FLOAT),
+            (oname, "Number_Object_Number", cellprofiler_core.measurement.COLTYPE_INTEGER),
+            (oname, "Parent_Primary", cellprofiler_core.measurement.COLTYPE_INTEGER),
         ]
     expected_columns += [
         (
             NEW_OBJECTS_NAME,
             "Children_%s_Count" % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
             "Parent_%s" % NEW_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
     ]
     assert len(columns) == len(expected_columns)
@@ -1030,7 +1030,7 @@ def test_filter_edge():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -1113,7 +1113,7 @@ def test_filter_unedited():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -1190,7 +1190,7 @@ def test_small():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -1259,7 +1259,7 @@ def test_small_touching():
     o_s.add_objects(objects, INPUT_OBJECTS_NAME)
     i_s = i_l.get_image_set(0)
     i_s.add(IMAGE_NAME, image)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects()
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
@@ -1337,7 +1337,7 @@ def test_relationships_zero():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     result = m.get_relationships(
         module.module_num,
         cellprofiler.modules.identifysecondaryobjects.R_PARENT,
@@ -1359,7 +1359,7 @@ def test_relationships_one():
     module.threshold.manual_threshold.value = 0.25
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     result = m.get_relationships(
         module.module_num,
         cellprofiler.modules.identifysecondaryobjects.R_PARENT,
@@ -1367,10 +1367,10 @@ def test_relationships_one():
         module.y_name.value,
     )
     assert len(result) == 1
-    assert result[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER][0] == 1
-    assert result[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER][0] == 1
-    assert result[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER][0] == 1
-    assert result[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER][0] == 1
+    assert result[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER][0] == 1
+    assert result[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER][0] == 1
+    assert result[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER][0] == 1
+    assert result[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER][0] == 1
 
 
 def test_relationships_missing():
@@ -1404,7 +1404,7 @@ def test_relationships_missing():
         module.threshold.manual_threshold.value = 0.25
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         result = m.get_relationships(
             module.module_num,
             cellprofiler.modules.identifysecondaryobjects.R_PARENT,
@@ -1416,13 +1416,13 @@ def test_relationships_missing():
             object_number = i + 1
             if object_number >= missing:
                 object_number += 1
-            assert result[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER][i] == 1
-            assert result[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER][i] == 1
+            assert result[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER][i] == 1
+            assert result[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER][i] == 1
             assert (
-                result[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER][i]
+                result[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER][i]
                 == object_number
             )
             assert (
-                result[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER][i]
+                result[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER][i]
                 == object_number
             )

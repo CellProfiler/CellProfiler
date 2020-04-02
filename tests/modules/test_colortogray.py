@@ -2,7 +2,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.colortogray
 import cellprofiler.modules.injectimage
 import cellprofiler.object
@@ -44,7 +44,7 @@ def test_combine():
     pipeline.add_module(ctg)
     pipeline.test_valid()
 
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
@@ -91,7 +91,7 @@ def test_split_all():
     pipeline.add_module(ctg)
     pipeline.test_valid()
 
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
@@ -170,7 +170,7 @@ def test_combine_channels():
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)
@@ -214,7 +214,7 @@ def test_split_channels():
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)

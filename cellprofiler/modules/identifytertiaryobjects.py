@@ -3,8 +3,8 @@
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
@@ -345,12 +345,12 @@ but the results will be zero or not-a-number (NaN).
         ):
             m.add_measurement(
                 self.subregion_objects_name.value,
-                cellprofiler.measurement.FF_PARENT % parent_objects_name.value,
+                cellprofiler_core.measurement.FF_PARENT % parent_objects_name.value,
                 parents_of,
             )
             m.add_measurement(
                 parent_objects_name.value,
-                cellprofiler.measurement.FF_CHILDREN_COUNT
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT
                 % self.subregion_objects_name.value,
                 child_count,
             )
@@ -441,12 +441,12 @@ but the results will be zero or not-a-number (NaN).
             columns += [
                 (
                     parent,
-                    cellprofiler.measurement.FF_CHILDREN_COUNT % subregion_name,
+                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % subregion_name,
                     cpmeas.COLTYPE_INTEGER,
                 ),
                 (
                     subregion_name,
-                    cellprofiler.measurement.FF_PARENT % parent,
+                    cellprofiler_core.measurement.FF_PARENT % parent,
                     cpmeas.COLTYPE_INTEGER,
                 ),
             ]

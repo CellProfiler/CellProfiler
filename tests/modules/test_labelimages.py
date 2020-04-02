@@ -1,7 +1,7 @@
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.labelimages
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -54,7 +54,7 @@ def make_workspace(image_set_count):
         module,
         image_set_list.get_image_set(0),
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -66,7 +66,7 @@ def test_label_plate_by_row():
     nimagesets = 96 * nsites
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 8
     module.column_count.value = 12
@@ -77,19 +77,19 @@ def test_label_plate_by_row():
             measurements.next_image_set()
         module.run(workspace)
     sites = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_SITE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_SITE
     )
     rows = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_ROW
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_ROW
     )
     columns = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_COLUMN
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_COLUMN
     )
     plates = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_PLATE
     )
     wells = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_WELL
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_WELL
     )
     for i in range(nimagesets):
         assert sites[i] == (i % 6) + 1
@@ -107,7 +107,7 @@ def test_label_plate_by_column():
     nimagesets = 96 * nsites
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 8
     module.column_count.value = 12
@@ -118,19 +118,19 @@ def test_label_plate_by_column():
             measurements.next_image_set()
         module.run(workspace)
     sites = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_SITE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_SITE
     )
     rows = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_ROW
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_ROW
     )
     columns = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_COLUMN
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_COLUMN
     )
     plates = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_PLATE
     )
     wells = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_WELL
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_WELL
     )
     for i in range(nimagesets):
         assert sites[i] == (i % 6) + 1
@@ -148,7 +148,7 @@ def test_label_many_plates():
     nimagesets = 96 * nsites * nplates
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 8
     module.column_count.value = 12
@@ -159,19 +159,19 @@ def test_label_many_plates():
             measurements.next_image_set()
         module.run(workspace)
     sites = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_SITE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_SITE
     )
     rows = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_ROW
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_ROW
     )
     columns = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_COLUMN
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_COLUMN
     )
     plates = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_PLATE
     )
     wells = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_WELL
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_WELL
     )
     for i in range(nimagesets):
         assert sites[i] == 1
@@ -187,7 +187,7 @@ def test_multichar_row_names():
     nimagesets = 1000
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler.measurement.Measurements)
+    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
     assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 1000
     module.column_count.value = 1
@@ -198,19 +198,19 @@ def test_multichar_row_names():
             measurements.next_image_set()
         module.run(workspace)
     sites = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_SITE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_SITE
     )
     rows = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_ROW
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_ROW
     )
     columns = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_COLUMN
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_COLUMN
     )
     plates = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_PLATE
     )
     wells = measurements.get_all_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_WELL
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.M_WELL
     )
     abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     for i in range(nimagesets):

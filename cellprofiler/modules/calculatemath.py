@@ -61,9 +61,9 @@ import numpy as np
 import six
 
 import cellprofiler_core.module as cpm
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.setting as cps
-from cellprofiler.measurement import R_PARENT
+from cellprofiler_core.measurement import R_PARENT
 
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"

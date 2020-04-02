@@ -7,7 +7,7 @@ import unittest
 
 import h5py
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.pipeline
 import cellprofiler.workspace
 from cellprofiler.utilities.hdf5_dict import FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
@@ -30,7 +30,7 @@ class TestWorkspace(unittest.TestCase):
         """Make a very basic workspace file"""
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.init_modules()
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(pipeline, None, m, None, m, None)
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()

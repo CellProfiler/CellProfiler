@@ -6,7 +6,7 @@ import numpy
 import scipy.ndimage
 import skimage.segmentation
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -246,14 +246,14 @@ parents or children of the parent object.""",
 
             # Objects that are the parent of the parents
             grandparents = module.get_measurements(
-                pipeline, parent_name, cellprofiler.measurement.C_PARENT
+                pipeline, parent_name, cellprofiler_core.measurement.C_PARENT
             )
 
             step_parents.update(grandparents)
 
             # Objects that are the children of the parents
             siblings = module.get_measurements(
-                pipeline, parent_name, cellprofiler.measurement.C_CHILDREN
+                pipeline, parent_name, cellprofiler_core.measurement.C_CHILDREN
             )
 
             for sibling in siblings:
@@ -263,7 +263,7 @@ parents or children of the parent object.""",
                     sibling_name = match.groups()[0]
 
                     if parent_name in module.get_measurements(
-                        pipeline, sibling_name, cellprofiler.measurement.C_PARENT
+                        pipeline, sibling_name, cellprofiler_core.measurement.C_PARENT
                     ):
                         step_parents.add(sibling_name)
 
@@ -326,13 +326,13 @@ parents or children of the parent object.""",
 
         m.add_measurement(
             self.y_name.value,
-            cellprofiler.measurement.FF_PARENT % self.x_name.value,
+            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
             parents_of,
         )
 
         m.add_measurement(
             self.x_name.value,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
             child_count,
         )
 
@@ -345,7 +345,7 @@ parents or children of the parent object.""",
         if numpy.any(good_parents):
             m.add_relate_measurement(
                 self.module_num,
-                cellprofiler.measurement.R_PARENT,
+                cellprofiler_core.measurement.R_PARENT,
                 self.x_name.value,
                 self.y_name.value,
                 image_numbers,
@@ -356,7 +356,7 @@ parents or children of the parent object.""",
 
             m.add_relate_measurement(
                 self.module_num,
-                cellprofiler.measurement.R_CHILD,
+                cellprofiler_core.measurement.R_CHILD,
                 self.y_name.value,
                 self.x_name.value,
                 image_numbers,
@@ -674,13 +674,13 @@ parents or children of the parent object.""",
         """
         meas = workspace.measurements
 
-        parent_feature = cellprofiler.measurement.FF_PARENT % parent_name
+        parent_feature = cellprofiler_core.measurement.FF_PARENT % parent_name
 
         primary_parent = self.x_name.value
 
         sub_object_name = self.y_name.value
 
-        primary_parent_feature = cellprofiler.measurement.FF_PARENT % primary_parent
+        primary_parent_feature = cellprofiler_core.measurement.FF_PARENT % primary_parent
 
         if parent_feature in meas.get_feature_names(sub_object_name):
             parents_of = meas.get_current_measurement(sub_object_name, parent_feature)
@@ -739,7 +739,7 @@ parents or children of the parent object.""",
 
         return parents_of
 
-    ignore_features = set(cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
+    ignore_features = set(cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
         """Return True if aggregate measurements should be made on a feature
@@ -749,7 +749,7 @@ parents or children of the parent object.""",
         if feature_name.startswith(C_MEAN):
             return False
 
-        if feature_name.startswith(cellprofiler.measurement.C_PARENT):
+        if feature_name.startswith(cellprofiler_core.measurement.C_PARENT):
             return False
 
         if feature_name in self.ignore_features:
@@ -812,7 +812,7 @@ parents or children of the parent object.""",
                     (
                         self.y_name.value,
                         FF_CENTROID % parent_name,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     )
                 ]
 
@@ -822,7 +822,7 @@ parents or children of the parent object.""",
                     (
                         self.y_name.value,
                         FF_MINIMUM % parent_name,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     )
                 ]
 
@@ -847,13 +847,13 @@ parents or children of the parent object.""",
         columns = [
             (
                 self.y_name.value,
-                cellprofiler.measurement.FF_PARENT % self.x_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER
+                cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
+                cellprofiler_core.measurement.COLTYPE_INTEGER
             ),
             (
                 self.x_name.value,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                cellprofiler_core.measurement.COLTYPE_INTEGER
             )
         ]
 
@@ -867,7 +867,7 @@ parents or children of the parent object.""",
                 (
                     self.x_name.value,
                     FF_MEAN % (self.y_name.value, column[1]),
-                    cellprofiler.measurement.COLTYPE_FLOAT,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                 )
                 for column in child_columns
             ]
@@ -884,16 +884,16 @@ parents or children of the parent object.""",
 
         return [
             (
-                cellprofiler.measurement.R_PARENT,
+                cellprofiler_core.measurement.R_PARENT,
                 parent_name,
                 sub_object_name,
-                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+                cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             ),
             (
-                cellprofiler.measurement.R_CHILD,
+                cellprofiler_core.measurement.R_CHILD,
                 sub_object_name,
                 parent_name,
-                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+                cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             ),
         ]
 
@@ -909,12 +909,12 @@ parents or children of the parent object.""",
 
             if self.find_parent_child_distances != D_NONE:
                 result += [C_DISTANCE]
-        elif object_name == cellprofiler.measurement.IMAGE:
-            result += [cellprofiler.measurement.C_COUNT]
+        elif object_name == cellprofiler_core.measurement.IMAGE:
+            result += [cellprofiler_core.measurement.C_COUNT]
         elif object_name == self.output_child_objects_name.value:
             result += [
-                cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER,
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
             ]
         return result
 
@@ -949,20 +949,20 @@ parents or children of the parent object.""",
 
             return result
         elif object_name == self.output_child_objects_name.value:
-            if category == cellprofiler.measurement.C_LOCATION:
+            if category == cellprofiler_core.measurement.C_LOCATION:
                 return [
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
-                    cellprofiler.measurement.FTR_CENTER_Z,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_Z,
                 ]
 
-            if category == cellprofiler.measurement.C_NUMBER:
-                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            if category == cellprofiler_core.measurement.C_NUMBER:
+                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
         elif (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and self.wants_child_objects_saved.value
-            and category == cellprofiler.measurement.C_COUNT
+            and category == cellprofiler_core.measurement.C_COUNT
         ):
             return [self.output_child_objects_name.value]
 

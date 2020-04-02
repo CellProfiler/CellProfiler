@@ -4,8 +4,8 @@ import scipy.ndimage
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
-import cellprofiler.measurement
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.identifydeadworms
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -104,7 +104,7 @@ def make_workspace(pixel_data, mask=None):
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -115,7 +115,7 @@ def test_zeros():
     workspace, module = make_workspace(numpy.zeros((20, 10), bool))
     module.run(workspace)
     count = workspace.measurements.get_current_image_measurement(
-        "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
+        "_".join((cellprofiler_core.measurement.C_COUNT, OBJECTS_NAME))
     )
     assert count == 0
 
@@ -137,18 +137,18 @@ def test_one_worm():
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
-        "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
+        "_".join((cellprofiler_core.measurement.C_COUNT, OBJECTS_NAME))
     )
     assert count == 1
     x = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X
+        OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X
     )
     assert len(x) == 1
     assert round(abs(x[0] - 9.0), 1) == 0
     y = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y
+        OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y
     )
     assert len(y) == 1
     assert round(abs(y[0] - 10.0), 1) == 0
@@ -183,9 +183,9 @@ def test_crossing_worms():
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
-        "_".join((cellprofiler.measurement.C_COUNT, OBJECTS_NAME))
+        "_".join((cellprofiler_core.measurement.C_COUNT, OBJECTS_NAME))
     )
     assert count == 2
     a = m.get_current_measurement(
@@ -199,13 +199,13 @@ def test_crossing_worms():
     assert round(abs(a[order[0]] - 135), 0) == 0
     assert round(abs(a[order[1]] - 45), 0) == 0
     x = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X
+        OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X
     )
     assert len(x) == 2
     assert round(abs(x[order[0]] - 9.0), 0) == 0
     assert round(abs(x[order[1]] - 10.0), 0) == 0
     y = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y
+        OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y
     )
     assert len(y) == 2
     assert round(abs(y[order[0]] - 10.0), 0) == 0
@@ -220,28 +220,28 @@ def test_measurement_columns():
     expected = (
         (
             OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OBJECTS_NAME,
             cellprofiler.modules.identifydeadworms.M_ANGLE,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OBJECTS_NAME,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
     )
     assert len(columns) == len(expected)

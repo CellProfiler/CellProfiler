@@ -24,7 +24,7 @@ import numpy as np
 import scipy.ndimage as scind
 
 import cellprofiler_core.image as cpi
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 

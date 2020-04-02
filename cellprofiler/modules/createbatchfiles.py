@@ -35,13 +35,13 @@ import zlib
 
 import cellprofiler
 import cellprofiler_core.module as cpm
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 
-from cellprofiler.measurement import F_BATCH_DATA_H5, F_BATCH_DATA
+from cellprofiler_core.measurement import F_BATCH_DATA_H5, F_BATCH_DATA
 
 """# of settings aside from the mappings"""
 S_FIXED_COUNT = 8

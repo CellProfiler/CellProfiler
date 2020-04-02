@@ -1,6 +1,6 @@
 import io
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.images
 import cellprofiler.pipeline
 import cellprofiler.workspace
@@ -11,7 +11,7 @@ def setUp():
     # an HDF5 file.
     #
     temp_fd, temp_filename = tempfile.mkstemp(".h5")
-    measurements = cellprofiler.measurement.Measurements(filename=temp_filename)
+    measurements = cellprofiler_core.measurement.Measurements(filename=temp_filename)
     os.close(temp_fd)
 
 
@@ -103,7 +103,7 @@ def check(module, url, expected):
     pipeline.add_urls([url])
     module.set_module_num(1)
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, None)
     file_list = pipeline.get_filtered_file_list(workspace)
     if expected:

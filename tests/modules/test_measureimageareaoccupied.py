@@ -2,7 +2,7 @@ import numpy
 import six
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.measureimageareaoccupied
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -32,7 +32,7 @@ def make_workspace(labels, parent_image=None):
         module,
         image_set_list.get_image_set(0),
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace
@@ -52,7 +52,7 @@ def test_zeros():
     assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
     columns = module.get_measurement_columns(workspace.pipeline)
-    features = m.get_feature_names(cellprofiler.measurement.IMAGE)
+    features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
     assert len(columns) == len(features)
     for column in columns:
         assert column[1] in features
@@ -105,19 +105,19 @@ def test_get_measurement_columns():
     columns = module.get_measurement_columns(cellprofiler.pipeline.Pipeline())
     expected = (
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "AreaOccupied_AreaOccupied_%s" % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "AreaOccupied_Perimeter_%s" % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "AreaOccupied_TotalArea_%s" % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
     )
     assert len(columns) == len(expected)

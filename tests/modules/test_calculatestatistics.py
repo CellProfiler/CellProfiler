@@ -5,7 +5,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.calculatestatistics
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -392,7 +392,7 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
 
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     nimages = None
     for object_name in list(mdict.keys()):
         odict = mdict[object_name]
@@ -403,7 +403,7 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
             else:
                 assert nimages == len(odict[feature])
             if (
-                object_name == cellprofiler.measurement.IMAGE
+                object_name == cellprofiler_core.measurement.IMAGE
                 and feature in dose_measurements
             ):
                 if len(module.dose_values) > 1:
@@ -427,7 +427,7 @@ def test_NAN():
     z-factors are NAN too.
     """
     mdict = {
-        cellprofiler.measurement.IMAGE: {
+        cellprofiler_core.measurement.IMAGE: {
             "Metadata_Controls": [1, 0, -1],
             "Metadata_Doses": [0, 0.5, 1],
         },
@@ -442,7 +442,7 @@ def test_NAN():
     workspace, module = make_workspace(mdict, "Metadata_Controls", ["Metadata_Doses"])
     module.post_run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
         feature = "_".join((category, INPUT_OBJECTS, TEST_FTR))
         value = m.get_experiment_measurement(feature)
@@ -454,7 +454,7 @@ def test_make_path():
     # If the figure directory doesn't exist, it should be created
     #
     mdict = {
-        cellprofiler.measurement.IMAGE: {
+        cellprofiler_core.measurement.IMAGE: {
             "Metadata_Controls": [1, 0, -1],
             "Metadata_Doses": [0, 0.5, 1],
         },

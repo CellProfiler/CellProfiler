@@ -3,7 +3,7 @@ import pytest
 import scipy.sparse.coo
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.convertobjectstoimage
 import cellprofiler.object
@@ -221,7 +221,7 @@ def make_workspace_ijv():
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     objects = cellprofiler.object.Objects()

@@ -29,7 +29,7 @@ from future.standard_library import install_aliases
 
 import cellprofiler
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -52,9 +52,9 @@ logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 
 """The measurement name of the image number"""
-IMAGE_NUMBER = cellprofiler.measurement.IMAGE_NUMBER
-GROUP_NUMBER = cellprofiler.measurement.GROUP_NUMBER
-GROUP_INDEX = cellprofiler.measurement.GROUP_INDEX
+IMAGE_NUMBER = cellprofiler_core.measurement.IMAGE_NUMBER
+GROUP_NUMBER = cellprofiler_core.measurement.GROUP_NUMBER
+GROUP_INDEX = cellprofiler_core.measurement.GROUP_INDEX
 CURRENT = "Current"
 NUMBER_OF_IMAGE_SETS = "NumberOfImageSets"
 NUMBER_OF_MODULES = "NumberOfModules"
@@ -375,7 +375,7 @@ def add_all_measurements(handles, measurements):
     has_image_number = np.zeros(max_image_number + 1, bool)
     has_image_number[image_numbers] = True
     for object_name in object_names:
-        if object_name == cellprofiler.measurement.EXPERIMENT:
+        if object_name == cellprofiler_core.measurement.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
@@ -394,13 +394,13 @@ def add_all_measurements(handles, measurements):
                     feature_measurements[0, i - 1] = ddata
                 else:
                     feature_measurements[0, i - 1] = np.zeros(0)
-    if cellprofiler.measurement.EXPERIMENT in measurements.object_names:
+    if cellprofiler_core.measurement.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(
-            measurements.get_feature_names(cellprofiler.measurement.EXPERIMENT)
+            measurements.get_feature_names(cellprofiler_core.measurement.EXPERIMENT)
         )
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = np.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements[cellprofiler.measurement.EXPERIMENT][
+        npy_measurements[cellprofiler_core.measurement.EXPERIMENT][
             0, 0
         ] = experiment_measurements
         for field, feature_name in list(mapping.items()):
@@ -910,7 +910,7 @@ class Pipeline(object):
                 os.unlink(filename)
                 return
             else:
-                m = cellprofiler.measurement.load_measurements(filename)
+                m = cellprofiler_core.measurement.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
                 pipeline_text = pipeline_text
                 self.load(six.moves.StringIO(pipeline_text))
@@ -1412,11 +1412,11 @@ class Pipeline(object):
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         """
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         fd = six.moves.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(
-            cellprofiler.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.EXPERIMENT,
             M_USER_PIPELINE if user_pipeline else M_PIPELINE,
             fd.getvalue(),
             can_overwrite=True,
@@ -1745,7 +1745,7 @@ class Pipeline(object):
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cellprofiler_core.image.Image(input_pixels))
         object_set = cellprofiler.object.ObjectSet()
-        measurements = cellprofiler.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
 
         # Run the modules
         for module in self.modules():
@@ -1781,7 +1781,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cellprofiler.measurement.Measurements(
+        measurements = cellprofiler_core.measurement.Measurements(
             image_set_start=image_set_start,
             filename=measurements_filename,
             copy=initial_measurements,
@@ -1839,14 +1839,14 @@ class Pipeline(object):
                 if initial_measurements is not None and all(
                     [
                         initial_measurements.has_feature(
-                            cellprofiler.measurement.IMAGE, f
+                            cellprofiler_core.measurement.IMAGE, f
                         )
                         for f in (GROUP_NUMBER, GROUP_INDEX)
                     ]
                 ):
                     group_number, group_index = [
                         initial_measurements[
-                            cellprofiler.measurement.IMAGE, f, image_number
+                            cellprofiler_core.measurement.IMAGE, f, image_number
                         ]
                         for f in (GROUP_NUMBER, GROUP_INDEX)
                     ]
@@ -1903,7 +1903,7 @@ class Pipeline(object):
             assert isinstance(image_set_end, int), "Image set end must be an integer"
 
         if initial_measurements is None:
-            measurements = cellprofiler.measurement.Measurements(image_set_start)
+            measurements = cellprofiler_core.measurement.Measurements(image_set_start)
         else:
             measurements = initial_measurements
 
@@ -1942,12 +1942,12 @@ class Pipeline(object):
                         to_remove += list(grouping_image_numbers)
 
             if len(to_remove) > 0 and measurements.has_feature(
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER
             ):
                 for image_number in np.unique(to_remove):
                     measurements.remove_measurement(
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.IMAGE_NUMBER,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE_NUMBER,
                         image_number,
                     )
 
@@ -2221,10 +2221,10 @@ class Pipeline(object):
         """
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[
-            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER
         ]
         measurements.group_index = measurements[
-            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX
         ]
         object_set = cellprofiler.object.ObjectSet()
         image_set = measurements
@@ -2273,7 +2273,7 @@ class Pipeline(object):
                 )
                 if should_write_measurements:
                     measurements[
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
                 evt = RunExceptionEvent(exception, module, sys.exc_info()[2])
@@ -2303,11 +2303,11 @@ class Pipeline(object):
             #  have already completed. So we don't report them for it.
             if should_write_measurements:
                 measurements[
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "ModuleError_%02d%s" % (module.module_num, module.module_name),
                 ] = 0
                 measurements[
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "ExecutionTime_%02d%s" % (module.module_num, module.module_name),
                 ] = cpu_delta_secs
 
@@ -2397,7 +2397,7 @@ class Pipeline(object):
 
         Write the pipeline, version # and timestamp.
         """
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, cellprofiler.__version__)
         m.add_experiment_measurement(M_TIMESTAMP, datetime.datetime.now().isoformat())
@@ -2433,10 +2433,10 @@ class Pipeline(object):
             # Legacy - there may be cached group number/group index
             #          image measurements which may be incorrect.
             m.remove_measurement(
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX
             )
             m.remove_measurement(
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER
             )
         self.write_experiment_measurements(m)
 
@@ -2486,7 +2486,7 @@ class Pipeline(object):
             return False
 
         if not m.has_feature(
-            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER
         ):
             # Legacy pipelines don't populate group # or index
             # Nor do pipelines that don't use the Group module
@@ -2503,17 +2503,17 @@ class Pipeline(object):
                 group_indexes[iii] = np.arange(len(iii)) + 1
                 group_lengths[iii] = np.ones(len(iii), int) * len(iii)
             m.add_all_measurements(
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 group_numbers,
             )
             m.add_all_measurements(
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_INDEX,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_INDEX,
                 group_indexes,
             )
             m.add_all_measurements(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Group_Length",
                 group_lengths,
             )
@@ -2688,11 +2688,11 @@ class Pipeline(object):
         current_metadata = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            if object_name == cellprofiler.measurement.IMAGE and feature.startswith(
-                cellprofiler.measurement.C_METADATA
+            if object_name == cellprofiler_core.measurement.IMAGE and feature.startswith(
+                cellprofiler_core.measurement.C_METADATA
             ):
                 current_metadata.append(
-                    feature[(len(cellprofiler.measurement.C_METADATA) + 1) :]
+                    feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
                 )
 
         m = re.findall("\\(\\?[<](.+?)[>]\\)", pattern)
@@ -2706,8 +2706,8 @@ class Pipeline(object):
                             [
                                 x.startswith(y)
                                 for y in (
-                                    cellprofiler.measurement.C_SERIES,
-                                    cellprofiler.measurement.C_FRAME,
+                                    cellprofiler_core.measurement.C_SERIES,
+                                    cellprofiler_core.measurement.C_FRAME,
                                 )
                             ]
                         )
@@ -3262,7 +3262,7 @@ class Pipeline(object):
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cellprofiler.measurement.Measurements(mode="memory")
+        temp_measurements = cellprofiler_core.measurement.Measurements(mode="memory")
         new_workspace = None
         try:
             new_workspace = cellprofiler.workspace.Workspace(
@@ -3285,7 +3285,7 @@ class Pipeline(object):
                 return iscds, metadata_key_names, {}
             metadata_columns = [
                 temp_measurements.get_measurement(
-                    cellprofiler.measurement.IMAGE, feature, all_image_numbers
+                    cellprofiler_core.measurement.IMAGE, feature, all_image_numbers
                 )
                 for feature in metadata_key_names
             ]
@@ -3297,42 +3297,42 @@ class Pipeline(object):
                     category = image_category
                 feature_name = "_".join((category, iscd.name))
                 if feature_name in temp_measurements.get_feature_names(
-                    cellprofiler.measurement.IMAGE
+                    cellprofiler_core.measurement.IMAGE
                 ):
                     return temp_measurements.get_measurement(
-                        cellprofiler.measurement.IMAGE, feature_name, all_image_numbers
+                        cellprofiler_core.measurement.IMAGE, feature_name, all_image_numbers
                     )
                 else:
                     return [None] * len(all_image_numbers)
 
             url_columns = [
                 get_column(
-                    cellprofiler.measurement.C_URL,
-                    cellprofiler.measurement.C_OBJECTS_URL,
+                    cellprofiler_core.measurement.C_URL,
+                    cellprofiler_core.measurement.C_OBJECTS_URL,
                     iscd,
                 )
                 for iscd in iscds
             ]
             series_columns = [
                 get_column(
-                    cellprofiler.measurement.C_SERIES,
-                    cellprofiler.measurement.C_OBJECTS_SERIES,
+                    cellprofiler_core.measurement.C_SERIES,
+                    cellprofiler_core.measurement.C_OBJECTS_SERIES,
                     iscd,
                 )
                 for iscd in iscds
             ]
             index_columns = [
                 get_column(
-                    cellprofiler.measurement.C_FRAME,
-                    cellprofiler.measurement.C_OBJECTS_FRAME,
+                    cellprofiler_core.measurement.C_FRAME,
+                    cellprofiler_core.measurement.C_OBJECTS_FRAME,
                     iscd,
                 )
                 for iscd in iscds
             ]
             channel_columns = [
                 get_column(
-                    cellprofiler.measurement.C_CHANNEL,
-                    cellprofiler.measurement.C_OBJECTS_CHANNEL,
+                    cellprofiler_core.measurement.C_CHANNEL,
+                    cellprofiler_core.measurement.C_OBJECTS_CHANNEL,
                     iscd,
                 )
                 for iscd in iscds
@@ -3772,40 +3772,40 @@ class Pipeline(object):
             return self.__measurement_columns[terminating_module_num]
         columns = [
             (
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.EXPERIMENT,
                 M_PIPELINE,
-                cellprofiler.measurement.COLTYPE_LONGBLOB,
+                cellprofiler_core.measurement.COLTYPE_LONGBLOB,
             ),
             (
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.EXPERIMENT,
                 M_VERSION,
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
             (
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.EXPERIMENT,
                 M_TIMESTAMP,
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
             (
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.EXPERIMENT,
                 M_MODIFICATION_TIMESTAMP,
-                cellprofiler.measurement.COLTYPE_VARCHAR,
-                {cellprofiler.measurement.MCA_AVAILABLE_POST_RUN: True},
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                {cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN: True},
             ),
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 GROUP_NUMBER,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 GROUP_INDEX,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Group_Length",
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
         ]
         should_write_columns = True
@@ -3829,14 +3829,14 @@ class Pipeline(object):
                 )
                 columns += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         module_error_measurement,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         execution_time_measurement,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                 ]
         self.__measurement_columns[terminating_module_num] = columns

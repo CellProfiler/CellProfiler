@@ -43,7 +43,7 @@ import os
 
 import numpy as np
 
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules

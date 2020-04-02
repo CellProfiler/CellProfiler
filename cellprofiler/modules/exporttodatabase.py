@@ -100,7 +100,7 @@ import six.moves
 
 import cellprofiler
 import cellprofiler.icons
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
@@ -192,7 +192,7 @@ W_PLATEVIEWER = "PlateViewer"
 W_BOXPLOT = "BoxPlot"
 W_DISPLAY_ALL = [W_SCATTERPLOT, W_HISTOGRAM, W_PLATEVIEWER, W_DENSITYPLOT, W_BOXPLOT]
 W_INDEX = "Index"
-W_TYPE_ALL = [cellprofiler.measurement.IMAGE, cellprofiler.measurement.OBJECT, W_INDEX]
+W_TYPE_ALL = [cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.OBJECT, W_INDEX]
 W_INDEX_ALL = [C_IMAGE_NUMBER, cellprofiler.pipeline.GROUP_INDEX]
 
 ################################################
@@ -260,7 +260,7 @@ OT_DICTIONARY = {
     "Single object table": OT_COMBINE,
     "Single object view": OT_VIEW,
 }
-from cellprofiler.measurement import C_PARENT, M_NUMBER_OBJECT_NUMBER
+from cellprofiler_core.measurement import C_PARENT, M_NUMBER_OBJECT_NUMBER
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
@@ -1595,11 +1595,11 @@ available:
 
         def object_fn_x():
             if group.x_measurement_type.value in (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.EXPERIMENT,
             ):
                 return group.x_measurement_type.value
-            elif group.x_measurement_type.value == cellprofiler.measurement.OBJECT:
+            elif group.x_measurement_type.value == cellprofiler_core.measurement.OBJECT:
                 return group.x_object_name.value
             else:
                 raise NotImplementedError(
@@ -1642,9 +1642,9 @@ available:
         )
 
         def object_fn_y():
-            if group.y_measurement_type.value == cellprofiler.measurement.IMAGE:
-                return cellprofiler.measurement.IMAGE
-            elif group.y_measurement_type.value == cellprofiler.measurement.OBJECT:
+            if group.y_measurement_type.value == cellprofiler_core.measurement.IMAGE:
+                return cellprofiler_core.measurement.IMAGE
+            elif group.y_measurement_type.value == cellprofiler_core.measurement.OBJECT:
                 return group.y_object_name.value
             else:
                 raise NotImplementedError(
@@ -1684,9 +1684,9 @@ available:
         choices = ["None"]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurement.C_METADATA) + 1) :]
-            if object_name == cellprofiler.measurement.IMAGE and feature.startswith(
-                cellprofiler.measurement.C_METADATA
+            choice = feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
+            if object_name == cellprofiler_core.measurement.IMAGE and feature.startswith(
+                cellprofiler_core.measurement.C_METADATA
             ):
                 choices.append(choice)
         return choices
@@ -1696,9 +1696,9 @@ available:
         image_names = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurement.C_FILE_NAME) + 1) :]
-            if object_name == cellprofiler.measurement.IMAGE and (
-                feature.startswith(cellprofiler.measurement.C_FILE_NAME)
+            choice = feature[(len(cellprofiler_core.measurement.C_FILE_NAME) + 1) :]
+            if object_name == cellprofiler_core.measurement.IMAGE and (
+                feature.startswith(cellprofiler_core.measurement.C_FILE_NAME)
             ):
                 image_names.append(choice)
         return image_names
@@ -1896,7 +1896,7 @@ available:
         result += [workspace_group.x_measurement_type]
         if workspace_group.x_measurement_type == W_INDEX:
             result += [workspace_group.x_index_name]
-        elif workspace_group.x_measurement_type == cellprofiler.measurement.OBJECT:
+        elif workspace_group.x_measurement_type == cellprofiler_core.measurement.OBJECT:
             result += [
                 workspace_group.x_object_name,
                 workspace_group.x_measurement_name,
@@ -1907,7 +1907,7 @@ available:
             result += [workspace_group.y_measurement_type]
             if workspace_group.y_measurement_type == W_INDEX:
                 result += [workspace_group.y_index_name]
-            elif workspace_group.y_measurement_type == cellprofiler.measurement.OBJECT:
+            elif workspace_group.y_measurement_type == cellprofiler_core.measurement.OBJECT:
                 result += [
                     workspace_group.y_object_name,
                     workspace_group.y_measurement_name,
@@ -2375,11 +2375,11 @@ available:
                     "Writing to an Oracle database is not supported"
                 )
             if self.db_type in (DB_MYSQL, DB_SQLITE):
-                tables = [self.get_table_name(cellprofiler.measurement.IMAGE)]
+                tables = [self.get_table_name(cellprofiler_core.measurement.IMAGE)]
                 if self.objects_choice != O_NONE:
                     if self.separate_object_tables == OT_COMBINE:
                         tables.append(
-                            self.get_table_name(cellprofiler.measurement.OBJECT)
+                            self.get_table_name(cellprofiler_core.measurement.OBJECT)
                         )
                     else:
                         for object_name in self.get_object_names(
@@ -2442,9 +2442,9 @@ available:
                 )
                 if self.objects_choice != O_ALL:
                     onames = [
-                        cellprofiler.measurement.EXPERIMENT,
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.NEIGHBORS,
+                        cellprofiler_core.measurement.EXPERIMENT,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.NEIGHBORS,
                     ]
                     if self.objects_choice == O_SELECT:
                         onames += self.objects_list.selections
@@ -2487,9 +2487,9 @@ available:
             for name in self.thumbnail_image_names.get_selections():
                 cols += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         C_THUMBNAIL + "_" + name,
-                        cellprofiler.measurement.COLTYPE_LONGBLOB,
+                        cellprofiler_core.measurement.COLTYPE_LONGBLOB,
                     )
                 ]
             return cols
@@ -2506,18 +2506,18 @@ available:
         # have to hack our measurement column cache to circumvent this.
         #
         m = workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         d = self.get_dictionary()
         columns = m.get_measurement_columns()
         for i, (object_name, feature_name, coltype) in enumerate(columns):
             if (
-                object_name == cellprofiler.measurement.IMAGE
+                object_name == cellprofiler_core.measurement.IMAGE
                 and feature_name.startswith(C_THUMBNAIL)
             ):
                 columns[i] = (
                     object_name,
                     feature_name,
-                    cellprofiler.measurement.COLTYPE_LONGBLOB,
+                    cellprofiler_core.measurement.COLTYPE_LONGBLOB,
                 )
         columns = self.filter_measurement_columns(columns)
         d[D_MEASUREMENT_COLUMNS] = columns
@@ -2825,16 +2825,16 @@ available:
             # Process the image numbers in the current image's group
             #
             m = workspace.measurements
-            assert isinstance(m, cellprofiler.measurement.Measurements)
+            assert isinstance(m, cellprofiler_core.measurement.Measurements)
             group_number = m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 m.image_set_number,
             ]
             all_image_numbers = m.get_image_numbers()
             all_group_numbers = m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 all_image_numbers,
             ]
             group_image_numbers = all_image_numbers[all_group_numbers == group_number]
@@ -2903,8 +2903,8 @@ available:
         If strict is True, then we ignore objects based on the object selection
         """
         if object_name in (
-            cellprofiler.measurement.EXPERIMENT,
-            cellprofiler.measurement.NEIGHBORS,
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.NEIGHBORS,
         ):
             return True
         if strict and self.objects_choice == O_NONE:
@@ -2912,7 +2912,7 @@ available:
         if (
             strict
             and self.objects_choice == O_SELECT
-            and object_name != cellprofiler.measurement.IMAGE
+            and object_name != cellprofiler_core.measurement.IMAGE
         ):
             return object_name not in self.objects_list.selections
         return False
@@ -2946,7 +2946,7 @@ available:
             if self.ignore_feature(object_name, feature_name):
                 continue
             mappings.add("%s_%s" % (object_name, feature_name))
-            if object_name != cellprofiler.measurement.IMAGE:
+            if object_name != cellprofiler_core.measurement.IMAGE:
                 for agg_name in self.agg_names:
                     mappings.add("%s_%s_%s" % (agg_name, object_name, feature_name))
         return mappings
@@ -2980,7 +2980,7 @@ available:
                 if (
                     obname == ob_table
                     and (not self.ignore_feature(obname, feature))
-                    and (not cellprofiler.measurement.agg_ignore_feature(feature))
+                    and (not cellprofiler_core.measurement.agg_ignore_feature(feature))
                 ):
                     feature_name = "%s_%s" % (obname, feature)
                     # create per_image aggregate column defs
@@ -3004,9 +3004,9 @@ available:
             if not self.ignore_object(obname, True)
             and obname
             not in (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.EXPERIMENT,
-                cellprofiler.measurement.NEIGHBORS,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.NEIGHBORS,
             )
         ]
 
@@ -3016,9 +3016,9 @@ available:
         return [
             name
             for name, setting in (
-                (cellprofiler.measurement.AGG_MEAN, self.wants_agg_mean),
-                (cellprofiler.measurement.AGG_MEDIAN, self.wants_agg_median),
-                (cellprofiler.measurement.AGG_STD_DEV, self.wants_agg_std_dev),
+                (cellprofiler_core.measurement.AGG_MEAN, self.wants_agg_mean),
+                (cellprofiler_core.measurement.AGG_MEDIAN, self.wants_agg_median),
+                (cellprofiler_core.measurement.AGG_STD_DEV, self.wants_agg_std_dev),
             )
             if setting.value
         ]
@@ -3068,12 +3068,12 @@ available:
         #
         # Drop either the unified objects table or the view of it
         #
-        object_table_name = self.get_table_name(cellprofiler.measurement.OBJECT)
+        object_table_name = self.get_table_name(cellprofiler_core.measurement.OBJECT)
         try:
             execute(
                 cursor,
                 "DROP TABLE IF EXISTS %s"
-                % self.get_table_name(cellprofiler.measurement.OBJECT),
+                % self.get_table_name(cellprofiler_core.measurement.OBJECT),
                 return_result=False,
             )
         except:
@@ -3083,7 +3083,7 @@ available:
             execute(
                 cursor,
                 "DROP VIEW IF EXISTS %s"
-                % self.get_table_name(cellprofiler.measurement.OBJECT),
+                % self.get_table_name(cellprofiler_core.measurement.OBJECT),
                 return_result=False,
             )
         except:
@@ -3119,7 +3119,7 @@ available:
         execute(
             cursor,
             "DROP TABLE IF EXISTS %s"
-            % self.get_table_name(cellprofiler.measurement.IMAGE),
+            % self.get_table_name(cellprofiler_core.measurement.IMAGE),
             return_result=False,
         )
         statement = self.get_create_image_table_statement(pipeline, image_set_list)
@@ -3128,7 +3128,7 @@ available:
         execute(
             cursor,
             "DROP TABLE IF EXISTS %s"
-            % self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+            % self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
         )
         for statement in self.get_experiment_table_statements(workspace):
             execute(cursor, statement, return_result=False)
@@ -3203,7 +3203,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
 
         experiment_columns = list(
             filter(
-                lambda x: x[0] == cellprofiler.measurement.EXPERIMENT,
+                lambda x: x[0] == cellprofiler_core.measurement.EXPERIMENT,
                 workspace.pipeline.get_measurement_columns(),
             )
         )
@@ -3212,7 +3212,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
             % (
                 x[1],
                 "TEXT"
-                if x[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR)
+                if x[2].startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR)
                 else x[2],
             )
             for x in experiment_columns
@@ -3221,7 +3221,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
 CREATE TABLE %s (
 %s)
 """ % (
-            self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+            self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
             ",\n".join(experiment_coldefs),
         )
         statements.append(create_per_experiment)
@@ -3233,16 +3233,16 @@ CREATE TABLE %s (
             if (
                 len(column) > 3
                 and column[3].get(
-                    cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False
+                    cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False
                 )
             ) or not workspace.measurements.has_feature(
-                cellprofiler.measurement.EXPERIMENT, ftr
+                cellprofiler_core.measurement.EXPERIMENT, ftr
             ):
                 values.append("null")
                 continue
             value = workspace.measurements.get_experiment_measurement(ftr)
 
-            if column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+            if column[2].startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                 if isinstance(value, six.text_type):
                     value = value
                 if self.db_type != DB_SQLITE:
@@ -3257,7 +3257,7 @@ CREATE TABLE %s (
                 value = "X'" + "".join(["%02X" % ord(x) for x in value]) + "'"
             values.append(value)
         experiment_insert_statement = "INSERT INTO %s (%s) VALUES (%s)" % (
-            self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+            self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
             ",".join(column_names),
             ",".join(values),
         )
@@ -3268,7 +3268,7 @@ CREATE TABLE %s (
         """Return a SQL statement that generates the image table"""
         statement = (
             "CREATE TABLE "
-            + self.get_table_name(cellprofiler.measurement.IMAGE)
+            + self.get_table_name(cellprofiler_core.measurement.IMAGE)
             + " (\n"
         )
         statement += "%s INTEGER" % C_IMAGE_NUMBER
@@ -3277,17 +3277,17 @@ CREATE TABLE %s (
         columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for column in columns:
             obname, feature, ftype = column[:3]
-            if obname == cellprofiler.measurement.IMAGE and not self.ignore_feature(
+            if obname == cellprofiler_core.measurement.IMAGE and not self.ignore_feature(
                 obname, feature
             ):
-                if ftype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+                if ftype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                     ftype = "TEXT"
                 feature_name = "%s_%s" % (obname, feature)
                 statement += ",\n%s %s" % (mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):
             statement += ",\n%s %s" % (
                 mappings[column[3]],
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             )
         statement += ",\nPRIMARY KEY (%s) )" % C_IMAGE_NUMBER
         return statement
@@ -3298,7 +3298,7 @@ CREATE TABLE %s (
         object_name - None = PerObject, otherwise a specific table
         """
         if object_name is None:
-            object_table = self.get_table_name(cellprofiler.measurement.OBJECT)
+            object_table = self.get_table_name(cellprofiler_core.measurement.OBJECT)
         else:
             object_table = self.get_table_name(object_name)
         statement = "CREATE TABLE " + object_table + " (\n"
@@ -3328,7 +3328,7 @@ CREATE TABLE %s (
 
         object_names is the list of objects to be included into the view
         """
-        object_table = self.get_table_name(cellprofiler.measurement.OBJECT)
+        object_table = self.get_table_name(cellprofiler_core.measurement.OBJECT)
 
         # Produce a list of columns from each of the separate tables
         list_of_columns = []
@@ -3629,7 +3629,7 @@ CREATE TABLE %s (
         #
         if self.objects_choice != O_NONE:
             if self.separate_object_tables == OT_COMBINE:
-                data = [(None, cellprofiler.measurement.OBJECT)]
+                data = [(None, cellprofiler_core.measurement.OBJECT)]
             else:
                 data = [(x, x) for x in self.get_object_names(pipeline, image_set_list)]
 
@@ -3652,8 +3652,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """
             % (
                 self.base_name(workspace),
-                cellprofiler.measurement.IMAGE,
-                self.get_table_name(cellprofiler.measurement.IMAGE),
+                cellprofiler_core.measurement.IMAGE,
+                self.get_table_name(cellprofiler_core.measurement.IMAGE),
             )
         )
 
@@ -3736,9 +3736,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         % (self.get_table_prefix(), aggname)
                     )
                 for i, object_name in enumerate(
-                    object_names + [cellprofiler.measurement.IMAGE]
+                    object_names + [cellprofiler_core.measurement.IMAGE]
                 ):
-                    if object_name == cellprofiler.measurement.IMAGE:
+                    if object_name == cellprofiler_core.measurement.IMAGE:
                         object_table_name = "IT"
                     elif self.separate_object_tables == OT_COMBINE:
                         object_table_name = "OT"
@@ -3754,7 +3754,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         # Don't take an aggregate on a string column
                         #
                         if data_type.startswith(
-                            cellprofiler.measurement.COLTYPE_VARCHAR
+                            cellprofiler_core.measurement.COLTYPE_VARCHAR
                         ):
                             continue
                         feature_name = "%s_%s" % (object_name, feature)
@@ -3782,7 +3782,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 fid.write(
                     "JOIN %s OT ON IT.%s = OT.%s\n"
                     % (
-                        self.get_table_name(cellprofiler.measurement.OBJECT),
+                        self.get_table_name(cellprofiler_core.measurement.OBJECT),
                         C_IMAGE_NUMBER,
                         C_IMAGE_NUMBER,
                     )
@@ -3873,7 +3873,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         image_filename = self.make_full_filename(
-            "%s_%s.CSV" % (self.base_name(workspace), cellprofiler.measurement.IMAGE),
+            "%s_%s.CSV" % (self.base_name(workspace), cellprofiler_core.measurement.IMAGE),
             workspace,
         )
         fid_per_image = open(image_filename, "w")
@@ -3884,22 +3884,22 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         for image_number in measurements.get_image_numbers():
             image_row = [image_number]
             for object_name, feature, coltype in columns:
-                if object_name != cellprofiler.measurement.IMAGE:
+                if object_name != cellprofiler_core.measurement.IMAGE:
                     continue
                 if self.ignore_feature(object_name, feature, measurements):
                     continue
                 feature_name = "%s_%s" % (object_name, feature)
                 if not measurements.has_feature(
-                    cellprofiler.measurement.IMAGE, feature
+                    cellprofiler_core.measurement.IMAGE, feature
                 ):
                     value = numpy.NaN
                 else:
                     value = measurements.get_measurement(
-                        cellprofiler.measurement.IMAGE, feature, image_number
+                        cellprofiler_core.measurement.IMAGE, feature, image_number
                     )
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
-                if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+                if coltype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                     if isinstance(value, six.string_types):
                         value = '"' + MySQLdb.escape_string(value).decode() + '"'
                     elif value is None:
@@ -3927,7 +3927,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return
 
         if self.separate_object_tables == OT_COMBINE:
-            data = [(cellprofiler.measurement.OBJECT, object_names)]
+            data = [(cellprofiler_core.measurement.OBJECT, object_names)]
         else:
             data = [(object_name, [object_name]) for object_name in object_names]
         for file_object_name, object_list in data:
@@ -3939,7 +3939,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 max_count = 0
                 for object_name in object_list:
                     count = measurements.get_measurement(
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "Count_%s" % object_name,
                         image_number,
                     )
@@ -3947,7 +3947,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 d = {}
                 for j in range(max_count):
                     object_row = [image_number]
-                    if file_object_name == cellprofiler.measurement.OBJECT:
+                    if file_object_name == cellprofiler_core.measurement.OBJECT:
                         # the object number
                         object_row.append(j + 1)
                     #
@@ -4022,11 +4022,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return not post_group
         if not hasattr(column[3], "has_key"):
             return not post_group
-        if cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
+        if cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
             return not post_group
         return (
             post_group
-            if column[3][cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP]
+            if column[3][cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP]
             else not post_group
         )
 
@@ -4042,7 +4042,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         try:
             zeros_for_nan = False
             measurements = workspace.measurements
-            assert isinstance(measurements, cellprofiler.measurement.Measurements)
+            assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             pipeline = workspace.pipeline
             image_set_list = workspace.image_set_list
             measurement_cols = self.get_pipeline_measurement_columns(
@@ -4063,15 +4063,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 image_row += [
                     (
                         image_number,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                         C_IMAGE_NUMBER,
                     )
                 ]
             feature_names = set(
-                measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+                measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
             )
             for m_col in measurement_cols:
-                if m_col[0] != cellprofiler.measurement.IMAGE:
+                if m_col[0] != cellprofiler_core.measurement.IMAGE:
                     continue
                 if not self.should_write(m_col, post_group):
                     continue
@@ -4082,9 +4082,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 #
                 if m_col[1] not in feature_names:
                     continue
-                feature_name = "%s_%s" % (cellprofiler.measurement.IMAGE, m_col[1])
+                feature_name = "%s_%s" % (cellprofiler_core.measurement.IMAGE, m_col[1])
                 value = measurements.get_measurement(
-                    cellprofiler.measurement.IMAGE, m_col[1], image_number
+                    cellprofiler_core.measurement.IMAGE, m_col[1], image_number
                 )
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
@@ -4105,7 +4105,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 pipeline, image_set_list, post_group
             )
             image_row += [
-                (agg_dict[agg[3]], cellprofiler.measurement.COLTYPE_FLOAT, agg[3])
+                (agg_dict[agg[3]], cellprofiler_core.measurement.COLTYPE_FLOAT, agg[3])
                 for agg in agg_columns
             ]
 
@@ -4116,7 +4116,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             if not post_group:
                 stmt = "DELETE FROM %s WHERE %s=%d" % (
-                    self.get_table_name(cellprofiler.measurement.IMAGE),
+                    self.get_table_name(cellprofiler_core.measurement.IMAGE),
                     C_IMAGE_NUMBER,
                     image_number,
                 )
@@ -4141,7 +4141,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             object_names = self.get_object_names(pipeline, image_set_list)
             if len(object_names) > 0:
                 if self.separate_object_tables == OT_COMBINE:
-                    data = [(cellprofiler.measurement.OBJECT, object_names)]
+                    data = [(cellprofiler_core.measurement.OBJECT, object_names)]
                 else:
                     data = [
                         (object_name, [object_name]) for object_name in object_names
@@ -4160,7 +4160,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for object_name in object_list:
                         ftr_count = "Count_%s" % object_name
                         count = measurements.get_measurement(
-                            cellprofiler.measurement.IMAGE, ftr_count, image_number
+                            cellprofiler_core.measurement.IMAGE, ftr_count, image_number
                         )
                         max_count = max(max_count, int(count))
                     column_values = []
@@ -4182,7 +4182,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     object_cols = []
                     if not post_group:
                         object_cols += [C_IMAGE_NUMBER]
-                    if table_object_name == cellprofiler.measurement.OBJECT:
+                    if table_object_name == cellprofiler_core.measurement.OBJECT:
                         object_number_column = C_OBJECT_NUMBER
                         if not post_group:
                             object_cols += [object_number_column]
@@ -4202,7 +4202,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for j in range(max_count):
                         if not post_group:
                             object_row = [image_number]
-                            if table_object_name == cellprofiler.measurement.OBJECT:
+                            if table_object_name == cellprofiler_core.measurement.OBJECT:
                                 # the object number
                                 object_row.append(object_numbers[j])
                         else:
@@ -4265,26 +4265,26 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 (table_name, self.truncate_string_for_display(row_stmt))
                             )
 
-            image_table = self.get_table_name(cellprofiler.measurement.IMAGE)
+            image_table = self.get_table_name(cellprofiler_core.measurement.IMAGE)
             replacement = "%s" if self.db_type == DB_MYSQL else "?"
             image_row_values = [
                 None
                 if field[0] is None
                 else None
                 if (
-                    (field[1] == cellprofiler.measurement.COLTYPE_FLOAT)
+                    (field[1] == cellprofiler_core.measurement.COLTYPE_FLOAT)
                     and (numpy.isnan(field[0]) or numpy.isinf(field[0]))
                 )
                 else float(field[0])
-                if (field[1] == cellprofiler.measurement.COLTYPE_FLOAT)
+                if (field[1] == cellprofiler_core.measurement.COLTYPE_FLOAT)
                 else int(field[0])
-                if (field[1] == cellprofiler.measurement.COLTYPE_INTEGER)
+                if (field[1] == cellprofiler_core.measurement.COLTYPE_INTEGER)
                 else buffer(field[0].encode())
                 if field[1]
                 in (
-                    cellprofiler.measurement.COLTYPE_BLOB,
-                    cellprofiler.measurement.COLTYPE_LONGBLOB,
-                    cellprofiler.measurement.COLTYPE_MEDIUMBLOB,
+                    cellprofiler_core.measurement.COLTYPE_BLOB,
+                    cellprofiler_core.measurement.COLTYPE_LONGBLOB,
+                    cellprofiler_core.measurement.COLTYPE_MEDIUMBLOB,
                 )
                 else field[0]
                 for field in image_row
@@ -4356,7 +4356,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     when,
                 ) in pipeline.get_object_relationships():
                     if post_group != (
-                        when == cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP
+                        when == cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
                     ):
                         continue
                     r = measurements.get_relationships(
@@ -4403,7 +4403,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             ###########################################
             stmt = "UPDATE %s SET %s='%s'" % (
-                self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+                self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
                 cellprofiler.pipeline.M_MODIFICATION_TIMESTAMP,
                 datetime.datetime.now().isoformat(),
             )
@@ -4451,24 +4451,24 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         columns = list(
             filter(
                 (
-                    lambda c: c[0] == cellprofiler.measurement.EXPERIMENT
+                    lambda c: c[0] == cellprofiler_core.measurement.EXPERIMENT
                     and len(c) > 3
-                    and c[3].get(cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False)
+                    and c[3].get(cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False)
                 ),
                 columns,
             )
         )
         if len(columns) > 0:
             statement = "UPDATE %s SET " % self.get_table_name(
-                cellprofiler.measurement.EXPERIMENT
+                cellprofiler_core.measurement.EXPERIMENT
             )
             assignments = []
             for column in columns:
                 if workspace.measurements.has_feature(
-                    cellprofiler.measurement.EXPERIMENT, column[1]
+                    cellprofiler_core.measurement.EXPERIMENT, column[1]
                 ):
                     value = workspace.measurements[
-                        cellprofiler.measurement.EXPERIMENT, column[1]
+                        cellprofiler_core.measurement.EXPERIMENT, column[1]
                     ]
                     if value is not None:
                         assignments.append("%s='%s'" % (column[1], value))
@@ -4532,7 +4532,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     object_names = [
                         object_name
                         for object_name in workspace.measurements.get_object_names()
-                        if (object_name != cellprofiler.measurement.IMAGE)
+                        if (object_name != cellprofiler_core.measurement.IMAGE)
                         and (not self.ignore_object(object_name))
                     ]
             elif self.separate_object_tables == OT_VIEW:
@@ -4545,11 +4545,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         image_features = [
             c[1]
             for c in workspace.pipeline.get_measurement_columns()
-            if c[0] == cellprofiler.measurement.IMAGE
+            if c[0] == cellprofiler_core.measurement.IMAGE
         ]
         for feature in image_features:
             match = re.match(
-                "^%s_(.+)$" % cellprofiler.measurement.C_FILE_NAME, feature
+                "^%s_(.+)$" % cellprofiler_core.measurement.C_FILE_NAME, feature
             )
             if match:
                 default_image_names.append(match.groups()[0])
@@ -4659,7 +4659,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             image_thumbnail_cols = (
                 ",".join(
                     [
-                        "%s_%s_%s" % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                        "%s_%s_%s" % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                         for name in self.thumbnail_image_names.get_selections()
                     ]
                 )
@@ -4672,8 +4672,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_FILE_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_FILE_NAME,
                             name,
                         )
                         for name in default_image_names
@@ -4683,8 +4683,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_PATH_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_PATH_NAME,
                             name,
                         )
                         for name in default_image_names
@@ -4733,7 +4733,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_thumbnail_cols = ",".join(
                         [
                             "%s_%s_%s"
-                            % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                            % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                             for name in thumb_names
                         ]
                     )
@@ -4757,8 +4757,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_FILE_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_FILE_NAME,
                             name,
                         )
                         for name in selected_image_names
@@ -4768,8 +4768,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_PATH_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_PATH_NAME,
                             name,
                         )
                         for name in selected_image_names
@@ -4791,7 +4791,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_thumbnail_cols = ",".join(
                         [
                             "%s_%s_%s"
-                            % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                            % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                             for name in thumb_names
                         ]
                     )
@@ -4865,8 +4865,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.properties_plate_metadata.value == NONE_CHOICE
                 else "%s_%s_%s"
                 % (
-                    cellprofiler.measurement.IMAGE,
-                    cellprofiler.measurement.C_METADATA,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_METADATA,
                     self.properties_plate_metadata.value,
                 )
             )
@@ -4875,8 +4875,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.properties_well_metadata.value == NONE_CHOICE
                 else "%s_%s_%s"
                 % (
-                    cellprofiler.measurement.IMAGE,
-                    cellprofiler.measurement.C_METADATA,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_METADATA,
                     self.properties_well_metadata.value,
                 )
             )
@@ -5107,17 +5107,17 @@ CP version : %d\n""" % int(
             )
             if (
                 workspace_group.x_measurement_type.value
-                == cellprofiler.measurement.IMAGE
+                == cellprofiler_core.measurement.IMAGE
             ):
                 axis_meas = "_".join(
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         workspace_group.x_measurement_name.value,
                     )
                 )
             elif (
                 workspace_group.x_measurement_type.value
-                == cellprofiler.measurement.OBJECT
+                == cellprofiler_core.measurement.OBJECT
             ):
                 axis_meas = "_".join(
                     (
@@ -5134,10 +5134,10 @@ CP version : %d\n""" % int(
                 else "table"
             )
             table_name = self.get_table_name(
-                cellprofiler.measurement.OBJECT
+                cellprofiler_core.measurement.OBJECT
                 if workspace_group.x_measurement_type.value
-                == cellprofiler.measurement.OBJECT
-                else cellprofiler.measurement.IMAGE
+                == cellprofiler_core.measurement.OBJECT
+                else cellprofiler_core.measurement.IMAGE
             )
             display_tool_text += """
 \t%s: %s
@@ -5154,17 +5154,17 @@ CP version : %d\n""" % int(
             ):
                 if (
                     workspace_group.y_measurement_type.value
-                    == cellprofiler.measurement.IMAGE
+                    == cellprofiler_core.measurement.IMAGE
                 ):
                     axis_meas = "_".join(
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             workspace_group.y_measurement_name.value,
                         )
                     )
                 elif (
                     workspace_group.y_measurement_type.value
-                    == cellprofiler.measurement.OBJECT
+                    == cellprofiler_core.measurement.OBJECT
                 ):
                     axis_meas = "_".join(
                         (
@@ -5175,10 +5175,10 @@ CP version : %d\n""" % int(
                 elif workspace_group.y_measurement_type.value == W_INDEX:
                     axis_meas = workspace_group.y_index_name.value
                 table_name = self.get_table_name(
-                    cellprofiler.measurement.OBJECT
+                    cellprofiler_core.measurement.OBJECT
                     if workspace_group.y_measurement_type.value
-                    == cellprofiler.measurement.OBJECT
-                    else cellprofiler.measurement.IMAGE
+                    == cellprofiler_core.measurement.OBJECT
+                    else cellprofiler_core.measurement.IMAGE
                 )
                 display_tool_text += """
 \ty-axis: %s
@@ -5199,23 +5199,23 @@ CP version : %d\n""" % int(
         #
         FileNameWidth = 128
         PathNameWidth = 128
-        image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
+        image_features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
         for feature in image_features:
-            if feature.startswith(cellprofiler.measurement.C_FILE_NAME):
+            if feature.startswith(cellprofiler_core.measurement.C_FILE_NAME):
                 names = [
                     name
                     for name in m.get_all_measurements(
-                        cellprofiler.measurement.IMAGE, feature
+                        cellprofiler_core.measurement.IMAGE, feature
                     )
                     if name is not None
                 ]
                 if len(names) > 0:
                     FileNameWidth = max(FileNameWidth, numpy.max(list(map(len, names))))
-            elif feature.startswith(cellprofiler.measurement.C_PATH_NAME):
+            elif feature.startswith(cellprofiler_core.measurement.C_PATH_NAME):
                 names = [
                     name
                     for name in m.get_all_measurements(
-                        cellprofiler.measurement.IMAGE, feature
+                        cellprofiler_core.measurement.IMAGE, feature
                     )
                     if name is not None
                 ]
@@ -5260,9 +5260,9 @@ CP version : %d\n""" % int(
         #
         def cmpfn(x, y):
             if x[0] != y[0]:
-                if x[0] == cellprofiler.measurement.IMAGE:
+                if x[0] == cellprofiler_core.measurement.IMAGE:
                     return -1
-                elif y[0] == cellprofiler.measurement.IMAGE:
+                elif y[0] == cellprofiler_core.measurement.IMAGE:
                     return 1
                 else:
                     return cellprofiler.utilities.legacy.cmp(x[0], y[0])
@@ -5335,7 +5335,7 @@ CP version : %d\n""" % int(
             #
             setting_values = (
                 setting_values[:-1]
-                + [cellprofiler.measurement.IMAGE]
+                + [cellprofiler_core.measurement.IMAGE]
                 + [cellprofiler.setting.DO_NOT_USE] * 3
                 + setting_values[-1:]
             )
@@ -5418,7 +5418,7 @@ CP version : %d\n""" % int(
                 objects_list = []
                 for setting in setting_values[8:15]:
                     if setting not in (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         cellprofiler.setting.DO_NOT_USE,
                     ):
                         objects_list.append(setting)
@@ -5594,13 +5594,13 @@ CP version : %d\n""" % int(
             setting_values += [cellprofiler.setting.NO]  # create_workspace_file
             setting_values += [
                 W_SCATTERPLOT,  # measurement_display
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "",
                 C_IMAGE_NUMBER,
                 # x_measurement_type, x_object_name, x_measurement_name, x_index_name
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "",
                 C_IMAGE_NUMBER,
             ]  # y_measurement_type, y_object_name, y_measurement_name, y_index_name

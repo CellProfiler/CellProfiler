@@ -75,7 +75,7 @@ import scipy.stats
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -1335,72 +1335,72 @@ Select the objects to be measured.""",
                 if self.do_corr_and_slope:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_CORRELATION_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_SLOPE_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_overlap:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_OVERLAP_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_K_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_K_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_manders:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_MANDERS_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_MANDERS_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
 
                 if self.do_rwc:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_RWC_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_RWC_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_costes:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_COSTES_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_COSTES_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
 
@@ -1412,7 +1412,7 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_CORRELATION_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         ]
                     if self.do_overlap:
@@ -1420,17 +1420,17 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_OVERLAP_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_K_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_K_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_manders:
@@ -1438,12 +1438,12 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_MANDERS_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_MANDERS_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_rwc:
@@ -1451,12 +1451,12 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_RWC_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_RWC_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_costes:
@@ -1464,12 +1464,12 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_COSTES_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_COSTES_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
         return columns
@@ -1477,10 +1477,10 @@ Select the objects to be measured.""",
     def get_categories(self, pipeline, object_name):
         """Return the categories supported by this module for the given object
 
-        object_name - name of the measured object or cellprofiler.measurement.IMAGE
+        object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
         """
-        if (object_name == cellprofiler.measurement.IMAGE and self.wants_images()) or (
-            (object_name != cellprofiler.measurement.IMAGE)
+        if (object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()) or (
+            (object_name != cellprofiler_core.measurement.IMAGE)
             and self.wants_objects()
             and (object_name in [x.object_name.value for x in self.object_groups])
         ):
@@ -1491,7 +1491,7 @@ Select the objects to be measured.""",
         if self.get_categories(pipeline, object_name) == [category]:
             results = []
             if self.do_corr_and_slope:
-                if object_name == cellprofiler.measurement.IMAGE:
+                if object_name == cellprofiler_core.measurement.IMAGE:
                     results += ["Correlation", "Slope"]
                 else:
                     results += ["Correlation"]

@@ -10,7 +10,7 @@ import numpy
 import scipy.ndimage
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.untangleworms
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -380,7 +380,7 @@ def make_workspace(image, data=None, write_mode="wb"):
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -2021,7 +2021,7 @@ def test_A02():
     worm_ijv = worms.get_ijv()
     assert numpy.max(worm_ijv[:, 2]) == 15
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
     assert ocount == 15
     ncount = m.get_current_image_measurement("Count_" + NON_OVERLAPPING_OBJECTS_NAME)

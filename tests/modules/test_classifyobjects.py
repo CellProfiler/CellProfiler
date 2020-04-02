@@ -1,7 +1,7 @@
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.classifyobjects
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -19,7 +19,7 @@ def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.classifyobjects.ClassifyObjects()
     m_names = []
     if measurement1 is not None:
@@ -120,7 +120,7 @@ def test_classify_single_even():
         assert numpy.all(values == numpy.array(expected_values))
     for measurement, expected_values in list(expected_img.items()):
         values = workspace.measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, measurement
+            cellprofiler_core.measurement.IMAGE, measurement
         )
         assert values == expected_values
 
@@ -136,24 +136,24 @@ def test_classify_single_even():
     assert len(set([column[1] for column in columns])) == 9  # no duplicates
     for column in columns:
         if column[0] != OBJECTS_NAME:  # Must be image
-            assert column[0] == cellprofiler.measurement.IMAGE
+            assert column[0] == cellprofiler_core.measurement.IMAGE
             assert column[1] in list(expected_img.keys())
             assert (
-                column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                 if column[1].endswith(
                     cellprofiler.modules.classifyobjects.F_NUM_PER_BIN
                 )
-                else cellprofiler.measurement.COLTYPE_FLOAT
+                else cellprofiler_core.measurement.COLTYPE_FLOAT
             )
         else:
             assert column[0] == OBJECTS_NAME
             assert column[1] in list(expected_obj.keys())
-            assert column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+            assert column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
 
-    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+    categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 1
     assert categories[0] == cellprofiler.modules.classifyobjects.M_CATEGORY
-    names = module.get_measurements(None, cellprofiler.measurement.IMAGE, "foo")
+    names = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "foo")
     assert len(names) == 0
     categories = module.get_categories(None, OBJECTS_NAME)
     assert len(categories) == 1
@@ -178,7 +178,7 @@ def test_classify_single_even():
     )
     names = module.get_measurements(
         None,
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         cellprofiler.modules.classifyobjects.M_CATEGORY,
     )
     assert len(names) == 6
@@ -235,7 +235,7 @@ def test_classify_single_custom():
         assert numpy.all(values == numpy.array(expected_values))
     for measurement, expected_values in list(expected_img.items()):
         values = workspace.measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, measurement
+            cellprofiler_core.measurement.IMAGE, measurement
         )
         assert values == expected_values
     image = workspace.image_set.get_image(IMAGE_NAME)
@@ -250,21 +250,21 @@ def test_classify_single_custom():
     assert len(set([column[1] for column in columns])) == 9  # no duplicates
     for column in columns:
         if column[0] != OBJECTS_NAME:  # Must be image
-            assert column[0] == cellprofiler.measurement.IMAGE
+            assert column[0] == cellprofiler_core.measurement.IMAGE
             assert column[1] in list(expected_img.keys())
             assert (
-                column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                 if column[1].endswith(
                     cellprofiler.modules.classifyobjects.F_NUM_PER_BIN
                 )
-                else cellprofiler.measurement.COLTYPE_FLOAT
+                else cellprofiler_core.measurement.COLTYPE_FLOAT
             )
         else:
             assert column[0] == OBJECTS_NAME
             assert column[1] in list(expected_obj.keys())
-            assert column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+            assert column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
 
-    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+    categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 1
     categories = module.get_categories(None, OBJECTS_NAME)
     assert len(categories) == 1
@@ -289,7 +289,7 @@ def test_classify_single_custom():
     )
     names = module.get_measurements(
         None,
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         cellprofiler.modules.classifyobjects.M_CATEGORY,
     )
     assert len(names) == 6
@@ -355,7 +355,7 @@ def test_last_is_nan():
             assert numpy.all(values == numpy.array(expected_values))
         for measurement, expected_values in list(expected_img.items()):
             values = workspace.measurements.get_current_measurement(
-                cellprofiler.measurement.IMAGE, measurement
+                cellprofiler_core.measurement.IMAGE, measurement
             )
             assert values == expected_values
         image = workspace.image_set.get_image(IMAGE_NAME)
@@ -454,24 +454,24 @@ def test_two():
                 columns = module.get_measurement_columns(None)
                 for column in columns:
                     if column[0] != OBJECTS_NAME:  # Must be image
-                        assert column[0] == cellprofiler.measurement.IMAGE
+                        assert column[0] == cellprofiler_core.measurement.IMAGE
                         assert (
-                            column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                            column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                             if column[1].endswith(
                                 cellprofiler.modules.classifyobjects.F_NUM_PER_BIN
                             )
-                            else cellprofiler.measurement.COLTYPE_FLOAT
+                            else cellprofiler_core.measurement.COLTYPE_FLOAT
                         )
                     else:
                         assert column[0] == OBJECTS_NAME
-                        assert column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                        assert column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
 
                 assert len(columns) == 12
                 assert (
                     len(set([column[1] for column in columns])) == 12
                 )  # no duplicates
 
-                categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+                categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
                 assert len(categories) == 1
                 categories = module.get_categories(None, OBJECTS_NAME)
                 assert len(categories) == 1
@@ -497,14 +497,14 @@ def test_two():
                     ),
                 ):
                     m = workspace.measurements.get_current_measurement(
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "_".join(
                             (m_name, cellprofiler.modules.classifyobjects.F_NUM_PER_BIN)
                         ),
                     )
                     assert m == expected.astype(int).sum()
                     m = workspace.measurements.get_current_measurement(
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "_".join(
                             (m_name, cellprofiler.modules.classifyobjects.F_PCT_PER_BIN)
                         ),

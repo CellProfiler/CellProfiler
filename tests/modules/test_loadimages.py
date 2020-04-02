@@ -22,7 +22,7 @@ import pytest
 import skimage.io
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
 import cellprofiler.object
@@ -66,11 +66,11 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
         for m in pipeline.modules()
         if isinstance(m, cellprofiler.modules.loadimages.LoadImages)
     ][0]
-    m1 = cellprofiler.measurement.Measurements()
+    m1 = cellprofiler_core.measurement.Measurements()
     w1 = cellprofiler.workspace.Workspace(pipeline, m, m1, None, m1, None)
     pipeline.prepare_run(w1)
 
-    m2 = cellprofiler.measurement.Measurements()
+    m2 = cellprofiler_core.measurement.Measurements()
     w2 = cellprofiler.workspace.Workspace(pipeline, m, m2, None, m2, None)
     urls = [
         cellprofiler.modules.loadimages.pathname2url(os.path.join(directory, filename))
@@ -82,26 +82,26 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     pipeline.convert_legacy_input_modules()
     pipeline.prepare_run(w2)
 
-    ff1 = m1.get_feature_names(cellprofiler.measurement.IMAGE)
+    ff1 = m1.get_feature_names(cellprofiler_core.measurement.IMAGE)
     ffexpected = [
         f.replace("IMAGE_FOR_", "")
         for f in ff1
-        if not f.startswith(cellprofiler.measurement.C_METADATA)
+        if not f.startswith(cellprofiler_core.measurement.C_METADATA)
     ]
     ff2 = [
         x
-        for x in m2.get_feature_names(cellprofiler.measurement.IMAGE)
+        for x in m2.get_feature_names(cellprofiler_core.measurement.IMAGE)
         if not any(
             [
                 x.startswith(y)
                 for y in (
-                    cellprofiler.measurement.C_FRAME,
-                    cellprofiler.measurement.C_SERIES,
-                    cellprofiler.measurement.C_OBJECTS_FRAME,
-                    cellprofiler.measurement.C_OBJECTS_SERIES,
-                    cellprofiler.measurement.C_CHANNEL,
-                    cellprofiler.measurement.C_OBJECTS_CHANNEL,
-                    cellprofiler.measurement.C_METADATA,
+                    cellprofiler_core.measurement.C_FRAME,
+                    cellprofiler_core.measurement.C_SERIES,
+                    cellprofiler_core.measurement.C_OBJECTS_FRAME,
+                    cellprofiler_core.measurement.C_OBJECTS_SERIES,
+                    cellprofiler_core.measurement.C_CHANNEL,
+                    cellprofiler_core.measurement.C_OBJECTS_CHANNEL,
+                    cellprofiler_core.measurement.C_METADATA,
                     cellprofiler.modules.namesandtypes.M_IMAGE_SET,
                     "Group_Length"
                 )
@@ -111,10 +111,10 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     assert ffexpected == ff2
 
     for feature in ff1:
-        if feature.startswith(cellprofiler.measurement.C_METADATA):
-            assert m2.has_feature(cellprofiler.measurement.IMAGE, feature)
+        if feature.startswith(cellprofiler_core.measurement.C_METADATA):
+            assert m2.has_feature(cellprofiler_core.measurement.IMAGE, feature)
     ff1a = list(
-        filter((lambda x: not x.startswith(cellprofiler.measurement.C_METADATA)), ff1)
+        filter((lambda x: not x.startswith(cellprofiler_core.measurement.C_METADATA)), ff1)
     )
     assert m1.image_set_count == m2.image_set_count
     image_numbers = m1.get_image_numbers()
@@ -126,7 +126,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     order1, order2 = [
         numpy.lexsort(
             [
-                mm.get_measurement(cellprofiler.measurement.IMAGE, f, image_numbers)
+                mm.get_measurement(cellprofiler_core.measurement.IMAGE, f, image_numbers)
                 for f in m_url
             ]
         )
@@ -136,24 +136,24 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     image_numbers2 = image_numbers[order2]
     for f1, f2 in zip(ff1a, ff2):
         if f1 in (
-            cellprofiler.measurement.GROUP_INDEX,
-            cellprofiler.measurement.GROUP_NUMBER,
-            cellprofiler.measurement.IMAGE_NUMBER,
+            cellprofiler_core.measurement.GROUP_INDEX,
+            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.measurement.IMAGE_NUMBER,
         ):
             continue
         v1 = m1.get_measurement(
-            cellprofiler.measurement.IMAGE, f1, image_set_number=image_numbers1
+            cellprofiler_core.measurement.IMAGE, f1, image_set_number=image_numbers1
         )
         v2 = m2.get_measurement(
-            cellprofiler.measurement.IMAGE, f2, image_set_number=image_numbers2
+            cellprofiler_core.measurement.IMAGE, f2, image_set_number=image_numbers2
         )
-        if f1.startswith(cellprofiler.measurement.C_PATH_NAME) or f1.startswith(
-            cellprofiler.measurement.C_OBJECTS_PATH_NAME
+        if f1.startswith(cellprofiler_core.measurement.C_PATH_NAME) or f1.startswith(
+            cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
         ):
             for p1, p2 in zip(v1, v2):
                 assert os.path.normcase(p1) == os.path.normcase(p2)
-        elif f1.startswith(cellprofiler.measurement.C_URL) or f1.startswith(
-            cellprofiler.measurement.C_OBJECTS_URL
+        elif f1.startswith(cellprofiler_core.measurement.C_URL) or f1.startswith(
+            cellprofiler_core.measurement.C_OBJECTS_URL
         ):
             for p1, p2 in zip(v1, v2):
                 assert os.path.normcase(
@@ -261,7 +261,7 @@ def test_load_5channel_tif():
     pipeline.add_module(module)
 
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -348,7 +348,7 @@ def test_file_metadata():
     pipeline.add_listener(error_callback)
     pipeline.add_module(load_images)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, load_images, None, None, m, image_set_list
     )
@@ -475,7 +475,7 @@ def test_missing_image():
             load_images,
             None,
             None,
-            cellprofiler.measurement.Measurements(),
+            cellprofiler_core.measurement.Measurements(),
             image_set_list,
         )
     )
@@ -537,7 +537,7 @@ def test_conflict():
                 load_images,
                 None,
                 None,
-                cellprofiler.measurement.Measurements(),
+                cellprofiler_core.measurement.Measurements(),
                 image_set_list,
             )
         )
@@ -611,7 +611,7 @@ def test_hierarchy():
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
         image_set_list = cellprofiler_core.image.ImageSetList()
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         load_images.prepare_run(
             cellprofiler.workspace.Workspace(
                 pipeline, load_images, None, None, m, image_set_list
@@ -619,16 +619,16 @@ def test_hierarchy():
         )
         for i in range(12):
             channel1_filename = m.get_measurement(
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_FILE_NAME + "_" + "Channel1",
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_FILE_NAME + "_" + "Channel1",
                 i + 1,
             )
             ctags = re.search(
                 load_images.images[0].file_metadata.value, channel1_filename
             ).groupdict()
             illum_filename = m.get_measurement(
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_FILE_NAME + "_" + "Illum",
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_FILE_NAME + "_" + "Illum",
                 i + 1,
             )
             itags = re.search(
@@ -718,7 +718,7 @@ def test_allowed_conflict():
             pipeline.add_module(load_images)
             pipeline.add_listener(error_callback)
             image_set_list = cellprofiler_core.image.ImageSetList()
-            m = cellprofiler.measurement.Measurements()
+            m = cellprofiler_core.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(
                 pipeline, load_images, None, None, m, image_set_list
             )
@@ -810,7 +810,7 @@ def test_subfolders():
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
         image_set_list = cellprofiler_core.image.ImageSetList()
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, load_images, None, None, m, image_set_list
         )
@@ -897,7 +897,7 @@ def test_some_subfolders():
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
         image_set_list = cellprofiler_core.image.ImageSetList()
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, load_images, None, None, m, image_set_list
         )
@@ -1014,13 +1014,13 @@ def test_get_measurements():
     }
     for cat, expected in list(categories.items()):
         assert set(expected) == set(
-            module.get_measurements(pipeline, cellprofiler.measurement.IMAGE, cat)
+            module.get_measurements(pipeline, cellprofiler_core.measurement.IMAGE, cat)
         )
     module.images[0].metadata_choice.value = cellprofiler.modules.loadimages.M_BOTH
     categories["Metadata"] += ["Year", "Month", "Day"]
     for cat, expected in list(categories.items()):
         assert set(expected) == set(
-            module.get_measurements(pipeline, cellprofiler.measurement.IMAGE, cat)
+            module.get_measurements(pipeline, cellprofiler_core.measurement.IMAGE, cat)
         )
 
 
@@ -1030,7 +1030,7 @@ def test_get_categories():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.load(fd)
     module = pipeline.module(1)
-    results = module.get_categories(pipeline, cellprofiler.measurement.IMAGE)
+    results = module.get_categories(pipeline, cellprofiler_core.measurement.IMAGE)
     expected = [
         "FileName",
         "PathName",
@@ -1103,7 +1103,7 @@ def test_get_movie_measurements():
             assert len(columns) == len(expected_cols)
             for column in columns:
                 assert column in expected_cols
-            categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+            categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
             assert len(categories) == 9
             category_dict = {}
             for column in expected_cols:
@@ -1115,7 +1115,7 @@ def test_get_movie_measurements():
                 assert category in categories
                 expected_features = category_dict[category]
                 features = module.get_measurements(
-                    None, cellprofiler.measurement.IMAGE, category
+                    None, cellprofiler_core.measurement.IMAGE, category
                 )
                 assert len(features) == len(expected_features)
                 assert len(features) == len(set(features))
@@ -1175,7 +1175,7 @@ def test_get_flex_measurements():
         assert len(columns) == len(expected_cols)
         for column in columns:
             assert column in expected_cols
-        categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+        categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
         assert len(categories) == 10
         category_dict = {}
         for column in expected_cols:
@@ -1187,7 +1187,7 @@ def test_get_flex_measurements():
             assert category in categories
             expected_features = category_dict[category]
             features = module.get_measurements(
-                None, cellprofiler.measurement.IMAGE, category
+                None, cellprofiler_core.measurement.IMAGE, category
             )
             assert len(features) == len(expected_features)
             assert len(features) == len(set(features))
@@ -1202,20 +1202,20 @@ def test_get_object_measurement_columns():
     columns = module.get_measurement_columns(None)
     for object_name, feature in (
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME,
         ),
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME,
         ),
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_COUNT + "_" + OBJECTS_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_COUNT + "_" + OBJECTS_NAME,
         ),
-        (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
-        (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
-        (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER),
+        (OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X),
+        (OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y),
+        (OBJECTS_NAME, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER),
     ):
         assert any(
             [
@@ -1233,17 +1233,17 @@ def test_get_object_categories():
     channel.object_name.value = OBJECTS_NAME
     for object_name, expected_categories in (
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             (
-                cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                cellprofiler.measurement.C_OBJECTS_URL,
-                cellprofiler.measurement.C_COUNT,
+                cellprofiler_core.measurement.C_OBJECTS_FILE_NAME,
+                cellprofiler_core.measurement.C_OBJECTS_PATH_NAME,
+                cellprofiler_core.measurement.C_OBJECTS_URL,
+                cellprofiler_core.measurement.C_COUNT,
             ),
         ),
         (
             OBJECTS_NAME,
-            (cellprofiler.measurement.C_LOCATION, cellprofiler.measurement.C_NUMBER),
+            (cellprofiler_core.measurement.C_LOCATION, cellprofiler_core.measurement.C_NUMBER),
         ),
         ("Foo", []),
     ):
@@ -1261,26 +1261,26 @@ def test_get_object_measurements():
     channel.object_name.value = OBJECTS_NAME
     for object_name, expected in (
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             (
-                (cellprofiler.measurement.C_OBJECTS_FILE_NAME, [OBJECTS_NAME]),
-                (cellprofiler.measurement.C_OBJECTS_PATH_NAME, [OBJECTS_NAME]),
-                (cellprofiler.measurement.C_COUNT, [OBJECTS_NAME]),
+                (cellprofiler_core.measurement.C_OBJECTS_FILE_NAME, [OBJECTS_NAME]),
+                (cellprofiler_core.measurement.C_OBJECTS_PATH_NAME, [OBJECTS_NAME]),
+                (cellprofiler_core.measurement.C_COUNT, [OBJECTS_NAME]),
             ),
         ),
         (
             OBJECTS_NAME,
             (
                 (
-                    cellprofiler.measurement.C_LOCATION,
+                    cellprofiler_core.measurement.C_LOCATION,
                     [
-                        cellprofiler.measurement.FTR_CENTER_X,
-                        cellprofiler.measurement.FTR_CENTER_Y,
+                        cellprofiler_core.measurement.FTR_CENTER_X,
+                        cellprofiler_core.measurement.FTR_CENTER_Y,
                     ],
                 ),
                 (
-                    cellprofiler.measurement.C_NUMBER,
-                    [cellprofiler.measurement.FTR_OBJECT_NUMBER],
+                    cellprofiler_core.measurement.C_NUMBER,
+                    [cellprofiler_core.measurement.FTR_OBJECT_NUMBER],
                 ),
             ),
         ),
@@ -1314,7 +1314,7 @@ def test_get_groupings():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, m, image_set_list
     )
@@ -1372,7 +1372,7 @@ def test_load_avi():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1390,7 +1390,7 @@ def test_load_avi():
     assert tuple(img1.shape) == (264, 542, 3)
     t = m.get_current_image_measurement(
         "_".join(
-            (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
+            (cellprofiler_core.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
         )
     )
     assert t == 0
@@ -1407,7 +1407,7 @@ def test_load_avi():
     assert numpy.any(img1 != img2)
     t = m.get_current_image_measurement(
         "_".join(
-            (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
+            (cellprofiler_core.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
         )
     )
     assert t == 1
@@ -1436,7 +1436,7 @@ def test_load_stk():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1491,7 +1491,7 @@ def test_01_load_2_stk():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1515,7 +1515,7 @@ def test_02_load_stk():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1548,7 +1548,7 @@ def test_load_flex():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1622,7 +1622,7 @@ def test_group_interleaved_avi_frames():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1647,7 +1647,7 @@ def test_group_interleaved_avi_frames():
     assert round(abs(numpy.mean(img3) - 0.07781), 3) == 0
     t = m.get_current_image_measurement(
         "_".join(
-            (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
+            (cellprofiler_core.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
         )
     )
     assert t == 0
@@ -1664,7 +1664,7 @@ def test_group_interleaved_avi_frames():
     assert round(abs(numpy.mean(img2) - 0.07860), 3) == 0
     t = m.get_current_image_measurement(
         "_".join(
-            (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
+            (cellprofiler_core.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
         )
     )
     assert t == 1
@@ -1705,7 +1705,7 @@ def test_group_separated_avi_frames():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1729,7 +1729,7 @@ def test_group_separated_avi_frames():
     assert round(abs(numpy.mean(img3) - 0.073312), 3) == 0
     t = m.get_current_image_measurement(
         "_".join(
-            (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
+            (cellprofiler_core.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
         )
     )
     assert t == 0
@@ -1747,7 +1747,7 @@ def test_group_separated_avi_frames():
     assert round(abs(numpy.mean(img2) - 0.079923), 3) == 0
     t = m.get_current_image_measurement(
         "_".join(
-            (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
+            (cellprofiler_core.measurement.C_METADATA, cellprofiler.modules.loadimages.M_T)
         )
     )
     assert t == 1
@@ -1777,7 +1777,7 @@ def test_load_flex_interleaved():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1846,7 +1846,7 @@ def test_load_flex_separated():
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1971,7 +1971,7 @@ def make_objects_workspace(image, mode="L", filename="myfile.tif"):
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -1997,12 +1997,12 @@ def test_load_empty_objects():
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name, measurement in (
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % OBJECTS_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % OBJECTS_NAME,
         ),
-        (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X),
-        (OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y),
-        (OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER),
+        (OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X),
+        (OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y),
+        (OBJECTS_NAME, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER),
     ):
         assert any(
             [
@@ -2012,10 +2012,10 @@ def test_load_empty_objects():
             ]
         )
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     assert (
         m.get_current_image_measurement(
-            cellprofiler.measurement.FF_COUNT % OBJECTS_NAME
+            cellprofiler_core.measurement.FF_COUNT % OBJECTS_NAME
         )
         == 0
     )
@@ -2030,10 +2030,10 @@ def test_load_indexed_objects():
     o = workspace.object_set.get_objects(OBJECTS_NAME)
     assert numpy.all(o.segmented == image)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     assert (
         m.get_current_image_measurement(
-            cellprofiler.measurement.FF_COUNT % OBJECTS_NAME
+            cellprofiler_core.measurement.FF_COUNT % OBJECTS_NAME
         )
         == 9
     )
@@ -2042,15 +2042,15 @@ def test_load_indexed_objects():
     x = numpy.bincount(image.ravel(), j.ravel())[1:].astype(float) / c
     y = numpy.bincount(image.ravel(), i.ravel())[1:].astype(float) / c
     v = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+        OBJECTS_NAME, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
     )
     assert numpy.all(v == numpy.arange(1, 10))
     v = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X
+        OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X
     )
     assert numpy.all(v == x)
     v = m.get_current_measurement(
-        OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_Y
+        OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y
     )
     assert numpy.all(v == y)
 
@@ -2146,7 +2146,7 @@ def test_batch_images():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -2173,20 +2173,20 @@ def test_batch_images():
     module.prepare_group(workspace, group_keys, image_numbers)
     for image_number in image_numbers:
         path = m.get_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert path == target_path
         file_name = m.get_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert re.match(file_regexp, file_name) is not None
         url = m.get_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_URL + "_" + IMAGE_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_URL + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         assert url == cellprofiler.modules.loadimages.pathname2url(
@@ -2218,7 +2218,7 @@ def test_batch_movies():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
@@ -2250,7 +2250,7 @@ def test_batch_movies():
     for image_number in image_numbers:
         assert (
             m.get_measurement(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "PathName_" + IMAGE_NAME,
                 image_set_number=image_number,
             )
@@ -2258,7 +2258,7 @@ def test_batch_movies():
         )
         assert (
             m.get_measurement(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "Metadata_T",
                 image_set_number=image_number,
             )
@@ -2287,7 +2287,7 @@ def test_batch_flex():
     module.images[0].channels[0].image_name.value = IMAGE_NAME
     module.set_module_num(1)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(module)
@@ -2320,7 +2320,7 @@ def test_batch_flex():
         for image_number in image_numbers:
             assert (
                 m.get_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "PathName_" + IMAGE_NAME,
                     image_number,
                 )
@@ -2328,7 +2328,7 @@ def test_batch_flex():
             )
             assert (
                 m.get_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     cellprofiler.modules.loadimages.C_SERIES + "_" + IMAGE_NAME,
                     image_number,
                 )
@@ -2421,7 +2421,7 @@ def make_prepare_run_workspace(file_names):
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     return (
         cellprofiler.workspace.Workspace(
@@ -2449,19 +2449,19 @@ def test_prepare_run_measurements():
     assert module.prepare_run(workspace)
 
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for i in range(1, 3):
         for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
             filename = "channel%d-A0%d.png" % (j, i)
             full_path = os.path.join(directory, filename)
             url = "file:" + urllib.request.pathname2url(full_path)
             for category, expected in (
-                (cellprofiler.measurement.C_FILE_NAME, filename),
-                (cellprofiler.measurement.C_PATH_NAME, directory),
-                (cellprofiler.measurement.C_URL, url),
+                (cellprofiler_core.measurement.C_FILE_NAME, filename),
+                (cellprofiler_core.measurement.C_PATH_NAME, directory),
+                (cellprofiler_core.measurement.C_URL, url),
             ):
                 value = m.get_measurement(
-                    cellprofiler.measurement.IMAGE, "_".join((category, image_name)), i
+                    cellprofiler_core.measurement.IMAGE, "_".join((category, image_name)), i
                 )
                 assert value == expected
 
@@ -2496,7 +2496,7 @@ def test_00_load_from_url():
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -2511,15 +2511,15 @@ def test_00_load_from_url():
     )
     for image_number, (filename, alt_filename) in zip(image_numbers, names):
         url = m.get_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_URL + "_" + IMAGE_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_URL + "_" + IMAGE_NAME,
             image_set_number=image_number,
         )
         expected = url_base + "/" + filename
         assert expected == url
         url = m.get_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.C_URL + "_" + ALT_IMAGE_NAME,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_URL + "_" + ALT_IMAGE_NAME,
             image_set_number=image_number,
         )
         expected = url_base + "/" + alt_filename

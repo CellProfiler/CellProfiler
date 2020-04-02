@@ -1,5 +1,5 @@
 import cellprofiler.gui.figure
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.workspace
 
 
@@ -33,18 +33,18 @@ class Workspace(cellprofiler.workspace.Workspace):
         window_name = cellprofiler.gui.figure.window_name(module)
 
         if self.measurements.has_feature(
-            cellprofiler.measurement.EXPERIMENT,
-            cellprofiler.measurement.M_GROUPING_TAGS,
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.M_GROUPING_TAGS,
         ):
             group_number = self.measurements[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 image_set_number,
             ]
 
             group_index = self.measurements[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_INDEX,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_INDEX,
                 image_set_number,
             ]
 

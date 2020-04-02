@@ -8,7 +8,7 @@ import skimage.data
 import skimage.exposure
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.injectimage
 import cellprofiler.modules.rescaleintensity
@@ -69,7 +69,7 @@ def workspace(image, module):
         module=module,
         image_set=image_set,
         object_set=cellprofiler.object.ObjectSet(),
-        measurements=cellprofiler.measurement.Measurements(),
+        measurements=cellprofiler_core.measurement.Measurements(),
         image_set_list=image_set_list,
     )
 

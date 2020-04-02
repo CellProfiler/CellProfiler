@@ -2,7 +2,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.tile
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -71,7 +71,7 @@ def make_tile_workspace(images):
         module,
         image_set_list.get_image_set(0),
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -462,7 +462,7 @@ def make_place_workspace(images):
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module

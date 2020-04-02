@@ -4,7 +4,7 @@ import pytest
 import skimage.morphology
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureimageintensity
 import cellprofiler.object
@@ -31,7 +31,7 @@ def objects(image):
 
 @pytest.fixture(scope="function")
 def measurements():
-    return cellprofiler.measurement.Measurements()
+    return cellprofiler_core.measurement.Measurements()
 
 
 @pytest.fixture(scope="function")
@@ -90,7 +90,7 @@ def test_volume_zeros(image, measurements, module, workspace):
 
     for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
@@ -119,7 +119,7 @@ def test_volume(image, measurements, module, workspace):
 
     for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
@@ -152,7 +152,7 @@ def test_volume_and_mask(image, measurements, module, workspace):
 
     for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
@@ -187,7 +187,7 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
 
     for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
@@ -226,7 +226,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
 
     for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, feature
+            cellprofiler_core.measurement.IMAGE, feature
         )
 
         assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
@@ -242,18 +242,18 @@ def test_zeros(image, measurements, module, workspace):
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_TotalArea_image"
+            cellprofiler_core.measurement.IMAGE, "Intensity_TotalArea_image"
         )
         == 0
     )
 
     assert len(measurements.get_object_names()) == 1
 
-    assert measurements.get_object_names()[0] == cellprofiler.measurement.IMAGE
+    assert measurements.get_object_names()[0] == cellprofiler_core.measurement.IMAGE
 
     columns = module.get_measurement_columns(workspace.pipeline)
 
-    features = measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+    features = measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
 
     assert len(columns) == len(features)
 
@@ -275,18 +275,18 @@ def test_image(image, measurements, module, workspace):
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_TotalArea_image"
+            cellprofiler_core.measurement.IMAGE, "Intensity_TotalArea_image"
         )
         == 100
     )
 
     assert measurements.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image"
+        cellprofiler_core.measurement.IMAGE, "Intensity_TotalIntensity_image"
     ) == numpy.sum(pixels)
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image"
+            cellprofiler_core.measurement.IMAGE, "Intensity_MeanIntensity_image"
         )
         == numpy.sum(pixels) / 100.0
     )
@@ -325,25 +325,25 @@ def test_image_and_mask(image, measurements, module, workspace):
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_TotalArea_image"
+            cellprofiler_core.measurement.IMAGE, "Intensity_TotalArea_image"
         )
         == 64
     )
 
     assert measurements.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image"
+        cellprofiler_core.measurement.IMAGE, "Intensity_TotalIntensity_image"
     ) == numpy.sum(pixels[1:9, 1:9])
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image"
+            cellprofiler_core.measurement.IMAGE, "Intensity_MeanIntensity_image"
         )
         == numpy.sum(pixels[1:9, 1:9]) / 64.0
     )
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_image"
+            cellprofiler_core.measurement.IMAGE, "Intensity_PercentMaximal_image"
         )
         == 400.0 / 64.0
     )
@@ -373,36 +373,36 @@ def test_image_and_objects(image, measurements, module, objects, workspace):
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_TotalArea_image_objects"
+            cellprofiler_core.measurement.IMAGE, "Intensity_TotalArea_image_objects"
         )
         == 64
     )
 
     assert measurements.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image_objects"
+        cellprofiler_core.measurement.IMAGE, "Intensity_TotalIntensity_image_objects"
     ) == numpy.sum(pixels[1:9, 1:9])
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image_objects"
+            cellprofiler_core.measurement.IMAGE, "Intensity_MeanIntensity_image_objects"
         )
         == numpy.sum(pixels[1:9, 1:9]) / 64.0
     )
 
     numpy.testing.assert_almost_equal(
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_image_objects"
+            cellprofiler_core.measurement.IMAGE, "Intensity_PercentMaximal_image_objects"
         ),
         400.0 / 64.0,
     )
 
     assert len(measurements.get_object_names()) == 1
 
-    assert measurements.get_object_names()[0] == cellprofiler.measurement.IMAGE
+    assert measurements.get_object_names()[0] == cellprofiler_core.measurement.IMAGE
 
     columns = module.get_measurement_columns(workspace.pipeline)
 
-    features = measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+    features = measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
 
     assert len(columns) == len(features)
 
@@ -438,18 +438,18 @@ def test_image_and_objects_and_mask(image, measurements, module, objects, worksp
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_TotalArea_image_objects"
+            cellprofiler_core.measurement.IMAGE, "Intensity_TotalArea_image_objects"
         )
         == 64
     )
 
     assert measurements.get_current_measurement(
-        cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image_objects"
+        cellprofiler_core.measurement.IMAGE, "Intensity_TotalIntensity_image_objects"
     ) == numpy.sum(pixels[1:9, 1:9])
 
     assert (
         measurements.get_current_measurement(
-            cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image_objects"
+            cellprofiler_core.measurement.IMAGE, "Intensity_MeanIntensity_image_objects"
         )
         == numpy.sum(pixels[1:9, 1:9]) / 64.0
     )
@@ -493,45 +493,45 @@ def test_get_measurement_columns(module):
 
     columns = module.get_measurement_columns(None)
 
-    assert all([column[0] == cellprofiler.measurement.IMAGE for column in columns])
+    assert all([column[0] == cellprofiler_core.measurement.IMAGE for column in columns])
 
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
                 cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ):
             # feature names are now formatting strings

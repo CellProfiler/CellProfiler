@@ -7,7 +7,7 @@ import numpy
 import scipy.ndimage
 import skimage.segmentation
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -318,14 +318,14 @@ Select the objects whose intensities you want to measure.""",
             for object_name in [obj.name for obj in self.objects]:
                 for category, features in (
                     (INTENSITY, ALL_MEASUREMENTS),
-                    (cellprofiler.measurement.C_LOCATION, ALL_LOCATION_MEASUREMENTS),
+                    (cellprofiler_core.measurement.C_LOCATION, ALL_LOCATION_MEASUREMENTS),
                 ):
                     for feature in features:
                         columns.append(
                             (
                                 object_name.value,
                                 "%s_%s_%s" % (category, feature, image_name.value),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
 
@@ -340,12 +340,12 @@ Select the objects whose intensities you want to measure.""",
         """
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable.value == object_name:
-                return [INTENSITY, cellprofiler.measurement.C_LOCATION]
+                return [INTENSITY, cellprofiler_core.measurement.C_LOCATION]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
-        if category == cellprofiler.measurement.C_LOCATION:
+        if category == cellprofiler_core.measurement.C_LOCATION:
             all_measurements = ALL_LOCATION_MEASUREMENTS
         elif category == INTENSITY:
             all_measurements = ALL_MEASUREMENTS
@@ -361,7 +361,7 @@ Select the objects whose intensities you want to measure.""",
         if category == INTENSITY:
             if measurement not in ALL_MEASUREMENTS:
                 return []
-        elif category == cellprofiler.measurement.C_LOCATION:
+        elif category == cellprofiler_core.measurement.C_LOCATION:
             if measurement not in ALL_LOCATION_MEASUREMENTS:
                 return []
         else:
@@ -665,12 +665,12 @@ Select the objects whose intensities you want to measure.""",
                     (INTENSITY, MEDIAN_INTENSITY, median_intensity),
                     (INTENSITY, MAD_INTENSITY, mad_intensity),
                     (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
-                    (cellprofiler.measurement.C_LOCATION, LOC_CMI_X, cmi_x),
-                    (cellprofiler.measurement.C_LOCATION, LOC_CMI_Y, cmi_y),
-                    (cellprofiler.measurement.C_LOCATION, LOC_CMI_Z, cmi_z),
-                    (cellprofiler.measurement.C_LOCATION, LOC_MAX_X, max_x),
-                    (cellprofiler.measurement.C_LOCATION, LOC_MAX_Y, max_y),
-                    (cellprofiler.measurement.C_LOCATION, LOC_MAX_Z, max_z),
+                    (cellprofiler_core.measurement.C_LOCATION, LOC_CMI_X, cmi_x),
+                    (cellprofiler_core.measurement.C_LOCATION, LOC_CMI_Y, cmi_y),
+                    (cellprofiler_core.measurement.C_LOCATION, LOC_CMI_Z, cmi_z),
+                    (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_X, max_x),
+                    (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_Y, max_y),
+                    (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_Z, max_z),
                 ):
                     measurement_name = "{}_{}_{}".format(
                         category, feature_name, image_name.value

@@ -5,7 +5,7 @@ from functools import reduce
 import numpy as np
 
 import cellprofiler_core.image as cpi
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps

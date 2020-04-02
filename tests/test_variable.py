@@ -5,7 +5,7 @@ import os
 import tempfile
 import unittest
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.preferences
 import cellprofiler.setting
 
@@ -392,7 +392,7 @@ class TestDirectoryPath(unittest.TestCase):
         self.assertEqual(s.get_absolute_path(), "")
 
     def test_03_07_metadata(self):
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         m.add_image_measurement("Metadata_Path", "2")
         s = cellprofiler.setting.DirectoryPath("whatever", allow_metadata=True)
         for dir_choice, expected in (

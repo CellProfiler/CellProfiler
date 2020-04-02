@@ -29,11 +29,11 @@ import matplotlib.text
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
-from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler_core.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"
@@ -92,7 +92,7 @@ Choose the name of objects identified by some previous module (such as
             if self.objects_or_image == OI_OBJECTS:
                 return self.objects_name.value
             else:
-                return cellprofiler.measurement.IMAGE
+                return cellprofiler_core.measurement.IMAGE
 
         self.measurement = cellprofiler.setting.Measurement(
             "Measurement to display",
@@ -419,7 +419,7 @@ color map.
         filename_feature = "_".join((LI.C_FILE_NAME, image_name))
         if not all(
             [
-                m.has_feature(cellprofiler.measurement.IMAGE, f)
+                m.has_feature(cellprofiler_core.measurement.IMAGE, f)
                 for f in (pathname_feature, filename_feature)
             ]
         ):
@@ -450,7 +450,7 @@ color map.
         title = "%s_%s" % (
             self.objects_name.value
             if self.objects_or_image == OI_OBJECTS
-            else cellprofiler.measurement.IMAGE,
+            else cellprofiler_core.measurement.IMAGE,
             self.measurement.value,
         )
 
@@ -523,7 +523,7 @@ color map.
             )
             objects_or_image = (
                 OI_IMAGE
-                if object_name == cellprofiler.measurement.IMAGE
+                if object_name == cellprofiler_core.measurement.IMAGE
                 else OI_OBJECTS
             )
             measurement = "_".join((category, feature_nbr, image_name, size_scale))

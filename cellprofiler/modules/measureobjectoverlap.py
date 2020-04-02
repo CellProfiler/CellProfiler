@@ -70,7 +70,7 @@ import scipy.sparse
 
 import cellprofiler.icons
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -942,14 +942,14 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return [C_IMAGE_OVERLAP]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_IMAGE_OVERLAP
         ):
             return self.all_features()
@@ -966,7 +966,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         self, pipeline, object_name, category, measurement, image_name
     ):
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_IMAGE_OVERLAP
             and measurement in FTR_ALL
         ):
@@ -985,9 +985,9 @@ the two objects. Set this setting to “No” to assess no penalty.""",
     def get_measurement_columns(self, pipeline):
         return [
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 self.measurement_name(feature),
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             )
             for feature in self.all_features()
         ]

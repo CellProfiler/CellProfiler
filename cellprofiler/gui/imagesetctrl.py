@@ -16,7 +16,7 @@ import wx.lib.mixins.gridlabelrenderer
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.images
 import cellprofiler.pipeline
 import cellprofiler.pipeline
@@ -111,48 +111,48 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         m = self.measurements
         if m is None or len(self.cache) == 0:
             return columns
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         metadata_tags = m.get_metadata_tags()
-        for feature in m.get_feature_names(cellprofiler.measurement.IMAGE):
+        for feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE):
             is_key = False
             channel = None
             if self.display_mode == DISPLAY_MODE_COMPLEX:
-                if feature.startswith(cellprofiler.measurement.C_METADATA):
+                if feature.startswith(cellprofiler_core.measurement.C_METADATA):
                     column_type = COL_METADATA
                     name = feature.split("_", 1)[1]
                     if feature in metadata_tags:
                         is_key = True
                 elif feature.startswith(
-                    cellprofiler.measurement.C_FILE_NAME
-                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME):
+                    cellprofiler_core.measurement.C_FILE_NAME
+                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_FILE_NAME):
                     column_type = COL_FILENAME
                     channel = feature.split("_", 1)[1]
                     name = "%s File Name" % channel
                 elif feature.startswith(
-                    cellprofiler.measurement.C_PATH_NAME
-                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME):
+                    cellprofiler_core.measurement.C_PATH_NAME
+                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_PATH_NAME):
                     column_type = COL_PATHNAME
                     channel = feature.split("_", 1)[1]
                     name = "%s Path Name" % channel
                 elif feature.startswith(
-                    cellprofiler.measurement.C_URL
-                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_URL):
+                    cellprofiler_core.measurement.C_URL
+                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_URL):
                     column_type = COL_URL
                     channel = feature.split("_", 1)[1]
                     name = "%s URL" % channel
-                elif feature.startswith(cellprofiler.measurement.C_SERIES):
+                elif feature.startswith(cellprofiler_core.measurement.C_SERIES):
                     column_type = COL_SERIES
                     channel = feature.split("_", 1)[1]
                     name = "%s Series" % channel
-                elif feature.startswith(cellprofiler.measurement.C_FRAME):
+                elif feature.startswith(cellprofiler_core.measurement.C_FRAME):
                     column_type = COL_FRAME
                     channel = feature.split("_", 1)[1]
                     name = "%s Frame" % channel
                 else:
                     continue
             elif feature.startswith(
-                cellprofiler.measurement.C_URL
-            ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_URL):
+                cellprofiler_core.measurement.C_URL
+            ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_URL):
                 column_type = COL_URL
                 channel = feature.split("_", 1)[1]
                 name = channel
@@ -251,9 +251,9 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             column.channel_type
             == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
         ):
-            feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
+            feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + column.channel
         else:
-            feature = cellprofiler.measurement.C_URL + "_" + column.channel
+            feature = cellprofiler_core.measurement.C_URL + "_" + column.channel
         value = self.cache[feature, image_set]
         if value is not None:
             return value.encode()
@@ -367,7 +367,7 @@ class ImageSetCache:
             if len(self.cache) >= self.max_size:
                 self.decimate()
             entry = [
-                self.m[cellprofiler.measurement.IMAGE, feature, self.pages[page]],
+                self.m[cellprofiler_core.measurement.IMAGE, feature, self.pages[page]],
                 self.access_time,
             ]
             self.cache[key] = entry

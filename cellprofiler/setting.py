@@ -12,7 +12,7 @@ import matplotlib.cm
 import six
 import skimage.morphology
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.utilities.legacy
 from cellprofiler.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
@@ -1404,10 +1404,10 @@ class ObjectNameProvider(NameProvider):
         )
 
     def test_valid(self, pipeline):
-        if self.value_text in cellprofiler.measurement.disallowed_object_names:
+        if self.value_text in cellprofiler_core.measurement.disallowed_object_names:
             raise ValidationError(
                 "Object names may not be any of %s"
-                % (", ".join(cellprofiler.measurement.disallowed_object_names)),
+                % (", ".join(cellprofiler_core.measurement.disallowed_object_names)),
                 self,
             )
         super(ObjectNameProvider, self).test_valid(pipeline)

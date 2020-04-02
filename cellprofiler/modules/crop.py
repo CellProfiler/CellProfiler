@@ -50,7 +50,7 @@ import numpy
 from centrosome.filter import stretch
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -394,7 +394,7 @@ objects:
     def run(self, workspace):
         first_image_set = (
             workspace.measurements.get_current_image_measurement(
-                cellprofiler.measurement.GROUP_INDEX
+                cellprofiler_core.measurement.GROUP_INDEX
             )
             == 1
         )
@@ -543,9 +543,9 @@ objects:
         """Return information on the measurements made during cropping"""
         return [
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 x % self.cropped_image_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             )
             for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)
         ]

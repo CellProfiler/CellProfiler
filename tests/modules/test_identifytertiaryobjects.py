@@ -2,8 +2,8 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
-import cellprofiler.measurement
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.identifytertiaryobjects
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -39,7 +39,7 @@ def make_workspace(primary_labels, secondary_labels):
         module,
         isl.get_image_set(0),
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         isl,
     )
     workspace.pipeline.add_module(module)
@@ -69,7 +69,7 @@ def test_zeros():
     output_objects = workspace.object_set.get_objects(TERTIARY)
     assert numpy.all(output_objects.segmented == primary_labels)
     columns = module.get_measurement_columns(workspace.pipeline)
-    for object_name in (cellprofiler.measurement.IMAGE, PRIMARY, SECONDARY, TERTIARY):
+    for object_name in (cellprofiler_core.measurement.IMAGE, PRIMARY, SECONDARY, TERTIARY):
         ocolumns = [x for x in columns if x[0] == object_name]
         features = measurements.get_feature_names(object_name)
         assert len(ocolumns) == len(features)
@@ -237,44 +237,44 @@ def test_get_measurement_columns():
     columns = module.get_measurement_columns(None)
     expected = (
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % TERTIARY,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % TERTIARY,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             TERTIARY,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             TERTIARY,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             TERTIARY,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             PRIMARY,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % TERTIARY,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % TERTIARY,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             SECONDARY,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % TERTIARY,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % TERTIARY,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             TERTIARY,
-            cellprofiler.measurement.FF_PARENT % PRIMARY,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_PARENT % PRIMARY,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             TERTIARY,
-            cellprofiler.measurement.FF_PARENT % SECONDARY,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_PARENT % SECONDARY,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
     )
     assert len(columns) == len(expected)
@@ -351,8 +351,8 @@ def test_do_not_shrink_identical():
             assert parent_of[child - 1] == child
 
     for location_feature in (
-        cellprofiler.measurement.M_LOCATION_CENTER_X,
-        cellprofiler.measurement.M_LOCATION_CENTER_Y,
+        cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+        cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
     ):
         values = measurements.get_current_measurement(TERTIARY, location_feature)
         assert numpy.all(numpy.isnan(values) == [False, True, False])
@@ -389,20 +389,20 @@ def test_do_not_shrink_missing():
 
             child_name = module.subregion_objects_name.value
             primary_name = module.primary_objects_name.value
-            ftr = cellprofiler.measurement.FF_PARENT % primary_name
+            ftr = cellprofiler_core.measurement.FF_PARENT % primary_name
             pparents = m[child_name, ftr]
             assert len(pparents) == (3 if missing_primary else 2)
             if missing_primary:
                 assert pparents[missing - 1] == 0
 
             secondary_name = module.secondary_objects_name.value
-            ftr = cellprofiler.measurement.FF_PARENT % secondary_name
+            ftr = cellprofiler_core.measurement.FF_PARENT % secondary_name
             pparents = m[child_name, ftr]
             assert len(pparents) == (3 if missing_primary else 2)
             if not missing_primary:
                 assert all([x in pparents for x in range(1, 3)])
 
-            ftr = cellprofiler.measurement.FF_CHILDREN_COUNT % child_name
+            ftr = cellprofiler_core.measurement.FF_CHILDREN_COUNT % child_name
             children = m[primary_name, ftr]
             assert len(children) == (2 if missing_primary else 3)
             if not missing_primary:
@@ -449,10 +449,10 @@ def test_relationships():
         )
         assert len(result) == 3
         for i in range(3):
-            assert result[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER][i] == 1
-            assert result[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER][i] == 1
-            assert result[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER][i] == i + 1
-            assert result[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER][i] == i + 1
+            assert result[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER][i] == 1
+            assert result[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER][i] == 1
+            assert result[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER][i] == i + 1
+            assert result[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER][i] == i + 1
 
 
 def test_load_v3():

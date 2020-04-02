@@ -8,7 +8,7 @@ import skimage.morphology
 
 import cellprofiler.gui.help
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -732,12 +732,12 @@ segmentation.""",
         children_per_parent, parents_of_children = objects.relate_children(objects_out)
         measurements.add_measurement(
             self.x_name.value,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % objname,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % objname,
             children_per_parent,
         )
         measurements.add_measurement(
             objname,
-            cellprofiler.measurement.FF_PARENT % self.x_name.value,
+            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
             parents_of_children,
         )
         image_numbers = (
@@ -773,13 +773,13 @@ segmentation.""",
 
             measurements.add_measurement(
                 self.new_primary_objects_name.value,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % objname,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % objname,
                 children_per_parent,
             )
 
             measurements.add_measurement(
                 objname,
-                cellprofiler.measurement.FF_PARENT
+                cellprofiler_core.measurement.FF_PARENT
                 % self.new_primary_objects_name.value,
                 parents_of_children,
             )
@@ -947,14 +947,14 @@ segmentation.""",
             columns += [
                 (
                     self.new_primary_objects_name.value,
-                    cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
                 (
                     self.y_name.value,
-                    cellprofiler.measurement.FF_PARENT
+                    cellprofiler_core.measurement.FF_PARENT
                     % self.new_primary_objects_name.value,
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
             ]
         else:
@@ -984,7 +984,7 @@ segmentation.""",
                     pipeline, self.y_name.value
                 )
 
-                categories += [cellprofiler.measurement.C_CHILDREN]
+                categories += [cellprofiler_core.measurement.C_CHILDREN]
 
         return categories
 
@@ -1000,41 +1000,41 @@ segmentation.""",
 
         if self.wants_discard_edge and self.wants_discard_primary:
             if (
-                object_name == cellprofiler.measurement.IMAGE
-                and category == cellprofiler.measurement.C_COUNT
+                object_name == cellprofiler_core.measurement.IMAGE
+                and category == cellprofiler_core.measurement.C_COUNT
             ):
                 measurements += [self.new_primary_objects_name.value]
 
             if (
                 object_name == self.y_name.value
-                and category == cellprofiler.measurement.C_PARENT
+                and category == cellprofiler_core.measurement.C_PARENT
             ):
                 measurements += [self.new_primary_objects_name.value]
 
             if object_name == self.new_primary_objects_name.value:
-                if category == cellprofiler.measurement.C_LOCATION:
+                if category == cellprofiler_core.measurement.C_LOCATION:
                     measurements += [
-                        cellprofiler.measurement.FTR_CENTER_X,
-                        cellprofiler.measurement.FTR_CENTER_Y,
-                        cellprofiler.measurement.FTR_CENTER_Z,
+                        cellprofiler_core.measurement.FTR_CENTER_X,
+                        cellprofiler_core.measurement.FTR_CENTER_Y,
+                        cellprofiler_core.measurement.FTR_CENTER_Z,
                     ]
 
-                if category == cellprofiler.measurement.C_NUMBER:
-                    measurements += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+                if category == cellprofiler_core.measurement.C_NUMBER:
+                    measurements += [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
-                if category == cellprofiler.measurement.C_PARENT:
+                if category == cellprofiler_core.measurement.C_PARENT:
                     measurements += [self.x_name.value]
 
-            if category == cellprofiler.measurement.C_CHILDREN:
+            if category == cellprofiler_core.measurement.C_CHILDREN:
                 if object_name == self.x_name.value:
                     measurements += [
-                        cellprofiler.measurement.FF_COUNT
+                        cellprofiler_core.measurement.FF_COUNT
                         % self.new_primary_objects_name.value
                     ]
 
                 if object_name == self.new_primary_objects_name.value:
                     measurements += [
-                        cellprofiler.measurement.FF_COUNT % self.y_name.value
+                        cellprofiler_core.measurement.FF_COUNT % self.y_name.value
                     ]
 
         return measurements

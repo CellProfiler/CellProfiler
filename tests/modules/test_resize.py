@@ -6,7 +6,7 @@ import skimage.exposure
 import skimage.transform
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.resize
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -70,7 +70,7 @@ def make_workspace(
         module,
         image_set,
         cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module

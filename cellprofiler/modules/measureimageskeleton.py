@@ -37,7 +37,7 @@ import scipy.ndimage
 import skimage.segmentation
 import skimage.util
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -184,7 +184,7 @@ You can create a morphological skeleton with the
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return ["Skeleton"]
 
         return []
@@ -197,7 +197,7 @@ You can create a morphological skeleton with the
     def get_measurements(self, pipeline, object_name, category):
         name = self.skeleton_name.value
 
-        if object_name == cellprofiler.measurement.IMAGE and category == "Skeleton":
+        if object_name == cellprofiler_core.measurement.IMAGE and category == "Skeleton":
             return [
                 "Skeleton_Branches_{}".format(name),
                 "Skeleton_Endpoints_{}".format(name),
@@ -206,14 +206,14 @@ You can create a morphological skeleton with the
         return []
 
     def get_measurement_columns(self, pipeline):
-        image = cellprofiler.measurement.IMAGE
+        image = cellprofiler_core.measurement.IMAGE
 
         features = [
             self.get_measurement_name("Branches"),
             self.get_measurement_name("Endpoints"),
         ]
 
-        column_type = cellprofiler.measurement.COLTYPE_INTEGER
+        column_type = cellprofiler_core.measurement.COLTYPE_INTEGER
 
         return [(image, feature, column_type) for feature in features]
 

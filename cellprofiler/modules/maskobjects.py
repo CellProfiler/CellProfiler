@@ -5,8 +5,8 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
-import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
@@ -374,7 +374,7 @@ controls how remaining objects are associated with their predecessors:
         m = workspace.measurements
         m.add_measurement(
             remaining_object_name,
-            cellprofiler.measurement.FF_PARENT % object_name,
+            cellprofiler_core.measurement.FF_PARENT % object_name,
             parent_objects,
         )
         if np.max(original_objects.segmented) == 0:
@@ -390,7 +390,7 @@ controls how remaining objects are associated with their predecessors:
             child_count = (child_count > 0).astype(int)
         m.add_measurement(
             object_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
             child_count,
         )
         if self.retain_or_renumber == R_RETAIN:
@@ -465,12 +465,12 @@ controls how remaining objects are associated with their predecessors:
         columns += [
             (
                 object_name,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (
                 remaining_object_name,
-                cellprofiler.measurement.FF_PARENT % object_name,
+                cellprofiler_core.measurement.FF_PARENT % object_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
         ]

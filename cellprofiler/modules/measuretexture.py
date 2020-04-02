@@ -108,7 +108,7 @@ import mahotas.features
 import numpy
 import skimage.util
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -412,7 +412,7 @@ measured and will result in a undefined value in the output file.
 
         if (
             self.wants_image_measurements()
-            and object_name == cellprofiler.measurement.IMAGE
+            and object_name == cellprofiler_core.measurement.IMAGE
         ):
             return [TEXTURE]
 
@@ -470,7 +470,7 @@ measured and will result in a undefined value in the output file.
                         for angle in range(13 if pipeline.volumetric() else 4):
                             columns += [
                                 (
-                                    cellprofiler.measurement.IMAGE,
+                                    cellprofiler_core.measurement.IMAGE,
                                     "{}_{}_{}_{:d}_{:02d}".format(
                                         TEXTURE,
                                         feature,
@@ -478,7 +478,7 @@ measured and will result in a undefined value in the output file.
                                         scale_group.scale.value,
                                         angle,
                                     ),
-                                    cellprofiler.measurement.COLTYPE_FLOAT,
+                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                                 )
                             ]
 
@@ -498,7 +498,7 @@ measured and will result in a undefined value in the output file.
                                             scale_group.scale.value,
                                             angle,
                                         ),
-                                        cellprofiler.measurement.COLTYPE_FLOAT,
+                                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                                     )
                                 ]
 

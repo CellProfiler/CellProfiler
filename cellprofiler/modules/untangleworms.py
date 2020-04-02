@@ -104,12 +104,12 @@ from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 
 logger = logging.getLogger(__name__)
 import cellprofiler
 import cellprofiler_core.module as cpm
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.image as cpi
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
@@ -1142,13 +1142,13 @@ should be processed.
                 center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
             measurements.add_measurement(
-                name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x
+                name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
             )
             measurements.add_measurement(
-                name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y
+                name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
             )
             measurements.add_measurement(
-                name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, o.indices
+                name, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER, o.indices
             )
             #
             # Save outlines
@@ -2866,7 +2866,7 @@ should be processed.
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [cellprofiler.measurement.C_COUNT]
+            return [cellprofiler_core.measurement.C_COUNT]
         if (
             object_name == self.overlap_objects.value
             and self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
@@ -2875,8 +2875,8 @@ should be processed.
             and self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         ):
             return [
-                cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER,
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
                 C_WORM,
             ]
         return []
@@ -2885,7 +2885,7 @@ should be processed.
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler_core.measurement.C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
@@ -2893,13 +2893,13 @@ should be processed.
         if (wants_overlapping and object_name == self.overlap_objects) or (
             wants_nonoverlapping and object_name == self.nonoverlapping_objects
         ):
-            if category == cellprofiler.measurement.C_LOCATION:
+            if category == cellprofiler_core.measurement.C_LOCATION:
                 result += [
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler.measurement.C_NUMBER:
-                result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler_core.measurement.C_NUMBER:
+                result += [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result

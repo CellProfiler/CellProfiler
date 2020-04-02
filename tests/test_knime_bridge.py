@@ -9,7 +9,7 @@ import six.moves
 import zmq
 
 import cellprofiler.knime_bridge
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.flagimage
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.loadimages
@@ -201,7 +201,7 @@ class TestKnimeBridge(unittest.TestCase):
     #     metadata = json.loads(response.pop(0))
     #     data = response.pop(0)
     #     measurements = self.decode_measurements(metadata, data)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][0], 1)
     #     self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
 
     # FIXME: wxPython 4 PR
@@ -308,7 +308,7 @@ class TestKnimeBridge(unittest.TestCase):
     #     metadata = json.loads(response.pop(0))
     #     data = response.pop(0)
     #     measurements = self.decode_measurements(metadata, data)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][0], 1)
     #     self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
     #     self.assertEqual(len(measurements["dizzy"]["AreaShape_Area"]), 0)
 
@@ -358,9 +358,9 @@ class TestKnimeBridge(unittest.TestCase):
     #     metadata = json.loads(response.pop(0))
     #     data = response.pop(0)
     #     measurements = self.decode_measurements(metadata, data)
-    #     self.assertEqual(len(measurements[cellprofiler.measurement.IMAGE][cellprofiler.measurement.IMAGE_NUMBER]), 2)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][1], 2)
+    #     self.assertEqual(len(measurements[cellprofiler_core.measurement.IMAGE][cellprofiler_core.measurement.IMAGE_NUMBER]), 2)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][0], 1)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][1], 2)
     #     self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
 
     # FIXME: wxPython 4 PR

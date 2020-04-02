@@ -3,7 +3,7 @@ import pytest
 from six.moves import StringIO
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.correctilluminationcalculate
 import cellprofiler.modules.injectimage
 import cellprofiler.object
@@ -41,7 +41,7 @@ def make_workspaces(images_and_masks):
     module.dilated_image_name.value = DILATED_IMAGE_NAME
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
 
     for i, (image, mask) in enumerate(images_and_masks):
         image_set = image_set_list.get_image_set(i)
@@ -115,7 +115,7 @@ def test_zeros():
                                 cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
                             ):
                                 module.automatic_object_width.value = ow
-                                measurements = cellprofiler.measurement.Measurements()
+                                measurements = cellprofiler_core.measurement.Measurements()
                                 image_set_list = cellprofiler_core.image.ImageSetList()
                                 workspace = cellprofiler.workspace.Workspace(
                                     pipeline,
@@ -201,7 +201,7 @@ def test_ones_image():
                             cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
                         ):
                             module.automatic_object_width.value = ow
-                            measurements = cellprofiler.measurement.Measurements()
+                            measurements = cellprofiler_core.measurement.Measurements()
                             image_set_list = cellprofiler_core.image.ImageSetList()
                             workspace = cellprofiler.workspace.Workspace(
                                 pipeline, None, None, None, measurements, image_set_list
@@ -287,7 +287,7 @@ def test_masked_image():
                         cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
                     ):
                         module.automatic_object_width.value = ow
-                        measurements = cellprofiler.measurement.Measurements()
+                        measurements = cellprofiler_core.measurement.Measurements()
                         image_set_list = cellprofiler_core.image.ImageSetList()
                         workspace = cellprofiler.workspace.Workspace(
                             pipeline, None, None, None, measurements, image_set_list
@@ -430,7 +430,7 @@ def test_Background():
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_NONE
     )
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -477,7 +477,7 @@ def test_no_smoothing():
     )
     module.rescale_option.value = cellprofiler.setting.NO
     module.dilate_objects.value = False
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -537,7 +537,7 @@ def test_FitPolynomial():
         )
         module.rescale_option.value = cellprofiler.setting.NO
         module.dilate_objects.value = False
-        measurements = cellprofiler.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
         image_set_list = cellprofiler_core.image.ImageSetList()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, None, None, None, measurements, image_set_list
@@ -590,7 +590,7 @@ def test_gaussian_filter():
     module.size_of_smoothing_filter.value = 10
     module.rescale_option.value = cellprofiler.setting.NO
     module.dilate_objects.value = False
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -648,7 +648,7 @@ def test_median_filter():
     module.size_of_smoothing_filter.value = 10
     module.rescale_option.value = cellprofiler.setting.NO
     module.dilate_objects.value = False
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -698,7 +698,7 @@ def test_smooth_to_average():
     module.size_of_smoothing_filter.value = 10
     module.rescale_option.value = cellprofiler.setting.NO
     module.dilate_objects.value = False
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -1135,7 +1135,7 @@ def test_intermediate_images():
         module.average_image_name.value = "AverageImage"
         module.save_dilated_image.value = dilated_flag
         module.dilated_image_name.value = "DilatedImage"
-        measurements = cellprofiler.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
         image_set_list = cellprofiler_core.image.ImageSetList()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, None, None, None, measurements, image_set_list
@@ -1193,7 +1193,7 @@ def test_rescale():
     module.size_of_smoothing_filter.value = 10
     module.rescale_option.value = cellprofiler.setting.YES
     module.dilate_objects.value = False
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -1245,7 +1245,7 @@ def test_rescale_outlier():
     module.size_of_smoothing_filter.value = 10
     module.rescale_option.value = cellprofiler.setting.YES
     module.dilate_objects.value = False
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list

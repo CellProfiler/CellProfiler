@@ -15,7 +15,7 @@ import six
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules
 import cellprofiler.modules.injectimage
@@ -157,7 +157,7 @@ HasImagePlaneDetails:False"""
                 [
                     column[0] == "Image"
                     and column[1] == "Group_Number"
-                    and column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                    and column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                     for column in columns
                 ]
             )
@@ -167,7 +167,7 @@ HasImagePlaneDetails:False"""
                 [
                     column[0] == "Image"
                     and column[1] == "Group_Index"
-                    and column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                    and column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                     for column in columns
                 ]
             )
@@ -177,7 +177,7 @@ HasImagePlaneDetails:False"""
                 [
                     column[0] == "Image"
                     and column[1] == "Group_Length"
-                    and column[2] == cellprofiler.measurement.COLTYPE_INTEGER
+                    and column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                     for column in columns
                 ]
             )
@@ -203,7 +203,7 @@ HasImagePlaneDetails:False"""
         self.assertTrue(
             any(
                 [
-                    column[0] == cellprofiler.measurement.EXPERIMENT
+                    column[0] == cellprofiler_core.measurement.EXPERIMENT
                     and column[1] == cellprofiler.pipeline.M_PIPELINE
                     for column in columns
                 ]
@@ -212,7 +212,7 @@ HasImagePlaneDetails:False"""
         self.assertTrue(
             any(
                 [
-                    column[0] == cellprofiler.measurement.EXPERIMENT
+                    column[0] == cellprofiler_core.measurement.EXPERIMENT
                     and column[1] == cellprofiler.pipeline.M_VERSION
                     for column in columns
                 ]
@@ -221,7 +221,7 @@ HasImagePlaneDetails:False"""
         self.assertTrue(
             any(
                 [
-                    column[0] == cellprofiler.measurement.EXPERIMENT
+                    column[0] == cellprofiler_core.measurement.EXPERIMENT
                     and column[1] == cellprofiler.pipeline.M_TIMESTAMP
                     for column in columns
                 ]
@@ -231,9 +231,9 @@ HasImagePlaneDetails:False"""
             any(
                 [
                     len(columns) > 3
-                    and column[0] == cellprofiler.measurement.EXPERIMENT
+                    and column[0] == cellprofiler_core.measurement.EXPERIMENT
                     and column[1] == cellprofiler.pipeline.M_MODIFICATION_TIMESTAMP
-                    and column[3][cellprofiler.measurement.MCA_AVAILABLE_POST_RUN]
+                    and column[3][cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN]
                     for column in columns
                 ]
             )
@@ -272,13 +272,13 @@ HasImagePlaneDetails:False"""
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
                     workspace.measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_NUMBER,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_NUMBER,
                         image_number,
                     ] = (group_number_idx + 1)
                     workspace.measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_INDEX,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_INDEX,
                         image_number,
                     ] = (group_idx + 1)
             expects[0], expects[1] = ("PrepareGroup", 0)
@@ -331,9 +331,9 @@ HasImagePlaneDetails:False"""
         def get_measurement_columns(pipeline):
             return [
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "mymeasurement",
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 )
             ]
 
@@ -375,13 +375,13 @@ HasImagePlaneDetails:False"""
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
                     workspace.measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_NUMBER,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_NUMBER,
                         image_number,
                     ] = (group_number_idx + 1)
                     workspace.measurements[
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.GROUP_INDEX,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.GROUP_INDEX,
                         image_number,
                     ] = (group_idx + 1)
             expects[0], expects[1] = ("PrepareGroup", 1)
@@ -426,9 +426,9 @@ HasImagePlaneDetails:False"""
         def get_measurement_columns(pipeline):
             return [
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "mymeasurement",
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 )
             ]
 
@@ -457,10 +457,10 @@ HasImagePlaneDetails:False"""
 
         def prepare_run(workspace):
             workspace.measurements[
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, 1
             ] = 1
             workspace.measurements[
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, 1
             ] = 1
             return True
 
@@ -496,9 +496,9 @@ HasImagePlaneDetails:False"""
         def get_measurement_columns(pipeline):
             return [
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "mymeasurement",
-                    cellprofiler.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
                 )
             ]
 
@@ -512,7 +512,7 @@ HasImagePlaneDetails:False"""
         )
         module.set_module_num(1)
         pipeline.add_module(module)
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, module, m, None, m, cellprofiler_core.image.ImageSetList
         )
@@ -558,9 +558,9 @@ HasImagePlaneDetails:False"""
     #     def prepare_run(workspace):
     #         m = workspace.measurements
     #         for i in range(1, 7):
-    #             m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_PATH_NAME + "_DNA", i] = \
+    #             m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_PATH_NAME + "_DNA", i] = \
     #                 "/imaging/analysis"
-    #             m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_FILE_NAME + "_DNA", i] = "img%d.tif" % i
+    #             m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_FILE_NAME + "_DNA", i] = "img%d.tif" % i
     #         workspace.pipeline.report_prepare_run_error(
     #                 module, "I am configured incorrectly")
     #         return True
@@ -570,7 +570,7 @@ HasImagePlaneDetails:False"""
     #     module.set_module_num(1)
     #     pipeline.add_module(module)
     #     workspace = cellprofiler.workspace.Workspace(
-    #             pipeline, None, None, None, cellprofiler.measurement.Measurements(),
+    #             pipeline, None, None, None, cellprofiler_core.measurement.Measurements(),
     #             cellprofiler_core.image.ImageSetList())
     #     self.assertFalse(pipeline.prepare_run(workspace))
     #     self.assertEqual(workspace.measurements.image_set_count, 0)
@@ -620,7 +620,7 @@ HasImagePlaneDetails:False"""
         module = cellprofiler.modules.instantiate_module("Align")
         module.set_module_num(1)
         pipeline.add_module(module)
-        measurements = cellprofiler.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
         my_measurement = [
             numpy.random.uniform(size=numpy.random.randint(3, 25)) for i in range(20)
         ]
@@ -635,7 +635,7 @@ HasImagePlaneDetails:False"""
         fd = six.moves.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
-        measurements = cellprofiler.measurement.load_measurements(fd)
+        measurements = cellprofiler_core.measurement.load_measurements(fd)
         my_measurement_out = measurements.get_all_measurements("Foo", "Bar")
         self.assertEqual(len(my_measurement), len(my_measurement_out))
         for m_in, m_out in zip(my_measurement, my_measurement_out):
@@ -669,7 +669,7 @@ HasImagePlaneDetails:False"""
         module = cellprofiler.modules.instantiate_module("Align")
         module.set_module_num(1)
         pipeline.add_module(module)
-        measurements = cellprofiler.measurement.Measurements()
+        measurements = cellprofiler_core.measurement.Measurements()
         # m2 and m3 should go into panic mode because they differ by a cap
         m1_name = "dalkzfsrqoiualkjfrqealkjfqroupifaaalfdskquyalkhfaafdsafdsqteqteqtew"
         m2_name = "lkjxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ"
@@ -689,7 +689,7 @@ HasImagePlaneDetails:False"""
         fd = six.moves.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
-        measurements = cellprofiler.measurement.load_measurements(fd)
+        measurements = cellprofiler_core.measurement.load_measurements(fd)
         reverse_mapping = cellprofiler.pipeline.map_feature_names(
             [m1_name, m2_name, m3_name]
         )
@@ -994,7 +994,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         module = ATestModule(
             measurement_columns=[
-                (OBJECT_NAME, FEATURE_NAME, cellprofiler.measurement.COLTYPE_FLOAT)
+                (OBJECT_NAME, FEATURE_NAME, cellprofiler_core.measurement.COLTYPE_FLOAT)
             ]
         )
         module.set_module_num(1)
@@ -1040,7 +1040,7 @@ HasImagePlaneDetails:False"""
         image_setting = cellprofiler.setting.ImageNameProvider("foo", IMAGE_NAME)
         object_setting = cellprofiler.setting.ObjectNameProvider("foo", OBJECT_NAME)
         measurement_columns = [
-            (OBJECT_NAME, FEATURE_NAME, cellprofiler.measurement.COLTYPE_FLOAT)
+            (OBJECT_NAME, FEATURE_NAME, cellprofiler_core.measurement.COLTYPE_FLOAT)
         ]
         other_providers = {cellprofiler.setting.IMAGE_GROUP: [ALT_IMAGE_NAME]}
         module = ATestModule(
@@ -1197,7 +1197,7 @@ HasImagePlaneDetails:False"""
     def test_17_03_get_dependency_graph_measurement(self):
         pipeline = cellprofiler.pipeline.Pipeline()
         measurement_columns = [
-            (OBJECT_NAME, FEATURE_NAME, cellprofiler.measurement.COLTYPE_FLOAT)
+            (OBJECT_NAME, FEATURE_NAME, cellprofiler_core.measurement.COLTYPE_FLOAT)
         ]
         measurement_setting = cellprofiler.setting.Measurement(
             "text", lambda: OBJECT_NAME, FEATURE_NAME
@@ -1549,7 +1549,7 @@ class TestModuleWithMeasurement(cellprofiler_core.module.Module):
 
     def get_measurement_columns(self, pipeline):
         return [
-            (cellprofiler.measurement.IMAGE, self.my_variable.value, "varchar(255)")
+            (cellprofiler_core.measurement.IMAGE, self.my_variable.value, "varchar(255)")
         ]
 
 

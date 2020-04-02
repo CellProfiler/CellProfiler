@@ -41,7 +41,7 @@ import numpy
 import skimage.io
 import skimage.util
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
@@ -549,7 +549,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             d = self.get_dictionary(workspace.image_set_list)
             if (
                 workspace.measurements[
-                    cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX
+                    cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX
                 ]
                 > 1
             ):
@@ -757,19 +757,19 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             pn, fn = os.path.split(filename)
             url = cellprofiler.modules.loadimages.pathname2url(filename)
             workspace.measurements.add_measurement(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 self.file_name_feature,
                 fn,
                 can_overwrite=True,
             )
             workspace.measurements.add_measurement(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 self.path_name_feature,
                 pn,
                 can_overwrite=True,
             )
             workspace.measurements.add_measurement(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 self.url_feature,
                 url,
                 can_overwrite=True,
@@ -777,32 +777,32 @@ store images in the subfolder, "*date*\/*plate-name*".""",
 
     @property
     def file_name_feature(self):
-        return "_".join((cellprofiler.measurement.C_FILE_NAME, self.image_name.value))
+        return "_".join((cellprofiler_core.measurement.C_FILE_NAME, self.image_name.value))
 
     @property
     def path_name_feature(self):
-        return "_".join((cellprofiler.measurement.C_PATH_NAME, self.image_name.value))
+        return "_".join((cellprofiler_core.measurement.C_PATH_NAME, self.image_name.value))
 
     @property
     def url_feature(self):
-        return "_".join((cellprofiler.measurement.C_URL, self.image_name.value))
+        return "_".join((cellprofiler_core.measurement.C_URL, self.image_name.value))
 
     @property
     def source_file_name_feature(self):
         """The file name measurement for the exemplar disk image"""
         return "_".join(
-            (cellprofiler.measurement.C_FILE_NAME, self.file_image_name.value)
+            (cellprofiler_core.measurement.C_FILE_NAME, self.file_image_name.value)
         )
 
     def source_path(self, workspace):
         """The path for the image data, or its first parent with a path"""
         if self.file_name_method.value == FN_FROM_IMAGE:
             path_feature = "%s_%s" % (
-                cellprofiler.measurement.C_PATH_NAME,
+                cellprofiler_core.measurement.C_PATH_NAME,
                 self.file_image_name.value,
             )
             assert workspace.measurements.has_feature(
-                cellprofiler.measurement.IMAGE, path_feature
+                cellprofiler_core.measurement.IMAGE, path_feature
             ), ("Image %s does not have a path!" % self.file_image_name.value)
             return workspace.measurements.get_current_image_measurement(path_feature)
 
@@ -819,14 +819,14 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         if self.update_file_names.value:
             return [
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     self.file_name_feature,
-                    cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME,
+                    cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 ),
                 (
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     self.path_name_feature,
-                    cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                    cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
                 ),
             ]
         else:

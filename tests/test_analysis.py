@@ -22,7 +22,7 @@ import cellprofiler.analysis
 import cellprofiler.pipeline
 import cellprofiler_core.module
 import cellprofiler.preferences
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.utilities.zmqrequest
 
 from tests.modules import example_images_directory, testimages_directory
@@ -237,7 +237,7 @@ class TestAnalysis(unittest.TestCase):
     def make_pipeline_and_measurements(
         self, nimage_sets=1, group_numbers=None, group_indexes=None, **kwargs
     ):
-        m = cellprofiler.measurement.Measurements(mode="memory")
+        m = cellprofiler_core.measurement.Measurements(mode="memory")
         for i in range(1, nimage_sets + 1):
             if group_numbers is not None:
                 group_number = group_numbers[i - 1]
@@ -246,15 +246,15 @@ class TestAnalysis(unittest.TestCase):
                 group_number = 1
                 group_index = i
             m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.C_URL + "_" + IMAGE_NAME,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.C_URL + "_" + IMAGE_NAME,
                 i,
             ] = ("file:/%d.tif" % i)
             m[
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, i
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, i
             ] = group_number
             m[
-                cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, i
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, i
             ] = group_index
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE), raise_on_error=True)
@@ -266,7 +266,7 @@ class TestAnalysis(unittest.TestCase):
             overwrite = False
             for i, status in enumerate(kwargs["status"]):
                 m.add_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     cellprofiler.analysis.AnalysisRunner.STATUS,
                     status,
                     image_set_number=i + 1,
@@ -311,7 +311,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsInstance(analysis_finished, cellprofiler.analysis.AnalysisFinished)
         self.assertTrue(analysis_finished.cancelled)
         self.assertIsInstance(
-            analysis_finished.measurements, cellprofiler.measurement.Measurements
+            analysis_finished.measurements, cellprofiler_core.measurement.Measurements
         )
         logger.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
@@ -444,14 +444,14 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             try:
                 assert isinstance(
-                    client_measurements, cellprofiler.measurement.Measurements
+                    client_measurements, cellprofiler_core.measurement.Measurements
                 )
-                assert isinstance(m, cellprofiler.measurement.Measurements)
+                assert isinstance(m, cellprofiler_core.measurement.Measurements)
                 self.assertSequenceEqual(
                     m.get_image_numbers(), client_measurements.get_image_numbers()
                 )
@@ -711,7 +711,7 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -731,7 +731,7 @@ class TestAnalysis(unittest.TestCase):
             )()
             objects_measurements = r.uniform(size=10)
             client_measurements[
-                cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1
+                cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, 1
             ] = "Hello"
             client_measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1] = objects_measurements
             req = cellprofiler.analysis.MeasurementsReport(
@@ -757,7 +757,7 @@ class TestAnalysis(unittest.TestCase):
             measurements = result.measurements
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
             self.assertEqual(
-                measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1], "Hello"
+                measurements[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, 1], "Hello"
             )
             numpy.testing.assert_almost_equal(
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1], objects_measurements
@@ -785,7 +785,7 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -830,8 +830,8 @@ class TestAnalysis(unittest.TestCase):
                             worker.analysis_id, image_set_number=image_number
                         )
                     )
-                m = cellprofiler.measurement.Measurements(copy=client_measurements)
-                m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
+                m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
+                m[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
                     "Hello %d" % image_number
                 )
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
@@ -859,7 +859,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(list(measurements.get_image_numbers()), [1, 2, 3])
             for i in range(1, 4):
                 self.assertEqual(
-                    measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
+                    measurements[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, i],
                     "Hello %d" % i,
                 )
                 numpy.testing.assert_almost_equal(
@@ -891,7 +891,7 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             response = worker.send(
@@ -918,9 +918,9 @@ class TestAnalysis(unittest.TestCase):
                     )
                 )
             for image_numbers in ((1, 2), (3, 4)):
-                m = cellprofiler.measurement.Measurements(copy=client_measurements)
+                m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
                 for image_number in image_numbers:
-                    m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
+                    m[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
                         "Hello %d" % image_number
                     )
                     m[
@@ -952,7 +952,7 @@ class TestAnalysis(unittest.TestCase):
             )
             for i in range(1, 5):
                 self.assertEqual(
-                    measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
+                    measurements[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, i],
                     "Hello %d" % i,
                 )
                 numpy.testing.assert_almost_equal(
@@ -989,7 +989,7 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -1032,8 +1032,8 @@ class TestAnalysis(unittest.TestCase):
                         worker.analysis_id, image_set_number=image_number
                     )
                 )
-                m = cellprofiler.measurement.Measurements(copy=client_measurements)
-                m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
+                m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
+                m[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
                     "Hello %d" % image_number
                 )
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
@@ -1058,19 +1058,19 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            assert isinstance(measurements, cellprofiler.measurement.Measurements)
+            assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             self.assertSequenceEqual(list(measurements.get_image_numbers()), [1, 2, 3])
             for i in range(1, 4):
                 if i == 2:
                     for feature in (IMAGE_FEATURE, OBJECTS_FEATURE):
                         self.assertFalse(
                             measurements.has_measurements(
-                                cellprofiler.measurement.IMAGE, feature, 2
+                                cellprofiler_core.measurement.IMAGE, feature, 2
                             )
                         )
                 else:
                     self.assertEqual(
-                        measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
+                        measurements[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, i],
                         "Hello %d" % i,
                     )
                     numpy.testing.assert_almost_equal(
@@ -1112,7 +1112,7 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             for image_number in (1, 2):
@@ -1121,10 +1121,10 @@ class TestAnalysis(unittest.TestCase):
                         worker.analysis_id, image_number
                     )
                 )()
-            m = cellprofiler.measurement.Measurements(copy=client_measurements)
+            m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
             objects_measurements = [r.uniform(size=10) for _ in range(2)]
             for image_number in (1, 2):
-                m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
+                m[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, image_number] = (
                     "Hello %d" % image_number
                 )
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = objects_measurements[
@@ -1151,7 +1151,7 @@ class TestAnalysis(unittest.TestCase):
             measurements = result.measurements
             for i in range(1, 3):
                 self.assertEqual(
-                    measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
+                    measurements[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, i],
                     "Hello %d" % i,
                 )
                 numpy.testing.assert_almost_equal(
@@ -1182,7 +1182,7 @@ class TestAnalysis(unittest.TestCase):
             response = worker.send(
                 cellprofiler.analysis.InitialMeasurementsRequest(worker.analysis_id)
             )()
-            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -1204,7 +1204,7 @@ class TestAnalysis(unittest.TestCase):
             objects_measurements = r.uniform(size=n_objects)
             objects_relationship = r.permutation(n_objects) + 1
             client_measurements[
-                cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1
+                cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, 1
             ] = "Hello"
             client_measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1] = objects_measurements
             client_measurements.add_relate_measurement(
@@ -1238,10 +1238,10 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            assert isinstance(measurements, cellprofiler.measurement.Measurements)
+            assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
             self.assertEqual(
-                measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1], "Hello"
+                measurements[cellprofiler_core.measurement.IMAGE, IMAGE_FEATURE, 1], "Hello"
             )
             numpy.testing.assert_almost_equal(
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1], objects_measurements
@@ -1249,7 +1249,7 @@ class TestAnalysis(unittest.TestCase):
             rg = measurements.get_relationship_groups()
             self.assertEqual(len(rg), 1)
             rk = rg[0]
-            assert isinstance(rk, cellprofiler.measurement.RelationshipKey)
+            assert isinstance(rk, cellprofiler_core.measurement.RelationshipKey)
             self.assertEqual(rk.module_number, 1)
             self.assertEqual(rk.object_name1, OBJECTS_NAME)
             self.assertEqual(rk.object_name2, OBJECTS_NAME)
@@ -1257,17 +1257,17 @@ class TestAnalysis(unittest.TestCase):
             r = measurements.get_relationships(1, "Foo", OBJECTS_NAME, OBJECTS_NAME)
             self.assertEqual(len(r), n_objects)
             numpy.testing.assert_array_equal(
-                r[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER], 1
+                r[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER], 1
             )
             numpy.testing.assert_array_equal(
-                r[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER], 1
+                r[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER], 1
             )
             numpy.testing.assert_array_equal(
-                r[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER],
+                r[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER],
                 numpy.arange(1, n_objects + 1),
             )
             numpy.testing.assert_array_equal(
-                r[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER], objects_relationship
+                r[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER], objects_relationship
             )
 
     def test_06_07_worker_cancel(self):

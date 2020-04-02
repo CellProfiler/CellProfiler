@@ -377,7 +377,7 @@ class Workspace(object):
             M_DEFAULT_INPUT_FOLDER,
             M_DEFAULT_OUTPUT_FOLDER,
         )
-        import cellprofiler.measurement as cpmeas
+        import cellprofiler_core.measurement as cpmeas
         from cellprofiler.preferences import (
             set_default_image_directory,
             set_default_output_directory,

@@ -45,7 +45,7 @@ import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadimages
@@ -1246,12 +1246,12 @@ class PipelineController(object):
         pathname - pathname to the file
         """
         assert h5py.is_hdf5(pathname)
-        m = cellprofiler.measurement.Measurements(filename=pathname, mode="r")
+        m = cellprofiler_core.measurement.Measurements(filename=pathname, mode="r")
         has_user_pipeline = m.has_feature(
-            cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.M_USER_PIPELINE
+            cellprofiler_core.measurement.EXPERIMENT, cellprofiler.pipeline.M_USER_PIPELINE
         )
         has_pipeline = m.has_feature(
-            cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.M_PIPELINE
+            cellprofiler_core.measurement.EXPERIMENT, cellprofiler.pipeline.M_PIPELINE
         )
         if has_user_pipeline:
             if has_pipeline:
@@ -1476,7 +1476,7 @@ class PipelineController(object):
 
             return
         m = self.__workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
 
         image_numbers = m.get_image_numbers()
         if len(image_numbers) == 0:
@@ -1488,16 +1488,16 @@ class PipelineController(object):
             return
         url_features = [
             f
-            for f in m.get_feature_names(cellprofiler.measurement.IMAGE)
-            if f.startswith(cellprofiler.measurement.C_URL)
+            for f in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+            if f.startswith(cellprofiler_core.measurement.C_URL)
         ]
         pws = []
         for feature in ("Plate", "Well", "Site"):
-            measurement = cellprofiler.measurement.C_METADATA + "_" + feature
-            if m.has_feature(cellprofiler.measurement.IMAGE, measurement):
+            measurement = cellprofiler_core.measurement.C_METADATA + "_" + feature
+            if m.has_feature(cellprofiler_core.measurement.IMAGE, measurement):
                 pws.append(
                     m.get_measurement(
-                        cellprofiler.measurement.IMAGE, measurement, image_numbers
+                        cellprofiler_core.measurement.IMAGE, measurement, image_numbers
                     )
                 )
             else:
@@ -1515,11 +1515,11 @@ class PipelineController(object):
             return
 
         for url_feature in url_features:
-            channel = [url_feature[(len(cellprofiler.measurement.C_URL) + 1) :]] * len(
+            channel = [url_feature[(len(cellprofiler_core.measurement.C_URL) + 1) :]] * len(
                 image_numbers
             )
             urls = m.get_measurement(
-                cellprofiler.measurement.IMAGE, url_feature, image_numbers
+                cellprofiler_core.measurement.IMAGE, url_feature, image_numbers
             )
             data.add_files(
                 [url for url in urls], plate, well, site, channel_names=channel
@@ -3255,7 +3255,7 @@ class PipelineController(object):
         ##################################
 
         try:
-            measurements = cellprofiler.measurement.load_measurements(path)
+            measurements = cellprofiler_core.measurement.load_measurements(path)
             pipeline_txt = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.M_PIPELINE
             )
@@ -3350,7 +3350,7 @@ class PipelineController(object):
         finally:
             m = event.measurements
             status = m[
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 cellprofiler.analysis.AnalysisRunner.STATUS,
                 m.get_image_numbers(),
             ]
@@ -3409,7 +3409,7 @@ class PipelineController(object):
                 return False
 
         self.close_debug_measurements()
-        self.__debug_measurements = cellprofiler.measurement.Measurements(
+        self.__debug_measurements = cellprofiler_core.measurement.Measurements(
             copy=self.__workspace.measurements, mode="memory"
         )
         self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
@@ -3763,9 +3763,9 @@ class PipelineController(object):
             # Put metadata first.
             #
             file_md_order = (
-                cellprofiler.measurement.C_FILE_NAME,
-                cellprofiler.measurement.C_PATH_NAME,
-                cellprofiler.measurement.C_FRAME,
+                cellprofiler_core.measurement.C_FILE_NAME,
+                cellprofiler_core.measurement.C_PATH_NAME,
+                cellprofiler_core.measurement.C_FRAME,
             )
             cx_is_file_md, cy_is_file_md = [cz in file_md_order for cz in (cx, cy)]
             if cx_is_file_md:
@@ -3787,20 +3787,20 @@ class PipelineController(object):
         features = sorted(
             [
                 f
-                for f in m.get_feature_names(cellprofiler.measurement.IMAGE)
+                for f in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
                 if f.split("_")[0]
                 in (
-                    cellprofiler.measurement.C_METADATA,
-                    cellprofiler.measurement.C_FILE_NAME,
-                    cellprofiler.measurement.C_PATH_NAME,
-                    cellprofiler.measurement.C_FRAME,
+                    cellprofiler_core.measurement.C_METADATA,
+                    cellprofiler_core.measurement.C_FILE_NAME,
+                    cellprofiler_core.measurement.C_PATH_NAME,
+                    cellprofiler_core.measurement.C_FRAME,
                 )
             ],
             key=cmp_to_key(feature_cmp),
         )
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict(
-            [(f, m[cellprofiler.measurement.IMAGE, f, image_numbers]) for f in features]
+            [(f, m[cellprofiler_core.measurement.IMAGE, f, image_numbers]) for f in features]
         )
         choices = {}
         for i, image_number in enumerate(image_numbers):
@@ -3853,17 +3853,17 @@ class PipelineController(object):
                 self.list_ctrl.InsertColumn(0, "Image #")
                 total_width = self.list_ctrl.GetFullTextExtent("Image #")[0]
                 for i, f in enumerate(features):
-                    if f.startswith(cellprofiler.measurement.C_METADATA):
-                        name = f[(len(cellprofiler.measurement.C_METADATA) + 1) :]
-                    elif f.startswith(cellprofiler.measurement.C_FILE_NAME):
-                        name = f[(len(cellprofiler.measurement.C_FILE_NAME) + 1) :]
-                    elif f.startswith(cellprofiler.measurement.C_FRAME):
+                    if f.startswith(cellprofiler_core.measurement.C_METADATA):
+                        name = f[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
+                    elif f.startswith(cellprofiler_core.measurement.C_FILE_NAME):
+                        name = f[(len(cellprofiler_core.measurement.C_FILE_NAME) + 1) :]
+                    elif f.startswith(cellprofiler_core.measurement.C_FRAME):
                         name = (
-                            f[(len(cellprofiler.measurement.C_FRAME) + 1) :] + " frame"
+                            f[(len(cellprofiler_core.measurement.C_FRAME) + 1) :] + " frame"
                         )
                     else:
                         name = (
-                            f[(len(cellprofiler.measurement.C_PATH_NAME) + 1) :]
+                            f[(len(cellprofiler_core.measurement.C_PATH_NAME) + 1) :]
                             + " folder"
                         )
                     self.list_ctrl.InsertColumn(i + 1, name)

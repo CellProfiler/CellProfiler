@@ -36,7 +36,7 @@ class Rules(object):
             """Score a rule
 
             measurements - a measurements structure
-                           (cellprofiler.measurements.Measurements). Look
+                           (cellprofiler_core.measurements.Measurements). Look
                            up this rule's measurement in the structure to
                            get the testing value.
             Returns a MxN matrix where M is the number of measurements taken

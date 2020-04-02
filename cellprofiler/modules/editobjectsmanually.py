@@ -54,14 +54,14 @@ See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 
 import logging
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 
 logger = logging.getLogger(__name__)
 
 import os
 import numpy as np
 
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 
@@ -271,12 +271,12 @@ supplied by a previous module.
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(
             filtered_objects_name,
-            cellprofiler.measurement.FF_PARENT % orig_objects_name,
+            cellprofiler_core.measurement.FF_PARENT % orig_objects_name,
             parents,
         )
         m.add_measurement(
             orig_objects_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
             child_count,
         )
         #
@@ -504,12 +504,12 @@ supplied by a previous module.
         columns += [
             (
                 orig_image_name,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % filtered_image_name,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_image_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (
                 filtered_image_name,
-                cellprofiler.measurement.FF_PARENT % orig_image_name,
+                cellprofiler_core.measurement.FF_PARENT % orig_image_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
         ]

@@ -4,11 +4,11 @@ import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from cellprofiler.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
+from cellprofiler_core.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules import _help
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements

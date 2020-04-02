@@ -96,11 +96,11 @@ import os
 import six
 
 import cellprofiler_core.module as cpm
-import cellprofiler.measurement as cpmeas
+import cellprofiler_core.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES
-from cellprofiler.measurement import IMAGE, EXPERIMENT
+from cellprofiler_core.measurement import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_headless
 from cellprofiler.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
@@ -1111,7 +1111,7 @@ desired.
         workspace - workspace containing the measurements
         """
         from .loaddata import is_path_name_feature, is_file_name_feature
-        from cellprofiler.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
+        from cellprofiler_core.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
         from .loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         file_name = self.make_gct_file_name(

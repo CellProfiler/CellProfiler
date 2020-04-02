@@ -7,7 +7,7 @@ import six.moves
 import skimage.util
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.imagemath
 import cellprofiler.object
@@ -34,7 +34,7 @@ def workspace(image_a, image_b, module):
         image_set_list=image_set_list,
         module=module,
         pipeline=cellprofiler.pipeline.Pipeline(),
-        measurements=cellprofiler.measurement.Measurements(),
+        measurements=cellprofiler_core.measurement.Measurements(),
         object_set=cellprofiler.object.ObjectSet(),
     )
 
@@ -381,7 +381,7 @@ def run_imagemath(images, modify_module_fn=None, measurement=None):
         modify_module_fn(module)
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     if measurement is not None:
         measurements.add_image_measurement(MEASUREMENT_NAME, str(measurement))
     workspace = cellprofiler.workspace.Workspace(
@@ -829,7 +829,7 @@ def test_add_and_do_nothing():
     #
     r = numpy.random.RandomState()
     r.seed(1101)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     pixel_data = r.uniform(size=(20, 20))
     m.add("inputimage", cellprofiler_core.image.Image(pixel_data))
     module = cellprofiler.modules.imagemath.ImageMath()
@@ -853,7 +853,7 @@ def test_invert_binary_invert():
     #
     r = numpy.random.RandomState()
     r.seed(1102)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     pixel_data = r.uniform(size=(20, 20)) > 0.5
     m.add("inputimage", cellprofiler_core.image.Image(pixel_data))
     module = cellprofiler.modules.imagemath.ImageMath()

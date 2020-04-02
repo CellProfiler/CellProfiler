@@ -6,7 +6,7 @@ import skimage.color
 import skimage.segmentation
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.overlayoutlines
 import cellprofiler.object
@@ -24,7 +24,7 @@ OBJECTS_NAME = "objectsname"
 
 def make_workspace(image, labels=None, dimensions=2):
     """Make a workspace for testing Threshold"""
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
     module = cellprofiler.modules.overlayoutlines.OverlayOutlines()
     module.blank_image.value = False

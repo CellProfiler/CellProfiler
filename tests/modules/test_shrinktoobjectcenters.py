@@ -3,7 +3,7 @@ import numpy.testing
 import pytest
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.shrinktoobjectcenters
 import cellprofiler.object
 

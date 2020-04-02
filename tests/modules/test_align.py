@@ -2,7 +2,7 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.align
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -24,7 +24,7 @@ def make_workspace(images, masks):
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     for index, (pixels, mask) in enumerate(zip(images, masks)):
@@ -156,7 +156,7 @@ def test_crop():
                     module.run(workspace)
                     output = workspace.image_set.get_image("Aligned0")
                     m = workspace.measurements
-                    assert isinstance(m, cellprofiler.measurement.Measurements)
+                    assert isinstance(m, cellprofiler_core.measurement.Measurements)
                     off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
                     off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
                     off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -284,7 +284,7 @@ def test_pad():
                     module.run(workspace)
                     output = workspace.image_set.get_image("Aligned0")
                     m = workspace.measurements
-                    assert isinstance(m, cellprofiler.measurement.Measurements)
+                    assert isinstance(m, cellprofiler_core.measurement.Measurements)
                     off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
                     off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
                     off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -378,7 +378,7 @@ def test_same_size():
                     module.run(workspace)
                     output = workspace.image_set.get_image("Aligned0")
                     m = workspace.measurements
-                    assert isinstance(m, cellprofiler.measurement.Measurements)
+                    assert isinstance(m, cellprofiler_core.measurement.Measurements)
                     off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
                     off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
                     off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -455,11 +455,11 @@ def test_align_similarly():
         assert len(columns) == 6
         align_measurements = [
             x
-            for x in m.get_feature_names(cellprofiler.measurement.IMAGE)
+            for x in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
             if x.startswith("Align")
         ]
         assert len(align_measurements) == 6
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
         off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
         off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -499,7 +499,7 @@ def test_align_separately():
         ].align_choice.value = cellprofiler.modules.align.A_SEPARATELY
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
         off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
         off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -585,7 +585,7 @@ def test_align_color():
                     module.run(workspace)
                     output = workspace.image_set.get_image("Aligned0")
                     m = workspace.measurements
-                    assert isinstance(m, cellprofiler.measurement.Measurements)
+                    assert isinstance(m, cellprofiler_core.measurement.Measurements)
                     off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
                     off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
                     off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -675,7 +675,7 @@ def test_align_binary():
                     module.run(workspace)
                     output = workspace.image_set.get_image("Aligned0")
                     m = workspace.measurements
-                    assert isinstance(m, cellprofiler.measurement.Measurements)
+                    assert isinstance(m, cellprofiler_core.measurement.Measurements)
                     off_i0 = -m.get_current_image_measurement("Align_Yshift_Aligned0")
                     off_j0 = -m.get_current_image_measurement("Align_Xshift_Aligned0")
                     off_i1 = -m.get_current_image_measurement("Align_Yshift_Aligned1")
@@ -729,8 +729,8 @@ def test_measurement_columns():
                 "Aligned%d" % i,
             )
             assert feature in [c[1] for c in columns]
-    assert all([c[0] == cellprofiler.measurement.IMAGE for c in columns])
-    assert all([c[2] == cellprofiler.measurement.COLTYPE_INTEGER for c in columns])
+    assert all([c[0] == cellprofiler_core.measurement.IMAGE for c in columns])
+    assert all([c[2] == cellprofiler_core.measurement.COLTYPE_INTEGER for c in columns])
 
 
 def test_categories():
@@ -739,7 +739,7 @@ def test_categories():
         (None, None, None),
     )
     assert isinstance(module, cellprofiler.modules.align.Align)
-    c = module.get_categories(workspace.pipeline, cellprofiler.measurement.IMAGE)
+    c = module.get_categories(workspace.pipeline, cellprofiler_core.measurement.IMAGE)
     assert len(c) == 1
     assert c[0] == cellprofiler.modules.align.C_ALIGN
 
@@ -755,7 +755,7 @@ def test_measurements():
     assert isinstance(module, cellprofiler.modules.align.Align)
     m = module.get_measurements(
         workspace.pipeline,
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         cellprofiler.modules.align.C_ALIGN,
     )
     assert len(m) == 2
@@ -772,7 +772,7 @@ def test_measurement_images():
     for measurement in ("Xshift", "Yshift"):
         image_names = module.get_measurement_images(
             workspace.pipeline,
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             cellprofiler.modules.align.C_ALIGN,
             measurement,
         )

@@ -5,7 +5,7 @@ import numpy
 import scipy.stats
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureobjectintensitydistribution
 import cellprofiler.object
@@ -452,7 +452,7 @@ def test_01_get_measurement_columns():
     for object_name, feature, coltype in columns:
         key = (object_name, feature)
         assert not (key in column_dictionary)
-        assert coltype == cellprofiler.measurement.COLTYPE_FLOAT
+        assert coltype == cellprofiler_core.measurement.COLTYPE_FLOAT
         column_dictionary[key] = (object_name, feature, coltype)
 
     for object_name in [x.object_name.value for x in module.objects]:
@@ -523,7 +523,7 @@ def test_02_get_zernike_columns():
                         col = (
                             object_name,
                             name,
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
                         assert col in columns
 
@@ -774,7 +774,7 @@ def run_module(
         module.heatmaps[i].colormap.value = "gray"
         module.heatmaps[i].measurement.value = a
     pipeline = cellprofiler.pipeline.Pipeline()
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = measurements
     img = cellprofiler_core.image.Image(image)

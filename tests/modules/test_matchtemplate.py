@@ -7,7 +7,7 @@ import skimage.feature
 import skimage.io
 
 import cellprofiler_core.image
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.matchtemplate
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -26,7 +26,7 @@ def image_set_list():
 
 @pytest.fixture()
 def measurements():
-    return cellprofiler.measurement.Measurements()
+    return cellprofiler_core.measurement.Measurements()
 
 
 @pytest.fixture()

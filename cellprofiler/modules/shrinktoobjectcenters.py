@@ -26,12 +26,12 @@ import numpy
 import skimage.measure
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
 
-class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
+class ShrinkToObjectCenters(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "ShrinkToObjectCenters"
 
     category = "Advanced"

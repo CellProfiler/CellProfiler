@@ -68,7 +68,7 @@ import centrosome.outline
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.measurement import (

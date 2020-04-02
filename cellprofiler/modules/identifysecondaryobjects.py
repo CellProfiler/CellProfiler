@@ -1,4 +1,4 @@
-# coding=utf-8
+﻿# coding=utf-8
 
 import centrosome.cpmorphology
 import centrosome.propagate
@@ -9,7 +9,7 @@ import skimage.morphology
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler.modules import _help, threshold
@@ -168,7 +168,7 @@ N_SETTING_VALUES = 10
 R_PARENT = "Parent"
 
 
-class IdentifySecondaryObjects(cellprofiler.module.ObjectProcessing):
+class IdentifySecondaryObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "IdentifySecondaryObjects"
 
     variable_revision_number = 10

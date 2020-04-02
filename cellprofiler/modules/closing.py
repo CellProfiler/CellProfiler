@@ -24,12 +24,12 @@ import numpy
 import skimage.morphology
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class Closing(cellprofiler.module.ImageProcessing):
+class Closing(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "Closing"

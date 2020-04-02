@@ -59,7 +59,7 @@ from scipy.linalg import lstsq
 
 import cellprofiler.gui.help.content
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 

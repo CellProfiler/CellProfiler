@@ -11,7 +11,7 @@ import six
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.loaddata
 import cellprofiler.modules.loadimages
 import cellprofiler.object
@@ -1169,7 +1169,7 @@ def test_load_default_input_folder():
         os.remove(filename)
 
 
-class C0(cellprofiler.module.Module):
+class C0(cellprofiler_core.module.Module):
     module_name = "C0"
     variable_revision_number = 1
 

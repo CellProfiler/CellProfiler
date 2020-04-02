@@ -35,7 +35,7 @@ import skimage.morphology
 import skimage.transform
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -43,7 +43,7 @@ O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
 
 
-class Watershed(cellprofiler.module.ImageSegmentation):
+class Watershed(cellprofiler_core.module.image_segmentation.ImageSegmentation):
     category = "Advanced"
 
     module_name = "Watershed"

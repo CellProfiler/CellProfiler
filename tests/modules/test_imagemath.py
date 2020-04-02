@@ -8,7 +8,7 @@ import skimage.util
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.imagemath
 import cellprofiler.object
 import cellprofiler.pipeline

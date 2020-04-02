@@ -3,7 +3,7 @@
 import numpy
 import scipy.ndimage
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
@@ -39,7 +39,7 @@ See also
 )
 
 
-class ResizeObjects(cellprofiler.module.ObjectProcessing):
+class ResizeObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "ResizeObjects"
 
     variable_revision_number = 2
@@ -155,7 +155,7 @@ Enter the desired height of the final objects, in pixels.""",
     def add_measurements(
         self, workspace, input_object_name=None, output_object_name=None
     ):
-        super(cellprofiler.module.ObjectProcessing, self).add_measurements(
+        super(cellprofiler_core.module.image_segmentation.ObjectProcessing, self).add_measurements(
             workspace, self.y_name.value
         )
 

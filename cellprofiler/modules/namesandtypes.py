@@ -14,7 +14,7 @@ import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -347,7 +347,7 @@ M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
 M_IMAGE_SET = "ImageSet_ImageSet"
 
 
-class NamesAndTypes(cellprofiler.module.Module):
+class NamesAndTypes(cellprofiler_core.module.Module):
     variable_revision_number = 8
     module_name = "NamesAndTypes"
     category = "File Processing"

@@ -13,7 +13,7 @@ import scipy.linalg.basic
 import scipy.ndimage
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
 from cellprofiler.modules import identify, loadimages
@@ -204,7 +204,7 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cellprofiler.module.Module):
+class MeasureImageQuality(cellprofiler_core.module.Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 5

@@ -7,7 +7,7 @@ import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.measureimageoverlap
 import cellprofiler.object
 import cellprofiler.pipeline

@@ -38,7 +38,7 @@ import numpy as np
 import wx
 
 import cellprofiler.image as cpimage
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpp
 import cellprofiler.setting as cps

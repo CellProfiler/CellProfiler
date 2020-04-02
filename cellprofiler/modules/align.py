@@ -56,7 +56,7 @@ from scipy.fftpack import fft2, ifft2
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 M_MUTUAL_INFORMATION = "Mutual Information"

@@ -64,7 +64,7 @@ from scipy.ndimage import mean as mean_of_labels
 
 import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps

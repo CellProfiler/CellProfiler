@@ -26,11 +26,11 @@ import skimage.restoration
 import skimage.util
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class ReduceNoise(cellprofiler.module.ImageProcessing):
+class ReduceNoise(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "ReduceNoise"

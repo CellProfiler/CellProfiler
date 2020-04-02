@@ -101,7 +101,7 @@ import six.moves
 import cellprofiler
 import cellprofiler.icons
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -379,7 +379,7 @@ class DBContext(object):
         self.connection.close()
 
 
-class ExportToDatabase(cellprofiler.module.Module):
+class ExportToDatabase(cellprofiler_core.module.Module):
     module_name = "ExportToDatabase"
     variable_revision_number = 27
     category = ["File Processing", "Data Tools"]

@@ -34,7 +34,7 @@ import numpy
 import skimage.transform
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cellprofiler.module.ImageProcessing):
+class Resize(cellprofiler_core.module.ImageProcessing):
     variable_revision_number = 4
 
     module_name = "Resize"

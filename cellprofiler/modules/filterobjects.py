@@ -67,7 +67,7 @@ import scipy.sparse
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.identify
 import cellprofiler.object
 import cellprofiler.preferences
@@ -121,7 +121,7 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cellprofiler.module.ObjectProcessing):
+class FilterObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "FilterObjects"
 
     variable_revision_number = 8

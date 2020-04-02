@@ -9,11 +9,11 @@ import logging
 logger = logging.getLogger(__name__)
 import re
 import sys
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 from cellprofiler.modules.plugins import plugin_list
 from cellprofiler.preferences import get_plugin_directory
 
-# python modules and their corresponding cellprofiler.module classes
+# python modules and their corresponding cellprofiler_core.module classes
 pymodule_to_cpmodule = {
     "align": "Align",
     "calculatemath": "CalculateMath",
@@ -246,7 +246,7 @@ def find_cpmodule(m):
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
     raise ValueError(
-        "Could not find cellprofiler.module.Module class in %s" % m.__file__
+        "Could not find cellprofiler_core.module.Module class in %s" % m.__file__
     )
 
 

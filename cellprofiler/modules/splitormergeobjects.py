@@ -5,7 +5,7 @@ import numpy as np
 import scipy.ndimage as scind
 
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT

@@ -4,7 +4,7 @@ import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.expandorshrinkobjects
 import cellprofiler.object
 import cellprofiler.pipeline

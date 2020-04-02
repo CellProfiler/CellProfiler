@@ -51,7 +51,7 @@ from centrosome.filter import stretch
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
 
@@ -106,7 +106,7 @@ D_FIRST_CROPPING = "FirstCropping"
 D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 
-class Crop(cellprofiler.module.Module):
+class Crop(cellprofiler_core.module.Module):
     module_name = "Crop"
     variable_revision_number = 3
     category = "Image Processing"

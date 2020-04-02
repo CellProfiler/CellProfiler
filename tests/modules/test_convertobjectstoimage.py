@@ -4,7 +4,7 @@ import scipy.sparse.coo
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.convertobjectstoimage
 import cellprofiler.object
 import cellprofiler.pipeline

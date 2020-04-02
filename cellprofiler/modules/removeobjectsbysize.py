@@ -21,11 +21,11 @@ import skimage.morphology
 import skimage.segmentation
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
+class RemoveObjectsBySize(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     category = "Advanced"
 
     module_name = "RemoveObjectsBySize"

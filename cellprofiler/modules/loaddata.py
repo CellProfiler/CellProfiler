@@ -13,7 +13,7 @@ import six.moves.urllib.request
 
 import cellprofiler.measurement
 import cellprofiler.misc
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -371,7 +371,7 @@ def make_objects_file_name_feature(objects_name):
     return cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + objects_name
 
 
-class LoadData(cellprofiler.module.Module):
+class LoadData(cellprofiler_core.module.Module):
     module_name = "LoadData"
     category = "File Processing"
     variable_revision_number = 6

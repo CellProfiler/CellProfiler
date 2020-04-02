@@ -10,12 +10,12 @@ import numpy as np
 
 import cellprofiler.image
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
 
-class InjectImage(cellprofiler.module.Module):
+class InjectImage(cellprofiler_core.module.Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
@@ -131,7 +131,7 @@ class InjectImage(cellprofiler.module.Module):
         return []
 
 
-class InjectObjects(cellprofiler.module.Module):
+class InjectObjects(cellprofiler_core.module.Module):
     """Inject objects with labels into the pipeline"""
 
     module_name = "InjectObjects"

@@ -18,7 +18,7 @@ import wx.lib.agw.floatspin
 import cellprofiler.gui.workspace
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences

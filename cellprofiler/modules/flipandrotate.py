@@ -25,7 +25,7 @@ import scipy.ndimage as scind
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 FLIP_NONE = "Do not flip"

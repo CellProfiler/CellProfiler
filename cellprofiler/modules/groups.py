@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 import numpy as np
 import six
 
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES

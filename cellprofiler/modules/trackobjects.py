@@ -212,7 +212,7 @@ import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps

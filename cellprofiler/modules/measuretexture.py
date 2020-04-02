@@ -109,7 +109,7 @@ import numpy
 import skimage.util
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -124,7 +124,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-class MeasureTexture(cellprofiler.module.Module):
+class MeasureTexture(cellprofiler_core.module.Module):
     module_name = "MeasureTexture"
 
     variable_revision_number = 5

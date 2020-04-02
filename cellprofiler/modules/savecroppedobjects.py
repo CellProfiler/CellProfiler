@@ -28,7 +28,7 @@ import numpy
 import skimage.io
 import skimage.measure
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 O_PNG = "png"
@@ -38,7 +38,7 @@ SAVE_PER_OBJECT = "Images"
 SAVE_MASK = "Masks"
 
 
-class SaveCroppedObjects(cellprofiler.module.Module):
+class SaveCroppedObjects(cellprofiler_core.module.Module):
     category = "File Processing"
 
     module_name = "SaveCroppedObjects"

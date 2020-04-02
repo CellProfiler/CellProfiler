@@ -1,4 +1,4 @@
-# coding=utf-8
+﻿# coding=utf-8
 
 import re
 
@@ -7,7 +7,7 @@ import scipy.ndimage
 import skimage.segmentation
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler.modules import _help
@@ -97,7 +97,7 @@ FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
 
-class RelateObjects(cellprofiler.module.ObjectProcessing):
+class RelateObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "RelateObjects"
 
     variable_revision_number = 5

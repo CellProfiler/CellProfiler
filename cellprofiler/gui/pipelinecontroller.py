@@ -46,7 +46,7 @@ import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadimages
 import cellprofiler.object
@@ -3037,7 +3037,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cellprofiler.module.Module.display:
+            if module.display != cellprofiler_core.module.Module.display:
                 fig = self.__workspace.get_module_figure(
                     module, evt.image_set_number, self.__frame
                 )
@@ -3067,7 +3067,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_run != cellprofiler.module.Module.display_post_run:
+            if module.display_post_run != cellprofiler_core.module.Module.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(
                     module, image_number, self.__frame
@@ -3095,7 +3095,7 @@ class PipelineController(object):
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
             if (
                 module.display_post_group
-                != cellprofiler.module.Module.display_post_group
+                != cellprofiler_core.module.Module.display_post_group
             ):
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(

@@ -3,7 +3,7 @@ import sys
 import pytest
 import six.moves
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.createbatchfiles
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -59,7 +59,7 @@ def test_module_must_be_last():
     # First, make sure that a naked CPModule tests valid
     #
     pipeline = cellprofiler.pipeline.Pipeline()
-    module = cellprofiler.module.Module()
+    module = cellprofiler_core.module.Module()
     module.set_module_num(len(pipeline.modules()) + 1)
     pipeline.add_module(module)
     pipeline.test_valid()
@@ -72,7 +72,7 @@ def test_module_must_be_last():
     pipeline.add_module(module)
     pipeline.test_valid()
 
-    module = cellprofiler.module.Module()
+    module = cellprofiler_core.module.Module()
     module.set_module_num(len(pipeline.modules()) + 1)
     pipeline.add_module(module)
     with pytest.raises(cellprofiler.setting.ValidationError):

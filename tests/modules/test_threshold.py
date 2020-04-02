@@ -11,7 +11,7 @@ import skimage.morphology
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.threshold
 import cellprofiler.object
 import cellprofiler.pipeline

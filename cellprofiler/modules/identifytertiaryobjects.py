@@ -5,7 +5,7 @@ from centrosome.outline import outline
 
 import cellprofiler.measurement
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.modules import _help, identify as cpmi

@@ -86,7 +86,7 @@ import skimage.external.tifffile
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.misc
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -474,7 +474,7 @@ def default_cpimage_name(index):
     return "Channel%d" % (index + 1)
 
 
-class LoadImages(cellprofiler.module.Module):
+class LoadImages(cellprofiler_core.module.Module):
     module_name = "LoadImages"
     variable_revision_number = 11
     category = "File Processing"

@@ -9,7 +9,7 @@ import six.moves.urllib.request
 
 import cellprofiler.gui.help.content
 import cellprofiler.icons
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules._help
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
@@ -164,7 +164,7 @@ FILTER_DEFAULT = (
 )
 
 
-class Images(cellprofiler.module.Module):
+class Images(cellprofiler_core.module.Module):
     variable_revision_number = 2
     module_name = "Images"
     category = "File Processing"
@@ -711,7 +711,7 @@ class ImagePredicate(cellprofiler.setting.Filter.FilterPredicate):
             return None
         return args[0](ipd, *args[1:])
 
-    class FakeModule(cellprofiler.module.Module):
+    class FakeModule(cellprofiler_core.module.Module):
         """A fake module for setting validation"""
 
         def get_image_plane_details(self, modpath):

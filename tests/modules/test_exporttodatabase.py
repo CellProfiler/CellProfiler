@@ -16,7 +16,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.exporttodatabase
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -883,7 +883,7 @@ def make_workspace(
 ):
     """Make a measurements structure with image and object measurements"""
 
-    class TestModule(cellprofiler.module.Module):
+    class TestModule(cellprofiler_core.module.Module):
         module_name = "TestModule"
         module_num = 1
         variable_revision_number = 1

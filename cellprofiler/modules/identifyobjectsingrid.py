@@ -60,7 +60,7 @@ import numpy as np
 from centrosome.cpmorphology import centers_of_labels
 
 import cellprofiler.grid as cpg
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.modules.identify import add_object_count_measurements

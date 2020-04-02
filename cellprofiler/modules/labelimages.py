@@ -49,7 +49,7 @@ from functools import reduce
 import numpy as np
 
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 O_ROW = "Row"

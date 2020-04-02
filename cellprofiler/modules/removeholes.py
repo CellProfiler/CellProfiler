@@ -28,11 +28,11 @@ import numpy
 import skimage.morphology
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class RemoveHoles(cellprofiler.module.ImageProcessing):
+class RemoveHoles(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "RemoveHoles"

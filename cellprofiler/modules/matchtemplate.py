@@ -30,11 +30,11 @@ import skimage.feature
 import skimage.io
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class MatchTemplate(cellprofiler.module.Module):
+class MatchTemplate(cellprofiler_core.module.Module):
     module_name = "MatchTemplate"
     category = "Advanced"
     variable_revision_number = 1

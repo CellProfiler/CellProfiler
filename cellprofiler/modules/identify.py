@@ -6,7 +6,7 @@ import numpy
 import scipy.ndimage
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -71,7 +71,7 @@ TSM_MANUAL = "Manual"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Identify(cellprofiler.module.Module):
+class Identify(cellprofiler_core.module.Module):
     def get_object_categories(self, pipeline, object_name, object_dictionary):
         """Get categories related to creating new children
 

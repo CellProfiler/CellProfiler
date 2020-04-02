@@ -38,7 +38,7 @@ import skimage.segmentation
 import skimage.util
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
@@ -96,7 +96,7 @@ def endpoints(image):
     return _neighbors(image) == 1
 
 
-class MeasureImageSkeleton(cellprofiler.module.Module):
+class MeasureImageSkeleton(cellprofiler_core.module.Module):
     category = "Measurement"
 
     module_name = "MeasureImageSkeleton"

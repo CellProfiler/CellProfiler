@@ -9,7 +9,7 @@ import skimage.exposure
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.injectimage
 import cellprofiler.modules.rescaleintensity
 import cellprofiler.object

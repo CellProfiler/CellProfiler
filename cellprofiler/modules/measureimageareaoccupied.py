@@ -50,7 +50,7 @@ import skimage.measure
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 C_AREA_OCCUPIED = "AreaOccupied"
@@ -76,7 +76,7 @@ IMAGE_SETTING_COUNT = 1
 OBJECT_SETTING_COUNT = 3
 
 
-class MeasureImageAreaOccupied(cellprofiler.module.Module):
+class MeasureImageAreaOccupied(cellprofiler_core.module.Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 4

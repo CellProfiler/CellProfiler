@@ -29,7 +29,7 @@ See also **ColorToGray** and **InvertForPrinting**.
 import numpy as np
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 OFF_RED_IMAGE_NAME = 0

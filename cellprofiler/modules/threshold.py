@@ -27,7 +27,7 @@ import skimage.morphology
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
@@ -56,7 +56,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Threshold(cellprofiler.module.ImageProcessing):
+class Threshold(cellprofiler_core.module.ImageProcessing):
     module_name = "Threshold"
 
     variable_revision_number = 10

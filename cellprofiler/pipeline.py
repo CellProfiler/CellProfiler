@@ -2563,7 +2563,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        from cellprofiler.module import Module
+        from cellprofiler_core.module import Module
 
         if len(args) == 3:
             measurements, image_set_list, frame = args
@@ -2748,7 +2748,7 @@ class Pipeline(object):
 
         workspace - the last workspace run
         """
-        from cellprofiler.module import Module
+        from cellprofiler_core.module import Module
 
         for module in self.modules():
             try:

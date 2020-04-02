@@ -46,7 +46,7 @@ See also **DisplayScatterPlot**, **DisplayHistogram**.
 
 import matplotlib.cm
 
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 

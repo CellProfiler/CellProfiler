@@ -60,7 +60,7 @@ logger = logging.getLogger(__package__)
 import numpy as np
 import six
 
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.measurement import R_PARENT

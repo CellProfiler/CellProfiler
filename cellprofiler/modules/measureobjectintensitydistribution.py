@@ -12,7 +12,7 @@ import scipy.sparse
 import cellprofiler.gui.help.content
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -153,7 +153,7 @@ MEASUREMENT_ALIASES = {
 }
 
 
-class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
+class MeasureObjectIntensityDistribution(cellprofiler_core.module.Module):
     module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
     variable_revision_number = 5

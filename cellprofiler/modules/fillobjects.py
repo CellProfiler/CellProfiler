@@ -27,11 +27,11 @@ import numpy
 import skimage.morphology
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class FillObjects(cellprofiler.module.ObjectProcessing):
+class FillObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     category = "Advanced"
 
     module_name = "FillObjects"

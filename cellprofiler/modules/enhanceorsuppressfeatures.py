@@ -31,7 +31,7 @@ import skimage.morphology
 import skimage.transform
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
 
@@ -52,7 +52,7 @@ N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
 
-class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
+class EnhanceOrSuppressFeatures(cellprofiler_core.module.ImageProcessing):
     module_name = "EnhanceOrSuppressFeatures"
 
     variable_revision_number = 6

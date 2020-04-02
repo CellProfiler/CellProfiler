@@ -22,12 +22,12 @@ import numpy
 import skimage.morphology
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class Erosion(cellprofiler.module.ImageProcessing):
+class Erosion(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "Erosion"

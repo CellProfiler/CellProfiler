@@ -53,7 +53,7 @@ import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.identify
 import cellprofiler.object
 import cellprofiler.setting
@@ -77,7 +77,7 @@ O_ALL = [
 ]
 
 
-class ExpandOrShrinkObjects(cellprofiler.module.Module):
+class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
     module_name = "ExpandOrShrinkObjects"
     category = "Object Processing"
     variable_revision_number = 2

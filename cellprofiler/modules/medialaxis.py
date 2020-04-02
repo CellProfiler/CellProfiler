@@ -25,11 +25,11 @@ import skimage.color
 import skimage.morphology
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class MedialAxis(cellprofiler.module.ImageProcessing):
+class MedialAxis(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "MedialAxis"

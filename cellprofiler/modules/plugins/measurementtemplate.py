@@ -13,7 +13,7 @@ import scipy.ndimage
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -146,12 +146,12 @@ C_MEASUREMENT_TEMPLATE = "MT"
 #
 # The module class
 #
-# Your module should "inherit" from cellprofiler.module.Module.
+# Your module should "inherit" from cellprofiler_core.module.Module.
 # This means that your module will use the methods from Module unless
 # you re-implement them. You can let Module do most of the work and
 # implement only what you need.
 #
-class MeasurementTemplate(cellprofiler.module.Module):
+class MeasurementTemplate(cellprofiler_core.module.Module):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision

@@ -76,7 +76,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -109,7 +109,7 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureColocalization(cellprofiler.module.Module):
+class MeasureColocalization(cellprofiler_core.module.Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
     variable_revision_number = 3

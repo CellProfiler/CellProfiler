@@ -21,11 +21,11 @@ import numpy
 import skimage.filters
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class GaussianFilter(cellprofiler.module.ImageProcessing):
+class GaussianFilter(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "GaussianFilter"

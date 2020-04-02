@@ -320,7 +320,7 @@ SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource(
 )
 
 
-class IdentifyPrimaryObjects(cellprofiler.module.ImageSegmentation):
+class IdentifyPrimaryObjects(cellprofiler_core.module.image_segmentation.ImageSegmentation):
     variable_revision_number = 14
 
     category = "Object Processing"

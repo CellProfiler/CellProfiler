@@ -8,7 +8,7 @@ import scipy.ndimage
 import skimage.segmentation
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler.modules import _help
@@ -134,7 +134,7 @@ ALL_LOCATION_MEASUREMENTS = [
 ]
 
 
-class MeasureObjectIntensity(cellprofiler.module.Module):
+class MeasureObjectIntensity(cellprofiler_core.module.Module):
     module_name = "MeasureObjectIntensity"
     variable_revision_number = 3
     category = "Measurement"

@@ -20,7 +20,7 @@ import zmq
 
 import cellprofiler.analysis
 import cellprofiler.pipeline
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.measurement
 import cellprofiler.utilities.zmqrequest
@@ -289,7 +289,7 @@ class TestAnalysis(unittest.TestCase):
             if (
                 module.show_window
                 and module.__class__.display_post_run
-                != cellprofiler.module.Module.display_post_run
+                != cellprofiler_core.module.Module.display_post_run
             ):
                 result = self.event_queue.get()
                 self.assertIsInstance(

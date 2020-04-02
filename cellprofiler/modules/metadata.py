@@ -11,7 +11,7 @@ import six.moves
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.misc
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.pipeline
 import cellprofiler.setting
 from cellprofiler.modules import _help
@@ -181,7 +181,7 @@ LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 
-class Metadata(cellprofiler.module.Module):
+class Metadata(cellprofiler_core.module.Module):
     variable_revision_number = 5
     module_name = "Metadata"
     category = "File Processing"

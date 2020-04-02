@@ -25,14 +25,14 @@ import matplotlib.cm
 import numpy
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
 
 DEFAULT_COLORMAP = "Default"
 
 
-class ConvertObjectsToImage(cellprofiler.module.Module):
+class ConvertObjectsToImage(cellprofiler_core.module.Module):
     module_name = "ConvertObjectsToImage"
 
     category = "Object Processing"

@@ -60,7 +60,7 @@ from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 

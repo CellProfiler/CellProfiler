@@ -5,7 +5,7 @@ import skimage.morphology
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.measureimageintensity
 import cellprofiler.object
 import cellprofiler.pipeline

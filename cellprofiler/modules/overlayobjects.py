@@ -4,13 +4,13 @@
 Create an RGB image with color-coded labels overlaid on a grayscale image.
 """
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting
 
 
-class OverlayObjects(cellprofiler.module.ImageProcessing):
+class OverlayObjects(cellprofiler_core.module.ImageProcessing):
     module_name = "OverlayObjects"
 
     variable_revision_number = 1

@@ -149,7 +149,7 @@ import scipy.optimize
 import six
 
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 from cellprofiler.modules._help import (

@@ -103,7 +103,7 @@ import scipy.sparse
 import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler.modules import _help
@@ -142,7 +142,7 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class MeasureImageOverlap(cellprofiler.module.Module):
+class MeasureImageOverlap(cellprofiler_core.module.Module):
     category = "Measurement"
     variable_revision_number = 5
     module_name = "MeasureImageOverlap"

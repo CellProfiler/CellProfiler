@@ -8,7 +8,7 @@ import skimage.measure
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -215,7 +215,7 @@ F_STANDARD = [
 ]
 
 
-class MeasureObjectSizeShape(cellprofiler.module.Module):
+class MeasureObjectSizeShape(cellprofiler_core.module.Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
     category = "Measurement"

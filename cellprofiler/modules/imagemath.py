@@ -39,7 +39,7 @@ import skimage.util
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 O_ADD = "Add"
@@ -76,7 +76,7 @@ FIXED_SETTING_COUNT_1 = 8
 FIXED_SETTING_COUNT = 9
 
 
-class ImageMath(cellprofiler.module.ImageProcessing):
+class ImageMath(cellprofiler_core.module.ImageProcessing):
     variable_revision_number = 5
 
     module_name = "ImageMath"

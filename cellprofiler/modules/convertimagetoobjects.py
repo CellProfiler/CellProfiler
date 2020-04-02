@@ -2,7 +2,7 @@
 import skimage
 import skimage.measure
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 HELP_BINARY_IMAGE = """\
@@ -41,7 +41,7 @@ YES          YES          NO
 )
 
 
-class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
+class ConvertImageToObjects(cellprofiler_core.module.image_segmentation.ImageSegmentation):
     category = "Object Processing"
 
     module_name = "ConvertImageToObjects"

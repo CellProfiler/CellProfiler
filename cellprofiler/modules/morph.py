@@ -261,7 +261,7 @@ import scipy.ndimage as scind
 
 logger = logging.getLogger(__name__)
 
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 import cellprofiler.image as cpi
 import centrosome.cpmorphology as morph

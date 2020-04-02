@@ -32,7 +32,7 @@ from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules._help import (
     HELP_ON_MEASURING_DISTANCES,
@@ -47,7 +47,7 @@ CIRCULAR_AVERAGE_FILTER = "Circular Average Filter"
 SM_TO_AVERAGE = "Smooth to Average"
 
 
-class Smooth(cellprofiler.module.Module):
+class Smooth(cellprofiler_core.module.Module):
     module_name = "Smooth"
     category = "Image Processing"
     variable_revision_number = 2

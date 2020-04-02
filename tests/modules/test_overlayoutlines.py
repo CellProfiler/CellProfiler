@@ -7,7 +7,7 @@ import skimage.segmentation
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.overlayoutlines
 import cellprofiler.object
 import cellprofiler.pipeline

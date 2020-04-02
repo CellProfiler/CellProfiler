@@ -19,13 +19,13 @@ YES          YES          NO
 """
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class DilateImage(cellprofiler.module.ImageProcessing):
+class DilateImage(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "DilateImage"

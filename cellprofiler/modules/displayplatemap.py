@@ -40,7 +40,7 @@ import numpy as np
 import six
 
 import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.modules._help import USING_METADATA_HELP_REF
 

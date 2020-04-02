@@ -18,11 +18,11 @@ YES          YES          NO
 
 import scipy.signal
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 
-class MedianFilter(cellprofiler.module.ImageProcessing):
+class MedianFilter(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "MedianFilter"

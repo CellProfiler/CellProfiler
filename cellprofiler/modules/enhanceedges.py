@@ -33,7 +33,7 @@ from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 
 M_SOBEL = "Sobel"

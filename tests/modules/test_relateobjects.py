@@ -3,7 +3,7 @@ import unittest
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.relateobjects
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -24,7 +24,7 @@ class TestRelateObjects(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         if fake_measurement:
 
-            class FakeModule(cellprofiler.module.Module):
+            class FakeModule(cellprofiler_core.module.Module):
                 def get_measurement_columns(self, pipeline):
                     return [
                         (

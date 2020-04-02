@@ -21,10 +21,10 @@ YES          YES          NO
 import skimage.morphology
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 
 
-class MorphologicalSkeleton(cellprofiler.module.ImageProcessing):
+class MorphologicalSkeleton(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "MorphologicalSkeleton"

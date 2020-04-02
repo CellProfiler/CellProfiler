@@ -24,7 +24,7 @@ import skimage.segmentation
 import skimage.util
 
 import cellprofiler.image
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -60,7 +60,7 @@ NUM_OUTLINE_SETTINGS_V4 = 2
 NUM_OUTLINE_SETTINGS = 2
 
 
-class OverlayOutlines(cellprofiler.module.Module):
+class OverlayOutlines(cellprofiler_core.module.Module):
     module_name = "OverlayOutlines"
     variable_revision_number = 4
     category = "Image Processing"

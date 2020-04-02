@@ -16,7 +16,7 @@ import six.moves
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules
 import cellprofiler.modules.injectimage
 import cellprofiler.modules.loadimages
@@ -1488,7 +1488,7 @@ def profile_pipeline(pipeline_filename, output_filename=None, always_run=True):
     to_print.print_stats(20)
 
 
-class ATestModule(cellprofiler.module.Module):
+class ATestModule(cellprofiler_core.module.Module):
     module_name = "ATestModule"
     variable_revision_number = 1
 
@@ -1529,7 +1529,7 @@ class ATestModule(cellprofiler.module.Module):
         return list(measurements)
 
 
-class TestModuleWithMeasurement(cellprofiler.module.Module):
+class TestModuleWithMeasurement(cellprofiler_core.module.Module):
     module_name = "Test0801"
     category = "Test"
     variable_revision_number = 1
@@ -1553,7 +1553,7 @@ class TestModuleWithMeasurement(cellprofiler.module.Module):
         ]
 
 
-class MyClassForTest1101(cellprofiler.module.Module):
+class MyClassForTest1101(cellprofiler_core.module.Module):
     def create_settings(self):
         self.my_variable = cellprofiler.setting.Text("", "")
 
@@ -1583,7 +1583,7 @@ class MyClassForTest1101(cellprofiler.module.Module):
         raise MySQLdb.OperationalError("Bogus error")
 
 
-class GroupModule(cellprofiler.module.Module):
+class GroupModule(cellprofiler_core.module.Module):
     module_name = "Group"
     variable_revision_number = 1
 

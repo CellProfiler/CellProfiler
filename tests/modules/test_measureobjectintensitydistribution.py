@@ -6,7 +6,7 @@ import scipy.stats
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.measureobjectintensitydistribution
 import cellprofiler.object
 import cellprofiler.pipeline

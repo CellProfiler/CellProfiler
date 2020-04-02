@@ -42,7 +42,7 @@ import skimage.io
 import skimage.util
 
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -91,7 +91,7 @@ WS_FIRST_CYCLE = "First cycle"
 WS_LAST_CYCLE = "Last cycle"
 
 
-class SaveImages(cellprofiler.module.Module):
+class SaveImages(cellprofiler_core.module.Module):
     module_name = "SaveImages"
 
     variable_revision_number = 14

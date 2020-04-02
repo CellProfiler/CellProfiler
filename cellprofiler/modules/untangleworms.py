@@ -108,7 +108,7 @@ import cellprofiler.measurement
 
 logger = logging.getLogger(__name__)
 import cellprofiler
-import cellprofiler.module as cpm
+import cellprofiler_core.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
 import cellprofiler.object as cpo

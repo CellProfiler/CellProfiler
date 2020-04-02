@@ -32,7 +32,7 @@ import skimage.exposure
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.setting
 
 M_STRETCH = "Stretch each image to use the full intensity range"
@@ -72,7 +72,7 @@ HIGH_EACH_IMAGE = "Maximum for each image"
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cellprofiler.module.ImageProcessing):
+class RescaleIntensity(cellprofiler_core.module.ImageProcessing):
     module_name = "RescaleIntensity"
 
     variable_revision_number = 3

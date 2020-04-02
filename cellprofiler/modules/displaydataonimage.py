@@ -30,7 +30,7 @@ import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
 from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
@@ -49,7 +49,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cellprofiler.module.Module):
+class DisplayDataOnImage(cellprofiler_core.module.Module):
     module_name = "DisplayDataOnImage"
     category = "Data Tools"
     variable_revision_number = 6

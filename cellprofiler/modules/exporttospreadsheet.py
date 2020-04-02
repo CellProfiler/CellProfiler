@@ -135,7 +135,7 @@ SETTING_OG_OFFSET_V9 = 15
 SETTING_OG_OFFSET_V10 = 17
 SETTING_OG_OFFSET_V11 = 18
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 17
+SETTING_OG_OFFSET = 18
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -178,7 +178,7 @@ NANS_AS_NANS = "NaN"
 class ExportToSpreadsheet(cpm.Module):
     module_name = "ExportToSpreadsheet"
     category = ["File Processing", "Data Tools"]
-    variable_revision_number = 12
+    variable_revision_number = 13
 
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
@@ -254,6 +254,16 @@ GUI and to fail when running headless."""
 “Image\_Metadata\_” columns are normally exported in the Image data
 file, but if you select *"Yes"*, they will also be exported with the
 Object data file(s)."""
+            % globals(),
+        )
+
+        self.add_filepath = cps.Binary(
+            "Add image file and folder names to your object data file?",
+            False,
+            doc="""\
+“Image\_PathName\_” and “Image\_FileName\_” columns are normally
+exported in the Image data file, but if you select *"Yes"*, they will also
+be exported with the Object data file(s)."""
             % globals(),
         )
 
@@ -544,6 +554,7 @@ desired.
         result = [
             self.delimiter,
             self.add_metadata,
+            self.add_filepath,
             self.pick_columns,
             self.wants_aggregate_means,
             self.wants_aggregate_medians,
@@ -577,6 +588,7 @@ desired.
         result += [
             self.wants_overwrite_without_warning,
             self.add_metadata,
+            self.add_filepath,
             self.nan_representation,
             self.pick_columns,
         ]
@@ -1246,6 +1258,9 @@ desired.
 
             columns = set(columns)
             features = [x for x in features if x in columns]
+        elif object_name == cpmeas.IMAGE:
+            # Exclude any thumbnails if they've been created for ExportToDatabase
+            features = [x for x in features if not x.startswith("Thumbnail_")]
         return features
 
     def make_object_file(
@@ -1276,6 +1291,14 @@ desired.
             ]
             mdfeatures.sort()
             features += mdfeatures
+        if self.add_filepath.value:
+            filefeatures = [
+                (IMAGE, name)
+                for object_name, name in columns
+                if name.startswith("PathName_", "FileName_") and object_name == IMAGE
+            ]
+            filefeatures.sort()
+            features += filefeatures
         for object_name in object_names:
             ofeatures = [
                 feature for col_object, feature in columns if col_object == object_name
@@ -1583,9 +1606,13 @@ desired.
             setting_values = setting_values[:2] + setting_values[3:]
 
             variable_revision_number = 12
+        if variable_revision_number == 12:
+            # Add "add file path" setting.
+            setting_values = setting_values[:2] + [cps.NO] + setting_values[2:]
+            variable_revision_number = 13
 
         # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 6
+        SLOT_DIRCHOICE = 7
         directory = setting_values[SLOT_DIRCHOICE]
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values = (

@@ -1,6 +1,6 @@
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.classifyobjects
 import cellprofiler.object
@@ -29,7 +29,7 @@ def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None
         measurements.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME_2, measurement2)
         module.add_single_measurement()
         m_names.append(MEASUREMENT_NAME_2)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
 
     module.contrast_choice.value = contrast_choice

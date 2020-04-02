@@ -32,7 +32,7 @@ from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
 from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 

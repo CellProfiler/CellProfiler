@@ -25,7 +25,7 @@ YES          YES          NO
 import numpy
 import skimage.measure
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting

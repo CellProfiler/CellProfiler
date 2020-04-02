@@ -1,6 +1,6 @@
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.injectimage
 import cellprofiler.pipeline
@@ -23,7 +23,7 @@ def test_get_from_image_set():
         measurements,
         None,
         measurements,
-        cellprofiler.image.ImageSetList(),
+        cellprofiler_core.image.ImageSetList(),
     )
     ii.prepare_run(workspace)
     ii.prepare_group(workspace, {}, [1])

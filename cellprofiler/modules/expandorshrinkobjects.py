@@ -51,7 +51,7 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.identify

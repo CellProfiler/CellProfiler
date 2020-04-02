@@ -83,7 +83,7 @@ import six.moves.urllib.parse
 import six.moves.urllib.request
 import skimage.external.tifffile
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.misc
 import cellprofiler_core.module
@@ -3101,7 +3101,7 @@ to store the image.
                             outlines |= centrosome.outline.outline(l).astype(
                                 outlines.dtype
                             )
-                        outline_image = cellprofiler.image.Image(
+                        outline_image = cellprofiler_core.image.Image(
                             outlines, path_name=path, file_name=filename
                         )
                         workspace.image_set.add(
@@ -4109,7 +4109,7 @@ def load_data_file(pathname_or_url, load_fn):
     return load_fn(pathname_or_url)
 
 
-class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
+class LoadImagesImageProvider(cellprofiler_core.image.AbstractImageProvider):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(
@@ -4399,7 +4399,7 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
-        self.__image = cellprofiler.image.Image(
+        self.__image = cellprofiler_core.image.Image(
             img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
@@ -4436,7 +4436,7 @@ class LoadImagesImageProvider(cellprofiler.image.AbstractImageProvider):
         else:
             self.scale = 1
 
-        self.__image = cellprofiler.image.Image(
+        self.__image = cellprofiler_core.image.Image(
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),

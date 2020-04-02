@@ -26,7 +26,7 @@ YES          YES          NO
 import numpy
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 

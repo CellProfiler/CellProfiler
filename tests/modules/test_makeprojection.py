@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.makeprojection
 import cellprofiler.object
@@ -41,19 +41,19 @@ def test_load_v2():
 
 
 def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_count = len(images_and_masks)
     for i in range(image_count):
         pixel_data, mask = images_and_masks[i]
         if mask is None:
-            image = cellprofiler.image.Image(pixel_data)
+            image = cellprofiler_core.image.Image(pixel_data)
         else:
-            image = cellprofiler.image.Image(pixel_data, mask)
+            image = cellprofiler_core.image.Image(pixel_data, mask)
         image_set_list.get_image_set(i).add(IMAGE_NAME, image)
     #
     # Add bogus image at end for 2nd group
     #
-    bogus_image = cellprofiler.image.Image(numpy.zeros((10, 20)))
+    bogus_image = cellprofiler_core.image.Image(numpy.zeros((10, 20)))
     image_set_list.get_image_set(image_count).add(IMAGE_NAME, bogus_image)
 
     pipeline = cellprofiler.pipeline.Pipeline()

@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.maskobjects
@@ -169,10 +169,10 @@ def make_workspace(
         oo.segmented = masking_objects
         object_set.add_objects(oo, MASKING_OBJECTS)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     if masking_image is not None:
-        mi = cellprofiler.image.Image(masking_image)
+        mi = cellprofiler_core.image.Image(masking_image)
         image_set.add(MASKING_IMAGE, mi)
 
     workspace = cellprofiler.workspace.Workspace(

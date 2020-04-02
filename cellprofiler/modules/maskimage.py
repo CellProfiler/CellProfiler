@@ -34,7 +34,7 @@ See also **Threshold**, **IdentifyPrimaryObjects**, and
 
 import numpy as np
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 

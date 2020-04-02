@@ -19,7 +19,7 @@ import six.moves
 import zmq
 
 import cellprofiler
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.preferences
 import cellprofiler.workspace
@@ -363,7 +363,7 @@ class AnalysisRunner:
                 None,
                 None,
                 measurements,
-                cellprofiler.image.ImageSetList(),
+                cellprofiler_core.image.ImageSetList(),
             )
 
             if image_set_end is None:

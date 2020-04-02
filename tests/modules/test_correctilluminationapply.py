@@ -1,7 +1,7 @@
 import numpy
 import pytest
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.correctilluminationapply
 import cellprofiler.modules.injectimage
@@ -40,7 +40,7 @@ def test_divide():
         cellprofiler.modules.correctilluminationapply.DOS_DIVIDE
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -88,7 +88,7 @@ def test_subtract():
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -136,7 +136,7 @@ def test_color_by_bw():
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
@@ -184,7 +184,7 @@ def test_color_by_color():
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list

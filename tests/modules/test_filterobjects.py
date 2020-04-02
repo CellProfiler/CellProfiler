@@ -6,7 +6,7 @@ import tempfile
 
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.filterobjects
 import cellprofiler.object
@@ -28,7 +28,7 @@ def make_workspace(object_dict={}, image_dict={}):
     module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -39,7 +39,7 @@ def make_workspace(object_dict={}, image_dict={}):
         image_set_list,
     )
     for key in list(image_dict.keys()):
-        image_set.add(key, cellprofiler.image.Image(image_dict[key]))
+        image_set.add(key, cellprofiler_core.image.Image(image_dict[key]))
     for key in list(object_dict.keys()):
         o = cellprofiler.object.Objects()
         o.segmented = object_dict[key]
@@ -775,7 +775,7 @@ def test_discard_mask_objects():
     expected[expected == 2] = 0
 
     workspace, module = make_workspace({})
-    parent_image = cellprofiler.image.Image(numpy.zeros((10, 10)), mask=mask)
+    parent_image = cellprofiler_core.image.Image(numpy.zeros((10, 10)), mask=mask)
     workspace.image_set.add(INPUT_IMAGE, parent_image)
 
     input_objects = cellprofiler.object.Objects()

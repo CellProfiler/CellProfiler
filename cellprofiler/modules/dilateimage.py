@@ -18,7 +18,7 @@ YES          YES          NO
 
 """
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 import cellprofiler.utilities.morphology

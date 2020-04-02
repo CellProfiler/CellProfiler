@@ -24,7 +24,7 @@ import numpy
 import skimage.color
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -58,7 +58,7 @@ class MedialAxis(cellprofiler_core.module.ImageProcessing):
         else:
             y_data = skimage.morphology.medial_axis(x_data)
 
-        y = cellprofiler.image.Image(
+        y = cellprofiler_core.image.Image(
             dimensions=x.dimensions, image=y_data, parent_image=x
         )
 

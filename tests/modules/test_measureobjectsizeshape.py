@@ -4,7 +4,7 @@ import os
 import numpy
 import skimage.io
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.injectimage
 import cellprofiler.modules.measureobjectsizeshape
@@ -19,7 +19,7 @@ OBJECTS_NAME = "myobjects"
 
 
 def make_workspace(labels):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     objects = cellprofiler.object.Objects()
@@ -77,7 +77,7 @@ def test_zeros():
     settings = ["SomeObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
@@ -136,7 +136,7 @@ def test_run():
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
@@ -236,7 +236,7 @@ def test_non_contiguous():
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
@@ -277,7 +277,7 @@ def test_zernikes_are_different():
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
@@ -319,7 +319,7 @@ def test_extent():
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
@@ -380,7 +380,7 @@ def test_overlapping():
         object_set = cellprofiler.object.ObjectSet()
         object_set.add_objects(objects, "SomeObjects")
         module.set_module_num(1)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         mlist.append(measurements)
         pipeline = cellprofiler.pipeline.Pipeline()

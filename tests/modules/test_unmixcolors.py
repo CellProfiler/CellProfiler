@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.unmixcolors
 import cellprofiler.object
@@ -79,9 +79,9 @@ def make_workspace(pixels, choices):
     module.set_module_num(1)
     pipeline.add_module(module)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image = cellprofiler.image.Image(pixels)
+    image = cellprofiler_core.image.Image(pixels)
     image_set.add(INPUT_IMAGE, image)
 
     workspace = cellprofiler.workspace.Workspace(

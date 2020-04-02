@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import cellprofiler.grid
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.definegrid
 import cellprofiler.object
@@ -23,9 +23,9 @@ def make_workspace(image, labels):
     module.display_image_name.value = INPUT_IMAGE_NAME
     module.object_name.value = OBJECTS_NAME
     module.save_image_name.value = OUTPUT_IMAGE_NAME
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
+    image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image))
     object_set = cellprofiler.object.ObjectSet()
     objects = cellprofiler.object.Objects()
     objects.segmented = labels

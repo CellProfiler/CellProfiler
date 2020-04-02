@@ -6,7 +6,7 @@ import numpy
 import pytest
 import scipy.ndimage
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
@@ -44,7 +44,7 @@ def make_workspace(image, mask=None, labels=None):
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     m = cellprofiler.measurement.Measurements()
-    cpimage = cellprofiler.image.Image(image, mask=mask)
+    cpimage = cellprofiler_core.image.Image(image, mask=mask)
     m.add(IMAGE_NAME, cpimage)
     object_set = cellprofiler.object.ObjectSet()
     if labels is not None:
@@ -69,11 +69,11 @@ def test_test_zero_objects():
     x.threshold.threshold_range.max = 1
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -119,11 +119,11 @@ def test_test_zero_objects_wa_in_lo_in():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -149,11 +149,11 @@ def test_test_zero_objects_wa_di_lo_in():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -179,11 +179,11 @@ def test_test_zero_objects_wa_in_lo_sh():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -209,11 +209,11 @@ def test_test_zero_objects_wa_di_lo_sh():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -241,11 +241,11 @@ def test_test_one_object():
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = one_cell_image()
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -308,11 +308,11 @@ def test_test_two_objects():
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = two_cell_image()
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -372,11 +372,11 @@ def test_test_threshold_range():
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     img = two_cell_image()
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -436,11 +436,11 @@ def test_fill_holes():
     draw_circle(img, (30, 30), 7, 0.5)
     img[10, 10] = 0
     img[30, 30] = 0
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -472,11 +472,11 @@ def test_dont_fill_holes():
     draw_circle(img, (30, 30), 7, 0.5)
     img[10, 10] = 0
     img[30, 30] = 0
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -509,11 +509,11 @@ def test_01_fill_holes_within_holes():
     draw_circle(img, (20, 20), 10, 0.5)
     draw_circle(img, (20, 20), 4, 0)
     img[20, 20] = 1
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -574,11 +574,11 @@ def test_test_watershed_shape_shape():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -637,11 +637,11 @@ def test_test_watershed_shape_intensity():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -704,11 +704,11 @@ def test_test_watershed_intensity_distance_single():
     # We do a little blur here so that there's some monotonic decrease
     # from the central peak
     img = scipy.ndimage.gaussian_filter(img, 0.25, mode="constant")
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -769,11 +769,11 @@ def test_test_watershed_intensity_distance_triple():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -834,11 +834,11 @@ def test_test_watershed_intensity_distance_filter():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -902,11 +902,11 @@ def test_test_watershed_intensity_distance_double():
     # We do a little blur here so that there's some monotonic decrease
     # from the central peak
     img = scipy.ndimage.gaussian_filter(img, 0.5, mode="constant")
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -968,11 +968,11 @@ def test_propagate():
     # We do a little blur here so that there's some monotonic decrease
     # from the central peak
     img = scipy.ndimage.gaussian_filter(img, 0.5, mode="constant")
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -1015,7 +1015,7 @@ def test_fly():
     )
 
     img = fly_image()
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     #
     # Make sure it runs both regular and with reduced image
     #
@@ -1035,7 +1035,7 @@ def test_fly():
                 cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
             ):
                 x.watershed_method.value = watershed_method
-                image_set_list = cellprofiler.image.ImageSetList()
+                image_set_list = cellprofiler_core.image.ImageSetList()
                 image_set = image_set_list.get_image_set(0)
                 image_set.add(x.x_name.value, image)
                 object_set = cellprofiler.object.ObjectSet()
@@ -1097,7 +1097,7 @@ def test_maxima_suppression_zero():
         pipeline.add_module(x)
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
-        measurements.add(x.x_name.value, cellprofiler.image.Image(img))
+        measurements.add(x.x_name.value, cellprofiler_core.image.Image(img))
         x.run(
             cellprofiler.workspace.Workspace(
                 pipeline, x, measurements, object_set, measurements, None
@@ -1335,11 +1335,11 @@ def test_discard_large():
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
     draw_circle(img, (25, 25), 10, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -1386,11 +1386,11 @@ def test_keep_large():
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
     draw_circle(img, (25, 25), 10, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -1431,11 +1431,11 @@ def test_discard_small():
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
     draw_circle(img, (25, 25), 10, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -1484,11 +1484,11 @@ def test_regression_diagonal():
     img = numpy.zeros((10, 10))
     img[4, 4] = 1
     img[5, 5] = 1
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -1518,11 +1518,11 @@ def test_regression_adaptive_mask():
     img = numpy.random.uniform(size=(100, 100))
     mask = numpy.zeros(img.shape, bool)
     mask[-1, -1] = True
-    image = cellprofiler.image.Image(img, mask)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img, mask)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
     object_set = cellprofiler.object.ObjectSet()
     measurements = cellprofiler.measurement.Measurements()
@@ -1794,8 +1794,8 @@ def test_regression_holes():
         ],
         bool,
     )
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
     object_set = cellprofiler.object.ObjectSet()
@@ -1834,8 +1834,8 @@ def test_erase_objects():
     pixels[12:18, 2:8] = 0.5
     pixels[2:8, 12:18] = 0.5
     pixels[12:18, 12:18] = 0.5
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
     object_set = cellprofiler.object.ObjectSet()
@@ -1875,8 +1875,8 @@ def test_dont_erase_objects():
     pixels[12:18, 2:8] = 0.5
     pixels[2:8, 12:18] = 0.5
     pixels[12:18, 12:18] = 0.5
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
     object_set = cellprofiler.object.ObjectSet()
@@ -1912,8 +1912,8 @@ def test_threshold_by_measurement():
     pixels = numpy.zeros((10, 10))
     pixels[2:6, 2:6] = 0.5
 
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("MyImage", image)
     object_set = cellprofiler.object.ObjectSet()

@@ -20,7 +20,7 @@ YES          YES          NO
 import numpy
 import skimage.filters
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -58,7 +58,7 @@ class GaussianFilter(cellprofiler_core.module.ImageProcessing):
 
         y_data = skimage.filters.gaussian(x_data, sigma=sigma)
 
-        y = cellprofiler.image.Image(
+        y = cellprofiler_core.image.Image(
             dimensions=dimensions, image=y_data, parent_image=x
         )
 

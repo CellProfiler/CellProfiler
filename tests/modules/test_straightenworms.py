@@ -2,7 +2,7 @@ import centrosome.cpmorphology
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.straightenworms
@@ -145,12 +145,12 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
     )
     m.add_measurement(OBJECTS_NAME, feature, lengths)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(image, mask))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(image, mask))
 
     if auximage is not None:
-        image_set.add(AUX_IMAGE_NAME, cellprofiler.image.Image(auximage))
+        image_set.add(AUX_IMAGE_NAME, cellprofiler_core.image.Image(auximage))
         module.add_image()
         module.images[1].image_name.value = AUX_IMAGE_NAME
         module.images[1].straightened_image_name.value = AUX_STRAIGHTENED_IMAGE_NAME
@@ -314,7 +314,7 @@ def test_straighten_straight_worm():
     module.wants_measurements.value = False
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 11
     assert pixels.shape[0] == 19
@@ -359,7 +359,7 @@ def test_straighten_diagonal_worm():
     module.width.value = 11
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 11
     assert pixels.shape[0] == 31
@@ -389,7 +389,7 @@ def test_straighten_two_worms():
     module.width.value = 11
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 22
     assert pixels.shape[0] == 31
@@ -419,7 +419,7 @@ def test_straighten_missing_worm():
     module.width.value = 11
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 33
     assert pixels.shape[0] == 31
@@ -1131,7 +1131,7 @@ def test_flip_dont_flip_top():
     module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_TOP
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 11
     assert pixels.shape[0] == 19
@@ -1156,7 +1156,7 @@ def test_flip_top():
     module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_TOP
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 11
     assert pixels.shape[0] == 19
@@ -1182,7 +1182,7 @@ def test_flip_dont_flip_bottom():
     module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_BOTTOM
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 11
     assert pixels.shape[0] == 19
@@ -1207,7 +1207,7 @@ def test_flip_bottom():
     module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_BOTTOM
     module.run(workspace)
     image_set = workspace.image_set
-    assert isinstance(image_set, cellprofiler.image.ImageSet)
+    assert isinstance(image_set, cellprofiler_core.image.ImageSet)
     pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
     assert pixels.shape[1] == 11
     assert pixels.shape[0] == 19

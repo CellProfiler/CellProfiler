@@ -9,7 +9,7 @@ import pytest
 import skimage.data
 import skimage.util
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.saveimages
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -23,14 +23,14 @@ instance = cellprofiler.modules.saveimages.SaveImages()
     ids=["grayscale_image", "multichannel_image"],
 )
 def image(request):
-    return cellprofiler.image.Image(image=request.param)
+    return cellprofiler_core.image.Image(image=request.param)
 
 
 @pytest.fixture(scope="module")
 def volume():
     data = numpy.random.rand(10, 10, 10)
 
-    return cellprofiler.image.Image(image=data, dimensions=3)
+    return cellprofiler_core.image.Image(image=data, dimensions=3)
 
 
 def test_load_v11():
@@ -496,16 +496,16 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 @pytest.mark.parametrize(
     "volume,outshape",
     [# an yxc image
-    (cellprofiler.image.Image(image=numpy.random.rand(100, 200, 8), dimensions=2),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(100, 200, 8), dimensions=2),
         (1, 100, 200, 8)),
      # an zyx image
-    (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
         (5, 100, 200, 1)),
      # an yx image
-    (cellprofiler.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
         (1, 100, 200, 1)),
      # an zyxc image
-    (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
         (5, 100, 200, 8))
 ]
 )

@@ -73,7 +73,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo

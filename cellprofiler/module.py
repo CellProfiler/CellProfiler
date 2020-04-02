@@ -5,7 +5,7 @@ import docutils.core
 import numpy
 import six
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting
@@ -1006,7 +1006,7 @@ class ImageProcessing(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = cellprofiler.image.Image(
+        y = cellprofiler_core.image.Image(
             dimensions=dimensions, image=y_data, parent_image=x, convert=False
         )
 

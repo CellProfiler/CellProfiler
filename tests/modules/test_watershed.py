@@ -13,7 +13,7 @@ import skimage.segmentation
 import skimage.transform
 import skimage.util
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.watershed
 
 instance = cellprofiler.modules.watershed.Watershed()
@@ -83,7 +83,7 @@ def test_run_markers(
 
     image_set.add(
         "markers",
-        cellprofiler.image.Image(
+        cellprofiler_core.image.Image(
             image=markers, convert=False, dimensions=image.dimensions
         ),
     )
@@ -100,7 +100,7 @@ def test_run_markers(
 
     image_set.add(
         "gradient",
-        cellprofiler.image.Image(
+        cellprofiler_core.image.Image(
             image=gradient, convert=False, dimensions=image.dimensions
         ),
     )
@@ -147,7 +147,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     image_set.add(
         "binary",
-        cellprofiler.image.Image(
+        cellprofiler_core.image.Image(
             image=binary, convert=False, dimensions=image.dimensions
         ),
     )

@@ -10,7 +10,7 @@ import numpy.testing
 import scipy.ndimage
 import centrosome.outline
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.object
 import cellprofiler.utilities.hdf5_dict
 
@@ -406,7 +406,7 @@ class TestObjects(unittest.TestCase):
         ijv = x.get_ijv()
         x = cellprofiler.object.Objects()
         x.ijv = ijv
-        x.parent_image = cellprofiler.image.Image(numpy.zeros(labels.shape))
+        x.parent_image = cellprofiler_core.image.Image(numpy.zeros(labels.shape))
         labels_out = x.get_labels()
         self.assertEqual(len(labels_out), 1)
         labels_out, indices = labels_out[0]
@@ -490,7 +490,7 @@ class TestObjects(unittest.TestCase):
         v = numpy.hstack([[k + 1] * numpy.sum(mask) for k, mask in enumerate(masks)])
 
         x.set_ijv(numpy.column_stack((i, j, v)), ii.shape)
-        x.parent_image = cellprofiler.image.Image(numpy.zeros((10, 20)))
+        x.parent_image = cellprofiler_core.image.Image(numpy.zeros((10, 20)))
         colors = numpy.random.uniform(size=(3, 3)).astype(numpy.float32)
         image = x.make_ijv_outlines(colors)
         i1 = [i for i, color in enumerate(colors) if numpy.all(color == image[0, 5, :])]

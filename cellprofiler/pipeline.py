@@ -28,7 +28,7 @@ from bioformats.formatreader import clear_image_reader_cache
 from future.standard_library import install_aliases
 
 import cellprofiler
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.preferences
@@ -1739,11 +1739,11 @@ class Pipeline(object):
             )
 
         # Create image set from provided dict
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, cellprofiler.image.Image(input_pixels))
+            image_set.add(image_name, cellprofiler_core.image.Image(input_pixels))
         object_set = cellprofiler.object.ObjectSet()
         measurements = cellprofiler.measurement.Measurements()
 
@@ -1907,7 +1907,7 @@ class Pipeline(object):
         else:
             measurements = initial_measurements
 
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
 
         workspace = cellprofiler.workspace.Workspace(
             self, None, None, None, measurements, image_set_list, frame
@@ -3271,7 +3271,7 @@ class Pipeline(object):
                 None,
                 None,
                 temp_measurements,
-                cellprofiler.image.ImageSetList(),
+                cellprofiler_core.image.ImageSetList(),
             )
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)

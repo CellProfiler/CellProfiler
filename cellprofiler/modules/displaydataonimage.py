@@ -28,7 +28,7 @@ import matplotlib.figure
 import matplotlib.text
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.preferences
@@ -401,7 +401,7 @@ color map.
                 fig.subplots_adjust(0.1, 0.1, 0.9, 0.9, 0, 0)
 
         pixel_data = figure_to_image(fig, dpi=fig.dpi)
-        image = cellprofiler.image.Image(pixel_data)
+        image = cellprofiler_core.image.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
 
     def run_as_data_tool(self, workspace):

@@ -3317,13 +3317,13 @@ class Filter(Setting):
 
             J.run_script(
                 """
-            importPackage(Packages.org.cellprofiler.imageset.filter);
+            importPackage(Packages.org.cellprofiler_core.imageset.filter);
             new Filter(expr, klass);
             """,
                 dict(
                     expr=self.value_text,
                     klass=J.class_for_name(
-                        "org.cellprofiler.imageset.ImagePlaneDetailsStack"
+                        "org.cellprofiler_core.imageset.ImagePlaneDetailsStack"
                     ),
                 ),
             )

@@ -1135,8 +1135,8 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
         ] = group_indexes[i - 1]
         jblob = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler.imageset);
-        importPackage(Packages.org.cellprofiler.imageset.filter);
+        importPackage(Packages.org.cellprofiler_core.imageset);
+        importPackage(Packages.org.cellprofiler_core.imageset.filter);
         var imageFile=new ImageFile(new java.net.URI(url));
         var imageFileDetails = new ImageFileDetails(imageFile);
         var imageSeries=new ImageSeries(imageFile, 0);

@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.measurecolocalization
 import cellprofiler.object
@@ -16,7 +16,7 @@ OBJECTS_NAME = "objects"
 def make_workspace(image1, image2, objects=None):
     """Make a workspace for testing Threshold"""
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     for image_group, name, image in zip(
         module.image_groups, (IMAGE1_NAME, IMAGE2_NAME), (image1, image2)
@@ -326,8 +326,8 @@ def test_03_get_measurement_columns_both():
 def test_correlated():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(10, 10))
-    i1 = cellprofiler.image.Image(image)
-    i2 = cellprofiler.image.Image(image)
+    i1 = cellprofiler_core.image.Image(image)
+    i2 = cellprofiler_core.image.Image(image)
     workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
@@ -356,8 +356,8 @@ def test_anticorrelated():
     i, j = numpy.mgrid[0:10, 0:10]
     image1 = ((i + j) % 2).astype(float)
     image2 = 1 - image1
-    i1 = cellprofiler.image.Image(image1)
-    i2 = cellprofiler.image.Image(image2)
+    i1 = cellprofiler_core.image.Image(image1)
+    i2 = cellprofiler_core.image.Image(image2)
     workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
@@ -375,8 +375,8 @@ def test_slope():
     numpy.random.seed(0)
     image1 = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
     image2 = image1 * 0.5
-    i1 = cellprofiler.image.Image(image1)
-    i2 = cellprofiler.image.Image(image2)
+    i1 = cellprofiler_core.image.Image(image1)
+    i2 = cellprofiler_core.image.Image(image2)
     workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
@@ -396,10 +396,10 @@ def test_crop():
     """Test similarly cropping one image to another"""
     numpy.random.seed(0)
     image1 = numpy.random.uniform(size=(20, 20))
-    i1 = cellprofiler.image.Image(image1)
+    i1 = cellprofiler_core.image.Image(image1)
     crop_mask = numpy.zeros((20, 20), bool)
     crop_mask[5:16, 5:16] = True
-    i2 = cellprofiler.image.Image(image1[5:16, 5:16], crop_mask=crop_mask)
+    i2 = cellprofiler_core.image.Image(image1[5:16, 5:16], crop_mask=crop_mask)
     workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
@@ -426,8 +426,8 @@ def test_mask():
     # Try to confound the module by making masked points anti-correlated
     #
     image2[~mask] = 1 - image1[~mask]
-    i1 = cellprofiler.image.Image(image1, mask=mask1)
-    i2 = cellprofiler.image.Image(image2, mask=mask2)
+    i1 = cellprofiler_core.image.Image(image1, mask=mask1)
+    i2 = cellprofiler_core.image.Image(image2, mask=mask2)
     workspace, module = make_workspace(i1, i2)
     module.run(workspace)
     m = workspace.measurements
@@ -452,8 +452,8 @@ def test_objects():
     # Anti-correlate the second object
     #
     image2[labels == 2] = 1 - image1[labels == 2]
-    i1 = cellprofiler.image.Image(image1)
-    i2 = cellprofiler.image.Image(image2)
+    i1 = cellprofiler_core.image.Image(image1)
+    i2 = cellprofiler_core.image.Image(image2)
     o = cellprofiler.object.Objects()
     o.segmented = labels
     workspace, module = make_workspace(i1, i2, o)
@@ -483,10 +483,10 @@ def test_cropped_objects():
     """Test images and objects with a cropping mask"""
     numpy.random.seed(0)
     image1 = numpy.random.uniform(size=(20, 20))
-    i1 = cellprofiler.image.Image(image1)
+    i1 = cellprofiler_core.image.Image(image1)
     crop_mask = numpy.zeros((20, 20), bool)
     crop_mask[5:15, 5:15] = True
-    i2 = cellprofiler.image.Image(image1[5:15, 5:15], crop_mask=crop_mask)
+    i2 = cellprofiler_core.image.Image(image1[5:15, 5:15], crop_mask=crop_mask)
     labels = numpy.zeros((10, 10), int)
     labels[:4, :4] = 1
     labels[6:, 6:] = 2
@@ -511,8 +511,8 @@ def test_no_objects():
     i, j = numpy.mgrid[0:10, 0:10]
     image1 = ((i + j) % 2).astype(float)
     image2 = image1.copy()
-    i1 = cellprofiler.image.Image(image1)
-    i2 = cellprofiler.image.Image(image2)
+    i1 = cellprofiler_core.image.Image(image1)
+    i2 = cellprofiler_core.image.Image(image2)
     o = cellprofiler.object.Objects()
     o.segmented = labels
     workspace, module = make_workspace(i1, i2, o)
@@ -539,7 +539,7 @@ def test_wrong_size():
     """Regression test of IMG-961 - objects and images of different sizes"""
     numpy.random.seed(0)
     image1 = numpy.random.uniform(size=(20, 20))
-    i1 = cellprofiler.image.Image(image1)
+    i1 = cellprofiler_core.image.Image(image1)
     labels = numpy.zeros((10, 30), int)
     labels[:4, :4] = 1
     labels[6:, 6:] = 2
@@ -572,8 +572,8 @@ def test_last_object_masked():
 
     for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):
         workspace, module = make_workspace(
-            cellprofiler.image.Image(image1, mask=mask1),
-            cellprofiler.image.Image(image2, mask=mask2),
+            cellprofiler_core.image.Image(image1, mask=mask1),
+            cellprofiler_core.image.Image(image2, mask=mask2),
             objects,
         )
         module.run(workspace)
@@ -602,7 +602,7 @@ def test_zero_valued_intensity():
     objects.segmented = labels
 
     workspace, module = make_workspace(
-        cellprofiler.image.Image(image1), cellprofiler.image.Image(image2), objects
+        cellprofiler_core.image.Image(image1), cellprofiler_core.image.Image(image2), objects
     )
 
     module.run(workspace)
@@ -633,7 +633,7 @@ def test_non_overlapping_object_intensity():
     objects.segmented = numpy.ones_like(image1, dtype=numpy.uint8)
 
     workspace, module = make_workspace(
-        cellprofiler.image.Image(image1), cellprofiler.image.Image(image2), objects
+        cellprofiler_core.image.Image(image1), cellprofiler_core.image.Image(image2), objects
     )
 
     module.run(workspace)

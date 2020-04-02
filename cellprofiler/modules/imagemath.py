@@ -37,7 +37,7 @@ import inflect
 import numpy
 import skimage.util
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
@@ -600,7 +600,7 @@ is applied before other operations.""",
             if smallest_image.has_masking_objects
             else None
         )
-        output_image = cellprofiler.image.Image(
+        output_image = cellprofiler_core.image.Image(
             output_pixel_data,
             mask=output_mask,
             crop_mask=crop_mask,

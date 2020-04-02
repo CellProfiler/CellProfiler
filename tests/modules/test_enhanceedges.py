@@ -3,7 +3,7 @@ import centrosome.kirsch
 import centrosome.otsu
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.enhanceedges
 import cellprofiler.object
@@ -21,7 +21,7 @@ def make_workspace(image, mask=None):
     module.output_image_name.value = OUTPUT_IMAGE_NAME
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -33,9 +33,9 @@ def make_workspace(image, mask=None):
     )
     image_set.add(
         INPUT_IMAGE_NAME,
-        cellprofiler.image.Image(image)
+        cellprofiler_core.image.Image(image)
         if mask is None
-        else cellprofiler.image.Image(image, mask),
+        else cellprofiler_core.image.Image(image, mask),
     )
     return workspace, module
 

@@ -12,7 +12,7 @@ import numpy
 import pytest
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.measurement
@@ -1131,9 +1131,9 @@ def make_workspace(
                 1, RELATIONSHIP_NAME, o1name, o2name, i1, o1, i2, o2
             )
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(r.uniform(size=(512, 512))))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(r.uniform(size=(512, 512))))
     object_set = cellprofiler.object.ObjectSet()
     objects = cellprofiler.object.Objects()
     objects.segmented = numpy.array([[0, 1, 2, 3], [0, 1, 2, 3]])

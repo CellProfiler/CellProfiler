@@ -5,7 +5,7 @@ import centrosome.cpmorphology
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.flipandrotate
 import cellprofiler.object
@@ -26,8 +26,8 @@ def run_module(image, mask=None, fn=None):
     returns an Image object containing the flipped/rotated/masked/cropped
     image and the angle measurement.
     """
-    img = cellprofiler.image.Image(image, mask)
-    image_set_list = cellprofiler.image.ImageSetList()
+    img = cellprofiler_core.image.Image(image, mask)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
     module = cellprofiler.modules.flipandrotate.FlipAndRotate()
@@ -312,7 +312,7 @@ def test_crop():
             module.wants_crop.value = False
 
         output_image, angle = run_module(image, fn=fn)
-        assert isinstance(crop_output_image, cellprofiler.image.Image)
+        assert isinstance(crop_output_image, cellprofiler_core.image.Image)
         pixel_data = output_image.pixel_data
         slop = (numpy.array(pixel_data.shape) - numpy.array(image.shape)) / 2
         mask = output_image.mask

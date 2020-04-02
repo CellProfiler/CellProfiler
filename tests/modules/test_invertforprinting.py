@@ -1,6 +1,6 @@
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.invertforprinting
 import cellprofiler.object
@@ -28,7 +28,7 @@ def run_module(
 
     Returns a dictionary of the pixel data of the images in the image set
     """
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.invertforprinting.InvertForPrinting()
     module.set_module_num(1)
@@ -39,7 +39,7 @@ def run_module(
         (blue_image, I_BLUE_IN, module.blue_input_image, module.wants_blue_input),
     ):
         if image is not None:
-            img = cellprofiler.image.Image(image)
+            img = cellprofiler_core.image.Image(image)
             image_set.add(name, img)
             setting.value = name
             if check is not None:

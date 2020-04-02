@@ -110,7 +110,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler
 import cellprofiler_core.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 import centrosome.cpmorphology as morph

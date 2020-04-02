@@ -2,7 +2,7 @@ import centrosome.cpmorphology
 import centrosome.outline
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.expandorshrinkobjects
@@ -34,7 +34,7 @@ def make_workspace(
     module.set_module_num(1)
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,

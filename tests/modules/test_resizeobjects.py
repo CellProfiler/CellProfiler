@@ -2,7 +2,7 @@ import numpy
 import numpy.testing
 import pytest
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.resizeobjects
 import cellprofiler.object
@@ -389,7 +389,7 @@ def test_resize_by_image(
 ):
     objects_empty.segmented = image_labels
     pixel_data = numpy.zeros((10, 5))
-    workspace_empty.image_set.add("TestImage", cellprofiler.image.Image(pixel_data))
+    workspace_empty.image_set.add("TestImage", cellprofiler_core.image.Image(pixel_data))
     module.x_name.value = "InputObjects"
     module.method.value = "Match Image"
     module.specific_image.value = "TestImage"
@@ -426,7 +426,7 @@ def test_resize_by_image_volume(
 ):
     objects_empty.segmented = volume_labels
     pixel_data = numpy.zeros((9, 10, 5))
-    workspace_empty.image_set.add("TestImage", cellprofiler.image.Image(pixel_data, dimensions=3))
+    workspace_empty.image_set.add("TestImage", cellprofiler_core.image.Image(pixel_data, dimensions=3))
     module.x_name.value = "InputObjects"
     module.method.value = "Match Image"
     module.specific_image.value = "TestImage"

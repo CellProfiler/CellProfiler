@@ -1,7 +1,7 @@
 import numpy
 
 import cellprofiler.grid
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.definegrid
 import cellprofiler.modules.identifyobjectsingrid
@@ -20,7 +20,7 @@ def make_workspace(gridding, labels=None):
     module.grid_name.value = GRID_NAME
     module.output_objects_name.value = OUTPUT_OBJECTS_NAME
     module.guiding_object_name.value = GUIDING_OBJECTS_NAME
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     object_set = cellprofiler.object.ObjectSet()
     if labels is not None:
         my_objects = cellprofiler.object.Objects()

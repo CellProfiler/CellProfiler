@@ -9,7 +9,7 @@ import bioformats.formatreader
 import numpy
 import six
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.loaddata
@@ -404,7 +404,7 @@ def test_load_planes():
     pipeline, module, filename = make_pipeline(csv_text)
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     try:
         workspace = cellprofiler.workspace.Workspace(
             pipeline, module, m, None, m, image_set_list
@@ -671,7 +671,7 @@ def test_get_groupings():
     module.wants_images.value = True
     module.wants_image_groupings.value = True
     module.metadata_fields.value = "ROW"
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, measurements, image_set_list
@@ -813,7 +813,7 @@ def test_load_objects():
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     module.wants_images.value = True
     try:
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         measurements = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, module, None, None, measurements, image_set_list
@@ -934,7 +934,7 @@ def test_load_filename():
         m,
         cellprofiler.object.ObjectSet(),
         m,
-        cellprofiler.image.ImageSetList(),
+        cellprofiler_core.image.ImageSetList(),
     )
     assert module.prepare_run(workspace)
     assert (
@@ -977,7 +977,7 @@ def test_load_url():
         m,
         cellprofiler.object.ObjectSet(),
         m,
-        cellprofiler.image.ImageSetList(),
+        cellprofiler_core.image.ImageSetList(),
     )
     assert module.prepare_run(workspace)
     assert (
@@ -1023,7 +1023,7 @@ def test_extra_fields():
         m,
         cellprofiler.object.ObjectSet(),
         m,
-        cellprofiler.image.ImageSetList(),
+        cellprofiler_core.image.ImageSetList(),
     )
     assert module.prepare_run(workspace)
     assert (
@@ -1073,7 +1073,7 @@ def test_extra_lines():
             m,
             cellprofiler.object.ObjectSet(),
             m,
-            cellprofiler.image.ImageSetList(),
+            cellprofiler_core.image.ImageSetList(),
         )
         assert module.prepare_run(workspace)
         assert isinstance(m, cellprofiler.measurement.Measurements)
@@ -1114,7 +1114,7 @@ def test_extra_lines_skip_rows():
             m,
             cellprofiler.object.ObjectSet(),
             m,
-            cellprofiler.image.ImageSetList(),
+            cellprofiler_core.image.ImageSetList(),
         )
         module.wants_rows.value = True
         module.row_range.min = 2
@@ -1147,7 +1147,7 @@ def test_load_default_input_folder():
             m,
             cellprofiler.object.ObjectSet(),
             m,
-            cellprofiler.image.ImageSetList(),
+            cellprofiler_core.image.ImageSetList(),
         )
         assert module.prepare_run(workspace)
         assert (

@@ -344,7 +344,7 @@ pass the current filter.
             else:
                 expression = self.filter.value_text
             env = javabridge.get_env()
-            ifcls = javabridge.class_for_name("org.cellprofiler.imageset.ImageFile")
+            ifcls = javabridge.class_for_name("org.cellprofiler_core.imageset.ImageFile")
             scls = env.find_class("java/lang/String")
             iffilter = javabridge.make_instance(
                 "org/cellprofiler/imageset/filter/Filter",

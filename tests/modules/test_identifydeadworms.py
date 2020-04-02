@@ -3,7 +3,7 @@ import numpy
 import scipy.ndimage
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.identifydeadworms
@@ -79,8 +79,8 @@ Angular distance:45
 
 
 def make_workspace(pixel_data, mask=None):
-    image = cellprofiler.image.Image(pixel_data, mask)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixel_data, mask)
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, image)

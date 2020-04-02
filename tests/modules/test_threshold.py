@@ -9,7 +9,7 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.threshold
@@ -31,7 +31,7 @@ def make_workspace(image, mask=None, dimensions=2):
     module.y_name.value = OUTPUT_IMAGE_NAME
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -43,9 +43,9 @@ def make_workspace(image, mask=None, dimensions=2):
     )
     image_set.add(
         INPUT_IMAGE_NAME,
-        cellprofiler.image.Image(image, dimensions=dimensions)
+        cellprofiler_core.image.Image(image, dimensions=dimensions)
         if mask is None
-        else cellprofiler.image.Image(image, mask, dimensions=dimensions),
+        else cellprofiler_core.image.Image(image, mask, dimensions=dimensions),
     )
     return workspace, module
 
@@ -353,7 +353,7 @@ def test_adaptive_otsu_small():
     x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
     x.global_operation.value = centrosome.threshold.TM_OTSU
     threshold, global_threshold = x.get_threshold(
-        cellprofiler.image.Image(image, mask=numpy.ones_like(image, bool)), workspace
+        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)), workspace
     )
     assert threshold[0, 0] != threshold[0, 109]
     assert threshold[0, 0] != threshold[119, 0]
@@ -381,7 +381,7 @@ def test_adaptive_otsu_small():
     x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
     x.global_operation.value = centrosome.threshold.TM_OTSU
     threshold, global_threshold = x.get_threshold(
-        cellprofiler.image.Image(image, mask=numpy.ones_like(image, bool)), workspace
+        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)), workspace
     )
     assert threshold[0, 0] != threshold[0, 109]
     assert threshold[0, 0] != threshold[119, 0]
@@ -412,13 +412,13 @@ def test_small_images():
             x.global_operation.value = threshold_method
             x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
             l, g = x.get_threshold(
-                cellprofiler.image.Image(image, mask=mask), workspace
+                cellprofiler_core.image.Image(image, mask=mask), workspace
             )
             v = image[mask]
             image = r.uniform(size=(9, 11))
             image[mask] = v
             l1, g1 = x.get_threshold(
-                cellprofiler.image.Image(image, mask=mask), workspace
+                cellprofiler_core.image.Image(image, mask=mask), workspace
             )
             assert round(abs(l1 - l), 7) == 0
 
@@ -431,7 +431,7 @@ def test_test_manual_background():
     x.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     x.manual_threshold.value = 0.5
     local_threshold, threshold = x.get_threshold(
-        cellprofiler.image.Image(
+        cellprofiler_core.image.Image(
             numpy.zeros((10, 10)), mask=numpy.ones((10, 10), bool)
         ),
         workspace,

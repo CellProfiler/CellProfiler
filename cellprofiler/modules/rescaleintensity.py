@@ -30,7 +30,7 @@ YES          YES          YES
 import numpy
 import skimage.exposure
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
@@ -418,7 +418,7 @@ Select the measurement value to use as the divisor for the final image.
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
 
-        rescaled_image = cellprofiler.image.Image(
+        rescaled_image = cellprofiler_core.image.Image(
             output_image,
             parent_image=input_image,
             convert=False,
@@ -482,7 +482,7 @@ Select the measurement value to use as the divisor for the final image.
                 channel = numpy.squeeze(channel, axis=splitaxis)
                 in_range = (min(channel[mask]), max(channel[mask]))
 
-                channelholder = cellprofiler.image.Image(channel, convert=False)
+                channelholder = cellprofiler_core.image.Image(channel, convert=False)
 
                 rescaled = self.rescale(channelholder, in_range)
                 newchannels.append(rescaled)

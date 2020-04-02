@@ -27,7 +27,7 @@ if not hasattr(zmq, "Frame"):
 
 import cellprofiler_core.module
 import cellprofiler.measurement
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -397,7 +397,7 @@ class KnimeBridgeServer(threading.Thread):
             for channel_name in channel_names:
                 dataset = image_group[channel_name]
                 pixel_data = dataset[image_index]
-                m.add(channel_name, cellprofiler.image.Image(pixel_data))
+                m.add(channel_name, cellprofiler_core.image.Image(pixel_data))
 
             for module in other_modules:
                 workspace = cellprofiler.workspace.Workspace(
@@ -543,7 +543,7 @@ class KnimeBridgeServer(threading.Thread):
                     message.pop(0).bytes,
                     grouping_allowed=grouping_allowed,
                 )
-                m.add(channel_name, cellprofiler.image.Image(pixel_data))
+                m.add(channel_name, cellprofiler_core.image.Image(pixel_data))
         except Exception as e:
             logger.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(session_id, e.message)

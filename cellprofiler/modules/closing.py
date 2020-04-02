@@ -23,7 +23,7 @@ YES          YES           NO
 import numpy
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules._help import HELP_FOR_STREL

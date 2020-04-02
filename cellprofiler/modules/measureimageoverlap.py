@@ -101,7 +101,7 @@ import scipy.ndimage
 import scipy.sparse
 
 import cellprofiler.icons
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.object

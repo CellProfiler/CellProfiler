@@ -49,7 +49,7 @@ import matplotlib.patches
 import numpy
 from centrosome.filter import stretch
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.preferences
@@ -458,16 +458,16 @@ objects:
                 image_mask = mask
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = cellprofiler.image.crop_image(
+            cropped_pixel_data = cellprofiler_core.image.crop_image(
                 orig_image.pixel_data, cropping, internal_cropping
             )
             if mask is None:
-                mask = cellprofiler.image.crop_image(
+                mask = cellprofiler_core.image.crop_image(
                     cropping, cropping, internal_cropping
                 )
             if orig_image.has_mask:
                 image_mask = (
-                    cellprofiler.image.crop_image(
+                    cellprofiler_core.image.crop_image(
                         orig_image.mask, cropping, internal_cropping
                     )
                     & mask
@@ -482,13 +482,13 @@ objects:
         if self.shape == SH_OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
-            output_image = cellprofiler.image.Image(
+            output_image = cellprofiler_core.image.Image(
                 image=cropped_pixel_data,
                 masking_objects=masking_objects,
                 parent_image=orig_image,
             )
         else:
-            output_image = cellprofiler.image.Image(
+            output_image = cellprofiler_core.image.Image(
                 image=cropped_pixel_data,
                 mask=image_mask,
                 parent_image=orig_image,

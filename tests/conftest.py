@@ -6,7 +6,7 @@ import skimage.filters
 import skimage.measure
 
 import cellprofiler.__main__
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -39,12 +39,12 @@ def pytest_sessionfinish(session, exitstatus):
 def image(request):
     data, dimensions = request.param
 
-    return cellprofiler.image.Image(image=data, dimensions=dimensions)
+    return cellprofiler_core.image.Image(image=data, dimensions=dimensions)
 
 
 @pytest.fixture(scope="module")
 def image_empty():
-    image = cellprofiler.image.Image()
+    image = cellprofiler_core.image.Image()
 
     return image
 
@@ -68,7 +68,7 @@ def image_set_empty(image_empty, image_set_list):
 
 @pytest.fixture(scope="function")
 def image_set_list():
-    return cellprofiler.image.ImageSetList()
+    return cellprofiler_core.image.ImageSetList()
 
 
 @pytest.fixture(scope="function")

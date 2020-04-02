@@ -1,7 +1,7 @@
 import numpy
 import unittest
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.relateobjects
@@ -53,7 +53,7 @@ class TestRelateObjects(unittest.TestCase):
         module.set_module_num(new_module_num)
         pipeline.add_module(module)
         object_set = cellprofiler.object.ObjectSet()
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         m = cellprofiler.measurement.Measurements()
         m.add_image_measurement(cellprofiler.measurement.GROUP_NUMBER, 1)

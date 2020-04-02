@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.align
 import cellprofiler.object
@@ -16,7 +16,7 @@ cellprofiler.preferences.set_headless()
 def make_workspace(images, masks):
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.align.Align()
     workspace = cellprofiler.workspace.Workspace(
@@ -29,9 +29,9 @@ def make_workspace(images, masks):
     )
     for index, (pixels, mask) in enumerate(zip(images, masks)):
         if mask is None:
-            image = cellprofiler.image.Image(pixels)
+            image = cellprofiler_core.image.Image(pixels)
         else:
-            image = cellprofiler.image.Image(pixels, mask=mask)
+            image = cellprofiler_core.image.Image(pixels, mask=mask)
         input_name = "Channel%d" % index
         output_name = "Aligned%d" % index
         image_set.add(input_name, image)
@@ -824,7 +824,7 @@ def test_different_sizes_crop():
             module.crop_mode.value = cellprofiler.modules.align.C_CROP
             module.run(workspace)
             i1 = workspace.image_set.get_image(i1_name)
-            assert isinstance(i1, cellprofiler.image.Image)
+            assert isinstance(i1, cellprofiler_core.image.Image)
             p1 = i1.pixel_data
             i2 = workspace.image_set.get_image(i2_name)
             p2 = i2.pixel_data
@@ -853,7 +853,7 @@ def test_different_sizes_pad():
     module.crop_mode.value = cellprofiler.modules.align.C_PAD
     module.run(workspace)
     i1 = workspace.image_set.get_image("Aligned0")
-    assert isinstance(i1, cellprofiler.image.Image)
+    assert isinstance(i1, cellprofiler_core.image.Image)
     p1 = i1.pixel_data
     i2 = workspace.image_set.get_image("Aligned1")
     p2 = i2.pixel_data

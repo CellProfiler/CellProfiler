@@ -9,7 +9,7 @@ import centrosome.outline
 import numpy
 import scipy.ndimage
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.untangleworms
 import cellprofiler.object
@@ -365,8 +365,8 @@ def make_workspace(image, data=None, write_mode="wb"):
     module.overlap_objects.value = OVERLAP_OBJECTS_NAME
     module.set_module_num(1)
     pipeline.add_module(module)
-    img = cellprofiler.image.Image(image)
-    image_set_list = cellprofiler.image.ImageSetList()
+    img = cellprofiler_core.image.Image(image)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
     module.training_set_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME

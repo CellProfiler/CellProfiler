@@ -4,7 +4,7 @@ import centrosome.propagate
 import numpy
 import scipy.stats
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureobjectintensitydistribution
@@ -775,9 +775,9 @@ def run_module(
         module.heatmaps[i].measurement.value = a
     pipeline = cellprofiler.pipeline.Pipeline()
     measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = measurements
-    img = cellprofiler.image.Image(image)
+    img = cellprofiler_core.image.Image(image)
     image_set.add(IMAGE_NAME, img)
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list

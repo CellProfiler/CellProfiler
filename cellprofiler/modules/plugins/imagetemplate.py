@@ -9,7 +9,7 @@
 import numpy
 import scipy.ndimage
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 

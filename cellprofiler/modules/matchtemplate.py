@@ -29,7 +29,7 @@ YES          NO           NO
 import skimage.feature
 import skimage.io
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -79,7 +79,7 @@ class MatchTemplate(cellprofiler_core.module.Module):
             image=input_pixels, template=template, pad_input=True
         )
 
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
+        output_image = cellprofiler_core.image.Image(output_pixels, parent_image=input_image)
 
         image_set.add(output_image_name, output_image)
 

@@ -558,7 +558,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.image import ImageSetList
+                from cellprofiler_core.image import ImageSetList
 
                 self.__image_set_list = ImageSetList()
             try:

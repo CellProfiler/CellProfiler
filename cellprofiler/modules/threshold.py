@@ -25,7 +25,7 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.setting
@@ -700,7 +700,7 @@ Often a good choice is some multiple of the largest expected object size.
             binary_image,
         )
 
-        output = cellprofiler.image.Image(
+        output = cellprofiler_core.image.Image(
             binary_image, parent_image=input, dimensions=dimensions
         )
 

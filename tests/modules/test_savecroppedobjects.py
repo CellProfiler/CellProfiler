@@ -7,7 +7,7 @@ import skimage
 import skimage.measure
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.savecroppedobjects
 import cellprofiler.object
 import cellprofiler.setting
@@ -76,7 +76,7 @@ def test_defaults(module):
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
     ],
 )
@@ -124,7 +124,7 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
     ],
 )
@@ -173,7 +173,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
     ],
 )

@@ -1,6 +1,6 @@
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.object
@@ -617,9 +617,9 @@ class TestImageSegmentation:
 
         module.x_name.value = "Image"
 
-        image = cellprofiler.image.Image(image=numpy.zeros((30, 30)))
+        image = cellprofiler_core.image.Image(image=numpy.zeros((30, 30)))
 
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
 
         image_set = image_set_list.get_image_set(0)
 
@@ -700,9 +700,9 @@ class TestImageSegmentation:
 
         module.x_name.value = "Image"
 
-        image = cellprofiler.image.Image(image=numpy.zeros((30, 30)))
+        image = cellprofiler_core.image.Image(image=numpy.zeros((30, 30)))
 
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
 
         image_set = image_set_list.get_image_set(0)
 

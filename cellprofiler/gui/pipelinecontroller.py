@@ -44,7 +44,7 @@ import cellprofiler.gui.runmultiplepipelinesdialog
 import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.loadimages
@@ -3415,7 +3415,7 @@ class PipelineController(object):
         self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.gui.pipeline.Pipeline)
-        self.__debug_image_set_list = cellprofiler.image.ImageSetList(True)
+        self.__debug_image_set_list = cellprofiler_core.image.ImageSetList(True)
         workspace = cellprofiler.gui.workspace.Workspace(
             self.__pipeline,
             None,

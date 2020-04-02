@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.identifytertiaryobjects
@@ -28,7 +28,7 @@ def make_workspace(primary_labels, secondary_labels):
                         has object with name "secondary" containing
                         the secondary labels
     """
-    isl = cellprofiler.image.ImageSetList()
+    isl = cellprofiler_core.image.ImageSetList()
     module = cellprofiler.modules.identifytertiaryobjects.IdentifyTertiarySubregion()
     module.set_module_num(1)
     module.primary_objects_name.value = PRIMARY

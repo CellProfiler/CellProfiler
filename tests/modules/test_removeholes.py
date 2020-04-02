@@ -1,7 +1,7 @@
 import numpy
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.removeholes
 import cellprofiler.workspace
 
@@ -37,9 +37,9 @@ def test_run_label_image(module):
     data[3:8, 3:8] = 1
     data[5, 5] = 0
 
-    image = cellprofiler.image.Image(image=data, convert=False)
+    image = cellprofiler_core.image.Image(image=data, convert=False)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
     image_set.add("example", image)

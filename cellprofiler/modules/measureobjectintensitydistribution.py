@@ -10,7 +10,7 @@ import scipy.ndimage
 import scipy.sparse
 
 import cellprofiler.gui.help.content
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.object
@@ -743,7 +743,7 @@ be selected in a later **SaveImages** or other module.
                         heatmap.image_name.get_image_name()
                     )
 
-                    output_img = cellprofiler.image.Image(
+                    output_img = cellprofiler_core.image.Image(
                         output_pixels, parent_image=parent_image
                     )
 

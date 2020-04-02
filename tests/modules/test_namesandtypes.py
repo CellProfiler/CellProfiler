@@ -705,15 +705,15 @@ def make_ipd(url, metadata, series=0, index=0, channel=None):
     if isinstance(channel, six.string_types):
         channel = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler.imageset);
+        importPackage(Packages.org.cellprofiler_core.imageset);
         ImagePlane.%s;"""
             % channel
         )
     jmetadata = javabridge.make_map(**metadata)
     jipd = javabridge.run_script(
         """
-            importPackage(Packages.org.cellprofiler.imageset);
-            importPackage(Packages.org.cellprofiler.imageset.filter);
+            importPackage(Packages.org.cellprofiler_core.imageset);
+            importPackage(Packages.org.cellprofiler_core.imageset.filter);
             var imageFile=new ImageFile(new java.net.URI(url));
             var imageFileDetails = new ImageFileDetails(imageFile);
             var imageSeries=new ImageSeries(imageFile, series);
@@ -1473,7 +1473,7 @@ def run_workspace(
 
     script = (
         """
-                    importPackage(Packages.org.cellprofiler.imageset);
+                    importPackage(Packages.org.cellprofiler_core.imageset);
                     var ls = new java.util.ArrayList();
                     for (var ipd in Iterator(ipds)) {
                         ls.add(ImagePlaneDetailsStack.make%sStack(ipd));

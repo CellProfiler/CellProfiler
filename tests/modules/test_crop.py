@@ -1,6 +1,6 @@
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.crop
 import cellprofiler.object
@@ -16,20 +16,20 @@ OUTPUT_IMAGE = "output_image"
 
 def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=None):
     """Return a workspace with the given images installed and the crop module"""
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.crop.Crop()
     module.set_module_num(1)
-    image_set.add(INPUT_IMAGE, cellprofiler.image.Image(input_pixels))
+    image_set.add(INPUT_IMAGE, cellprofiler_core.image.Image(input_pixels))
     module.image_name.value = INPUT_IMAGE
     module.cropped_image_name.value = OUTPUT_IMAGE
     if crop_image is not None:
-        image_set.add(CROP_IMAGE, cellprofiler.image.Image(crop_image))
+        image_set.add(CROP_IMAGE, cellprofiler_core.image.Image(crop_image))
         module.image_mask_source.value = CROP_IMAGE
     if cropping is not None:
         image_set.add(
             CROPPING,
-            cellprofiler.image.Image(numpy.zeros(cropping.shape), crop_mask=cropping),
+            cellprofiler_core.image.Image(numpy.zeros(cropping.shape), crop_mask=cropping),
         )
         module.cropping_mask_source.value = CROPPING
     object_set = cellprofiler.object.ObjectSet()

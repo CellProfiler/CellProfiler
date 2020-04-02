@@ -2,7 +2,7 @@ import numpy
 import numpy.testing
 import pytest
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.shrinktoobjectcenters
 import cellprofiler.object
@@ -12,7 +12,7 @@ instance = cellprofiler.modules.shrinktoobjectcenters.ShrinkToObjectCenters()
 
 @pytest.fixture(scope="module")
 def image():
-    return cellprofiler.image.Image()
+    return cellprofiler_core.image.Image()
 
 
 @pytest.fixture(scope="module")

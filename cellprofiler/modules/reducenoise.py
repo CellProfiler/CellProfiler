@@ -25,7 +25,7 @@ YES          YES          NO
 import skimage.restoration
 import skimage.util
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -92,7 +92,7 @@ image.
             patch_size=self.size.value,
         )
 
-        y = cellprofiler.image.Image(
+        y = cellprofiler_core.image.Image(
             dimensions=dimensions, image=y_data, parent_image=x
         )
 

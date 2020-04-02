@@ -2,7 +2,7 @@ import centrosome.filter
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.measurement
@@ -197,7 +197,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     )
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     if fn:
         fn(module, None, 0)
@@ -1226,7 +1226,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
         )
     m.image_set_number = nimages
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
     workspace = cellprofiler.workspace.Workspace(
@@ -2525,7 +2525,7 @@ def test_save_image():
     measurements.add_image_measurement(cellprofiler.pipeline.GROUP_INDEX, 1)
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     module.prepare_run(
         cellprofiler.workspace.Workspace(

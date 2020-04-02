@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.measureobjectneighbors
 import cellprofiler.object
@@ -22,7 +22,7 @@ def make_workspace(labels, mode, distance=0, neighbors_labels=None):
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     measurements = cellprofiler.measurement.Measurements()
     measurements.group_index = 1

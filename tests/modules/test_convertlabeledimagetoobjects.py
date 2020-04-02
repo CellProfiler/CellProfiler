@@ -2,7 +2,7 @@ import numpy
 import numpy.random
 import pytest
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.convertimagetoobjects
 
@@ -41,7 +41,7 @@ def image(request):
 
     dimensions = data.ndim
 
-    return cellprofiler.image.Image(image=data, dimensions=dimensions)
+    return cellprofiler_core.image.Image(image=data, dimensions=dimensions)
 
 
 def test_run_labels(image, module, workspace):

@@ -2,7 +2,7 @@ import numpy
 import numpy.random
 import scipy.ndimage
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureobjectoverlap
@@ -40,14 +40,14 @@ def make_obj_workspace(ground_truth_obj, id_obj, ground_truth, id):
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
 
     for name, d in (
         (GROUND_TRUTH_OBJ_IMAGE_NAME, ground_truth),
         (ID_OBJ_IMAGE_NAME, id),
     ):
-        image = cellprofiler.image.Image(
+        image = cellprofiler_core.image.Image(
             d["image"], mask=d.get("mask"), crop_mask=d.get("crop_mask")
         )
         image_set.add(name, image)

@@ -6,7 +6,7 @@ import numpy
 import pytest
 import scipy.ndimage
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.morph
 import cellprofiler.object
@@ -92,7 +92,7 @@ def execute(image, function, mask=None, custom_repeats=None, scale=None, module=
         module.functions[0].scale.value = scale
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -102,7 +102,7 @@ def execute(image, function, mask=None, custom_repeats=None, scale=None, module=
         cellprofiler.measurement.Measurements(),
         image_set_list,
     )
-    image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, mask=mask))
+    image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image, mask=mask))
     module.run(workspace)
     output = image_set.get_image(OUTPUT_IMAGE_NAME)
     return output.pixel_data

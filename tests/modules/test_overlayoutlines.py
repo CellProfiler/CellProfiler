@@ -5,7 +5,7 @@ import numpy.testing
 import skimage.color
 import skimage.segmentation
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.overlayoutlines
@@ -46,7 +46,7 @@ def make_workspace(image, labels=None, dimensions=2):
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, m, object_set, m, None
     )
-    m.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, dimensions=dimensions))
+    m.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image, dimensions=dimensions))
     return workspace, module
 
 

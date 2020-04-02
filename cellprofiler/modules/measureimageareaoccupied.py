@@ -48,7 +48,7 @@ Measurements made by this module
 import numpy
 import skimage.measure
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.setting

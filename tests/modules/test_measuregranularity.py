@@ -3,7 +3,7 @@ import sys
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.measuregranularity
 import cellprofiler.object
@@ -81,9 +81,9 @@ def make_pipeline(
     image_setting.image_sample_size.value = image_sample_size
     image_setting.element_size.value = element_size
     image_setting.granular_spectrum_length.value = granular_spectrum_length
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    img = cellprofiler.image.Image(image, mask)
+    img = cellprofiler_core.image.Image(image, mask)
     image_set.add(IMAGE_NAME, img)
     pipeline = cellprofiler.pipeline.Pipeline()
 

@@ -4,7 +4,7 @@ import tempfile
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.calculatestatistics
 import cellprofiler.object
@@ -411,7 +411,7 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
                 dv = module.dose_values[-1]
                 dv.measurement.value = feature
     m.image_set_number = nimages
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
     workspace = cellprofiler.workspace.Workspace(

@@ -6,7 +6,7 @@ import skimage.data
 import skimage.feature
 import skimage.io
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.matchtemplate
 import cellprofiler.object
@@ -21,7 +21,7 @@ def image_set(image_set_list):
 
 @pytest.fixture()
 def image_set_list():
-    return cellprofiler.image.ImageSetList()
+    return cellprofiler_core.image.ImageSetList()
 
 
 @pytest.fixture()
@@ -54,7 +54,7 @@ def workspace(pipeline, module, image_set, object_set, measurements, image_set_l
 def test_run(module, image_set, workspace):
     coins = skimage.data.coins()
 
-    image = cellprofiler.image.Image(coins)
+    image = cellprofiler_core.image.Image(coins)
 
     image_set.add("image", image)
 

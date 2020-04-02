@@ -7,7 +7,7 @@ import scipy.ndimage
 import skimage.morphology
 
 import cellprofiler.gui.help
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.object

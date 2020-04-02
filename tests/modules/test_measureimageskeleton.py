@@ -40,7 +40,7 @@ def image(request):
     data, dimensions = request.param
     data = request.getfixturevalue(data)
 
-    return cellprofiler.image.Image(image=data, dimensions=dimensions, convert=False)
+    return cellprofiler_core.image.Image(image=data, dimensions=dimensions, convert=False)
 
 
 def test_get_categories_image(module, pipeline):

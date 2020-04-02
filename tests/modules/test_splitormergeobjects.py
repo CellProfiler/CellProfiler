@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.splitormergeobjects
@@ -130,10 +130,10 @@ def rruunn(
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     if image is not None:
-        img = cellprofiler.image.Image(image)
+        img = cellprofiler_core.image.Image(image)
         image_set.add(IMAGE_NAME, img)
         module.image_name.value = IMAGE_NAME
 

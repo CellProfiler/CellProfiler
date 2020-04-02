@@ -12,7 +12,7 @@ import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.workspace
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules
 import cellprofiler.object
@@ -241,7 +241,7 @@ class DataToolFrame(wx.Frame):
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cellprofiler.gui.workspace.Workspace(
             self.pipeline,

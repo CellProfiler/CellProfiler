@@ -33,7 +33,7 @@ import logging
 import numpy
 import skimage.transform
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 
@@ -378,7 +378,7 @@ resized with the same settings as the first image.""",
         else:
             cropping = None
 
-        output_image = cellprofiler.image.Image(
+        output_image = cellprofiler_core.image.Image(
             output_pixels,
             parent_image=image,
             mask=mask,

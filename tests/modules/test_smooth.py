@@ -8,7 +8,7 @@ import numpy
 import scipy.ndimage
 import skimage.restoration
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.smooth
 import cellprofiler.object
@@ -24,7 +24,7 @@ def make_workspace(image, mask):
     module = cellprofiler.modules.smooth.Smooth()
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -34,7 +34,7 @@ def make_workspace(image, mask):
         cellprofiler.measurement.Measurements(),
         image_set_list,
     )
-    image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, mask))
+    image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image, mask))
     module.image_name.value = INPUT_IMAGE_NAME
     module.filtered_image_name.value = OUTPUT_IMAGE_NAME
     return workspace, module

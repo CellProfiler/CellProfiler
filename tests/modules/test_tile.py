@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.tile
 import cellprofiler.object
@@ -61,10 +61,10 @@ def make_tile_workspace(images):
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for i, image in enumerate(images):
         image_set = image_set_list.get_image_set(i)
-        image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
+        image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image))
 
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -430,7 +430,7 @@ def test_filtered():
 
 
 def make_place_workspace(images):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.tile.Tile()
     module.set_module_num(1)
@@ -447,7 +447,7 @@ def make_place_workspace(images):
             if len(module.additional_images) <= i:
                 module.add_image()
             module.additional_images[i - 1].input_image_name.value = image_name
-        image_set.add(image_name, cellprofiler.image.Image(image))
+        image_set.add(image_name, cellprofiler_core.image.Image(image))
 
     pipeline = cellprofiler.pipeline.Pipeline()
 

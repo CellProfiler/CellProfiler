@@ -94,7 +94,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.ndimage import map_coordinates, extrema
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo

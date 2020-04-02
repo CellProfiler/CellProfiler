@@ -30,7 +30,7 @@ import skimage.filters
 import skimage.morphology
 import skimage.transform
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules import _help
@@ -381,7 +381,7 @@ Two methods can be used to enhance neurites:
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
 
-        result_image = cellprofiler.image.Image(
+        result_image = cellprofiler_core.image.Image(
             result, parent_image=image, dimensions=image.dimensions
         )
 

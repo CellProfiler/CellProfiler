@@ -14,7 +14,7 @@ import numpy.lib.index_tricks
 import six
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules
@@ -514,7 +514,7 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
-            pipeline, module, m, None, m, cellprofiler.image.ImageSetList
+            pipeline, module, m, None, m, cellprofiler_core.image.ImageSetList
         )
         workspace.post_group_display_handler = post_group_display_handler
         workspace.post_run_display_handler = post_run_display_handler
@@ -571,7 +571,7 @@ HasImagePlaneDetails:False"""
     #     pipeline.add_module(module)
     #     workspace = cellprofiler.workspace.Workspace(
     #             pipeline, None, None, None, cellprofiler.measurement.Measurements(),
-    #             cellprofiler.image.ImageSetList())
+    #             cellprofiler_core.image.ImageSetList())
     #     self.assertFalse(pipeline.prepare_run(workspace))
     #     self.assertEqual(workspace.measurements.image_set_count, 0)
 
@@ -1358,12 +1358,12 @@ class TestImagePlaneDetails(unittest.TestCase):
         jipd = cellprofiler.pipeline.J.run_script(
             """
             var uri = new java.net.URI(url);
-            var f = new Packages.org.cellprofiler.imageset.ImageFile(uri);
-            var fd = new Packages.org.cellprofiler.imageset.ImageFileDetails(f);
-            var s = new Packages.org.cellprofiler.imageset.ImageSeries(f, series);
-            var sd = new Packages.org.cellprofiler.imageset.ImageSeriesDetails(s, fd);
-            var p = new Packages.org.cellprofiler.imageset.ImagePlane(s, index, channel);
-            var ipd = new Packages.org.cellprofiler.imageset.ImagePlaneDetails(p, sd);
+            var f = new Packages.org.cellprofiler_core.imageset.ImageFile(uri);
+            var fd = new Packages.org.cellprofiler_core.imageset.ImageFileDetails(f);
+            var s = new Packages.org.cellprofiler_core.imageset.ImageSeries(f, series);
+            var sd = new Packages.org.cellprofiler_core.imageset.ImageSeriesDetails(s, fd);
+            var p = new Packages.org.cellprofiler_core.imageset.ImagePlane(s, index, channel);
+            var ipd = new Packages.org.cellprofiler_core.imageset.ImagePlaneDetails(p, sd);
             ipd.putAll(d);
             ipd;
             """,
@@ -1573,7 +1573,7 @@ class MyClassForTest1101(cellprofiler_core.module.Module):
 
     def prepare_group(self, workspace, *args):
         image_set = workspace.image_set_list.get_image_set(0)
-        image = cellprofiler.image.Image(numpy.zeros((5, 5)))
+        image = cellprofiler_core.image.Image(numpy.zeros((5, 5)))
         image_set.add("dummy", image)
         return True
 

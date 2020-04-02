@@ -1,7 +1,7 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.colortogray
 import cellprofiler.modules.injectimage
@@ -46,7 +46,7 @@ def test_combine():
 
     measurements = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, inj, None, None, measurements, image_set_list, None
     )
@@ -93,7 +93,7 @@ def test_split_all():
 
     measurements = cellprofiler.measurement.Measurements()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, inj, None, None, measurements, image_set_list, None
     )
@@ -136,9 +136,9 @@ def test_split_all():
 def test_combine_channels():
     numpy.random.seed(13)
     image = numpy.random.uniform(size=(20, 10, 5))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(image))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(image))
 
     module = cellprofiler.modules.colortogray.ColorToGray()
     module.set_module_num(1)
@@ -183,9 +183,9 @@ def test_combine_channels():
 def test_split_channels():
     numpy.random.seed(13)
     image = numpy.random.uniform(size=(20, 10, 5))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(image))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(image))
 
     module = cellprofiler.modules.colortogray.ColorToGray()
     module.set_module_num(1)

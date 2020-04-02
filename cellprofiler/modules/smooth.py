@@ -31,7 +31,7 @@ from centrosome.filter import median_filter, circular_average_filter
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 from cellprofiler.modules._help import (
@@ -259,7 +259,7 @@ the output image.
             raise ValueError(
                 "Unsupported smoothing method: %s" % self.smoothing_method.value
             )
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=image)
+        output_image = cellprofiler_core.image.Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, output_image)
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels

@@ -8,7 +8,7 @@ import pytest
 import six
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules
@@ -482,7 +482,7 @@ def test_no_measurements(output_dir):
     measurements = cellprofiler.measurement.Measurements()
     measurements.add_measurement("my_object", "my_measurement", numpy.zeros((0,)))
     measurements.add_image_measurement("Count_my_object", 0)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_object")
@@ -520,7 +520,7 @@ def test_experiment_measurement(output_dir):
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler.measurement.Measurements()
     m.add_experiment_measurement("my_measurement", "Hello, world")
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -562,7 +562,7 @@ def test_two_experiment_measurements(output_dir):
     m = cellprofiler.measurement.Measurements(mode="memory")
     m.add_experiment_measurement("my_measurement", "Hello, world")
     m.add_experiment_measurement("my_other_measurement", "Goodbye")
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -609,7 +609,7 @@ def test_img_887_no_experiment_file(output_dir):
     m.add_all_measurements(
         cellprofiler.measurement.IMAGE, "my_measurement", image_measurements
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -641,7 +641,7 @@ def test_prefix(output_dir):
     m.add_all_measurements(
         cellprofiler.measurement.IMAGE, "my_measurement", image_measurements
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -664,7 +664,7 @@ def test_image_measurement(output_dir):
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler.measurement.Measurements()
     m.add_image_measurement("my_measurement", "Hello, world")
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -698,7 +698,7 @@ def test_three_by_two_image_measurements(output_dir):
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_sets = [image_set_list.get_image_set(i) for i in range(2)]
     for i in range(2):
         if i:
@@ -749,7 +749,7 @@ def test_object_measurement(output_dir):
     mvalues = numpy.random.uniform(size=(1,))
     m.add_measurement("my_object", "my_measurement", mvalues)
     m.add_image_measurement("Count_my_object", 1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -790,7 +790,7 @@ def test_three_by_two_object_measurements(output_dir):
     for i in range(3):
         m.add_measurement("my_object", "measurement_%d" % i, mvalues[:, i])
     m.add_image_measurement("Count_my_object", 2)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -845,7 +845,7 @@ def test_get_measurements_from_two_objects(output_dir):
             )
     m.add_image_measurement("Count_object_0", 4)
     m.add_image_measurement("Count_object_1", 4)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "object_0")
@@ -904,7 +904,7 @@ def test_nan_measurements(output_dir):
     mvalues[1] = numpy.NaN
     m.add_measurement("my_object", "my_measurement", mvalues)
     m.add_image_measurement("Count_my_object", 2)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -950,7 +950,7 @@ def test_null_measurements(output_dir):
     mvalues[1] = numpy.NaN
     m.add_measurement("my_object", "my_measurement", mvalues)
     m.add_image_measurement("Count_my_object", 2)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -1016,7 +1016,7 @@ def test_nan_image_measurements(output_dir):
     m.add_measurement(
         cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0, image_set_number=2
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), OBJECTS_NAME)
@@ -1087,7 +1087,7 @@ def test_null_image_measurements(output_dir):
     m.add_measurement(
         cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0, image_set_number=2
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), OBJECTS_NAME)
@@ -1141,7 +1141,7 @@ def test_blob_image_measurements(output_dir):
         image_set_number=1,
         data_type=numpy.uint8,
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -1180,7 +1180,7 @@ def test_blob_experiment_measurements():
         image_set_number=1,
         data_type=numpy.uint8,
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -1217,7 +1217,7 @@ def test_01_object_with_metadata(output_dir):
     m = cellprofiler.measurement.Measurements()
     numpy.random.seed(0)
     mvalues = numpy.random.uniform(size=(4,))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for index, measurement, metadata in zip(
         list(range(4)), mvalues, ("foo", "bar", "bar", "foo")
     ):
@@ -1276,7 +1276,7 @@ def test_02_object_with_path_metadata(output_dir):
     m = cellprofiler.measurement.Measurements()
     numpy.random.seed(0)
     mvalues = numpy.random.uniform(size=(4,))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for index, measurement, metadata in zip(
         list(range(4)), mvalues, ("foo", "bar", "bar", "foo")
     ):
@@ -1329,7 +1329,7 @@ def test_image_with_metadata(output_dir):
     m = cellprofiler.measurement.Measurements()
     numpy.random.seed(0)
     mvalues = numpy.random.uniform(size=(4,))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for index, measurement, metadata in zip(
         list(range(4)), mvalues, ("foo", "bar", "bar", "foo")
     ):
@@ -1392,7 +1392,7 @@ def test_image_with_path_metadata(output_dir):
     m = cellprofiler.measurement.Measurements()
     numpy.random.seed(0)
     mvalues = numpy.random.uniform(size=(4,))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     metadata_values = ("foo", "bar", "bar", "foo")
     for index, (measurement, metadata) in enumerate(zip(mvalues, metadata_values)):
         image_set = image_set_list.get_image_set(index)
@@ -1452,7 +1452,7 @@ def test_image_measurement_custom_directory(output_dir):
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler.measurement.Measurements(mode="memory")
     m.add_image_measurement("my_measurement", "Hello, world")
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -1494,7 +1494,7 @@ def test_unicode_image_metadata(output_dir):
     m = cellprofiler.measurement.Measurements(mode="memory")
     metadata_value = "\\u2211(Hello, world)"
     m.add_image_measurement("my_measurement", metadata_value)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -1612,7 +1612,7 @@ def test_aggregate_image_columns(output_dir):
     numpy.random.seed(0)
     data = numpy.random.uniform(size=(6,))
     m.add_measurement("my_objects", "my_measurement", data)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -1671,7 +1671,7 @@ def test_no_aggregate_image_columns(output_dir):
     numpy.random.seed(0)
     data = numpy.random.uniform(size=(6,))
     m.add_measurement("my_objects", "my_measurement", data)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -1744,7 +1744,7 @@ def test_aggregate_and_filtered(output_dir):
     m.add_measurement(
         "my_objects", "my_filtered_measurement", numpy.random.uniform(size=(6,))
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -1833,7 +1833,7 @@ def test_image_number(output_dir):
     numpy.random.seed(0)
     data = numpy.random.uniform(size=(6,))
     m.add_image_measurement("first_measurement", numpy.sum(data))
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     workspace = cellprofiler.workspace.Workspace(
@@ -1865,7 +1865,7 @@ def test_image_index_columns(output_dir):
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     data = (
         "The reverse side also has a reverse side. (Japanese proverb)",
         "When I was younger, I could remember anything, whether it had happened or not. (Mark Twain)",
@@ -1917,7 +1917,7 @@ def test_object_index_columns(output_dir):
             m.next_image_set()
         m.add_image_measurement("Count_my_objects", mvalues.shape[1])
         m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -1970,7 +1970,7 @@ def test_object_metadata_columns(output_dir):
         m.add_image_measurement("Metadata_Plate", "P-X9TRG")
         m.add_image_measurement("Metadata_Well", "C0%d" % (image_idx + 1))
         m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -2038,7 +2038,7 @@ def test_missing_measurements(output_dir):
         if image_idx != 1:
             m.add_image_measurement("my_measurement", 100)
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -2115,7 +2115,7 @@ def test_missing_column_measurements(output_dir):
     m[OBJECTS_NAME, cellprofiler.measurement.M_LOCATION_CENTER_X, 1] = numpy.array(
         [1, 4, 9], float
     )
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
     object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
@@ -2447,7 +2447,7 @@ def test_relationships_file(output_dir):
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(0, 10):
         image_set = image_set_list.get_image_set(i)
         m.add_image_measurement(cellprofiler.pipeline.IMAGE_NUMBER, i + 1)

@@ -1017,7 +1017,7 @@ not being applied, your choice on this setting may be the culprit.
                     "org/cellprofiler/imageset/filter/Filter",
                     "(Ljava/lang/String;Ljava/lang/Class;)V",
                     group.filter.value_text,
-                    javabridge.class_for_name("org.cellprofiler.imageset.ImageFile"),
+                    javabridge.class_for_name("org.cellprofiler_core.imageset.ImageFile"),
                 )
             else:
                 fltr = None

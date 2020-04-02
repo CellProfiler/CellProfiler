@@ -21,7 +21,7 @@ import numpy
 import pytest
 import skimage.io
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
@@ -260,7 +260,7 @@ def test_load_5channel_tif():
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -347,7 +347,7 @@ def test_file_metadata():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(load_images)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, load_images, None, None, m, image_set_list
@@ -468,7 +468,7 @@ def test_missing_image():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(load_images)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     assert not load_images.prepare_run(
         cellprofiler.workspace.Workspace(
             pipeline,
@@ -530,7 +530,7 @@ def test_conflict():
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         assert not load_images.prepare_run(
             cellprofiler.workspace.Workspace(
                 pipeline,
@@ -610,7 +610,7 @@ def test_hierarchy():
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         load_images.prepare_run(
             cellprofiler.workspace.Workspace(
@@ -717,7 +717,7 @@ def test_allowed_conflict():
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(load_images)
             pipeline.add_listener(error_callback)
-            image_set_list = cellprofiler.image.ImageSetList()
+            image_set_list = cellprofiler_core.image.ImageSetList()
             m = cellprofiler.measurement.Measurements()
             workspace = cellprofiler.workspace.Workspace(
                 pipeline, load_images, None, None, m, image_set_list
@@ -809,7 +809,7 @@ def test_subfolders():
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, load_images, None, None, m, image_set_list
@@ -896,7 +896,7 @@ def test_some_subfolders():
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(load_images)
         pipeline.add_listener(error_callback)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         m = cellprofiler.measurement.Measurements()
         workspace = cellprofiler.workspace.Workspace(
             pipeline, load_images, None, None, m, image_set_list
@@ -1313,7 +1313,7 @@ def test_get_groupings():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, None, None, None, m, image_set_list
@@ -1371,7 +1371,7 @@ def test_load_avi():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1435,7 +1435,7 @@ def test_load_stk():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1490,7 +1490,7 @@ def test_01_load_2_stk():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1514,7 +1514,7 @@ def test_02_load_stk():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1547,7 +1547,7 @@ def test_load_flex():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1621,7 +1621,7 @@ def test_group_interleaved_avi_frames():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1704,7 +1704,7 @@ def test_group_separated_avi_frames():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1776,7 +1776,7 @@ def test_load_flex_interleaved():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1845,7 +1845,7 @@ def test_load_flex_separated():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -1970,7 +1970,7 @@ def make_objects_workspace(image, mode="L", filename="myfile.tif"):
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(module)
     pipeline.add_listener(error_callback)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
@@ -2142,7 +2142,7 @@ def test_batch_images():
     module.images[0].common_text.value = file_regexp
     module.images[0].channels[0].image_name.value = IMAGE_NAME
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(module)
@@ -2214,7 +2214,7 @@ def test_batch_movies():
     module.images[0].common_text.value = file_name
     module.images[0].channels[0].image_name.value = IMAGE_NAME
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     pipeline.add_module(module)
@@ -2286,7 +2286,7 @@ def test_batch_flex():
     module.images[0].common_text.value = file_name
     module.images[0].channels[0].image_name.value = IMAGE_NAME
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m = cellprofiler.measurement.Measurements()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
@@ -2422,7 +2422,7 @@ def make_prepare_run_workspace(file_names):
     pipeline.add_listener(callback)
     pipeline.add_module(module)
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     return (
         cellprofiler.workspace.Workspace(
             pipeline, module, None, None, m, image_set_list
@@ -2497,7 +2497,7 @@ def test_00_load_from_url():
     pipeline.add_module(module)
 
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )

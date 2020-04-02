@@ -23,7 +23,7 @@ import skimage.color
 import skimage.segmentation
 import skimage.util
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -253,7 +253,7 @@ maximal brightness already occurring in the image.
         else:
             pixel_data = self.run_bw(workspace, base_image)
 
-        output_image = cellprofiler.image.Image(pixel_data, dimensions=dimensions)
+        output_image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
 
         workspace.image_set.add(self.output_image_name.value, output_image)
 

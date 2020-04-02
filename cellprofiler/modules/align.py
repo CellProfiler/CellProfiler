@@ -54,7 +54,7 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps

@@ -2,7 +2,7 @@ import io
 
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.measuretexture
 import cellprofiler.object
@@ -20,7 +20,7 @@ def make_workspace(image, labels, convert=True, mask=None):
     module.object_groups[0].object_name.value = INPUT_OBJECTS_NAME
     pipeline = cellprofiler.pipeline.Pipeline()
     object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
@@ -32,7 +32,7 @@ def make_workspace(image, labels, convert=True, mask=None):
     )
     image_set.add(
         INPUT_IMAGE_NAME,
-        cellprofiler.image.Image(
+        cellprofiler_core.image.Image(
             image, convert=convert, dimensions=image.ndim, mask=mask
         ),
     )

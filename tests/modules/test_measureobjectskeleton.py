@@ -5,7 +5,7 @@ import traceback
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.measureobjectskeleton
 import cellprofiler.object
@@ -62,7 +62,7 @@ def test_load_v1():
 
 def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=False):
     m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m.add_measurement(
         cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1
     )
@@ -70,7 +70,7 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
         cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1
     )
     image_set = m
-    img = cellprofiler.image.Image(image, mask)
+    img = cellprofiler_core.image.Image(image, mask)
     image_set.add(IMAGE_NAME, img)
 
     object_set = cellprofiler.object.ObjectSet()
@@ -82,7 +82,7 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
     module.image_name.value = IMAGE_NAME
     module.seed_objects_name.value = OBJECT_NAME
     if intensity_image is not None:
-        img = cellprofiler.image.Image(intensity_image)
+        img = cellprofiler_core.image.Image(intensity_image)
         image_set.add(INTENSITY_IMAGE_NAME, img)
         module.intensity_image_name.value = INTENSITY_IMAGE_NAME
     if wants_graph:

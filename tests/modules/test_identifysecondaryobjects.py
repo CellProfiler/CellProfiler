@@ -3,7 +3,7 @@ import io
 import centrosome.threshold
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
@@ -104,8 +104,8 @@ def make_workspace(
 
     p.add_listener(callback)
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(image)
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(image)
     objects = cellprofiler.object.Objects()
     if unedited_segmented is not None:
         objects.unedited_segmented = unedited_segmented
@@ -219,11 +219,11 @@ def test_two_objects_propagation_image():
 def test_two_objects_propagation_distance():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     img[2:7, 2:7] = 0.3
     img[2:7, 7:17] = 0.5
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
@@ -300,8 +300,8 @@ def test_propagation_wrong_size():
 def test_zeros_watershed_gradient():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(numpy.zeros((10, 10)))
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = numpy.zeros((10, 10), int)
     objects.small_removed_segmented = numpy.zeros((10, 10), int)
@@ -330,10 +330,10 @@ def test_zeros_watershed_gradient():
 def test_one_object_watershed_gradient():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 10))
     img[2:7, 2:7] = 0.5
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
@@ -378,13 +378,13 @@ def test_one_object_watershed_gradient():
 def test_two_objects_watershed_gradient():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     # There should be a gradient at :,7 which should act
     # as the watershed barrier
     img[2:7, 2:7] = 0.3
     img[2:7, 7:17] = 0.5
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
@@ -457,8 +457,8 @@ def test_watershed_gradient_wrong_size():
 def test_zeros_watershed_image():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(numpy.zeros((10, 10)))
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = numpy.zeros((10, 10), int)
     objects.small_removed_segmented = numpy.zeros((10, 10), int)
@@ -487,10 +487,10 @@ def test_zeros_watershed_image():
 def test_one_object_watershed_image():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 10))
     img[2:7, 2:7] = 0.5
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
@@ -527,14 +527,14 @@ def test_one_object_watershed_image():
 def test_two_objects_watershed_image():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     # There should be a saddle at 7 which should serve
     # as the watershed barrier
     x, y = numpy.mgrid[0:10, 0:20]
     img[2:7, 2:7] = 0.05 * (7 - y[2:7, 2:7])
     img[2:7, 7:17] = 0.05 * (y[2:7, 7:17] - 6)
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
@@ -599,8 +599,8 @@ def test_watershed_image_wrong_size():
 def test_zeros_distance_n():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(numpy.zeros((10, 10)))
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = numpy.zeros((10, 10), int)
     objects.small_removed_segmented = numpy.zeros((10, 10), int)
@@ -629,9 +629,9 @@ def test_zeros_distance_n():
 def test_one_object_distance_n():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 10))
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
@@ -670,9 +670,9 @@ def test_one_object_distance_n():
 def test_two_objects_distance_n():
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
+    i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     objects = cellprofiler.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
@@ -1021,8 +1021,8 @@ def test_filter_edge():
 
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(image)
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(image)
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
@@ -1103,8 +1103,8 @@ def test_filter_unedited():
 
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(image)
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(image)
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
@@ -1180,8 +1180,8 @@ def test_small():
 
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(image)
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(image)
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
@@ -1249,8 +1249,8 @@ def test_small_touching():
 
     p = cellprofiler.pipeline.Pipeline()
     o_s = cellprofiler.object.ObjectSet()
-    i_l = cellprofiler.image.ImageSetList()
-    image = cellprofiler.image.Image(image)
+    i_l = cellprofiler_core.image.ImageSetList()
+    image = cellprofiler_core.image.Image(image)
     objects = cellprofiler.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
@@ -1315,7 +1315,7 @@ def test_holes_no_holes():
             module.fill_holes.value = wants_fill_holes
             module.distance_to_dilate.value = 10000
             image_set = workspace.image_set
-            assert isinstance(image_set, cellprofiler.image.ImageSet)
+            assert isinstance(image_set, cellprofiler_core.image.ImageSet)
 
             module.run(workspace)
             object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)

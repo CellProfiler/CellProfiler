@@ -3,7 +3,7 @@ import io
 import centrosome.threshold
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadsingleimage
@@ -19,10 +19,10 @@ OBJECTS_NAME = "my_objects"
 
 
 def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler.object.ObjectSet()
-    image = cellprofiler.image.Image(pixel_data, dimensions=dimensions)
+    image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
     if not mask is None:
         image.mask = mask
     image_set.add(IMAGES_NAME, image)
@@ -775,7 +775,7 @@ def test_check_image_groups():
     image_set = image_set_list.get_image_set(0)
     for i in range(1, 5):
         image_set.add(
-            "my_image%s" % i, cellprofiler.image.Image(numpy.zeros((100, 100)))
+            "my_image%s" % i, cellprofiler_core.image.Image(numpy.zeros((100, 100)))
         )
 
     q = workspace.module

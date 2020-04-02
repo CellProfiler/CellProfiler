@@ -20,7 +20,7 @@ import numpy
 import skimage.morphology
 import skimage.segmentation
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.setting
 

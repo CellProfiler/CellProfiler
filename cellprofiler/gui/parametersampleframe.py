@@ -16,7 +16,7 @@ import wx
 import wx.lib.agw.floatspin
 
 import cellprofiler.gui.workspace
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.object
@@ -640,7 +640,7 @@ class ParameterSampleFrame(wx.Frame):
         """
         self.__measurements = cellprofiler.measurement.Measurements(can_overwrite=True)
         self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cellprofiler.image.ImageSetList()
+        self.__image_set_list = cellprofiler_core.image.ImageSetList()
         workspace = cellprofiler.gui.workspace.Workspace(
             self.__pipeline,
             None,

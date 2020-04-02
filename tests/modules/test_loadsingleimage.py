@@ -7,7 +7,7 @@ import PIL.Image
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
@@ -223,7 +223,7 @@ class TestLoadSingleImage(
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         workspace = cellprofiler.workspace.Workspace(
             pipeline,
             module,
@@ -327,7 +327,7 @@ class TestLoadSingleImage(
             m,
             cellprofiler.object.ObjectSet(),
             m,
-            cellprofiler.image.ImageSetList(),
+            cellprofiler_core.image.ImageSetList(),
         )
         assert pipeline.prepare_run(workspace)
         assert m.image_set_count > 1
@@ -576,7 +576,7 @@ class TestLoadSingleImage(
             pipeline.add_module(module)
             m = cellprofiler.measurement.Measurements()
             object_set = cellprofiler.object.ObjectSet()
-            image_set_list = cellprofiler.image.ImageSetList()
+            image_set_list = cellprofiler_core.image.ImageSetList()
             image_set = image_set_list.get_image_set(0)
             workspace = cellprofiler.workspace.Workspace(
                 pipeline, module, image_set, object_set, m, image_set_list
@@ -662,7 +662,7 @@ class TestLoadSingleImage(
             pipeline.add_module(module)
             m = cellprofiler.measurement.Measurements()
             object_set = cellprofiler.object.ObjectSet()
-            image_set_list = cellprofiler.image.ImageSetList()
+            image_set_list = cellprofiler_core.image.ImageSetList()
             image_set = image_set_list.get_image_set(0)
             workspace = cellprofiler.workspace.Workspace(
                 pipeline, module, image_set, object_set, m, image_set_list

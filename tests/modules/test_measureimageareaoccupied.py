@@ -1,7 +1,7 @@
 import numpy
 import six
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.measureimageareaoccupied
 import cellprofiler.object
@@ -26,7 +26,7 @@ def make_workspace(labels, parent_image=None):
     module.set_module_num(1)
     module.operands[0].operand_objects.value = OBJECTS_NAME
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,
@@ -80,7 +80,7 @@ def test_object_with_cropping():
     labels[0:7, 3:8] = 1
     mask = numpy.zeros((10, 10), bool)
     mask[1:9, 1:9] = True
-    image = cellprofiler.image.Image(numpy.zeros((10, 10)), mask=mask)
+    image = cellprofiler_core.image.Image(numpy.zeros((10, 10)), mask=mask)
     area_occupied = [30]
     perimeter = [18]
     total_area = 64
@@ -167,7 +167,7 @@ def test_image_volume():
     pixel_data[:2, :2, :2] = True
     pixel_data[3:, 8:, 8:] = True
 
-    image = cellprofiler.image.Image(pixel_data, dimensions=3)
+    image = cellprofiler_core.image.Image(pixel_data, dimensions=3)
 
     expected_area = [16]
     expected_perimeter = [16]

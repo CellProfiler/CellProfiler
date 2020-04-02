@@ -1,6 +1,6 @@
 import numpy as np
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.maskimage
 import cellprofiler.object
@@ -22,11 +22,11 @@ def test_mask_with_objects():
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     np.random.seed(0)
     pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     pipeline = cellprofiler.pipeline.Pipeline()
     module = cellprofiler.modules.maskimage.MaskImage()
@@ -47,7 +47,7 @@ def test_mask_with_objects():
     )
     module.run(workspace)
     masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-    assert isinstance(masked_image, cellprofiler.image.Image)
+    assert isinstance(masked_image, cellprofiler_core.image.Image)
     assert np.all(masked_image.pixel_data[labels > 0] == pixel_data[labels > 0])
     assert np.all(masked_image.pixel_data[labels == 0] == 0)
     assert np.all(masked_image.mask == (labels > 0))
@@ -63,11 +63,11 @@ def test_mask_invert():
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     np.random.seed(0)
     pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     pipeline = cellprofiler.pipeline.Pipeline()
     module = cellprofiler.modules.maskimage.MaskImage()
@@ -88,7 +88,7 @@ def test_mask_invert():
     )
     module.run(workspace)
     masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-    assert isinstance(masked_image, cellprofiler.image.Image)
+    assert isinstance(masked_image, cellprofiler_core.image.Image)
     assert np.all(masked_image.pixel_data[labels == 0] == pixel_data[labels == 0])
     assert np.all(masked_image.pixel_data[labels > 0] == 0)
     assert np.all(masked_image.mask == (labels == 0))
@@ -104,12 +104,12 @@ def test_double_mask():
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     np.random.seed(0)
     pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
     mask = np.random.uniform(size=(10, 15)) > 0.5
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data, mask))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data, mask))
 
     expected_mask = mask & (labels > 0)
 
@@ -132,7 +132,7 @@ def test_double_mask():
     )
     module.run(workspace)
     masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-    assert isinstance(masked_image, cellprofiler.image.Image)
+    assert isinstance(masked_image, cellprofiler_core.image.Image)
     assert np.all(masked_image.pixel_data[expected_mask] == pixel_data[expected_mask])
     assert np.all(masked_image.pixel_data[~expected_mask] == 0)
     assert np.all(masked_image.mask == expected_mask)
@@ -140,14 +140,14 @@ def test_double_mask():
 
 
 def test_binary_mask():
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     np.random.seed(0)
     pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     masking_image = np.random.uniform(size=(10, 15)) > 0.5
-    image_set.add(MASKING_IMAGE_NAME, cellprofiler.image.Image(masking_image))
+    image_set.add(MASKING_IMAGE_NAME, cellprofiler_core.image.Image(masking_image))
 
     pipeline = cellprofiler.pipeline.Pipeline()
     module = cellprofiler.modules.maskimage.MaskImage()
@@ -169,7 +169,7 @@ def test_binary_mask():
     )
     module.run(workspace)
     masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-    assert isinstance(masked_image, cellprofiler.image.Image)
+    assert isinstance(masked_image, cellprofiler_core.image.Image)
     assert np.all(masked_image.pixel_data[masking_image] == pixel_data[masking_image])
     assert np.all(masked_image.pixel_data[~masking_image] == 0)
     assert np.all(masked_image.mask == masking_image)
@@ -177,14 +177,14 @@ def test_binary_mask():
 
 
 def test_gray_mask():
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     np.random.seed(0)
     pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     masking_image = np.random.uniform(size=(10, 15))
-    image_set.add(MASKING_IMAGE_NAME, cellprofiler.image.Image(masking_image))
+    image_set.add(MASKING_IMAGE_NAME, cellprofiler_core.image.Image(masking_image))
     masking_image = masking_image > 0.5
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -207,7 +207,7 @@ def test_gray_mask():
     )
     module.run(workspace)
     masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-    assert isinstance(masked_image, cellprofiler.image.Image)
+    assert isinstance(masked_image, cellprofiler_core.image.Image)
     assert np.all(masked_image.pixel_data[masking_image] == pixel_data[masking_image])
     assert np.all(masked_image.pixel_data[~masking_image] == 0)
     assert np.all(masked_image.mask == masking_image)
@@ -215,15 +215,15 @@ def test_gray_mask():
 
 
 def test_color_mask():
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     np.random.seed(0)
     pixel_data = np.random.uniform(size=(10, 15, 3)).astype(np.float32)
-    image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
+    image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     masking_image = np.random.uniform(size=(10, 15))
 
-    image_set.add(MASKING_IMAGE_NAME, cellprofiler.image.Image(masking_image))
+    image_set.add(MASKING_IMAGE_NAME, cellprofiler_core.image.Image(masking_image))
     expected_mask = masking_image > 0.5
 
     pipeline = cellprofiler.pipeline.Pipeline()
@@ -246,7 +246,7 @@ def test_color_mask():
     )
     module.run(workspace)
     masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-    assert isinstance(masked_image, cellprofiler.image.Image)
+    assert isinstance(masked_image, cellprofiler_core.image.Image)
     assert np.all(
         masked_image.pixel_data[expected_mask, :] == pixel_data[expected_mask, :]
     )

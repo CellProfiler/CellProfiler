@@ -3,7 +3,7 @@ import numpy.testing
 import pytest
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureimageintensity
@@ -17,7 +17,7 @@ cellprofiler.preferences.set_headless()
 
 @pytest.fixture(scope="function")
 def image():
-    return cellprofiler.image.Image()
+    return cellprofiler_core.image.Image()
 
 
 @pytest.fixture(scope="function")
@@ -47,7 +47,7 @@ def module():
 
 @pytest.fixture(scope="function")
 def workspace(image, measurements, module, objects):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
 

@@ -34,7 +34,7 @@ import skimage.measure
 import skimage.morphology
 import skimage.transform
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.object
 import cellprofiler.setting

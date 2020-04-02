@@ -1,6 +1,6 @@
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.labelimages
 import cellprofiler.object
@@ -36,7 +36,7 @@ def test_load_v1():
 
 
 def make_workspace(image_set_count):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(image_set_count):
         image_set = image_set_list.get_image_set(i)
     module = cellprofiler.modules.labelimages.LabelImages()

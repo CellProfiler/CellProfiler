@@ -1,6 +1,6 @@
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.calculatemath
@@ -48,7 +48,7 @@ def run_workspace(
     module.rounding = "Not rounded"
     module.rounding_digit = 0
     pipeline = cellprofiler.pipeline.Pipeline()
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler.workspace.Workspace(
         pipeline,
         module,

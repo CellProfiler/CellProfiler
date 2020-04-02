@@ -2,7 +2,7 @@ import centrosome.cpmorphology
 import numpy
 import six.moves
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.displaydataonimage
 import cellprofiler.object
@@ -162,9 +162,9 @@ def make_workspace(measurement, labels=None, image=None):
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
+    image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image))
 
     workspace = cellprofiler.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list

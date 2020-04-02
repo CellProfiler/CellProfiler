@@ -24,7 +24,7 @@ import centrosome.cpmorphology
 import matplotlib.cm
 import numpy
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -183,7 +183,7 @@ Preferences*.
         elif self.image_mode != "Binary (black & white)":
             pixel_data[mask] = pixel_data[mask] / alpha[mask]
 
-        image = cellprofiler.image.Image(
+        image = cellprofiler_core.image.Image(
             pixel_data,
             parent_image=objects.parent_image,
             convert=convert,

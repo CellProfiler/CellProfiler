@@ -28,7 +28,7 @@ YES          NO           NO
 
 import numpy as np
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES

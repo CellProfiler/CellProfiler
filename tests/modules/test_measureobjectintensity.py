@@ -7,7 +7,7 @@ import pytest
 import skimage.measure
 import skimage.segmentation
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.measureobjectintensity
@@ -24,7 +24,7 @@ OBJECT_NAME = "MyObjects"
 
 @pytest.fixture(scope="function")
 def image():
-    return cellprofiler.image.Image()
+    return cellprofiler_core.image.Image()
 
 
 @pytest.fixture(scope="function")
@@ -75,7 +75,7 @@ def volume(image):
 
 @pytest.fixture(scope="function")
 def workspace(image, measurements, module, objects):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
 

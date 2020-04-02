@@ -70,7 +70,7 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import grey_dilation, grey_erosion
 
-import cellprofiler.image as cpi
+import cellprofiler_core.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler.object as cpo

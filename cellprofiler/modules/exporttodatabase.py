@@ -2557,7 +2557,7 @@ available:
                     or pixels.dtype == numpy.bool
                 ):
                     factor = 255
-                    if self.auto_scale_thumbnail_intensities:
+                    if self.auto_scale_thumbnail_intensities and pixels.dtype != numpy.bool:
                         pixels = (pixels - pixels.min()) / pixels.max()
                 else:
                     raise Exception(

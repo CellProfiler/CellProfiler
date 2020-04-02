@@ -17,6 +17,7 @@ import cellprofiler.gui.help.content
 import cellprofiler.object
 import cellprofiler.setting
 from cellprofiler.modules import _help, threshold
+import cellprofiler_core.module.image_segmentation
 
 __doc__ = """\
 IdentifyPrimaryObjects

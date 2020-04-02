@@ -463,7 +463,7 @@ class Workspace:
         for key in hdf5src:
             obj = hdf5src[key]
             if isinstance(obj, h5py.Dataset):
-                hdf5dest[key] = obj.value
+                hdf5dest[key] = obj[()]
             else:
                 hdf5src.copy(hdf5src[key], hdf5dest, key)
         for key in hdf5src.attrs:

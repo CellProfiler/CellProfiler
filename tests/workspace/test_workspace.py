@@ -47,7 +47,7 @@ class TestWorkspace:
         assert not cellprofiler_core.workspace.is_workspace_file(__file__)
         for group in TOP_LEVEL_GROUP_NAME, FILE_LIST_GROUP:
             path = self.make_workspace_file()
-            h5file = h5py.File(path)
+            h5file = h5py.File(path, 'r+')
             del h5file[group]
             h5file.close()
             assert not cellprofiler_core.workspace.is_workspace_file(path)

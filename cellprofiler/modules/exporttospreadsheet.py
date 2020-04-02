@@ -1258,6 +1258,9 @@ desired.
 
             columns = set(columns)
             features = [x for x in features if x in columns]
+        elif object_name == cpmeas.IMAGE:
+            # Exclude any thumbnails if they've been created for ExportToDatabase
+            features = [x for x in features if not x.startswith("Thumbnail_")]
         return features
 
     def make_object_file(

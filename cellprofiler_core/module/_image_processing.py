@@ -1,9 +1,10 @@
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+from cellprofiler_core.module._module import Module
 
 
-class ImageProcessing(cellprofiler_core.module.Module):
+class ImageProcessing(Module):
     category = "Image Processing"
 
     def create_settings(self):

@@ -1,6 +1,8 @@
 import cellprofiler_core.preferences
 from cellprofiler_core.module._module import Module
 from cellprofiler_core.module.image_segmentation import (ObjectProcessing, ImageSegmentation)
+from cellprofiler_core.module._image_processing import ImageProcessing
+
 
 DEFINITION_OBJECT = """\
 In CellProfiler, we use the term *object* as a generic term to refer to

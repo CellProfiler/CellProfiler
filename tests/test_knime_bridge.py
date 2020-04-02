@@ -12,7 +12,7 @@ import cellprofiler.knime_bridge
 import cellprofiler_core.measurement
 import cellprofiler.modules.flagimage
 import cellprofiler.modules.identifyprimaryobjects
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.loadimages
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler.modules.saveimages
 import cellprofiler.modules.threshold
@@ -60,7 +60,7 @@ class TestKnimeBridge(unittest.TestCase):
     # FIXME: wxPython 4 PR
     # def test_02_01_pipeline_info(self):
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.add_imagecb()
     #     load_images.images[0].channels[0].image_name.value = "Foo"
@@ -117,7 +117,7 @@ class TestKnimeBridge(unittest.TestCase):
     # FIXME: wxPython 4 PR
     # def test_02_03_clean_pipeline(self):
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.add_imagecb()
     #     load_images.images[0].channels[0].image_name.value = "Foo"
@@ -154,14 +154,14 @@ class TestKnimeBridge(unittest.TestCase):
     #     pipeline = cellprofiler.pipeline.Pipeline()
     #     pipeline.loadtxt(six.moves.StringIO(pipeline_txt))
     #     self.assertEqual(len(pipeline.modules()), 3)
-    #     self.assertIsInstance(pipeline.modules()[0], cellprofiler.modules.loadimages.LoadImages)
+    #     self.assertIsInstance(pipeline.modules()[0], cellprofiler_core.modules.loadimages.LoadImages)
     #     self.assertIsInstance(pipeline.modules()[1], cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
     #     self.assertIsInstance(pipeline.modules()[2], cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape)
 
     # FIXME: wxPython 4 PR
     # def test_03_01_run_something(self):
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -207,7 +207,7 @@ class TestKnimeBridge(unittest.TestCase):
     # FIXME: wxPython 4 PR
     # def test_03_02_bad_cellprofiler(self):
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -252,7 +252,7 @@ class TestKnimeBridge(unittest.TestCase):
     #     # Missing measurement causes exception
     #     #
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -315,7 +315,7 @@ class TestKnimeBridge(unittest.TestCase):
     # FIXME: wxPython 4 PR
     # def test_04_01_run_group(self):
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -366,7 +366,7 @@ class TestKnimeBridge(unittest.TestCase):
     # FIXME: wxPython 4 PR
     # def test_04_02_bad_cellprofiler(self):
     #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)

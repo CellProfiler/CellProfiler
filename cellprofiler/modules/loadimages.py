@@ -3873,9 +3873,9 @@ to store the image.
         groups - the groups module
         first - True if no images have been added to namesandtypes yet.
         """
-        import cellprofiler.modules.metadata as cpmetadata
-        import cellprofiler.modules.namesandtypes as cpnamesandtypes
-        import cellprofiler.modules.groups as cpgroups
+        import cellprofiler_core.modules.metadata as cpmetadata
+        import cellprofiler_core.modules.namesandtypes as cpnamesandtypes
+        import cellprofiler_core.modules.groups as cpgroups
 
         assert isinstance(metadata, cpmetadata.Metadata)
         assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)

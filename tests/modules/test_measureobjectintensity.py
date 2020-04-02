@@ -9,7 +9,7 @@ import skimage.segmentation
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.identify
+import cellprofiler_core.modules.identify
 import cellprofiler.modules.measureobjectintensity
 import cellprofiler.object
 import cellprofiler.pipeline

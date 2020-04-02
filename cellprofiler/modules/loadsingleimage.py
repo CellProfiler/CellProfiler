@@ -94,15 +94,15 @@ from cellprofiler.modules._help import (
     IO_FOLDER_CHOICE_HELP_TEXT,
     IO_WITH_METADATA_HELP_TEXT,
 )
-from cellprofiler.modules.identify import (
+from cellprofiler_core.modules.identify import (
     add_object_count_measurements,
     add_object_location_measurements,
 )
-from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST
-from cellprofiler.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
-from cellprofiler.modules.loadimages import LoadImagesImageProvider, C_SCALING
-from cellprofiler.modules.loadimages import convert_image_to_objects, pathname2url
+from cellprofiler_core.modules.identify import get_object_measurement_columns
+from cellprofiler_core.modules.loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST
+from cellprofiler_core.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
+from cellprofiler_core.modules.loadimages import LoadImagesImageProvider, C_SCALING
+from cellprofiler_core.modules.loadimages import convert_image_to_objects, pathname2url
 from cellprofiler.setting import YES, NO
 
 DIR_CUSTOM_FOLDER = "Custom folder"
@@ -762,9 +762,9 @@ pipeline.
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
         """Convert from legacy to modern"""
-        import cellprofiler.modules.metadata as cpmetadata
-        import cellprofiler.modules.namesandtypes as cpnamesandtypes
-        import cellprofiler.modules.groups as cpgroups
+        import cellprofiler_core.modules.metadata as cpmetadata
+        import cellprofiler_core.modules.namesandtypes as cpnamesandtypes
+        import cellprofiler_core.modules.groups as cpgroups
 
         assert isinstance(metadata, cpmetadata.Metadata)
         assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)

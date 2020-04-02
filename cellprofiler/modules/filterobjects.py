@@ -68,7 +68,7 @@ import cellprofiler.gui.help
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.identify
+import cellprofiler_core.modules.identify
 import cellprofiler.object
 import cellprofiler.preferences
 import cellprofiler.setting

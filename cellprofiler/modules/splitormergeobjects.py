@@ -10,9 +10,9 @@ import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler_core.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules import _help
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
+from cellprofiler_core.modules.identify import add_object_count_measurements
+from cellprofiler_core.modules.identify import add_object_location_measurements
+from cellprofiler_core.modules.identify import get_object_measurement_columns
 
 __doc__ = """\
 SplitOrMergeObjects

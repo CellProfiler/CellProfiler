@@ -11,9 +11,9 @@ import uuid
 
 import cellprofiler.analysis
 import cellprofiler_core.measurement
-import cellprofiler.modules.identify
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.namesandtypes
+import cellprofiler_core.modules.identify
+import cellprofiler_core.modules.loadimages
+import cellprofiler_core.modules.namesandtypes
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.zmqrequest
@@ -428,7 +428,7 @@ class TestAnalysisWorker(unittest.TestCase):
             for object_name in m.get_object_names():
                 for feature_name in m.get_feature_names(object_name):
                     self.assertTrue(cm.has_feature(object_name, feature_name))
-                    if feature_name == cellprofiler.modules.namesandtypes.M_IMAGE_SET:
+                    if feature_name == cellprofiler_core.modules.namesandtypes.M_IMAGE_SET:
                         numpy.testing.assert_array_equal(
                             cm[object_name, feature_name, 1],
                             m[object_name, feature_name, 1],
@@ -763,7 +763,7 @@ class TestAnalysisWorker(unittest.TestCase):
         m = get_measurements_for_good_pipeline(nimages=3)
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.namesandtypes.M_IMAGE_SET,
+            cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
             2,
         ] = numpy.zeros(100, numpy.uint8)
         try:
@@ -1113,7 +1113,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             "ABCDEFGH"[int((i - 1) / 12)],
             ((i - 1) % 12) + 1,
         )
-        url = cellprofiler.modules.loadimages.pathname2url(os.path.join(path, filename))
+        url = cellprofiler_core.modules.loadimages.pathname2url(os.path.join(path, filename))
         m[
             cellprofiler_core.measurement.IMAGE,
             cellprofiler_core.measurement.C_FILE_NAME + "_DNA",
@@ -1154,7 +1154,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
         blob = javabridge.get_env().get_byte_array_elements(jblob)
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.namesandtypes.M_IMAGE_SET,
+            cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
             i,
             blob.dtype,
         ] = blob

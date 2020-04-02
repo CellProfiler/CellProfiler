@@ -4,7 +4,7 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.colortogray
-import cellprofiler.modules.injectimage
+import cellprofiler_core.modules.injectimage
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.workspace
@@ -29,7 +29,7 @@ def test_init():
 
 def test_combine():
     img = get_my_image()
-    inj = cellprofiler.modules.injectimage.InjectImage("my_image", img)
+    inj = cellprofiler_core.modules.injectimage.InjectImage("my_image", img)
     inj.set_module_num(1)
     ctg = cellprofiler.modules.colortogray.ColorToGray()
     ctg.set_module_num(2)
@@ -74,7 +74,7 @@ def test_combine():
 
 def test_split_all():
     img = get_my_image()
-    inj = cellprofiler.modules.injectimage.InjectImage("my_image", img)
+    inj = cellprofiler_core.modules.injectimage.InjectImage("my_image", img)
     inj.set_module_num(1)
     ctg = cellprofiler.modules.colortogray.ColorToGray()
     ctg.set_module_num(2)

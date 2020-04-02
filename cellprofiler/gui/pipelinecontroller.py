@@ -47,8 +47,8 @@ import cellprofiler.icons
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.loadimages
+import cellprofiler_core.modules.loadimages
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -2028,7 +2028,7 @@ class PipelineController(object):
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
         from cellprofiler.gui.figure import show_image
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler_core.modules.loadimages import url2pathname
 
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY
@@ -2162,7 +2162,7 @@ class PipelineController(object):
                     message[0] = "Processing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(
-                            cellprofiler.modules.loadimages.pathname2url(pathname)
+                            cellprofiler_core.modules.loadimages.pathname2url(pathname)
                         )
                         if len(urls) > 100:
                             queue.put(urls)
@@ -2174,7 +2174,7 @@ class PipelineController(object):
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(
-                                    cellprofiler.modules.loadimages.pathname2url(path)
+                                    cellprofiler_core.modules.loadimages.pathname2url(path)
                                 )
                                 message[0] = "Processing " + path
                                 if len(urls) > 100:
@@ -2300,7 +2300,7 @@ class PipelineController(object):
 
         hdf_file_list = self.__workspace.get_file_list()
         file_list = [
-            cellprofiler.modules.loadimages.pathname2url(
+            cellprofiler_core.modules.loadimages.pathname2url(
                 os.path.join(dirpath, filename)
             )
             for filename in filenames

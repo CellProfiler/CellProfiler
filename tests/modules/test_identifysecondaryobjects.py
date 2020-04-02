@@ -5,7 +5,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.identify
+import cellprofiler_core.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
 import cellprofiler.modules.threshold
 import cellprofiler.object
@@ -49,7 +49,7 @@ def test_load_v9():
     assert not module.wants_discard_primary
     assert module.new_primary_objects_name == "FilteredChocolateChips"
     assert module.fill_holes
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
         module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
     )
@@ -59,10 +59,10 @@ def test_load_v9():
     assert module.threshold.threshold_range.max == 1.0
     assert module.threshold.manual_threshold == 0.3
     assert module.threshold.thresholding_measurement == "Count_Cookies"
-    assert module.threshold.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
+    assert module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     assert (
         module.threshold.assign_middle_to_foreground
-        == cellprofiler.modules.identify.O_FOREGROUND
+        == cellprofiler_core.modules.identify.O_FOREGROUND
     )
     assert module.threshold.adaptive_window_size == 9
 
@@ -271,7 +271,7 @@ def test_propagation_wrong_size():
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     m = workspace.measurements
@@ -349,7 +349,7 @@ def test_one_object_watershed_gradient():
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
@@ -430,7 +430,7 @@ def test_watershed_gradient_wrong_size():
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     m = workspace.measurements
@@ -507,7 +507,7 @@ def test_one_object_watershed_image():
     module.image_name.value = IMAGE_NAME
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
     workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
@@ -580,7 +580,7 @@ def test_watershed_image_wrong_size():
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     m = workspace.measurements
@@ -1042,7 +1042,7 @@ def test_filter_edge():
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -1122,7 +1122,7 @@ def test_filter_unedited():
     module.wants_discard_edge.value = True
     module.wants_discard_primary.value = True
     module.new_primary_objects_name.value = NEW_OBJECTS_NAME
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)

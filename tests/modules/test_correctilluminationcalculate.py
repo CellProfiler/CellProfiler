@@ -5,7 +5,7 @@ from six.moves import StringIO
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.correctilluminationcalculate
-import cellprofiler.modules.injectimage
+import cellprofiler_core.modules.injectimage
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.setting
@@ -67,7 +67,7 @@ def test_zeros():
     for image in (numpy.zeros((10, 10)), numpy.zeros((10, 10, 3))):
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(error_callback)
-        inj_module = cellprofiler.modules.injectimage.InjectImage("MyImage", image)
+        inj_module = cellprofiler_core.modules.injectimage.InjectImage("MyImage", image)
         inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = (
@@ -160,7 +160,7 @@ def test_ones_image():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     for image in (numpy.ones((10, 10)), numpy.ones((10, 10, 3))):
-        inj_module = cellprofiler.modules.injectimage.InjectImage("MyImage", image)
+        inj_module = cellprofiler_core.modules.injectimage.InjectImage("MyImage", image)
         inj_module.set_module_num(1)
         pipeline.add_module(inj_module)
         module = (
@@ -246,7 +246,7 @@ def test_masked_image():
         mask = numpy.zeros((10, 10), bool)
         mask[2:7, 3:8] = True
         image[mask] = 1
-        inj_module = cellprofiler.modules.injectimage.InjectImage(
+        inj_module = cellprofiler_core.modules.injectimage.InjectImage(
             "MyImage", image, mask
         )
         inj_module.set_module_num(1)
@@ -410,7 +410,7 @@ def test_Background():
     image[10, 30] = 0.5
     image[30, 10] = 0.75
     image[30, 30] = 0.9
-    inj_module = cellprofiler.modules.injectimage.InjectImage("MyImage", image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage("MyImage", image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -458,7 +458,7 @@ def test_no_smoothing():
     image_name = "InputImage"
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -516,7 +516,7 @@ def test_FitPolynomial():
     ):
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(error_callback)
-        inj_module = cellprofiler.modules.injectimage.InjectImage(
+        inj_module = cellprofiler_core.modules.injectimage.InjectImage(
             image_name, input_image
         )
         inj_module.set_module_num(1)
@@ -567,7 +567,7 @@ def test_gaussian_filter():
     expected_image = numpy.e ** (-(i ** 2 + j ** 2) / (2 * (10.0 / 2.35) ** 2))
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -625,7 +625,7 @@ def test_median_filter():
     ] = 1
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -675,7 +675,7 @@ def test_smooth_to_average():
     expected_image = numpy.ones((10, 10)) * input_image.mean()
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -1119,7 +1119,7 @@ def test_intermediate_images():
     ):
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(error_callback)
-        inj_module = cellprofiler.modules.injectimage.InjectImage(
+        inj_module = cellprofiler_core.modules.injectimage.InjectImage(
             "InputImage", numpy.zeros((10, 10))
         )
         inj_module.set_module_num(1)
@@ -1170,7 +1170,7 @@ def test_rescale():
     expected_image = input_image * 2
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -1222,7 +1222,7 @@ def test_rescale_outlier():
     expected_image[0, 0] = 1
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (

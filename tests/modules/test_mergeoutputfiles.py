@@ -4,7 +4,7 @@ import tempfile
 import numpy
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.loadimages
 import cellprofiler.modules.mergeoutputfiles
 import cellprofiler.pipeline
 
@@ -13,7 +13,7 @@ def execute_merge_files(mm):
     input_files = []
     output_fd, output_file = tempfile.mkstemp(".mat")
     pipeline = cellprofiler.pipeline.Pipeline()
-    li = cellprofiler.modules.loadimages.LoadImages()
+    li = cellprofiler_core.modules.loadimages.LoadImages()
     li.module_num = 1
     pipeline.add_module(li)
 

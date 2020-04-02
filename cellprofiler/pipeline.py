@@ -1620,10 +1620,10 @@ class Pipeline(object):
         """Convert a pipeline from legacy to using Images, NamesAndTypes etc"""
         if not self.can_convert_legacy_input_modules():
             return
-        from cellprofiler.modules.images import Images, FILTER_CHOICE_NONE
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
+        from cellprofiler_core.modules.images import Images, FILTER_CHOICE_NONE
+        from cellprofiler_core.modules.metadata import Metadata
+        from cellprofiler_core.modules.namesandtypes import NamesAndTypes
+        from cellprofiler_core.modules.groups import Groups
 
         with self.undoable_action("Legacy modules converted"):
             images, metadata, namesandtypes, groups = (
@@ -1680,7 +1680,7 @@ class Pipeline(object):
 
     def fix_legacy_pipeline(self):
         """Perform inter-module fixes needed for some legacy pipelines"""
-        from cellprofiler.modules.loadsingleimage import LoadSingleImage
+        from cellprofiler_core.modules.loadsingleimage import LoadSingleImage
 
         #
         # LoadSingleImage used to work if placed before LoadImages or
@@ -2826,10 +2826,10 @@ class Pipeline(object):
 
         Initialize the modules list to contain the four file modules.
         """
-        from cellprofiler.modules.images import Images
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
+        from cellprofiler_core.modules.images import Images
+        from cellprofiler_core.modules.metadata import Metadata
+        from cellprofiler_core.modules.namesandtypes import NamesAndTypes
+        from cellprofiler_core.modules.groups import Groups
 
         for i, module in enumerate((Images(), Metadata(), NamesAndTypes(), Groups())):
             module.set_module_num(i + 1)
@@ -3050,7 +3050,7 @@ class Pipeline(object):
         path - a path to a file or a URL
         """
         if isinstance(path_or_fd, six.string_types):
-            from cellprofiler.modules.loadimages import (
+            from cellprofiler_core.modules.loadimages import (
                 url2pathname,
                 FILE_SCHEME,
                 PASSTHROUGH_SCHEMES,
@@ -3083,7 +3083,7 @@ class Pipeline(object):
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
         """Add a sequence of paths or URLs to the file list"""
-        from cellprofiler.modules.loadimages import pathname2url
+        from cellprofiler_core.modules.loadimages import pathname2url
 
         urls = []
         for pathname in pathnames:

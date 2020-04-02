@@ -8,7 +8,7 @@ import scipy.ndimage
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.identify
+import cellprofiler_core.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.threshold
 import cellprofiler.object
@@ -237,7 +237,7 @@ def test_test_one_object():
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = one_cell_image()
@@ -304,7 +304,7 @@ def test_test_two_objects():
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = two_cell_image()
@@ -367,7 +367,7 @@ def test_test_threshold_range():
     x.threshold.threshold_range.min = 0.7
     x.threshold.threshold_range.max = 1
     x.threshold.threshold_correction_factor.value = 0.95
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
@@ -428,7 +428,7 @@ def test_fill_holes():
     x.exclude_size.value = False
     x.fill_holes.value = True
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.zeros((40, 40))
@@ -502,7 +502,7 @@ def test_01_fill_holes_within_holes():
     x.exclude_size.value = False
     x.fill_holes.value = cellprofiler.modules.identifyprimaryobjects.FH_DECLUMP
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.zeros((40, 40))
@@ -546,7 +546,7 @@ def test_test_watershed_shape_shape():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -609,7 +609,7 @@ def test_test_watershed_shape_intensity():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -673,7 +673,7 @@ def test_test_watershed_intensity_distance_single():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -741,7 +741,7 @@ def test_test_watershed_intensity_distance_triple():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -806,7 +806,7 @@ def test_test_watershed_intensity_distance_filter():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -937,7 +937,7 @@ def test_propagate():
     x.threshold.manual_threshold.value = 0.3
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -1153,7 +1153,7 @@ def test_load_v10():
     assert module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
     assert module.maximum_object_count == 499
     #
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_ADAPTIVE
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_ADAPTIVE
     assert module.threshold.local_operation.value == centrosome.threshold.TM_OTSU
     assert module.threshold.threshold_smoothing_scale == 1.3488
     assert round(abs(module.threshold.threshold_correction_factor.value - 0.80), 7) == 0
@@ -1161,10 +1161,10 @@ def test_load_v10():
     assert round(abs(module.threshold.threshold_range.max - 0.90), 7) == 0
     assert round(abs(module.threshold.manual_threshold.value - 0.03), 7) == 0
     assert module.threshold.thresholding_measurement == "Metadata_Threshold"
-    assert module.threshold.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
+    assert module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     assert (
         module.threshold.assign_middle_to_foreground
-        == cellprofiler.modules.identify.O_FOREGROUND
+        == cellprofiler_core.modules.identify.O_FOREGROUND
     )
     assert module.threshold.adaptive_window_size == 12
     #
@@ -1190,16 +1190,16 @@ def test_load_v10():
     assert (
         module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     )
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
         module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
     )
     assert (
-        module.threshold.two_class_otsu == cellprofiler.modules.identify.O_THREE_CLASS
+        module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
     )
     assert (
         module.threshold.assign_middle_to_foreground
-        == cellprofiler.modules.identify.O_BACKGROUND
+        == cellprofiler_core.modules.identify.O_BACKGROUND
     )
     assert module.use_advanced.value
 
@@ -1225,7 +1225,7 @@ def test_load_v10():
     assert (
         module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     )
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
         module.threshold.global_operation.value
         == centrosome.threshold.TM_ROBUST_BACKGROUND
@@ -1233,9 +1233,9 @@ def test_load_v10():
     assert module.threshold.lower_outlier_fraction.value == 0.02
     assert module.threshold.upper_outlier_fraction.value == 0.02
     assert (
-        module.threshold.averaging_method.value == cellprofiler.modules.identify.RB_MODE
+        module.threshold.averaging_method.value == cellprofiler_core.modules.identify.RB_MODE
     )
-    assert module.threshold.variance_method.value == cellprofiler.modules.identify.RB_SD
+    assert module.threshold.variance_method.value == cellprofiler_core.modules.identify.RB_SD
     assert module.threshold.number_of_deviations.value == 0
     assert module.threshold.threshold_correction_factor.value == 1.6
     assert module.use_advanced.value
@@ -1273,8 +1273,8 @@ def test_load_v10():
     )
     assert module.threshold.lower_outlier_fraction == 0.05
     assert module.threshold.upper_outlier_fraction == 0.05
-    assert module.threshold.averaging_method == cellprofiler.modules.identify.RB_MEAN
-    assert module.threshold.variance_method == cellprofiler.modules.identify.RB_SD
+    assert module.threshold.averaging_method == cellprofiler_core.modules.identify.RB_MEAN
+    assert module.threshold.variance_method == cellprofiler_core.modules.identify.RB_SD
     assert module.threshold.number_of_deviations == 2
     assert module.use_advanced.value
 
@@ -1299,14 +1299,14 @@ def test_01_load_new_robust_background():
     for module, averaging_method, variance_method in zip(
         pipeline.modules(),
         (
-            cellprofiler.modules.identify.RB_MEAN,
-            cellprofiler.modules.identify.RB_MEDIAN,
-            cellprofiler.modules.identify.RB_MODE,
+            cellprofiler_core.modules.identify.RB_MEAN,
+            cellprofiler_core.modules.identify.RB_MEDIAN,
+            cellprofiler_core.modules.identify.RB_MODE,
         ),
         (
-            cellprofiler.modules.identify.RB_SD,
-            cellprofiler.modules.identify.RB_MAD,
-            cellprofiler.modules.identify.RB_MAD,
+            cellprofiler_core.modules.identify.RB_SD,
+            cellprofiler_core.modules.identify.RB_MAD,
+            cellprofiler_core.modules.identify.RB_MAD,
         ),
     ):
         assert isinstance(
@@ -1980,7 +1980,7 @@ def test_threshold_smoothing_automatic():
     module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     # MCT on this image is zero, so set the threshold at .225
     # with the threshold minimum (manual = no smoothing)
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     module.threshold.threshold_range.min = 0.225
     module.run(workspace)
@@ -2019,7 +2019,7 @@ def test_threshold_smoothing_manual():
     module.exclude_size.value = False
     module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
     module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     module.threshold.threshold_range.min = 0.125
     module.threshold.threshold_smoothing_scale.value = 3
@@ -2052,8 +2052,8 @@ def test_threshold_no_smoothing():
         ]
     )
     for tm in (
-        cellprofiler.modules.identify.TS_MANUAL,
-        cellprofiler.modules.identify.TS_MEASUREMENT,
+        cellprofiler_core.modules.identify.TS_MANUAL,
+        cellprofiler_core.modules.identify.TS_MEASUREMENT,
     ):
         workspace, module = make_workspace(image)
         assert isinstance(

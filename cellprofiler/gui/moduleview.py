@@ -1682,7 +1682,7 @@ class ModuleView(object):
 
     def make_image_plane_control(self, v, control):
         """Make a control to pick an image plane from the file list"""
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler_core.modules.loadimages import url2pathname
 
         assert isinstance(v, cellprofiler.setting.ImagePlane)
         if not control:

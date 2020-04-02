@@ -54,7 +54,7 @@ import scipy.ndimage
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.identify
+import cellprofiler_core.modules.identify
 import cellprofiler.object
 import cellprofiler.setting
 
@@ -221,13 +221,13 @@ order to keep from breaking up the object or breaking the hole.
 
         workspace.object_set.add_objects(output_objects, self.output_object_name.value)
 
-        cellprofiler.modules.identify.add_object_count_measurements(
+        cellprofiler_core.modules.identify.add_object_count_measurements(
             workspace.measurements,
             self.output_object_name.value,
             numpy.max(output_objects.segmented),
         )
 
-        cellprofiler.modules.identify.add_object_location_measurements(
+        cellprofiler_core.modules.identify.add_object_location_measurements(
             workspace.measurements,
             self.output_object_name.value,
             output_objects.segmented,
@@ -360,7 +360,7 @@ order to keep from breaking up the object or breaking the hole.
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(
+        columns = cellprofiler_core.modules.identify.get_object_measurement_columns(
             self.output_object_name.value
         )
         return columns

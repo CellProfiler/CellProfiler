@@ -4,19 +4,19 @@ Input
 -----
 Input modules help you load images and metadata into CellProfiler.
 
-.. automodule:: cellprofiler.modules.images
+.. automodule:: cellprofiler_core.modules.images
 
 `(Jump to top)`_
 
-.. automodule:: cellprofiler.modules.metadata
+.. automodule:: cellprofiler_core.modules.metadata
 
 `(Jump to top)`_
 
-.. automodule:: cellprofiler.modules.namesandtypes
+.. automodule:: cellprofiler_core.modules.namesandtypes
 
 `(Jump to top)`_
 
-.. automodule:: cellprofiler.modules.groups
+.. automodule:: cellprofiler_core.modules.groups
 
 `(Jump to top)`_
 

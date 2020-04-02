@@ -41,7 +41,7 @@ import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.tools
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.loadimages
 import cellprofiler.object
 import cellprofiler.preferences
 from cellprofiler.setting import LOG
@@ -243,7 +243,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     filename = url[(url.rfind("/") + 1) :]
 
     try:
-        provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
+        provider = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
             filename=filename,
             name=os.path.splitext(filename)[0],
             pathname=os.path.dirname(url),

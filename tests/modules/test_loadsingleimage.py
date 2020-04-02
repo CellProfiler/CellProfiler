@@ -9,9 +9,9 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.identify
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.loadsingleimage
+import cellprofiler_core.modules.identify
+import cellprofiler_core.modules.loadimages
+import cellprofiler_core.modules.loadsingleimage
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -61,12 +61,12 @@ class TestLoadSingleImage(
         ]
         for i, module in enumerate(pipeline.modules()):
             assert isinstance(
-                module, cellprofiler.modules.loadsingleimage.LoadSingleImage
+                module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage
             )
             assert module.directory.dir_choice == dir_choice[i]
             assert module.directory.custom_path == "path%d" % (i + 1)
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         assert len(module.file_settings) == 2
         fs = module.file_settings[0]
         assert fs.file_name == "foo.tif"
@@ -89,7 +89,7 @@ class TestLoadSingleImage(
         assert len(pipeline.modules()) == 4
 
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         assert len(module.file_settings) == 2
         fs = module.file_settings[0]
         assert fs.file_name == "foo.tif"
@@ -113,7 +113,7 @@ class TestLoadSingleImage(
         ]
         for i, module in enumerate(pipeline.modules()):
             assert isinstance(
-                module, cellprofiler.modules.loadsingleimage.LoadSingleImage
+                module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage
             )
             assert module.directory.dir_choice == dir_choice[i]
 
@@ -131,7 +131,7 @@ class TestLoadSingleImage(
         assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         assert len(module.file_settings) == 2
         fs = module.file_settings[0]
         assert fs.file_name == "foo.tif"
@@ -155,11 +155,11 @@ class TestLoadSingleImage(
         assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         assert len(module.file_settings) == 2
         fs = module.file_settings[0]
         assert fs.file_name == "foo.tif"
-        assert fs.image_objects_choice == cellprofiler.modules.loadsingleimage.IO_IMAGES
+        assert fs.image_objects_choice == cellprofiler_core.modules.loadsingleimage.IO_IMAGES
         assert fs.image_name == "DNA"
         assert not fs.rescale
         fs = module.file_settings[1]
@@ -181,11 +181,11 @@ class TestLoadSingleImage(
         assert len(pipeline.modules()) == 1
 
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         assert len(module.file_settings) == 2
         fs = module.file_settings[0]
         assert fs.file_name == "foo.tif"
-        assert fs.image_objects_choice == cellprofiler.modules.loadsingleimage.IO_IMAGES
+        assert fs.image_objects_choice == cellprofiler_core.modules.loadsingleimage.IO_IMAGES
         assert fs.image_name == "DNA"
         assert fs.objects_name == "MyObjects"
         assert fs.wants_outlines
@@ -194,7 +194,7 @@ class TestLoadSingleImage(
         fs = module.file_settings[1]
         assert fs.file_name == "bar.tif"
         assert (
-            fs.image_objects_choice == cellprofiler.modules.loadsingleimage.IO_OBJECTS
+            fs.image_objects_choice == cellprofiler_core.modules.loadsingleimage.IO_OBJECTS
         )
         assert fs.image_name == "Cytoplasm"
         assert fs.objects_name == "Cells"
@@ -206,7 +206,7 @@ class TestLoadSingleImage(
         return "MyImage%d" % idx
 
     def make_workspace(file_names):
-        module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+        module = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
         module.set_module_num(1)
         module.directory.set_dir_choice(
             cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
@@ -239,7 +239,7 @@ class TestLoadSingleImage(
         file_name = test_filename
         cellprofiler.preferences.set_default_image_directory(test_path)
         workspace, module = make_workspace([file_name])
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
@@ -248,7 +248,7 @@ class TestLoadSingleImage(
         f = m.get_all_measurements(
             cellprofiler_core.measurement.IMAGE,
             "_".join(
-                (cellprofiler.modules.loadsingleimage.C_FILE_NAME, get_image_name(0))
+                (cellprofiler_core.modules.loadsingleimage.C_FILE_NAME, get_image_name(0))
             ),
         )
         assert len(f) == 1
@@ -256,7 +256,7 @@ class TestLoadSingleImage(
         p = m.get_all_measurements(
             cellprofiler_core.measurement.IMAGE,
             "_".join(
-                (cellprofiler.modules.loadsingleimage.C_PATH_NAME, get_image_name(0))
+                (cellprofiler_core.modules.loadsingleimage.C_PATH_NAME, get_image_name(0))
             ),
         )
         assert len(p) == 1
@@ -264,7 +264,7 @@ class TestLoadSingleImage(
         s = m.get_all_measurements(
             cellprofiler_core.measurement.IMAGE,
             "_".join(
-                (cellprofiler.modules.loadsingleimage.C_SCALING, get_image_name(0))
+                (cellprofiler_core.modules.loadsingleimage.C_SCALING, get_image_name(0))
             ),
         )
         assert len(s) == 1
@@ -272,7 +272,7 @@ class TestLoadSingleImage(
         md = m.get_all_measurements(
             cellprofiler_core.measurement.IMAGE,
             "_".join(
-                (cellprofiler.modules.loadsingleimage.C_MD5_DIGEST, get_image_name(0))
+                (cellprofiler_core.modules.loadsingleimage.C_MD5_DIGEST, get_image_name(0))
             ),
         )
         assert len(md) == 1
@@ -284,7 +284,7 @@ class TestLoadSingleImage(
         path = test_path
         cellprofiler.preferences.set_default_image_directory(path)
         workspace, module = make_workspace(file_names)
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         module.file_settings[0].rescale.value = False
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
@@ -306,17 +306,17 @@ class TestLoadSingleImage(
         path = os.path.join(tests.modules.example_images_directory(), folder)
         filename = "Channel1-01-A-01.tif"
         pipeline = cellprofiler.pipeline.Pipeline()
-        lsi = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+        lsi = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
         lsi.set_module_num(1)
         lsi.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         lsi.directory.custom_path = path
         lsi.file_settings[0].image_name.value = get_image_name(0)
         lsi.file_settings[0].file_name.value = filename
         pipeline.add_module(lsi)
-        li = cellprofiler.modules.loadimages.LoadImages()
+        li = cellprofiler_core.modules.loadimages.LoadImages()
         li.set_module_num(2)
         pipeline.add_module(li)
-        li.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        li.match_method.value = cellprofiler_core.modules.loadimages.MS_EXACT_MATCH
         li.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"
@@ -351,18 +351,18 @@ class TestLoadSingleImage(
     def test_measurement_columns():
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = make_workspace(file_names)
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         columns = module.get_measurement_columns(workspace.pipeline)
         assert len(columns) == 12
         assert [c[0] == cellprofiler_core.measurement.IMAGE for c in columns]
         for image_name in [get_image_name(i) for i in range(2)]:
             for feature in (
-                cellprofiler.modules.loadsingleimage.C_FILE_NAME,
-                cellprofiler.modules.loadsingleimage.C_MD5_DIGEST,
-                cellprofiler.modules.loadsingleimage.C_PATH_NAME,
-                cellprofiler.modules.loadsingleimage.C_SCALING,
-                cellprofiler.modules.loadsingleimage.C_HEIGHT,
-                cellprofiler.modules.loadsingleimage.C_WIDTH,
+                cellprofiler_core.modules.loadsingleimage.C_FILE_NAME,
+                cellprofiler_core.modules.loadsingleimage.C_MD5_DIGEST,
+                cellprofiler_core.modules.loadsingleimage.C_PATH_NAME,
+                cellprofiler_core.modules.loadsingleimage.C_SCALING,
+                cellprofiler_core.modules.loadsingleimage.C_HEIGHT,
+                cellprofiler_core.modules.loadsingleimage.C_WIDTH,
             ):
                 measurement = "_".join((feature, image_name))
                 assert measurement in [c[1] for c in columns]
@@ -370,7 +370,7 @@ class TestLoadSingleImage(
     def test_categories():
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = make_workspace(file_names)
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         categories = module.get_categories(workspace.pipeline, "Foo")
         assert len(categories) == 0
         categories = module.get_categories(
@@ -378,19 +378,19 @@ class TestLoadSingleImage(
         )
         assert len(categories) == 6
         for category in (
-            cellprofiler.modules.loadsingleimage.C_FILE_NAME,
-            cellprofiler.modules.loadsingleimage.C_MD5_DIGEST,
-            cellprofiler.modules.loadsingleimage.C_PATH_NAME,
-            cellprofiler.modules.loadsingleimage.C_SCALING,
-            cellprofiler.modules.loadsingleimage.C_HEIGHT,
-            cellprofiler.modules.loadsingleimage.C_WIDTH,
+            cellprofiler_core.modules.loadsingleimage.C_FILE_NAME,
+            cellprofiler_core.modules.loadsingleimage.C_MD5_DIGEST,
+            cellprofiler_core.modules.loadsingleimage.C_PATH_NAME,
+            cellprofiler_core.modules.loadsingleimage.C_SCALING,
+            cellprofiler_core.modules.loadsingleimage.C_HEIGHT,
+            cellprofiler_core.modules.loadsingleimage.C_WIDTH,
         ):
             assert category in categories
 
     def test_measurements():
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = make_workspace(file_names)
-        assert isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage)
+        assert isinstance(module, cellprofiler_core.modules.loadsingleimage.LoadSingleImage)
         measurements = module.get_measurements(workspace.pipeline, "foo", "bar")
         assert len(measurements) == 0
         measurements = module.get_measurements(
@@ -398,7 +398,7 @@ class TestLoadSingleImage(
         )
         assert len(measurements) == 0
         measurements = module.get_measurements(
-            workspace.pipeline, "foo", cellprofiler.modules.loadsingleimage.C_PATH_NAME
+            workspace.pipeline, "foo", cellprofiler_core.modules.loadsingleimage.C_PATH_NAME
         )
         assert len(measurements) == 0
         categories = module.get_categories(
@@ -413,22 +413,22 @@ class TestLoadSingleImage(
                 assert get_image_name(i) in measurements
 
     def test_object_measurement_columns():
-        module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+        module = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
         module.file_settings[
             0
-        ].image_objects_choice.value = cellprofiler.modules.loadsingleimage.IO_OBJECTS
+        ].image_objects_choice.value = cellprofiler_core.modules.loadsingleimage.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         columns = module.get_measurement_columns(None)
         expected_columns = (
             (
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME
+                cellprofiler_core.modules.loadsingleimage.C_OBJECTS_FILE_NAME
                 + "_"
                 + OBJECTS_NAME,
             ),
             (
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME
+                cellprofiler_core.modules.loadsingleimage.C_OBJECTS_PATH_NAME
                 + "_"
                 + OBJECTS_NAME,
             ),
@@ -472,18 +472,18 @@ class TestLoadSingleImage(
             )
 
     def test_object_categories():
-        module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+        module = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
         module.file_settings[
             0
-        ].image_objects_choice.value = cellprofiler.modules.loadsingleimage.IO_OBJECTS
+        ].image_objects_choice.value = cellprofiler_core.modules.loadsingleimage.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, expected_categories in (
             (
                 cellprofiler_core.measurement.IMAGE,
                 (
                     cellprofiler_core.measurement.C_COUNT,
-                    cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
-                    cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
+                    cellprofiler_core.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
+                    cellprofiler_core.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
                 ),
             ),
             (
@@ -504,10 +504,10 @@ class TestLoadSingleImage(
             )
 
     def test_object_measurements():
-        module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+        module = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
         module.file_settings[
             0
-        ].image_objects_choice.value = cellprofiler.modules.loadsingleimage.IO_OBJECTS
+        ].image_objects_choice.value = cellprofiler_core.modules.loadsingleimage.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, category, expected_features in (
             (
@@ -517,12 +517,12 @@ class TestLoadSingleImage(
             ),
             (
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
+                cellprofiler_core.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
                 (OBJECTS_NAME,),
             ),
             (
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
+                cellprofiler_core.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
                 (OBJECTS_NAME,),
             ),
             (
@@ -556,7 +556,7 @@ class TestLoadSingleImage(
         pilimage.save(os.path.join(directory, filename))
         del pilimage
         try:
-            module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+            module = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
             module.set_module_num(1)
             module.directory.set_dir_choice(
                 cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
@@ -564,7 +564,7 @@ class TestLoadSingleImage(
             fs = module.file_settings[0]
             fs.file_name.value = filename
             fs.image_objects_choice.value = (
-                cellprofiler.modules.loadsingleimage.IO_OBJECTS
+                cellprofiler_core.modules.loadsingleimage.IO_OBJECTS
             )
             fs.objects_name.value = OBJECTS_NAME
             pipeline = cellprofiler.pipeline.Pipeline()
@@ -596,7 +596,7 @@ class TestLoadSingleImage(
                 m.get_current_image_measurement(
                     "_".join(
                         (
-                            cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
+                            cellprofiler_core.modules.loadsingleimage.C_OBJECTS_FILE_NAME,
                             OBJECTS_NAME,
                         )
                     )
@@ -607,7 +607,7 @@ class TestLoadSingleImage(
                 m.get_current_image_measurement(
                     "_".join(
                         (
-                            cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
+                            cellprofiler_core.modules.loadsingleimage.C_OBJECTS_PATH_NAME,
                             OBJECTS_NAME,
                         )
                     )
@@ -640,7 +640,7 @@ class TestLoadSingleImage(
         pilimage.save(os.path.join(directory, filename))
         del pilimage
         try:
-            module = cellprofiler.modules.loadsingleimage.LoadSingleImage()
+            module = cellprofiler_core.modules.loadsingleimage.LoadSingleImage()
             module.set_module_num(1)
             module.directory.set_dir_choice(
                 cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
@@ -648,7 +648,7 @@ class TestLoadSingleImage(
             fs = module.file_settings[0]
             fs.file_name.value = filename
             fs.image_objects_choice.value = (
-                cellprofiler.modules.loadsingleimage.IO_OBJECTS
+                cellprofiler_core.modules.loadsingleimage.IO_OBJECTS
             )
             fs.objects_name.value = OBJECTS_NAME
             fs.wants_outlines.value = True

@@ -410,7 +410,7 @@ def test_small_images():
                 mask[ii[p], jj[p]] = True
             workspace, x = make_workspace(image, mask)
             x.global_operation.value = threshold_method
-            x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+            x.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
             l, g = x.get_threshold(
                 cellprofiler_core.image.Image(image, mask=mask), workspace
             )

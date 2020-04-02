@@ -4,7 +4,7 @@ import os
 import numpy
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.groups
+import cellprofiler_core.modules.groups
 import cellprofiler.pipeline
 import cellprofiler.workspace
 
@@ -22,7 +22,7 @@ def test_load_v1():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.groups.Groups)
+    assert isinstance(module, cellprofiler_core.modules.groups.Groups)
     assert module.wants_groups
     assert module.grouping_metadata_count.value == 1
     g0 = module.grouping_metadata[0]
@@ -42,7 +42,7 @@ def test_load_v2():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.groups.Groups)
+    assert isinstance(module, cellprofiler_core.modules.groups.Groups)
     assert module.wants_groups
     assert module.grouping_metadata_count.value == 1
     g0 = module.grouping_metadata[0]
@@ -139,7 +139,7 @@ def make_image_sets(key_metadata, channel_metadata):
                 m[cellprofiler_core.measurement.IMAGE, feature, image_number] = value
 
     pipeline = cellprofiler.pipeline.Pipeline()
-    module = cellprofiler.modules.groups.Groups()
+    module = cellprofiler_core.modules.groups.Groups()
     module.set_module_num(1)
     pipeline.add_module(module)
     workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
@@ -168,7 +168,7 @@ def test_compute_no_groups():
             ),
         ),
     )
-    groups = cellprofiler.modules.groups.Groups()
+    groups = cellprofiler_core.modules.groups.Groups()
     groups.wants_groups.value = False
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
@@ -189,7 +189,7 @@ def test_compute_no_groups():
 
 
 def test_group_on_one():
-    groups = cellprofiler.modules.groups.Groups()
+    groups = cellprofiler_core.modules.groups.Groups()
     groups, workspace = make_image_sets(
         (
             ("Plate", ("P-12345", "P-23456")),
@@ -317,7 +317,7 @@ def test_get_measurement_columns_nogroups():
     #
     # Don't return the metadata grouping tags measurement if no groups
     #
-    groups = cellprofiler.modules.groups.Groups()
+    groups = cellprofiler_core.modules.groups.Groups()
     groups.wants_groups.value = False
     columns = groups.get_measurement_columns(None)
     assert len(columns) == 0
@@ -327,7 +327,7 @@ def test_get_measurement_columns_groups():
     #
     # Return the metadata grouping tags measurement if groups
     #
-    groups = cellprofiler.modules.groups.Groups()
+    groups = cellprofiler_core.modules.groups.Groups()
     groups.wants_groups.value = True
     choices = ["Plate", "Well", "Site"]
     for i, choice in enumerate(choices):

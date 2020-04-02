@@ -18,8 +18,8 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules
-import cellprofiler.modules.injectimage
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.injectimage
+import cellprofiler_core.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -136,7 +136,7 @@ HasImagePlaneDetails:False"""
 
     def test_06_01_run_pipeline(self):
         x = exploding_pipeline(self)
-        module = cellprofiler.modules.injectimage.InjectImage(
+        module = cellprofiler_core.modules.injectimage.InjectImage(
             "OneCell", image_with_one_cell()
         )
         module.set_module_num(1)
@@ -1297,12 +1297,12 @@ HasImagePlaneDetails:False"""
         self.assertEqual(len(p.file_list), 2)
         for path in paths:
             self.assertIn(
-                cellprofiler.modules.loadimages.pathname2url(path), p.file_list
+                cellprofiler_core.modules.loadimages.pathname2url(path), p.file_list
             )
 
     def test_19_02_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
-        file_url = cellprofiler.modules.loadimages.pathname2url(
+        file_url = cellprofiler_core.modules.loadimages.pathname2url(
             os.path.join(root, "foo.tif")
         )
         urls = [

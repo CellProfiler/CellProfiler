@@ -2,19 +2,19 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.injectimage
+import cellprofiler_core.modules.injectimage
 import cellprofiler.pipeline
 import cellprofiler.workspace
 
 
 def test_init():
     image = numpy.zeros((10, 10), dtype=float)
-    x = cellprofiler.modules.injectimage.InjectImage("my_image", image)
+    x = cellprofiler_core.modules.injectimage.InjectImage("my_image", image)
 
 
 def test_get_from_image_set():
     image = numpy.zeros((10, 10), dtype=float)
-    ii = cellprofiler.modules.injectimage.InjectImage("my_image", image)
+    ii = cellprofiler_core.modules.injectimage.InjectImage("my_image", image)
     pipeline = cellprofiler.pipeline.Pipeline()
     measurements = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler.workspace.Workspace(

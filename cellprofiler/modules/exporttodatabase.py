@@ -102,7 +102,7 @@ import cellprofiler
 import cellprofiler.icons
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting

@@ -65,7 +65,7 @@ import cellprofiler_core.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 
-from cellprofiler.modules.loadimages import pathname2url
+from cellprofiler_core.modules.loadimages import pathname2url
 from cellprofiler.modules import identify as I
 
 ###########################################
@@ -314,7 +314,7 @@ supplied by a previous module.
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from cellprofiler.modules.namesandtypes import ObjectsImageProvider
+        from cellprofiler_core.modules.namesandtypes import ObjectsImageProvider
         from bioformats import load_image
 
         with wx.Dialog(None) as dlg:

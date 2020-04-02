@@ -11,7 +11,7 @@ import cellprofiler.gui.help.content
 import cellprofiler.icons
 import cellprofiler_core.module
 import cellprofiler.modules._help
-import cellprofiler.modules.loadimages
+import cellprofiler_core.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.utilities.hdf5_dict
@@ -273,7 +273,7 @@ pass the current filter.
                     )
                 )
         path = os.path.join(*modpath)
-        return cellprofiler.modules.loadimages.pathname2url(path)
+        return cellprofiler_core.modules.loadimages.pathname2url(path)
 
     @staticmethod
     def url_to_modpath(url):

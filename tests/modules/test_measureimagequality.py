@@ -5,10 +5,10 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.identify
-import cellprofiler.modules.loadsingleimage
+import cellprofiler_core.modules.identify
+import cellprofiler_core.modules.loadsingleimage
 import cellprofiler.modules.measureimagequality
-import cellprofiler.modules.namesandtypes
+import cellprofiler_core.modules.namesandtypes
 import cellprofiler.modules.smooth
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -453,10 +453,10 @@ def test_threshold():
         t = q.image_groups[idx].threshold_groups[0]
         t.threshold_method.value = tm
         t.object_fraction.value = object_fraction
-        t.two_class_otsu.value = cellprofiler.modules.identify.O_THREE_CLASS
-        t.assign_middle_to_foreground.value = cellprofiler.modules.identify.O_FOREGROUND
+        t.two_class_otsu.value = cellprofiler_core.modules.identify.O_THREE_CLASS
+        t.assign_middle_to_foreground.value = cellprofiler_core.modules.identify.O_FOREGROUND
         t.use_weighted_variance.value = (
-            cellprofiler.modules.identify.O_WEIGHTED_VARIANCE
+            cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
         )
     q.run(workspace)
     m = workspace.measurements
@@ -641,11 +641,11 @@ def test_load_v3():
     assert group.calculate_threshold
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert round(abs(thr.object_fraction.value - 0.2), 7) == 0
-    assert thr.two_class_otsu == cellprofiler.modules.identify.O_THREE_CLASS
+    assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
     assert (
-        thr.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
-    assert thr.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND
+    assert thr.assign_middle_to_foreground == cellprofiler_core.modules.identify.O_FOREGROUND
 
     group = module.image_groups[1]
     thr = group.threshold_groups[0]
@@ -656,9 +656,9 @@ def test_load_v3():
     assert not group.calculate_threshold
     assert thr.threshold_method == centrosome.threshold.TM_MOG
     assert round(abs(thr.object_fraction.value - 0.3), 7) == 0
-    assert thr.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
-    assert thr.use_weighted_variance == cellprofiler.modules.identify.O_ENTROPY
-    assert thr.assign_middle_to_foreground == cellprofiler.modules.identify.O_BACKGROUND
+    assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
+    assert thr.use_weighted_variance == cellprofiler_core.modules.identify.O_ENTROPY
+    assert thr.assign_middle_to_foreground == cellprofiler_core.modules.identify.O_BACKGROUND
 
 
 def test_load_v4():
@@ -712,9 +712,9 @@ def test_load_v4():
     thr = group.threshold_groups[0]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert (
-        thr.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
-    assert thr.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
+    assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     group = module.image_groups[1]
     assert group.image_names == "Epsilon"
 
@@ -727,16 +727,16 @@ def test_load_v4():
     thr = group.threshold_groups[0]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert (
-        thr.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
-    assert thr.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
+    assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     thr = group.threshold_groups[1]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert (
-        thr.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
-    assert thr.two_class_otsu == cellprofiler.modules.identify.O_THREE_CLASS
-    assert thr.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND
+    assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
+    assert thr.assign_middle_to_foreground == cellprofiler_core.modules.identify.O_FOREGROUND
 
 
 def test_intensity_image():
@@ -841,15 +841,15 @@ def test_images_to_process():
     #
     expected_names = ["foo", "bar"]
     pipeline = cellprofiler.pipeline.Pipeline()
-    module1 = cellprofiler.modules.namesandtypes.NamesAndTypes()
+    module1 = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     module1.set_module_num(1)
-    module1.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    module1.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     module1.add_assignment()
     module1.add_assignment()
     module1.assignments[0].image_name.value = expected_names[0]
     module1.assignments[
         0
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     #
     # TO_DO: issue #652
     #    This test should fail at some later date when we can detect
@@ -859,11 +859,11 @@ def test_images_to_process():
     module1.assignments[
         1
     ].load_as_choice.value = (
-        cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
+        cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
     )
     module1.assignments[
         2
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     pipeline.add_module(module1)
 
     module2 = cellprofiler.modules.smooth.Smooth()

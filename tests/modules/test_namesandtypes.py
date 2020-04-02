@@ -12,7 +12,7 @@ import six
 
 import cellprofiler_core.measurement
 import cellprofiler.modules.createbatchfiles
-import cellprofiler.modules.namesandtypes
+import cellprofiler_core.modules.namesandtypes
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.workspace
@@ -61,14 +61,14 @@ def test_load_v1():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 3
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
-    assert module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    assert isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
+    assert module.assignment_method == cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     assert (
         module.single_load_as_choice
-        == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
+        == cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
     )
     assert module.single_image_provider.value == "PI"
-    assert module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    assert module.matching_choice == cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     assert module.assignments_count.value == 5
     aa = module.assignments
     for assignment, rule, image_name, objects_name, load_as in (
@@ -77,35 +77,35 @@ def test_load_v1():
             'or (metadata does ChannelNumber "0")',
             "DNA",
             "Nuclei",
-            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
         ),
         (
             aa[1],
             'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
             "Actin",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
         ),
         (
             aa[2],
             'or (metadata does ChannelNumber "2")',
             "GFP",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_MASK,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_MASK,
         ),
         (
             aa[3],
             'or (metadata does ChannelNumber "2")',
             "Foo",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS,
         ),
         (
             aa[4],
             'or (metadata does ChannelNumber "2")',
             "Illum",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
         ),
     ):
         assert assignment.rule_filter.value == rule
@@ -127,14 +127,14 @@ def test_load_v2():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 3
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
-    assert module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    assert isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
+    assert module.assignment_method == cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     assert (
         module.single_load_as_choice
-        == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
+        == cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
     )
     assert module.single_image_provider.value == "PI"
-    assert module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    assert module.matching_choice == cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     assert module.assignments_count.value == 5
     aa = module.assignments
     for assignment, rule, image_name, objects_name, load_as in (
@@ -143,35 +143,35 @@ def test_load_v2():
             'or (metadata does ChannelNumber "0")',
             "DNA",
             "Nuclei",
-            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
         ),
         (
             aa[1],
             'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
             "Actin",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
         ),
         (
             aa[2],
             'or (metadata does ChannelNumber "2")',
             "GFP",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_MASK,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_MASK,
         ),
         (
             aa[3],
             'or (metadata does ChannelNumber "2")',
             "Foo",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS,
         ),
         (
             aa[4],
             'or (metadata does ChannelNumber "2")',
             "Illum",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
         ),
     ):
         assert assignment.rule_filter.value == rule
@@ -193,18 +193,18 @@ def test_load_v3():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 3
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
-    assert module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    assert isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
+    assert module.assignment_method == cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     assert (
         module.single_load_as_choice
-        == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
+        == cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
     )
     assert module.single_image_provider.value == "PI"
     assert (
         module.single_rescale
-        == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
+        == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
     )
-    assert module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    assert module.matching_choice == cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     assert module.assignments_count.value == 5
     aa = module.assignments
     for assignment, rule, image_name, objects_name, load_as, rescale in (
@@ -213,40 +213,40 @@ def test_load_v3():
             'or (metadata does ChannelNumber "0")',
             "DNA",
             "Nuclei",
-            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
         ),
         (
             aa[1],
             'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
             "Actin",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
         ),
         (
             aa[2],
             'or (metadata does ChannelNumber "2")',
             "GFP",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_MASK,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_MASK,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
         ),
         (
             aa[3],
             'or (metadata does ChannelNumber "2")',
             "Foo",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
         ),
         (
             aa[4],
             'or (metadata does ChannelNumber "2")',
             "Illum",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
         ),
     ):
         assert assignment.rule_filter.value == rule
@@ -268,18 +268,18 @@ def test_load_v4():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 3
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes)
-    assert module.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    assert isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
+    assert module.assignment_method == cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     assert (
         module.single_load_as_choice
-        == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
+        == cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
     )
     assert module.single_image_provider.value == "PI"
     assert (
         module.single_rescale
-        == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
+        == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
     )
-    assert module.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    assert module.matching_choice == cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     assert module.assignments_count.value == 5
     aa = module.assignments
     for assignment, rule, image_name, objects_name, load_as, rescale in (
@@ -288,40 +288,40 @@ def test_load_v4():
             'or (metadata does ChannelNumber "0")',
             "DNA",
             "Nuclei",
-            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
         ),
         (
             aa[1],
             'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
             "Actin",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
         ),
         (
             aa[2],
             'or (metadata does ChannelNumber "2")',
             "GFP",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_MASK,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_MASK,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
         ),
         (
             aa[3],
             'or (metadata does ChannelNumber "2")',
             "Foo",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
         ),
         (
             aa[4],
             'or (metadata does ChannelNumber "2")',
             "Illum",
             "Cells",
-            cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
         ),
     ):
         assert assignment.rule_filter.value == rule
@@ -331,7 +331,7 @@ def test_load_v4():
         assert assignment.rescale.value == rescale
         assert (
             assignment.manual_rescale.value
-            == cellprofiler.modules.namesandtypes.DEFAULT_MANUAL_RESCALE
+            == cellprofiler_core.modules.namesandtypes.DEFAULT_MANUAL_RESCALE
         )
     assert len(module.single_images) == 0
 
@@ -731,17 +731,17 @@ def make_ipd(url, metadata, series=0, index=0, channel=None):
 
 
 def test_01_all():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_ALL
     n.single_image_provider.value = C0
     data = {C0: [("images/1.jpg", {M0: "1"})]}
     do_teest(n, data, [(cellprofiler_core.measurement.IMAGE_NUMBER,)], [(M0, C0)])
 
 
 def test_one():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.assignments[0].image_name.value = C0
     n.join.build('[{"%s":"%s"}]' % (C0, M0))
     # It should match by order, even if match by metadata and the joiner
@@ -757,9 +757,9 @@ def test_one():
 
 
 def test_match_one_same_key():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -771,9 +771,9 @@ def test_match_one_same_key():
 
 
 def test_match_one_different_key():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -785,9 +785,9 @@ def test_match_one_different_key():
 
 
 def test_match_two_one_key():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -802,9 +802,9 @@ def test_match_two_one_key():
 
 
 def test_match_two_and_two():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -828,9 +828,9 @@ def test_match_two_and_two():
 
 
 def test_01_two_with_same_metadata():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -869,9 +869,9 @@ def test_01_two_with_same_metadata():
 
 
 def test_02_missing():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -906,9 +906,9 @@ def test_02_missing():
 
 
 def test_one_against_all():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -930,10 +930,10 @@ def test_some_against_all():
     joins = [{C0: M0, C1: M1}, {C0: None, C1: M2}]
     for cA, cB in ((C0, C1), (C1, C0)):
         for j0, j1 in ((0, 1), (1, 0)):
-            n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-            n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+            n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+            n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
             n.matching_choice.value = (
-                cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+                cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
             )
             n.add_assignment()
             n.assignments[0].image_name.value = cA
@@ -960,9 +960,9 @@ def test_some_against_all():
 
 
 def test_by_order():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -977,9 +977,9 @@ def test_by_order():
 
 def test_by_order_bad():
     # Regression test of issue #392: columns of different lengths
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -998,9 +998,9 @@ def test_by_order_bad():
 
 
 def test_single_image_by_order():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_ORDER
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -1010,7 +1010,7 @@ def test_single_image_by_order():
     si = n.single_images[0]
     si.image_plane.value = si.image_plane.build(url_root + "/illum.tif")
     si.image_name.value = C2
-    si.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    si.load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     data = {
         C0: [("%s%d" % (C0, i + 1), m) for i, m in enumerate(md([(M0, 2)]))],
         C1: [("%s%d" % (C1, i + 1), m) for i, m in enumerate(md([(M1, 2)]))],
@@ -1036,9 +1036,9 @@ def test_single_image_by_order():
 
 
 def test_single_image_by_metadata():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-    n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
     n.add_assignment()
     n.assignments[0].image_name.value = C0
     n.assignments[1].image_name.value = C1
@@ -1052,7 +1052,7 @@ def test_single_image_by_metadata():
     si = n.single_images[0]
     si.image_plane.value = si.image_plane.build(url_root + "/illum.tif")
     si.image_name.value = C2
-    si.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    si.load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     data = {
         C0: [
             ("%s%s%s" % (C0, m[M0], m[M1]), m)
@@ -1068,9 +1068,9 @@ def test_single_image_by_metadata():
 
 
 def test_prepare_to_create_batch_single():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.module_num = 1
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_ALL
     n.single_image_provider.value = IMAGE_NAME
     m = cellprofiler_core.measurement.Measurements(mode="memory")
     pathnames = ["foo", "fuu"]
@@ -1113,17 +1113,17 @@ def test_prepare_to_create_batch_single():
 
 
 def test_prepare_to_create_batch_multiple():
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.module_num = 1
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     n.add_assignment()
     n.assignments[
         0
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     n.assignments[0].image_name.value = IMAGE_NAME
     n.assignments[
         1
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     n.assignments[1].object_name.value = OBJECTS_NAME
     m = cellprofiler_core.measurement.Measurements(mode="memory")
     pathnames = ["foo", "fuu"]
@@ -1191,19 +1191,19 @@ def test_prepare_to_create_batch_single_image():
     urlnames = ["file:/foo/bar", "http://foo/bar"]
     expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
 
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.module_num = 1
-    n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     n.assignments[
         0
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     n.assignments[0].image_name.value = IMAGE_NAME
     for name, url in zip(si_names, urlnames):
         n.add_single_image()
         si = n.single_images[-1]
         si.image_plane.value = si.image_plane.build(url)
         si.load_as_choice.value = (
-            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+            cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
         )
         si.image_name.value = name
 
@@ -1332,7 +1332,7 @@ def run_workspace(
     index=None,
     channel=None,
     single=False,
-    rescaled=cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+    rescaled=cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
     lsi=[],
     volume=False,
     spacing=None,
@@ -1355,14 +1355,14 @@ def run_workspace(
     """
     if isinstance(rescaled, float):
         manual_rescale = rescaled
-        rescaled = cellprofiler.modules.namesandtypes.INTENSITY_MANUAL
+        rescaled = cellprofiler_core.modules.namesandtypes.INTENSITY_MANUAL
     else:
         manual_rescale = 255.0
-    n = cellprofiler.modules.namesandtypes.NamesAndTypes()
+    n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.assignment_method.value = (
-        cellprofiler.modules.namesandtypes.ASSIGN_ALL
+        cellprofiler_core.modules.namesandtypes.ASSIGN_ALL
         if single
-        else cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        else cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     )
     n.single_image_provider.value = IMAGE_NAME
     n.single_load_as_choice.value = load_as_type
@@ -1382,10 +1382,10 @@ def run_workspace(
     n.module_num = 1
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.add_module(n)
-    url = cellprofiler.modules.loadimages.pathname2url(path)
+    url = cellprofiler_core.modules.loadimages.pathname2url(path)
     pathname, filename = os.path.split(path)
     m = cellprofiler_core.measurement.Measurements()
-    if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
+    if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
         url_feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + OBJECTS_NAME
         path_feature = cellprofiler_core.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         file_feature = cellprofiler_core.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
@@ -1420,11 +1420,11 @@ def run_workspace(
     m.add_measurement(
         cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, 1
     )
-    if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE:
+    if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE:
         stack = "Color"
         if channel is None:
             channel = "INTERLEAVED"
-    elif load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
+    elif load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
         stack = "Objects"
         if channel is None:
             channel = "OBJECT_PLANES"
@@ -1450,9 +1450,9 @@ def run_workspace(
         si.rescale.value = rescaled
         si.manual_rescale.value = manual_rescale
 
-        url = cellprofiler.modules.loadimages.pathname2url(path)
+        url = cellprofiler_core.modules.loadimages.pathname2url(path)
         pathname, filename = os.path.split(path)
-        if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
+        if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
             url_feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + name
             path_feature = cellprofiler_core.measurement.C_OBJECTS_PATH_NAME + "_" + name
             file_feature = cellprofiler_core.measurement.C_OBJECTS_FILE_NAME + "_" + name
@@ -1489,7 +1489,7 @@ def run_workspace(
     blob = javabridge.get_env().get_byte_array_elements(blob)
     m.add_measurement(
         cellprofiler_core.measurement.IMAGE,
-        cellprofiler.modules.namesandtypes.M_IMAGE_SET,
+        cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
         blob,
         data_type=numpy.uint8,
     )
@@ -1509,7 +1509,7 @@ def test_load_color():
     with open(path, "rb") as fd:
         md5 = hashlib.md5(fd.read()).hexdigest()
     workspace = run_workspace(
-        path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
     )
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
@@ -1520,21 +1520,21 @@ def test_load_color():
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_MD5_DIGEST + "_" + IMAGE_NAME,
+            cellprofiler_core.modules.loadimages.C_MD5_DIGEST + "_" + IMAGE_NAME,
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_HEIGHT + "_" + IMAGE_NAME,
+            cellprofiler_core.modules.loadimages.C_HEIGHT + "_" + IMAGE_NAME,
         ]
         == 21
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_WIDTH + "_" + IMAGE_NAME,
+            cellprofiler_core.modules.loadimages.C_WIDTH + "_" + IMAGE_NAME,
         ]
         == 31
     )
@@ -1545,7 +1545,7 @@ def test_load_monochrome_as_color():
     target = bioformats.load_image(path)
     target_shape = (target.shape[0], target.shape[1], 3)
     workspace = run_workspace(
-        path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
     )
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
@@ -1559,7 +1559,7 @@ def test_load_monochrome_as_color():
 def test_load_color_frame():
     path = tests.modules.maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
     workspace = run_workspace(
-        path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, index=3
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, index=3
     )
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
@@ -1580,7 +1580,7 @@ def test_load_monochrome():
     path = get_monochrome_image_path()
     target = bioformats.load_image(path)
     workspace = run_workspace(
-        path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     )
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
@@ -1595,7 +1595,7 @@ def test_load_color_as_monochrome():
         ["ExampleColorToGray"], "nt_03_05_color.tif", shape
     )
     workspace = run_workspace(
-        path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     )
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
@@ -1609,7 +1609,7 @@ def test_load_monochrome_plane():
 
     for i in range(5):
         workspace = run_workspace(
-            path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, index=i
+            path, cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, index=i
         )
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1625,7 +1625,7 @@ def test_load_raw():
     file_name = "1-162hrh2ax2.tif"
     path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
     workspace = run_workspace(
-        path, cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
     )
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
@@ -1639,7 +1639,7 @@ def test_load_mask():
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
     target = bioformats.load_image(path)
-    workspace = run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_MASK)
+    workspace = run_workspace(path, cellprofiler_core.modules.namesandtypes.LOAD_AS_MASK)
     image = workspace.image_set.get_image(IMAGE_NAME)
     pixel_data = image.pixel_data
     assert pixel_data.shape == target.shape
@@ -1653,7 +1653,7 @@ def test_load_objects():
     target = bioformats.load_image(path, rescale=False)
     with open(path, "rb") as fd:
         md5 = hashlib.md5(fd.read()).hexdigest()
-    workspace = run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS)
+    workspace = run_workspace(path, cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS)
     o = workspace.object_set.get_objects(OBJECTS_NAME)
     assert isinstance(o, cellprofiler.object.Objects)
     areas = o.areas
@@ -1665,14 +1665,14 @@ def test_load_objects():
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_MD5_DIGEST + "_" + OBJECTS_NAME,
+            cellprofiler_core.modules.loadimages.C_MD5_DIGEST + "_" + OBJECTS_NAME,
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_WIDTH + "_" + OBJECTS_NAME,
+            cellprofiler_core.modules.loadimages.C_WIDTH + "_" + OBJECTS_NAME,
         ]
         == target.shape[1]
     )
@@ -1688,7 +1688,7 @@ def test_load_overlapped_objects():
     f.close()
     try:
         workspace = run_workspace(
-            path, cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+            path, cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
         )
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert isinstance(o, cellprofiler.object.Objects)
@@ -1717,13 +1717,13 @@ def test_load_rescaled():
     path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
     for single in (True, False):
         for rescaled in (
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
-            cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+            cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
             float(2 ** 17),
         ):
             for load_as in (
-                cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
-                cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+                cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+                cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
             ):
                 workspace = run_workspace(
                     path, load_as, single=single, rescaled=rescaled
@@ -1733,12 +1733,12 @@ def test_load_rescaled():
                 assert numpy.all(pixel_data >= 0)
                 if (
                     rescaled
-                    == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA
+                    == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA
                 ):
                     assert numpy.any(pixel_data > 1.0 / 16.0)
                 elif (
                     rescaled
-                    == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
+                    == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
                 ):
                     assert numpy.all(pixel_data <= 1.0 / 16.0)
                     assert numpy.any(pixel_data > 1.0 / 32.0)
@@ -1757,11 +1757,11 @@ def test_load_single_image():
     target = bioformats.load_image(lsi_path)
     workspace = run_workspace(
         path,
-        cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+        cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
         lsi=[
             {
                 "path": lsi_path,
-                "load_as_type": cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+                "load_as_type": cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
                 "name": "lsi",
             }
         ],
@@ -1783,11 +1783,11 @@ def test_load_single_object():
         md5 = hashlib.md5(fd.read()).hexdigest()
     workspace = run_workspace(
         path,
-        cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+        cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
         lsi=[
             {
                 "path": lsi_path,
-                "load_as_type": cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS,
+                "load_as_type": cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS,
                 "name": "lsi",
             }
         ],
@@ -1803,14 +1803,14 @@ def test_load_single_object():
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_MD5_DIGEST + "_lsi",
+            cellprofiler_core.modules.loadimages.C_MD5_DIGEST + "_lsi",
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.loadimages.C_WIDTH + "_lsi",
+            cellprofiler_core.modules.loadimages.C_WIDTH + "_lsi",
         ]
         == target.shape[1]
     )
@@ -1822,16 +1822,16 @@ def test_get_measurement_columns():
     nts = [
         m
         for m in p.modules()
-        if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        if isinstance(m, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
     ]
     assert len(nts) == 1
     m = nts[0]
-    m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    m.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     m.add_assignment()
     m.assignments[0].image_name.value = IMAGE_NAME
     m.assignments[
         1
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     m.assignments[1].object_name.value = OBJECTS_NAME
 
     columns = m.get_measurement_columns(p)
@@ -1840,10 +1840,10 @@ def test_get_measurement_columns():
         cellprofiler_core.measurement.C_FILE_NAME,
         cellprofiler_core.measurement.C_PATH_NAME,
         cellprofiler_core.measurement.C_URL,
-        cellprofiler.modules.loadimages.C_MD5_DIGEST,
-        cellprofiler.modules.loadimages.C_SCALING,
-        cellprofiler.modules.loadimages.C_HEIGHT,
-        cellprofiler.modules.loadimages.C_WIDTH,
+        cellprofiler_core.modules.loadimages.C_MD5_DIGEST,
+        cellprofiler_core.modules.loadimages.C_SCALING,
+        cellprofiler_core.modules.loadimages.C_HEIGHT,
+        cellprofiler_core.modules.loadimages.C_WIDTH,
         cellprofiler_core.measurement.C_SERIES,
         cellprofiler_core.measurement.C_FRAME,
     ):
@@ -1855,10 +1855,10 @@ def test_get_measurement_columns():
     for ftr in (
         cellprofiler_core.measurement.C_OBJECTS_FILE_NAME,
         cellprofiler_core.measurement.C_OBJECTS_PATH_NAME,
-        cellprofiler.modules.loadimages.C_MD5_DIGEST,
+        cellprofiler_core.modules.loadimages.C_MD5_DIGEST,
         cellprofiler_core.measurement.C_OBJECTS_URL,
-        cellprofiler.modules.loadimages.C_HEIGHT,
-        cellprofiler.modules.loadimages.C_WIDTH,
+        cellprofiler_core.modules.loadimages.C_HEIGHT,
+        cellprofiler_core.modules.loadimages.C_WIDTH,
         cellprofiler_core.measurement.C_OBJECTS_SERIES,
         cellprofiler_core.measurement.C_OBJECTS_FRAME,
         cellprofiler_core.measurement.C_COUNT,
@@ -1881,11 +1881,11 @@ def test_get_categories():
     nts = [
         m
         for m in p.modules()
-        if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        if isinstance(m, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
     ]
     assert len(nts) == 1
     m = nts[0]
-    m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    m.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     m.assignments[0].image_name.value = IMAGE_NAME
     categories = m.get_categories(p, cellprofiler_core.measurement.IMAGE)
     assert not (cellprofiler_core.measurement.C_OBJECTS_FILE_NAME in categories)
@@ -1894,16 +1894,16 @@ def test_get_categories():
     assert cellprofiler_core.measurement.C_FILE_NAME in categories
     assert cellprofiler_core.measurement.C_PATH_NAME in categories
     assert cellprofiler_core.measurement.C_URL in categories
-    assert cellprofiler.modules.loadimages.C_MD5_DIGEST in categories
-    assert cellprofiler.modules.loadimages.C_SCALING in categories
-    assert cellprofiler.modules.loadimages.C_WIDTH in categories
-    assert cellprofiler.modules.loadimages.C_HEIGHT in categories
+    assert cellprofiler_core.modules.loadimages.C_MD5_DIGEST in categories
+    assert cellprofiler_core.modules.loadimages.C_SCALING in categories
+    assert cellprofiler_core.modules.loadimages.C_WIDTH in categories
+    assert cellprofiler_core.modules.loadimages.C_HEIGHT in categories
     assert cellprofiler_core.measurement.C_SERIES in categories
     assert cellprofiler_core.measurement.C_FRAME in categories
     m.add_assignment()
     m.assignments[
         1
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     m.assignments[1].object_name.value = OBJECTS_NAME
     categories = m.get_categories(p, cellprofiler_core.measurement.IMAGE)
     assert cellprofiler_core.measurement.C_OBJECTS_FILE_NAME in categories
@@ -1919,16 +1919,16 @@ def test_get_measurements():
     nts = [
         m
         for m in p.modules()
-        if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        if isinstance(m, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
     ]
     assert len(nts) == 1
     m = nts[0]
-    m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+    m.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     m.assignments[0].image_name.value = IMAGE_NAME
     m.add_assignment()
     m.assignments[
         1
-    ].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     m.assignments[1].object_name.value = OBJECTS_NAME
     for cname in (
         cellprofiler_core.measurement.C_FILE_NAME,
@@ -1950,10 +1950,10 @@ def test_get_measurements():
         assert mnames[0] == OBJECTS_NAME
 
     for cname in (
-        cellprofiler.modules.loadimages.C_MD5_DIGEST,
-        cellprofiler.modules.loadimages.C_SCALING,
-        cellprofiler.modules.loadimages.C_HEIGHT,
-        cellprofiler.modules.loadimages.C_WIDTH,
+        cellprofiler_core.modules.loadimages.C_MD5_DIGEST,
+        cellprofiler_core.modules.loadimages.C_SCALING,
+        cellprofiler_core.modules.loadimages.C_HEIGHT,
+        cellprofiler_core.modules.loadimages.C_WIDTH,
         cellprofiler_core.measurement.C_SERIES,
         cellprofiler_core.measurement.C_FRAME,
     ):
@@ -1981,12 +1981,12 @@ def test_validate_single_channel():
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.init_modules()
     for module in pipeline.modules():
-        if isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes):
+        if isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes):
             module.assignment_method.value = (
-                cellprofiler.modules.namesandtypes.ASSIGN_RULES
+                cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
             )
             module.matching_choice.value = (
-                cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+                cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
             )
             module.assignments[0].image_name.value = IMAGE_NAME
             module.join.build([{IMAGE_NAME: None}])

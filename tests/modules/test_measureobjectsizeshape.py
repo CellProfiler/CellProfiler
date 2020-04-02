@@ -6,7 +6,7 @@ import skimage.io
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.injectimage
+import cellprofiler_core.modules.injectimage
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler.object
 import cellprofiler.pipeline

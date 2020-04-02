@@ -1,7 +1,7 @@
 import io
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.images
+import cellprofiler_core.modules.images
 import cellprofiler.pipeline
 import cellprofiler.workspace
 
@@ -34,8 +34,8 @@ def test_load_v1():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.images.Images)
-    assert module.filter_choice == cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
+    assert isinstance(module, cellprofiler_core.modules.images.Images)
+    assert module.filter_choice == cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
     assert (
         module.filter.value
         == 'or (directory does startwith "foo") (file does contain "bar")'
@@ -47,9 +47,9 @@ def test_load_v2():
         data = fd.read()
 
     for fc, fctext in (
-        (cellprofiler.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
-        (cellprofiler.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
-        (cellprofiler.modules.images.FILTER_CHOICE_NONE, "No filtering"),
+        (cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
+        (cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
+        (cellprofiler_core.modules.images.FILTER_CHOICE_NONE, "No filtering"),
     ):
         pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -60,7 +60,7 @@ def test_load_v2():
         pipeline.load(io.StringIO(data % fctext))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.images.Images)
+        assert isinstance(module, cellprofiler_core.modules.images.Images)
         assert module.filter_choice == fc
         assert (
             module.filter.value
@@ -69,8 +69,8 @@ def test_load_v2():
 
 
 def test_filter_url():
-    module = cellprofiler.modules.images.Images()
-    module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_CUSTOM
+    module = cellprofiler_core.modules.images.Images()
+    module.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
     for url, filter_value, expected in (
         (
             "file:/TestImages/NikonTIF.tif",
@@ -114,8 +114,8 @@ def check(module, url, expected):
 
 
 def test_filter_standard():
-    module = cellprofiler.modules.images.Images()
-    module.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_IMAGES
+    module = cellprofiler_core.modules.images.Images()
+    module.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES
     for url, expected in (
         ("file:/TestImages/NikonTIF.tif", True),
         ("file:/foo/.bar/baz.tif", False),

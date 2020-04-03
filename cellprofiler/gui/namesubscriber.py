@@ -188,15 +188,14 @@ class NameSubscriberListBox(wx.Panel):
 
     def __init__(self, annotation, choices=None, checked=[], name="", nametype="Image"):
         wx.Panel.__init__(self, annotation, name=name)
-        if choices is None:
-            choices = []
+        self.choices = choices
+        if self.choices is None:
+            self.choices = []
         self.checked = checked
-        self.choice_names = self.get_choice_names(choices)
+        self.choice_names = self.get_choice_names()
         self.nametype = nametype
-        self.list_dlg = wx.CheckListBox(
-            self,
-            choices=[self.get_choice_label(choice) for choice in choices],
-        )
+        self.list_dlg = wx.CheckListBox(self)
+        self.SetItems(self.choices)
         self.SetChecked(self.checked)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddStretchSpacer()
@@ -264,21 +263,27 @@ class NameSubscriberListBox(wx.Panel):
         whitespace = " "*max(10, (90 - len(name) - len(end)))
         return "".join((name, whitespace, end))
 
-    def get_choice_names(self, choices):
-        choice_names = [choice[0] for choice in choices]
+    def get_choice_names(self):
+        choice_names = [choice[0] for choice in self.choices]
         if self.checked != 'None':
             for item in self.checked:
                 if item not in choice_names:
-                    choice_names.append(item)
-                    choices.append((item, None, 0, True))
+                    choice_names.insert(0, item)
+                    self.choices.insert(0, (item, None, 0, True))
         return choice_names
 
     def GetItems(self):
         return self.list_dlg.GetItems()
 
     def SetItems(self, choices):
-        self.choice_names = self.get_choice_names(choices)
+        self.choices = choices
+        self.choice_names = self.get_choice_names()
         self.list_dlg.SetItems([self.get_choice_label(choice) for choice in choices])
+        for i in range(len(self.choices)):
+            choice = self.choices[i]
+            if choice[1] is None:
+                # Tag missing items
+                self.list_dlg.SetItemBackgroundColour(i, "pink")
         # on Mac, changing the items clears the current selection
         self.SetChecked(self.checked)
         self.Refresh()

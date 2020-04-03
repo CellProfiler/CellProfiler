@@ -2,6 +2,7 @@
 """namesubscriber.py - implements a combobox with extra information
 """
 
+import platform
 import wx
 
 
@@ -191,16 +192,18 @@ class NameSubscriberListBox(wx.Panel):
         self.choices = choices
         if self.choices is None:
             self.choices = []
+        if platform.system() == "darwin":
+            self.text_width = 50
+        else:
+            self.text_width = 90
         self.checked = checked
         self.choice_names = self.get_choice_names()
         self.nametype = nametype
-        self.list_dlg = wx.CheckListBox(self)
+        self.list_dlg = wx.CheckListBox(self, style=wx.LB_NEEDED_SB | wx.LB_HSCROLL)
         self.SetItems(self.choices)
         self.SetChecked(self.checked)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddStretchSpacer()
-        sizer.Add(self.list_dlg, flag=wx.ALL | wx.EXPAND, border=3)
-        sizer.AddStretchSpacer()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.list_dlg, 0, flag=wx.ALL | wx.EXPAND, border=3)
         self.SetSizer(sizer)
         self.callbacks = []
         self.list_dlg.Bind(wx.EVT_CHECKLISTBOX, self.choice_made)
@@ -260,7 +263,7 @@ class NameSubscriberListBox(wx.Panel):
                 end = "(from %s #%02d)" % (module_name, module_num)
         else:
             end = "(%s Missing!)" % self.nametype
-        whitespace = " "*max(10, (90 - len(name) - len(end)))
+        whitespace = " "*max(10, (self.text_width - len(name) - len(end)))
         return "".join((name, whitespace, end))
 
     def get_choice_names(self):

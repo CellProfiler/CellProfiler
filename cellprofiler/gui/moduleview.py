@@ -517,12 +517,12 @@ class ModuleView(object):
                     )
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, (cellprofiler.setting.ListImageNameSubscriber,
-                                   cellprofiler.setting.ListObjectNameSubscriber)):
+                                    cellprofiler.setting.ListObjectNameSubscriber)):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_list_name_subscriber_control(
                         v, choices, control_name, control
                     )
-                    flag = wx.ALIGN_LEFT
+                    flag = wx.EXPAND
                 elif isinstance(v, cellprofiler.setting.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_name_subscriber_control(
@@ -848,6 +848,7 @@ class ModuleView(object):
             control = namesubscriber.NameSubscriberListBox(
                 self.__module_panel, checked=v.value, choices=choices, name=control_name, nametype=namelabel,
             )
+
             def callback(event, setting=v, control=control):
                 self.__on_checklistbox_change(event, setting, control)
             control.add_callback(callback)

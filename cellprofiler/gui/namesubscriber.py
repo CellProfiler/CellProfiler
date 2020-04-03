@@ -254,17 +254,26 @@ class NameSubscriberListBox(wx.Panel):
         self.Refresh()
         self.checked = self.GetChecked()
 
-    def get_choice_label(self, choice):
-        name, module_name, module_num, is_input_module = choice[:4]
-        if module_name:
-            if is_input_module:
-                end = "(from %s)" % (module_name)
+    def get_choice_labels(self):
+        choice_labels = []
+        for choice in self.choices:
+            name, module_name, module_num, is_input_module = choice[:4]
+            if module_name:
+                if is_input_module:
+                    end = "(from %s)" % module_name
+                else:
+                    end = "(from %s #%02d)" % (module_name, module_num)
             else:
-                end = "(from %s #%02d)" % (module_name, module_num)
-        else:
-            end = "(%s Missing!)" % self.nametype
-        whitespace = " "*max(10, (self.text_width - len(name) - len(end)))
-        return "".join((name, whitespace, end))
+                end = "(%s Missing!)" % self.nametype
+            whitespace = " "*max(10, (self.text_width - len(name) - len(end)))
+            choice_label = "".join((name, whitespace, end))
+            if choice_label in choice_labels:
+                # Name is duplicated
+                end = "(Duplicate %s Name!)" % self.nametype
+                whitespace = " " * max(10, (self.text_width - len(name) - len(end)))
+                choice_label = "".join((name, whitespace, end))
+            choice_labels.append(choice_label)
+        return choice_labels
 
     def get_choice_names(self):
         choice_names = [choice[0] for choice in self.choices]
@@ -281,12 +290,15 @@ class NameSubscriberListBox(wx.Panel):
     def SetItems(self, choices):
         self.choices = choices
         self.choice_names = self.get_choice_names()
-        self.list_dlg.SetItems([self.get_choice_label(choice) for choice in choices])
+        self.list_dlg.SetItems(self.get_choice_labels())
+        labels = self.get_choice_labels()
         for i in range(len(self.choices)):
-            choice = self.choices[i]
-            if choice[1] is None:
+            if self.choices[i][1] is None:
                 # Tag missing items
                 self.list_dlg.SetItemBackgroundColour(i, "pink")
+            elif labels[i].endswith("Name!)"):
+                # Tag duplicated items
+                self.list_dlg.SetItemForegroundColour(i, "grey")
         # on Mac, changing the items clears the current selection
         self.SetChecked(self.checked)
         self.Refresh()

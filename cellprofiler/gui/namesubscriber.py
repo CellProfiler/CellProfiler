@@ -196,13 +196,11 @@ class NameSubscriberListBox(wx.Panel):
         self.list_dlg = wx.CheckListBox(
             self,
             choices=[self.get_choice_label(choice) for choice in choices],
-            style=wx.LB_MULTIPLE,
         )
         self.SetChecked(self.checked)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddStretchSpacer()
-        sizer.Add(self.list_dlg, flag=wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, border=3)
-        sizer.Add((5, 5))
+        sizer.Add(self.list_dlg, flag=wx.ALL | wx.EXPAND, border=3)
         sizer.AddStretchSpacer()
         self.SetSizer(sizer)
         self.callbacks = []

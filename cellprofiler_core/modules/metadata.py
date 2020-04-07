@@ -13,6 +13,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.module
 import cellprofiler_core.modules
+import cellprofiler_core.modules.images as cpmi
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 
@@ -542,9 +543,9 @@ There are two choices:
             cellprofiler_core.setting.Filter(
                 "Select the filtering criteria",
                 [
-                    cellprofiler_core.modules.images.FilePredicate(),
-                    cellprofiler_core.modules.images.DirectoryPredicate(),
-                    cellprofiler_core.modules.images.ExtensionPredicate(),
+                    cpmi.FilePredicate(),
+                    cpmi.DirectoryPredicate(),
+                    cpmi.ExtensionPredicate(),
                 ],
                 'and (file does contain "")',
                 doc="""\

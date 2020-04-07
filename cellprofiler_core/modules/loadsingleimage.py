@@ -103,7 +103,6 @@ from cellprofiler_core.modules.loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST
 from cellprofiler_core.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
 from cellprofiler_core.modules.loadimages import LoadImagesImageProvider, C_SCALING
 from cellprofiler_core.modules.loadimages import convert_image_to_objects, pathname2url
-from cellprofiler_core.setting import YES, NO
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
@@ -167,7 +166,7 @@ typos are avoided.
             "file_name",
             cps.FilenameText(
                 FILE_TEXT,
-                cps.NONE,
+                "None",
                 metadata=True,
                 get_directory_fn=get_directory_fn,
                 exts=[
@@ -262,16 +261,14 @@ microscope might acquire images using a 12-bit A/D converter which
 outputs intensity values between zero and 4095, but stores the values
 in a field that can take values up to 65535.
 
-Select *{YES}* to rescale the image intensity so that saturated values
+Select *Yes* to rescale the image intensity so that saturated values
 are rescaled to 1.0 by dividing all pixels in the image by the maximum
 possible intensity value.
 
-Select *{NO}* to ignore the image metadata and rescale the image to 0 –
+Select *No* to ignore the image metadata and rescale the image to 0 –
 1.0 by dividing by 255 or 65535, depending on the number of bits used to
 store the image.
-""".format(
-                    **{"NO": NO, "YES": YES}
-                ),
+""",
             ),
         )
 
@@ -296,11 +293,9 @@ This is the name for the objects loaded from your image
                 doc="""\
 *(Used only if objects are output)*
 
-Select *{YES}* if you want to save an image of the outlines of the
+Select *Yes* if you want to save an image of the outlines of the
 loaded objects.
-""".format(
-                    **{"YES": YES}
-                ),
+""",
             ),
         )
 

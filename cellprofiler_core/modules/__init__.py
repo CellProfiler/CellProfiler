@@ -14,12 +14,11 @@ import cellprofiler_core.preferences
 logger = logging.getLogger(__name__)
 
 
-def plugin_list():
-    plugin_dir = cellprofiler_core.preferences.get_plugin_directory()
+def plugin_list(plugin_dir):
     if plugin_dir is not None and os.path.isdir(plugin_dir):
         file_list = glob.glob(os.path.join(plugin_dir, "*.py"))
         return [
-            os.path.basename(f)[:-3] for f in file_list if not f.endswith("__init__.py")
+            os.path.basename(f)[:-3] for f in file_list if not f.endswith(("__init__.py", "_help.py"))
         ]
     return []
 
@@ -70,8 +69,15 @@ pymodule_to_cpmodule = {
     "measurementfixture": "MeasurementFixture"
 }
 
-# the builtin CP modules that will be loaded from the cellprofiler.modules directory
-builtin_modules = ["align", "images", "loadimages", "measurementfixture"]
+# the builtin CP modules that will be loaded from the cellprofiler_core.modules directory
+builtin_modules = ["align",
+                   "groups",
+                   "images",
+                   "loadimages",
+                   "loadsingleimage",
+                   "metadata",
+                   "namesandtypes",
+                   ]
 
 all_modules = {}
 svn_revisions = {}
@@ -119,6 +125,7 @@ def fill_modules():
     del datatools[:]
     all_modules.clear()
     svn_revisions.clear()
+    cppath = None
 
     def add_module(mod, check_svn):
         try:
@@ -161,15 +168,32 @@ def fill_modules():
                 del all_modules[name]
                 del pymodules[-1]
 
+    # Import core modules
     for mod in builtin_modules:
         add_module("cellprofiler_core.modules." + mod, True)
 
+    # Import CellProfiler modules if CellProfiler is installed
+    try:
+        import cellprofiler
+        cppath = os.path.join(os.path.dirname(cellprofiler.__file__), 'modules')
+    except ImportError:
+        cellprofiler = None
+        print("No CellProfiler installation detected, only base modules will be loaded")
+    finally:
+        if cppath:
+            old_path = sys.path
+            sys.path.insert(0, cppath)
+            for mod in plugin_list(cppath):
+                add_module(mod, True)
+            sys.path = old_path
+
+    # Find and import plugins
     plugin_directory = cellprofiler_core.preferences.get_plugin_directory()
     if plugin_directory is not None:
         old_path = sys.path
         sys.path.insert(0, plugin_directory)
         try:
-            for mod in plugin_list():
+            for mod in plugin_list(plugin_directory):
                 add_module(mod, False)
         finally:
             sys.path = old_path
@@ -247,7 +271,9 @@ def instantiate_module(module_name):
 
 
 def get_module_names():
-    return list(all_modules.keys())
+    names = list(all_modules.keys())
+    names.sort()
+    return names
 
 
 def get_data_tool_names():

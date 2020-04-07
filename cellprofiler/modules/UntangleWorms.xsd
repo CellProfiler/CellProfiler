@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema
+        targetNamespace="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
+        elementFormDefault="qualified"
+        xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+    <xs:annotation>
+        <xs:appinfo>
+            XML schema for the UntangleWorms training data.
+        </xs:appinfo>
+    </xs:annotation>
+    <xs:element name="training-data" type="training-data-type"/>
+    <xs:complexType name="training-data-type">
+        <xs:sequence>
+            <xs:element name="version" type="xs:positiveInteger">
+                <xs:annotation>
+                    <xs:documentation>The SVN revision of the CellProfiler application that created the training data.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="min-area" type="xs:double">
+                <xs:annotation>
+                    <xs:documentation>The minimum allowed area for a worm.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="max-area" type="xs:double">
+                <xs:annotation>
+                    <xs:documentation>The maximum allowed area for a worm.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cost-threshold" type="xs:double">
+                <xs:annotation>
+                    <xs:documentation>Maximum allowed cost for a worm.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="num-control-points" type="xs:positiveInteger">
+                <xs:annotation>
+                    <xs:documentation>Number of control points to be sampled per worm.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="max-skel-length" type="xs:decimal"/>
+            <xs:element name="min-path-length" type="xs:decimal"/>
+            <xs:element name="max-path-length" type="xs:decimal"/>
+            <xs:element name="median-worm-area" type="xs:decimal"/>
+            <xs:element name="max-radius" type="xs:decimal"/>
+            <xs:element name="overlap-weight" type="xs:decimal"/>
+            <xs:element name="leftover-weight" type="xs:decimal"/>
+            <xs:element name="training-set-size" type="xs:positiveInteger">
+                <xs:annotation>
+                    <xs:documentation>The number of worms analyzed to form the training set.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="mean-angles" type="double-vector">
+                <xs:annotation>
+                    <xs:documentation>The mean angle at each control point.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="radii-from-training" type="double-vector"/>
+            <xs:element name="inv-angles-covariance-matrix" type="double-matrix">
+                <xs:annotation>
+                    <xs:documentation>The inverse covariance matrix of angles and length which is used to score
+                        shapes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="double-vector">
+        <xs:sequence>
+            <xs:element name="value" type="xs:double" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="double-matrix">
+        <xs:sequence>
+            <xs:element name="values" type="double-vector" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

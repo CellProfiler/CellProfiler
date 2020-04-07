@@ -53,7 +53,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler.utilities.legacy
+import cellprofiler_core.utilities.legacy
 import cellprofiler.workspace
 
 logger = logging.getLogger(__name__)
@@ -3755,7 +3755,7 @@ class PipelineController(object):
 
         def feature_cmp(x, y):
             if "_" not in x or "_" not in y:
-                return cellprofiler.utilities.legacy.cmp(x, y)
+                return cellprofiler_core.utilities.legacy.cmp(x, y)
             (cx, fx), (cy, fy) = [z.split("_", 1) for z in (x, y)]
             #
             # For image names, group image file, path and frame consecutively
@@ -3772,16 +3772,16 @@ class PipelineController(object):
                 if not cy_is_file_md:
                     return 1
                 elif fx != fy:
-                    return cellprofiler.utilities.legacy.cmp(fx, fy)
+                    return cellprofiler_core.utilities.legacy.cmp(fx, fy)
                 else:
                     cx_priority, cy_priority = [
                         file_md_order.index(cz) for cz in (cx, cy)
                     ]
-                    return cellprofiler.utilities.legacy.cmp(cx_priority, cy_priority)
+                    return cellprofiler_core.utilities.legacy.cmp(cx_priority, cy_priority)
             elif cy_is_file_md:
                 return -1
             else:
-                return cellprofiler.utilities.legacy.cmp(x, y)
+                return cellprofiler_core.utilities.legacy.cmp(x, y)
 
         m = self.__debug_measurements
         features = sorted(

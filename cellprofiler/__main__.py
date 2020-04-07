@@ -21,8 +21,8 @@ import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
-import cellprofiler.utilities.cpjvm
-import cellprofiler.utilities.hdf5_dict
+import cellprofiler_core.utilities.java
+import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
@@ -174,7 +174,7 @@ def main(args=None):
 
     try:
         if not options.show_gui:
-            cellprofiler.utilities.cpjvm.cp_start_vm()
+            cellprofiler_core.utilities.java.start_java()
 
         if options.image_set_file is not None:
             cellprofiler_core.preferences.set_image_set_file(options.image_set_file)
@@ -248,7 +248,7 @@ def stop_cellprofiler():
     # high memory consumption.
     bioformats.formatreader.clear_image_reader_cache()
 
-    cellprofiler.utilities.cpjvm.cp_stop_vm()
+    cellprofiler_core.utilities.java.stop_java()
 
 
 def parse_args(args):
@@ -798,8 +798,8 @@ def run_pipeline_headless(options, args):
             #
 
             with h5py.File(options.pipeline_filename, "r") as src:
-                if cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(src):
-                    cellprofiler.utilities.hdf5_dict.HDF5FileList.copy(
+                if cellprofiler_core.utilities.hdf5_dict.HDF5FileList.has_file_list(src):
+                    cellprofiler_core.utilities.hdf5_dict.HDF5FileList.copy(
                         src, initial_measurements.hdf5_dict.hdf5_file
                     )
     else:

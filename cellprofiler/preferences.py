@@ -21,7 +21,7 @@ import uuid
 import weakref
 
 import cellprofiler.gui.help.content
-import cellprofiler.utilities.utf16encode
+import cellprofiler_core.utilities.utf16encode
 
 logger = logging.getLogger(__name__)
 

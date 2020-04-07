@@ -100,7 +100,7 @@ import cellprofiler_core.module as cpm
 import cellprofiler_core.object as cpo
 import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting as cps
-import cellprofiler.utilities.legacy
+import cellprofiler_core.utilities.legacy
 from cellprofiler_core.measurement import (
     C_LOCATION,
     C_NUMBER,
@@ -481,7 +481,7 @@ of the straightened worms.""",
                 """Sort by control point number"""
                 acp = int(a.split("_")[-1])
                 bcp = int(b.split("_")[-1])
-                return cellprofiler.utilities.legacy.cmp(acp, bcp)
+                return cellprofiler_core.utilities.legacy.cmp(acp, bcp)
 
             cpx.sort(key=functools.cmp_to_key(sort_fn))
             cpy.sort(key=functools.cmp_to_key(sort_fn))

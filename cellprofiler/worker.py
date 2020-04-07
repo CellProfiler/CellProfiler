@@ -209,9 +209,9 @@ def main():
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
 
     # Start the JVM
-    from cellprofiler.utilities.cpjvm import cp_start_vm, cp_stop_vm
+    from cellprofiler_core.utilities.java import start_java, stop_java
 
-    cp_start_vm()
+    start_java()
 
     deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
     deadman_start_socket.bind(DEADMAN_START_ADDR)
@@ -236,7 +236,7 @@ def main():
     # Shutdown - need to handle some global cleanup here
     #
     try:
-        cp_stop_vm()
+        stop_java()
     except:
         logger.warn("Failed to stop the JVM", exc_info=1)
 

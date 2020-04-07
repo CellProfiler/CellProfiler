@@ -12,7 +12,7 @@ import wx.lib.inspection
 
 import cellprofiler.gui.dialog
 import cellprofiler_core.preferences
-import cellprofiler.utilities.cpjvm
+import cellprofiler_core.utilities.java
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop("workspace_path", None)
 
-        cellprofiler.utilities.cpjvm.cp_start_vm()
+        cellprofiler_core.utilities.java.start_java()
 
         super(App, self).__init__(*args, **kwargs)
 
@@ -90,7 +90,7 @@ class App(wx.App):
         return True
 
     def OnExit(self):
-        cellprofiler.utilities.cpjvm.cp_stop_vm()
+        cellprofiler_core.utilities.java.stop_java()
 
         return 0
 

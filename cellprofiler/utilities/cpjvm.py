@@ -73,7 +73,7 @@ def find_logback_xml():
             return target
 
 
-def cp_start_vm():
+def start_java():
     """Start CellProfiler's JVM via Javabridge
 
     JVM parameters are harvested from preferences and
@@ -124,7 +124,7 @@ def cp_start_vm():
     logger.debug("Enabled Bio-formats directory cacheing")
 
 
-def cp_stop_vm(kill=True):
+def stop_java(kill=True):
     """
     Shut down the Java VM
     """

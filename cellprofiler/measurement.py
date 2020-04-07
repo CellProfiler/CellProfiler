@@ -16,7 +16,7 @@ import six
 from scipy.io.matlab import loadmat
 
 import cellprofiler_core.preferences
-from cellprofiler.utilities.hdf5_dict import (
+from cellprofiler_core.utilities.hdf5_dict import (
     HDF5Dict,
     get_top_level_group,
     VERSION,

@@ -106,7 +106,7 @@ import cellprofiler_core.modules.loadimages
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler.utilities.legacy
+import cellprofiler_core.utilities.legacy
 from cellprofiler.modules import _help
 
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
@@ -5265,12 +5265,12 @@ CP version : %d\n""" % int(
                 elif y[0] == cellprofiler_core.measurement.IMAGE:
                     return 1
                 else:
-                    return cellprofiler.utilities.legacy.cmp(x[0], y[0])
+                    return cellprofiler_core.utilities.legacy.cmp(x[0], y[0])
             if x[1] == M_NUMBER_OBJECT_NUMBER:
                 return -1
             if y[1] == M_NUMBER_OBJECT_NUMBER:
                 return 1
-            return cellprofiler.utilities.legacy.cmp(x[1], y[1])
+            return cellprofiler_core.utilities.legacy.cmp(x[1], y[1])
 
         columns = sorted(columns, key=functools.cmp_to_key(cmpfn))
         #

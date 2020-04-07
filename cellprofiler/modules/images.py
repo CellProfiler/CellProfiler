@@ -14,7 +14,7 @@ import cellprofiler.modules._help
 import cellprofiler_core.modules.loadimages
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
-import cellprofiler.utilities.hdf5_dict
+import cellprofiler_core.utilities.hdf5_dict
 
 from cellprofiler.modules._help import FILTER_RULES_BUTTONS_HELP
 
@@ -278,7 +278,7 @@ pass the current filter.
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
-            schema, rest = cellprofiler.utilities.hdf5_dict.HDF5FileList.split_url(url)
+            schema, rest = cellprofiler_core.utilities.hdf5_dict.HDF5FileList.split_url(url)
             return (
                 [schema]
                 + rest[0:1]

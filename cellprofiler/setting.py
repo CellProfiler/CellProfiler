@@ -13,7 +13,7 @@ import six
 import skimage.morphology
 
 import cellprofiler_core.measurement
-import cellprofiler.utilities.legacy
+import cellprofiler_core.utilities.legacy
 from cellprofiler_core.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
     DEFAULT_OUTPUT_FOLDER_NAME,
@@ -3798,7 +3798,7 @@ class Table(Setting):
 
         def compare_fn(row1, row2):
             for index in indices:
-                x = cellprofiler.utilities.legacy.cmp(row1[index], row2[index])
+                x = cellprofiler_core.utilities.legacy.cmp(row1[index], row2[index])
                 if x != 0:
                     return x
             return 0
@@ -4117,7 +4117,7 @@ class NumberConnector(object):
         return float(self.__fn())
 
     def __cmp__(self, other):
-        return cellprofiler.utilities.legacy.cmp(self.__fn(), other)
+        return cellprofiler_core.utilities.legacy.cmp(self.__fn(), other)
 
     def __hash__(self):
         return self.__fn().__hash__()

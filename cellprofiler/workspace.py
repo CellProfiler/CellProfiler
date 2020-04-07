@@ -7,7 +7,7 @@ import six.moves
 
 import h5py
 
-import cellprofiler.utilities.hdf5_dict
+import cellprofiler_core.utilities.hdf5_dict
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +39,9 @@ def is_workspace_file(path):
         return False
     h5file = h5py.File(path, mode="r")
     try:
-        if not cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(h5file):
+        if not cellprofiler_core.utilities.hdf5_dict.HDF5FileList.has_file_list(h5file):
             return False
-        return cellprofiler.utilities.hdf5_dict.HDF5Dict.has_hdf5_dict(h5file)
+        return cellprofiler_core.utilities.hdf5_dict.HDF5Dict.has_hdf5_dict(h5file)
     finally:
         h5file.close()
 
@@ -100,7 +100,7 @@ class Workspace(object):
         self.__loading = False
         if measurements is not None:
             self.set_file_list(
-                cellprofiler.utilities.hdf5_dict.HDF5FileList(
+                cellprofiler_core.utilities.hdf5_dict.HDF5FileList(
                     measurements.hdf5_dict.hdf5_file
                 )
             )
@@ -406,7 +406,7 @@ class Workspace(object):
                 self.__file_list.remove_notification_callback(
                     self.__on_file_list_changed
                 )
-            self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(
+            self.__file_list = cellprofiler_core.utilities.hdf5_dict.HDF5FileList(
                 self.measurements.hdf5_dict.hdf5_file
             )
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
@@ -465,7 +465,7 @@ class Workspace(object):
         os.close(fd)
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(self.__on_file_list_changed)
-        self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(
+        self.__file_list = cellprofiler_core.utilities.hdf5_dict.HDF5FileList(
             self.measurements.hdf5_dict.hdf5_file
         )
         self.__file_list.add_notification_callback(self.__on_file_list_changed)

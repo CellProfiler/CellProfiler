@@ -33,8 +33,8 @@ import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler.utilities.legacy
-import cellprofiler.utilities.utf16encode
+import cellprofiler_core.utilities.legacy
+import cellprofiler_core.utilities.utf16encode
 import cellprofiler.workspace
 
 install_aliases()
@@ -269,7 +269,7 @@ def map_feature_names(feature_names, max_size=63):
             if len(a) < len(b)
             else 1
             if len(b) < len(a)
-            else cellprofiler.utilities.legacy.cmp(a, b)
+            else cellprofiler_core.utilities.legacy.cmp(a, b)
         )
 
     for feature_name in sorted(feature_names, shortest_first):
@@ -1790,7 +1790,7 @@ class Pipeline(object):
             #
             # Need file list in order to call prepare_run
             #
-            from cellprofiler.utilities.hdf5_dict import HDF5FileList
+            from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
 
             src = initial_measurements.hdf5_dict.hdf5_file
             dest = measurements.hdf5_dict.hdf5_file
@@ -4051,7 +4051,7 @@ def find_image_plane_details(exemplar, ipds):
     Returns the match or None if not found
     """
     pos = bisect.bisect_left(ipds, exemplar)
-    if pos == len(ipds) or cellprofiler.utilities.legacy.cmp(ipds[pos], exemplar):
+    if pos == len(ipds) or cellprofiler_core.utilities.legacy.cmp(ipds[pos], exemplar):
         return None
     return ipds[pos]
 

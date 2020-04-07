@@ -6,8 +6,8 @@ import scipy.ndimage as scind
 
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 from cellprofiler_core.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules import _help
 from cellprofiler_core.modules.identify import add_object_count_measurements

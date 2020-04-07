@@ -28,7 +28,7 @@ import skimage.morphology
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 
 class FillObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
@@ -41,13 +41,13 @@ class FillObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     def create_settings(self):
         super(FillObjects, self).create_settings()
 
-        self.size = cellprofiler.setting.Float(
+        self.size = cellprofiler_core.setting.Float(
             text="Minimum hole size",
             value=64.0,
             doc="Holes smaller than this diameter will be filled.",
         )
 
-        self.planewise = cellprofiler.setting.Binary(
+        self.planewise = cellprofiler_core.setting.Binary(
             text="Planewise fill",
             value=False,
             doc="""\
@@ -58,7 +58,7 @@ This may be helpful for removing seed artifacts that
 are the result of segmentation.
 **Note**: Planewise operations will be considerably slower.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 

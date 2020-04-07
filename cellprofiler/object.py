@@ -6,7 +6,7 @@ import scipy.ndimage
 import scipy.sparse
 import skimage.color
 
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 OBJECT_TYPE_NAME = "objects"
 
@@ -167,7 +167,7 @@ def overlay_labels(pixel_data, labels, opacity=0.7, max_label=None, seed=None):
 
 def _colors(labels, max_label=None, seed=None):
     mappable = matplotlib.cm.ScalarMappable(
-        cmap=matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        cmap=matplotlib.cm.get_cmap(cellprofiler_core.preferences.get_default_colormap())
     )
 
     colors = mappable.to_rgba(
@@ -997,7 +997,7 @@ class ObjectSet(object):
     def add_objects(self, objects, name):
         assert isinstance(
             objects, Objects
-        ), "objects must be an instance of CellProfiler.Objects"
+        ), "objects must be an instance of cellprofiler_core.objects"
         assert (
             name not in list(self.__objects_by_name.keys())
         ) or self.__can_overwrite, (

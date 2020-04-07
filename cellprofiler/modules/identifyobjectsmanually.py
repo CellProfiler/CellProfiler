@@ -41,8 +41,8 @@ See also
 
 import numpy as np
 
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 from cellprofiler.modules import identify as I
 
 TOOL_OUTLINE = "Outline"

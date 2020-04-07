@@ -18,10 +18,10 @@ import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.images
-import cellprofiler.pipeline
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.pipeline
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 import cellprofiler.utilities.legacy
 
 """Table column displays metadata"""
@@ -249,7 +249,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         column = self.columns[col]
         if (
             column.channel_type
-            == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
+            == cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
         ):
             feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + column.channel
         else:
@@ -479,7 +479,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 parent=self,
             )
         else:
-            cellprofiler.preferences.report_progress(
+            cellprofiler_core.preferences.report_progress(
                 "ImageSetCount", None, "Found %d image sets" % n_imagesets
             )
         self.recompute()
@@ -688,27 +688,27 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
                     self.monochrome_channel_image,
                     "Treat the image as monochrome, averaging colors if needed",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
                     self.color_channel_image,
                     "Treat the image as color. Use ColorToGray to get individual colors",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
                     self.mask_image,
                     "Treat the image as a binary mask",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
                     self.objects_image,
                     "Treat the image as objects",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
                     self.illumination_function_image,
                     "Use the image for illumination correction",
                 ),
@@ -1564,7 +1564,7 @@ class FilterPanelDlg(wx.Dialog):
         from cellprofiler_core.modules.images import FilePredicate, DirectoryPredicate
         from cellprofiler_core.modules.images import ExtensionPredicate
 
-        self.filter_setting = cellprofiler.setting.Filter(
+        self.filter_setting = cellprofiler_core.setting.Filter(
             "Filter",
             predicates=[FilePredicate(), DirectoryPredicate(), ExtensionPredicate()],
             value='and (file does contain "")',
@@ -1582,7 +1582,7 @@ class FilterPanelDlg(wx.Dialog):
         """A filter function that applies the current filter to a URL"""
         modpath = cellprofiler_core.modules.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
-            (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None)
+            (cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None)
         )
 
     def on_value_change(self, setting, panel, new_text, event, timeout):

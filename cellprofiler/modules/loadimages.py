@@ -87,10 +87,10 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.misc
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 from cellprofiler.modules import identify, images
 
@@ -481,7 +481,7 @@ class LoadImages(cellprofiler_core.module.Module):
 
     def create_settings(self):
         # Settings
-        self.file_types = cellprofiler.setting.Choice(
+        self.file_types = cellprofiler_core.setting.Choice(
             "File type to be loaded",
             FF,
             doc="""\
@@ -523,7 +523,7 @@ objects across timepoints.
             ),
         )
 
-        self.match_method = cellprofiler.setting.Choice(
+        self.match_method = cellprofiler_core.setting.Choice(
             "File selection method",
             [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],
             doc="""\
@@ -554,7 +554,7 @@ Three options are available:
             ),
         )
 
-        self.exclude = cellprofiler.setting.Binary(
+        self.exclude = cellprofiler_core.setting.Binary(
             "Exclude certain files?",
             False,
             doc="""\
@@ -565,13 +565,13 @@ files that you want to exclude from analysis (such as thumbnails created
 by an imaging system). Select *{YES}* to enter text to match against
 such files for exclusion.
 """.format(
-                **{"MS_EXACT_MATCH": MS_EXACT_MATCH, "YES": cellprofiler.setting.YES}
+                **{"MS_EXACT_MATCH": MS_EXACT_MATCH, "YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.match_exclude = cellprofiler.setting.Text(
+        self.match_exclude = cellprofiler_core.setting.Text(
             "Type the text that the excluded images have in common",
-            cellprofiler.setting.DO_NOT_USE,
+            cellprofiler_core.setting.DO_NOT_USE,
             doc="""\
 *(Used only if file exclusion is selected)*
 
@@ -581,7 +581,7 @@ expression.
 """,
         )
 
-        self.order_group_size = cellprofiler.setting.Integer(
+        self.order_group_size = cellprofiler_core.setting.Integer(
             "Number of images in each group?",
             3,
             doc="""\
@@ -593,7 +593,7 @@ the number of images that in each group would be 3.
 """,
         )
 
-        self.descend_subdirectories = cellprofiler.setting.Choice(
+        self.descend_subdirectories = cellprofiler_core.setting.Choice(
             "Analyze all subfolders within the selected folder?",
             [SUB_NONE, SUB_ALL, SUB_SOME],
             doc="""\
@@ -611,14 +611,14 @@ well:
         )
 
         # Location settings
-        self.location = cellprofiler.setting.DirectoryPath(
+        self.location = cellprofiler_core.setting.DirectoryPath(
             "Input image file location",
             dir_choices=[
-                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
             ],
             allow_metadata=False,
             doc="Select the folder containing the images to be loaded. {IO_FOLDER_CHOICE_HELP_TEXT}".format(
@@ -626,7 +626,7 @@ well:
             ),
         )
 
-        self.subdirectory_filter = cellprofiler.setting.SubdirectoryFilter(
+        self.subdirectory_filter = cellprofiler_core.setting.SubdirectoryFilter(
             "Select subfolders to analyze",
             directory_path=self.location,
             doc="""\
@@ -637,7 +637,7 @@ of the associated folders.
 """,
         )
 
-        self.check_images = cellprofiler.setting.Binary(
+        self.check_images = cellprofiler_core.setting.Binary(
             "Check image sets for unmatched or duplicate files?",
             True,
             doc="""\
@@ -650,11 +650,11 @@ create a duplicate as a correction or may miss an image entirely. See
 the *Extract metadata from where?* setting for more details on
 obtaining, extracting, and using metadata tags.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.group_by_metadata = cellprofiler.setting.Binary(
+        self.group_by_metadata = cellprofiler_core.setting.Binary(
             "Group images by metadata?",
             False,
             doc="""\
@@ -674,13 +674,13 @@ AVIs, ZVIs), each movie is already treated as a group of images, so
 there is no need to enable here.
 """.format(
                 **{
-                    "YES": cellprofiler.setting.YES,
+                    "YES": cellprofiler_core.setting.YES,
                     "USING_METADATA_GROUPING_HELP_REF": _help.USING_METADATA_GROUPING_HELP_REF,
                 }
             ),
         )
 
-        self.metadata_fields = cellprofiler.setting.MultiChoice(
+        self.metadata_fields = cellprofiler_core.setting.MultiChoice(
             "Specify metadata fields to group by",
             [],
             doc="""\
@@ -696,18 +696,18 @@ pair of fields.""",
         # Add the first image to the images list
         self.images = []
         self.add_imagecb(False)
-        self.image_count = cellprofiler.setting.HiddenCount(
+        self.image_count = cellprofiler_core.setting.HiddenCount(
             self.images, text="Image count"
         )
 
         # Add another image
-        self.add_image = cellprofiler.setting.DoSomething(
+        self.add_image = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_imagecb
         )
 
     def add_imagecb(self, can_remove=True):
         """Adds another image to the settings"""
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         def example_file_fn(path=None):
             """Get an example file for use in the file metadata regexp editor"""
@@ -768,10 +768,10 @@ pair of fields.""",
 
         img_index = len(self.images)
         self.images.append(group)
-        group.append("divider", cellprofiler.setting.Divider(line=True))
+        group.append("divider", cellprofiler_core.setting.Divider(line=True))
         group.append(
             "common_text",
-            cellprofiler.setting.Text(
+            cellprofiler_core.setting.Text(
                 "Text that these images have in common (case-sensitive)",
                 "",
                 doc="""\
@@ -791,7 +791,7 @@ information on regular expressions.
 
         group.append(
             "order_position",
-            cellprofiler.setting.Integer(
+            cellprofiler_core.setting.Integer(
                 "Position of this image in each group",
                 img_index + 1,
                 minval=1,
@@ -807,7 +807,7 @@ on, the DAPI channel would occupy position 1.
 
         group.append(
             "metadata_choice",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Extract metadata from where?",
                 [M_NONE, M_FILE_NAME, M_PATH, M_BOTH],
                 doc="""\
@@ -822,7 +822,7 @@ simply used as additional columns in the exported measurements (see the
 
         group.append(
             "file_metadata",
-            cellprofiler.setting.RegexpText(
+            cellprofiler_core.setting.RegexpText(
                 "Regular expression that finds metadata in the file name",
                 "^(?P.*)_(?P[A-P][0-9]{2})_s(?P[0-9])",
                 get_example_fn=example_file_fn,
@@ -903,11 +903,11 @@ the standard well nomenclature.
 
         group.append(
             "path_metadata",
-            cellprofiler.setting.RegexpText(
+            cellprofiler_core.setting.RegexpText(
                 "Type the regular expression that finds metadata in the subfolder path",
                 ".\*[\\\/](?P.\*)[\\\/](?P.\*)$",
                 get_example_fn=example_path_fn,
-                guess=cellprofiler.setting.RegexpText.GUESS_FOLDER,
+                guess=cellprofiler_core.setting.RegexpText.GUESS_FOLDER,
                 doc="""\
 *(Used only if you want to extract metadata from the path)*
 
@@ -953,7 +953,7 @@ the plate, well, and site in the fields *Date* and *Run*:
 
         group.append(
             "wants_movie_frame_grouping",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 "Group the movie frames?",
                 False,
                 doc="""\
@@ -972,14 +972,14 @@ grouping, first specify how the channels are grouped (interleaving and
 number of channels per group), then assign image names to each of the
 channels individually.
 """.format(
-                    **{"YES": cellprofiler.setting.YES}
+                    **{"YES": cellprofiler_core.setting.YES}
                 ),
             ),
         )
 
         group.append(
             "interleaving",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Grouping method",
                 [I_INTERLEAVED, I_SEPARATED],
                 doc="""\
@@ -1039,7 +1039,7 @@ between the two methods.""",
 
         group.append(
             "channels_per_group",
-            cellprofiler.setting.Integer(
+            cellprofiler_core.setting.Integer(
                 "Number of channels per group",
                 3,
                 minval=2,
@@ -1066,7 +1066,7 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3.""",
         group.channels = []
         group.append(
             "channel_count",
-            cellprofiler.setting.HiddenCount(group.channels, "Channel count"),
+            cellprofiler_core.setting.HiddenCount(group.channels, "Channel count"),
         )
 
         def add_channel(can_remove=True):
@@ -1076,7 +1076,7 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3.""",
 
         group.append(
             "add_channel_button",
-            cellprofiler.setting.DoSomething(
+            cellprofiler_core.setting.DoSomething(
                 "Add another channel", "Add channel", add_channel
             ),
         )
@@ -1085,7 +1085,7 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3.""",
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image", self.images, group
                 ),
             )
@@ -1097,7 +1097,7 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3.""",
         can_remove - true if we are allowed to remove this channel
         """
 
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         image_settings.channels.append(group)
         img_index = 0
         for ii in self.images:
@@ -1108,7 +1108,7 @@ channel 1, 5 through 8 to channel 2 and 9 through 12 to channel 3.""",
 
         group.append(
             "image_object_choice",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Load the input as images or objects?",
                 IO_ALL,
                 doc="""\
@@ -1136,7 +1136,7 @@ segmentation results (i.e., objects):
 
         group.append(
             "image_name",
-            cellprofiler.setting.FileImageNameProvider(
+            cellprofiler_core.setting.FileImageNameProvider(
                 "Name this loaded image",
                 default_cpimage_name(img_index),
                 doc="""\
@@ -1165,7 +1165,7 @@ mind:
 
         group.append(
             "object_name",
-            cellprofiler.setting.ObjectNameProvider(
+            cellprofiler_core.setting.ObjectNameProvider(
                 "Name this loaded object",
                 "Nuclei",
                 doc="""\
@@ -1178,7 +1178,7 @@ This is the name for the objects loaded from your image
 
         group.append(
             "wants_outlines",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 "Retain outlines of loaded objects?",
                 False,
                 doc="""\
@@ -1187,14 +1187,14 @@ This is the name for the objects loaded from your image
 Select *{YES}* if you want to create an image of the outlines of the
 loaded objects.
 """.format(
-                    **{"YES": cellprofiler.setting.YES}
+                    **{"YES": cellprofiler_core.setting.YES}
                 ),
             ),
         )
 
         group.append(
             "outlines_name",
-            cellprofiler.setting.OutlineNameProvider(
+            cellprofiler_core.setting.OutlineNameProvider(
                 "Name the outline image",
                 "LoadedImageOutlines",
                 doc="""\
@@ -1218,7 +1218,7 @@ then save them with the **SaveImages** module.""",
 
         group.append(
             "channel_number",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Channel number",
                 channels,
                 channels[len(image_settings.channels) - 1],
@@ -1236,7 +1236,7 @@ with the above image name.
 
         group.append(
             "rescale",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 "Rescale intensities?",
                 True,
                 doc="""\
@@ -1255,7 +1255,7 @@ Select *{NO}* to ignore the image metadata and rescale the image to 0
 – 1.0 by dividing by 255 or 65535, depending on the number of bits used
 to store the image.
 """.format(
-                    **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                    **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
                 ),
             ),
         )
@@ -1264,7 +1264,7 @@ to store the image.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "Remove this channel",
                     "Remove channel",
                     image_settings.channels,
@@ -1424,7 +1424,7 @@ to store the image.
         if self.match_method == MS_EXACT_MATCH:
             for image_group in self.images:
                 if len(image_group.common_text.value) == 0:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "The matching text is blank. This would match all images.\n"
                         "Use regular expressions to match with a matching\n"
                         'expression of ".*" if this is the desired behavior.',
@@ -1436,7 +1436,7 @@ to store the image.
 
         # Check that user has selected fields for grouping if grouping is turned on
         if self.group_by_metadata.value and (len(self.metadata_fields.selections) == 0):
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "Group images by metadata is True, but no metadata "
                 "fields have been chosen for grouping.",
                 self.metadata_fields,
@@ -1455,7 +1455,7 @@ to store the image.
                     if not re.match(
                         invalid_chars_pattern, fd.channels[0].image_name.value
                     ):
-                        raise cellprofiler.setting.ValidationError(
+                        raise cellprofiler_core.setting.ValidationError(
                             warning_text, fd.channels[0].image_name
                         )
             else:
@@ -1464,7 +1464,7 @@ to store the image.
                         if not re.match(
                             invalid_chars_pattern, fd.channels[0].image_name.value
                         ):
-                            raise cellprofiler.setting.ValidationError(
+                            raise cellprofiler_core.setting.ValidationError(
                                 warning_text, channel.image_name
                             )
 
@@ -1475,7 +1475,7 @@ to store the image.
             if id(module) == id(self):
                 return
             if isinstance(module, LoadData):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Your pipeline has a LoadImages and LoadData module.\n"
                     "The best practice is to have only a single LoadImages\n"
                     "or LoadData module. This LoadImages module will match its\n"
@@ -1486,7 +1486,7 @@ to store the image.
                     self.add_image,
                 )
             if isinstance(module, LoadImages):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Your pipeline has two or more LoadImages modules.\n"
                     "The best practice is to have only one LoadImages module.\n"
                     "Consider loading all of your images using a single\n"
@@ -1703,12 +1703,12 @@ to store the image.
         def upgrade_3_to_4(setting_values):
             """Added text exclusion at slot # 10"""
             new_values = list(setting_values)
-            new_values.insert(10, cellprofiler.setting.DO_NOT_USE)
+            new_values.insert(10, cellprofiler_core.setting.DO_NOT_USE)
             return new_values, 4
 
         def upgrade_4_to_5(setting_values):
             new_values = list(setting_values)
-            new_values.append(cellprofiler.setting.NO)
+            new_values.append(cellprofiler_core.setting.NO)
             return new_values, 5
 
         def upgrade_5_to_new_1(setting_values):
@@ -1716,16 +1716,16 @@ to store the image.
             loc = setting_values[13]
             custom_path = loc
             if loc == ".":
-                dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+                dir_choice = cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
             elif loc == "&":
-                dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+                dir_choice = cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
             elif loc.startswith("."):
-                dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
             elif loc.startswith("&"):
-                dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                 custom_path = "." + loc[1:]
             else:
-                dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
 
             new_values = [
                 setting_values[11],  # file_types
@@ -1742,8 +1742,8 @@ to store the image.
                 text_to_find = setting_values[i * 2 + 1]
                 image_name = setting_values[i * 2 + 2]
                 if (
-                    text_to_find == cellprofiler.setting.DO_NOT_USE
-                    or image_name == cellprofiler.setting.DO_NOT_USE
+                    text_to_find == cellprofiler_core.setting.DO_NOT_USE
+                    or image_name == cellprofiler_core.setting.DO_NOT_USE
                     or text_to_find == "/"
                     or image_name == "/"
                     or text_to_find == "\\"
@@ -1759,7 +1759,7 @@ to store the image.
         def upgrade_new_1_to_2(setting_values):
             """Add the metadata slots to the images"""
             new_values = list(setting_values[: self.SLOT_FIRST_IMAGE_V1])
-            new_values.append(cellprofiler.setting.NO)  # Group by metadata is off
+            new_values.append(cellprofiler_core.setting.NO)  # Group by metadata is off
             for i in range(
                 (len(setting_values) - self.SLOT_FIRST_IMAGE_V1)
                 / self.SLOT_IMAGE_FIELD_COUNT_V1
@@ -1771,8 +1771,8 @@ to store the image.
                         setting_values[off + 1],
                         setting_values[off + 2],
                         M_NONE,
-                        cellprofiler.setting.NONE,
-                        cellprofiler.setting.NONE,
+                        cellprofiler_core.setting.NONE,
+                        cellprofiler_core.setting.NONE,
                     ]
                 )
             return new_values, 2
@@ -1782,11 +1782,11 @@ to store the image.
             new_values = list(setting_values[: self.SLOT_FIRST_IMAGE_V2])
             if (
                 setting_values[self.SLOT_MATCH_EXCLUDE]
-                == cellprofiler.setting.DO_NOT_USE
+                == cellprofiler_core.setting.DO_NOT_USE
             ):
-                new_values += [cellprofiler.setting.NO]
+                new_values += [cellprofiler_core.setting.NO]
             else:
-                new_values += [cellprofiler.setting.YES]
+                new_values += [cellprofiler_core.setting.YES]
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V2 :]
             return new_values, 3
 
@@ -1799,18 +1799,18 @@ to store the image.
 
         def upgrade_new_4_to_5(setting_values):
             """Combine the location and custom location values"""
-            setting_values = cellprofiler.setting.standardize_default_folder_names(
+            setting_values = cellprofiler_core.setting.standardize_default_folder_names(
                 setting_values, self.SLOT_LOCATION
             )
             custom_location = setting_values[self.SLOT_LOCATION + 1]
             location = setting_values[self.SLOT_LOCATION]
-            if location == cellprofiler.preferences.ABSOLUTE_FOLDER_NAME:
+            if location == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME:
                 if custom_location.startswith("."):
-                    location = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                    location = cellprofiler_core.setting.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif custom_location.startswith("&"):
-                    location = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    location = cellprofiler_core.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     custom_location = "." + custom_location[1:]
-            location = cellprofiler.setting.DirectoryPath.static_join_string(
+            location = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 location, custom_location
             )
             setting_values = (
@@ -1851,7 +1851,7 @@ to store the image.
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V6 :]
             for i in range(image_count):
                 new_values += setting_values[: self.SLOT_IMAGE_FIELD_COUNT_V5]
-                new_values += [cellprofiler.setting.NO, I_INTERLEAVED, "2"]
+                new_values += [cellprofiler_core.setting.NO, I_INTERLEAVED, "2"]
                 channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V6])
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5 :]
                 channel_field_count = self.SLOT_CHANNEL_FIELD_COUNT_V6 * channel_count
@@ -1870,7 +1870,7 @@ to store the image.
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V7 :]
                 for j in range(channel_count):
                     new_values += setting_values[: self.SLOT_CHANNEL_FIELD_COUNT_V7] + [
-                        cellprofiler.setting.YES
+                        cellprofiler_core.setting.YES
                     ]
                     setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V7 :]
             return new_values, 8
@@ -1910,7 +1910,7 @@ to store the image.
                 for j in range(channel_count):
                     new_values += (
                         setting_values[: self.SLOT_OFFSET_OBJECT_NAME_V9]
-                        + [cellprofiler.setting.NO, "NucleiOutlines"]
+                        + [cellprofiler_core.setting.NO, "NucleiOutlines"]
                         + setting_values[
                             self.SLOT_OFFSET_OBJECT_NAME_V9 : self.SLOT_CHANNEL_FIELD_COUNT_V9
                         ]
@@ -1925,7 +1925,7 @@ to store the image.
                 + [""]
                 + setting_values[self.SLOT_IMAGE_COUNT_V10 :]
             )
-            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cellprofiler.setting.YES:
+            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cellprofiler_core.setting.YES:
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_ALL
             else:
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
@@ -1999,7 +1999,7 @@ to store the image.
         # Standardize input/output directory name references
         setting_values[
             self.SLOT_LOCATION
-        ] = cellprofiler.setting.DirectoryPath.upgrade_setting(
+        ] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
             setting_values[self.SLOT_LOCATION]
         )
         # Upgrade the file type slot
@@ -3034,7 +3034,7 @@ to store the image.
                             pixel_data.shape[:2],
                             filename,
                         )
-                        if cellprofiler.preferences.get_headless():
+                        if cellprofiler_core.preferences.get_headless():
                             print(warning)
                         elif self.show_window:
                             workspace.display_data.warning = warning
@@ -3085,10 +3085,10 @@ to store the image.
                         )
                         if ijv.shape[0] > 0:
                             offset = numpy.max(ijv[:, 2])
-                    o = cellprofiler.object.Objects()
+                    o = cellprofiler_core.object.Objects()
                     o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
-                    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+                    assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
                     object_name = channel.object_name.value
                     object_set.add_objects(o, object_name)
                     provider.release_memory()
@@ -3536,7 +3536,7 @@ to store the image.
         elif not is_image(filename):
             return False
         if (
-            (self.text_to_exclude() != cellprofiler.setting.DO_NOT_USE)
+            (self.text_to_exclude() != cellprofiler_core.setting.DO_NOT_USE)
             and self.exclude
             and (filename.find(self.text_to_exclude()) >= 0)
         ):
@@ -3913,14 +3913,14 @@ to store the image.
                     name = assignment.object_name.value = channel.object_name.value
                     assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_OBJECTS
                 rfilter = assignment.rule_filter
-                assert isinstance(rfilter, cellprofiler.setting.Filter)
-                structure = [cellprofiler.setting.Filter.AND_PREDICATE]
+                assert isinstance(rfilter, cellprofiler_core.setting.Filter)
+                structure = [cellprofiler_core.setting.Filter.AND_PREDICATE]
                 fp = images.FilePredicate()
                 fp_does, fp_does_not = [
                     [d for d in fp.subpredicates if isinstance(d, c)][0]
                     for c in (
-                        cellprofiler.setting.Filter.DoesPredicate,
-                        cellprofiler.setting.Filter.DoesNotPredicate,
+                        cellprofiler_core.setting.Filter.DoesPredicate,
+                        cellprofiler_core.setting.Filter.DoesNotPredicate,
                     )
                 ]
                 if self.exclude:
@@ -3931,7 +3931,7 @@ to store the image.
                         [
                             fp,
                             fp_does_not,
-                            cellprofiler.setting.Filter.CONTAINS_PREDICATE,
+                            cellprofiler_core.setting.Filter.CONTAINS_PREDICATE,
                             self.match_exclude.value,
                         ]
                     )
@@ -3940,7 +3940,7 @@ to store the image.
                         [
                             fp,
                             fp_does,
-                            cellprofiler.setting.Filter.CONTAINS_PREDICATE,
+                            cellprofiler_core.setting.Filter.CONTAINS_PREDICATE,
                             group.common_text.value,
                         ]
                     )
@@ -3949,7 +3949,7 @@ to store the image.
                         [
                             fp,
                             fp_does,
-                            cellprofiler.setting.Filter.CONTAINS_REGEXP_PREDICATE,
+                            cellprofiler_core.setting.Filter.CONTAINS_REGEXP_PREDICATE,
                             group.common_text.value,
                         ]
                     )
@@ -4254,7 +4254,7 @@ class LoadImagesImageProvider(cellprofiler_core.image.AbstractImageProvider):
             # urlretrieve uses the suffix of the path component of the URL
             # to name the temporary file, so we replicate that behavior
             #
-            temp_dir = cellprofiler.preferences.get_temporary_directory()
+            temp_dir = cellprofiler_core.preferences.get_temporary_directory()
             tempfd, temppath = tempfile.mkstemp(suffix=".npy", dir=temp_dir)
             self.__cached_file = temppath
             try:

@@ -34,7 +34,7 @@ from centrosome.otsu import otsu3
 
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

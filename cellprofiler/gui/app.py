@@ -11,7 +11,7 @@ import wx
 import wx.lib.inspection
 
 import cellprofiler.gui.dialog
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 import cellprofiler.utilities.cpjvm
 
 logger = logging.getLogger(__name__)
@@ -67,17 +67,17 @@ class App(wx.App):
 
         self.frame.Show()
 
-        if cellprofiler.preferences.get_telemetry_prompt():
+        if cellprofiler_core.preferences.get_telemetry_prompt():
             telemetry = cellprofiler.gui.dialog.Telemetry()
 
             if telemetry.status == wx.ID_YES:
-                cellprofiler.preferences.set_telemetry(True)
+                cellprofiler_core.preferences.set_telemetry(True)
             else:
-                cellprofiler.preferences.set_telemetry(False)
+                cellprofiler_core.preferences.set_telemetry(False)
 
-            cellprofiler.preferences.set_telemetry_prompt(False)
+            cellprofiler_core.preferences.set_telemetry_prompt(False)
 
-        if cellprofiler.preferences.get_telemetry():
+        if cellprofiler_core.preferences.get_telemetry():
             sentry_handler = raven.handlers.logging.SentryHandler(sentry)
 
             sentry_handler.setLevel(logging.ERROR)

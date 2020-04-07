@@ -33,7 +33,7 @@ from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 from cellprofiler.modules._help import (
     HELP_ON_MEASURING_DISTANCES,
     HELP_ON_PIXEL_INTENSITIES,
@@ -53,19 +53,19 @@ class Smooth(cellprofiler_core.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""Select the image to be smoothed.""",
         )
 
-        self.filtered_image_name = cellprofiler.setting.ImageNameProvider(
+        self.filtered_image_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             "FilteredImage",
             doc="""Enter a name for the resulting image.""",
         )
 
-        self.smoothing_method = cellprofiler.setting.Choice(
+        self.smoothing_method = cellprofiler_core.setting.Choice(
             "Select smoothing method",
             [
                 FIT_POLYNOMIAL,
@@ -126,7 +126,7 @@ anyway.*
             % globals(),
         )
 
-        self.wants_automatic_object_size = cellprofiler.setting.Binary(
+        self.wants_automatic_object_size = cellprofiler_core.setting.Binary(
             "Calculate artifact diameter automatically?",
             True,
             doc="""\
@@ -141,7 +141,7 @@ Select *No* to manually enter an artifact diameter.
             % globals(),
         )
 
-        self.object_size = cellprofiler.setting.Float(
+        self.object_size = cellprofiler_core.setting.Float(
             "Typical artifact diameter",
             16.0,
             doc="""\
@@ -157,7 +157,7 @@ amounts of time to process.
             % globals(),
         )
 
-        self.sigma_range = cellprofiler.setting.Float(
+        self.sigma_range = cellprofiler_core.setting.Float(
             "Edge intensity difference",
             0.1,
             doc="""\
@@ -173,7 +173,7 @@ and one. %(HELP_ON_PIXEL_INTENSITIES)s
             % globals(),
         )
 
-        self.clip = cellprofiler.setting.Binary(
+        self.clip = cellprofiler_core.setting.Binary(
             "Clip intensities to 0 and 1?",
             True,
             doc="""\
@@ -296,8 +296,8 @@ the output image.
                 smoothed_image_name,
                 "Smooth Keeping Edges",
                 "Automatic",
-                cellprofiler.setting.DO_NOT_USE,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.DO_NOT_USE,
+                cellprofiler_core.setting.NO,
                 spatial_radius,
                 intensity_radius,
             ]
@@ -327,9 +327,9 @@ the output image.
                 setting_values[0],  # image name
                 setting_values[1],  # result name
                 setting_values[2],  # smoothing method
-                cellprofiler.setting.YES
+                cellprofiler_core.setting.YES
                 if setting_values[3] == "Automatic"
-                else cellprofiler.setting.NO,  # wants smoothing
+                else cellprofiler_core.setting.NO,  # wants smoothing
                 "16.0"
                 if setting_values[3] == "Automatic"
                 else (
@@ -343,6 +343,6 @@ the output image.
             from_matlab = False
             variable_revision_number = 1
         if variable_revision_number == 1 and not from_matlab:
-            setting_values = setting_values + [cellprofiler.setting.YES]
+            setting_values = setting_values + [cellprofiler_core.setting.YES]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

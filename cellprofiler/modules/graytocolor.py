@@ -30,7 +30,7 @@ import numpy as np
 
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 OFF_RED_IMAGE_NAME = 0
 OFF_GREEN_IMAGE_NAME = 1

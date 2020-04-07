@@ -66,9 +66,9 @@ import numpy as np
 
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.pipeline as cpp
+import cellprofiler_core.pipeline as cpp
 import cellprofiler.utilities.legacy
-from cellprofiler.preferences import get_headless
+from cellprofiler_core.preferences import get_headless
 
 
 class MergeOutputFiles(cpm.Module):
@@ -362,7 +362,7 @@ class MergeOutputFiles(cpm.Module):
             has_error = [False]
 
             def callback(caller, event):
-                if isinstance(event, cpp.LoadExceptionEvent):
+                if isinstance(event, cpp.event.LoadException):
                     has_error = True
                     wx.MessageBox(
                         message="Could not load %s: %s" % (sources[0], event.error),

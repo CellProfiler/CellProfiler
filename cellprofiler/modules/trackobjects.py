@@ -214,10 +214,10 @@ import scipy.ndimage
 import scipy.sparse
 import cellprofiler_core.module as cpm
 import cellprofiler_core.image as cpi
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
 import cellprofiler_core.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler_core.preferences as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix

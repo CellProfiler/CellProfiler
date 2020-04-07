@@ -57,7 +57,7 @@ from scipy.fftpack import fft2, ifft2
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 M_MUTUAL_INFORMATION = "Mutual Information"
 M_CROSS_CORRELATION = "Normalized Cross Correlation"

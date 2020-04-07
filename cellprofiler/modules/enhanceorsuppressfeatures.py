@@ -32,7 +32,7 @@ import skimage.transform
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 ENHANCE = "Enhance"
@@ -60,7 +60,7 @@ class EnhanceOrSuppressFeatures(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(EnhanceOrSuppressFeatures, self).create_settings()
 
-        self.method = cellprofiler.setting.Choice(
+        self.method = cellprofiler_core.setting.Choice(
             "Select the operation",
             [ENHANCE, SUPPRESS],
             doc="""\
@@ -75,7 +75,7 @@ designate.
             ),
         )
 
-        self.enhance_method = cellprofiler.setting.Choice(
+        self.enhance_method = cellprofiler_core.setting.Choice(
             "Feature type",
             [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
             doc="""\
@@ -140,7 +140,7 @@ This module can enhance several kinds of image features:
             ),
         )
 
-        self.object_size = cellprofiler.setting.Integer(
+        self.object_size = cellprofiler_core.setting.Integer(
             "Feature size",
             10,
             2,
@@ -163,7 +163,7 @@ used to calculate an appropriate filter size.
             ),
         )
 
-        self.hole_size = cellprofiler.setting.IntegerRange(
+        self.hole_size = cellprofiler_core.setting.IntegerRange(
             "Range of hole sizes",
             value=(1, 10),
             minval=1,
@@ -177,7 +177,7 @@ holes whose diameters fall between these two values.
             ),
         )
 
-        self.smoothing = cellprofiler.setting.Float(
+        self.smoothing = cellprofiler_core.setting.Float(
             "Smoothing scale",
             value=2.0,
             minval=0.0,
@@ -214,7 +214,7 @@ this is not recommended.
             ),
         )
 
-        self.angle = cellprofiler.setting.Float(
+        self.angle = cellprofiler_core.setting.Float(
             "Shear angle",
             value=0,
             doc="""\
@@ -231,7 +231,7 @@ the shear angle is 180° + 45° = 225°.
             ),
         )
 
-        self.decay = cellprofiler.setting.Float(
+        self.decay = cellprofiler_core.setting.Float(
             "Decay",
             value=0.95,
             minval=0.1,
@@ -252,7 +252,7 @@ appears to be a bias in the integration direction.
             ),
         )
 
-        self.neurite_choice = cellprofiler.setting.Choice(
+        self.neurite_choice = cellprofiler_core.setting.Choice(
             "Enhancement method",
             [N_TUBENESS, N_GRADIENT],
             doc="""\
@@ -287,7 +287,7 @@ Two methods can be used to enhance neurites:
             ),
         )
 
-        self.speckle_accuracy = cellprofiler.setting.Choice(
+        self.speckle_accuracy = cellprofiler_core.setting.Choice(
             "Speed and accuracy",
             choices=[S_FAST, S_SLOW],
             doc="""\

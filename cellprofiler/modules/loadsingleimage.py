@@ -69,8 +69,8 @@ import centrosome.outline
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 from cellprofiler_core.measurement import (
     C_LOCATION,
     C_NUMBER,
@@ -103,7 +103,7 @@ from cellprofiler_core.modules.loadimages import C_HEIGHT, C_WIDTH, C_MD5_DIGEST
 from cellprofiler_core.modules.loadimages import IO_IMAGES, IO_OBJECTS, IO_ALL
 from cellprofiler_core.modules.loadimages import LoadImagesImageProvider, C_SCALING
 from cellprofiler_core.modules.loadimages import convert_image_to_objects, pathname2url
-from cellprofiler.setting import YES, NO
+from cellprofiler_core.setting import YES, NO
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"

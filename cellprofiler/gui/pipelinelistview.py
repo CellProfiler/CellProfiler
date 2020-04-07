@@ -17,8 +17,8 @@ import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
 import cellprofiler.icons
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 
 logger = logging.getLogger(__name__)
 
@@ -401,17 +401,17 @@ class PipelineListView(object):
         """Pipeline event notifications come through here
 
         """
-        if isinstance(event, cellprofiler.pipeline.PipelineLoadedEvent):
+        if isinstance(event, cellprofiler_core.pipeline.event.PipelineLoaded):
             self.__on_pipeline_loaded(pipeline, event)
-        elif isinstance(event, cellprofiler.pipeline.ModuleAddedPipelineEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleAdded):
             self.__on_module_added(pipeline, event)
-        elif isinstance(event, cellprofiler.pipeline.ModuleMovedPipelineEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleMoved):
             self.__on_module_moved(pipeline, event)
-        elif isinstance(event, cellprofiler.pipeline.ModuleRemovedPipelineEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleRemoved):
             self.__on_module_removed(pipeline, event)
-        elif isinstance(event, cellprofiler.pipeline.PipelineClearedEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.PipelineCleared):
             self.__on_pipeline_cleared(pipeline, event)
-        elif isinstance(event, cellprofiler.pipeline.ModuleEditedPipelineEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEdited):
             for list_ctrl in self.list_ctrl, self.input_list_ctrl:
                 active_item = list_ctrl.get_active_item()
                 if (
@@ -436,11 +436,11 @@ class PipelineListView(object):
                             self.set_current_debug_module(module)
                         break
 
-        elif isinstance(event, cellprofiler.pipeline.ModuleEnabledEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEnabled):
             self.__on_module_enabled(event)
-        elif isinstance(event, cellprofiler.pipeline.ModuleDisabledEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleDisabled):
             self.__on_module_disabled(event)
-        elif isinstance(event, cellprofiler.pipeline.ModuleShowWindowEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleShowWindow):
             self.__on_show_window(event)
 
     def notify_directory_change(self):
@@ -773,7 +773,7 @@ class PipelineListView(object):
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
             _, ext = os.path.splitext(filename)
-            if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
+            if len(ext) > 1 and ext[1:] in cellprofiler_core.preferences.EXT_PROJECT_CHOICES:
                 self.__frame.Raise()
                 if (
                     wx.MessageBox(
@@ -788,7 +788,7 @@ class PipelineListView(object):
                     break
             elif (
                 len(ext) > 1
-                and ext[1:] in cellprofiler.preferences.EXT_PIPELINE_CHOICES
+                and ext[1:] in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES
             ):
                 self.__frame.Raise()
                 if (
@@ -901,7 +901,7 @@ class PipelineListView(object):
     def __on_module_moved(self, pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
         list_ctrl, index = self.get_ctrl_and_index(module)
-        if event.direction == cellprofiler.pipeline.DIRECTION_UP:
+        if event.direction == cellprofiler_core.pipeline.DIRECTION_UP:
             # if this module was moved up, the one before it was moved down
             # and is now after
             other_module = pipeline.modules(False)[event.module_num]
@@ -1025,7 +1025,7 @@ class PipelineListView(object):
         list_ctrl.SetItemState(index, flags, PLV_STATE_ERROR_MASK)
 
 
-PIPELINE_DATA_FORMAT = "CellProfiler.Pipeline"
+PIPELINE_DATA_FORMAT = "cellprofiler_core.pipeline"
 
 
 class PipelineDataObject(wx.CustomDataObject):

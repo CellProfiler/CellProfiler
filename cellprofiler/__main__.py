@@ -18,9 +18,9 @@ import six.moves
 
 import cellprofiler
 import cellprofiler_core.measurement
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
@@ -53,7 +53,7 @@ numpy.seterr(all="ignore")
 
 
 def main(args=None):
-    import cellprofiler.preferences
+    import cellprofiler_core.preferences
 
     """Run CellProfiler
 
@@ -62,14 +62,14 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
-    cellprofiler.preferences.set_awt_headless(True)
+    cellprofiler_core.preferences.set_awt_headless(True)
 
     exit_code = 0
 
     switches = ("--work-announce", "--knime-bridge-address")
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
-        cellprofiler.preferences.set_headless()
+        cellprofiler_core.preferences.set_headless()
         cellprofiler.worker.aw_parse_args()
         cellprofiler.worker.main()
         return exit_code
@@ -79,7 +79,7 @@ def main(args=None):
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
-        cellprofiler.preferences.set_temporary_directory(
+        cellprofiler_core.preferences.set_temporary_directory(
             options.temp_dir, globally=False
         )
 
@@ -122,12 +122,12 @@ def main(args=None):
         __version__(exit_code)
 
     if (not options.show_gui) or options.write_schema_and_exit:
-        cellprofiler.preferences.set_headless()
+        cellprofiler_core.preferences.set_headless()
 
         options.run_pipeline = True
 
     if options.batch_commands_file:
-        cellprofiler.preferences.set_headless()
+        cellprofiler_core.preferences.set_headless()
         options.run_pipeline = False
         options.show_gui = False
 
@@ -150,34 +150,34 @@ def main(args=None):
         set_omero_credentials_from_string(options.omero_credentials)
 
     if options.plugins_directory is not None:
-        cellprofiler.preferences.set_plugin_directory(
+        cellprofiler_core.preferences.set_plugin_directory(
             options.plugins_directory, globally=False
         )
 
     if not options.allow_schema_write:
-        cellprofiler.preferences.set_allow_schema_write(False)
+        cellprofiler_core.preferences.set_allow_schema_write(False)
 
     if options.output_directory:
         if not os.path.exists(options.output_directory):
             os.makedirs(options.output_directory)
 
-        cellprofiler.preferences.set_default_output_directory(options.output_directory)
+        cellprofiler_core.preferences.set_default_output_directory(options.output_directory)
 
     if options.image_directory:
-        cellprofiler.preferences.set_default_image_directory(options.image_directory)
+        cellprofiler_core.preferences.set_default_image_directory(options.image_directory)
 
     if options.run_pipeline and not options.pipeline_filename:
         raise ValueError("You must specify a pipeline filename to run")
 
     if options.data_file is not None:
-        cellprofiler.preferences.set_data_file(os.path.abspath(options.data_file))
+        cellprofiler_core.preferences.set_data_file(os.path.abspath(options.data_file))
 
     try:
         if not options.show_gui:
             cellprofiler.utilities.cpjvm.cp_start_vm()
 
         if options.image_set_file is not None:
-            cellprofiler.preferences.set_image_set_file(options.image_set_file)
+            cellprofiler_core.preferences.set_image_set_file(options.image_set_file)
 
         #
         # Handle command-line tasks that that need to load the modules to run
@@ -527,24 +527,24 @@ def set_omero_credentials_from_string(credentials_string):
         k = k.lower()
 
         credentials = {
-            bioformats.formatreader.K_OMERO_SERVER: cellprofiler.preferences.get_omero_server(),
-            bioformats.formatreader.K_OMERO_PORT: cellprofiler.preferences.get_omero_port(),
-            bioformats.formatreader.K_OMERO_USER: cellprofiler.preferences.get_omero_user(),
-            bioformats.formatreader.K_OMERO_SESSION_ID: cellprofiler.preferences.get_omero_session_id(),
+            bioformats.formatreader.K_OMERO_SERVER: cellprofiler_core.preferences.get_omero_server(),
+            bioformats.formatreader.K_OMERO_PORT: cellprofiler_core.preferences.get_omero_port(),
+            bioformats.formatreader.K_OMERO_USER: cellprofiler_core.preferences.get_omero_user(),
+            bioformats.formatreader.K_OMERO_SESSION_ID: cellprofiler_core.preferences.get_omero_session_id(),
         }
 
         if k == OMERO_CK_HOST:
-            cellprofiler.preferences.set_omero_server(v, globally=False)
+            cellprofiler_core.preferences.set_omero_server(v, globally=False)
 
             credentials[bioformats.formatreader.K_OMERO_SERVER] = v
         elif k == OMERO_CK_PORT:
-            cellprofiler.preferences.set_omero_port(v, globally=False)
+            cellprofiler_core.preferences.set_omero_port(v, globally=False)
 
             credentials[bioformats.formatreader.K_OMERO_PORT] = v
         elif k == OMERO_CK_SESSION_ID:
             credentials[bioformats.formatreader.K_OMERO_SESSION_ID] = v
         elif k == OMERO_CK_USER:
-            cellprofiler.preferences.set_omero_user(v, globally=False)
+            cellprofiler_core.preferences.set_omero_user(v, globally=False)
 
             credentials[bioformats.formatreader.K_OMERO_USER] = v
         elif k == OMERO_CK_PASSWORD:
@@ -586,12 +586,12 @@ def print_measurements(options):
     if options.pipeline_filename is None:
         raise ValueError("Can't print measurements, no pipeline file")
 
-    import cellprofiler.pipeline
+    import cellprofiler_core.pipeline
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(pipeline, event):
-        if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+        if isinstance(event, cellprofiler_core.pipeline.event.LoadException):
             raise ValueError("Failed to load %s" % options.pipeline_filename)
 
     pipeline.add_listener(callback)
@@ -715,7 +715,7 @@ def write_schema(pipeline_filename):
             "ExportToDatabase module."
         )
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     pipeline.load(pipeline_filename)
 
@@ -733,7 +733,7 @@ def write_schema(pipeline_filename):
     m = cellprofiler_core.measurement.Measurements()
 
     workspace = cellprofiler.workspace.Workspace(
-        pipeline, module, m, cellprofiler.object.ObjectSet, m, None
+        pipeline, module, m, cellprofiler_core.object.ObjectSet, m, None
     )
 
     module.prepare_run(workspace)
@@ -771,7 +771,7 @@ def run_pipeline_headless(options, args):
     ):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     initial_measurements = None
 
@@ -785,7 +785,7 @@ def run_pipeline_headless(options, args):
 
     if initial_measurements is not None:
         pipeline_text = initial_measurements.get_experiment_measurement(
-            cellprofiler.pipeline.M_PIPELINE
+            cellprofiler_core.pipeline.M_PIPELINE
         )
 
         pipeline_text = pipeline_text
@@ -812,7 +812,7 @@ def run_pipeline_headless(options, args):
     else:
         groups = None
 
-    file_list = cellprofiler.preferences.get_image_set_file()
+    file_list = cellprofiler_core.preferences.get_image_set_file()
 
     if file_list is not None:
         pipeline.read_file_list(file_list)
@@ -871,10 +871,10 @@ def run_pipeline_headless(options, args):
 
     if options.done_file is not None:
         if measurements is not None and measurements.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS
+            cellprofiler_core.measurement.EXPERIMENT, cellprofiler_core.pipeline.EXIT_STATUS
         ):
             done_text = measurements.get_experiment_measurement(
-                cellprofiler.pipeline.EXIT_STATUS
+                cellprofiler_core.pipeline.EXIT_STATUS
             )
 
             exit_code = 0 if done_text == "Complete" else -1
@@ -887,7 +887,7 @@ def run_pipeline_headless(options, args):
         fd.write("%s\n" % done_text)
         fd.close()
     elif not measurements.has_feature(
-        cellprofiler_core.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS
+        cellprofiler_core.measurement.EXPERIMENT, cellprofiler_core.pipeline.EXIT_STATUS
     ):
         # The pipeline probably failed
         exit_code = 1

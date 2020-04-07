@@ -111,14 +111,14 @@ import cellprofiler
 import cellprofiler_core.module as cpm
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.image as cpi
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 import centrosome.cpmorphology as morph
-import cellprofiler.preferences as cpprefs
+import cellprofiler_core.preferences as cpprefs
 from cellprofiler.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler.modules._help import (
     USING_METADATA_GROUPING_HELP_REF,
     IO_FOLDER_CHOICE_HELP_TEXT,

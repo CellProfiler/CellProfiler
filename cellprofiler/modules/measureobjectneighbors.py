@@ -76,9 +76,9 @@ from centrosome.outline import outline
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler_core.object as cpo
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
 import cellprofiler.workspace as cpw
 
 D_ADJACENT = "Adjacent"

@@ -15,9 +15,9 @@ import cellprofiler.gui.workspace
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()
@@ -247,7 +247,7 @@ class DataToolFrame(wx.Frame):
             self.pipeline,
             self.module,
             image_set,
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             self.measurements,
             image_set_list,
             frame=self,

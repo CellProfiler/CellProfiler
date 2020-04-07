@@ -7,7 +7,7 @@ import wx
 import wx.lib.masked
 
 import cellprofiler_core.measurement
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 __choice_ids = []
 
@@ -537,7 +537,7 @@ class MetadataControl(wx.Control):
         try:
             dc.SetBackgroundMode(wx.PENSTYLE_SOLID)
             background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = cellprofiler.preferences.get_primary_outline_color()
+            metadata_color = cellprofiler_core.preferences.get_primary_outline_color()
             selected_background_color = wx.SystemSettings.GetColour(
                 wx.SYS_COLOUR_HIGHLIGHT
             )

@@ -7,8 +7,8 @@ import six
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 from cellprofiler import pipeline
 
 
@@ -81,9 +81,9 @@ class Module(object):
 
     def __setattr__(self, slot, value):
         if hasattr(self, slot) and isinstance(
-            getattr(self, slot), cellprofiler.setting.Setting
+            getattr(self, slot), cellprofiler_core.setting.Setting
         ):
-            assert isinstance(value, cellprofiler.setting.Setting), (
+            assert isinstance(value, cellprofiler_core.setting.Setting), (
                 "Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override."
                 % (self.module_name, slot, type(value), slot)
             )
@@ -96,11 +96,11 @@ class Module(object):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
+            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler.settings.Float(...)
+            self.smoothing_size = cellprofiler_core.settings.Float(...)
         """
         pass
 
@@ -226,7 +226,7 @@ class Module(object):
         return parts["body_pre_docinfo"] + parts["fragment"]
 
     def _get_setting_help(self, setting):
-        if isinstance(setting, cellprofiler.setting.HiddenCount):
+        if isinstance(setting, cellprofiler_core.setting.HiddenCount):
             return ""
 
         return """\
@@ -302,11 +302,11 @@ class Module(object):
                 setting[pipeline.VARIABLE_VALUES][
                     module_idx, i
                 ] = variable.get_unicode_value()
-            if isinstance(variable, cellprofiler.setting.NameProvider):
+            if isinstance(variable, cellprofiler_core.setting.NameProvider):
                 setting[pipeline.VARIABLE_INFO_TYPES][module_idx, i] = six.text_type(
                     "%s indep" % variable.group
                 )
-            elif isinstance(variable, cellprofiler.setting.NameSubscriber):
+            elif isinstance(variable, cellprofiler_core.setting.NameSubscriber):
                 setting[pipeline.VARIABLE_INFO_TYPES][module_idx, i] = six.text_type(
                     variable.group
                 )
@@ -358,10 +358,10 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cellprofiler.setting.ValidationError as instance:
+        except cellprofiler_core.setting.ValidationError as instance:
             raise instance
         except Exception as e:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "Exception in cpmodule.test_valid %s" % e, self.visible_settings()[0]
             )
 
@@ -376,10 +376,10 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cellprofiler.setting.ValidationError as instance:
+        except cellprofiler_core.setting.ValidationError as instance:
             raise instance
         except Exception as e:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "Exception in cpmodule.test_valid %s" % e, self.visible_settings()[0]
             )
 
@@ -475,7 +475,7 @@ class Module(object):
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -881,7 +881,7 @@ class Module(object):
         """Return True if this module loads this image name from a file."""
         for setting in self.settings():
             if (
-                isinstance(setting, cellprofiler.setting.FileImageNameProvider)
+                isinstance(setting, cellprofiler_core.setting.FileImageNameProvider)
                 and setting.value == image_name
             ):
                 return True
@@ -908,7 +908,7 @@ class Module(object):
         that uses the DirectoryPath setting.
         """
         for setting in self.visible_settings():
-            if isinstance(setting, cellprofiler.setting.DirectoryPath):
+            if isinstance(setting, cellprofiler_core.setting.DirectoryPath):
                 return True
         return False
 
@@ -953,11 +953,11 @@ class ImageProcessing(Module):
     category = "Image Processing"
 
     def create_settings(self):
-        self.x_name = cellprofiler.setting.ImageNameSubscriber(
+        self.x_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler.setting.ImageNameProvider(
+        self.y_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             self.__class__.__name__,
             doc="Enter the name you want to call the image produced by this module.",
@@ -1075,11 +1075,11 @@ class ImageSegmentation(Module):
         )
 
     def create_settings(self):
-        self.x_name = cellprofiler.setting.ImageNameSubscriber(
+        self.x_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler.setting.ObjectNameProvider(
+        self.y_name = cellprofiler_core.setting.ObjectNameProvider(
             "Name the output object",
             self.__class__.__name__,
             doc="Enter the name you want to call the object produced by this module.",
@@ -1190,7 +1190,7 @@ class ImageSegmentation(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = cellprofiler.object.Objects()
+        y = cellprofiler_core.object.Objects()
 
         y.segmented = y_data
 
@@ -1256,7 +1256,7 @@ class ObjectProcessing(ImageSegmentation):
     def create_settings(self):
         super(ObjectProcessing, self).create_settings()
 
-        self.x_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.x_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input object", doc="Select the object you want to use."
         )
 
@@ -1354,7 +1354,7 @@ class ObjectProcessing(ImageSegmentation):
 
         y_data = self.function(x_data, *args)
 
-        y = cellprofiler.object.Objects()
+        y = cellprofiler_core.object.Objects()
 
         y.segmented = y_data
 

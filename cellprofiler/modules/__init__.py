@@ -11,7 +11,7 @@ import re
 import sys
 import cellprofiler_core.module as cpm
 from cellprofiler.modules.plugins import plugin_list
-from cellprofiler.preferences import get_plugin_directory
+from cellprofiler_core.preferences import get_plugin_directory
 
 # python modules and their corresponding cellprofiler_core.module classes
 pymodule_to_cpmodule = {

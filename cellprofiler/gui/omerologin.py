@@ -5,7 +5,7 @@
 import bioformats.formatreader
 import wx
 
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 
 class OmeroLoginDlg(wx.Dialog):
@@ -17,9 +17,9 @@ class OmeroLoginDlg(wx.Dialog):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
 
-        self.server = cellprofiler.preferences.get_omero_server() or ""
-        self.port = cellprofiler.preferences.get_omero_port()
-        self.user = cellprofiler.preferences.get_omero_user() or ""
+        self.server = cellprofiler_core.preferences.get_omero_server() or ""
+        self.port = cellprofiler_core.preferences.get_omero_port()
+        self.user = cellprofiler_core.preferences.get_omero_user() or ""
         self.session_id = None
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -143,9 +143,9 @@ class OmeroLoginDlg(wx.Dialog):
             self.server = server
             self.port = port
             self.user = user
-            cellprofiler.preferences.set_omero_server(server)
-            cellprofiler.preferences.set_omero_port(port)
-            cellprofiler.preferences.set_omero_user(user)
+            cellprofiler_core.preferences.set_omero_server(server)
+            cellprofiler_core.preferences.set_omero_port(port)
+            cellprofiler_core.preferences.set_omero_user(user)
             self.ok_button.Enable(True)
             return True
         except:

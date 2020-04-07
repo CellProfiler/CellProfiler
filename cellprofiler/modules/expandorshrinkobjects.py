@@ -55,8 +55,8 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules.identify
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 
 O_SHRINK_INF = "Shrink objects to a point"
@@ -83,19 +83,19 @@ class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.object_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input objects",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="Select the objects that you want to expand or shrink.",
         )
 
-        self.output_object_name = cellprofiler.setting.ObjectNameProvider(
+        self.output_object_name = cellprofiler_core.setting.ObjectNameProvider(
             "Name the output objects",
             "ShrunkenNuclei",
             doc="Enter a name for the resulting objects.",
         )
 
-        self.operation = cellprofiler.setting.Choice(
+        self.operation = cellprofiler_core.setting.Choice(
             "Select the operation",
             O_ALL,
             doc="""\
@@ -141,7 +141,7 @@ Choose the operation that you want to perform:
             ),
         )
 
-        self.iterations = cellprofiler.setting.Integer(
+        self.iterations = cellprofiler_core.setting.Integer(
             "Number of pixels by which to expand or shrink",
             1,
             minval=1,
@@ -154,7 +154,7 @@ Specify the number of pixels to add or remove from object borders.
             ),
         )
 
-        self.wants_fill_holes = cellprofiler.setting.Binary(
+        self.wants_fill_holes = cellprofiler_core.setting.Binary(
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
             doc="""\
@@ -169,7 +169,7 @@ erode an object with a hole to a ring in order to keep the hole. An
 object with two holes will be shrunk to two rings connected by a line in
 order to keep from breaking up the object or breaking the hole.
 """.format(
-                **{"NO": cellprofiler.setting.NO, "YES": cellprofiler.setting.YES}
+                **{"NO": cellprofiler_core.setting.NO, "YES": cellprofiler_core.setting.YES}
             ),
         )
 
@@ -196,7 +196,7 @@ order to keep from breaking up the object or breaking the hole.
     def run(self, workspace):
         input_objects = workspace.object_set.get_objects(self.object_name.value)
 
-        output_objects = cellprofiler.object.Objects()
+        output_objects = cellprofiler_core.object.Objects()
 
         output_objects.segmented = self.do_labels(input_objects.segmented)
 
@@ -337,13 +337,13 @@ order to keep from breaking up the object or breaking the hole.
 
             iterations = "1" if inf else setting_values[4]
 
-            wants_outlines = setting_values[5] != cellprofiler.setting.DO_NOT_USE
+            wants_outlines = setting_values[5] != cellprofiler_core.setting.DO_NOT_USE
 
             setting_values = setting_values[:2] + [
                 operation,
                 iterations,
-                cellprofiler.setting.NO,
-                cellprofiler.setting.YES if wants_outlines else cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
+                cellprofiler_core.setting.YES if wants_outlines else cellprofiler_core.setting.NO,
                 setting_values[5],
             ]
 

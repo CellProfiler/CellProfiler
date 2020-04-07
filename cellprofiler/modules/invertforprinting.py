@@ -30,8 +30,8 @@ import numpy as np
 
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES
+import cellprofiler_core.setting as cps
+from cellprofiler_core.setting import YES
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"

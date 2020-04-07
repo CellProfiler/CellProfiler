@@ -39,7 +39,7 @@ import skimage.util
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 
 def _neighbors(image):
@@ -104,7 +104,7 @@ class MeasureImageSkeleton(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.skeleton_name = cellprofiler.setting.ImageNameSubscriber(
+        self.skeleton_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select an image to measure",
             doc="""\
 Select the morphological skeleton image you wish to measure.

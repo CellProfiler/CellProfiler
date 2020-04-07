@@ -56,7 +56,7 @@ import cellprofiler.grid as cpg
 import cellprofiler_core.module as cpm
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 from centrosome.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"
@@ -412,7 +412,7 @@ first image.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.

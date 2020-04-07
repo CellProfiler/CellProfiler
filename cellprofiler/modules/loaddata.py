@@ -14,9 +14,9 @@ import six.moves.urllib.request
 import cellprofiler_core.measurement
 import cellprofiler.misc
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 from cellprofiler.modules import identify, loadimages
 
@@ -240,10 +240,10 @@ OBJECTS_CATEGORIES = (
 DIR_NONE = "None"
 DIR_OTHER = "Elsewhere..."
 DIR_ALL = [
-    cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
-    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
-    cellprofiler.preferences.NO_FOLDER_NAME,
-    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+    cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
+    cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+    cellprofiler_core.preferences.NO_FOLDER_NAME,
+    cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
 ]
 
 """Reserve extra space in pathnames for batch processing name rewrites"""
@@ -377,7 +377,7 @@ class LoadData(cellprofiler_core.module.Module):
     variable_revision_number = 6
 
     def create_settings(self):
-        self.csv_directory = cellprofiler.setting.DirectoryPath(
+        self.csv_directory = cellprofiler_core.setting.DirectoryPath(
             "Input data file location",
             allow_metadata=False,
             support_urls=True,
@@ -396,9 +396,9 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
             dir_choice, custom_path = self.csv_directory.get_parts_from_path(path)
             self.csv_directory.join_parts(dir_choice, custom_path)
 
-        self.csv_file_name = cellprofiler.setting.FilenameText(
+        self.csv_file_name = cellprofiler_core.setting.FilenameText(
             "Name of the file",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""Provide the file name of the CSV file containing the data you want to load.""",
             get_directory_fn=get_directory_fn,
             set_directory_fn=set_directory_fn,
@@ -406,22 +406,22 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
             exts=[("Data file (*.csv)", "*.csv"), ("All files (*.*)", "*.*")],
         )
 
-        self.browse_csv_button = cellprofiler.setting.DoSomething(
+        self.browse_csv_button = cellprofiler_core.setting.DoSomething(
             "Press to view CSV file contents", "View...", self.browse_csv
         )
 
-        self.wants_images = cellprofiler.setting.Binary(
+        self.wants_images = cellprofiler_core.setting.Binary(
             "Load images based on this data?",
             True,
             doc="""\
 Select *{YES}* to have **LoadData** load images based on the
 *Image\_FileName* column and the *Image\_PathName* column (if specified).
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.rescale = cellprofiler.setting.Binary(
+        self.rescale = cellprofiler_core.setting.Binary(
             "Rescale intensities?",
             True,
             doc="""\
@@ -441,11 +441,11 @@ Select *{NO}* to ignore the image metadata and rescale the image to a
 maximum of 1.0 by dividing by 255 or 65535, depending on the maximum possible
 intensity value of the image file format.
 """.format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
             ),
         )
 
-        self.image_directory = cellprofiler.setting.DirectoryPath(
+        self.image_directory = cellprofiler_core.setting.DirectoryPath(
             "Base image location",
             dir_choices=DIR_ALL,
             allow_metadata=False,
@@ -463,7 +463,7 @@ the following options:
 -  *Elsewhere…*: Use a particular folder you specify.""",
         )
 
-        self.wants_image_groupings = cellprofiler.setting.Binary(
+        self.wants_image_groupings = cellprofiler_core.setting.Binary(
             "Group images by metadata?",
             False,
             doc="""\
@@ -473,11 +473,11 @@ together. For example, see **CreateBatchFiles** for details on submitting a
 CellProfiler pipeline to a computing cluster for processing groups
 separately, and see the **Groups** module for other examples.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.metadata_fields = cellprofiler.setting.MultiChoice(
+        self.metadata_fields = cellprofiler_core.setting.MultiChoice(
             "Select metadata tags for grouping",
             None,
             doc="""\
@@ -490,7 +490,7 @@ create groups containing images that share the same [*Run*,\ *Plate*]
 pair of tags.""",
         )
 
-        self.wants_rows = cellprofiler.setting.Binary(
+        self.wants_rows = cellprofiler_core.setting.Binary(
             "Process just a range of rows?",
             False,
             doc="""\
@@ -500,11 +500,11 @@ with in the box on the left. Then, enter the number of the row you want to
 end processing with in the box on the right. Rows are numbered starting at 1
 (but do not count the header line). **LoadData** will process up to and including the end row.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.row_range = cellprofiler.setting.IntegerRange(
+        self.row_range = cellprofiler_core.setting.IntegerRange(
             "Rows to process",
             (1, 100000),
             1,
@@ -522,7 +522,7 @@ Enter the row numbers of the first and last row to be processed.""",
             except:
                 pass
 
-        self.clear_cache_button = cellprofiler.setting.DoSomething(
+        self.clear_cache_button = cellprofiler_core.setting.DoSomething(
             "Reload cached information",
             "Reload",
             do_reload,
@@ -557,9 +557,9 @@ safe to press it.""",
     def validate_module(self, pipeline):
         csv_path = self.csv_path
 
-        if self.csv_directory.dir_choice != cellprofiler.setting.URL_FOLDER_NAME:
+        if self.csv_directory.dir_choice != cellprofiler_core.setting.URL_FOLDER_NAME:
             if not os.path.isfile(csv_path):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "No such CSV file: %s" % csv_path, self.csv_file_name
                 )
 
@@ -569,13 +569,13 @@ safe to press it.""",
             import errno
 
             if e.errno == errno.EWOULDBLOCK:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Another program (Excel?) is locking the CSV file %s."
                     % self.csv_path,
                     self.csv_file_name,
                 )
             else:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Could not open CSV file %s (error: %s)" % (self.csv_path, e),
                     self.csv_file_name,
                 )
@@ -583,7 +583,7 @@ safe to press it.""",
         try:
             self.get_header()
         except Exception as e:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "The CSV file, %s, is not in the proper format."
                 " See this module's help for details on CSV format. (error: %s)"
                 % (self.csv_path, e),
@@ -599,7 +599,7 @@ safe to press it.""",
             if id(module) == id(self):
                 return
             if isinstance(module, LoadData):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Your pipeline has two or more LoadData modules.\n"
                     "The best practice is to have only one LoadData module.\n"
                     "Consider combining the CSV files from all of your\n"
@@ -608,7 +608,7 @@ safe to press it.""",
                     self.csv_file_name,
                 )
             if isinstance(module, loadimages.LoadImages):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Your pipeline has a LoadImages and LoadData module.\n"
                     "The best practice is to have only a single LoadImages\n"
                     "or LoadData module. This LoadData module will match its\n"
@@ -623,7 +623,7 @@ safe to press it.""",
         if self.wants_image_groupings.value and (
             len(self.metadata_fields.selections) == 0
         ):
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "Group images by metadata is True, but no metadata "
                 "tags have been chosen for grouping.",
                 self.metadata_fields,
@@ -631,7 +631,7 @@ safe to press it.""",
 
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, self.browse_csv_button]
-        if self.csv_directory.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
+        if self.csv_directory.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
             result += [self.clear_cache_button]
             self.csv_file_name.text = "URL of the file"
             self.csv_file_name.set_browsable(False)
@@ -742,9 +742,9 @@ safe to press it.""",
     @property
     def csv_path(self):
         """The path and file name of the CSV file to be loaded"""
-        if cellprofiler.preferences.get_data_file() is not None:
-            return cellprofiler.preferences.get_data_file()
-        if self.csv_directory.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
+        if cellprofiler_core.preferences.get_data_file() is not None:
+            return cellprofiler_core.preferences.get_data_file()
+        if self.csv_directory.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
             return self.csv_file_name.value
 
         path = self.csv_directory.get_absolute_path()
@@ -763,7 +763,7 @@ safe to press it.""",
         """Get the cached information for the data file"""
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
-        if cellprofiler.preferences.is_url_path(self.csv_path):
+        if cellprofiler_core.preferences.is_url_path(self.csv_path):
             if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = entry
             return entry
@@ -777,7 +777,7 @@ safe to press it.""",
         """Open the csv file or URL, returning a file descriptor"""
         global header_cache
 
-        if cellprofiler.preferences.is_url_path(self.csv_path):
+        if cellprofiler_core.preferences.is_url_path(self.csv_path):
             if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = {}
             entry = header_cache[self.csv_path]
@@ -999,7 +999,7 @@ safe to press it.""",
             #
             # Add synthetic object and image columns
             #
-            if self.image_directory.dir_choice == cellprofiler.setting.NO_FOLDER_NAME:
+            if self.image_directory.dir_choice == cellprofiler_core.setting.NO_FOLDER_NAME:
                 path_base = ""
             else:
                 path_base = self.image_path
@@ -1324,7 +1324,7 @@ safe to press it.""",
                 provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = loadimages.convert_image_to_objects(image.pixel_data)
-                o = cellprofiler.object.Objects()
+                o = cellprofiler_core.object.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
                 identify.add_object_count_measurements(m, objects_name, o.count)
@@ -1655,17 +1655,17 @@ safe to press it.""",
                 path_choice,
                 path_name,
                 text_file_name,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
                 dir_default_image,
                 ".",
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
                 "1,100000",
             ]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
         if (not from_matlab) and variable_revision_number == 1:
-            setting_values = setting_values + [cellprofiler.setting.NO, ""]
+            setting_values = setting_values + [cellprofiler_core.setting.NO, ""]
             variable_revision_number = 2
 
         if variable_revision_number == 2 and (not from_matlab):
@@ -1691,10 +1691,10 @@ safe to press it.""",
             csv_directory_choice, csv_custom_directory, csv_file_name, wants_images, image_directory_choice, image_custom_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
                 setting_values
             )
-            csv_directory = cellprofiler.setting.DirectoryPath.static_join_string(
+            csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 csv_directory_choice, csv_custom_directory
             )
-            image_directory = cellprofiler.setting.DirectoryPath.static_join_string(
+            image_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 image_directory_choice, image_custom_directory
             )
             setting_values = [
@@ -1712,7 +1712,7 @@ safe to press it.""",
         # Standardize input/output directory name references
         setting_values = list(setting_values)
         for index in (0, 3):
-            setting_values[index] = cellprofiler.setting.DirectoryPath.upgrade_setting(
+            setting_values[index] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
                 setting_values[index]
             )
 
@@ -1720,12 +1720,12 @@ safe to press it.""",
             csv_directory, csv_file_name, wants_images, image_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
                 setting_values
             )
-            dir_choice, custom_dir = cellprofiler.setting.DirectoryPath.split_string(
+            dir_choice, custom_dir = cellprofiler_core.setting.DirectoryPath.split_string(
                 csv_directory
             )
-            if dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
+            if dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
                 csv_file_name = custom_dir + "/" + csv_file_name
-                csv_directory = cellprofiler.setting.DirectoryPath.static_join_string(
+                csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
                     dir_choice, ""
                 )
             setting_values = [
@@ -1741,7 +1741,7 @@ safe to press it.""",
             variable_revision_number = 5
         if variable_revision_number == 5 and (not from_matlab):
             # Added rescaling option
-            setting_values = setting_values + [cellprofiler.setting.YES]
+            setting_values = setting_values + [cellprofiler_core.setting.YES]
             variable_revision_number = 6
         return setting_values, variable_revision_number, from_matlab
 

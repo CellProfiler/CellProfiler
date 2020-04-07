@@ -11,7 +11,7 @@ import scipy.ndimage
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 #################################
 #
@@ -164,7 +164,7 @@ class ImageTemplate(cellprofiler_core.module.ImageProcessing):
     # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
     #
-    # You can look at other modules and in cellprofiler.settings for
+    # You can look at other modules and in cellprofiler_core.settings for
     # settings you can use.
     #
     def create_settings(self):
@@ -200,7 +200,7 @@ that is made available by a prior module.
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
-        self.gradient_choice = cellprofiler.setting.Choice(
+        self.gradient_choice = cellprofiler_core.setting.Choice(
             text="Gradient choice:",
             # The choice takes a list of possibilities. The first one
             # is the default - the one the user will typically choose.
@@ -240,7 +240,7 @@ Choose what to calculate:
         #
         # A binary setting displays a checkbox.
         #
-        self.automatic_smoothing = cellprofiler.setting.Binary(
+        self.automatic_smoothing = cellprofiler_core.setting.Binary(
             text="Automatically choose the smoothing scale?",
             value=True,  # The default value is to choose automatically
             doc="The module will automatically choose a smoothing scale for you if you leave this checked.",
@@ -253,7 +253,7 @@ Choose what to calculate:
         # for the scale. The control will turn red if the user types in
         # an invalid scale.
         #
-        self.scale = cellprofiler.setting.Float(
+        self.scale = cellprofiler_core.setting.Float(
             text="Scale",
             value=1,  # The default value is 1 - a short-range scale
             minval=0.1,  # We don't let the user type in really small values

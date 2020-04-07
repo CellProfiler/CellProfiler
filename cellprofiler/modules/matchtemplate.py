@@ -31,7 +31,7 @@ import skimage.io
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 
 class MatchTemplate(cellprofiler_core.module.Module):
@@ -40,16 +40,16 @@ class MatchTemplate(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.input_image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Image", doc="Select the image you want to use."
         )
 
-        self.template_name = cellprofiler.setting.Pathname(
+        self.template_name = cellprofiler_core.setting.Pathname(
             "Template",
             doc="Specify the location of the cropped image you want to use as a template.",
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
             "Output",
             doc="Enter the name you want to call the image produced by this module.",
         )

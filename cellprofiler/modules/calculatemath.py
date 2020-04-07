@@ -62,7 +62,7 @@ import six
 
 import cellprofiler_core.module as cpm
 import cellprofiler_core.measurement as cpmeas
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 from cellprofiler_core.measurement import R_PARENT
 
 O_MULTIPLY = "Multiply"

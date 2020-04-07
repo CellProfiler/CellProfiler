@@ -7,8 +7,8 @@ import numpy as np
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
 
 __doc__ = """\
 ClassifyObjects

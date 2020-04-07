@@ -30,9 +30,9 @@ from future.standard_library import install_aliases
 import cellprofiler
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.object
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 import cellprofiler.utilities.legacy
 import cellprofiler.utilities.utf16encode
 import cellprofiler.workspace
@@ -710,7 +710,7 @@ class Pipeline(object):
             module_names = settings[MODULE_NAMES]
         except Exception as instance:
             logger.error("Failed to load pipeline", exc_info=True)
-            e = LoadExceptionEvent(instance, None)
+            e = event.LoadException(instance, None)
             self.notify_listeners(e)
             return
         module_count = module_names.shape[1]
@@ -737,7 +737,7 @@ class Pipeline(object):
                     for x in module_settings
                 ]
 
-                event = LoadExceptionEvent(
+                event = event.LoadException(
                     instance, module, module_name, module_settings
                 )
                 self.notify_listeners(event)
@@ -751,7 +751,7 @@ class Pipeline(object):
         for module in self.__modules:
             module.post_pipeline_load(self)
 
-        self.notify_listeners(PipelineLoadedEvent())
+        self.notify_listeners(PipelineLoaded())
 
     def instantiate_module(self, module_name):
         import cellprofiler.modules
@@ -816,7 +816,7 @@ class Pipeline(object):
         setting[NUMBERS_OF_VARIABLES] = np.ndarray(
             (1, module_count), dtype=np.dtype("uint8")
         )
-        setting[PIXEL_SIZE] = cellprofiler.preferences.get_pixel_size()
+        setting[PIXEL_SIZE] = cellprofiler_core.preferences.get_pixel_size()
         setting[VARIABLE_REVISION_NUMBERS] = np.ndarray(
             (1, module_count), dtype=np.dtype("uint8")
         )
@@ -927,14 +927,14 @@ class Pipeline(object):
                     "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n"
                     % fd_or_filename
                 )
-                self.notify_listeners(LoadExceptionEvent(e, None))
+                self.notify_listeners(event.LoadException(e, None))
                 return
             except Exception as e:
                 logging.error(
                     "Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
                     exc_info=True,
                 )
-                self.notify_listeners(LoadExceptionEvent(e, None))
+                self.notify_listeners(event.LoadException(e, None))
                 return
         else:
             handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
@@ -1066,7 +1066,7 @@ class Pipeline(object):
             self.respond_to_version_mismatch_error(message)
         else:
             if (
-                not cellprofiler.preferences.get_headless()
+                not cellprofiler_core.preferences.get_headless()
             ) and pipeline_version < CURRENT_VERSION:
                 if git_hash is not None:
                     message = (
@@ -1205,7 +1205,7 @@ class Pipeline(object):
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
-                event = LoadExceptionEvent(instance, module, module_name, settings)
+                event = event.LoadException(instance, module, module_name, settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
                     break
@@ -1224,9 +1224,9 @@ class Pipeline(object):
         ]
         for module in self.modules(False):
             module.post_pipeline_load(self)
-        self.notify_listeners(PipelineLoadedEvent())
+        self.notify_listeners(PipelineLoaded())
         if has_image_plane_details:
-            self.notify_listeners(URLsAddedEvent(self.__file_list))
+            self.notify_listeners(URLsAdded(self.__file_list))
         self.__undo_stack = []
         return pipeline_version, git_hash
 
@@ -1454,7 +1454,7 @@ class Pipeline(object):
     def build_matlab_handles(self, image_set=None, object_set=None, measurements=None):
         handles = self.save_to_handles()
         image_tools_dir = os.path.join(
-            cellprofiler.preferences.cell_profiler_root_directory(), "ImageTools"
+            cellprofiler_core.preferences.cell_profiler_root_directory(), "ImageTools"
         )
         if os.access(image_tools_dir, os.R_OK):
             image_tools = [
@@ -1488,28 +1488,28 @@ class Pipeline(object):
         current[STARTING_IMAGE_SET][0, 0] = [1]
         current[STARTUP_DIRECTORY][
             0, 0
-        ] = cellprofiler.preferences.cell_profiler_root_directory()
+        ] = cellprofiler_core.preferences.cell_profiler_root_directory()
         current[DEFAULT_OUTPUT_DIRECTORY][
             0, 0
-        ] = cellprofiler.preferences.get_default_output_directory()
+        ] = cellprofiler_core.preferences.get_default_output_directory()
         current[DEFAULT_IMAGE_DIRECTORY][
             0, 0
-        ] = cellprofiler.preferences.get_default_image_directory()
+        ] = cellprofiler_core.preferences.get_default_image_directory()
         current[IMAGE_TOOLS_FILENAMES][0, 0] = npy_image_tools
         current[IMAGE_TOOL_HELP][0, 0] = []
 
         preferences = np.ndarray(shape=(1, 1), dtype=PREFERENCES_DTYPE)
         handles[PREFERENCES] = preferences
-        preferences[PIXEL_SIZE][0, 0] = cellprofiler.preferences.get_pixel_size()
+        preferences[PIXEL_SIZE][0, 0] = cellprofiler_core.preferences.get_pixel_size()
         preferences[DEFAULT_MODULE_DIRECTORY][
             0, 0
-        ] = cellprofiler.preferences.module_directory()
+        ] = cellprofiler_core.preferences.module_directory()
         preferences[DEFAULT_OUTPUT_DIRECTORY][
             0, 0
-        ] = cellprofiler.preferences.get_default_output_directory()
+        ] = cellprofiler_core.preferences.get_default_output_directory()
         preferences[DEFAULT_IMAGE_DIRECTORY][
             0, 0
-        ] = cellprofiler.preferences.get_default_image_directory()
+        ] = cellprofiler_core.preferences.get_default_image_directory()
         preferences[INTENSITY_COLOR_MAP][0, 0] = "gray"
         preferences[LABEL_COLOR_MAP][0, 0] = "jet"
         preferences[STRIP_PIPELINE][0, 0] = "Yes"  # TODO - get from preferences
@@ -1587,7 +1587,7 @@ class Pipeline(object):
         result = []
         for module in self.modules():
             for setting in module.settings():
-                if isinstance(setting, cellprofiler.setting.ExternalImageNameProvider):
+                if isinstance(setting, cellprofiler_core.setting.ExternalImageNameProvider):
                     result.append(setting.value)
         return result
 
@@ -1596,7 +1596,7 @@ class Pipeline(object):
         for module in self.modules():
             for setting in module.settings():
                 if isinstance(
-                    setting, cellprofiler.setting.ExternalImageNameSubscriber
+                    setting, cellprofiler_core.setting.ExternalImageNameSubscriber
                 ):
                     result.append(setting.value)
         return result
@@ -1635,7 +1635,7 @@ class Pipeline(object):
             images.filter_choice.value = FILTER_CHOICE_NONE
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
-                module.show_window = cellprofiler.preferences.get_headless()
+                module.show_window = cellprofiler_core.preferences.get_headless()
                 if module.notes:
                     module.notes += ["---"]
                 module.notes += ["Settings converted from legacy pipeline."]
@@ -1644,7 +1644,7 @@ class Pipeline(object):
                 if module.needs_conversion():
                     module.convert(self, metadata, namesandtypes, groups)
                     self.remove_module(module.module_num)
-            self.notify_listeners(PipelineLoadedEvent())
+            self.notify_listeners(PipelineLoaded())
 
     def convert_default_input_folder(self, path):
         """Convert all references to the default input folder to abolute paths
@@ -1655,28 +1655,28 @@ class Pipeline(object):
             for module in self.modules(False):
                 was_edited = False
                 for setting in module.settings():
-                    if isinstance(setting, cellprofiler.setting.DirectoryPath):
+                    if isinstance(setting, cellprofiler_core.setting.DirectoryPath):
                         if (
                             setting.dir_choice
-                            == cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+                            == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
                         ):
                             setting.dir_choice = (
-                                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                             )
                             setting.custom_path = path
                             was_edited = True
                         elif (
                             setting.dir_choice
-                            == cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                            == cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                         ):
                             subpath = os.path.join(path, setting.custom_path)
                             setting.dir_choice = (
-                                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                             )
                             setting.custom_path = subpath
                 if was_edited:
                     self.edit_module(module.module_num, True)
-            self.notify_listeners(PipelineLoadedEvent())
+            self.notify_listeners(PipelineLoaded())
 
     def fix_legacy_pipeline(self):
         """Perform inter-module fixes needed for some legacy pipelines"""
@@ -1744,7 +1744,7 @@ class Pipeline(object):
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cellprofiler_core.image.Image(input_pixels))
-        object_set = cellprofiler.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
         measurements = cellprofiler_core.measurement.Measurements()
 
         # Run the modules
@@ -1890,7 +1890,7 @@ class Pipeline(object):
         Run the pipeline, returning the measurements made
         """
 
-        can_display = not cellprofiler.preferences.get_headless()
+        can_display = not cellprofiler_core.preferences.get_headless()
 
         columns = self.get_measurement_columns()
 
@@ -2010,7 +2010,7 @@ class Pipeline(object):
 
                 slot_number = 0
 
-                object_set = cellprofiler.object.ObjectSet()
+                object_set = cellprofiler_core.object.ObjectSet()
 
                 image_set = measurements
 
@@ -2123,7 +2123,7 @@ class Pipeline(object):
                     failure = 0
 
                     if exception is not None:
-                        event = RunExceptionEvent(exception, module, tb)
+                        event = RunException(exception, module, tb)
 
                         self.notify_listeners(event)
 
@@ -2226,7 +2226,7 @@ class Pipeline(object):
         measurements.group_index = measurements[
             cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX
         ]
-        object_set = cellprofiler.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
         image_set = measurements
         measurements.clear_cache()
         for provider in measurements.providers:
@@ -2276,7 +2276,7 @@ class Pipeline(object):
                         cellprofiler_core.measurement.IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
-                evt = RunExceptionEvent(exception, module, sys.exc_info()[2])
+                evt = RunException(exception, module, sys.exc_info()[2])
                 self.notify_listeners(evt)
                 if evt.cancel_run or evt.skip_thisset:
                     # actual cancellation or skipping handled upstream.
@@ -2355,7 +2355,7 @@ class Pipeline(object):
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number
                 image_set = m
-                object_set = cellprofiler.object.ObjectSet()
+                object_set = cellprofiler_core.object.ObjectSet()
                 old_providers = list(image_set.providers)
                 grid_set = {}
                 for module in pipeline.modules():
@@ -2444,7 +2444,7 @@ class Pipeline(object):
 
         def on_pipeline_event(pipeline, event):
             global prepare_run_error_detected
-            if isinstance(event, PrepareRunErrorEvent):
+            if isinstance(event, PrepareRunError):
                 prepare_run_error_detected = True
 
         had_image_sets = False
@@ -2468,7 +2468,7 @@ class Pipeline(object):
                         module.module_name,
                         exc_info=True,
                     )
-                    event = PrepareRunExceptionEvent(
+                    event = PrepareRunException(
                         instance, module, sys.exc_info()[2]
                     )
                     self.notify_listeners(event)
@@ -2582,7 +2582,7 @@ class Pipeline(object):
                     % module.module_name,
                     exc_info=True,
                 )
-                event = PostRunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = PostRunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
@@ -2631,7 +2631,7 @@ class Pipeline(object):
                     module.module_name,
                     exc_info=True,
                 )
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = RunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
@@ -2737,7 +2737,7 @@ class Pipeline(object):
                     module.module_name,
                     exc_info=True,
                 )
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = RunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -2759,7 +2759,7 @@ class Pipeline(object):
                     % module.module_name,
                     exc_info=True,
                 )
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = RunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -2816,7 +2816,7 @@ class Pipeline(object):
         try:
             while len(self.__modules) > 0:
                 self.remove_module(self.__modules[-1].module_num)
-            self.notify_listeners(PipelineClearedEvent())
+            self.notify_listeners(PipelineCleared())
             self.init_modules()
         finally:
             self.stop_undoable_action()
@@ -2833,7 +2833,7 @@ class Pipeline(object):
 
         for i, module in enumerate((Images(), Metadata(), NamesAndTypes(), Groups())):
             module.set_module_num(i + 1)
-            module.show_window = cellprofiler.preferences.get_headless()
+            module.show_window = cellprofiler_core.preferences.get_headless()
             self.add_module(module)
 
     def move_module(self, module_num, direction):
@@ -2877,7 +2877,7 @@ class Pipeline(object):
         else:
             raise ValueError("Unknown direction: %s" % direction)
         self.notify_listeners(
-            ModuleMovedPipelineEvent(new_module_num, direction, False)
+            ModuleMoved(new_module_num, direction, False)
         )
 
         def undo():
@@ -2898,7 +2898,7 @@ class Pipeline(object):
             )
             return
         module.enabled = True
-        self.notify_listeners(ModuleEnabledEvent(module))
+        self.notify_listeners(ModuleEnabled(module))
 
         def undo():
             self.disable_module(module)
@@ -2914,7 +2914,7 @@ class Pipeline(object):
                 % module.module_name
             )
         module.enabled = False
-        self.notify_listeners(ModuleDisabledEvent(module))
+        self.notify_listeners(ModuleDIsabled(module))
 
         def undo():
             self.enable_module(module)
@@ -2931,7 +2931,7 @@ class Pipeline(object):
         """
         if state != module.show_window:
             module.show_window = state
-            self.notify_listeners(ModuleShowWindowEvent(module))
+            self.notify_listeners(ModuleShowWindow(module))
 
             def undo():
                 self.show_module_window(module, not state)
@@ -2961,7 +2961,7 @@ class Pipeline(object):
                 else:
                     filename = path
                 filename = six.moves.urllib.request.url2pathname(filename)
-                cellprofiler.preferences.report_progress(
+                cellprofiler_core.preferences.report_progress(
                     uid, float(i) / n, "Adding %s" % filename
                 )
             pos = bisect.bisect_left(self.__file_list, url, start)
@@ -2970,12 +2970,12 @@ class Pipeline(object):
                 self.__file_list.insert(pos, url)
             start = pos
         if n > 0:
-            cellprofiler.preferences.report_progress(uid, 1, "Done")
+            cellprofiler_core.preferences.report_progress(uid, 1, "Done")
         # Invalidate caches
         self.__file_list_generation = uid
         self.__filtered_file_list_images_settings = None
         self.__image_plane_details_metadata_settings = None
-        self.notify_listeners(URLsAddedEvent(real_list))
+        self.notify_listeners(URLsAdded(real_list))
         if add_undo:
 
             def undo():
@@ -2998,7 +2998,7 @@ class Pipeline(object):
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
             self.__file_list_generation = uuid.uuid4()
-            self.notify_listeners(URLsRemovedEvent(real_list))
+            self.notify_listeners(URLsRemoved(real_list))
 
             def undo():
                 self.add_urls(real_list, False)
@@ -3013,7 +3013,7 @@ class Pipeline(object):
             self.__filtered_file_list_images_settings = None
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
-            self.notify_listeners(URLsRemovedEvent(old_urls))
+            self.notify_listeners(URLsRemoved(old_urls))
             if add_undo:
 
                 def undo():
@@ -3032,7 +3032,7 @@ class Pipeline(object):
             urls = file_list.get_filelist()
         except Exception as instance:
             logger.error("Failed to get file list from workspace", exc_info=True)
-            x = IPDLoadExceptionEvent("Failed to get file list from workspace")
+            x = IPDevent.LoadException("Failed to get file list from workspace")
             self.notify_listeners(x)
             if x.cancel_run:
                 raise instance
@@ -3466,7 +3466,7 @@ class Pipeline(object):
         ):
             module.module_num = mn
         self.notify_listeners(
-            ModuleAddedPipelineEvent(
+            ModuleAdded(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -3490,7 +3490,7 @@ class Pipeline(object):
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
         self.notify_listeners(
-            ModuleRemovedPipelineEvent(
+            ModuleRemoved(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -3512,7 +3512,7 @@ class Pipeline(object):
         module = self.__modules[idx]
         new_settings = self.capture_module_settings(module)
         self.notify_listeners(
-            ModuleEditedPipelineEvent(
+            ModuleEdited(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -3525,7 +3525,7 @@ class Pipeline(object):
             module.set_settings_from_values(
                 old_settings, variable_revision_number, module_name, False
             )
-            self.notify_listeners(ModuleEditedPipelineEvent(module_num))
+            self.notify_listeners(ModuleEdited(module_num))
             self.__settings[idx] = old_settings
 
         self.__undo_stack.append((undo, "Edited %s" % module_name))
@@ -3732,7 +3732,7 @@ class Pipeline(object):
 
         Report errors due to misconfiguration, such as no files found.
         """
-        event = PrepareRunErrorEvent(module, message)
+        event = PrepareRunError(module, message)
         self.notify_listeners(event)
 
     def is_image_from_file(self, image_name):
@@ -3864,7 +3864,7 @@ class Pipeline(object):
     def get_provider_dictionary(self, groupname, module=None):
         """Get a dictionary of all providers for a given category
 
-        groupname - the name of the category from cellprofiler.settings:
+        groupname - the name of the category from cellprofiler_core.settings:
             IMAGE_GROUP for image providers, OBJECT_GROUP for object providers
             or MEASUREMENTS_GROUP for measurement providers.
 
@@ -3898,7 +3898,7 @@ class Pipeline(object):
                 if (name not in result) or target_module is not None:
                     result[name] = []
                 result[name].append((module, None))
-            if groupname == cellprofiler.setting.MEASUREMENTS_GROUP:
+            if groupname == cellprofiler_core.setting.MEASUREMENTS_GROUP:
                 for c in module.get_measurement_columns(self):
                     object_name, feature_name = c[:2]
                     k = (object_name, feature_name)
@@ -3907,11 +3907,11 @@ class Pipeline(object):
                     result[k].append((module, None))
             for setting in module.visible_settings():
                 if (
-                    isinstance(setting, cellprofiler.setting.NameProvider)
+                    isinstance(setting, cellprofiler_core.setting.NameProvider)
                     and setting.get_group() == groupname
                 ):
                     name = setting.value
-                    if name == cellprofiler.setting.DO_NOT_USE:
+                    if name == cellprofiler_core.setting.DO_NOT_USE:
                         continue
                     if name not in result or target_module is not None:
                         result[name] = []
@@ -3935,9 +3935,9 @@ class Pipeline(object):
         #   second is either None or the setting.
         #
         all_groups = (
-            cellprofiler.setting.OBJECT_GROUP,
-            cellprofiler.setting.IMAGE_GROUP,
-            cellprofiler.setting.MEASUREMENTS_GROUP,
+            cellprofiler_core.setting.OBJECT_GROUP,
+            cellprofiler_core.setting.IMAGE_GROUP,
+            cellprofiler_core.setting.MEASUREMENTS_GROUP,
         )
         providers = dict([(g, self.get_provider_dictionary(g)) for g in all_groups])
         #
@@ -3946,30 +3946,30 @@ class Pipeline(object):
         result = []
         for module in self.modules():
             for setting in module.visible_settings():
-                if isinstance(setting, cellprofiler.setting.NameSubscriber):
+                if isinstance(setting, cellprofiler_core.setting.NameSubscriber):
                     group = setting.get_group()
                     name = setting.value
                     if group in providers and name in providers[group]:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
-                                if group == cellprofiler.setting.OBJECT_GROUP:
+                                if group == cellprofiler_core.setting.OBJECT_GROUP:
                                     dependency = ObjectDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
-                                elif group == cellprofiler.setting.IMAGE_GROUP:
+                                elif group == cellprofiler_core.setting.IMAGE_GROUP:
                                     dependency = ImageDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
                                 break
-                elif isinstance(setting, cellprofiler.setting.Measurement):
+                elif isinstance(setting, cellprofiler_core.setting.Measurement):
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     key = (object_name, feature_name)
-                    if key in providers[cellprofiler.setting.MEASUREMENTS_GROUP]:
+                    if key in providers[cellprofiler_core.setting.MEASUREMENTS_GROUP]:
                         for pmodule, psetting in providers[
-                            cellprofiler.setting.MEASUREMENTS_GROUP
+                            cellprofiler_core.setting.MEASUREMENTS_GROUP
                         ][key]:
                             if pmodule.module_num < module.module_num:
                                 dependency = MeasurementDependency(
@@ -4070,13 +4070,13 @@ class AbstractPipelineEvent(object):
         )
 
 
-class PipelineLoadedEvent(AbstractPipelineEvent):
+class PipelineLoaded(AbstractPipelineEvent):
     """Indicates that the pipeline has been (re)loaded
 
     """
 
     def __init__(self):
-        super(PipelineLoadedEvent, self).__init__(
+        super(PipelineLoaded, self).__init__(
             is_pipeline_modification=True, is_image_set_modification=True
         )
 
@@ -4084,13 +4084,13 @@ class PipelineLoadedEvent(AbstractPipelineEvent):
         return "PipelineLoaded"
 
 
-class PipelineClearedEvent(AbstractPipelineEvent):
+class PipelineCleared(AbstractPipelineEvent):
     """Indicates that all modules have been removed from the pipeline
 
     """
 
     def __init__(self):
-        super(PipelineClearedEvent, self).__init__(
+        super(PipelineCleared, self).__init__(
             is_pipeline_modification=True, is_image_set_modification=True
         )
 
@@ -4102,13 +4102,13 @@ DIRECTION_UP = "up"
 DIRECTION_DOWN = "down"
 
 
-class ModuleMovedPipelineEvent(AbstractPipelineEvent):
+class ModuleMoved(AbstractPipelineEvent):
     """A module moved up or down
 
     """
 
     def __init__(self, module_num, direction, is_image_set_modification):
-        super(ModuleMovedPipelineEvent, self).__init__(
+        super(ModuleMoved, self).__init__(
             is_pipeline_modification=True,
             is_image_set_modification=is_image_set_modification,
         )
@@ -4119,13 +4119,13 @@ class ModuleMovedPipelineEvent(AbstractPipelineEvent):
         return "Module moved"
 
 
-class ModuleAddedPipelineEvent(AbstractPipelineEvent):
+class ModuleAdded(AbstractPipelineEvent):
     """A module was added to the pipeline
 
     """
 
     def __init__(self, module_num, is_image_set_modification=False):
-        super(ModuleAddedPipelineEvent, self).__init__(
+        super(ModuleAdded, self).__init__(
             is_pipeline_modification=True,
             is_image_set_modification=is_image_set_modification,
         )
@@ -4135,13 +4135,13 @@ class ModuleAddedPipelineEvent(AbstractPipelineEvent):
         return "Module Added"
 
 
-class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
+class ModuleRemoved(AbstractPipelineEvent):
     """A module was removed from the pipeline
 
     """
 
     def __init__(self, module_num, is_image_set_modification=False):
-        super(ModuleRemovedPipelineEvent, self).__init__(
+        super(ModuleRemoved, self).__init__(
             is_pipeline_modification=True,
             is_image_set_modification=is_image_set_modification,
         )
@@ -4151,13 +4151,13 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
         return "Module deleted"
 
 
-class ModuleEditedPipelineEvent(AbstractPipelineEvent):
+class ModuleEdited(AbstractPipelineEvent):
     """A module had its settings changed
 
     """
 
     def __init__(self, module_num, is_image_set_modification=False):
-        super(ModuleEditedPipelineEvent, self).__init__(
+        super(ModuleEdited, self).__init__(
             is_pipeline_modification=True,
             is_image_set_modification=is_image_set_modification,
         )
@@ -4167,7 +4167,7 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
         return "Module edited"
 
 
-class URLsAddedEvent(AbstractPipelineEvent):
+class URLsAdded(AbstractPipelineEvent):
     def __init__(self, urls):
         super(self.__class__, self).__init__()
         self.urls = urls
@@ -4176,7 +4176,7 @@ class URLsAddedEvent(AbstractPipelineEvent):
         return "URLs added to file list"
 
 
-class URLsRemovedEvent(AbstractPipelineEvent):
+class URLsRemoved(AbstractPipelineEvent):
     def __init__(self, urls):
         super(self.__class__, self).__init__()
         self.urls = urls
@@ -4195,7 +4195,7 @@ class FileWalkEndedEvent(AbstractPipelineEvent):
         return "File walk ended"
 
 
-class RunExceptionEvent(AbstractPipelineEvent):
+class RunException(AbstractPipelineEvent):
     """An exception was caught during a pipeline run
 
     Initializer:
@@ -4215,21 +4215,21 @@ class RunExceptionEvent(AbstractPipelineEvent):
         return "Pipeline run exception"
 
 
-class PrepareRunExceptionEvent(RunExceptionEvent):
+class PrepareRunException(RunException):
     """An event indicating an uncaught exception during the prepare_run phase"""
 
     def event_type(self):
         return "Prepare run exception"
 
 
-class PostRunExceptionEvent(RunExceptionEvent):
+class PostRunException(RunException):
     """An event indicating an uncaught exception during the post_run phase"""
 
     def event_type(self):
         return "Post run exception"
 
 
-class PrepareRunErrorEvent(AbstractPipelineEvent):
+class PrepareRunError(AbstractPipelineEvent):
     """A user configuration error prevented CP from running the pipeline
 
     Modules use this class to report conditions that prevent construction
@@ -4243,7 +4243,7 @@ class PrepareRunErrorEvent(AbstractPipelineEvent):
         self.message = message
 
 
-class LoadExceptionEvent(AbstractPipelineEvent):
+class event.LoadException(AbstractPipelineEvent):
     """An exception was caught during pipeline loading
 
     """
@@ -4259,7 +4259,7 @@ class LoadExceptionEvent(AbstractPipelineEvent):
         return "Pipeline load exception"
 
 
-class IPDLoadExceptionEvent(AbstractPipelineEvent):
+class IPDevent.LoadException(AbstractPipelineEvent):
     """An exception was cauaght while trying to load the image plane details
 
     This event is reported when an exception is thrown while loading
@@ -4284,7 +4284,7 @@ class CancelledException(Exception):
     pass
 
 
-class PipelineLoadCancelledException(Exception):
+class event.PipelineLoadCancelledException(Exception):
     """Exception thrown if user cancels pipeline load"""
 
     pass
@@ -4297,7 +4297,7 @@ class EndRunEvent(AbstractPipelineEvent):
         return "Run ended"
 
 
-class ModuleEnabledEvent(AbstractPipelineEvent):
+class ModuleEnabled(AbstractPipelineEvent):
     """A module was enabled
 
     module - the module that was enabled.
@@ -4315,7 +4315,7 @@ class ModuleEnabledEvent(AbstractPipelineEvent):
         return "Module enabled"
 
 
-class ModuleDisabledEvent(AbstractPipelineEvent):
+class ModuleDIsabled(AbstractPipelineEvent):
     """A module was disabled
 
     module - the module that was disabled.
@@ -4333,7 +4333,7 @@ class ModuleDisabledEvent(AbstractPipelineEvent):
         return "Module disabled"
 
 
-class ModuleShowWindowEvent(AbstractPipelineEvent):
+class ModuleShowWindow(AbstractPipelineEvent):
     """A module had its "show_window" state changed
 
     module - the module that had its state changed

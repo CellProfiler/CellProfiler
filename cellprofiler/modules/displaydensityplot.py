@@ -47,7 +47,7 @@ See also **DisplayScatterPlot**, **DisplayHistogram**.
 import matplotlib.cm
 
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 
 class DisplayDensityPlot(cpm.Module):

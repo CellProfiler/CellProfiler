@@ -14,7 +14,7 @@ import skimage.morphology
 
 import cellprofiler_core.measurement
 import cellprofiler.utilities.legacy
-from cellprofiler.preferences import (
+from cellprofiler_core.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
     DEFAULT_OUTPUT_FOLDER_NAME,
     DEFAULT_INPUT_SUBFOLDER_NAME,
@@ -3323,7 +3323,7 @@ class Filter(Setting):
                 dict(
                     expr=self.value_text,
                     klass=J.class_for_name(
-                        "org.cellprofiler_core.imageset.ImagePlaneDetailsStack"
+                        "org.cellprofiler_core.imageset.ImagePlaneStack"
                     ),
                 ),
             )

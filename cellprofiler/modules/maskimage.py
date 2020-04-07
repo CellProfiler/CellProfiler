@@ -36,7 +36,7 @@ import numpy as np
 
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 IO_IMAGE = "Image"
 IO_OBJECTS = "Objects"

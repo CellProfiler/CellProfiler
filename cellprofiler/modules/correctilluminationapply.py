@@ -32,7 +32,7 @@ import numpy as np
 
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
@@ -144,7 +144,7 @@ somewhat empirical.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.

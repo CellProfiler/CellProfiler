@@ -9,9 +9,9 @@ import numpy as np
 import six
 
 import cellprofiler_core.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
+from cellprofiler_core.setting import YES
 import cellprofiler_core.measurement as cpmeas
 
 __doc__ = """\

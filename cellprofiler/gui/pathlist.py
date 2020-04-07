@@ -12,7 +12,7 @@ import wx
 import wx.lib.scrolledpanel
 
 import cellprofiler.gui
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +254,7 @@ class PathListCtrl(wx.ScrolledWindow):
         npaths = len(paths)
         for i, path in enumerate(paths):
             if i % 100 == 0:
-                cellprofiler.preferences.report_progress(
+                cellprofiler_core.preferences.report_progress(
                     uid, float(i) / npaths, "Loading %s into UI" % path
                 )
             folder, filename = self.splitpath(path)
@@ -275,7 +275,7 @@ class PathListCtrl(wx.ScrolledWindow):
                 folder_item.file_display_names.insert(pidx, display_name)
                 folder_item.enabled.insert(pidx, True)
         if len(paths) > 0:
-            cellprofiler.preferences.report_progress(uid, 1, "Done")
+            cellprofiler_core.preferences.report_progress(uid, 1, "Done")
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
 

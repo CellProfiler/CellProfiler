@@ -15,10 +15,10 @@ import cellprofiler.icons
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 from cellprofiler.modules import _help, identify, images, loadimages
 
 logger = logging.getLogger(__name__)
@@ -364,7 +364,7 @@ class NamesAndTypes(cellprofiler_core.module.Module):
         self.image_sets = []
         self.metadata_keys = []
 
-        self.assignment_method = cellprofiler.setting.Choice(
+        self.assignment_method = cellprofiler_core.setting.Choice(
             "Assign a name to",
             [ASSIGN_ALL, ASSIGN_RULES],
             doc="""\
@@ -392,13 +392,13 @@ The choices are:
             ),
         )
 
-        self.single_load_as_choice = cellprofiler.setting.Choice(
+        self.single_load_as_choice = cellprofiler_core.setting.Choice(
             "Select the image type",
             [LOAD_AS_GRAYSCALE_IMAGE, LOAD_AS_COLOR_IMAGE, LOAD_AS_MASK],
             doc=LOAD_AS_CHOICE_HELP_TEXT,
         )
 
-        self.process_as_3d = cellprofiler.setting.Binary(
+        self.process_as_3d = cellprofiler_core.setting.Binary(
             text="Process as 3D?",
             value=False,
             doc="""\
@@ -409,7 +409,7 @@ two-dimensional images.
             callback=lambda value: self.pipeline.set_volumetric(value),
         )
 
-        self.x = cellprofiler.setting.Float(
+        self.x = cellprofiler_core.setting.Float(
             text="Relative pixel spacing in X",
             value=1.0,
             minval=0.0,
@@ -429,7 +429,7 @@ as set here in **NamesAndTypes**.
 """,
         )
 
-        self.y = cellprofiler.setting.Float(
+        self.y = cellprofiler_core.setting.Float(
             text="Relative pixel spacing in Y",
             value=1.0,
             minval=0.0,
@@ -441,7 +441,7 @@ See help for *Relative pixel spacing in X* for details.
 """,
         )
 
-        self.z = cellprofiler.setting.Float(
+        self.z = cellprofiler_core.setting.Float(
             text="Relative pixel spacing in Z",
             value=1.0,
             minval=0.0,
@@ -453,18 +453,18 @@ See help for *Relative pixel spacing in X* for details.
 """,
         )
 
-        self.single_image_provider = cellprofiler.setting.FileImageNameProvider(
+        self.single_image_provider = cellprofiler_core.setting.FileImageNameProvider(
             "Name to assign these images", IMAGE_NAMES[0]
         )
 
-        self.single_rescale = cellprofiler.setting.Choice(
+        self.single_rescale = cellprofiler_core.setting.Choice(
             "Set intensity range from",
             INTENSITY_ALL,
             value=INTENSITY_RESCALING_BY_METADATA,
             doc=RESCALING_HELP_TEXT,
         )
 
-        self.manual_rescale = cellprofiler.setting.Float(
+        self.manual_rescale = cellprofiler_core.setting.Float(
             MANUAL_INTENSITY_LABEL,
             DEFAULT_MANUAL_RESCALE,
             minval=numpy.finfo(numpy.float32).eps,
@@ -475,19 +475,19 @@ See help for *Relative pixel spacing in X* for details.
 
         self.single_images = []
 
-        self.assignments_count = cellprofiler.setting.HiddenCount(
+        self.assignments_count = cellprofiler_core.setting.HiddenCount(
             self.assignments, "Assignments count"
         )
 
-        self.single_images_count = cellprofiler.setting.HiddenCount(
+        self.single_images_count = cellprofiler_core.setting.HiddenCount(
             self.single_images, "Single images count"
         )
 
         self.add_assignment(can_remove=False)
 
-        self.add_assignment_divider = cellprofiler.setting.Divider()
+        self.add_assignment_divider = cellprofiler_core.setting.Divider()
 
-        self.add_assignment_button = cellprofiler.setting.DoThings(
+        self.add_assignment_button = cellprofiler_core.setting.DoThings(
             "",
             (
                 ("Add another image", self.add_assignment),
@@ -495,7 +495,7 @@ See help for *Relative pixel spacing in X* for details.
             ),
         )
 
-        self.matching_choice = cellprofiler.setting.Choice(
+        self.matching_choice = cellprofiler_core.setting.Choice(
             "Image set matching method",
             [MATCH_BY_ORDER, MATCH_BY_METADATA],
             doc="""\
@@ -648,9 +648,9 @@ You can match corresponding channels to each other in one of two ways:
             ),
         )
 
-        self.join = cellprofiler.setting.Joiner("Match metadata")
+        self.join = cellprofiler_core.setting.Joiner("Match metadata")
 
-        self.imageset_setting = cellprofiler.setting.ImageSetDisplay(
+        self.imageset_setting = cellprofiler_core.setting.ImageSetDisplay(
             "", "Update image set table"
         )
 
@@ -658,11 +658,11 @@ You can match corresponding channels to each other in one of two ways:
         """Add a rules assignment"""
         unique_image_name = self.get_unique_image_name()
         unique_object_name = self.get_unique_object_name()
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         self.assignments.append(group)
 
         if can_remove:
-            group.append("divider", cellprofiler.setting.Divider())
+            group.append("divider", cellprofiler_core.setting.Divider())
 
         mp = MetadataPredicate(
             "Metadata",
@@ -674,7 +674,7 @@ You can match corresponding channels to each other in one of two ways:
 
         group.append(
             "rule_filter",
-            cellprofiler.setting.Filter(
+            cellprofiler_core.setting.Filter(
                 "Select the rule criteria",
                 [
                     images.FilePredicate(),
@@ -696,7 +696,7 @@ Specify a filter using rules to narrow down the files to be analyzed.
 
         group.append(
             "image_name",
-            cellprofiler.setting.FileImageNameProvider(
+            cellprofiler_core.setting.FileImageNameProvider(
                 "Name to assign these images",
                 unique_image_name,
                 doc="""\
@@ -710,7 +710,7 @@ requests an image selection.
 
         group.append(
             "object_name",
-            cellprofiler.setting.ObjectNameProvider(
+            cellprofiler_core.setting.ObjectNameProvider(
                 "Name to assign these objects",
                 unique_object_name,
                 doc="""\
@@ -724,14 +724,14 @@ requests an object selection.
 
         group.append(
             "load_as_choice",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select the image type", LOAD_AS_ALL, doc=LOAD_AS_CHOICE_HELP_TEXT
             ),
         )
 
         group.append(
             "rescale",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Set intensity range from",
                 INTENSITY_ALL,
                 value=INTENSITY_RESCALING_BY_METADATA,
@@ -741,7 +741,7 @@ requests an object selection.
 
         group.append(
             "manual_rescale",
-            cellprofiler.setting.Float(
+            cellprofiler_core.setting.Float(
                 MANUAL_INTENSITY_LABEL,
                 value=DEFAULT_MANUAL_RESCALE,
                 minval=numpy.finfo(numpy.float32).eps,
@@ -754,7 +754,7 @@ requests an object selection.
 
         group.append(
             "copy_button",
-            cellprofiler.setting.DoSomething(
+            cellprofiler_core.setting.DoSomething(
                 "",
                 "Duplicate this image",
                 copy_assignment,
@@ -780,7 +780,7 @@ times.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image", self.assignments, group
                 ),
             )
@@ -838,14 +838,14 @@ times.
         """Add another single image group to the settings"""
         unique_image_name = self.get_unique_image_name()
         unique_object_name = self.get_unique_object_name()
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         self.single_images.append(group)
 
-        group.append("divider", cellprofiler.setting.Divider())
+        group.append("divider", cellprofiler_core.setting.Divider())
 
         group.append(
             "image_plane",
-            cellprofiler.setting.ImagePlane(
+            cellprofiler_core.setting.ImagePlane(
                 "Single image location",
                 doc="""\
 Choose the single image to add to all image sets. You can
@@ -857,7 +857,7 @@ select an existing image from the file list.
         )
         group.append(
             "image_name",
-            cellprofiler.setting.FileImageNameProvider(
+            cellprofiler_core.setting.FileImageNameProvider(
                 "Name to assign this image",
                 unique_image_name,
                 doc="""\
@@ -871,7 +871,7 @@ requests an image selection.
 
         group.append(
             "object_name",
-            cellprofiler.setting.ObjectNameProvider(
+            cellprofiler_core.setting.ObjectNameProvider(
                 "Name to assign these objects",
                 unique_object_name,
                 doc="""\
@@ -885,14 +885,14 @@ requests an object selection.
 
         group.append(
             "load_as_choice",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select the image type", LOAD_AS_ALL, doc=LOAD_AS_CHOICE_HELP_TEXT
             ),
         )
 
         group.append(
             "rescale",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Set intensity range from",
                 INTENSITY_ALL,
                 value=INTENSITY_RESCALING_BY_METADATA,
@@ -902,7 +902,7 @@ requests an object selection.
 
         group.append(
             "manual_rescale",
-            cellprofiler.setting.Float(
+            cellprofiler_core.setting.Float(
                 MANUAL_INTENSITY_LABEL,
                 value=DEFAULT_MANUAL_RESCALE,
                 minval=numpy.finfo(numpy.float32).eps,
@@ -915,7 +915,7 @@ requests an object selection.
 
         group.append(
             "copy_button",
-            cellprofiler.setting.DoSomething(
+            cellprofiler_core.setting.DoSomething(
                 "",
                 "Copy",
                 copy_assignment,
@@ -926,7 +926,7 @@ requests an object selection.
         group.can_remove = True
         group.append(
             "remover",
-            cellprofiler.setting.RemoveSettingButton(
+            cellprofiler_core.setting.RemoveSettingButton(
                 "", "Remove this image", self.single_images, group
             ),
         )
@@ -1073,7 +1073,7 @@ requests an object selection.
             for group in self.assignments:
                 rules_filter = group.rule_filter
                 filters.append(rules_filter)
-                assert isinstance(rules_filter, cellprofiler.setting.Filter)
+                assert isinstance(rules_filter, cellprofiler_core.setting.Filter)
                 #
                 # The problem here is that the metadata predicates don't
                 # know what possible metadata keys are allowable and
@@ -1089,15 +1089,15 @@ requests an object selection.
                 #
                 pattern = r"\(%s (?:%s|%s) ((?:\\.|[^ )])+)" % (
                     MetadataPredicate.SYMBOL,
-                    cellprofiler.setting.Filter.DoesNotPredicate.SYMBOL,
-                    cellprofiler.setting.Filter.DoesPredicate.SYMBOL,
+                    cellprofiler_core.setting.Filter.DoesNotPredicate.SYMBOL,
+                    cellprofiler_core.setting.Filter.DoesPredicate.SYMBOL,
                 )
                 text = rules_filter.value_text
                 while True:
                     match = re.search(pattern, text)
                     if match is None:
                         break
-                    key = cellprofiler.setting.Filter.FilterPredicate.decode_symbol(
+                    key = cellprofiler_core.setting.Filter.FilterPredicate.decode_symbol(
                         match.groups()[0]
                     )
                     self.metadata_keys.append(key)
@@ -1118,7 +1118,7 @@ requests an object selection.
         """
         if setting is self.add_assignment_button:
             return True
-        if isinstance(setting, cellprofiler.setting.RemoveSettingButton):
+        if isinstance(setting, cellprofiler_core.setting.RemoveSettingButton):
             return True
         return setting in self.settings()
 
@@ -1455,7 +1455,7 @@ requests an object selection.
         importPackage(Packages.org.cellprofiler_core.imageset);
         importPackage(Packages.org.cellprofiler_core.imageset.filter);
         var ipdscls = java.lang.Class.forName(
-            "org.cellprofiler_core.imageset.ImagePlaneDetailsStack");
+            "org.cellprofiler_core.imageset.ImagePlaneStack");
         var filter = new Filter(expr, ipdscls);
         new ChannelFilter(name, filter, axes);
         """
@@ -1713,7 +1713,7 @@ requests an object selection.
                 "Error for image set, channel=%s, metadata=%s: %s"
                 % (str(key), echannel, message)
             )
-        if not cellprofiler.preferences.get_headless():
+        if not cellprofiler_core.preferences.get_headless():
             msg = (
                 "Warning: %d image set errors found (see log for details)\n"
                 "Do you want to continue?"
@@ -1815,8 +1815,8 @@ requests an object selection.
         """Get an image plane descriptor for this single_image group"""
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")
-        ipd = cellprofiler.pipeline.find_image_plane_details(
-            cellprofiler.pipeline.ImagePlaneDetails(
+        ipd = cellprofiler_core.pipeline.find_image_plane_details(
+            cellprofiler_core.pipeline.ImagePlane(
                 single_image.image_plane.url,
                 single_image.image_plane.series,
                 single_image.image_plane.index,
@@ -1906,7 +1906,7 @@ requests an object selection.
         if num_dimensions == 2:
             coords = javabridge.get_env().make_int_array(numpy.zeros(2, numpy.int32))
             ipds = [
-                cellprofiler.pipeline.ImagePlaneDetails(
+                cellprofiler_core.pipeline.ImagePlane(
                     javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
                 )
             ]
@@ -1917,7 +1917,7 @@ requests an object selection.
                 coords[2] = i
                 jcoords = javabridge.get_env().make_int_array(coords)
                 ipds.append(
-                    cellprofiler.pipeline.ImagePlaneDetails(
+                    cellprofiler_core.pipeline.ImagePlane(
                         javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
                     )
                 )
@@ -2047,7 +2047,7 @@ requests an object selection.
             index = None  # signal that we haven't read the metadata
             series = None
             coords = javabridge.get_env().make_int_array(numpy.zeros(2, int))
-            ipd = cellprofiler.pipeline.ImagePlaneDetails(
+            ipd = cellprofiler_core.pipeline.ImagePlane(
                 javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
             )
             url = ipd.url
@@ -2058,7 +2058,7 @@ requests an object selection.
                 coords[2] = i
                 jcoords = javabridge.get_env().make_int_array(coords)
                 ipds.append(
-                    cellprofiler.pipeline.ImagePlaneDetails(
+                    cellprofiler_core.pipeline.ImagePlane(
                         javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
                     )
                 )
@@ -2091,7 +2091,7 @@ requests an object selection.
             provider, workspace.measurements, cellprofiler_core.measurement.OBJECT
         )
         image = provider.provide_image(workspace.image_set)
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             identify.add_object_location_measurements(
@@ -2348,7 +2348,7 @@ requests an object selection.
                         break
                 else:
                     return
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "At least one channel must have all metadata keys specified. "
                 "All channels have at least one metadata key of (None).",
                 self.join,
@@ -2388,7 +2388,7 @@ requests an object selection.
                 new_setting_values += setting_values[
                     idx : (idx + NUM_ASSIGNMENT_SETTINGS_V3)
                 ]
-                new_setting_values += [cellprofiler.setting.NO, "LoadedObjects"]
+                new_setting_values += [cellprofiler_core.setting.NO, "LoadedObjects"]
             setting_values = new_setting_values
             variable_revision_number = 4
 
@@ -2605,15 +2605,15 @@ requests an object selection.
         return metadata_columns
 
 
-class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
+class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
     """A predicate that compares an ifd against a metadata key and value"""
 
     SYMBOL = "metadata"
 
     def __init__(self, display_name, display_fmt="%s", **kwargs):
         subpredicates = [
-            cellprofiler.setting.Filter.DoesPredicate([]),
-            cellprofiler.setting.Filter.DoesNotPredicate([]),
+            cellprofiler_core.setting.Filter.DoesPredicate([]),
+            cellprofiler_core.setting.Filter.DoesNotPredicate([]),
         ]
 
         super(self.__class__, self).__init__(
@@ -2631,12 +2631,12 @@ class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
         keys - a list of keys
         """
         sub_subpredicates = [
-            cellprofiler.setting.Filter.FilterPredicate(
+            cellprofiler_core.setting.Filter.FilterPredicate(
                 key,
                 self.display_fmt % key,
                 lambda ipd, match, key=key: key in ipd.metadata
                 and ipd.metadata[key] == match,
-                [cellprofiler.setting.Filter.LITERAL_PREDICATE],
+                [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
             )
             for key in keys
         ]
@@ -2660,12 +2660,12 @@ class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
 
     def test_valid(self, pipeline, *args):
         modpath = ["imaging", "image.png"]
-        ipd = cellprofiler.pipeline.ImagePlaneDetails(
+        ipd = cellprofiler_core.pipeline.ImagePlane(
             "/imaging/image.png", None, None, None
         )
         self(
             (
-                cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
+                cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
                 modpath,
                 NamesAndTypes.FakeModpathResolver(modpath, ipd),
             ),

@@ -40,7 +40,7 @@ import skimage.util
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
@@ -89,7 +89,7 @@ class ImageMath(cellprofiler_core.module.ImageProcessing):
         self.add_image(False)
 
         # other settings
-        self.operation = cellprofiler.setting.Choice(
+        self.operation = cellprofiler_core.setting.Choice(
             "Operation",
             [
                 O_ADD,
@@ -165,30 +165,30 @@ single image.
 """
             % globals(),
         )
-        self.divider_top = cellprofiler.setting.Divider(line=False)
+        self.divider_top = cellprofiler_core.setting.Divider(line=False)
 
-        self.exponent = cellprofiler.setting.Float(
+        self.exponent = cellprofiler_core.setting.Float(
             "Raise the power of the result by",
             1,
             doc="""\
 Enter an exponent to raise the result to *after* the chosen operation.""",
         )
 
-        self.after_factor = cellprofiler.setting.Float(
+        self.after_factor = cellprofiler_core.setting.Float(
             "Multiply the result by",
             1,
             doc="""\
 Enter a factor to multiply the result by *after* the chosen operation.""",
         )
 
-        self.addend = cellprofiler.setting.Float(
+        self.addend = cellprofiler_core.setting.Float(
             "Add to result",
             0,
             doc="""\
 Enter a number to add to the result *after* the chosen operation.""",
         )
 
-        self.truncate_low = cellprofiler.setting.Binary(
+        self.truncate_low = cellprofiler_core.setting.Binary(
             "Set values less than 0 equal to 0?",
             True,
             doc="""\
@@ -198,7 +198,7 @@ modules. Select *Yes* to set negative values to 0.
             % globals(),
         )
 
-        self.truncate_high = cellprofiler.setting.Binary(
+        self.truncate_high = cellprofiler_core.setting.Binary(
             "Set values greater than 1 equal to 1?",
             True,
             doc="""\
@@ -209,7 +209,7 @@ value of 1.
             % globals(),
         )
 
-        self.replace_nan = cellprofiler.setting.Binary(
+        self.replace_nan = cellprofiler_core.setting.Binary(
             "Replace invalid values with 0?",
             True,
             doc="""\
@@ -223,7 +223,7 @@ value of 1.
             % globals(),
         )
 
-        self.ignore_mask = cellprofiler.setting.Binary(
+        self.ignore_mask = cellprofiler_core.setting.Binary(
             "Ignore the image masks?",
             False,
             doc="""\
@@ -234,26 +234,26 @@ the smallest image mask is applied after image math has been completed.
             % globals(),
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             "ImageAfterMath",
             doc="""\
 Enter a name for the resulting image.""",
         )
 
-        self.add_button = cellprofiler.setting.DoSomething(
+        self.add_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_image
         )
 
-        self.divider_bottom = cellprofiler.setting.Divider(line=False)
+        self.divider_bottom = cellprofiler_core.setting.Divider(line=False)
 
     def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         group.removable = removable
         group.append(
             "image_or_measurement",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Image or measurement?",
                 [IM_IMAGE, IM_MEASUREMENT],
                 doc="""\
@@ -271,9 +271,9 @@ use the median intensity measurement as the denominator.
 
         group.append(
             "image_name",
-            cellprofiler.setting.ImageNameSubscriber(
+            cellprofiler_core.setting.ImageNameSubscriber(
                 "Select the image",
-                cellprofiler.setting.NONE,
+                cellprofiler_core.setting.NONE,
                 doc="""\
 Select the image that you want to use for this operation.""",
             ),
@@ -281,7 +281,7 @@ Select the image that you want to use for this operation.""",
 
         group.append(
             "measurement",
-            cellprofiler.setting.Measurement(
+            cellprofiler_core.setting.Measurement(
                 "Measurement",
                 lambda: cellprofiler_core.measurement.IMAGE,
                 "",
@@ -294,7 +294,7 @@ other operand's image.""",
 
         group.append(
             "factor",
-            cellprofiler.setting.Float(
+            cellprofiler_core.setting.Float(
                 "Multiply the image by",
                 1,
                 doc="""\
@@ -306,12 +306,12 @@ is applied before other operations.""",
         if removable:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image", self.images, group
                 ),
             )
 
-        group.append("divider", cellprofiler.setting.Divider())
+        group.append("divider", cellprofiler_core.setting.Divider())
         self.images.append(group)
 
     def renumber_settings(self):
@@ -659,7 +659,7 @@ is applied before other operations.""",
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:
                 return
-        raise cellprofiler.setting.ValidationError(
+        raise cellprofiler_core.setting.ValidationError(
             "At least one of the operands must be an image", op.image_or_measurement
         )
 
@@ -676,7 +676,7 @@ is applied before other operations.""",
                 1,  # post-multiply factor
                 0,  # addend
                 truncate,  # truncate low
-                cellprofiler.setting.NO,  # truncate high
+                cellprofiler_core.setting.NO,  # truncate high
                 resulting_image_name,
                 basic_image_name,
                 multiply_factor_2,
@@ -690,7 +690,7 @@ is applied before other operations.""",
             names_and_weights = [
                 (name, weight)
                 for name, weight in zip(setting_values[:3], setting_values[4:])
-                if name.lower() != cellprofiler.setting.DO_NOT_USE.lower()
+                if name.lower() != cellprofiler_core.setting.DO_NOT_USE.lower()
             ]
 
             multiplier = 1.0 / sum(
@@ -702,8 +702,8 @@ is applied before other operations.""",
                 "1",  # Exponent
                 str(multiplier),  # Post-operation multiplier
                 "0",  # Post-operation offset
-                cellprofiler.setting.NO,  # Truncate low
-                cellprofiler.setting.NO,  # Truncate high
+                cellprofiler_core.setting.NO,  # Truncate low
+                cellprofiler_core.setting.NO,  # Truncate high
                 output_image,
             ]
             for name, weight in names_and_weights:
@@ -719,16 +719,16 @@ is applied before other operations.""",
             image_name, output_image = setting_values
             setting_values = [
                 image_name,
-                cellprofiler.setting.DO_NOT_USE,
-                cellprofiler.setting.DO_NOT_USE,
+                cellprofiler_core.setting.DO_NOT_USE,
+                cellprofiler_core.setting.DO_NOT_USE,
                 "Invert",
                 1,
                 1,
                 1,
                 1,
                 1,
-                cellprofiler.setting.NO,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
+                cellprofiler_core.setting.NO,
                 output_image,
             ]
             module_name = "ImageMath"
@@ -738,15 +738,15 @@ is applied before other operations.""",
             setting_values = [
                 image1,
                 image2,
-                cellprofiler.setting.DO_NOT_USE,
+                cellprofiler_core.setting.DO_NOT_USE,
                 "Multiply",
                 1,
                 1,
                 1,
                 1,
                 1,
-                cellprofiler.setting.NO,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
+                cellprofiler_core.setting.NO,
                 output_image,
             ]
             module_name = "ImageMath"
@@ -761,7 +761,7 @@ is applied before other operations.""",
             try:
                 factors += [float(setting_values[2]) * float(setting_values[5])]
             except ValueError:
-                if setting_values[2] != cellprofiler.setting.DO_NOT_USE:
+                if setting_values[2] != cellprofiler_core.setting.DO_NOT_USE:
                     image_names += [setting_values[2]]
                     input_factors += [float(setting_values[5])]
             exponent = 1.0
@@ -811,7 +811,7 @@ is applied before other operations.""",
                 try:
                     factors += [float(setting_values[i]) * float(setting_values[i + 4])]
                 except ValueError:
-                    if setting_values[i] != cellprofiler.setting.DO_NOT_USE:
+                    if setting_values[i] != cellprofiler_core.setting.DO_NOT_USE:
                         image_names += [setting_values[i]]
                         input_factors += [float(setting_values[i + 4])]
 

@@ -110,8 +110,8 @@ import skimage.util
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 TEXTURE = "Texture"
 
@@ -138,37 +138,37 @@ class MeasureTexture(cellprofiler_core.module.Module):
 
         self.scale_groups = []
 
-        self.image_count = cellprofiler.setting.HiddenCount(self.image_groups)
+        self.image_count = cellprofiler_core.setting.HiddenCount(self.image_groups)
 
-        self.object_count = cellprofiler.setting.HiddenCount(self.object_groups)
+        self.object_count = cellprofiler_core.setting.HiddenCount(self.object_groups)
 
-        self.scale_count = cellprofiler.setting.HiddenCount(self.scale_groups)
+        self.scale_count = cellprofiler_core.setting.HiddenCount(self.scale_groups)
 
         self.add_image(removable=False)
 
-        self.add_images = cellprofiler.setting.DoSomething(
+        self.add_images = cellprofiler_core.setting.DoSomething(
             callback=self.add_image, label="Add another image", text=""
         )
 
-        self.image_divider = cellprofiler.setting.Divider()
+        self.image_divider = cellprofiler_core.setting.Divider()
 
         self.add_object(removable=True)
 
-        self.add_objects = cellprofiler.setting.DoSomething(
+        self.add_objects = cellprofiler_core.setting.DoSomething(
             callback=self.add_object, label="Add another object", text=""
         )
 
-        self.object_divider = cellprofiler.setting.Divider()
+        self.object_divider = cellprofiler_core.setting.Divider()
 
         self.add_scale(removable=False)
 
-        self.add_scales = cellprofiler.setting.DoSomething(
+        self.add_scales = cellprofiler_core.setting.DoSomething(
             callback=self.add_scale, label="Add another scale", text=""
         )
 
-        self.scale_divider = cellprofiler.setting.Divider()
+        self.scale_divider = cellprofiler_core.setting.Divider()
 
-        self.images_or_objects = cellprofiler.setting.Choice(
+        self.images_or_objects = cellprofiler_core.setting.Choice(
             "Measure images or objects?",
             [IO_IMAGES, IO_OBJECTS, IO_BOTH],
             value=IO_BOTH,
@@ -255,23 +255,23 @@ measurements, per-object measurements or both.
         :param removable: set this to False to keep from showing the "remove" button for images that must be present.
 
         """
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         if removable:
-            divider = cellprofiler.setting.Divider(line=False)
+            divider = cellprofiler_core.setting.Divider(line=False)
 
             group.append("divider", divider)
 
-        image = cellprofiler.setting.ImageNameSubscriber(
+        image = cellprofiler_core.setting.ImageNameSubscriber(
             doc="Select the grayscale images whose texture you want to measure.",
             text="Select an image to measure",
-            value=cellprofiler.setting.NONE,
+            value=cellprofiler_core.setting.NONE,
         )
 
         group.append("image_name", image)
 
         if removable:
-            remove_setting = cellprofiler.setting.RemoveSettingButton(
+            remove_setting = cellprofiler_core.setting.RemoveSettingButton(
                 entry=group, label="Remove this image", list=self.image_groups, text=""
             )
 
@@ -287,14 +287,14 @@ measurements, per-object measurements or both.
         :param removable: set this to False to keep from showing the "remove" button for objects that must be present.
 
         """
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         if removable:
-            divider = cellprofiler.setting.Divider(line=False)
+            divider = cellprofiler_core.setting.Divider(line=False)
 
             group.append("divider", divider)
 
-        object_subscriber = cellprofiler.setting.ObjectNameSubscriber(
+        object_subscriber = cellprofiler_core.setting.ObjectNameSubscriber(
             doc="""\
 Select the objects whose texture you want to measure. If you only want
 to measure the texture for the image overall, you can remove all objects
@@ -307,13 +307,13 @@ are unnecessary. If you do not want this behavior, use multiple
 measures that you want.
 """,
             text="Select objects to measure",
-            value=cellprofiler.setting.NONE,
+            value=cellprofiler_core.setting.NONE,
         )
 
         group.append("object_name", object_subscriber)
 
         if removable:
-            remove_setting = cellprofiler.setting.RemoveSettingButton(
+            remove_setting = cellprofiler_core.setting.RemoveSettingButton(
                 entry=group,
                 label="Remove this object",
                 list=self.object_groups,
@@ -332,12 +332,12 @@ measures that you want.
         :param removable: set this to False to keep from showing the "remove" button for scales that must be present.
 
         """
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         if removable:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
-        scale = cellprofiler.setting.Integer(
+        scale = cellprofiler_core.setting.Integer(
             doc="""\
 You can specify the scale of texture to be measured, in pixel units; the
 texture scale is the distance between correlated intensities in the
@@ -356,7 +356,7 @@ measured and will result in a undefined value in the output file.
         group.append("scale", scale)
 
         if removable:
-            remove_setting = cellprofiler.setting.RemoveSettingButton(
+            remove_setting = cellprofiler_core.setting.RemoveSettingButton(
                 entry=group, label="Remove this scale", list=self.scale_groups, text=""
             )
 
@@ -369,7 +369,7 @@ measured and will result in a undefined value in the output file.
 
         for group in self.image_groups:
             if group.image_name.value in images:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "{} has already been selected".format(group.image_name.value),
                     group.image_name,
                 )
@@ -381,7 +381,7 @@ measured and will result in a undefined value in the output file.
 
             for group in self.object_groups:
                 if group.object_name.value in objects:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "{} has already been selected".format(group.object_name.value),
                         group.object_name,
                     )
@@ -392,7 +392,7 @@ measured and will result in a undefined value in the output file.
 
         for group in self.scale_groups:
             if group.scale.value in scales:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "{} has already been selected".format(group.scale.value),
                     group.scale,
                 )
@@ -586,13 +586,13 @@ measured and will result in a undefined value in the output file.
             )
             pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = cellprofiler.object.size_similarly(
+            pixel_data, m1 = cellprofiler_core.object.size_similarly(
                 labels, image.pixel_data
             )
 
             if numpy.any(~m1):
                 if image.has_mask:
-                    mask, m2 = cellprofiler.object.size_similarly(labels, image.mask)
+                    mask, m2 = cellprofiler_core.object.size_similarly(labels, image.mask)
                     mask[~m2] = False
                 else:
                     mask = m1
@@ -710,7 +710,7 @@ measured and will result in a undefined value in the output file.
             # Added "wants_gabor"
             #
             setting_values = (
-                setting_values[:-1] + [cellprofiler.setting.YES] + setting_values[-1:]
+                setting_values[:-1] + [cellprofiler_core.setting.YES] + setting_values[-1:]
             )
 
             variable_revision_number = 2

@@ -36,7 +36,7 @@ knime_bridge_address = None
 
 def aw_parse_args():
     """Parse the application arguments into setup parameters"""
-    from cellprofiler.preferences import (
+    from cellprofiler_core.preferences import (
         set_headless,
         set_awt_headless,
         set_plugin_directory,
@@ -92,7 +92,7 @@ def aw_parse_args():
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler_core.preferences import set_jvm_heap_mb
 
         set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
@@ -149,7 +149,7 @@ import six.moves
 
 import cellprofiler.workspace as cpw
 import cellprofiler_core.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler_core.preferences as cpprefs
 from cellprofiler.analysis import (
     PipelinePreferencesRequest,
     InitialMeasurementsRequest,
@@ -313,7 +313,7 @@ class AnalysisWorker(object):
         J.detach()
 
     def run(self):
-        from cellprofiler.pipeline import CancelledException
+        from cellprofiler_core.pipeline.event import CancelledException
 
         t0 = 0
         with self.AnalysisWorkerThreadObject(self):
@@ -347,7 +347,7 @@ class AnalysisWorker(object):
 
         job - WorkRequest
         """
-        import cellprofiler.pipeline as cpp
+        import cellprofiler_core.pipeline as cpp
 
         job_measurements = []
         try:
@@ -487,7 +487,7 @@ class AnalysisWorker(object):
                                 image_set_number=image_set_number,
                             )
                         rep = self.send(req)
-                    except cpp.CancelledException:
+                    except CancelledException:
                         logging.info("Aborting job after cancellation")
                         abort = True
                     except Exception:
@@ -534,14 +534,14 @@ class AnalysisWorker(object):
             )
             rep = self.send(req)
 
-        except cpp.CancelledException:
+        except CancelledException:
             # Main thread received shutdown signal
             raise
 
         except Exception:
             logging.error("Error in worker", exc_info=True)
             if self.handle_exception() == ED_STOP:
-                raise cpp.CancelledException("Cancelling after user-requested stop")
+                raise CancelledException("Cancelling after user-requested stop")
         finally:
             # Clean up any measurements owned by us
             for m in job_measurements:
@@ -608,7 +608,7 @@ class AnalysisWorker(object):
         returns a reply on success. If cancelled, throws a CancelledException
         """
         if self.current_analysis_id is None:
-            from cellprofiler.pipeline import CancelledException
+            from cellprofiler_core.pipeline.event import CancelledException
 
             raise CancelledException("Can't send after cancelling")
         if work_socket is None:
@@ -646,7 +646,7 @@ class AnalysisWorker(object):
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
         """
-        from cellprofiler.pipeline import CancelledException
+        from cellprofiler_core.pipeline.event import CancelledException
 
         logger.debug(msg)
         self.cancelled = True
@@ -677,7 +677,7 @@ class AnalysisWorker(object):
                     if socket == self.notify_socket and state == zmq.POLLIN:
                         msg = self.notify_socket.recv()
                         if msg == NOTIFY_STOP:
-                            from cellprofiler.pipeline import CancelledException
+                            from cellprofiler_core.pipeline.event import CancelledException
 
                             self.cancelled = True
                             raise CancelledException()
@@ -766,9 +766,9 @@ class PipelineEventListener(object):
         self.should_skip = False
 
     def handle_event(self, pipeline, event):
-        from cellprofiler.pipeline import RunExceptionEvent
+        from cellprofiler_core.pipeline import RunException
 
-        if isinstance(event, RunExceptionEvent):
+        if isinstance(event, RunException):
             disposition = self.handle_exception_fn(
                 image_set_number=self.image_set_number,
                 module_name=event.module.module_name,

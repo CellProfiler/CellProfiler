@@ -10,8 +10,8 @@ import cellprofiler.gui.help
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 from cellprofiler.modules import _help, threshold
 
 __doc__ = """\
@@ -197,7 +197,7 @@ secondary object and completely contained within it."""
 
         self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
-        self.method = cellprofiler.setting.Choice(
+        self.method = cellprofiler_core.setting.Choice(
             "Select the method to identify the secondary objects",
             [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
             M_PROPAGATION,
@@ -284,9 +284,9 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
             ),
         )
 
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""\
 The selected image will be used to find the edges of the secondary
 objects. For *{M_DISTANCE_N:s}* this will not affect object
@@ -296,7 +296,7 @@ identification, only the module's display.
             ),
         )
 
-        self.distance_to_dilate = cellprofiler.setting.Integer(
+        self.distance_to_dilate = cellprofiler_core.setting.Integer(
             "Number of pixels by which to expand the primary objects",
             10,
             minval=1,
@@ -312,7 +312,7 @@ measurements.
             ),
         )
 
-        self.regularization_factor = cellprofiler.setting.Float(
+        self.regularization_factor = cellprofiler_core.setting.Float(
             "Regularization factor",
             0.05,
             minval=0,
@@ -341,7 +341,7 @@ balance between these two considerations:
             ),
         )
 
-        self.wants_discard_edge = cellprofiler.setting.Binary(
+        self.wants_discard_edge = cellprofiler_core.setting.Binary(
             "Discard secondary objects touching the border of the image?",
             False,
             doc="""\
@@ -354,11 +354,11 @@ modules, but they are retained in memory as “Unedited objects”; this
 allows them to be considered in downstream modules that modify the
 segmentation.
 """.format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
             ),
         )
 
-        self.fill_holes = cellprofiler.setting.Binary(
+        self.fill_holes = cellprofiler_core.setting.Binary(
             "Fill holes in identified objects?",
             True,
             doc="""\
@@ -367,11 +367,11 @@ Select *{YES:s}* to fill any holes inside objects.
 Please note that if an object is located within a hole and this option is
 enabled, the object will be lost when the hole is filled in.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.wants_discard_primary = cellprofiler.setting.Binary(
+        self.wants_discard_primary = cellprofiler_core.setting.Binary(
             "Discard the associated primary objects?",
             False,
             doc="""\
@@ -385,11 +385,11 @@ Select *{YES:s}* to create a new set of objects that are identical to
 the original set of primary objects, minus the objects for which the
 associated secondary object touches the image edge.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.new_primary_objects_name = cellprofiler.setting.ObjectNameProvider(
+        self.new_primary_objects_name = cellprofiler_core.setting.ObjectNameProvider(
             "Name the new primary objects",
             "FilteredNuclei",
             doc="""\
@@ -403,7 +403,7 @@ this allows them to be considered in downstream modules that modify the
 segmentation.""",
         )
 
-        self.threshold_setting_version = cellprofiler.setting.Integer(
+        self.threshold_setting_version = cellprofiler_core.setting.Integer(
             "Threshold setting version", value=self.threshold.variable_revision_number
         )
 
@@ -701,7 +701,7 @@ segmentation.""",
             lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
             segmented_labels = lookup[objects.segmented]
             segmented_out = lookup[segmented_out]
-            new_objects = cellprofiler.object.Objects()
+            new_objects = cellprofiler_core.object.Objects()
             new_objects.segmented = segmented_labels
             if objects.has_unedited_segmented:
                 new_objects.unedited_segmented = objects.unedited_segmented
@@ -712,7 +712,7 @@ segmentation.""",
         #
         # Add the objects to the object set
         #
-        objects_out = cellprofiler.object.Objects()
+        objects_out = cellprofiler_core.object.Objects()
         objects_out.unedited_segmented = small_removed_segmented_out
         objects_out.small_removed_segmented = small_removed_segmented_out
         objects_out.segmented = segmented_out
@@ -892,7 +892,7 @@ segmentation.""",
         segmented_labels = objects.segmented
         max_out = numpy.max(labels_out)
         if max_out > 0:
-            segmented_labels, m1 = cellprofiler.object.size_similarly(
+            segmented_labels, m1 = cellprofiler_core.object.size_similarly(
                 labels_out, segmented_labels
             )
             segmented_labels[~m1] = 0

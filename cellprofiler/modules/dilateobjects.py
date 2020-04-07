@@ -25,8 +25,8 @@ YES          YES          NO
 """
 
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
@@ -41,7 +41,7 @@ class DilateObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing
     def create_settings(self):
         super(DilateObjects, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(
+        self.structuring_element = cellprofiler_core.setting.StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

@@ -42,9 +42,9 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.tools
 import cellprofiler_core.modules.loadimages
-import cellprofiler.object
-import cellprofiler.preferences
-from cellprofiler.setting import LOG
+import cellprofiler_core.object
+import cellprofiler_core.preferences
+from cellprofiler_core.setting import LOG
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +184,7 @@ def close_all(parent):
         else:
             window.Close()
 
-    cellprofiler.preferences.reset_cpfigure_position()
+    cellprofiler_core.preferences.reset_cpfigure_position()
 
 
 def allow_sharexy(fn):
@@ -285,12 +285,12 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
 
 
 def get_matplotlib_interpolation_preference():
-    interpolation = cellprofiler.preferences.get_interpolation_mode()
-    if interpolation == cellprofiler.preferences.IM_NEAREST:
+    interpolation = cellprofiler_core.preferences.get_interpolation_mode()
+    if interpolation == cellprofiler_core.preferences.IM_NEAREST:
         return "nearest"
-    elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+    elif interpolation == cellprofiler_core.preferences.IM_BILINEAR:
         return "bilinear"
-    elif interpolation == cellprofiler.preferences.IM_BICUBIC:
+    elif interpolation == cellprofiler_core.preferences.IM_BICUBIC:
         return "bilinear"
     return "nearest"
 
@@ -348,7 +348,7 @@ class Figure(wx.Frame):
         """
         global window_ids
         if pos == wx.DefaultPosition:
-            pos = cellprofiler.preferences.get_next_cpfigure_position()
+            pos = cellprofiler_core.preferences.get_next_cpfigure_position()
         super(Figure, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
         self.mouse_mode = MODE_NONE
@@ -982,12 +982,12 @@ class Figure(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = cellprofiler.preferences.get_title_font_name()
+        fontname = cellprofiler_core.preferences.get_title_font_name()
 
         self.subplot(x, y).set_title(
             title,
             fontname=fontname,
-            fontsize=cellprofiler.preferences.get_title_font_size(),
+            fontsize=cellprofiler_core.preferences.get_title_font_size(),
         )
 
     def clear_subplot(self, x, y):
@@ -1179,7 +1179,7 @@ class Figure(wx.Frame):
 
         def adjust_gamma(evt):
             dlg = wx.TextEntryDialog(self, "Normalization factor", "Adjust gamma")
-            dlg.SetValue(cellprofiler.preferences.get_normalization_factor())
+            dlg.SetValue(cellprofiler_core.preferences.get_normalization_factor())
             if dlg.ShowModal() == wx.ID_OK:
                 params["normalize_args"] = {"gamma": float(dlg.GetValue())}
             dlg.Destroy()
@@ -1188,7 +1188,7 @@ class Figure(wx.Frame):
 
         def adjust_log(evt):
             dlg = wx.TextEntryDialog(self, "Normalization factor", "Log normalization")
-            dlg.SetValue(cellprofiler.preferences.get_normalization_factor())
+            dlg.SetValue(cellprofiler_core.preferences.get_normalization_factor())
             if dlg.ShowModal() == wx.ID_OK:
                 params["normalize_args"] = {"gain": float(dlg.GetValue())}
             dlg.Destroy()
@@ -1480,21 +1480,21 @@ class Figure(wx.Frame):
                 interpolation = get_matplotlib_interpolation_preference()
 
             if normalize is None:
-                normalize = cellprofiler.preferences.get_intensity_mode()
+                normalize = cellprofiler_core.preferences.get_intensity_mode()
 
-                if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
+                if normalize == cellprofiler_core.preferences.INTENSITY_MODE_RAW:
                     normalize = False
                 elif normalize == False:
                     normalize = False
-                elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
+                elif normalize == cellprofiler_core.preferences.INTENSITY_MODE_LOG:
                     normalize = "log"
                     normalize_args["gain"] = float(
-                        cellprofiler.preferences.get_normalization_factor()
+                        cellprofiler_core.preferences.get_normalization_factor()
                     )
-                elif normalize == cellprofiler.preferences.INTENSITY_MODE_GAMMA:
+                elif normalize == cellprofiler_core.preferences.INTENSITY_MODE_GAMMA:
                     normalize = "gamma"
                     normalize_args["gamma"] = float(
-                        cellprofiler.preferences.get_normalization_factor()
+                        cellprofiler_core.preferences.get_normalization_factor()
                     )
                 else:
                     normalize = True
@@ -1513,15 +1513,15 @@ class Figure(wx.Frame):
                         if i == 0:
                             d[
                                 CPLD_OUTLINE_COLOR
-                            ] = cellprofiler.preferences.get_primary_outline_color()
+                            ] = cellprofiler_core.preferences.get_primary_outline_color()
                         elif i == 1:
                             d[
                                 CPLD_OUTLINE_COLOR
-                            ] = cellprofiler.preferences.get_secondary_outline_color()
+                            ] = cellprofiler_core.preferences.get_secondary_outline_color()
                         elif i == 2:
                             d[
                                 CPLD_OUTLINE_COLOR
-                            ] = cellprofiler.preferences.get_tertiary_outline_color()
+                            ] = cellprofiler_core.preferences.get_tertiary_outline_color()
 
                     if CPLD_MODE not in d:
                         d[CPLD_MODE] = CPLDM_OUTLINES
@@ -1532,7 +1532,7 @@ class Figure(wx.Frame):
                     if CPLD_ALPHA_COLORMAP not in d:
                         d[
                             CPLD_ALPHA_COLORMAP
-                        ] = cellprofiler.preferences.get_default_colormap()
+                        ] = cellprofiler_core.preferences.get_default_colormap()
 
                     if CPLD_ALPHA_VALUE not in d:
                         d[CPLD_ALPHA_VALUE] = 0.25
@@ -1573,7 +1573,7 @@ class Figure(wx.Frame):
             self.subplot_params[(x, y)].update(kwargs)
 
             if kwargs["colormap"] is None:
-                kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
+                kwargs["colormap"] = cellprofiler_core.preferences.get_default_colormap()
 
             # and fetch back out
             title = kwargs["title"]
@@ -1816,7 +1816,7 @@ class Figure(wx.Frame):
         """
         if background_image is not None:
             opacity = 0.7
-            label_image = cellprofiler.object.overlay_labels(
+            label_image = cellprofiler_core.object.overlay_labels(
                 labels=image,
                 opacity=opacity,
                 pixel_data=background_image,
@@ -1850,7 +1850,7 @@ class Figure(wx.Frame):
     def return_cmap(self):
         # Get the colormap from the user preferences
         colormap = matplotlib.cm.get_cmap(
-            cellprofiler.preferences.get_default_colormap()
+            cellprofiler_core.preferences.get_default_colormap()
         )
         # Initialize the colormap so we have access to the LUT
         colormap._init()
@@ -1905,7 +1905,7 @@ class Figure(wx.Frame):
         image = numpy.zeros(list(shape) + [3], numpy.float)
 
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+            cm = matplotlib.cm.get_cmap(cellprofiler_core.preferences.get_default_colormap())
 
             max_label = numpy.max(ijv[:, 2])
 

@@ -21,7 +21,7 @@ import zmq
 import cellprofiler
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 import cellprofiler.workspace
 from cellprofiler.utilities.zmqrequest import (
     AnalysisRequest,
@@ -333,7 +333,7 @@ class AnalysisRunner:
             if self.output_path is None:
                 # Caller wants a temporary measurements file.
                 fd, filename = tempfile.mkstemp(
-                    ".h5", dir=cellprofiler.preferences.get_temporary_directory()
+                    ".h5", dir=cellprofiler_core.preferences.get_temporary_directory()
                 )
                 try:
                     fd = os.fdopen(fd, "wb")
@@ -681,7 +681,7 @@ class AnalysisRunner:
                 req.reply(
                     Reply(
                         pipeline_blob=numpy.array(self.pipeline_as_string()),
-                        preferences=cellprofiler.preferences.preferences_as_dict(),
+                        preferences=cellprofiler_core.preferences.preferences_as_dict(),
                     )
                 )
                 logger.debug("Replied to pipeline preferences request")
@@ -800,7 +800,7 @@ class AnalysisRunner:
             if os.environ["CP_DEBUG_WORKER"] == "NOT_INPROC":
                 return
             from cellprofiler.worker import AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
-            from cellprofiler.pipeline import CancelledException
+            from cellprofiler_core.pipeline.event import CancelledException
 
             class WorkerRunner(threading.Thread):
                 def __init__(self, work_announce_address):
@@ -836,11 +836,11 @@ class AnalysisRunner:
                 "--work-announce",
                 cls.work_announce_address,
                 "--plugins-directory",
-                cellprofiler.preferences.get_plugin_directory(),
+                cellprofiler_core.preferences.get_plugin_directory(),
                 "--ij-plugins-directory",
-                cellprofiler.preferences.get_ij_plugin_directory(),
+                cellprofiler_core.preferences.get_ij_plugin_directory(),
             ]
-            jvm_arg = "%dm" % cellprofiler.preferences.get_jvm_heap_mb()
+            jvm_arg = "%dm" % cellprofiler_core.preferences.get_jvm_heap_mb()
             aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
@@ -1171,8 +1171,8 @@ if sys.platform == "darwin":
 
 
 if __name__ == "__main__":
-    import cellprofiler.pipeline
-    import cellprofiler.preferences
+    import cellprofiler_core.pipeline
+    import cellprofiler_core.preferences
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply
     # classes above, so that regardless of whether this is the current module,

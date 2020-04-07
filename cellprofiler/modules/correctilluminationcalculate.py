@@ -61,8 +61,8 @@ from centrosome.smooth import smooth_with_function_and_mask
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"

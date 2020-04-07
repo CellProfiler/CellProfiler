@@ -26,8 +26,8 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 
 DEFAULT_COLORMAP = "Default"
 
@@ -40,19 +40,19 @@ class ConvertObjectsToImage(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.object_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input objects",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="Choose the name of the objects you want to convert to an image.",
         )
 
-        self.image_name = cellprofiler.setting.ImageNameProvider(
+        self.image_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             "CellImage",
             doc="Enter the name of the resulting image.",
         )
 
-        self.image_mode = cellprofiler.setting.Choice(
+        self.image_mode = cellprofiler_core.setting.Choice(
             "Select the color format",
             ["Color", "Binary (black & white)", "Grayscale", "uint16"],
             doc="""\
@@ -84,7 +84,7 @@ objects.
             """,
         )
 
-        self.colormap = cellprofiler.setting.Colormap(
+        self.colormap = cellprofiler_core.setting.Colormap(
             "Select the colormap",
             doc="""\
 *(Used only if "Color" output image selected)*
@@ -139,7 +139,7 @@ Preferences*.
                 alpha[mask] = 1
             elif self.image_mode == "Color":
                 if self.colormap.value == DEFAULT_COLORMAP:
-                    cm_name = cellprofiler.preferences.get_default_colormap()
+                    cm_name = cellprofiler_core.preferences.get_default_colormap()
                 elif self.colormap.value == "colorcube":
                     # Colorcube missing from matplotlib
                     cm_name = "gist_rainbow"

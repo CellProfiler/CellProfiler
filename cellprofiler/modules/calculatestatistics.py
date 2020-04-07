@@ -150,7 +150,7 @@ import six
 
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 from cellprofiler.modules._help import (
     IO_FOLDER_CHOICE_HELP_TEXT,
@@ -176,11 +176,11 @@ class CalculateStatistics(cpm.Module):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
+            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler.settings.Float(...)"""
+            self.smoothing_size = cellprofiler_core.settings.Float(...)"""
 
         self.grouping_values = cps.Measurement(
             "Select the image measurement describing the positive and negative control status",
@@ -316,7 +316,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.

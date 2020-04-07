@@ -9,8 +9,8 @@ import sys
 import wx
 
 import cellprofiler.gui.pipeline
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 
 FC_FILENAME_COLUMN = 0
 FC_DATE_COLUMN = 1
@@ -55,7 +55,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.add_dialog_buttons(self.sizer)
 
         self.hookup_events()
-        self.set_path(cellprofiler.preferences.get_default_output_directory())
+        self.set_path(cellprofiler_core.preferences.get_default_output_directory())
         self.Layout()
 
     def add_file_chooser(self, sizer):
@@ -145,16 +145,16 @@ class RunMultplePipelinesDialog(wx.Dialog):
             ext = os.path.splitext(file_name)[1].lower()
             if (
                 len(ext) > 0
-                and ext[1:] in cellprofiler.preferences.EXT_PIPELINE_CHOICES
+                and ext[1:] in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES
             ):
                 file_names.append(file_name)
         self.file_chooser.DeleteAllItems()
         module_count = [None]
 
         def on_pipeline_event(caller, event):
-            if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+            if isinstance(event, cellprofiler_core.pipeline.event.LoadException):
                 module_count[0] = None
-            elif isinstance(event, cellprofiler.pipeline.PipelineLoadedEvent):
+            elif isinstance(event, cellprofiler_core.pipeline.event.PipelineLoaded):
                 module_count[0] = len(caller.modules())
 
         pipeline = cellprofiler.gui.pipeline.Pipeline()
@@ -194,17 +194,17 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 self.pipeline_list_view.SetStringItem(
                     index,
                     P_INPUT_DIRECTORY_COLUMN,
-                    cellprofiler.preferences.get_default_image_directory(),
+                    cellprofiler_core.preferences.get_default_image_directory(),
                 )
                 self.pipeline_list_view.SetStringItem(
                     index,
                     P_OUTPUT_DIRECTORY_COLUMN,
-                    cellprofiler.preferences.get_default_output_directory(),
+                    cellprofiler_core.preferences.get_default_output_directory(),
                 )
                 self.pipeline_list_view.SetStringItem(
                     index,
                     P_OUTPUT_FILE_COLUMN,
-                    cellprofiler.preferences.get_output_file_name(),
+                    cellprofiler_core.preferences.get_output_file_name(),
                 )
                 self.pipeline_list_view.SetItemColumnImage(
                     index, P_REMOVE_BUTTON_COLUMN, self.delete_bmp_idx

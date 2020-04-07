@@ -262,7 +262,7 @@ import scipy.ndimage as scind
 logger = logging.getLogger(__name__)
 
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 import cellprofiler_core.image as cpi
 import centrosome.cpmorphology as morph
 from centrosome.filter import poisson_equation

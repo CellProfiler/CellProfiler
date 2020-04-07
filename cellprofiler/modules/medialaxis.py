@@ -26,7 +26,7 @@ import skimage.morphology
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 
 class MedialAxis(cellprofiler_core.module.ImageProcessing):

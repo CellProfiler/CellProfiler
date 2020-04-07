@@ -9,7 +9,7 @@ import sys
 import javabridge
 import prokaryote
 
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 logger = logging.getLogger(__name__)
 
@@ -100,12 +100,12 @@ def cp_start_vm():
         args.append("-Dlogback.configurationFile=%s" % logback_path)
 
     class_path = get_jars()
-    awt_headless = cellprofiler.preferences.get_awt_headless()
+    awt_headless = cellprofiler_core.preferences.get_awt_headless()
     if awt_headless:
         logger.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
-    heap_size = str(cellprofiler.preferences.get_jvm_heap_mb()) + "m"
+    heap_size = str(cellprofiler_core.preferences.get_jvm_heap_mb()) + "m"
     if "CP_JDWP_PORT" in os.environ:
         args.append(
             (

@@ -13,7 +13,7 @@ import wx.lib.scrolledpanel
 import cellprofiler.gui.help
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"
@@ -117,7 +117,7 @@ class PreferencesDlg(wx.Dialog):
                 maxval = sys.maxsize if ui_info.maxval is None else ui_info.maxval
                 ctl = wx.SpinCtrl(scrollpanel, min=minval, max=maxval, initial=getter())
             else:
-                if getter == cellprofiler.preferences.get_ij_plugin_directory:
+                if getter == cellprofiler_core.preferences.get_ij_plugin_directory:
                     validator = ClassPathValidator()
                 else:
                     validator = wx.DefaultValidator
@@ -270,191 +270,191 @@ class PreferencesDlg(wx.Dialog):
         return [
             [
                 "Send Telemetry to the CellProfiler Team",
-                cellprofiler.preferences.get_telemetry,
-                cellprofiler.preferences.set_telemetry,
+                cellprofiler_core.preferences.get_telemetry,
+                cellprofiler_core.preferences.set_telemetry,
                 CHOICE,
-                cellprofiler.preferences.SHOW_TELEMETRY_HELP,
+                cellprofiler_core.preferences.SHOW_TELEMETRY_HELP,
             ],
             [
                 "Default Input Folder",
-                cellprofiler.preferences.get_default_image_directory,
-                cellprofiler.preferences.set_default_image_directory,
+                cellprofiler_core.preferences.get_default_image_directory,
+                cellprofiler_core.preferences.set_default_image_directory,
                 DIRBROWSE,
-                cellprofiler.preferences.DEFAULT_IMAGE_FOLDER_HELP,
+                cellprofiler_core.preferences.DEFAULT_IMAGE_FOLDER_HELP,
             ],
             [
                 "Default Output Folder",
-                cellprofiler.preferences.get_default_output_directory,
-                cellprofiler.preferences.set_default_output_directory,
+                cellprofiler_core.preferences.get_default_output_directory,
+                cellprofiler_core.preferences.set_default_output_directory,
                 DIRBROWSE,
-                cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_HELP,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_HELP,
             ],
             [
                 "Table font",
                 self.get_table_font,
                 self.set_table_font,
                 FONT,
-                cellprofiler.preferences.TABLE_FONT_HELP,
+                cellprofiler_core.preferences.TABLE_FONT_HELP,
             ],
             [
                 "Default colormap",
-                cellprofiler.preferences.get_default_colormap,
-                cellprofiler.preferences.set_default_colormap,
+                cellprofiler_core.preferences.get_default_colormap,
+                cellprofiler_core.preferences.set_default_colormap,
                 cmaps,
-                cellprofiler.preferences.DEFAULT_COLORMAP_HELP,
+                cellprofiler_core.preferences.DEFAULT_COLORMAP_HELP,
             ],
             [
                 "Error color",
-                cellprofiler.preferences.get_error_color,
-                cellprofiler.preferences.set_error_color,
+                cellprofiler_core.preferences.get_error_color,
+                cellprofiler_core.preferences.set_error_color,
                 COLOR,
-                cellprofiler.preferences.ERROR_COLOR_HELP,
+                cellprofiler_core.preferences.ERROR_COLOR_HELP,
             ],
             [
                 "Primary outline color",
-                cellprofiler.preferences.get_primary_outline_color,
-                cellprofiler.preferences.set_primary_outline_color,
+                cellprofiler_core.preferences.get_primary_outline_color,
+                cellprofiler_core.preferences.set_primary_outline_color,
                 COLOR,
-                cellprofiler.preferences.PRIMARY_OUTLINE_COLOR_HELP,
+                cellprofiler_core.preferences.PRIMARY_OUTLINE_COLOR_HELP,
             ],
             [
                 "Secondary outline color",
-                cellprofiler.preferences.get_secondary_outline_color,
-                cellprofiler.preferences.set_secondary_outline_color,
+                cellprofiler_core.preferences.get_secondary_outline_color,
+                cellprofiler_core.preferences.set_secondary_outline_color,
                 COLOR,
-                cellprofiler.preferences.SECONDARY_OUTLINE_COLOR_HELP,
+                cellprofiler_core.preferences.SECONDARY_OUTLINE_COLOR_HELP,
             ],
             [
                 "Tertiary outline color",
-                cellprofiler.preferences.get_tertiary_outline_color,
-                cellprofiler.preferences.set_tertiary_outline_color,
+                cellprofiler_core.preferences.get_tertiary_outline_color,
+                cellprofiler_core.preferences.set_tertiary_outline_color,
                 COLOR,
-                cellprofiler.preferences.TERTIARY_OUTLINE_COLOR_HELP,
+                cellprofiler_core.preferences.TERTIARY_OUTLINE_COLOR_HELP,
             ],
             [
                 "Interpolation mode",
-                cellprofiler.preferences.get_interpolation_mode,
-                cellprofiler.preferences.set_interpolation_mode,
+                cellprofiler_core.preferences.get_interpolation_mode,
+                cellprofiler_core.preferences.set_interpolation_mode,
                 [
-                    cellprofiler.preferences.IM_NEAREST,
-                    cellprofiler.preferences.IM_BILINEAR,
-                    cellprofiler.preferences.IM_BICUBIC,
+                    cellprofiler_core.preferences.IM_NEAREST,
+                    cellprofiler_core.preferences.IM_BILINEAR,
+                    cellprofiler_core.preferences.IM_BICUBIC,
                 ],
-                cellprofiler.preferences.INTERPOLATION_MODE_HELP,
+                cellprofiler_core.preferences.INTERPOLATION_MODE_HELP,
             ],
             [
                 "Intensity normalization",
-                cellprofiler.preferences.get_intensity_mode,
-                cellprofiler.preferences.set_intensity_mode,
+                cellprofiler_core.preferences.get_intensity_mode,
+                cellprofiler_core.preferences.set_intensity_mode,
                 [
-                    cellprofiler.preferences.INTENSITY_MODE_RAW,
-                    cellprofiler.preferences.INTENSITY_MODE_NORMAL,
-                    cellprofiler.preferences.INTENSITY_MODE_LOG,
-                    cellprofiler.preferences.INTENSITY_MODE_GAMMA,
+                    cellprofiler_core.preferences.INTENSITY_MODE_RAW,
+                    cellprofiler_core.preferences.INTENSITY_MODE_NORMAL,
+                    cellprofiler_core.preferences.INTENSITY_MODE_LOG,
+                    cellprofiler_core.preferences.INTENSITY_MODE_GAMMA,
                 ],
-                cellprofiler.preferences.INTENSITY_MODE_HELP,
+                cellprofiler_core.preferences.INTENSITY_MODE_HELP,
             ],
             [
                 "Intensity normalization factor",
-                cellprofiler.preferences.get_normalization_factor,
-                cellprofiler.preferences.set_normalization_factor,
+                cellprofiler_core.preferences.get_normalization_factor,
+                cellprofiler_core.preferences.set_normalization_factor,
                 TEXT,
-                cellprofiler.preferences.NORMALIZATION_FACTOR_HELP,
+                cellprofiler_core.preferences.NORMALIZATION_FACTOR_HELP,
             ],
             [
                 "CellProfiler plugins directory",
-                cellprofiler.preferences.get_plugin_directory,
-                cellprofiler.preferences.set_plugin_directory,
+                cellprofiler_core.preferences.get_plugin_directory,
+                cellprofiler_core.preferences.set_plugin_directory,
                 DIRBROWSE,
-                cellprofiler.preferences.PLUGINS_DIRECTORY_HELP,
+                cellprofiler_core.preferences.PLUGINS_DIRECTORY_HELP,
             ],
             [
                 "ImageJ plugins directory",
-                cellprofiler.preferences.get_ij_plugin_directory,
-                cellprofiler.preferences.set_ij_plugin_directory,
+                cellprofiler_core.preferences.get_ij_plugin_directory,
+                cellprofiler_core.preferences.set_ij_plugin_directory,
                 DIRBROWSE,
-                cellprofiler.preferences.IJ_PLUGINS_DIRECTORY_HELP,
+                cellprofiler_core.preferences.IJ_PLUGINS_DIRECTORY_HELP,
             ],
             [
                 "Display welcome text on startup",
-                cellprofiler.preferences.get_startup_blurb,
-                cellprofiler.preferences.set_startup_blurb,
+                cellprofiler_core.preferences.get_startup_blurb,
+                cellprofiler_core.preferences.set_startup_blurb,
                 CHOICE,
-                cellprofiler.preferences.SHOW_STARTUP_BLURB_HELP,
+                cellprofiler_core.preferences.SHOW_STARTUP_BLURB_HELP,
             ],
             [
                 "Warn if Java runtime environment not present",
-                cellprofiler.preferences.get_report_jvm_error,
-                cellprofiler.preferences.set_report_jvm_error,
+                cellprofiler_core.preferences.get_report_jvm_error,
+                cellprofiler_core.preferences.set_report_jvm_error,
                 CHOICE,
-                cellprofiler.preferences.REPORT_JVM_ERROR_HELP,
+                cellprofiler_core.preferences.REPORT_JVM_ERROR_HELP,
             ],
             [
                 'Show the "Analysis complete" message at the end of a run',
-                cellprofiler.preferences.get_show_analysis_complete_dlg,
-                cellprofiler.preferences.set_show_analysis_complete_dlg,
+                cellprofiler_core.preferences.get_show_analysis_complete_dlg,
+                cellprofiler_core.preferences.set_show_analysis_complete_dlg,
                 CHOICE,
-                cellprofiler.preferences.SHOW_ANALYSIS_COMPLETE_HELP,
+                cellprofiler_core.preferences.SHOW_ANALYSIS_COMPLETE_HELP,
             ],
             [
                 'Show the "Exiting test mode" message',
-                cellprofiler.preferences.get_show_exiting_test_mode_dlg,
-                cellprofiler.preferences.set_show_exiting_test_mode_dlg,
+                cellprofiler_core.preferences.get_show_exiting_test_mode_dlg,
+                cellprofiler_core.preferences.set_show_exiting_test_mode_dlg,
                 CHOICE,
-                cellprofiler.preferences.SHOW_EXITING_TEST_MODE_HELP,
+                cellprofiler_core.preferences.SHOW_EXITING_TEST_MODE_HELP,
             ],
             [
                 "Warn if images are different sizes",
-                cellprofiler.preferences.get_show_report_bad_sizes_dlg,
-                cellprofiler.preferences.set_show_report_bad_sizes_dlg,
+                cellprofiler_core.preferences.get_show_report_bad_sizes_dlg,
+                cellprofiler_core.preferences.set_show_report_bad_sizes_dlg,
                 CHOICE,
-                cellprofiler.preferences.SHOW_REPORT_BAD_SIZES_DLG_HELP,
+                cellprofiler_core.preferences.SHOW_REPORT_BAD_SIZES_DLG_HELP,
             ],
             [
                 "Show the sampling menu",
-                cellprofiler.preferences.get_show_sampling,
-                cellprofiler.preferences.set_show_sampling,
+                cellprofiler_core.preferences.get_show_sampling,
+                cellprofiler_core.preferences.set_show_sampling,
                 CHOICE,
-                cellprofiler.preferences.SHOW_SAMPLING_MENU_HELP,
+                cellprofiler_core.preferences.SHOW_SAMPLING_MENU_HELP,
             ],
             [
                 "Maximum number of workers",
-                cellprofiler.preferences.get_max_workers,
-                cellprofiler.preferences.set_max_workers,
+                cellprofiler_core.preferences.get_max_workers,
+                cellprofiler_core.preferences.set_max_workers,
                 IntegerPreference(
-                    1, cellprofiler.preferences.default_max_workers() * 4
+                    1, cellprofiler_core.preferences.default_max_workers() * 4
                 ),
-                cellprofiler.preferences.MAX_WORKERS_HELP,
+                cellprofiler_core.preferences.MAX_WORKERS_HELP,
             ],
             [
                 "Temporary folder",
-                cellprofiler.preferences.get_temporary_directory,
+                cellprofiler_core.preferences.get_temporary_directory,
                 (
-                    lambda x: cellprofiler.preferences.set_temporary_directory(
+                    lambda x: cellprofiler_core.preferences.set_temporary_directory(
                         x, globally=True
                     )
                 ),
                 DIRBROWSE,
-                cellprofiler.preferences.TEMP_DIR_HELP,
+                cellprofiler_core.preferences.TEMP_DIR_HELP,
             ],
             [
                 "Maximum memory for Java (MB)",
-                cellprofiler.preferences.get_jvm_heap_mb,
-                cellprofiler.preferences.set_jvm_heap_mb,
+                cellprofiler_core.preferences.get_jvm_heap_mb,
+                cellprofiler_core.preferences.set_jvm_heap_mb,
                 IntegerPreference(128, 64000),
-                cellprofiler.preferences.JVM_HEAP_HELP,
+                cellprofiler_core.preferences.JVM_HEAP_HELP,
             ],
             [
                 "Save pipeline and/or file list in addition to project",
-                cellprofiler.preferences.get_save_pipeline_with_project,
-                cellprofiler.preferences.set_save_pipeline_with_project,
-                cellprofiler.preferences.SPP_ALL,
-                cellprofiler.preferences.SAVE_PIPELINE_WITH_PROJECT_HELP,
+                cellprofiler_core.preferences.get_save_pipeline_with_project,
+                cellprofiler_core.preferences.set_save_pipeline_with_project,
+                cellprofiler_core.preferences.SPP_ALL,
+                cellprofiler_core.preferences.SAVE_PIPELINE_WITH_PROJECT_HELP,
             ],
             [
                 "Pony",
-                cellprofiler.preferences.get_wants_pony,
-                cellprofiler.preferences.set_wants_pony,
+                cellprofiler_core.preferences.get_wants_pony,
+                cellprofiler_core.preferences.set_wants_pony,
                 CHOICE,
                 "Pony",
             ],
@@ -463,25 +463,25 @@ class PreferencesDlg(wx.Dialog):
     @staticmethod
     def get_title_font():
         return "%s,%f" % (
-            cellprofiler.preferences.get_title_font_name(),
-            cellprofiler.preferences.get_title_font_size(),
+            cellprofiler_core.preferences.get_title_font_name(),
+            cellprofiler_core.preferences.get_title_font_size(),
         )
 
     @staticmethod
     def set_title_font(font):
         name, size = font.split(",")
-        cellprofiler.preferences.set_title_font_name(name)
-        cellprofiler.preferences.set_title_font_size(float(size))
+        cellprofiler_core.preferences.set_title_font_name(name)
+        cellprofiler_core.preferences.set_title_font_size(float(size))
 
     @staticmethod
     def get_table_font():
         return "%s,%f" % (
-            cellprofiler.preferences.get_table_font_name(),
-            cellprofiler.preferences.get_table_font_size(),
+            cellprofiler_core.preferences.get_table_font_name(),
+            cellprofiler_core.preferences.get_table_font_size(),
         )
 
     @staticmethod
     def set_table_font(font):
         name, size = font.split(",")
-        cellprofiler.preferences.set_table_font_name(name)
-        cellprofiler.preferences.set_table_font_size(float(size))
+        cellprofiler_core.preferences.set_table_font_name(name)
+        cellprofiler_core.preferences.set_table_font_size(float(size))

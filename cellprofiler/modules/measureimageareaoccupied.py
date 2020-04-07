@@ -51,7 +51,7 @@ import skimage.measure
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -84,24 +84,24 @@ class MeasureImageAreaOccupied(cellprofiler_core.module.Module):
     def create_settings(self):
         self.operands = []
 
-        self.count = cellprofiler.setting.HiddenCount(self.operands)
+        self.count = cellprofiler_core.setting.HiddenCount(self.operands)
 
         self.add_operand(can_remove=False)
 
-        self.add_operand_button = cellprofiler.setting.DoSomething(
+        self.add_operand_button = cellprofiler_core.setting.DoSomething(
             "", "Add another area", self.add_operand
         )
 
-        self.remover = cellprofiler.setting.DoSomething(
+        self.remover = cellprofiler_core.setting.DoSomething(
             "", "Remove this area", self.remove
         )
 
     def add_operand(self, can_remove=True):
         class Operand(object):
             def __init__(self):
-                self.__spacer = cellprofiler.setting.Divider(line=True)
+                self.__spacer = cellprofiler_core.setting.Divider(line=True)
 
-                self.__operand_choice = cellprofiler.setting.Choice(
+                self.__operand_choice = cellprofiler_core.setting.Choice(
                     "Measure the area occupied in a binary image, or in objects?",
                     [O_BINARY_IMAGE, O_OBJECTS],
                     doc="""\
@@ -114,9 +114,9 @@ The area can be measured in two ways:
                     ),
                 )
 
-                self.__operand_objects = cellprofiler.setting.ObjectNameSubscriber(
+                self.__operand_objects = cellprofiler_core.setting.ObjectNameSubscriber(
                     "Select objects to measure",
-                    cellprofiler.setting.NONE,
+                    cellprofiler_core.setting.NONE,
                     doc="""\
 *(Used only if ‘{O_OBJECTS}’ are to be measured)*
 
@@ -126,9 +126,9 @@ Select the previously identified objects you would like to measure.
                     ),
                 )
 
-                self.__binary_name = cellprofiler.setting.ImageNameSubscriber(
+                self.__binary_name = cellprofiler_core.setting.ImageNameSubscriber(
                     "Select a binary image to measure",
-                    cellprofiler.setting.NONE,
+                    cellprofiler_core.setting.NONE,
                     doc="""\
 *(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
 
@@ -179,7 +179,7 @@ like to measure the area occupied by the foreground in the image.
         for group in self.operands:
             if (group.operand_choice.value, group.operand_objects.value) in settings:
                 if group.operand_choice.value == O_OBJECTS:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "{} has already been selected".format(
                             group.operand_objects.value
                         ),
@@ -192,7 +192,7 @@ like to measure the area occupied by the foreground in the image.
         for group in self.operands:
             if (group.operand_choice.value, group.binary_name.value) in settings:
                 if group.operand_choice.value == O_BINARY_IMAGE:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "%s has already been selected" % group.binary_name.value,
                         group.binary_name,
                     )
@@ -491,7 +491,7 @@ like to measure the area occupied by the foreground in the image.
                     setting_values[(i * 3)],
                     setting_values[(i * 3) + 1],
                     setting_values[(i * 3) + 2],
-                    cellprofiler.setting.NONE,
+                    cellprofiler_core.setting.NONE,
                 ]
 
             setting_values = new_setting_values

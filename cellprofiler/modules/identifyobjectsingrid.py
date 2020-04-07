@@ -61,8 +61,8 @@ from centrosome.cpmorphology import centers_of_labels
 
 import cellprofiler.grid as cpg
 import cellprofiler_core.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 from cellprofiler_core.modules.identify import add_object_count_measurements
 from cellprofiler_core.modules.identify import add_object_location_measurements
 from cellprofiler_core.modules.identify import get_object_measurement_columns
@@ -196,7 +196,7 @@ depending on the method chosen.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.

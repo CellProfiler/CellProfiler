@@ -8,7 +8,7 @@ import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.modules
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 MENU_HELP = {
     "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(
@@ -278,7 +278,7 @@ def search_module_help(text):
             0
         ]
 
-        if location == cellprofiler.preferences.get_plugin_directory():
+        if location == cellprofiler_core.preferences.get_plugin_directory():
             continue
 
         help_text = module.get_help()

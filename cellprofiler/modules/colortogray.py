@@ -35,7 +35,7 @@ import numpy as np
 
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -529,7 +529,7 @@ Select the name of the output grayscale image.""",
     def run(self, workspace):
         """Run the module
 
-        pipeline     - instance of CellProfiler.Pipeline for this run
+        pipeline     - instance of cellprofiler_core.pipeline for this run
         workspace    - the workspace contains:
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set

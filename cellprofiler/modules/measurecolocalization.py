@@ -77,8 +77,8 @@ from scipy.linalg import lstsq
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
@@ -118,15 +118,15 @@ class MeasureColocalization(cellprofiler_core.module.Module):
         """Create the initial settings for the module"""
         self.image_groups = []
         self.add_image(can_delete=False)
-        self.spacer_1 = cellprofiler.setting.Divider()
+        self.spacer_1 = cellprofiler_core.setting.Divider()
         self.add_image(can_delete=False)
-        self.image_count = cellprofiler.setting.HiddenCount(self.image_groups)
+        self.image_count = cellprofiler_core.setting.HiddenCount(self.image_groups)
 
-        self.add_image_button = cellprofiler.setting.DoSomething(
+        self.add_image_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_image
         )
-        self.spacer_2 = cellprofiler.setting.Divider()
-        self.thr = cellprofiler.setting.Float(
+        self.spacer_2 = cellprofiler_core.setting.Divider()
+        self.thr = cellprofiler_core.setting.Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
             minval=0,
@@ -134,7 +134,7 @@ class MeasureColocalization(cellprofiler_core.module.Module):
             doc="You may choose to measure colocalization metrics only for those pixels above a certain threshold. Select the threshold as a percentage of the maximum intensity of the above image [0-99].",
         )
 
-        self.images_or_objects = cellprofiler.setting.Choice(
+        self.images_or_objects = cellprofiler_core.setting.Choice(
             "Select where to measure correlation",
             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS],
             doc="""\
@@ -154,14 +154,14 @@ All methods measure correlation on a pixel by pixel basis.
 
         self.object_groups = []
         self.add_object(can_delete=False)
-        self.object_count = cellprofiler.setting.HiddenCount(self.object_groups)
+        self.object_count = cellprofiler_core.setting.HiddenCount(self.object_groups)
 
-        self.spacer_2 = cellprofiler.setting.Divider(line=True)
+        self.spacer_2 = cellprofiler_core.setting.Divider(line=True)
 
-        self.add_object_button = cellprofiler.setting.DoSomething(
+        self.add_object_button = cellprofiler_core.setting.DoSomething(
             "", "Add another object", self.add_object
         )
-        self.do_all = cellprofiler.setting.Binary(
+        self.do_all = cellprofiler_core.setting.Binary(
             "Run all metrics?",
             True,
             doc="""\
@@ -170,57 +170,57 @@ and colocalization algorithms on your images and/or objects;
 otherwise select *{NO}* to pick which correlation and 
 colocalization algorithms to run.
 """.format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
             ),
         )
 
-        self.do_corr_and_slope = cellprofiler.setting.Binary(
+        self.do_corr_and_slope = cellprofiler_core.setting.Binary(
             "Calculate correlation and slope metrics?",
             True,
             doc="""\
 Select *{YES}* to run the Pearson correlation and slope metrics.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.do_manders = cellprofiler.setting.Binary(
+        self.do_manders = cellprofiler_core.setting.Binary(
             "Calculate the Manders coefficients?",
             True,
             doc="""\
 Select *{YES}* to run the Manders coefficients.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.do_rwc = cellprofiler.setting.Binary(
+        self.do_rwc = cellprofiler_core.setting.Binary(
             "Calculate the Rank Weighted Coloalization coefficients?",
             True,
             doc="""\
 Select *{YES}* to run the Rank Weighted Coloalization coefficients.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.do_overlap = cellprofiler.setting.Binary(
+        self.do_overlap = cellprofiler_core.setting.Binary(
             "Calculate the Overlap coefficients?",
             True,
             doc="""\
 Select *{YES}* to run the Overlap coefficients.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.do_costes = cellprofiler.setting.Binary(
+        self.do_costes = cellprofiler_core.setting.Binary(
             "Calculate the Manders coefficients using Costes auto threshold?",
             True,
             doc="""\
 Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
@@ -230,14 +230,14 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
         """
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         if can_delete:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
         group.append(
             "image_name",
-            cellprofiler.setting.ImageNameSubscriber(
+            cellprofiler_core.setting.ImageNameSubscriber(
                 "Select an image to measure",
-                cellprofiler.setting.NONE,
+                cellprofiler_core.setting.NONE,
                 doc="Select an image to measure the correlation/colocalization in.",
             ),
         )
@@ -245,12 +245,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         if (
             len(self.image_groups) == 0
         ):  # Insert space between 1st two images for aesthetics
-            group.append("extra_divider", cellprofiler.setting.Divider(line=False))
+            group.append("extra_divider", cellprofiler_core.setting.Divider(line=False))
 
         if can_delete:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image", self.image_groups, group
                 ),
             )
@@ -259,15 +259,15 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
     def add_object(self, can_delete=True):
         """Add an object to the object_groups collection"""
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         if can_delete:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "object_name",
-            cellprofiler.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select an object to measure",
-                cellprofiler.setting.NONE,
+                cellprofiler_core.setting.NONE,
                 doc="""\
 *(Used only when "Within objects" or "Both" are selected)*
 
@@ -278,7 +278,7 @@ Select the objects to be measured.""",
         if can_delete:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this object", self.object_groups, group
                 ),
             )
@@ -702,10 +702,10 @@ Select the objects to be measured.""",
             first_pixels = objects.crop_image_similarly(first_image.pixel_data)
             first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = cellprofiler.object.size_similarly(
+            first_pixels, m1 = cellprofiler_core.object.size_similarly(
                 labels, first_image.pixel_data
             )
-            first_mask, m1 = cellprofiler.object.size_similarly(
+            first_mask, m1 = cellprofiler_core.object.size_similarly(
                 labels, first_image.mask
             )
             first_mask[~m1] = False
@@ -713,10 +713,10 @@ Select the objects to be measured.""",
             second_pixels = objects.crop_image_similarly(second_image.pixel_data)
             second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = cellprofiler.object.size_similarly(
+            second_pixels, m1 = cellprofiler_core.object.size_similarly(
                 labels, second_image.pixel_data
             )
-            second_mask, m1 = cellprofiler.object.size_similarly(
+            second_mask, m1 = cellprofiler_core.object.size_similarly(
                 labels, second_image.mask
             )
             second_mask[~m1] = False

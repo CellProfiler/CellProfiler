@@ -60,8 +60,8 @@ from scipy.linalg import lstsq
 import cellprofiler.gui.help.content
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
 
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)

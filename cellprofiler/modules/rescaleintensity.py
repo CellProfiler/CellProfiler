@@ -33,7 +33,7 @@ import skimage.exposure
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 M_STRETCH = "Stretch each image to use the full intensity range"
 M_MANUAL_INPUT_RANGE = "Choose specific values to be reset to the full intensity range"
@@ -80,7 +80,7 @@ class RescaleIntensity(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(RescaleIntensity, self).create_settings()
 
-        self.rescale_method = cellprofiler.setting.Choice(
+        self.rescale_method = cellprofiler_core.setting.Choice(
             "Rescaling method",
             choices=M_ALL,
             doc="""\
@@ -121,7 +121,7 @@ There are a number of options for rescaling the input image:
             % globals(),
         )
 
-        self.wants_automatic_low = cellprofiler.setting.Choice(
+        self.wants_automatic_low = cellprofiler_core.setting.Choice(
             "Method to calculate the minimum intensity",
             LOW_ALL,
             doc="""\
@@ -143,7 +143,7 @@ This setting controls how the minimum intensity is determined.
             % globals(),
         )
 
-        self.wants_automatic_high = cellprofiler.setting.Choice(
+        self.wants_automatic_high = cellprofiler_core.setting.Choice(
             "Method to calculate the maximum intensity",
             HIGH_ALL,
             doc="""\
@@ -165,7 +165,7 @@ This setting controls how the maximum intensity is determined.
             % globals(),
         )
 
-        self.source_low = cellprofiler.setting.Float(
+        self.source_low = cellprofiler_core.setting.Float(
             "Lower intensity limit for the input image",
             0,
             doc="""\
@@ -186,7 +186,7 @@ also rescaled to the minimum pixel value in the output image.
             ),
         )
 
-        self.source_high = cellprofiler.setting.Float(
+        self.source_high = cellprofiler_core.setting.Float(
             "Upper intensity limit for the input image",
             1,
             doc="""\
@@ -207,7 +207,7 @@ also rescaled to the maximum pixel value in the output image.
             ),
         )
 
-        self.source_scale = cellprofiler.setting.FloatRange(
+        self.source_scale = cellprofiler_core.setting.FloatRange(
             "Intensity range for the input image",
             (0, 1),
             doc="""\
@@ -229,7 +229,7 @@ or maximum, respectively.
             ),
         )
 
-        self.dest_scale = cellprofiler.setting.FloatRange(
+        self.dest_scale = cellprofiler_core.setting.FloatRange(
             "Intensity range for the output image",
             (0, 1),
             doc="""\
@@ -246,9 +246,9 @@ output image will be rescaled to the maximum output image intensity.
             ),
         )
 
-        self.matching_image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.matching_image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select image to match in maximum intensity",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""\
 *(Used only if “%(M_SCALE_BY_IMAGE_MAXIMUM)s” is selected)*
 
@@ -257,7 +257,7 @@ Select the image whose maximum you want the rescaled image to match.
             % globals(),
         )
 
-        self.divisor_value = cellprofiler.setting.Float(
+        self.divisor_value = cellprofiler_core.setting.Float(
             "Divisor value",
             1,
             minval=numpy.finfo(float).eps,
@@ -269,7 +269,7 @@ Enter the value to use as the divisor for the final image.
             % globals(),
         )
 
-        self.divisor_measurement = cellprofiler.setting.Measurement(
+        self.divisor_measurement = cellprofiler_core.setting.Measurement(
             "Divisor measurement",
             lambda: cellprofiler_core.measurement.IMAGE,
             doc="""\
@@ -597,7 +597,7 @@ Select the measurement value to use as the divisor for the final image.
             setting_values = list(setting_values)
 
             for i, automatic in ((3, LOW_EACH_IMAGE), (4, HIGH_EACH_IMAGE)):
-                if setting_values[i] == cellprofiler.setting.YES:
+                if setting_values[i] == cellprofiler_core.setting.YES:
                     setting_values[i] = automatic
                 else:
                     setting_values[i] = CUSTOM_VALUE

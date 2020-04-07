@@ -11,8 +11,8 @@ import numpy as np
 import cellprofiler_core.image
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 
 class InjectImage(cellprofiler_core.module.Module):
@@ -40,7 +40,7 @@ class InjectImage(cellprofiler_core.module.Module):
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = cellprofiler.setting.NameProvider(
+        self.image_name = cellprofiler_core.setting.NameProvider(
             "Hardwired image name", "imagegroup", image_name
         )
         self.__release_image = release_image
@@ -82,7 +82,7 @@ class InjectImage(cellprofiler_core.module.Module):
     def run(self, workspace):
         """Run the module (abstract method)
 
-        pipeline     - instance of CellProfiler.Pipeline for this run
+        pipeline     - instance of cellprofiler_core.pipeline for this run
         image_set    - the images in the image set being processed
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
@@ -154,7 +154,7 @@ class InjectObjects(cellprofiler_core.module.Module):
                                   same as segmented
         """
         super(InjectObjects, self).__init__()
-        self.object_name = cellprofiler.setting.ObjectNameProvider("text", object_name)
+        self.object_name = cellprofiler_core.setting.ObjectNameProvider("text", object_name)
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented
         self.__small_removed_segmented = small_removed_segmented
@@ -163,7 +163,7 @@ class InjectObjects(cellprofiler_core.module.Module):
         return [self.object_name]
 
     def run(self, workspace):
-        my_objects = cellprofiler.object.Objects()
+        my_objects = cellprofiler_core.object.Objects()
         my_objects.segmented = self.__segmented
         if self.__unedited_segmented is not None:
             my_objects.unedited_segmented = self.__unedited_segmented

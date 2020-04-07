@@ -28,9 +28,9 @@ if not hasattr(zmq, "Frame"):
 import cellprofiler_core.module
 import cellprofiler_core.measurement
 import cellprofiler_core.image
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
 import cellprofiler.workspace
 
 CONNECT_REQ_1 = "connect-request-1"
@@ -163,7 +163,7 @@ class KnimeBridgeServer(threading.Thread):
         """Handle the pipeline info message"""
         logger.info("Handling pipeline info request")
         pipeline_txt = message.pop(0).bytes
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
@@ -189,7 +189,7 @@ class KnimeBridgeServer(threading.Thread):
         logger.info("Handling clean pipeline request")
         pipeline_txt = message.pop(0).bytes
         module_names = json.loads(message.pop(0).bytes)
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
@@ -318,7 +318,7 @@ class KnimeBridgeServer(threading.Thread):
 
     def run_group_request(self, session_id, message_type, message):
         """Handle a run-group request message"""
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         m = cellprofiler_core.measurement.Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
         if len(message) < 2:
@@ -392,7 +392,7 @@ class KnimeBridgeServer(threading.Thread):
             )
 
         for image_index in range(n_image_sets):
-            object_set = cellprofiler.object.ObjectSet()
+            object_set = cellprofiler_core.object.ObjectSet()
             m.next_image_set(image_index + 1)
             for channel_name in channel_names:
                 dataset = image_group[channel_name]
@@ -520,9 +520,9 @@ class KnimeBridgeServer(threading.Thread):
         session_id - the session ID for the session
         grouping_allowed - true to allow grouped images
         """
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         m = cellprofiler_core.measurement.Measurements()
-        object_set = cellprofiler.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
         if len(message) < 2:
             self.raise_cellprofiler_exception(
                 session_id, "Missing run request sections"
@@ -608,7 +608,7 @@ class KnimeBridgeServer(threading.Thread):
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
-                if isinstance(setting, cellprofiler.setting.ImageNameProvider):
+                if isinstance(setting, cellprofiler_core.setting.ImageNameProvider):
                     channels.append(setting.value)
         return channels
 

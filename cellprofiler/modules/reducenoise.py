@@ -27,7 +27,7 @@ import skimage.util
 
 import cellprofiler_core.image
 import cellprofiler_core.module
-import cellprofiler.setting
+import cellprofiler_core.setting
 
 
 class ReduceNoise(cellprofiler_core.module.ImageProcessing):
@@ -40,17 +40,17 @@ class ReduceNoise(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(ReduceNoise, self).create_settings()
 
-        self.size = cellprofiler.setting.Integer(
+        self.size = cellprofiler_core.setting.Integer(
             text="Size", value=7, doc="Size of the patches to use for noise reduction."
         )
 
-        self.distance = cellprofiler.setting.Integer(
+        self.distance = cellprofiler_core.setting.Integer(
             text="Distance",
             value=11,
             doc="Maximal distance in pixels to search for patches to use for denoising.",
         )
 
-        self.cutoff_distance = cellprofiler.setting.Float(
+        self.cutoff_distance = cellprofiler_core.setting.Float(
             text="Cut-off distance",
             value=0.1,
             doc="""\

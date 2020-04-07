@@ -14,8 +14,8 @@ import skimage.morphology
 import cellprofiler.gui.help
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 from cellprofiler.modules import _help, threshold
 import cellprofiler_core.module.image_segmentation
 
@@ -345,7 +345,7 @@ class IdentifyPrimaryObjects(cellprofiler_core.module.image_segmentation.ImageSe
         self.y_name.text = "Name the primary objects to be identified"
         self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
-        self.size_range = cellprofiler.setting.IntegerRange(
+        self.size_range = cellprofiler_core.setting.IntegerRange(
             SIZE_RANGE_SETTING_TEXT,
             (10, 40),
             minval=1,
@@ -384,7 +384,7 @@ A few important notes:
             ),
         )
 
-        self.exclude_size = cellprofiler.setting.Binary(
+        self.exclude_size = cellprofiler_core.setting.Binary(
             EXCLUDE_SIZE_SETTING_TEXT,
             True,
             doc="""\
@@ -403,15 +403,15 @@ desired.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(
                 **{
-                    "YES": cellprofiler.setting.YES,
+                    "YES": cellprofiler_core.setting.YES,
                     "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
-                    "NO": cellprofiler.setting.NO,
+                    "NO": cellprofiler_core.setting.NO,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
             ),
         )
 
-        self.exclude_border_objects = cellprofiler.setting.Binary(
+        self.exclude_border_objects = cellprofiler_core.setting.Binary(
             "Discard objects touching the border of the image?",
             True,
             doc="""\
@@ -431,14 +431,14 @@ partial object would not be accurate.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(
                 **{
-                    "YES": cellprofiler.setting.YES,
-                    "NO": cellprofiler.setting.NO,
+                    "YES": cellprofiler_core.setting.YES,
+                    "NO": cellprofiler_core.setting.NO,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
             ),
         )
 
-        self.unclump_method = cellprofiler.setting.Choice(
+        self.unclump_method = cellprofiler_core.setting.Choice(
             "Method to distinguish clumped objects",
             [UN_INTENSITY, UN_SHAPE, UN_NONE],
             doc="""\
@@ -530,7 +530,7 @@ see the results of each.
             ),
         )
 
-        self.watershed_method = cellprofiler.setting.Choice(
+        self.watershed_method = cellprofiler_core.setting.Choice(
             "Method to draw dividing lines between clumped objects",
             [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE],
             doc="""\
@@ -577,7 +577,7 @@ see the results of each.
             ),
         )
 
-        self.automatic_smoothing = cellprofiler.setting.Binary(
+        self.automatic_smoothing = cellprofiler_core.setting.Binary(
             AUTOMATIC_SMOOTHING_SETTING_TEXT,
             True,
             doc="""\
@@ -602,14 +602,14 @@ objects merged that ought to be separate or too many objects split up
 that ought to be merged, you may want to override the automatically
 calculated value.""".format(
                 **{
-                    "YES": cellprofiler.setting.YES,
-                    "NO": cellprofiler.setting.NO,
+                    "YES": cellprofiler_core.setting.YES,
+                    "NO": cellprofiler_core.setting.NO,
                     "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 }
             ),
         )
 
-        self.smoothing_filter_size = cellprofiler.setting.Integer(
+        self.smoothing_filter_size = cellprofiler_core.setting.Integer(
             SMOOTHING_FILTER_SIZE_SETTING_TEXT,
             10,
             doc="""\
@@ -641,7 +641,7 @@ diameter).
             ),
         )
 
-        self.automatic_suppression = cellprofiler.setting.Binary(
+        self.automatic_suppression = cellprofiler_core.setting.Binary(
             AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
             True,
             doc="""\
@@ -665,15 +665,15 @@ but if you see too many objects merged that ought to be separate, or too
 many objects split up that ought to be merged, you may want to override
 the automatically calculated value.""".format(
                 **{
-                    "YES": cellprofiler.setting.YES,
-                    "NO": cellprofiler.setting.NO,
+                    "YES": cellprofiler_core.setting.YES,
+                    "NO": cellprofiler_core.setting.NO,
                     "SMOOTHING_FILTER_SIZE_SETTING_TEXT": SMOOTHING_FILTER_SIZE_SETTING_TEXT,
                     "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 }
             ),
         )
 
-        self.maxima_suppression_size = cellprofiler.setting.Float(
+        self.maxima_suppression_size = cellprofiler_core.setting.Float(
             "Suppress local maxima that are closer than this minimum allowed distance",
             7,
             minval=0,
@@ -703,7 +703,7 @@ these two settings; read the help carefully for both.
             ),
         )
 
-        self.low_res_maxima = cellprofiler.setting.Binary(
+        self.low_res_maxima = cellprofiler_core.setting.Binary(
             "Speed up by using lower-resolution image to find local maxima?",
             True,
             doc="""\
@@ -714,11 +714,11 @@ helpful for saving processing time on large images.
 
 Note that if you have entered a minimum object diameter of 10 or less,
 checking this box will have no effect.""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.fill_holes = cellprofiler.setting.Choice(
+        self.fill_holes = cellprofiler_core.setting.Choice(
             "Fill holes in identified objects?",
             FH_ALL,
             value=FH_THRESHOLDING,
@@ -743,7 +743,7 @@ or more objects) are filled in:
             ),
         )
 
-        self.limit_choice = cellprofiler.setting.Choice(
+        self.limit_choice = cellprofiler_core.setting.Choice(
             "Handling of objects if excessive number of objects identified",
             [LIMIT_NONE, LIMIT_ERASE],
             doc="""\
@@ -764,7 +764,7 @@ ways:
             ),
         )
 
-        self.maximum_object_count = cellprofiler.setting.Integer(
+        self.maximum_object_count = cellprofiler_core.setting.Integer(
             "Maximum number of objects",
             value=500,
             minval=2,
@@ -776,7 +776,7 @@ This setting limits the number of objects in the image. See the
 documentation for the previous setting for details.""",
         )
 
-        self.want_plot_maxima = cellprofiler.setting.Binary(
+        self.want_plot_maxima = cellprofiler_core.setting.Binary(
             "Display accepted local maxima?",
             False,
             doc="""\
@@ -790,18 +790,18 @@ documentation for the previous setting for details.""",
             
             For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
             If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
 
-        self.maxima_color = cellprofiler.setting.Color(
+        self.maxima_color = cellprofiler_core.setting.Color(
             "Select maxima color",
             DEFAULT_MAXIMA_COLOR,
             doc="Maxima will be displayed in this color.",
         )
 
-        self.use_advanced = cellprofiler.setting.Binary(
+        self.use_advanced = cellprofiler_core.setting.Binary(
             "Use advanced settings?",
             value=False,
             doc="""\
@@ -831,7 +831,7 @@ If "*{NO}*" is selected, the following settings are used:
                     "LIMIT_CHOICE_TEXT": self.limit_choice.get_text(),
                     "LIMIT_CHOICE_VALUE": LIMIT_NONE,
                     "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
-                    "NO": cellprofiler.setting.NO,
+                    "NO": cellprofiler_core.setting.NO,
                     "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold.threshold_correction_factor.get_text(),
                     "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
                     "THRESHOLD_METHOD_TEXT": self.threshold.global_operation.get_text(),
@@ -847,12 +847,12 @@ If "*{NO}*" is selected, the following settings are used:
                     "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
                     "WATERSHED_METHOD_TEXT": self.watershed_method.get_text(),
                     "WATERSHED_METHOD_VALUE": WA_INTENSITY,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": cellprofiler_core.setting.YES,
                 }
             ),
         )
 
-        self.threshold_setting_version = cellprofiler.setting.Integer(
+        self.threshold_setting_version = cellprofiler_core.setting.Integer(
             "Threshold setting version", value=self.threshold.variable_revision_number
         )
 
@@ -901,9 +901,9 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 10:
             setting_values = list(setting_values)
-            if setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.NO:
+            if setting_values[OFF_FILL_HOLES_V10] == cellprofiler_core.setting.NO:
                 setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
-            elif setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.YES:
+            elif setting_values[OFF_FILL_HOLES_V10] == cellprofiler_core.setting.YES:
                 setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
             variable_revision_number = 11
 
@@ -928,7 +928,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 12:
             new_setting_values = setting_values[: N_SETTINGS - 1]
-            new_setting_values += [cellprofiler.setting.YES]
+            new_setting_values += [cellprofiler_core.setting.YES]
             new_setting_values += setting_values[N_SETTINGS - 1 :]
 
             setting_values = new_setting_values
@@ -937,7 +937,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 13:
             new_setting_values = setting_values[: N_SETTINGS - 3]
-            new_setting_values += [cellprofiler.setting.NO, DEFAULT_MAXIMA_COLOR]
+            new_setting_values += [cellprofiler_core.setting.NO, DEFAULT_MAXIMA_COLOR]
             new_setting_values += setting_values[N_SETTINGS - 3 :]
 
             setting_values = new_setting_values
@@ -1178,7 +1178,7 @@ If "*{NO}*" is selected, the following settings are used:
         measurements = workspace.measurements
 
         # Add label matrices to the object set
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels

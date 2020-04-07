@@ -97,12 +97,12 @@ import six
 
 import cellprofiler_core.module as cpm
 import cellprofiler_core.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
+from cellprofiler_core.setting import YES
 from cellprofiler_core.measurement import IMAGE, EXPERIMENT
-from cellprofiler.preferences import get_headless
-from cellprofiler.preferences import (
+from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
     DEFAULT_OUTPUT_FOLDER_NAME,
     ABSOLUTE_FOLDER_NAME,

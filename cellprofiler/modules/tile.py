@@ -68,7 +68,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.setting as cps
 
 T_WITHIN_CYCLES = "Within cycles"
 T_ACROSS_CYCLES = "Across cycles"

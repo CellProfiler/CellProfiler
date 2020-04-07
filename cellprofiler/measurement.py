@@ -15,7 +15,7 @@ import numpy
 import six
 from scipy.io.matlab import loadmat
 
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 from cellprofiler.utilities.hdf5_dict import (
     HDF5Dict,
     get_top_level_group,
@@ -223,7 +223,7 @@ def make_temporary_file():
     returns a file descriptor (that should be closed when done) and a
     file name.
     """
-    dir = cellprofiler.preferences.get_temporary_directory()
+    dir = cellprofiler_core.preferences.get_temporary_directory()
     if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
         dir = None
     return tempfile.mkstemp(prefix="Cpmeasurements", suffix=".hdf5", dir=dir)
@@ -1877,7 +1877,7 @@ class Measurements(object):
         Returns pipeline.ImageSetChannelDescriptor instances for each
         channel descriptor specified in the experiment measurements.
         """
-        from cellprofiler.pipeline import Pipeline
+        from cellprofiler_core.pipeline import Pipeline
 
         ImageSetChannelDescriptor = Pipeline.ImageSetChannelDescriptor
         iscds = []
@@ -1940,7 +1940,7 @@ class Measurements(object):
 
 
 def load_measurements_from_buffer(buf):
-    dir = cellprofiler.preferences.get_default_output_directory()
+    dir = cellprofiler_core.preferences.get_default_output_directory()
     if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
         dir = None
     fd, filename = tempfile.mkstemp(prefix="Cpmeasurements", suffix=".hdf5", dir=dir)

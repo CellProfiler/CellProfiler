@@ -9,12 +9,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.overlayoutlines
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -25,13 +25,13 @@ OBJECTS_NAME = "objectsname"
 def make_workspace(image, labels=None, dimensions=2):
     """Make a workspace for testing Threshold"""
     m = cellprofiler_core.measurement.Measurements()
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     module = cellprofiler.modules.overlayoutlines.OverlayOutlines()
     module.blank_image.value = False
     module.image_name.value = INPUT_IMAGE_NAME
     module.output_image_name.value = OUTPUT_IMAGE_NAME
 
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     if len(labels) > 1:
         ijv = numpy.vstack(
             [numpy.column_stack(list(numpy.where(l > 0)) + [l[l > 0]]) for l in labels]
@@ -42,8 +42,8 @@ def make_workspace(image, labels=None, dimensions=2):
     object_set.add_objects(objects, OBJECTS_NAME)
     module.outlines[0].objects_name.value = OBJECTS_NAME
 
-    pipeline = cellprofiler.pipeline.Pipeline()
-    workspace = cellprofiler.workspace.Workspace(
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, m, object_set, m, None
     )
     m.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image, dimensions=dimensions))
@@ -54,7 +54,7 @@ def test_load_v2():
     with open("./tests/resources/modules/overlayoutlines/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
@@ -69,7 +69,7 @@ def test_load_v2():
     for outline, name, color in zip(
         module.outlines, ("PrimaryOutlines", "SecondaryOutlines"), ("Red", "Green")
     ):
-        assert outline.objects_name.value == cellprofiler.setting.NONE
+        assert outline.objects_name.value == cellprofiler_core.setting.NONE
         assert outline.color == color
 
 
@@ -77,7 +77,7 @@ def test_load_v3():
     with open("./tests/resources/modules/overlayoutlines/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]

@@ -5,9 +5,9 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules.splitormergeobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
@@ -19,10 +19,10 @@ def test_load_v5():
     with open("./tests/resources/modules/splitormergeobjects/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.loadtxt(six.moves.StringIO(data))
@@ -45,10 +45,10 @@ def test_load_v4():
     with open("./tests/resources/modules/splitormergeobjects/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.loadtxt(six.moves.StringIO(data))
@@ -122,10 +122,10 @@ def rruunn(
     module.wants_image.value = image is not None
     module.where_algorithm.value = where_algorithm
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
@@ -137,12 +137,12 @@ def rruunn(
         image_set.add(IMAGE_NAME, img)
         module.image_name.value = IMAGE_NAME
 
-    object_set = cellprofiler.object.ObjectSet()
-    o = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    o = cellprofiler_core.object.Objects()
     o.segmented = input_labels
     object_set.add_objects(o, INPUT_OBJECTS_NAME)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -168,7 +168,7 @@ def test_split_zero():
     assert labels.shape[0] == 10
     assert labels.shape[1] == 20
 
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
@@ -268,7 +268,7 @@ def test_split_one():
     )
     assert numpy.all(labels == labels_out)
 
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(

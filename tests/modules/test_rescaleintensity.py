@@ -12,12 +12,12 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules.injectimage
 import cellprofiler.modules.rescaleintensity
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
@@ -64,11 +64,11 @@ def workspace(image, module):
 
     image_set.add("input", image)
 
-    return cellprofiler.workspace.Workspace(
-        pipeline=cellprofiler.pipeline.Pipeline(),
+    return cellprofiler_core.workspace.Workspace(
+        pipeline=cellprofiler_core.pipeline.Pipeline(),
         module=module,
         image_set=image_set,
-        object_set=cellprofiler.object.ObjectSet(),
+        object_set=cellprofiler_core.object.ObjectSet(),
         measurements=cellprofiler_core.measurement.Measurements(),
         image_set_list=image_set_list,
     )

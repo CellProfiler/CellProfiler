@@ -3,9 +3,9 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.classifyobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 OBJECTS_NAME = "myobjects"
 MEASUREMENT_NAME_1 = "Measurement1"
@@ -14,8 +14,8 @@ IMAGE_NAME = "image"
 
 
 def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None):
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
 
@@ -48,14 +48,14 @@ def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None
         module.first_measurement.value = MEASUREMENT_NAME_1
         module.second_measurement.value = MEASUREMENT_NAME_2
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
     return workspace, module

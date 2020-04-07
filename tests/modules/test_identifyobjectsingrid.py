@@ -5,9 +5,9 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.definegrid
 import cellprofiler.modules.identifyobjectsingrid
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 OUTPUT_OBJECTS_NAME = "outputobjects"
 GRID_NAME = "mygrid"
@@ -21,19 +21,19 @@ def make_workspace(gridding, labels=None):
     module.output_objects_name.value = OUTPUT_OBJECTS_NAME
     module.guiding_object_name.value = GUIDING_OBJECTS_NAME
     image_set_list = cellprofiler_core.image.ImageSetList()
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     if labels is not None:
-        my_objects = cellprofiler.object.Objects()
+        my_objects = cellprofiler_core.object.Objects()
         my_objects.segmented = labels
         object_set.add_objects(my_objects, GUIDING_OBJECTS_NAME)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),

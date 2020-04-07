@@ -8,13 +8,13 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureobjectintensitydistribution
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 OBJECT_NAME = "objectname"
 CENTER_NAME = "centername"
@@ -110,10 +110,10 @@ Scale bins?:Yes
 Number of bins:5
 Maximum radius:50
 """
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -153,10 +153,10 @@ def test_load_v3():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -202,10 +202,10 @@ def test_load_v4():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -268,7 +268,7 @@ def test_load_v4():
                 "Cells",
                 5,
                 cellprofiler.modules.measureobjectintensitydistribution.A_FRAC_AT_D,
-                cellprofiler.setting.DEFAULT,
+                cellprofiler_core.setting.DEFAULT,
                 True,
                 "Heat",
             ),
@@ -286,7 +286,7 @@ def test_load_v4():
                 "Nuclei",
                 5,
                 cellprofiler.modules.measureobjectintensitydistribution.A_RADIAL_CV,
-                cellprofiler.setting.DEFAULT,
+                cellprofiler_core.setting.DEFAULT,
                 False,
                 "B",
             ),
@@ -307,10 +307,10 @@ def test_load_v5():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -373,7 +373,7 @@ def test_load_v5():
                 "Cells",
                 5,
                 cellprofiler.modules.measureobjectintensitydistribution.A_FRAC_AT_D,
-                cellprofiler.setting.DEFAULT,
+                cellprofiler_core.setting.DEFAULT,
                 True,
                 "Heat",
             ),
@@ -391,7 +391,7 @@ def test_load_v5():
                 "Nuclei",
                 5,
                 cellprofiler.modules.measureobjectintensitydistribution.A_RADIAL_CV,
-                cellprofiler.setting.DEFAULT,
+                cellprofiler_core.setting.DEFAULT,
                 False,
                 "B",
             ),
@@ -727,8 +727,8 @@ def run_module(
     module.zernike_degree.value = zernike_degree
     module.images[0].image_name.value = IMAGE_NAME
     module.objects[0].object_name.value = OBJECT_NAME
-    object_set = cellprofiler.object.ObjectSet()
-    main_objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    main_objects = cellprofiler_core.object.Objects()
     main_objects.segmented = labels
     object_set.add_objects(main_objects, OBJECT_NAME)
     if center_labels is None:
@@ -740,7 +740,7 @@ def run_module(
     else:
         module.objects[0].center_choice.value = center_choice
         module.objects[0].center_object_name.value = CENTER_NAME
-        center_objects = cellprofiler.object.Objects()
+        center_objects = cellprofiler_core.object.Objects()
         center_objects.segmented = center_labels
         object_set.add_objects(center_objects, CENTER_NAME)
     module.bin_counts[0].bin_count.value = bin_count
@@ -773,13 +773,13 @@ def run_module(
         module.heatmaps[i].display_name.value = display_name
         module.heatmaps[i].colormap.value = "gray"
         module.heatmaps[i].measurement.value = a
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = measurements
     img = cellprofiler_core.image.Image(image)
     image_set.add(IMAGE_NAME, img)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
     module.run(workspace)
@@ -834,7 +834,7 @@ def test_circle():
         wants_zernikes=True,
         zernike_degree=2,
     )
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     bins = labels * (1 + (numpy.sqrt(i * i + j * j) / 10).astype(int))
     for bin in range(1, 5):
         data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))
@@ -1102,7 +1102,7 @@ def test_two_circles():
     img[labels == 1] = 1
     img[labels == 2] = d[labels == 2] / 40
     m, workspace = run_module(img, labels, wants_workspace=True)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     bins = (labels != 0) * (1 + (numpy.sqrt(i * i + j * j) / 10).astype(int))
     for bin in range(1, 5):
         data = m.get_current_measurement(OBJECT_NAME, feature_frac_at_d(bin, 4))

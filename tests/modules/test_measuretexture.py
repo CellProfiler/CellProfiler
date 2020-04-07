@@ -5,9 +5,9 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.measuretexture
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE_NAME = "Cytoplasm"
 INPUT_OBJECTS_NAME = "inputobjects"
@@ -18,11 +18,11 @@ def make_workspace(image, labels, convert=True, mask=None):
     module = cellprofiler.modules.measuretexture.MeasureTexture()
     module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
     module.object_groups[0].object_name.value = INPUT_OBJECTS_NAME
-    pipeline = cellprofiler.pipeline.Pipeline()
-    object_set = cellprofiler.object.ObjectSet()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -36,7 +36,7 @@ def make_workspace(image, labels, convert=True, mask=None):
             image, convert=convert, dimensions=image.ndim, mask=mask
         ),
     )
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, INPUT_OBJECTS_NAME)
     return workspace, module
@@ -73,10 +73,10 @@ Texture scale to measure:5
 Measure Gabor features?:No
 Number of angles to compute for Gabor:6
 """
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -130,10 +130,10 @@ Angles to measure:Diagonal,Anti-diagonal
 Measure Gabor features?:No
 Number of angles to compute for Gabor:6
 """
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -209,10 +209,10 @@ Measure Gabor features?:No
 Number of angles to compute for Gabor:6
 Measure images or objects?:Both
 """
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))

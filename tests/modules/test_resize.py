@@ -8,12 +8,12 @@ import skimage.transform
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.resize
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"
@@ -23,10 +23,10 @@ def test_load_v3():
     with open("./tests/resources/modules/resize/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -59,17 +59,17 @@ def make_workspace(
     module.size_method.value = size_method
     module.interpolation.value = interpolation
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image = cellprofiler_core.image.Image(image, mask, cropping, dimensions=dimensions)
     image_set.add(INPUT_IMAGE_NAME, image)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )

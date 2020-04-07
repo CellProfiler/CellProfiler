@@ -7,9 +7,9 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.graytocolor
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 OUTPUT_IMAGE_NAME = "outputimage"
 
@@ -73,10 +73,10 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
 
     module.rgb_image_name.value = OUTPUT_IMAGE_NAME
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
@@ -85,11 +85,11 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
     for image, image_name in zip(images, image_names):
         if image is not None:
             image_set.add(image_name, cellprofiler_core.image.Image(image))
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
@@ -100,10 +100,10 @@ def test_load_v3():
     with open("./tests/resources/modules/graytocolor/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))

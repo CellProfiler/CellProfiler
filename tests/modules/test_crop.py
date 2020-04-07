@@ -3,9 +3,9 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.crop
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE = "input_image"
 CROP_IMAGE = "crop_image"
@@ -32,21 +32,21 @@ def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=No
             cellprofiler_core.image.Image(numpy.zeros(cropping.shape), crop_mask=cropping),
         )
         module.cropping_mask_source.value = CROPPING
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     if crop_objects is not None:
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = crop_objects
         object_set.add_objects(objects, CROP_OBJECTS)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
     m = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     m.add_measurement(

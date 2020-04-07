@@ -4,30 +4,30 @@ import six
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.measureimageareaoccupied
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "MyObjects"
 
 
 def make_workspace(labels, parent_image=None):
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     objects.parent_image = parent_image
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.set_module_num(1)
     module.operands[0].operand_objects.value = OBJECTS_NAME
     pipeline.add_module(module)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
@@ -102,7 +102,7 @@ def test_get_measurement_columns():
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.operands[0].operand_objects.value = OBJECTS_NAME
     module.operands[0].operand_choice.value = "Objects"
-    columns = module.get_measurement_columns(cellprofiler.pipeline.Pipeline())
+    columns = module.get_measurement_columns(cellprofiler_core.pipeline.Pipeline())
     expected = (
         (
             cellprofiler_core.measurement.IMAGE,
@@ -210,9 +210,9 @@ def test_load_v3():
         data = fd.read()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(callback)
     pipeline.load(six.StringIO(data))
 

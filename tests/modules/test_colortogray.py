@@ -5,9 +5,9 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.colortogray
 import cellprofiler_core.modules.injectimage
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 import tests.modules
 
 IMAGE_NAME = "image"
@@ -39,27 +39,27 @@ def test_combine():
     ctg.green_contribution.value = 2
     ctg.blue_contribution.value = 3
     ctg.grayscale_name.value = "my_grayscale"
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(inj)
     pipeline.add_module(ctg)
     pipeline.test_valid()
 
     measurements = cellprofiler_core.measurement.Measurements()
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj, None, None, measurements, image_set_list, None
     )
     inj.prepare_run(workspace)
     inj.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
     inj.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, inj, image_set, object_set, measurements, None
         )
     )
     ctg.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, ctg, image_set, object_set, measurements, None
         )
     )
@@ -86,27 +86,27 @@ def test_split_all():
     ctg.red_name.value = "my_red"
     ctg.green_name.value = "my_green"
     ctg.blue_name.value = "my_blue"
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(inj)
     pipeline.add_module(ctg)
     pipeline.test_valid()
 
     measurements = cellprofiler_core.measurement.Measurements()
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj, None, None, measurements, image_set_list, None
     )
     inj.prepare_run(workspace)
     inj.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
     inj.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, inj, image_set, object_set, measurements, None
         )
     )
     ctg.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, ctg, image_set, object_set, measurements, None
         )
     )
@@ -158,18 +158,18 @@ def test_combine_channels():
         module.channels[i].contribution.value_text = "%.10f" % factors[i]
         expected += image[:, :, channel_index] * factors[i] / divisor
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
@@ -202,18 +202,18 @@ def test_split_channels():
         module.channels[i].channel_choice.value = channel_index + 1
         module.channels[i].image_name.value = OUTPUT_IMAGE_F % i
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
@@ -256,10 +256,10 @@ def test_load_v2():
     with open("./tests/resources/modules/colortogray/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -304,10 +304,10 @@ def test_load_v3():
     with open("./tests/resources/modules/colortogray/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))

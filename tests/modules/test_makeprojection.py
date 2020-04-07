@@ -4,9 +4,9 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.makeprojection
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 IMAGE_NAME = "image"
 PROJECTED_IMAGE_NAME = "projectedimage"
@@ -16,10 +16,10 @@ def test_load_v2():
     with open("./tests/resources/modules/makeprojection/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.load(six.moves.StringIO(data))
     methods = (
@@ -56,7 +56,7 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     bogus_image = cellprofiler_core.image.Image(numpy.zeros((10, 20)))
     image_set_list.get_image_set(image_count).add(IMAGE_NAME, bogus_image)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler.modules.makeprojection.MakeProjection()
     module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
@@ -65,7 +65,7 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     module.frequency.value = frequency
     pipeline.add_module(module)
     m = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, None, None, m, image_set_list
     )
     module.prepare_run(workspace)
@@ -73,11 +73,11 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     for i in range(image_count):
         if i > 0:
             image_set_list.purge_image_set(i - 1)
-        w = cellprofiler.workspace.Workspace(
+        w = cellprofiler_core.workspace.Workspace(
             pipeline,
             module,
             image_set_list.get_image_set(i),
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             m,
             image_set_list,
         )
@@ -90,8 +90,8 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     #
     module.prepare_group(workspace, {}, [image_count + 1])
     image_set = image_set_list.get_image_set(image_count)
-    w = cellprofiler.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler.object.ObjectSet(), m, image_set_list
+    w = cellprofiler_core.workspace.Workspace(
+        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     module.run(w)
     image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)

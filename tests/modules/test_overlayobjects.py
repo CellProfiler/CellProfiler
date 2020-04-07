@@ -1,5 +1,5 @@
 import cellprofiler.modules.overlayobjects
-import cellprofiler.object
+import cellprofiler_core.object
 
 instance = cellprofiler.modules.overlayobjects.OverlayObjects()
 

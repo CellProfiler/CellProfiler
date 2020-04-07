@@ -11,12 +11,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
 import cellprofiler.modules.measureobjectintensity
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 IMAGE_NAME = "MyImage"
 OBJECT_NAME = "MyObjects"
@@ -45,7 +45,7 @@ def module():
 
 @pytest.fixture(scope="function")
 def objects(image):
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
 
     objects.parent_image = image
 
@@ -81,12 +81,12 @@ def workspace(image, measurements, module, objects):
 
     image_set.add(IMAGE_NAME, image)
 
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     object_set.add_objects(objects, OBJECT_NAME)
 
-    return cellprofiler.workspace.Workspace(
-        cellprofiler.pipeline.Pipeline(),
+    return cellprofiler_core.workspace.Workspace(
+        cellprofiler_core.pipeline.Pipeline(),
         module,
         image_set,
         object_set,

@@ -8,12 +8,12 @@ import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
 import cellprofiler.modules.identifysecondaryobjects
 import cellprofiler.modules.threshold
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_OBJECTS_NAME = "input_objects"
 OUTPUT_OBJECTS_NAME = "output_objects"
@@ -28,10 +28,10 @@ def test_load_v9():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -73,10 +73,10 @@ def test_load_v10():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -97,16 +97,16 @@ def test_load_v10():
 def make_workspace(
     image, segmented, unedited_segmented=None, small_removed_segmented=None
 ):
-    p = cellprofiler.pipeline.Pipeline()
+    p = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     p.add_listener(callback)
-    o_s = cellprofiler.object.ObjectSet()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(image)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     if unedited_segmented is not None:
         objects.unedited_segmented = unedited_segmented
     if small_removed_segmented is not None:
@@ -122,7 +122,7 @@ def make_workspace(
     module.image_name.value = IMAGE_NAME
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     return workspace, module
 
 
@@ -217,14 +217,14 @@ def test_two_objects_propagation_image():
 
 
 def test_two_objects_propagation_distance():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     img[2:7, 2:7] = 0.3
     img[2:7, 7:17] = 0.5
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
     labels[3:6, 13:16] = 2
@@ -246,7 +246,7 @@ def test_two_objects_propagation_distance():
     module.threshold.manual_threshold.value = 0.2
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -298,11 +298,11 @@ def test_propagation_wrong_size():
 
 
 def test_zeros_watershed_gradient():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = numpy.zeros((10, 10), int)
     objects.small_removed_segmented = numpy.zeros((10, 10), int)
     objects.segmented = numpy.zeros((10, 10), int)
@@ -317,7 +317,7 @@ def test_zeros_watershed_gradient():
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -328,13 +328,13 @@ def test_zeros_watershed_gradient():
 
 
 def test_one_object_watershed_gradient():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 10))
     img[2:7, 2:7] = 0.5
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
     objects.unedited_segmented = labels
@@ -353,7 +353,7 @@ def test_one_object_watershed_gradient():
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -376,8 +376,8 @@ def test_one_object_watershed_gradient():
 
 
 def test_two_objects_watershed_gradient():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     # There should be a gradient at :,7 which should act
@@ -385,7 +385,7 @@ def test_two_objects_watershed_gradient():
     img[2:7, 2:7] = 0.3
     img[2:7, 7:17] = 0.5
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
     labels[3:6, 13:16] = 2
@@ -406,7 +406,7 @@ def test_two_objects_watershed_gradient():
     module.threshold.manual_threshold.value = 0.2
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -455,11 +455,11 @@ def test_watershed_gradient_wrong_size():
 
 
 def test_zeros_watershed_image():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = numpy.zeros((10, 10), int)
     objects.small_removed_segmented = numpy.zeros((10, 10), int)
     objects.segmented = numpy.zeros((10, 10), int)
@@ -474,7 +474,7 @@ def test_zeros_watershed_image():
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -485,13 +485,13 @@ def test_zeros_watershed_image():
 
 
 def test_one_object_watershed_image():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 10))
     img[2:7, 2:7] = 0.5
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
     objects.unedited_segmented = labels
@@ -506,7 +506,7 @@ def test_one_object_watershed_image():
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
@@ -525,8 +525,8 @@ def test_one_object_watershed_image():
 
 
 def test_two_objects_watershed_image():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     # There should be a saddle at 7 which should serve
@@ -535,7 +535,7 @@ def test_two_objects_watershed_image():
     img[2:7, 2:7] = 0.05 * (7 - y[2:7, 2:7])
     img[2:7, 7:17] = 0.05 * (y[2:7, 7:17] - 6)
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
     labels[3:6, 13:16] = 2
@@ -556,7 +556,7 @@ def test_two_objects_watershed_image():
     module.threshold.manual_threshold.value = 0.01
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -597,11 +597,11 @@ def test_watershed_image_wrong_size():
 
 
 def test_zeros_distance_n():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(numpy.zeros((10, 10)))
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = numpy.zeros((10, 10), int)
     objects.small_removed_segmented = numpy.zeros((10, 10), int)
     objects.segmented = numpy.zeros((10, 10), int)
@@ -616,7 +616,7 @@ def test_zeros_distance_n():
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -627,12 +627,12 @@ def test_zeros_distance_n():
 
 
 def test_one_object_distance_n():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 10))
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
     objects.unedited_segmented = labels
@@ -650,7 +650,7 @@ def test_one_object_distance_n():
     module.distance_to_dilate.value = 1
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -668,12 +668,12 @@ def test_one_object_distance_n():
 
 
 def test_two_objects_distance_n():
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     img = numpy.zeros((10, 20))
     image = cellprofiler_core.image.Image(img)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros((10, 20), int)
     labels[3:6, 3:6] = 1
     labels[3:6, 13:16] = 2
@@ -692,7 +692,7 @@ def test_two_objects_distance_n():
     module.distance_to_dilate.value = 100
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
     assert "Image" in m.get_object_names()
@@ -1019,11 +1019,11 @@ def test_filter_edge():
         ]
     )
 
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(image)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
     objects.segmented = labels
@@ -1041,7 +1041,7 @@ def test_filter_edge():
     module.new_primary_objects_name.value = NEW_OBJECTS_NAME
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
@@ -1101,11 +1101,11 @@ def test_filter_unedited():
         ]
     )
 
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(image)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
     objects.unedited_segmented = labels_unedited
@@ -1126,7 +1126,7 @@ def test_filter_unedited():
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
     assert numpy.all(object_out.segmented == expected)
@@ -1178,11 +1178,11 @@ def test_small():
     )
     expected = image.astype(int)
 
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(image)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
     objects.unedited_segmented = labels_unedited
@@ -1201,7 +1201,7 @@ def test_small():
     module.threshold.manual_threshold.value = 0.5
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
     assert numpy.all(object_out.segmented == expected)
@@ -1247,11 +1247,11 @@ def test_small_touching():
         float,
     )
 
-    p = cellprofiler.pipeline.Pipeline()
-    o_s = cellprofiler.object.ObjectSet()
+    p = cellprofiler_core.pipeline.Pipeline()
+    o_s = cellprofiler_core.object.ObjectSet()
     i_l = cellprofiler_core.image.ImageSetList()
     image = cellprofiler_core.image.Image(image)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.unedited_segmented = labels
     objects.small_removed_segmented = labels
     objects.unedited_segmented = labels_unedited
@@ -1270,7 +1270,7 @@ def test_small_touching():
     module.threshold.manual_threshold.value = 0.5
     module.set_module_num(1)
     p.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(p, module, i_s, o_s, m, i_l)
+    workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.run(workspace)
     object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
     i, j = numpy.argwhere(labels_unedited == 2)[0]

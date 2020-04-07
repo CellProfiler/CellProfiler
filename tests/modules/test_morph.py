@@ -9,20 +9,20 @@ import scipy.ndimage
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.morph
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 
 def test_load_v2():
     with open("./tests/resources/modules/morph/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -61,14 +61,14 @@ def test_load_with_extracted_operations():
         data = fd.read()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
 
     module = pipeline.modules()[-1]
-    with pytest.raises(cellprofiler.setting.ValidationError):
+    with pytest.raises(cellprofiler_core.setting.ValidationError):
         module.test_valid(pipeline)
 
 
@@ -90,11 +90,11 @@ def execute(image, function, mask=None, custom_repeats=None, scale=None, module=
         module.functions[0].custom_repeats.value = custom_repeats
     if scale is not None:
         module.functions[0].scale.value = scale
-    pipeline = cellprofiler.pipeline.Pipeline()
-    object_set = cellprofiler.object.ObjectSet()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,

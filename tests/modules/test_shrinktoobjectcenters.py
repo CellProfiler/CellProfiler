@@ -5,7 +5,7 @@ import pytest
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.shrinktoobjectcenters
-import cellprofiler.object
+import cellprofiler_core.object
 
 instance = cellprofiler.modules.shrinktoobjectcenters.ShrinkToObjectCenters()
 
@@ -32,7 +32,7 @@ def image_labels():
 
 @pytest.fixture(scope="function")
 def object_set(objects):
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     object_set.add_objects(objects, "InputObjects")
 
@@ -41,7 +41,7 @@ def object_set(objects):
 
 @pytest.fixture(scope="function")
 def objects():
-    return cellprofiler.object.Objects()
+    return cellprofiler_core.object.Objects()
 
 
 @pytest.fixture(scope="module")

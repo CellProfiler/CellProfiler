@@ -5,9 +5,9 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.displaydataonimage
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -19,10 +19,10 @@ def test_load_v4():
     with open("./tests/resources/modules/displaydataonimage/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -50,10 +50,10 @@ def test_load_v5():
     with open("./tests/resources/modules/displaydataonimage/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -87,10 +87,10 @@ def test_load_v6():
     with open("./tests/resources/modules/displaydataonimage/v6.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -127,7 +127,7 @@ def test_load_v6():
 
 
 def make_workspace(measurement, labels=None, image=None):
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     module = cellprofiler.modules.displaydataonimage.DisplayDataOnImage()
     module.set_module_num(1)
     module.image_name.value = INPUT_IMAGE_NAME
@@ -144,7 +144,7 @@ def make_workspace(measurement, labels=None, image=None):
         module.objects_or_image.value = (
             cellprofiler.modules.displaydataonimage.OI_OBJECTS
         )
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         o.segmented = labels
         object_set.add_objects(o, OBJECTS_NAME)
         m.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME, numpy.array(measurement))
@@ -155,10 +155,10 @@ def make_workspace(measurement, labels=None, image=None):
             image = numpy.zeros(labels.shape)
     module.measurement.value = MEASUREMENT_NAME
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
@@ -166,7 +166,7 @@ def make_workspace(measurement, labels=None, image=None):
     image_set = image_set_list.get_image_set(0)
     image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image))
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     return workspace, module

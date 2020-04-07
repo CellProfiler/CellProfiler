@@ -4,9 +4,9 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.measureobjectneighbors
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 OBJECTS_NAME = "objectsname"
 NEIGHBORS_NAME = "neighborsname"
@@ -19,25 +19,25 @@ def make_workspace(labels, mode, distance=0, neighbors_labels=None):
     module.object_name.value = OBJECTS_NAME
     module.distance_method.value = mode
     module.distance.value = distance
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     measurements = cellprofiler_core.measurement.Measurements()
     measurements.group_index = 1
     measurements.group_number = 1
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
     if neighbors_labels is None:
         module.neighbors_name.value = OBJECTS_NAME
     else:
         module.neighbors_name.value = NEIGHBORS_NAME
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = neighbors_labels
         object_set.add_objects(objects, NEIGHBORS_NAME)
     return workspace, module
@@ -49,10 +49,10 @@ def test_load_v2():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -326,9 +326,9 @@ def test_touching_discarded():
         labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
     )
     object_set = workspace.object_set
-    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
     objects = object_set.get_objects(OBJECTS_NAME)
-    assert isinstance(objects, cellprofiler.object.Objects)
+    assert isinstance(objects, cellprofiler_core.object.Objects)
 
     sm_labels = labels.copy() * 3
     sm_labels[-1, -1] = 1
@@ -367,9 +367,9 @@ def test_all_discarded():
         labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
     )
     object_set = workspace.object_set
-    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
     objects = object_set.get_objects(OBJECTS_NAME)
-    assert isinstance(objects, cellprofiler.object.Objects)
+    assert isinstance(objects, cellprofiler_core.object.Objects)
 
     # Needs 2 objects to trigger the bug
     sm_labels = numpy.zeros((10, 10), int)

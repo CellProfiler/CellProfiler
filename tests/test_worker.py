@@ -14,8 +14,8 @@ import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
 import cellprofiler_core.modules.loadimages
 import cellprofiler_core.modules.namesandtypes
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import javabridge
@@ -50,7 +50,7 @@ class TestAnalysisWorker(unittest.TestCase):
 
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
-        cellprofiler.preferences.set_default_output_directory(self.out_dir)
+        cellprofiler_core.preferences.set_default_output_directory(self.out_dir)
         self.announce_addr = "inproc://" + uuid.uuid4().hex
         self.work_addr = "inproc://" + uuid.uuid4().hex
         self.announce_socket = self.zmq_context.socket(zmq.PUB)
@@ -139,7 +139,7 @@ class TestAnalysisWorker(unittest.TestCase):
                     if e is not None:
                         raise e
                     else:
-                        raise cellprofiler.pipeline.CancelledException(
+                        raise cellprofiler_core.pipeline.event.CancelledException(
                             "Unexpected exit during recv"
                         )
                 if socket == work_socket and state == zmq.POLLIN:
@@ -237,7 +237,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)
         self.cancel()
-        self.assertRaises(cellprofiler.pipeline.CancelledException, self.awthread.ecute)
+        self.assertRaises(cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute)
 
     def test_02_01_send(self):
         self.awthread = self.AWThread(self.announce_addr)
@@ -268,7 +268,7 @@ class TestAnalysisWorker(unittest.TestCase):
 
         self.awthread.ex(send_something)
         self.cancel()
-        self.assertRaises(cellprofiler.pipeline.CancelledException, self.awthread.ecute)
+        self.assertRaises(cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute)
 
     def test_02_03_send_upstream_exit(self):
         self.awthread = self.AWThread(self.announce_addr)
@@ -282,7 +282,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.ex(send_something)
         req = self.awthread.recv(self.work_socket)
         req.reply(cellprofiler.analysis.ServerExited())
-        self.assertRaises(cellprofiler.pipeline.CancelledException, self.awthread.ecute)
+        self.assertRaises(cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute)
 
     def test_03_01_work_request(self):
         #
@@ -332,22 +332,22 @@ class TestAnalysisWorker(unittest.TestCase):
         output_dir = os.path.normcase(
             os.path.join(tests.modules.example_images_directory(), "ExampleHT29")
         )
-        cellprofiler.preferences.set_default_image_directory(input_dir)
-        input_dir = cellprofiler.preferences.get_default_image_directory()
-        cellprofiler.preferences.set_default_output_directory(output_dir)
-        output_dir = cellprofiler.preferences.get_default_output_directory()
+        cellprofiler_core.preferences.set_default_image_directory(input_dir)
+        input_dir = cellprofiler_core.preferences.get_default_image_directory()
+        cellprofiler_core.preferences.set_default_output_directory(output_dir)
+        output_dir = cellprofiler_core.preferences.get_default_output_directory()
         preferences = {
-            cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
             ),
-            cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_OUTPUT_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_DIRECTORY
             ),
         }
-        cellprofiler.preferences.set_default_image_directory(
+        cellprofiler_core.preferences.set_default_image_directory(
             tests.modules.example_images_directory()
         )
-        cellprofiler.preferences.set_default_output_directory(
+        cellprofiler_core.preferences.set_default_output_directory(
             tests.modules.example_images_directory()
         )
         rep = cellprofiler.analysis.Reply(
@@ -360,10 +360,10 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertEqual(
-            cellprofiler.preferences.get_default_image_directory(), input_dir
+            cellprofiler_core.preferences.get_default_image_directory(), input_dir
         )
         self.assertEqual(
-            cellprofiler.preferences.get_default_output_directory(), output_dir
+            cellprofiler_core.preferences.get_default_output_directory(), output_dir
         )
         self.assertIn(self.analysis_id, self.awthread.aw.pipelines_and_preferences)
         pipe, prefs = self.awthread.aw.pipelines_and_preferences[self.analysis_id]
@@ -372,7 +372,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Cancel and check for exit
         #
         req.reply(cellprofiler.analysis.ServerExited())
-        self.assertRaises(cellprofiler.pipeline.CancelledException, self.awthread.ecute)
+        self.assertRaises(cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute)
 
     def test_03_03_initial_measurements(self):
         #
@@ -399,10 +399,10 @@ class TestAnalysisWorker(unittest.TestCase):
         input_dir = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        cellprofiler.preferences.set_default_image_directory(input_dir)
+        cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
-            cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
             )
         }
 
@@ -443,7 +443,7 @@ class TestAnalysisWorker(unittest.TestCase):
             #
             req.reply(cellprofiler.analysis.ServerExited())
             self.assertRaises(
-                cellprofiler.pipeline.CancelledException, self.awthread.ecute
+                cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
             )
         finally:
             m.close()
@@ -473,10 +473,10 @@ class TestAnalysisWorker(unittest.TestCase):
         input_dir = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        cellprofiler.preferences.set_default_image_directory(input_dir)
+        cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
-            cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
             )
         }
 
@@ -544,10 +544,10 @@ class TestAnalysisWorker(unittest.TestCase):
         input_dir = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        cellprofiler.preferences.set_default_image_directory(input_dir)
+        cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
-            cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
             )
         }
 
@@ -647,10 +647,10 @@ class TestAnalysisWorker(unittest.TestCase):
         input_dir = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        cellprofiler.preferences.set_default_image_directory(input_dir)
+        cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
-            cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
             )
         }
 
@@ -743,10 +743,10 @@ class TestAnalysisWorker(unittest.TestCase):
         input_dir = os.path.join(
             tests.modules.example_images_directory(), "ExampleSBSImages"
         )
-        cellprofiler.preferences.set_default_image_directory(input_dir)
+        cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
-            cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler.preferences.config_read(
-                cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY
+            cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
+                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
             )
         }
 
@@ -933,9 +933,9 @@ class TestAnalysisWorker(unittest.TestCase):
     #             self.assertEqual(req.analysis_id, self.analysis_id)
     #
     #             input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
-    #             cellprofiler.preferences.set_default_image_directory(input_dir)
-    #             preferences = {cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY:
-    #                            cellprofiler.preferences.config_read(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY)}
+    #             cellprofiler_core.preferences.set_default_image_directory(input_dir)
+    #             preferences = {cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY:
+    #                            cellprofiler_core.preferences.config_read(cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY)}
     #
     #             rep = cellprofiler.analysis.Reply(
     #                 pipeline_blob = numpy.array(data),
@@ -948,7 +948,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             self.assertIsInstance(req, cellprofiler.analysis.InitialMeasurementsRequest)
     #             self.assertEqual(req.analysis_id, self.analysis_id)
     #             m = get_measurements_for_good_pipeline()
-    #             pipeline = cellprofiler.pipeline.Pipeline()
+    #             pipeline = cellprofiler_core.pipeline.Pipeline()
     #             pipeline.loadtxt(six.moves.StringIO(data))
     #             pipeline.write_pipeline_measurement(m)
     #
@@ -1158,7 +1158,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             i,
             blob.dtype,
         ] = blob
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(six.moves.StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)
     return m

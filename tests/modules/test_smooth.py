@@ -11,9 +11,9 @@ import skimage.restoration
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.smooth
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE_NAME = "myimage"
 OUTPUT_IMAGE_NAME = "myfilteredimage"
@@ -22,11 +22,11 @@ OUTPUT_IMAGE_NAME = "myfilteredimage"
 def make_workspace(image, mask):
     """Make a workspace for testing FilterByObjectMeasurement"""
     module = cellprofiler.modules.smooth.Smooth()
-    pipeline = cellprofiler.pipeline.Pipeline()
-    object_set = cellprofiler.object.ObjectSet()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -44,7 +44,7 @@ def test_load_v02():
     with open("./tests/resources/modules/smooth/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     smooth = pipeline.modules()[0]

@@ -5,12 +5,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.relateobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 PARENT_OBJECTS = "parentobjects"
 CHILD_OBJECTS = "childobjects"
@@ -21,7 +21,7 @@ IGNORED_MEASUREMENT = "%s_Foo" % cellprofiler_core.measurement.C_PARENT
 class TestRelateObjects(unittest.TestCase):
     def make_workspace(self, parents, children, fake_measurement=False):
         """Make a workspace for testing Relate"""
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         if fake_measurement:
 
             class FakeModule(cellprofiler_core.module.Module):
@@ -52,23 +52,23 @@ class TestRelateObjects(unittest.TestCase):
         new_module_num = 2 if fake_measurement else 1
         module.set_module_num(new_module_num)
         pipeline.add_module(module)
-        object_set = cellprofiler.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
         image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         m = cellprofiler_core.measurement.Measurements()
         m.add_image_measurement(cellprofiler_core.measurement.GROUP_NUMBER, 1)
         m.add_image_measurement(cellprofiler_core.measurement.GROUP_INDEX, 1)
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, module, image_set, object_set, m, image_set_list
         )
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         if parents.shape[1] == 3:
             # IJV format
             o.ijv = parents
         else:
             o.segmented = parents
         object_set.add_objects(o, PARENT_OBJECTS)
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         if children.shape[1] == 3:
             o.ijv = children
         else:
@@ -459,7 +459,7 @@ class TestRelateObjects(unittest.TestCase):
 
         step_parents = numpy.zeros_like(parents)
 
-        step_parents_object = cellprofiler.object.Objects()
+        step_parents_object = cellprofiler_core.object.Objects()
 
         step_parents_object.segmented = step_parents
 

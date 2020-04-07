@@ -6,10 +6,10 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules.straightenworms
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 OBJECTS_NAME = "worms"
 STRAIGHTENED_OBJECTS_NAME = "straightenedworms"
@@ -23,10 +23,10 @@ def test_load_v1():
     with open("./tests/resources/modules/straightenworms/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -38,7 +38,7 @@ def test_load_v1():
     assert module.width == 20
     assert (
         module.training_set_directory.dir_choice
-        == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+        == cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.training_set_file_name == "TrainingSet.xml"
     assert module.image_count.value == 2
@@ -54,10 +54,10 @@ def test_load_v2():
     with open("./tests/resources/modules/straightenworms/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -76,7 +76,7 @@ def test_load_v2():
         assert module.width == 20
         assert (
             module.training_set_directory.dir_choice
-            == cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
+            == cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME
         )
         assert module.training_set_file_name == "TrainingSet.mat"
         assert len(module.images) == 1
@@ -114,16 +114,16 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
         def __init__(self):
             radii_from_training = radii
 
-    module.training_set_directory.dir_choice = cellprofiler.setting.URL_FOLDER_NAME
+    module.training_set_directory.dir_choice = cellprofiler_core.setting.URL_FOLDER_NAME
     module.training_set_directory.custom_path = "http://www.cellprofiler.org"
     module.training_set_file_name.value = "TrainingSet.xml"
     module.training_params = {"TrainingSet.xml": (P(), "URL")}
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
 
@@ -155,8 +155,8 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
         module.images[1].image_name.value = AUX_IMAGE_NAME
         module.images[1].straightened_image_name.value = AUX_STRAIGHTENED_IMAGE_NAME
 
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     labels = numpy.zeros(image.shape, int)
     for i in range(control_points.shape[2]):
         if lengths[i] == 0:
@@ -168,7 +168,7 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
 
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     return workspace, module
@@ -269,7 +269,7 @@ def test_straighten_nothing():
     # TODO: need to come back to this and see what needs to be changed for this to be resolved
     # assertFalse(np.any(image.mask))
     objectset = workspace.object_set
-    assert isinstance(objectset, cellprofiler.object.ObjectSet)
+    assert isinstance(objectset, cellprofiler_core.object.ObjectSet)
     labels = objectset.get_objects(STRAIGHTENED_OBJECTS_NAME).segmented
     assert numpy.all(labels == 0)
     m = workspace.measurements

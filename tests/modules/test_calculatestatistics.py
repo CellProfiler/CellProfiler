@@ -7,10 +7,10 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.calculatestatistics
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"
@@ -21,10 +21,10 @@ def test_load_v2():
     with open("./tests/resources/modules/calculatestatistics/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -40,7 +40,7 @@ def test_load_v2():
     assert not dv.log_transform
     assert dv.wants_save_figure
     assert dv.figure_name == "DoseResponsePlot"
-    assert dv.pathname.dir_choice == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+    assert dv.pathname.dir_choice == cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME
     assert dv.pathname.custom_path == "Test"
 
 
@@ -344,7 +344,7 @@ def test_load_v2():
 #         module.set_module_num(1)
 #         pipeline.add_module(module)
 #         def callback(caller, event):
-#             assertFalse(isinstance(event, cpp.RunExceptionEvent))
+#             assertFalse(isinstance(event, cpp.event.RunException))
 #         workspace = cpw.Workspace(pipeline, module, image_set,
 #                                   cpo.ObjectSet(), m,
 #                                   image_set_list)
@@ -389,7 +389,7 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
     module.set_module_num(1)
     module.grouping_values.value = controls_measurement
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     m = cellprofiler_core.measurement.Measurements()
@@ -414,8 +414,8 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
     image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = cellprofiler.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler.object.ObjectSet(), m, image_set_list
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     return workspace, module
 
@@ -477,7 +477,7 @@ def test_make_path():
     try:
         dose_group = module.dose_values[0]
         dose_group.wants_save_figure.value = True
-        dose_group.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        dose_group.pathname.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
         dose_group.pathname.custom_path = my_subdir
         dose_group.figure_name.value = FIGURE_NAME
         module.post_run(workspace)

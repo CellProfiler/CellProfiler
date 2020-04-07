@@ -6,12 +6,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.measureobjectoverlap
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 GROUND_TRUTH_IMAGE_NAME = "groundtruth"
 TEST_IMAGE_NAME = "test"
@@ -33,10 +33,10 @@ def make_obj_workspace(ground_truth_obj, id_obj, ground_truth, id):
     module.object_name_GT.value = GROUND_TRUTH_OBJ
     module.object_name_ID.value = ID_OBJ
     module.wants_emd.value = True
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
@@ -51,15 +51,15 @@ def make_obj_workspace(ground_truth_obj, id_obj, ground_truth, id):
             d["image"], mask=d.get("mask"), crop_mask=d.get("crop_mask")
         )
         image_set.add(name, image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj), (ID_OBJ, id_obj)):
-        object = cellprofiler.object.Objects()
+        object = cellprofiler_core.object.Objects()
         if d.shape[1] == 3:
             object.ijv = d
         else:
             object.segmented = d
         object_set.add_objects(object, name)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,

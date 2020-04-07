@@ -10,9 +10,9 @@ import cellprofiler_core.modules.loadsingleimage
 import cellprofiler.modules.measureimagequality
 import cellprofiler_core.modules.namesandtypes
 import cellprofiler.modules.smooth
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -21,13 +21,13 @@ OBJECTS_NAME = "my_objects"
 def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
     if not mask is None:
         image.mask = mask
     image_set.add(IMAGES_NAME, image)
     if not objects is None:
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         o.segmented = objects
         object_set.add_objects(o, OBJECTS_NAME)
     module = cellprofiler.modules.measureimagequality.MeasureImageQuality()
@@ -36,9 +36,9 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
     module.image_groups[0].image_names.value = IMAGES_NAME
     module.image_groups[0].use_all_threshold_methods.value = False
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -487,7 +487,7 @@ def test_experiment_threshold():
     """Test experiment-wide thresholds"""
     numpy.random.seed(32)
     workspace = make_workspace(numpy.zeros((10, 10)))
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module = workspace.module
     assert isinstance(
         module, cellprofiler.modules.measureimagequality.MeasureImageQuality
@@ -529,7 +529,7 @@ def test_experiment_threshold_cycle_skipping():
 
     numpy.random.seed(33)
     workspace = make_workspace(numpy.zeros((10, 10)))
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module = workspace.module
     assert isinstance(
         module, cellprofiler.modules.measureimagequality.MeasureImageQuality
@@ -611,17 +611,17 @@ def test_use_all_thresholding_methods():
 
 
 def check_error(caller, event):
-    assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+    assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
 
 def test_load_v3():
     with open("./tests/resources/modules/measureimagequality/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -665,10 +665,10 @@ def test_load_v4():
     with open("./tests/resources/modules/measureimagequality/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -840,7 +840,7 @@ def test_images_to_process():
     # variety of image providers.
     #
     expected_names = ["foo", "bar"]
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     module1 = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     module1.set_module_num(1)
     module1.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES

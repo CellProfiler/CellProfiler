@@ -8,11 +8,11 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.measureobjectskeleton
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 
 IMAGE_NAME = "MyImage"
@@ -42,10 +42,10 @@ def test_load_v1():
     with open("./tests/resources/modules/measureobjectskeleton/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -73,8 +73,8 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
     img = cellprofiler_core.image.Image(image, mask)
     image_set.add(IMAGE_NAME, img)
 
-    object_set = cellprofiler.object.ObjectSet()
-    o = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    o = cellprofiler_core.object.Objects()
     o.segmented = labels
     object_set.add_objects(o, OBJECT_NAME)
 
@@ -87,21 +87,21 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
         module.intensity_image_name.value = INTENSITY_IMAGE_NAME
     if wants_graph:
         module.wants_objskeleton_graph.value = True
-        module.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = temp_dir
         module.edge_file_name.value = EDGE_FILE
         module.vertex_file_name.value = VERTEX_FILE
     module.set_module_num(1)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     return workspace, module

@@ -4,9 +4,9 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules.calculatemath
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 OUTPUT_MEASUREMENTS = "outputmeasurements"
 MATH_OUTPUT_MEASUREMENTS = "_".join(("Math", OUTPUT_MEASUREMENTS))
@@ -47,13 +47,13 @@ def run_workspace(
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
     module.rounding = "Not rounded"
     module.rounding_digit = 0
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         measurements,
         image_set_list,
     )

@@ -13,12 +13,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.threshold
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -29,11 +29,11 @@ def make_workspace(image, mask=None, dimensions=2):
     module = cellprofiler.modules.threshold.Threshold()
     module.x_name.value = INPUT_IMAGE_NAME
     module.y_name.value = OUTPUT_IMAGE_NAME
-    pipeline = cellprofiler.pipeline.Pipeline()
-    object_set = cellprofiler.object.ObjectSet()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -59,7 +59,7 @@ def test_load_v7():
         data = fd.read()
 
     fd = io.StringIO(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[-1]
     assert isinstance(module, cellprofiler.modules.threshold.Threshold)
@@ -86,7 +86,7 @@ def test_load_v8():
         data = fd.read()
 
     fd = io.StringIO(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[-1]
     assert isinstance(module, cellprofiler.modules.threshold.Threshold)
@@ -113,7 +113,7 @@ def test_load_v9():
         data = fd.read()
 
     fd = io.StringIO(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[4]
     assert isinstance(module, cellprofiler.modules.threshold.Threshold)
@@ -152,7 +152,7 @@ def test_load_v10():
         data = fd.read()
 
     fd = io.StringIO(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[-1]
     assert isinstance(module, cellprofiler.modules.threshold.Threshold)

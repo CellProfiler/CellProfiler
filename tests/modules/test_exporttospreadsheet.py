@@ -13,11 +13,11 @@ import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules
 import cellprofiler.modules.exporttospreadsheet
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 import tests.modules
 
 OBJECTS_NAME = "MyObjects"
@@ -46,10 +46,10 @@ def test_load_v3():
     with open("./tests/resources/modules/exporttospreadsheet/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -82,10 +82,10 @@ def test_load_v4():
     with open("./tests/resources/modules/exporttospreadsheet/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -126,10 +126,10 @@ def test_load_v5():
     with open("./tests/resources/modules/exporttospreadsheet/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -191,10 +191,10 @@ def test_load_v6():
     with open("./tests/resources/modules/exporttospreadsheet/v6.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -293,10 +293,10 @@ def test_load_v8():
     with open("./tests/resources/modules/exporttospreadsheet/v8.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -336,10 +336,10 @@ def test_load_v9():
     with open("./tests/resources/modules/exporttospreadsheet/v9.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -381,10 +381,10 @@ def test_load_v10():
     with open("./tests/resources/modules/exporttospreadsheet/v10.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -427,10 +427,10 @@ def test_load_v11():
     with open("./tests/resources/modules/exporttospreadsheet/v11.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -484,9 +484,9 @@ def test_no_measurements(output_dir):
     measurements.add_image_measurement("Count_my_object", 0)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_object")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_object")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(measurements),
         module,
         image_set,
@@ -522,8 +522,8 @@ def test_experiment_measurement(output_dir):
     m.add_experiment_measurement("my_measurement", "Hello, world")
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -564,8 +564,8 @@ def test_two_experiment_measurements(output_dir):
     m.add_experiment_measurement("my_other_measurement", "Goodbye")
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -611,8 +611,8 @@ def test_img_887_no_experiment_file(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -643,8 +643,8 @@ def test_prefix(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -666,8 +666,8 @@ def test_image_measurement(output_dir):
     m.add_image_measurement("my_measurement", "Hello, world")
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -705,8 +705,8 @@ def test_three_by_two_image_measurements(output_dir):
             m.next_image_set()
         for j in range(3):
             m.add_image_measurement("measurement_%d" % j, "%d:%d" % (i, j))
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m),
         module,
         image_sets[i],
@@ -751,9 +751,9 @@ def test_object_measurement(output_dir):
     m.add_image_measurement("Count_my_object", 1)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -792,9 +792,9 @@ def test_three_by_two_object_measurements(output_dir):
     m.add_image_measurement("Count_my_object", 2)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -847,10 +847,10 @@ def test_get_measurements_from_two_objects(output_dir):
     m.add_image_measurement("Count_object_1", 4)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "object_0")
-    object_set.add_objects(cellprofiler.object.Objects(), "object_1")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "object_0")
+    object_set.add_objects(cellprofiler_core.object.Objects(), "object_1")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -906,9 +906,9 @@ def test_nan_measurements(output_dir):
     m.add_image_measurement("Count_my_object", 2)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -952,9 +952,9 @@ def test_null_measurements(output_dir):
     m.add_image_measurement("Count_my_object", 2)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1018,9 +1018,9 @@ def test_nan_image_measurements(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), OBJECTS_NAME)
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), OBJECTS_NAME)
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1089,9 +1089,9 @@ def test_null_image_measurements(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), OBJECTS_NAME)
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), OBJECTS_NAME)
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1143,8 +1143,8 @@ def test_blob_image_measurements(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1182,8 +1182,8 @@ def test_blob_experiment_measurements():
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1227,9 +1227,9 @@ def test_01_object_with_metadata(output_dir):
         m.add_image_measurement("Count_my_object", 1)
         if index < 3:
             m.next_image_set()
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     for i in range(4):
@@ -1286,9 +1286,9 @@ def test_02_object_with_path_metadata(output_dir):
         m.add_image_measurement("Count_my_object", 1)
         if index < 3:
             m.next_image_set()
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1338,9 +1338,9 @@ def test_image_with_metadata(output_dir):
         m.add_image_measurement("Metadata_tag", metadata)
         if index < 3:
             m.next_image_set()
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     for i in range(4):
@@ -1400,9 +1400,9 @@ def test_image_with_path_metadata(output_dir):
         m.add_image_measurement("Metadata_tag", metadata)
         if index < 3:
             m.next_image_set()
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1437,8 +1437,8 @@ def test_image_with_path_metadata(output_dir):
 def test_image_measurement_custom_directory(output_dir):
     """Test writing an image measurement"""
     path = os.path.join(output_dir, "my_dir", "my_file.csv")
-    cellprofiler.preferences.set_headless()
-    cellprofiler.preferences.set_default_output_directory(output_dir)
+    cellprofiler_core.preferences.set_headless()
+    cellprofiler_core.preferences.set_default_output_directory(output_dir)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
@@ -1454,8 +1454,8 @@ def test_image_measurement_custom_directory(output_dir):
     m.add_image_measurement("my_measurement", "Hello, world")
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1478,8 +1478,8 @@ def test_image_measurement_custom_directory(output_dir):
 def test_unicode_image_metadata(output_dir):
     """Write image measurements containing unicode characters"""
     path = os.path.join(output_dir, "my_dir", "my_file.csv")
-    cellprofiler.preferences.set_headless()
-    cellprofiler.preferences.set_default_output_directory(output_dir)
+    cellprofiler_core.preferences.set_headless()
+    cellprofiler_core.preferences.set_default_output_directory(output_dir)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
@@ -1496,8 +1496,8 @@ def test_unicode_image_metadata(output_dir):
     m.add_image_measurement("my_measurement", metadata_value)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1537,7 +1537,7 @@ def test_overwrite_files_everything(output_dir):
     module.set_module_num(2)
     pipeline.add_module(module)
 
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
     for object_name in (
         cellprofiler_core.measurement.EXPERIMENT,
         cellprofiler_core.measurement.IMAGE,
@@ -1578,7 +1578,7 @@ def test_overwrite_files_group(output_dir):
     module.set_module_num(2)
     pipeline.add_module(module)
 
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
 
     for image_number in m.get_image_numbers():
         file_name = module.make_objects_file_name(
@@ -1614,9 +1614,9 @@ def test_aggregate_image_columns(output_dir):
     m.add_measurement("my_objects", "my_measurement", data)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1673,9 +1673,9 @@ def test_no_aggregate_image_columns(output_dir):
     m.add_measurement("my_objects", "my_measurement", data)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1746,9 +1746,9 @@ def test_aggregate_and_filtered(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1835,8 +1835,8 @@ def test_image_number(output_dir):
     m.add_image_measurement("first_measurement", numpy.sum(data))
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1876,8 +1876,8 @@ def test_image_index_columns(output_dir):
         m.add_image_measurement("quotation", data[i])
         if i < len(data) - 1:
             m.next_image_set()
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1919,9 +1919,9 @@ def test_object_index_columns(output_dir):
         m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -1972,9 +1972,9 @@ def test_object_metadata_columns(output_dir):
         m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -2040,9 +2040,9 @@ def test_missing_measurements(output_dir):
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -2086,7 +2086,7 @@ def test_missing_column_measurements(output_dir):
     # no image set makes the measurement
     #
     path = os.path.join(output_dir, "my_file.csv")
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     module.set_module_num(1)
     pipeline.add_module(module)
@@ -2117,9 +2117,9 @@ def test_missing_column_measurements(output_dir):
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    object_set.add_objects(cellprofiler.object.Objects(), "my_objects")
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     module.post_run(workspace)
@@ -2153,15 +2153,15 @@ def make_pipeline(csv_text):
     fd.close()
     csv_path, csv_file = os.path.split(name)
     module = L.LoadText()
-    module.csv_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    module.csv_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     module.csv_directory.custom_path = csv_path
     module.csv_file_name.value = csv_file
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def error_callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(error_callback)
     return pipeline, module, name
@@ -2192,7 +2192,7 @@ def make_measurements_pipeline(m):
                         (object_name, feature, cellprofiler_core.measurement.COLTYPE_FLOAT)
                     )
 
-    class MPipeline(cellprofiler.pipeline.Pipeline):
+    class MPipeline(cellprofiler_core.pipeline.Pipeline):
         def get_measurement_columns(terminating_module=None):
             return columns
 
@@ -2423,7 +2423,7 @@ def test_test_overwrite_gct_file(output_dir):
     module.wants_prefix.value = False
     module.set_module_num(1)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
     assert output_csv_filename == module.make_gct_file_name(workspace, 1)
 
     assert module.prepare_run(workspace)
@@ -2450,9 +2450,9 @@ def test_relationships_file(output_dir):
     image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(0, 10):
         image_set = image_set_list.get_image_set(i)
-        m.add_image_measurement(cellprofiler.pipeline.IMAGE_NUMBER, i + 1)
-        m.add_image_measurement(cellprofiler.pipeline.GROUP_NUMBER, 1)
-        m.add_image_measurement(cellprofiler.pipeline.GROUP_INDEX, i + 1)
+        m.add_image_measurement(cellprofiler_core.pipeline.IMAGE_NUMBER, i + 1)
+        m.add_image_measurement(cellprofiler_core.pipeline.GROUP_NUMBER, 1)
+        m.add_image_measurement(cellprofiler_core.pipeline.GROUP_INDEX, i + 1)
         if i < 9:
             m.next_image_set()
     my_relationship = "BlahBlah"
@@ -2474,8 +2474,8 @@ def test_relationships_file(output_dir):
     )
     pipeline = make_measurements_pipeline(m)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler.object.ObjectSet(), m, image_set_list
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     fd = None
     try:
@@ -2546,7 +2546,7 @@ def test_test_overwrite_relationships_file(output_dir):
     module.set_module_num(1)
     pipeline.add_module(module)
 
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
     assert module.prepare_run(workspace)
     with open(output_csv_filename, "w") as fd:
         fd.write("Hello, world.\n")

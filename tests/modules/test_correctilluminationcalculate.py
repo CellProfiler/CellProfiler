@@ -6,10 +6,10 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.correctilluminationcalculate
 import cellprofiler_core.modules.injectimage
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 INPUT_IMAGE_NAME = "MyImage"
 OUTPUT_IMAGE_NAME = "MyResult"
@@ -18,7 +18,7 @@ DILATED_IMAGE_NAME = "Dilate"
 
 
 def error_callback(calller, event):
-    if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
+    if isinstance(event, cellprofiler_core.pipeline.event.RunException):
         pytest.fail(event.error.message)
 
 
@@ -39,7 +39,7 @@ def make_workspaces(images_and_masks):
     module.illumination_image_name.value = OUTPUT_IMAGE_NAME
     module.average_image_name.value = AVERAGE_IMAGE_NAME
     module.dilated_image_name.value = DILATED_IMAGE_NAME
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     measurements = cellprofiler_core.measurement.Measurements()
 
@@ -50,11 +50,11 @@ def make_workspaces(images_and_masks):
         else:
             image = cellprofiler_core.image.Image(image, mask)
         image_set.add(INPUT_IMAGE_NAME, image)
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
             module,
             image_set,
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             measurements,
             image_set_list,
         )
@@ -65,7 +65,7 @@ def make_workspaces(images_and_masks):
 def test_zeros():
     """Test all combinations of options with an image of all zeros"""
     for image in (numpy.zeros((10, 10)), numpy.zeros((10, 10, 3))):
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.add_listener(error_callback)
         inj_module = cellprofiler_core.modules.injectimage.InjectImage("MyImage", image)
         inj_module.set_module_num(1)
@@ -94,8 +94,8 @@ def test_zeros():
                 for dilate_objects in (True, False):
                     module.dilate_objects.value = dilate_objects
                     for rescale_option in (
-                        cellprofiler.setting.YES,
-                        cellprofiler.setting.NO,
+                        cellprofiler_core.setting.YES,
+                        cellprofiler_core.setting.NO,
                         cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
                     ):
                         module.rescale_option.value = rescale_option
@@ -117,7 +117,7 @@ def test_zeros():
                                 module.automatic_object_width.value = ow
                                 measurements = cellprofiler_core.measurement.Measurements()
                                 image_set_list = cellprofiler_core.image.ImageSetList()
-                                workspace = cellprofiler.workspace.Workspace(
+                                workspace = cellprofiler_core.workspace.Workspace(
                                     pipeline,
                                     None,
                                     None,
@@ -129,8 +129,8 @@ def test_zeros():
                                 inj_module.prepare_group(workspace, {}, [1])
                                 module.prepare_group(workspace, {}, [1])
                                 image_set = image_set_list.get_image_set(0)
-                                object_set = cellprofiler.object.ObjectSet()
-                                workspace = cellprofiler.workspace.Workspace(
+                                object_set = cellprofiler_core.object.ObjectSet()
+                                workspace = cellprofiler_core.workspace.Workspace(
                                     pipeline,
                                     inj_module,
                                     image_set,
@@ -157,7 +157,7 @@ def test_ones_image():
     """The illumination correction of an image of all ones should be uniform
 
     """
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     for image in (numpy.ones((10, 10)), numpy.ones((10, 10, 3))):
         inj_module = cellprofiler_core.modules.injectimage.InjectImage("MyImage", image)
@@ -170,7 +170,7 @@ def test_ones_image():
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
         module.illumination_image_name.value = "OutputImage"
-        module.rescale_option.value = cellprofiler.setting.YES
+        module.rescale_option.value = cellprofiler_core.setting.YES
 
         for ea in (
             cellprofiler.modules.correctilluminationcalculate.EA_EACH,
@@ -203,15 +203,15 @@ def test_ones_image():
                             module.automatic_object_width.value = ow
                             measurements = cellprofiler_core.measurement.Measurements()
                             image_set_list = cellprofiler_core.image.ImageSetList()
-                            workspace = cellprofiler.workspace.Workspace(
+                            workspace = cellprofiler_core.workspace.Workspace(
                                 pipeline, None, None, None, measurements, image_set_list
                             )
                             pipeline.prepare_run(workspace)
                             inj_module.prepare_group(workspace, {}, [1])
                             module.prepare_group(workspace, {}, [1])
                             image_set = image_set_list.get_image_set(0)
-                            object_set = cellprofiler.object.ObjectSet()
-                            workspace = cellprofiler.workspace.Workspace(
+                            object_set = cellprofiler_core.object.ObjectSet()
+                            workspace = cellprofiler_core.workspace.Workspace(
                                 pipeline,
                                 inj_module,
                                 image_set,
@@ -236,7 +236,7 @@ def test_ones_image():
 
 def test_masked_image():
     """A masked image should be insensitive to points outside the mask"""
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     numpy.random.seed(12)
     for image in (
@@ -258,7 +258,7 @@ def test_masked_image():
         pipeline.add_module(module)
         module.image_name.value = "MyImage"
         module.illumination_image_name.value = "OutputImage"
-        module.rescale_option.value = cellprofiler.setting.YES
+        module.rescale_option.value = cellprofiler_core.setting.YES
         module.dilate_objects.value = False
 
         for ea in (
@@ -289,15 +289,15 @@ def test_masked_image():
                         module.automatic_object_width.value = ow
                         measurements = cellprofiler_core.measurement.Measurements()
                         image_set_list = cellprofiler_core.image.ImageSetList()
-                        workspace = cellprofiler.workspace.Workspace(
+                        workspace = cellprofiler_core.workspace.Workspace(
                             pipeline, None, None, None, measurements, image_set_list
                         )
                         pipeline.prepare_run(workspace)
                         inj_module.prepare_group(workspace, {}, [1])
                         module.prepare_group(workspace, {}, [1])
                         image_set = image_set_list.get_image_set(0)
-                        object_set = cellprofiler.object.ObjectSet()
-                        workspace = cellprofiler.workspace.Workspace(
+                        object_set = cellprofiler_core.object.ObjectSet()
+                        workspace = cellprofiler_core.workspace.Workspace(
                             pipeline,
                             inj_module,
                             image_set,
@@ -347,7 +347,7 @@ def test_filtered():
         cellprofiler.modules.correctilluminationcalculate.CorrectIlluminationCalculate,
     )
     for workspace in workspaces[:-1]:
-        assert isinstance(workspace, cellprofiler.workspace.Workspace)
+        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         module.run(workspace)
     image_set = workspaces[-1].image_set
     assert OUTPUT_IMAGE_NAME not in image_set.names
@@ -386,7 +386,7 @@ def test_not_filtered():
         cellprofiler.modules.correctilluminationcalculate.CorrectIlluminationCalculate,
     )
     for workspace in workspaces:
-        assert isinstance(workspace, cellprofiler.workspace.Workspace)
+        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         module.run(workspace)
     image_set = workspaces[-1].image_set
     assert OUTPUT_IMAGE_NAME in image_set.names
@@ -403,7 +403,7 @@ def test_not_filtered():
 def test_Background():
     """Test an image with four distinct backgrounds"""
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     image = numpy.ones((40, 40))
     image[10, 10] = 0.25
@@ -425,22 +425,22 @@ def test_Background():
     )
     module.each_or_all.value == cellprofiler.modules.correctilluminationcalculate.EA_EACH
     module.block_size.value = 20
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.dilate_objects.value = False
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_NONE
     )
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -456,7 +456,7 @@ def test_no_smoothing():
     """Make sure that no smoothing takes place if smoothing is turned off"""
     input_image = numpy.random.uniform(size=(10, 10))
     image_name = "InputImage"
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
@@ -475,19 +475,19 @@ def test_no_smoothing():
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_NONE
     )
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.dilate_objects.value = False
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -514,7 +514,7 @@ def test_FitPolynomial():
         (image_y2, "Y2Image"),
         (image_xy, "XYImage"),
     ):
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.add_listener(error_callback)
         inj_module = cellprofiler_core.modules.injectimage.InjectImage(
             image_name, input_image
@@ -535,19 +535,19 @@ def test_FitPolynomial():
         module.smoothing_method.value = (
             cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL
         )
-        module.rescale_option.value = cellprofiler.setting.NO
+        module.rescale_option.value = cellprofiler_core.setting.NO
         module.dilate_objects.value = False
         measurements = cellprofiler_core.measurement.Measurements()
         image_set_list = cellprofiler_core.image.ImageSetList()
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, None, None, None, measurements, image_set_list
         )
         pipeline.prepare_run(workspace)
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cellprofiler.object.ObjectSet()
-        workspace = cellprofiler.workspace.Workspace(
+        object_set = cellprofiler_core.object.ObjectSet()
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, inj_module, image_set, object_set, measurements, image_set_list
         )
         inj_module.run(workspace)
@@ -565,7 +565,7 @@ def test_gaussian_filter():
     image_name = "InputImage"
     i, j = numpy.mgrid[-50:51, -50:51]
     expected_image = numpy.e ** (-(i ** 2 + j ** 2) / (2 * (10.0 / 2.35) ** 2))
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
@@ -588,19 +588,19 @@ def test_gaussian_filter():
         cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY
     )
     module.size_of_smoothing_filter.value = 10
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.dilate_objects.value = False
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -623,7 +623,7 @@ def test_median_filter():
     expected_image[
         -filter_distance : filter_distance + 1, -filter_distance : filter_distance + 1
     ] = 1
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
@@ -646,19 +646,19 @@ def test_median_filter():
         cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY
     )
     module.size_of_smoothing_filter.value = 10
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.dilate_objects.value = False
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -673,7 +673,7 @@ def test_smooth_to_average():
     input_image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
     image_name = "InputImage"
     expected_image = numpy.ones((10, 10)) * input_image.mean()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
@@ -696,19 +696,19 @@ def test_smooth_to_average():
         cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY
     )
     module.size_of_smoothing_filter.value = 10
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.dilate_objects.value = False
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -911,7 +911,7 @@ def test_splines():
         module.each_or_all.value = (
             cellprofiler.modules.correctilluminationcalculate.EA_EACH
         )
-        module.rescale_option.value = cellprofiler.setting.NO
+        module.rescale_option.value = cellprofiler_core.setting.NO
         module.smoothing_method.value = (
             cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
         )
@@ -960,7 +960,7 @@ def test_splines_scaled():
         cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
     )
     module.each_or_all.value = cellprofiler.modules.correctilluminationcalculate.EA_EACH
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
     )
@@ -1005,7 +1005,7 @@ def test_splines_masked():
         cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
     )
     module.each_or_all.value = cellprofiler.modules.correctilluminationcalculate.EA_EACH
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
     )
@@ -1028,7 +1028,7 @@ def test_splines_masked():
         cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
     )
     module.each_or_all.value = cellprofiler.modules.correctilluminationcalculate.EA_EACH
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
     )
@@ -1073,7 +1073,7 @@ def test_splines_cropped():
         cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
     )
     module.each_or_all.value = cellprofiler.modules.correctilluminationcalculate.EA_EACH
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
     )
@@ -1096,7 +1096,7 @@ def test_splines_cropped():
         cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
     )
     module.each_or_all.value = cellprofiler.modules.correctilluminationcalculate.EA_EACH
-    module.rescale_option.value = cellprofiler.setting.NO
+    module.rescale_option.value = cellprofiler_core.setting.NO
     module.smoothing_method.value = (
         cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
     )
@@ -1117,7 +1117,7 @@ def test_intermediate_images():
         (True, False),
         (True, True),
     ):
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.add_listener(error_callback)
         inj_module = cellprofiler_core.modules.injectimage.InjectImage(
             "InputImage", numpy.zeros((10, 10))
@@ -1137,15 +1137,15 @@ def test_intermediate_images():
         module.dilated_image_name.value = "DilatedImage"
         measurements = cellprofiler_core.measurement.Measurements()
         image_set_list = cellprofiler_core.image.ImageSetList()
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, None, None, None, measurements, image_set_list
         )
         pipeline.prepare_run(workspace)
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cellprofiler.object.ObjectSet()
-        workspace = cellprofiler.workspace.Workspace(
+        object_set = cellprofiler_core.object.ObjectSet()
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, inj_module, image_set, object_set, measurements, image_set_list
         )
         inj_module.run(workspace)
@@ -1168,7 +1168,7 @@ def test_rescale():
     input_image[0:5, :] *= 0.5
     image_name = "InputImage"
     expected_image = input_image * 2
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
@@ -1191,19 +1191,19 @@ def test_rescale():
         cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY
     )
     module.size_of_smoothing_filter.value = 10
-    module.rescale_option.value = cellprofiler.setting.YES
+    module.rescale_option.value = cellprofiler_core.setting.YES
     module.dilate_objects.value = False
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -1220,7 +1220,7 @@ def test_rescale_outlier():
     image_name = "InputImage"
     expected_image = input_image * 2
     expected_image[0, 0] = 1
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
     inj_module.set_module_num(1)
@@ -1243,19 +1243,19 @@ def test_rescale_outlier():
         cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY
     )
     module.size_of_smoothing_filter.value = 10
-    module.rescale_option.value = cellprofiler.setting.YES
+    module.rescale_option.value = cellprofiler_core.setting.YES
     module.dilate_objects.value = False
     measurements = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
     inj_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, inj_module, image_set, object_set, measurements, image_set_list
     )
     inj_module.run(workspace)
@@ -1270,10 +1270,10 @@ def test_load_v1():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(StringIO(data))
@@ -1307,7 +1307,7 @@ def test_load_v1():
                 False,
                 1,
                 60,
-                cellprofiler.setting.YES,
+                cellprofiler_core.setting.YES,
                 cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
                 cellprofiler.modules.correctilluminationcalculate.SM_NONE,
                 cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
@@ -1325,7 +1325,7 @@ def test_load_v1():
                 True,
                 2,
                 65,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
                 cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
                 cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
                 cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
@@ -1358,7 +1358,7 @@ def test_load_v1():
                 "Image4",
                 "Illum4",
                 cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
                 1,
                 60,
                 cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
@@ -1376,7 +1376,7 @@ def test_load_v1():
                 "Image5",
                 "Illum5",
                 cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
-                cellprofiler.setting.NO,
+                cellprofiler_core.setting.NO,
                 1,
                 60,
                 cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
@@ -1421,10 +1421,10 @@ def test_load_v2():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(StringIO(data))
@@ -1443,7 +1443,7 @@ def test_load_v2():
     assert not module.dilate_objects
     assert module.object_dilation_radius == 2
     assert module.block_size == 55
-    assert module.rescale_option == cellprofiler.setting.NO
+    assert module.rescale_option == cellprofiler_core.setting.NO
     assert (
         module.each_or_all == cellprofiler.modules.correctilluminationcalculate.EA_EACH
     )

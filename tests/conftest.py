@@ -8,15 +8,15 @@ import skimage.measure
 import cellprofiler.__main__
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler.utilities.cpjvm
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 
 def pytest_sessionstart(session):
-    cellprofiler.preferences.set_headless()
+    cellprofiler_core.preferences.set_headless()
 
     cellprofiler.utilities.cpjvm.cp_start_vm()
 
@@ -85,12 +85,12 @@ def module(request):
 
 @pytest.fixture(scope="function")
 def pipeline():
-    return cellprofiler.pipeline.Pipeline()
+    return cellprofiler_core.pipeline.Pipeline()
 
 
 @pytest.fixture(scope="function")
 def workspace(pipeline, module, image_set, object_set, measurements, image_set_list):
-    return cellprofiler.workspace.Workspace(
+    return cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
 
@@ -99,7 +99,7 @@ def workspace(pipeline, module, image_set, object_set, measurements, image_set_l
 def workspace_empty(
     pipeline, module, image_set_empty, object_set_empty, measurements, image_set_list
 ):
-    return cellprofiler.workspace.Workspace(
+    return cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_empty,
@@ -113,14 +113,14 @@ def workspace_empty(
 def workspace_with_data(
     pipeline, module, image_set, object_set_with_data, measurements, image_set_list
 ):
-    return cellprofiler.workspace.Workspace(
+    return cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set_with_data, measurements, image_set_list
     )
 
 
 @pytest.fixture(scope="function")
 def objects(image):
-    obj = cellprofiler.object.Objects()
+    obj = cellprofiler_core.object.Objects()
     obj.parent_image = image
 
     return obj
@@ -128,14 +128,14 @@ def objects(image):
 
 @pytest.fixture(scope="function")
 def objects_empty():
-    obj = cellprofiler.object.Objects()
+    obj = cellprofiler_core.object.Objects()
 
     return obj
 
 
 @pytest.fixture(scope="function")
 def object_set(objects):
-    objects_set = cellprofiler.object.ObjectSet()
+    objects_set = cellprofiler_core.object.ObjectSet()
     objects_set.add_objects(objects, "InputObjects")
 
     return objects_set
@@ -143,7 +143,7 @@ def object_set(objects):
 
 @pytest.fixture(scope="function")
 def object_set_empty(objects_empty):
-    objects_set = cellprofiler.object.ObjectSet()
+    objects_set = cellprofiler_core.object.ObjectSet()
     objects_set.add_objects(objects_empty, "InputObjects")
 
     return objects_set
@@ -160,7 +160,7 @@ def object_with_data(image):
 
     labels = skimage.measure.label(binary)
 
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
 
     objects.segmented = labels
     objects.parent_image = image
@@ -170,7 +170,7 @@ def object_with_data(image):
 
 @pytest.fixture(scope="function")
 def object_set_with_data(object_with_data):
-    objects_set = cellprofiler.object.ObjectSet()
+    objects_set = cellprofiler_core.object.ObjectSet()
     objects_set.add_objects(object_with_data, "InputObjects")
 
     return objects_set

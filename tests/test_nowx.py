@@ -25,7 +25,7 @@ def import_all_but_wx(
 @unittest.skipIf(sys.platform.startswith("linux"), "Do not test under Linux")
 class TestNoWX(unittest.TestCase):
     def setUp(self):
-        from cellprofiler.preferences import set_headless, set_temporary_directory
+        from cellprofiler_core.preferences import set_headless, set_temporary_directory
 
         set_headless()
         set_temporary_directory(tempfile.gettempdir())
@@ -66,10 +66,10 @@ class TestNoWX(unittest.TestCase):
     fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
 
     def test_01_05_load_pipeline(self):
-        import cellprofiler.pipeline as cpp
+        import cellprofiler_core.pipeline as cpp
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cpp.event.LoadException))
 
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
@@ -85,13 +85,13 @@ class TestNoWX(unittest.TestCase):
         fd.close()
 
         # def test_01_06_run_pipeline(self):
-        #     import cellprofiler.pipeline as cpp
+        #     import cellprofiler_core.pipeline as cpp
         #     import cellprofiler.cpmodule as cpm
-        #     from cellprofiler.preferences import \
+        #     from cellprofiler_core.preferences import \
         #          set_default_image_directory, set_default_output_directory
         #     def callback(caller, event):
-        #         self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
-        #                                             cpp.RunExceptionEvent)))
+        #         self.assertFalse(isinstance(event, (cpp.event.LoadException,
+        #                                             cpp.event.RunException)))
         #     pipeline = cpp.Pipeline()
         #     pipeline.add_listener(callback)
         #     fd = urlopen(self.fly_url)

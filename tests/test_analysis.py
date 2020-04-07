@@ -19,9 +19,9 @@ import uuid
 import zmq
 
 import cellprofiler.analysis
-import cellprofiler.pipeline
+import cellprofiler_core.pipeline
 import cellprofiler_core.module
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 import cellprofiler_core.measurement
 import cellprofiler.utilities.zmqrequest
 
@@ -228,7 +228,7 @@ class TestAnalysis(unittest.TestCase):
             if not self.wants_analysis_finished:
                 return
         if (
-            isinstance(event, cellprofiler.pipeline.AbstractPipelineEvent)
+            isinstance(event, cellprofiler_core.pipeline.Event)
             and not self.wants_pipeline_events
         ):
             return
@@ -256,7 +256,7 @@ class TestAnalysis(unittest.TestCase):
             m[
                 cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, i
             ] = group_index
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE), raise_on_error=True)
         return pipeline, m
 
@@ -394,11 +394,11 @@ class TestAnalysis(unittest.TestCase):
     # def test_04_01_pipeline_preferences(self):
     #     logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
     #     pipeline, m = self.make_pipeline_and_measurements_and_start()
-    #     cellprofiler.preferences.set_headless()
+    #     cellprofiler_core.preferences.set_headless()
     #     title_font_name = "Rosewood Std Regular"
-    #     cellprofiler.preferences.set_title_font_name(title_font_name)
-    #     cellprofiler.preferences.set_default_image_directory(example_images_directory())
-    #     cellprofiler.preferences.set_default_output_directory(testimages_directory())
+    #     cellprofiler_core.preferences.set_title_font_name(title_font_name)
+    #     cellprofiler_core.preferences.set_default_image_directory(example_images_directory())
+    #     cellprofiler_core.preferences.set_default_output_directory(testimages_directory())
     #     with self.FakeWorker() as worker:
     #         worker.connect(self.analysis.runner.work_announce_address)
     #         response = worker.send(cellprofiler.analysis.PipelinePreferencesRequest(
@@ -406,7 +406,7 @@ class TestAnalysis(unittest.TestCase):
     #         #
     #         # Compare pipelines
     #         #
-    #         client_pipeline = cellprofiler.pipeline.Pipeline()
+    #         client_pipeline = cellprofiler_core.pipeline.Pipeline()
     #         pipeline_txt = response.pipeline_blob.tostring()
     #         client_pipeline.loadtxt(six.moves.StringIO(pipeline_txt),
     #                                 raise_on_error=True)
@@ -422,15 +422,15 @@ class TestAnalysis(unittest.TestCase):
     #                 self.assertEqual(ssetting.get_value_text(),
     #                                  csetting.get_value_text())
     #         preferences = response.preferences
-    #         self.assertIn(cellprofiler.preferences.TITLE_FONT_NAME, preferences)
-    #         self.assertEqual(preferences[cellprofiler.preferences.TITLE_FONT_NAME],
+    #         self.assertIn(cellprofiler_core.preferences.TITLE_FONT_NAME, preferences)
+    #         self.assertEqual(preferences[cellprofiler_core.preferences.TITLE_FONT_NAME],
     #                          title_font_name)
-    #         self.assertIn(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY, preferences)
-    #         self.assertEqual(preferences[cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY],
-    #                          cellprofiler.preferences.get_default_image_directory())
-    #         self.assertIn(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY, preferences)
-    #         self.assertEqual(preferences[cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY],
-    #                          cellprofiler.preferences.get_default_output_directory())
+    #         self.assertIn(cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY, preferences)
+    #         self.assertEqual(preferences[cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY],
+    #                          cellprofiler_core.preferences.get_default_image_directory())
+    #         self.assertIn(cellprofiler_core.preferences.DEFAULT_OUTPUT_DIRECTORY, preferences)
+    #         self.assertEqual(preferences[cellprofiler_core.preferences.DEFAULT_OUTPUT_DIRECTORY],
+    #                          cellprofiler_core.preferences.get_default_output_directory())
     #
     #     logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 

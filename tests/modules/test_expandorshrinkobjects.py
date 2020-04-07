@@ -6,12 +6,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.expandorshrinkobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
@@ -21,8 +21,8 @@ OUTLINES_NAME = "outlines"
 def make_workspace(
     labels, operation, iterations=1, wants_outlines=False, wants_fill_holes=False
 ):
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, INPUT_NAME)
     module = cellprofiler.modules.expandorshrinkobjects.ExpandOrShrink()
@@ -32,10 +32,10 @@ def make_workspace(
     module.iterations.value = iterations
     module.wants_fill_holes.value = wants_fill_holes
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
     image_set_list = cellprofiler_core.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),

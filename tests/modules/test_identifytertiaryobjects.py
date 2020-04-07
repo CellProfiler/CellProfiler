@@ -5,9 +5,9 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules.identifytertiaryobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 PRIMARY = "primary"
 SECONDARY = "secondary"
@@ -16,7 +16,7 @@ OUTLINES = "Outlines"
 
 
 def on_pipeline_event(caller, event):
-    assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+    assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
 
 def make_workspace(primary_labels, secondary_labels):
@@ -34,18 +34,18 @@ def make_workspace(primary_labels, secondary_labels):
     module.primary_objects_name.value = PRIMARY
     module.secondary_objects_name.value = SECONDARY
     module.subregion_objects_name.value = TERTIARY
-    workspace = cellprofiler.workspace.Workspace(
-        cellprofiler.pipeline.Pipeline(),
+    workspace = cellprofiler_core.workspace.Workspace(
+        cellprofiler_core.pipeline.Pipeline(),
         module,
         isl.get_image_set(0),
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         cellprofiler_core.measurement.Measurements(),
         isl,
     )
     workspace.pipeline.add_module(module)
 
     for labels, name in ((primary_labels, PRIMARY), (secondary_labels, SECONDARY)):
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, name)
     return workspace
@@ -461,10 +461,10 @@ def test_load_v3():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.loadtxt(six.moves.StringIO(data))

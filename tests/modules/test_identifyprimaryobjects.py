@@ -11,10 +11,10 @@ import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.threshold
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -23,7 +23,7 @@ MEASUREMENT_NAME = "my_measurement"
 
 
 def load_error_handler(caller, event):
-    if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+    if isinstance(event, cellprofiler_core.pipeline.event.LoadException):
         pytest.fail(event.error.message)
 
 
@@ -41,17 +41,17 @@ def make_workspace(image, mask=None, labels=None):
     module.x_name.value = IMAGE_NAME
     module.y_name.value = OBJECTS_NAME
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
     m = cellprofiler_core.measurement.Measurements()
     cpimage = cellprofiler_core.image.Image(image, mask=mask)
     m.add(IMAGE_NAME, cpimage)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     if labels is not None:
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         o.segmented = labels
         object_set.add_objects(o, MASKING_OBJECTS_NAME)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, m, object_set, m, None
     )
     return workspace, module
@@ -75,11 +75,11 @@ def test_test_zero_objects():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -125,11 +125,11 @@ def test_test_zero_objects_wa_in_lo_in():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -155,11 +155,11 @@ def test_test_zero_objects_wa_di_lo_in():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -185,11 +185,11 @@ def test_test_zero_objects_wa_in_lo_sh():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -215,11 +215,11 @@ def test_test_zero_objects_wa_di_lo_sh():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -247,11 +247,11 @@ def test_test_one_object():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -314,11 +314,11 @@ def test_test_two_objects():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -378,11 +378,11 @@ def test_test_threshold_range():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -442,11 +442,11 @@ def test_fill_holes():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -478,11 +478,11 @@ def test_dont_fill_holes():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -515,11 +515,11 @@ def test_01_fill_holes_within_holes():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -580,11 +580,11 @@ def test_test_watershed_shape_shape():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -643,11 +643,11 @@ def test_test_watershed_shape_intensity():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -710,11 +710,11 @@ def test_test_watershed_intensity_distance_single():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -775,11 +775,11 @@ def test_test_watershed_intensity_distance_triple():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -840,11 +840,11 @@ def test_test_watershed_intensity_distance_filter():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -908,11 +908,11 @@ def test_test_watershed_intensity_distance_double():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -974,11 +974,11 @@ def test_propagate():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -996,14 +996,14 @@ def test_fly():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(pipeline, event):
         assert not isinstance(
             event,
             (
-                cellprofiler.pipeline.RunExceptionEvent,
-                cellprofiler.pipeline.LoadExceptionEvent,
+                cellprofiler_core.pipeline.event.RunException,
+                cellprofiler_core.pipeline.event.LoadException,
             ),
         )
 
@@ -1038,10 +1038,10 @@ def test_fly():
                 image_set_list = cellprofiler_core.image.ImageSetList()
                 image_set = image_set_list.get_image_set(0)
                 image_set.add(x.x_name.value, image)
-                object_set = cellprofiler.object.ObjectSet()
+                object_set = cellprofiler_core.object.ObjectSet()
                 measurements = cellprofiler_core.measurement.Measurements()
                 x.run(
-                    cellprofiler.workspace.Workspace(
+                    cellprofiler_core.workspace.Workspace(
                         pipeline, x, image_set, object_set, measurements, None
                     )
                 )
@@ -1092,14 +1092,14 @@ def test_maxima_suppression_zero():
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         x.threshold.threshold_smoothing_scale.value = 0
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         x.set_module_num(1)
         pipeline.add_module(x)
-        object_set = cellprofiler.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
         measurements = cellprofiler_core.measurement.Measurements()
         measurements.add(x.x_name.value, cellprofiler_core.image.Image(img))
         x.run(
-            cellprofiler.workspace.Workspace(
+            cellprofiler_core.workspace.Workspace(
                 pipeline, x, measurements, object_set, measurements, None
             )
         )
@@ -1117,10 +1117,10 @@ def test_load_v10():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1289,10 +1289,10 @@ def test_01_load_new_robust_background():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1341,11 +1341,11 @@ def test_discard_large():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1392,11 +1392,11 @@ def test_keep_large():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1437,11 +1437,11 @@ def test_discard_small():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1490,11 +1490,11 @@ def test_regression_diagonal():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1524,11 +1524,11 @@ def test_regression_adaptive_mask():
     image_set.providers.append(
         cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     measurements = cellprofiler_core.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1798,7 +1798,7 @@ def test_regression_holes():
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -1814,10 +1814,10 @@ def test_regression_holes():
     x.threshold.manual_threshold.value = 0.1
     x.threshold.threshold_correction_factor.value = 1
     x.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(x)
     measurements = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1838,7 +1838,7 @@ def test_erase_objects():
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -1854,10 +1854,10 @@ def test_erase_objects():
     x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     x.maximum_object_count.value = maximum_object_count
     x.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(x)
     measurements = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1879,7 +1879,7 @@ def test_dont_erase_objects():
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -1895,10 +1895,10 @@ def test_dont_erase_objects():
     x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     x.maximum_object_count.value = maximum_object_count
     x.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(x)
     measurements = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1916,9 +1916,9 @@ def test_threshold_by_measurement():
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("MyImage", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     measurements = cellprofiler_core.measurement.Measurements()
     measurements.add_image_measurement("MeanIntensity_MyImage", numpy.mean(pixels))
 
@@ -1937,7 +1937,7 @@ def test_threshold_by_measurement():
     x.set_module_num(1)
     pipeline.add_module(x)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)

@@ -4,9 +4,9 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.measurecolocalization
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 IMAGE1_NAME = "image1"
 IMAGE2_NAME = "image2"
@@ -23,7 +23,7 @@ def make_workspace(image1, image2, objects=None):
     ):
         image_group.image_name.value = name
         image_set.add(name, image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     if objects is None:
         module.images_or_objects.value = (
             cellprofiler.modules.measurecolocalization.M_IMAGES
@@ -34,8 +34,8 @@ def make_workspace(image1, image2, objects=None):
         )
         module.object_groups[0].object_name.value = OBJECTS_NAME
         object_set.add_objects(objects, OBJECTS_NAME)
-    pipeline = cellprofiler.pipeline.Pipeline()
-    workspace = cellprofiler.workspace.Workspace(
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
@@ -51,10 +51,10 @@ def test_load_v2():
         data = fd.read()
 
     fd = six.moves.StringIO(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(fd)
@@ -79,10 +79,10 @@ def test_load_v3():
         data = fd.read()
 
     fd = six.moves.StringIO(data)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(fd)
@@ -454,7 +454,7 @@ def test_objects():
     image2[labels == 2] = 1 - image1[labels == 2]
     i1 = cellprofiler_core.image.Image(image1)
     i2 = cellprofiler_core.image.Image(image2)
-    o = cellprofiler.object.Objects()
+    o = cellprofiler_core.object.Objects()
     o.segmented = labels
     workspace, module = make_workspace(i1, i2, o)
     module.run(workspace)
@@ -490,7 +490,7 @@ def test_cropped_objects():
     labels = numpy.zeros((10, 10), int)
     labels[:4, :4] = 1
     labels[6:, 6:] = 2
-    o = cellprofiler.object.Objects()
+    o = cellprofiler_core.object.Objects()
     o.segmented = labels
     #
     # Make the objects have the cropped image as a parent
@@ -513,7 +513,7 @@ def test_no_objects():
     image2 = image1.copy()
     i1 = cellprofiler_core.image.Image(image1)
     i2 = cellprofiler_core.image.Image(image2)
-    o = cellprofiler.object.Objects()
+    o = cellprofiler_core.object.Objects()
     o.segmented = labels
     workspace, module = make_workspace(i1, i2, o)
     module.run(workspace)
@@ -543,7 +543,7 @@ def test_wrong_size():
     labels = numpy.zeros((10, 30), int)
     labels[:4, :4] = 1
     labels[6:, 6:] = 2
-    o = cellprofiler.object.Objects()
+    o = cellprofiler_core.object.Objects()
     o.segmented = labels
     workspace, module = make_workspace(i1, i1, o)
     module.run(workspace)
@@ -567,7 +567,7 @@ def test_last_object_masked():
     labels[3:8, 3:8] = 1
     labels[13:18, 13:18] = 2
     mask = labels != 2
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
 
     for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):
@@ -597,7 +597,7 @@ def test_zero_valued_intensity():
 
     labels[5, 5] = 1
 
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
 
     objects.segmented = labels
 
@@ -629,7 +629,7 @@ def test_non_overlapping_object_intensity():
     image2 = numpy.random.rand(10, 10)
     image2[5:, :] = 0
 
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = numpy.ones_like(image1, dtype=numpy.uint8)
 
     workspace, module = make_workspace(

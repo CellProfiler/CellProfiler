@@ -7,9 +7,9 @@ import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules.trackobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 OBJECT_NAME = "objects"
 
@@ -18,10 +18,10 @@ def test_load_v3():
     with open("./tests/resources/modules/trackobjects/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -47,10 +47,10 @@ def test_load_v4():
     with open("./tests/resources/modules/trackobjects/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -97,10 +97,10 @@ def test_load_v5():
     with open("./tests/resources/modules/trackobjects/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -133,10 +133,10 @@ def test_load_v6():
     with open("./tests/resources/modules/trackobjects/v6s.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -187,30 +187,30 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     measurements = cellprofiler_core.measurement.Measurements()
     measurements.add_all_measurements(
         cellprofiler_core.measurement.IMAGE,
-        cellprofiler.pipeline.GROUP_NUMBER,
+        cellprofiler_core.pipeline.GROUP_NUMBER,
         [1] * len(labels_list),
     )
     measurements.add_all_measurements(
         cellprofiler_core.measurement.IMAGE,
-        cellprofiler.pipeline.GROUP_INDEX,
+        cellprofiler_core.pipeline.GROUP_INDEX,
         list(range(1, len(labels_list) + 1)),
     )
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
     image_set_list = cellprofiler_core.image.ImageSetList()
 
     if fn:
         fn(module, None, 0)
     module.prepare_run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, module, None, None, measurements, image_set_list
         )
     )
 
     first = True
     for labels, index in zip(labels_list, list(range(len(labels_list)))):
-        object_set = cellprofiler.object.ObjectSet()
-        objects = cellprofiler.object.Objects()
+        object_set = cellprofiler_core.object.ObjectSet()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECT_NAME)
         image_set = image_set_list.get_image_set(index)
@@ -222,7 +222,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
             measurements.add_measurement(
                 OBJECT_NAME, "measurement", numpy.array(measurement[index])
             )
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, module, image_set, object_set, measurements, image_set_list
         )
         if fn:
@@ -1071,10 +1071,10 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
 
     module.pixel_radius.value = 50
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
@@ -1119,13 +1119,13 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
         m.add_measurement(cellprofiler_core.measurement.IMAGE, "ImageNumber", i + 1)
         m.add_measurement(
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.pipeline.GROUP_NUMBER,
+            cellprofiler_core.pipeline.GROUP_NUMBER,
             1 if group_numbers is None else group_numbers[i],
             i + 1,
         )
         m.add_measurement(
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler.pipeline.GROUP_INDEX,
+            cellprofiler_core.pipeline.GROUP_INDEX,
             i if group_indexes is None else group_indexes[i],
             i + 1,
         )
@@ -1229,8 +1229,8 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = cellprofiler.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler.object.ObjectSet(), m, image_set_list
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
     )
     return workspace, module
 
@@ -2521,25 +2521,25 @@ def test_save_image():
     module.wants_image.value = True
     module.image_name.value = "outimage"
     measurements = cellprofiler_core.measurement.Measurements()
-    measurements.add_image_measurement(cellprofiler.pipeline.GROUP_NUMBER, 1)
-    measurements.add_image_measurement(cellprofiler.pipeline.GROUP_INDEX, 1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    measurements.add_image_measurement(cellprofiler_core.pipeline.GROUP_NUMBER, 1)
+    measurements.add_image_measurement(cellprofiler_core.pipeline.GROUP_INDEX, 1)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
     image_set_list = cellprofiler_core.image.ImageSetList()
 
     module.prepare_run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, module, None, None, measurements, image_set_list
         )
     )
 
     first = True
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = numpy.zeros((640, 480), int)
     object_set.add_objects(objects, OBJECT_NAME)
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
     module.run(workspace)

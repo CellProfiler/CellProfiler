@@ -14,14 +14,14 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler.modules.loaddata
 import cellprofiler_core.modules.loadimages
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 import tests.modules
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "objects"
 
@@ -53,15 +53,15 @@ def make_pipeline(csv_text, name=None):
     fd.close()
     csv_path, csv_file = os.path.split(name)
     module = cellprofiler.modules.loaddata.LoadText()
-    module.csv_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    module.csv_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     module.csv_directory.custom_path = csv_path
     module.csv_file_name.value = csv_file
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def error_callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(error_callback)
     return pipeline, module, name
@@ -76,10 +76,10 @@ def test_load_v4():
     with open("./tests/resources/modules/loaddata/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -89,7 +89,7 @@ def test_load_v4():
     assert module.csv_file_name == "1049_Metadata.csv"
     assert (
         module.csv_directory.dir_choice
-        == cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.wants_images
     assert module.rescale
@@ -105,10 +105,10 @@ def test_load_v5():
     with open("./tests/resources/modules/loaddata/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -116,7 +116,7 @@ def test_load_v5():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
-    assert module.csv_directory.dir_choice == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    assert module.csv_directory.dir_choice == cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     assert (
         module.csv_directory.custom_path
         == r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages"
@@ -124,7 +124,7 @@ def test_load_v5():
     assert module.wants_images
     assert (
         module.image_directory.dir_choice
-        == cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.rescale
     assert module.wants_image_groupings
@@ -140,10 +140,10 @@ def test_load_v6():
     with open("./tests/resources/modules/loaddata/v6.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -151,7 +151,7 @@ def test_load_v6():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
-    assert module.csv_directory.dir_choice == cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    assert module.csv_directory.dir_choice == cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     assert (
         module.csv_directory.custom_path
         == r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages"
@@ -159,7 +159,7 @@ def test_load_v6():
     assert module.wants_images
     assert (
         module.image_directory.dir_choice
-        == cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.rescale
     assert module.wants_image_groupings
@@ -406,7 +406,7 @@ def test_load_planes():
     m = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     try:
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, module, m, None, m, image_set_list
         )
         assert module.prepare_run(workspace)
@@ -673,7 +673,7 @@ def test_get_groupings():
     module.metadata_fields.value = "ROW"
     image_set_list = cellprofiler_core.image.ImageSetList()
     measurements = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, None, None, measurements, image_set_list
     )
     module.prepare_run(workspace)
@@ -687,7 +687,7 @@ def test_get_groupings():
     for grouping in groupings:
         row = grouping[0]["Metadata_ROW"]
         module.prepare_group(
-            cellprofiler.workspace.Workspace(
+            cellprofiler_core.workspace.Workspace(
                 pipeline, module, None, None, measurements, image_set_list
             ),
             grouping[0],
@@ -696,11 +696,11 @@ def test_get_groupings():
         for image_number in grouping[1]:
             image_set = image_set_list.get_image_set(image_number - 1)
             measurements.next_image_set(image_number)
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 pipeline,
                 module,
                 image_set,
-                cellprofiler.object.ObjectSet(),
+                cellprofiler_core.object.ObjectSet(),
                 measurements,
                 image_set_list,
             )
@@ -809,13 +809,13 @@ def test_load_objects():
         sbs_dir,
     )
     pipeline, module, csv_name = make_pipeline(csv_text)
-    assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
+    assert isinstance(pipeline, cellprofiler_core.pipeline.Pipeline)
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     module.wants_images.value = True
     try:
         image_set_list = cellprofiler_core.image.ImageSetList()
         measurements = cellprofiler_core.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, module, None, None, measurements, image_set_list
         )
         pipeline.prepare_run(workspace)
@@ -823,8 +823,8 @@ def test_load_objects():
         assert len(g) == 1
         module.prepare_group(workspace, g[0][0], g[0][1])
         image_set = image_set_list.get_image_set(g[0][1][0] - 1)
-        object_set = cellprofiler.object.ObjectSet()
-        workspace = cellprofiler.workspace.Workspace(
+        object_set = cellprofiler_core.object.ObjectSet()
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline, module, image_set, object_set, measurements, image_set_list
         )
         module.run(workspace)
@@ -925,14 +925,14 @@ def test_load_filename():
     )
     pipeline, module, filename = make_pipeline(csv_text)
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
-    module.image_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    module.image_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     module.image_directory.custom_path = test_path
     m = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         m,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         m,
         cellprofiler_core.image.ImageSetList(),
     )
@@ -971,11 +971,11 @@ def test_load_url():
     pipeline, module, filename = make_pipeline(csv_text)
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     m = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         m,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         m,
         cellprofiler_core.image.ImageSetList(),
     )
@@ -1017,11 +1017,11 @@ def test_extra_fields():
     pipeline, module, filename = make_pipeline(csv_text)
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     m = cellprofiler_core.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         m,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         m,
         cellprofiler_core.image.ImageSetList(),
     )
@@ -1067,11 +1067,11 @@ def test_extra_lines():
     try:
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler_core.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
             module,
             m,
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             m,
             cellprofiler_core.image.ImageSetList(),
         )
@@ -1108,11 +1108,11 @@ def test_extra_lines_skip_rows():
     try:
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
         m = cellprofiler_core.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
             module,
             m,
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             m,
             cellprofiler_core.image.ImageSetList(),
         )
@@ -1138,14 +1138,14 @@ def test_load_default_input_folder():
     pipeline, module, filename = make_pipeline(csv_text)
     try:
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
-        module.image_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.image_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
         module.image_directory.custom_path = test_path
         m = cellprofiler_core.measurement.Measurements()
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
             module,
             m,
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             m,
             cellprofiler_core.image.ImageSetList(),
         )

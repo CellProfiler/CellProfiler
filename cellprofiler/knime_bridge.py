@@ -31,7 +31,7 @@ import cellprofiler_core.image
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 CONNECT_REQ_1 = "connect-request-1"
 CONNECT_REPLY_1 = "connect-reply-1"
@@ -223,12 +223,12 @@ class KnimeBridgeServer(threading.Thread):
         m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 pipeline, module, m, None, m, None
             )
             module.prepare_run(workspace)
         for module in other_modules:
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 pipeline, module, m, object_set, m, None
             )
             try:
@@ -237,8 +237,8 @@ class KnimeBridgeServer(threading.Thread):
                 )
                 pipeline.run_module(module, workspace)
                 if workspace.disposition in (
-                    cellprofiler.workspace.DISPOSITION_SKIP,
-                    cellprofiler.workspace.DISPOSITION_CANCEL,
+                    cellprofiler_core.workspace.DISPOSITION_SKIP,
+                    cellprofiler_core.workspace.DISPOSITION_CANCEL,
                 ):
                     break
             except Exception as e:
@@ -382,7 +382,7 @@ class KnimeBridgeServer(threading.Thread):
                 image_number,
             ] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
-        workspace = cellprofiler.workspace.Workspace(pipeline, None, m, None, m, None)
+        workspace = cellprofiler_core.workspace.Workspace(pipeline, None, m, None, m, None)
         logger.info("Preparing group")
         for module in other_modules:
             module.prepare_group(
@@ -400,7 +400,7 @@ class KnimeBridgeServer(threading.Thread):
                 m.add(channel_name, cellprofiler_core.image.Image(pixel_data))
 
             for module in other_modules:
-                workspace = cellprofiler.workspace.Workspace(
+                workspace = cellprofiler_core.workspace.Workspace(
                     pipeline, module, m, object_set, m, None
                 )
                 try:
@@ -410,8 +410,8 @@ class KnimeBridgeServer(threading.Thread):
                     )
                     pipeline.run_module(module, workspace)
                     if workspace.disposition in (
-                        cellprofiler.workspace.DISPOSITION_SKIP,
-                        cellprofiler.workspace.DISPOSITION_CANCEL,
+                        cellprofiler_core.workspace.DISPOSITION_SKIP,
+                        cellprofiler_core.workspace.DISPOSITION_CANCEL,
                     ):
                         break
                 except Exception as e:
@@ -424,7 +424,7 @@ class KnimeBridgeServer(threading.Thread):
                     return
             else:
                 continue
-            if workspace.disposition == cellprofiler.workspace.DISPOSITION_CANCEL:
+            if workspace.disposition == cellprofiler_core.workspace.DISPOSITION_CANCEL:
                 break
         for module in other_modules:
             module.post_group(

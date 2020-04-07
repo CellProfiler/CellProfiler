@@ -147,7 +147,7 @@ import traceback
 from weakref import WeakSet
 import six.moves
 
-import cellprofiler.workspace as cpw
+import cellprofiler_core.workspace as cpw
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.preferences as cpprefs
 from cellprofiler.analysis import (

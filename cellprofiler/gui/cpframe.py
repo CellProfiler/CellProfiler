@@ -40,7 +40,7 @@ import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 logger = logging.getLogger(__name__)
 

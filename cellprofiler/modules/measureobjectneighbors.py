@@ -79,7 +79,7 @@ import cellprofiler_core.module as cpm
 import cellprofiler_core.object as cpo
 import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler_core.workspace as cpw
 
 D_ADJACENT = "Adjacent"
 D_EXPAND = "Expand until adjacent"

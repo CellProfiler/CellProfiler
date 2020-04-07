@@ -47,7 +47,7 @@ import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps
 import cellprofiler.utilities.rules as cprules
-import cellprofiler.workspace as cpw
+import cellprofiler_core.workspace as cpw
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 logger = logging.getLogger(__name__)

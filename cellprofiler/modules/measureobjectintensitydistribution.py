@@ -16,7 +16,7 @@ import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
     "MeasureObjectIntensityDistribution_Magnitude_Phase.png"

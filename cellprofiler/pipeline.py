@@ -35,7 +35,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
 import cellprofiler_core.utilities.utf16encode
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 install_aliases()
 
@@ -1749,7 +1749,7 @@ class Pipeline(object):
 
         # Run the modules
         for module in self.modules():
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 self, module, image_set, object_set, measurements, image_set_list
             )
             self.run_module(module, workspace)
@@ -1909,7 +1909,7 @@ class Pipeline(object):
 
         image_set_list = cellprofiler_core.image.ImageSetList()
 
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             self, None, None, None, measurements, image_set_list, frame
         )
 
@@ -2042,7 +2042,7 @@ class Pipeline(object):
 
                     frame_if_shown = frame if module.show_window else None
 
-                    workspace = cellprofiler.workspace.Workspace(
+                    workspace = cellprofiler_core.workspace.Workspace(
                         self,
                         module,
                         image_set,
@@ -2132,7 +2132,7 @@ class Pipeline(object):
                         elif event.skip_thisset:
                             # Skip this image, continue to others
                             workspace.set_disposition(
-                                cellprofiler.workspace.DISPOSITION_SKIP
+                                cellprofiler_core.workspace.DISPOSITION_SKIP
                             )
 
                             should_write_measurements = False
@@ -2155,7 +2155,7 @@ class Pipeline(object):
 
                     while (
                         workspace.disposition
-                        == cellprofiler.workspace.DISPOSITION_PAUSE
+                        == cellprofiler_core.workspace.DISPOSITION_PAUSE
                         and frame is not None
                     ):
                         # try to leave measurements temporary file in a readable state
@@ -2163,11 +2163,11 @@ class Pipeline(object):
 
                         yield measurements
 
-                    if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
+                    if workspace.disposition == cellprofiler_core.workspace.DISPOSITION_SKIP:
                         break
                     elif (
                         workspace.disposition
-                        == cellprofiler.workspace.DISPOSITION_CANCEL
+                        == cellprofiler_core.workspace.DISPOSITION_CANCEL
                     ):
                         measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
@@ -2177,7 +2177,7 @@ class Pipeline(object):
             # by freeing up memory and resources.
             clear_image_reader_cache()
             if measurements is not None:
-                workspace = cellprofiler.workspace.Workspace(
+                workspace = cellprofiler_core.workspace.Workspace(
                     self, None, None, None, measurements, image_set_list, frame
                 )
 
@@ -2238,7 +2238,7 @@ class Pipeline(object):
             print("Running module", module.module_name, module.module_num)
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 self,
                 module,
                 image_set,
@@ -2312,9 +2312,9 @@ class Pipeline(object):
                 ] = cpu_delta_secs
 
             measurements.flush()
-            if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
+            if workspace.disposition == cellprofiler_core.workspace.DISPOSITION_SKIP:
                 break
-        return cellprofiler.workspace.Workspace(
+        return cellprofiler_core.workspace.Workspace(
             self, None, measurements, object_set, measurements, None, outlines=outlines
         )
 
@@ -2359,7 +2359,7 @@ class Pipeline(object):
                 old_providers = list(image_set.providers)
                 grid_set = {}
                 for module in pipeline.modules():
-                    w = cellprofiler.workspace.Workspace(
+                    w = cellprofiler_core.workspace.Workspace(
                         self, module, image_set, object_set, m, image_set_list, grids=grid_set
                     )
                     if module == stop_module:
@@ -2427,7 +2427,7 @@ class Pipeline(object):
 
         end_module - if present, terminate before executing this module
         """
-        assert isinstance(workspace, cellprofiler.workspace.Workspace)
+        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         m = workspace.measurements
         if self.has_legacy_loaders():
             # Legacy - there may be cached group number/group index
@@ -2567,7 +2567,7 @@ class Pipeline(object):
 
         if len(args) == 3:
             measurements, image_set_list, frame = args
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 self, None, None, None, measurements, image_set_list, frame
             )
         else:
@@ -3265,7 +3265,7 @@ class Pipeline(object):
         temp_measurements = cellprofiler_core.measurement.Measurements(mode="memory")
         new_workspace = None
         try:
-            new_workspace = cellprofiler.workspace.Workspace(
+            new_workspace = cellprofiler_core.workspace.Workspace(
                 pipeline,
                 None,
                 None,

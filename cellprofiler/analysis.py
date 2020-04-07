@@ -22,7 +22,7 @@ import cellprofiler
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.preferences
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 from cellprofiler.utilities.zmqrequest import (
     AnalysisRequest,
     Reply,
@@ -357,7 +357,7 @@ class AnalysisRunner:
                 )
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
-            workspace = cellprofiler.workspace.Workspace(
+            workspace = cellprofiler_core.workspace.Workspace(
                 self.pipeline,
                 None,
                 None,
@@ -551,7 +551,7 @@ class AnalysisRunner:
                     if not worker_runs_post_group:
                         self.pipeline.post_group(workspace, {})
 
-                    workspace = cellprofiler.workspace.Workspace(
+                    workspace = cellprofiler_core.workspace.Workspace(
                         self.pipeline, None, None, None, measurements, None, None
                     )
                     workspace.post_run_display_handler = self.post_run_display_handler

@@ -25,7 +25,7 @@ import cellprofiler_core.utilities.java
 import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 if sys.platform.startswith("win") and hasattr(sys, "frozen"):
     # For Windows builds, use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
@@ -194,7 +194,7 @@ def main(args=None):
             import cellprofiler.gui.app
 
             if options.pipeline_filename:
-                if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
+                if cellprofiler_core.workspace.is_workspace_file(options.pipeline_filename):
                     workspace_path = os.path.expanduser(options.pipeline_filename)
 
                     pipeline_path = None
@@ -732,7 +732,7 @@ def write_schema(pipeline_filename):
 
     m = cellprofiler_core.measurement.Measurements()
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, m, cellprofiler_core.object.ObjectSet, m, None
     )
 

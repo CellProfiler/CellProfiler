@@ -1,9 +1,9 @@
 import cellprofiler.gui.figure
 import cellprofiler_core.measurement
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 
-class Workspace(cellprofiler.workspace.Workspace):
+class Workspace(cellprofiler_core.workspace.Workspace):
     def create_or_find_figure(self, title=None, subplots=None, window_name=None):
         assert not self.__in_background
 

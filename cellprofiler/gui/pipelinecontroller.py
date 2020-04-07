@@ -54,7 +54,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
-import cellprofiler.workspace
+import cellprofiler_core.workspace
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [
@@ -3512,7 +3512,7 @@ class PipelineController(object):
                 module.display(workspace, fig)
                 fig.Refresh()
             workspace.refresh()
-            if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
+            if workspace.disposition == cellprofiler_core.workspace.DISPOSITION_SKIP:
                 self.last_debug_module()
             elif (
                 module.module_num < len(self.__pipeline.modules())

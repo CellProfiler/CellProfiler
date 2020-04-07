@@ -99,7 +99,6 @@ import cellprofiler_core.module as cpm
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.pipeline as cpp
 import cellprofiler_core.setting as cps
-from cellprofiler_core.setting import YES
 from cellprofiler_core.measurement import IMAGE, EXPERIMENT
 from cellprofiler_core.preferences import get_headless
 from cellprofiler_core.preferences import (
@@ -295,7 +294,7 @@ measurements would be a nuisance.
 Alternatively, this option can be helpful for viewing spreadsheets in
 programs which limit the number of rows and columns.
 """.format(
-                **{"YES": YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -420,7 +419,7 @@ metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s"""
 
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
             "Select the image to use as the identifier",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if a GenePattern file is requested and image filename is
 used to name each row)*
@@ -949,7 +948,7 @@ desired.
         if self.wants_everything:
             object_names = {IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS}
             object_providers = workspace.pipeline.get_provider_dictionary(
-                cps.OBJECT_GROUP, self
+                "objectgroup", self
             )
             object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)
@@ -1457,14 +1456,14 @@ desired.
         if variable_revision_number == 1 and from_matlab:
             # Added create subdirectories question
             setting_values = list(setting_values)
-            setting_values.append(cps.NO)
+            setting_values.append("No")
             variable_revision_number = 2
         if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = setting_values[8] == cps.YES
-            object_names = [x for x in setting_values[:-1] if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO, cps.NO, cps.NO]
+            wants_subdirectories = setting_values[8] == "Yes"
+            object_names = [x for x in setting_values[:-1] if x != "Do not use"]
+            setting_values = [DELIMITER_TAB, "Yes", "No", "No", "No", "No"]
             for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv" % name])
+                setting_values.extend([name, "No", "%s.csv" % name])
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 3 and from_matlab:
@@ -1483,32 +1482,32 @@ desired.
             else:
                 directory_choice = DIR_CUSTOM
                 custom_directory = setting_values[8]
-            if setting_values[9] != cps.DO_NOT_USE:
+            if setting_values[9] != "Do not use":
                 prefix = setting_values[9] + "_"
             else:
                 prefix = ""
-            object_names = [x for x in setting_values[:8] if x != cps.DO_NOT_USE]
+            object_names = [x for x in setting_values[:8] if x != "Do not use"]
             setting_values = [
                 DELIMITER_TAB,
-                cps.YES,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
+                "Yes",
+                "No",
+                "No",
+                "No",
+                "No",
+                "No",
+                "No",
+                "No",
                 directory_choice,
                 custom_directory,
             ]
             for name in object_names:
-                setting_values.extend([name, cps.NO, "%s%s.csv" % (prefix, name)])
+                setting_values.extend([name, "No", "%s%s.csv" % (prefix, name)])
             variable_revision_number = 3
             from_matlab = False
         if variable_revision_number == 1 and not from_matlab:
             # Added aggregate questions
             setting_values = (
-                setting_values[:6] + [cps.NO, cps.NO, cps.NO] + setting_values[6:]
+                setting_values[:6] + ["No", "No", "No"] + setting_values[6:]
             )
             variable_revision_number = 2
         if variable_revision_number == 2 and not from_matlab:
@@ -1522,9 +1521,9 @@ desired.
         if variable_revision_number == 3 and not from_matlab:
             # Added "wants everything" setting
             #
-            new_setting_values = setting_values[:11] + [cps.NO]
+            new_setting_values = setting_values[:11] + ["No"]
             for i in range(11, len(setting_values), 3):
-                new_setting_values += setting_values[i : i + 3] + [cps.NO]
+                new_setting_values += setting_values[i : i + 3] + ["No"]
 
             setting_values = new_setting_values
             variable_revision_number = 4
@@ -1565,7 +1564,7 @@ desired.
             """
             setting_values = (
                 setting_values[:9]
-                + [cps.NO, GP_NAME_METADATA, cps.NONE, cps.NONE]
+                + ["No", GP_NAME_METADATA, "None", "None"]
                 + setting_values[9:]
             )
             variable_revision_number = 7
@@ -1588,7 +1587,7 @@ desired.
             # Added prefix
             setting_values = (
                 setting_values[:SETTING_OG_OFFSET_V9]
-                + [cps.NO, "MyExpt_"]
+                + ["No", "MyExpt_"]
                 + setting_values[SETTING_OG_OFFSET_V9:]
             )
             variable_revision_number = 10
@@ -1597,7 +1596,7 @@ desired.
             # added overwrite choice - legacy value is "Yes"
             setting_values = (
                 setting_values[:SETTING_OG_OFFSET_V10]
-                + [cps.YES]
+                + ["Yes"]
                 + setting_values[SETTING_OG_OFFSET_V10:]
             )
             variable_revision_number = 11
@@ -1608,7 +1607,7 @@ desired.
             variable_revision_number = 12
         if variable_revision_number == 12:
             # Add "add file path" setting.
-            setting_values = setting_values[:2] + [cps.NO] + setting_values[2:]
+            setting_values = setting_values[:2] + ["No"] + setting_values[2:]
             variable_revision_number = 13
 
         # Standardize input/output directory name references

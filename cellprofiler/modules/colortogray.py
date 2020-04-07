@@ -59,7 +59,7 @@ class ColorToGray(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""Select the multichannel image you want to convert to grayscale.""",
         )
 
@@ -658,7 +658,7 @@ Select the name of the output grayscale image.""",
             ]
             for i in range(3):
                 vv = setting_values[i + 8]
-                use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
+                use_it = ((vv == "Do not use" or vv == "N") and "No") or "Yes"
                 new_setting_values.append(use_it)
                 new_setting_values.append(vv)
             setting_values = new_setting_values
@@ -685,7 +685,7 @@ Select the name of the output grayscale image.""",
             #
             setting_values = (
                 setting_values[:13]
-                + [cps.YES, "OrigHue", cps.YES, "OrigSaturation", cps.YES, "OrigValue"]
+                + ["Yes", "OrigHue", "Yes", "OrigSaturation", "Yes", "OrigValue"]
                 + setting_values[13:]
             )
             variable_revision_number = 3

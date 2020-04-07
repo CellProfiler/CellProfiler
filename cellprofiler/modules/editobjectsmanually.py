@@ -66,7 +66,7 @@ import cellprofiler_core.object as cpo
 import cellprofiler_core.setting as cps
 
 from cellprofiler_core.modules.loadimages import pathname2url
-from cellprofilder_core.modules import identify as I
+from cellprofiler_core.modules import identify as I
 
 ###########################################
 #
@@ -97,7 +97,7 @@ class EditObjectsManually(I.Identify):
         """
         self.object_name = cps.ObjectNameSubscriber(
             "Select the objects to be edited",
-            cps.NONE,
+            "None",
             doc="""\
 Choose a set of previously identified objects
 for editing, such as those produced by one of the
@@ -163,7 +163,7 @@ Select "*No*" if you do not want a guide image while editing.
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the guiding image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if a guiding image is desired)*
 
@@ -555,10 +555,10 @@ supplied by a previous module.
             else:
                 renumber_or_retain = R_RETAIN
 
-            if outlines_name == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
+            if outlines_name == "Do not use":
+                wants_outlines = "No"
             else:
-                wants_outlines = cps.YES
+                wants_outlines = "Yes"
 
             setting_values = [
                 object_name,
@@ -573,12 +573,12 @@ supplied by a previous module.
 
         if variable_revision_number == 1:
             # Added wants image + image
-            setting_values = setting_values + [cps.NO, cps.NONE]
+            setting_values = setting_values + ["No", "None"]
             variable_revision_number = 2
 
         if variable_revision_number == 2:
             # Added allow overlap, default = False
-            setting_values = setting_values + [cps.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 3
 
         if variable_revision_number == 3:

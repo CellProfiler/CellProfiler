@@ -3,7 +3,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.tile
+import cellprofiler.modules.tile
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -29,16 +29,16 @@ def test_load_v1():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert module.input_image == "ResizedColorImage"
     assert module.output_image == "TiledImage"
-    assert module.tile_method == cellprofiler.modules.plugins.tile.T_ACROSS_CYCLES
+    assert module.tile_method == cellprofiler.modules.tile.T_ACROSS_CYCLES
     assert module.rows == 2
     assert module.columns == 12
     assert module.wants_automatic_rows
     assert not module.wants_automatic_columns
-    assert module.place_first == cellprofiler.modules.plugins.tile.P_TOP_LEFT
-    assert module.tile_style == cellprofiler.modules.plugins.tile.S_ROW
+    assert module.place_first == cellprofiler.modules.tile.P_TOP_LEFT
+    assert module.tile_style == cellprofiler.modules.tile.S_ROW
     assert not module.meander
     assert len(module.additional_images) == 3
     for g, expected in zip(
@@ -48,9 +48,9 @@ def test_load_v1():
 
 
 def make_tile_workspace(images):
-    module = cellprofiler.modules.plugins.tile.Tile()
+    module = cellprofiler.modules.tile.Tile()
     module.set_module_num(1)
-    module.tile_method.value = cellprofiler.modules.plugins.tile.T_ACROSS_CYCLES
+    module.tile_method.value = cellprofiler.modules.tile.T_ACROSS_CYCLES
     module.input_image.value = INPUT_IMAGE_NAME
     module.output_image.value = OUTPUT_IMAGE_NAME
 
@@ -83,13 +83,13 @@ def test_manual_rows_and_columns():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -114,13 +114,13 @@ def test_automatic_rows():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = True
     module.rows.value = 8
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -145,13 +145,13 @@ def test_automatic_columns():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = True
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 365
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -176,13 +176,13 @@ def test_automatic_rows_and_columns():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = True
     module.wants_automatic_rows.value = True
     module.rows.value = 365
     module.columns.value = 24
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
     for i in range(96):
@@ -206,13 +206,13 @@ def test_color():
         numpy.random.uniform(size=(20, 10, 3)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -237,13 +237,13 @@ def test_columns_first():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_COL
+    module.tile_style.value = cellprofiler.modules.tile.S_COL
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -269,14 +269,14 @@ def test_top_right():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
-    module.place_first.value = cellprofiler.modules.plugins.tile.P_TOP_RIGHT
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
+    module.place_first.value = cellprofiler.modules.tile.P_TOP_RIGHT
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -302,14 +302,14 @@ def test_bottom_left():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
-    module.place_first.value = cellprofiler.modules.plugins.tile.P_BOTTOM_LEFT
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
+    module.place_first.value = cellprofiler.modules.tile.P_BOTTOM_LEFT
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -335,14 +335,14 @@ def test_bottom_right():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
-    module.place_first.value = cellprofiler.modules.plugins.tile.P_BOTTOM_RIGHT
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
+    module.place_first.value = cellprofiler.modules.tile.P_BOTTOM_RIGHT
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -371,13 +371,13 @@ def test_different_sizes():
         numpy.random.uniform(size=(40, 20)).astype(numpy.float32),
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 1
     module.columns.value = 4
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
     module.prepare_group(workspace, (), numpy.arange(1, 4))
 
     for i in range(4):
@@ -401,14 +401,14 @@ def test_filtered():
         numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)
     ]
     workspace, module = make_tile_workspace(images)
-    assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+    assert isinstance(module, cellprofiler.modules.tile.Tile)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
     module.columns.value = 16
-    module.tile_style.value = cellprofiler.modules.plugins.tile.S_ROW
-    module.place_first.value = cellprofiler.modules.plugins.tile.P_BOTTOM_RIGHT
+    module.tile_style.value = cellprofiler.modules.tile.S_ROW
+    module.place_first.value = cellprofiler.modules.tile.P_BOTTOM_RIGHT
 
     module.prepare_group(workspace, (), numpy.arange(1, 97))
 
@@ -432,9 +432,9 @@ def test_filtered():
 def make_place_workspace(images):
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    module = cellprofiler.modules.plugins.tile.Tile()
+    module = cellprofiler.modules.tile.Tile()
     module.set_module_num(1)
-    module.tile_method.value = cellprofiler.modules.plugins.tile.T_WITHIN_CYCLES
+    module.tile_method.value = cellprofiler.modules.tile.T_WITHIN_CYCLES
     module.output_image.value = OUTPUT_IMAGE_NAME
     module.wants_automatic_rows.value = False
     module.wants_automatic_columns.value = True
@@ -475,7 +475,7 @@ def test_some_images():
             numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for ii in range(i)
         ]
         workspace, module = make_place_workspace(images)
-        assert isinstance(module, cellprofiler.modules.plugins.tile.Tile)
+        assert isinstance(module, cellprofiler.modules.tile.Tile)
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
 
         module.run(workspace)

@@ -483,7 +483,7 @@ References
 
         self.object_name = cps.ObjectNameSubscriber(
             "Select the objects to track",
-            cps.NONE,
+            "None",
             doc="""Select the objects to be tracked by this module.""",
         )
 
@@ -3647,7 +3647,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         if variable_revision_number == 4:
             # Added lifetime filtering: Wants filtering + min/max allowed lifetime
-            setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
+            setting_values = setting_values + ["No", "Yes", "1", "No", "100"]
             variable_revision_number = 5
 
         if variable_revision_number == 5:

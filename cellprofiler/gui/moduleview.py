@@ -1607,8 +1607,8 @@ class ModuleView(object):
             if not browse_ctrl.IsShown():
                 browse_ctrl.Show()
             if v.dir_choice in (
-                DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
             ):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
@@ -1627,15 +1627,15 @@ class ModuleView(object):
             custom_ctrl.Hide()
             browse_ctrl.Hide()
         if v.dir_choice in (
-            DEFAULT_INPUT_FOLDER_NAME,
-            DEFAULT_INPUT_SUBFOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
         ):
             folder_label.Label = (
                 "( %s )" % cellprofiler_core.preferences.get_default_image_directory()
             )
         elif v.dir_choice in (
-            DEFAULT_OUTPUT_FOLDER_NAME,
-            DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
         ):
             folder_label.Label = (
                 "( %s )" % cellprofiler_core.preferences.get_default_output_directory()

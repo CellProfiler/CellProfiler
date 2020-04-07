@@ -172,7 +172,7 @@ class UnmixColors(cpm.Module):
 
         self.input_image_name = cps.ImageNameSubscriber(
             "Select the input color image",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the name of the histologically stained color image
 loaded or created by some prior module.""",

@@ -150,7 +150,7 @@ class MeasureImageOverlap(cellprofiler_core.module.Module):
     def create_settings(self):
         self.ground_truth = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 This binary (black and white) image is known as the “ground truth”
 image. It can be the product of segmentation performed by hand, or the
@@ -160,7 +160,7 @@ compare.""",
 
         self.test_img = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image to be used to test for overlap",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 This binary (black and white) image is what you will compare with the
 ground truth image. It is known as the “test image”.""",
@@ -833,11 +833,11 @@ the two images. Set this setting to “No” to assess no penalty.""",
             # Added earth mover's distance
             #
             setting_values = setting_values + [
-                cellprofiler_core.setting.NO,  # wants_emd
+                "No",  # wants_emd
                 250,  # max points
                 DM_KMEANS,  # decimation method
                 250,  # max distance
-                cellprofiler_core.setting.NO,  # penalize missing
+                "No",  # penalize missing
             ]
             variable_revision_number = 4
 

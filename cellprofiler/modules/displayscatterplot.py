@@ -76,7 +76,7 @@ You can plot two types of measurements:
 
         self.x_object = cps.ObjectNameSubscriber(
             "Select the object to plot on the X-axis",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only when plotting objects)*
 
@@ -89,7 +89,7 @@ measurements are to be displayed on the X-axis.
         self.x_axis = cps.Measurement(
             "Select the measurement to plot on the X-axis",
             self.get_x_object,
-            cps.NONE,
+            "None",
             doc="""Choose the measurement (made by a previous module) to plot on the X-axis.""",
         )
 
@@ -114,7 +114,7 @@ You can plot two types of measurements:
 
         self.y_object = cps.ObjectNameSubscriber(
             "Select the object to plot on the Y-axis",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only when plotting objects)*
 
@@ -127,7 +127,7 @@ measurements are to be displayed on the Y-axis.
         self.y_axis = cps.Measurement(
             "Select the measurement to plot on the Y-axis",
             self.get_y_object,
-            cps.NONE,
+            "None",
             doc="""Choose the measurement (made by a previous module) to plot on the Y-axis.""",
         )
 
@@ -280,10 +280,10 @@ executed.
                 # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title
                 new_setting_values = [
                     setting_values[0],
-                    cps.NONE,
+                    "None",
                     setting_values[1],
                     cpmeas.IMAGE,
-                    cps.NONE,
+                    "None",
                 ] + setting_values[2:]
             else:
                 # self.source, self.x_object, self.x_axis, self.y_object, self.y_axis, self.xscale, self.yscale, self.title

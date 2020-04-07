@@ -4,9 +4,9 @@ import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.convertimagetoobjects
+import cellprofiler.modules.convertimagetoobjects
 
-instance = cellprofiler.modules.plugins.convertimagetoobjects.ConvertImageToObjects()
+instance = cellprofiler.modules.convertimagetoobjects.ConvertImageToObjects()
 
 
 @pytest.fixture

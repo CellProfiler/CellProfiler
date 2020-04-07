@@ -30,6 +30,7 @@ import skimage.measure
 
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import cellprofiler_core.preferences
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"
@@ -72,7 +73,7 @@ The choices are:
         self.directory = cellprofiler_core.setting.DirectoryPath(
             "Directory",
             doc="Enter the directory where object crops are saved.",
-            value=cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME,
+            value=cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
         )
 
         self.file_format = cellprofiler_core.setting.Choice(

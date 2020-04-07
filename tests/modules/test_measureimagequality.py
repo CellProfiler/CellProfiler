@@ -7,9 +7,9 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
 import cellprofiler_core.modules.loadsingleimage
-import cellprofiler.modules.plugins.measureimagequality
+import cellprofiler.modules.measureimagequality
 import cellprofiler_core.modules.namesandtypes
-import cellprofiler.modules.plugins.smooth
+import cellprofiler.modules.smooth
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -30,8 +30,8 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
         o = cellprofiler_core.object.Objects()
         o.segmented = objects
         object_set.add_objects(o, OBJECTS_NAME)
-    module = cellprofiler.modules.plugins.measureimagequality.MeasureImageQuality()
-    module.images_choice.value = cellprofiler.modules.plugins.measureimagequality.O_SELECT
+    module = cellprofiler.modules.measureimagequality.MeasureImageQuality()
+    module.images_choice.value = cellprofiler.modules.measureimagequality.O_SELECT
     module.image_groups[0].include_image_scalings.value = False
     module.image_groups[0].image_names.value = IMAGES_NAME
     module.image_groups[0].use_all_threshold_methods.value = False
@@ -490,7 +490,7 @@ def test_experiment_threshold():
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module = workspace.module
     assert isinstance(
-        module, cellprofiler.modules.plugins.measureimagequality.MeasureImageQuality
+        module, cellprofiler.modules.measureimagequality.MeasureImageQuality
     )
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
@@ -508,9 +508,9 @@ def test_experiment_threshold():
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
-            cellprofiler.modules.plugins.measureimagequality.AGG_MEAN,
-            cellprofiler.modules.plugins.measureimagequality.AGG_MEDIAN,
-            cellprofiler.modules.plugins.measureimagequality.AGG_STD,
+            cellprofiler.modules.measureimagequality.AGG_MEAN,
+            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
+            cellprofiler.modules.measureimagequality.AGG_STD,
         )
     ]
 
@@ -532,7 +532,7 @@ def test_experiment_threshold_cycle_skipping():
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module = workspace.module
     assert isinstance(
-        module, cellprofiler.modules.plugins.measureimagequality.MeasureImageQuality
+        module, cellprofiler.modules.measureimagequality.MeasureImageQuality
     )
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
@@ -564,9 +564,9 @@ def test_experiment_threshold_cycle_skipping():
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
-            cellprofiler.modules.plugins.measureimagequality.AGG_MEAN,
-            cellprofiler.modules.plugins.measureimagequality.AGG_MEDIAN,
-            cellprofiler.modules.plugins.measureimagequality.AGG_STD,
+            cellprofiler.modules.measureimagequality.AGG_MEAN,
+            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
+            cellprofiler.modules.measureimagequality.AGG_STD,
         )
     ]
 
@@ -628,7 +628,7 @@ def test_load_v3():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.measureimagequality.MeasureImageQuality
+        module, cellprofiler.modules.measureimagequality.MeasureImageQuality
     )
     assert len(module.image_groups) == 2
 
@@ -675,14 +675,14 @@ def test_load_v4():
     assert len(pipeline.modules()) == 5
     for module in pipeline.modules():
         assert isinstance(
-            module, cellprofiler.modules.plugins.measureimagequality.MeasureImageQuality
+            module, cellprofiler.modules.measureimagequality.MeasureImageQuality
         )
 
     module = pipeline.modules()[0]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
     assert group.threshold_groups == []
-    assert module.images_choice == cellprofiler.modules.plugins.measureimagequality.O_ALL_LOADED
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_ALL_LOADED
     assert group.check_blur
     assert group.scale_groups[0].scale == 20
     assert group.check_saturation
@@ -693,19 +693,19 @@ def test_load_v4():
     module = pipeline.modules()[1]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
-    assert module.images_choice == cellprofiler.modules.plugins.measureimagequality.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Alpha"
 
     module = pipeline.modules()[2]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
-    assert module.images_choice == cellprofiler.modules.plugins.measureimagequality.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Delta,Beta"
 
     module = pipeline.modules()[3]
     assert len(module.image_groups) == 2
     group = module.image_groups[0]
-    assert module.images_choice == cellprofiler.modules.plugins.measureimagequality.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Delta"
     assert group.check_intensity
     assert not group.use_all_threshold_methods
@@ -721,7 +721,7 @@ def test_load_v4():
     module = pipeline.modules()[4]
     assert len(module.image_groups) == 1
     group = module.image_groups[0]
-    assert module.images_choice == cellprofiler.modules.plugins.measureimagequality.O_SELECT
+    assert module.images_choice == cellprofiler.modules.measureimagequality.O_SELECT
     assert group.image_names == "Zeta"
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
@@ -866,16 +866,16 @@ def test_images_to_process():
     ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     pipeline.add_module(module1)
 
-    module2 = cellprofiler.modules.plugins.smooth.Smooth()
+    module2 = cellprofiler.modules.smooth.Smooth()
     module2.set_module_num(2)
     module2.image_name.value = expected_names[0]
     module2.filtered_image_name.value = "henry"
     pipeline.add_module(module2)
 
-    miq_module = cellprofiler.modules.plugins.measureimagequality.MeasureImageQuality()
+    miq_module = cellprofiler.modules.measureimagequality.MeasureImageQuality()
     miq_module.set_module_num(3)
     miq_module.images_choice.value = (
-        cellprofiler.modules.plugins.measureimagequality.O_ALL_LOADED
+        cellprofiler.modules.measureimagequality.O_ALL_LOADED
     )
     image_names = miq_module.images_to_process(
         miq_module.image_groups[0], None, pipeline
@@ -900,20 +900,20 @@ def test_volumetric_measurements():
     names = [
         "_".join(
             [
-                cellprofiler.modules.plugins.measureimagequality.C_IMAGE_QUALITY,
+                cellprofiler.modules.measureimagequality.C_IMAGE_QUALITY,
                 feature,
                 IMAGES_NAME,
             ]
         )
         for feature in [
-            cellprofiler.modules.plugins.measureimagequality.F_TOTAL_VOLUME,
-            cellprofiler.modules.plugins.measureimagequality.F_TOTAL_INTENSITY,
-            cellprofiler.modules.plugins.measureimagequality.F_MEAN_INTENSITY,
-            cellprofiler.modules.plugins.measureimagequality.F_MEDIAN_INTENSITY,
-            cellprofiler.modules.plugins.measureimagequality.F_STD_INTENSITY,
-            cellprofiler.modules.plugins.measureimagequality.F_MAD_INTENSITY,
-            cellprofiler.modules.plugins.measureimagequality.F_MAX_INTENSITY,
-            cellprofiler.modules.plugins.measureimagequality.F_MIN_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_TOTAL_VOLUME,
+            cellprofiler.modules.measureimagequality.F_TOTAL_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MEAN_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MEDIAN_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_STD_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MAD_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MAX_INTENSITY,
+            cellprofiler.modules.measureimagequality.F_MIN_INTENSITY,
         ]
     ]
     values = [

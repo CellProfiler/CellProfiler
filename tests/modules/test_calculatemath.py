@@ -3,7 +3,7 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.calculatemath
+import cellprofiler.modules.calculatemath
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -28,7 +28,7 @@ def run_workspace(
     m<n>_data - either a single value or an array
     setup_fn - this gets called with the module before running
     """
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
+    module = cellprofiler.modules.calculatemath.CalculateMath()
     module.operation.value = operation
     measurements = cellprofiler_core.measurement.Measurements()
     for i, operand, is_image_measurement, data in (
@@ -37,10 +37,10 @@ def run_workspace(
     ):
         measurement = "measurement%d" % i
         if is_image_measurement:
-            operand.operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_IMAGE
+            operand.operand_choice.value = cellprofiler.modules.calculatemath.MC_IMAGE
             measurements.add_image_measurement(measurement, data)
         else:
-            operand.operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+            operand.operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
             operand.operand_objects.value = OBJECT[i]
             measurements.add_measurement(OBJECT[i], measurement, data)
         operand.operand_measurement.value = measurement
@@ -65,7 +65,7 @@ def run_workspace(
 
 def test_add_image_image():
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 2, True, 2
+        cellprofiler.modules.calculatemath.O_ADD, True, 2, True, 2
     )
     assert measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -81,7 +81,7 @@ def test_add_image_image():
 def test_add_image_object():
     """Add an image measurement to each of several object measurements"""
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 2, False, numpy.array([1, 4, 9])
+        cellprofiler.modules.calculatemath.O_ADD, True, 2, False, numpy.array([1, 4, 9])
     )
     assert not measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -94,7 +94,7 @@ def test_add_image_object():
 def test_add_object_image():
     """Add an image measurement to each of several object measurements (reverse)"""
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, False, numpy.array([1, 4, 9]), True, 2
+        cellprofiler.modules.calculatemath.O_ADD, False, numpy.array([1, 4, 9]), True, 2
     )
     assert not measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -110,7 +110,7 @@ def test_add_premultiply():
         module.operands[1].multiplicand.value = 3
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = 2 * 5 + 3 * 7
     data = measurements.get_current_measurement(
@@ -125,7 +125,7 @@ def test_add_pre_exponentiate():
         module.operands[1].exponent.value = 3
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = 5 ** 2 + 7 ** 3
     data = measurements.get_current_measurement(
@@ -139,7 +139,7 @@ def test_add_postmultiply():
         module.final_multiplicand.value = 3
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = (5 + 7) * 3
     data = measurements.get_current_measurement(
@@ -153,7 +153,7 @@ def test_add_postexponentiate():
         module.final_exponent.value = 3
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = (5 + 7) ** 3
     data = measurements.get_current_measurement(
@@ -167,7 +167,7 @@ def test_add_log():
         module.wants_log.value = True
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = numpy.log10(5 + 7)
     data = measurements.get_current_measurement(
@@ -178,7 +178,7 @@ def test_add_log():
 
 def test_add_object_object():
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD,
+        cellprofiler.modules.calculatemath.O_ADD,
         False,
         numpy.array([1, 2, 3]),
         False,
@@ -195,7 +195,7 @@ def test_add_object_object():
 
 def test_subtract():
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_SUBTRACT, True, 7, True, 5
+        cellprofiler.modules.calculatemath.O_SUBTRACT, True, 7, True, 5
     )
     data = measurements.get_current_measurement(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -205,7 +205,7 @@ def test_subtract():
 
 def test_multiply():
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_MULTIPLY, True, 7, True, 5
+        cellprofiler.modules.calculatemath.O_MULTIPLY, True, 7, True, 5
     )
     data = measurements.get_current_measurement(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -215,7 +215,7 @@ def test_multiply():
 
 def test_divide():
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_DIVIDE, True, 35, True, 5
+        cellprofiler.modules.calculatemath.O_DIVIDE, True, 35, True, 5
     )
     data = measurements.get_current_measurement(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -224,10 +224,10 @@ def test_divide():
 
 
 def test_measurement_columns_image():
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
+    module = cellprofiler.modules.calculatemath.CalculateMath()
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
     for operand in module.operands:
-        operand.operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_IMAGE
+        operand.operand_choice.value = cellprofiler.modules.calculatemath.MC_IMAGE
     columns = module.get_measurement_columns(None)
     assert len(columns) == 1
     assert columns[0][0] == cellprofiler_core.measurement.IMAGE
@@ -241,14 +241,14 @@ def test_measurement_columns_image():
 
 
 def test_measurement_columns_image_object():
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
+    module = cellprofiler.modules.calculatemath.CalculateMath()
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
     module.operands[
         0
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_IMAGE
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_IMAGE
     module.operands[
         1
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[1].operand_objects.value = OBJECT[1]
     columns = module.get_measurement_columns(None)
     assert len(columns) == 1
@@ -261,14 +261,14 @@ def test_measurement_columns_image_object():
 
 
 def test_measurement_columns_object_image():
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
+    module = cellprofiler.modules.calculatemath.CalculateMath()
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
     module.operands[
         0
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[
         1
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_IMAGE
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_IMAGE
     module.operands[0].operand_objects.value = OBJECT[0]
     columns = module.get_measurement_columns(None)
     assert len(columns) == 1
@@ -281,14 +281,14 @@ def test_measurement_columns_object_image():
 
 
 def test_measurement_columns_object_object():
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
+    module = cellprofiler.modules.calculatemath.CalculateMath()
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
     module.operands[
         0
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[
         1
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[0].operand_objects.value = OBJECT[0]
     module.operands[1].operand_objects.value = OBJECT[1]
     columns = list(module.get_measurement_columns(None))
@@ -317,7 +317,7 @@ def test_add_object_object_same():
         module.operands[1].operand_measurement.value = "measurement0"
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD,
+        cellprofiler.modules.calculatemath.O_ADD,
         False,
         numpy.array([5, 6]),
         False,
@@ -334,7 +334,7 @@ def test_img_379():
     """Regression test for IMG-379, divide by zero"""
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_DIVIDE, True, 35, True, 0
+        cellprofiler.modules.calculatemath.O_DIVIDE, True, 35, True, 0
     )
     data = measurements.get_current_measurement(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -342,7 +342,7 @@ def test_img_379():
     assert numpy.isnan(data)
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_DIVIDE,
+        cellprofiler.modules.calculatemath.O_DIVIDE,
         False,
         numpy.array([1.0]),
         False,
@@ -359,7 +359,7 @@ def test_none_operation():
         module.operands[0].multiplicand.value = 2
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_NONE,
+        cellprofiler.modules.calculatemath.O_NONE,
         False,
         numpy.array([1, 2, 3]),
         False,
@@ -390,14 +390,14 @@ def test_img_919():
         module.operands[1].operand_objects.value = OBJECT[0]
         module.operands[1].operand_measurement.value = "measurement0"
 
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
+    module = cellprofiler.modules.calculatemath.CalculateMath()
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
     module.operands[
         0
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[
         1
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[0].operand_objects.value = OBJECT[0]
     module.operands[1].operand_objects.value = OBJECT[0]
     columns = module.get_measurement_columns(None)
@@ -475,7 +475,7 @@ def test_img_1566():
                     )
 
             measurements = run_workspace(
-                cellprofiler.modules.plugins.calculatemath.O_ADD,
+                cellprofiler.modules.calculatemath.O_ADD,
                 False,
                 ii0,
                 False,
@@ -563,7 +563,7 @@ def test_02_different_image_sets():
                 )
 
         measurements = run_workspace(
-            cellprofiler.modules.plugins.calculatemath.O_ADD, False, ii0, False, ii1, setup_fn
+            cellprofiler.modules.calculatemath.O_ADD, False, ii0, False, ii1, setup_fn
         )
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
         numpy.testing.assert_almost_equal(e0, data)
@@ -578,16 +578,16 @@ def test_issue_422():
     # get_categories report measurements for both operands when
     # they should report for only a single one
     #
-    module = cellprofiler.modules.plugins.calculatemath.CalculateMath()
-    module.operation.value = cellprofiler.modules.plugins.calculatemath.O_NONE
+    module = cellprofiler.modules.calculatemath.CalculateMath()
+    module.operation.value = cellprofiler.modules.calculatemath.O_NONE
     module.operands[0].operand_objects.value = OBJECT[0]
     module.operands[1].operand_objects.value = OBJECT[1]
     module.operands[
         0
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.operands[
         1
-    ].operand_choice.value = cellprofiler.modules.plugins.calculatemath.MC_OBJECT
+    ].operand_choice.value = cellprofiler.modules.calculatemath.MC_OBJECT
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
 
     c = module.get_measurement_columns(None)
@@ -601,7 +601,7 @@ def test_issue_422():
     assert (
         len(
             module.get_measurements(
-                None, OBJECT[0], cellprofiler.modules.plugins.calculatemath.C_MATH
+                None, OBJECT[0], cellprofiler.modules.calculatemath.C_MATH
             )
         )
         == 1
@@ -609,7 +609,7 @@ def test_issue_422():
     assert (
         len(
             module.get_measurements(
-                None, OBJECT[1], cellprofiler.modules.plugins.calculatemath.C_MATH
+                None, OBJECT[1], cellprofiler.modules.calculatemath.C_MATH
             )
         )
         == 0
@@ -623,7 +623,7 @@ def test_postadd():
         module.final_addend.value = 1.5
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = (5 + 7) + 1.5
     data = measurements.get_current_measurement(
@@ -640,7 +640,7 @@ def test_constrain_lower():
         module.lower_bound.value = 0
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_SUBTRACT, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_SUBTRACT, True, 5, True, 7, fn
     )
     expected = 0
     data = measurements.get_current_measurement(
@@ -657,7 +657,7 @@ def test_constrain_upper():
         module.upper_bound.value = 10
 
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 5, True, 7, fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 5, True, 7, fn
     )
     expected = 10
     data = measurements.get_current_measurement(
@@ -668,10 +668,10 @@ def test_constrain_upper():
 def test_round_digit_1():
     """Test if rounding to the first decimal place works"""
     def fn(module, workspace):
-        module.rounding.value = cellprofiler.modules.plugins.calculatemath.ROUNDING[1]
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[1]
         module.rounding_digit.value = 1
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
     )
     assert not measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -683,10 +683,10 @@ def test_round_digit_1():
 def test_round_digit_0():
     """Test if rounding to the zeroth decimal place works"""
     def fn(module, workspace):
-        module.rounding.value = cellprofiler.modules.plugins.calculatemath.ROUNDING[1]
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[1]
         module.rounding_digit.value = 0
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
     )
     assert not measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -698,9 +698,9 @@ def test_round_digit_0():
 def test_round_floor():
     """Test if floor rounding works"""
     def fn(module, workspace):
-        module.rounding.value = cellprofiler.modules.plugins.calculatemath.ROUNDING[2]
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[2]
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
     )
     assert not measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
@@ -712,9 +712,9 @@ def test_round_floor():
 def test_round_ceil():
     """Test if ceiling rounding works"""
     def fn(module, workspace):
-        module.rounding.value = cellprofiler.modules.plugins.calculatemath.ROUNDING[3]
+        module.rounding.value = cellprofiler.modules.calculatemath.ROUNDING[3]
     measurements = run_workspace(
-        cellprofiler.modules.plugins.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
+        cellprofiler.modules.calculatemath.O_ADD, True, 2.1, False, numpy.array([1, 4, 9]), fn
     )
     assert not measurements.has_feature(
         cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS

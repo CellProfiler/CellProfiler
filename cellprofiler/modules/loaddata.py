@@ -18,7 +18,7 @@ import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
-from cellprofilder_core.modules import identify, loadimages
+from cellprofiler_core.modules import identify, loadimages
 
 logger = logging.getLogger(__name__)
 from io import StringIO
@@ -398,7 +398,7 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
 
         self.csv_file_name = cellprofiler_core.setting.FilenameText(
             "Name of the file",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""Provide the file name of the CSV file containing the data you want to load.""",
             get_directory_fn=get_directory_fn,
             set_directory_fn=set_directory_fn,
@@ -417,7 +417,7 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
 Select *{YES}* to have **LoadData** load images based on the
 *Image\_FileName* column and the *Image\_PathName* column (if specified).
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -441,7 +441,7 @@ Select *{NO}* to ignore the image metadata and rescale the image to a
 maximum of 1.0 by dividing by 255 or 65535, depending on the maximum possible
 intensity value of the image file format.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
@@ -473,7 +473,7 @@ together. For example, see **CreateBatchFiles** for details on submitting a
 CellProfiler pipeline to a computing cluster for processing groups
 separately, and see the **Groups** module for other examples.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -500,7 +500,7 @@ with in the box on the left. Then, enter the number of the row you want to
 end processing with in the box on the right. Rows are numbered starting at 1
 (but do not count the header line). **LoadData** will process up to and including the end row.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -1655,17 +1655,17 @@ safe to press it.""",
                 path_choice,
                 path_name,
                 text_file_name,
-                cellprofiler_core.setting.NO,
+                "No",
                 dir_default_image,
                 ".",
-                cellprofiler_core.setting.NO,
+                "No",
                 "1,100000",
             ]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
         if (not from_matlab) and variable_revision_number == 1:
-            setting_values = setting_values + [cellprofiler_core.setting.NO, ""]
+            setting_values = setting_values + ["No", ""]
             variable_revision_number = 2
 
         if variable_revision_number == 2 and (not from_matlab):
@@ -1741,7 +1741,7 @@ safe to press it.""",
             variable_revision_number = 5
         if variable_revision_number == 5 and (not from_matlab):
             # Added rescaling option
-            setting_values = setting_values + [cellprofiler_core.setting.YES]
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 6
         return setting_values, variable_revision_number, from_matlab
 

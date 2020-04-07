@@ -5,7 +5,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.measuregranularity
+import cellprofiler.modules.measuregranularity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -30,7 +30,7 @@ def test_load_v3():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     assert len(module.images) == 2
     for image_setting, image_name, subsample_size, bsize, elsize, glen, objs in (
@@ -72,7 +72,7 @@ def make_pipeline(
     subsample_size, etc. - values for corresponding settings in the module
     returns tuple of module & workspace
     """
-    module = cellprofiler.modules.plugins.measuregranularity.MeasureGranularity()
+    module = cellprofiler.modules.measuregranularity.MeasureGranularity()
     module.set_module_num(1)
     image_setting = module.images[0]
     # assert isinstance(image_setting, M.MeasureGranularity)
@@ -116,7 +116,7 @@ def test_all_masked():
         numpy.zeros((40, 40)), numpy.zeros((40, 40), bool), 0.25, 0.25, 10, 16
     )
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -132,7 +132,7 @@ def test_zeros():
     """Run on an image of all zeros"""
     module, workspace = make_pipeline(numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -154,7 +154,7 @@ def test_no_scaling():
     expected = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 1, 1, 10, 16)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -180,7 +180,7 @@ def test_subsampling():
     expected = [0, 96, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 0.5, 1, 10, 16)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -210,7 +210,7 @@ def test_background_sampling():
     expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 1, 0.5, 10, 16)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -257,7 +257,7 @@ def test_filter_background():
     expected = [0, 99, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     module, workspace = make_pipeline(image, None, 1, 1, 5, 16)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -277,7 +277,7 @@ def test_all_masked():
         numpy.zeros((40, 40)), numpy.zeros((40, 40), bool), 0.25, 0.25, 10, 16, labels
     )
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -298,7 +298,7 @@ def test_no_objects():
         numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16, numpy.zeros((40, 40), int)
     )
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -320,7 +320,7 @@ def test_zeros():
         numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16, labels
     )
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -347,7 +347,7 @@ def test_no_scaling():
     labels[20:, :] = 2
     module, workspace = make_pipeline(image, None, 1, 1, 10, 16, labels)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements
@@ -378,7 +378,7 @@ def test_subsampling():
     labels[40:, :] = 2
     module, workspace = make_pipeline(image, None, 0.5, 1, 10, 16, labels)
     assert isinstance(
-        module, cellprofiler.modules.plugins.measuregranularity.MeasureGranularity
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
     )
     module.run(workspace)
     m = workspace.measurements

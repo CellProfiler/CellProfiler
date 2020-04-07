@@ -91,7 +91,7 @@ Enter the desired height of the final objects, in pixels.""",
 
         self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
         *(Used only if resizing by specifying desired final dimensions using an image)*
 
@@ -182,7 +182,7 @@ Enter the desired height of the final objects, in pixels.""",
         self, setting_values, variable_revision_number, module_name, from_matlab
     ):
         if variable_revision_number == 1:
-            setting_values += [cellprofiler_core.setting.NONE]
+            setting_values += ["None"]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

@@ -59,7 +59,7 @@ class EnhanceEdges(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""Select the image whose edges you want to enhance.""",
         )
 
@@ -376,16 +376,16 @@ values below this threshold as not being edges.
             setting_values = [
                 setting_values[0],  # ImageName
                 setting_values[1],  # OutputName
-                setting_values[2] == cps.DO_NOT_USE,  # Threshold
-                setting_values[2] if setting_values[2] != cps.DO_NOT_USE else 0.5,
+                setting_values[2] == "Do not use",  # Threshold
+                setting_values[2] if setting_values[2] != "Do not use" else 0.5,
                 setting_values[3],  # Threshold adjustment factor
                 setting_values[4],  # Method
                 setting_values[5],  # Filter size
                 setting_values[8],  # Direction
-                setting_values[9] == cps.DO_NOT_USE,  # Sigma
-                setting_values[9] if setting_values[9] != cps.DO_NOT_USE else 5,
-                setting_values[10] == cps.DO_NOT_USE,  # Low threshold
-                setting_values[10] if setting_values[10] != cps.DO_NOT_USE else 0.5,
+                setting_values[9] == "Do not use",  # Sigma
+                setting_values[9] if setting_values[9] != "Do not use" else 5,
+                setting_values[10] == "Do not use",  # Low threshold
+                setting_values[10] if setting_values[10] != "Do not use" else 0.5,
             ]
             from_matlab = False
             variable_revision_number = 1

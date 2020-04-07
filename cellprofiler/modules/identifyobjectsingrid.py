@@ -93,7 +93,7 @@ class IdentifyObjectsInGrid(cpm.Module):
         """
         self.grid_name = cps.GridNameSubscriber(
             "Select the defined grid",
-            cps.NONE,
+            "None",
             doc="""Select the name of a grid created by a previous **DefineGrid** module.""",
         )
 
@@ -181,7 +181,7 @@ Enter the diameter to be used for each grid circle, in pixels.
 
         self.guiding_object_name = cps.ObjectNameSubscriber(
             "Select the guiding objects",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if "Circle" is selected as object shape and diameter is
 specified automatically, or if "Natural Location" is selected as the
@@ -499,7 +499,7 @@ depending on the method chosen.
                 diameter_choice = AM_AUTOMATIC
             else:
                 diameter_choice = AM_MANUAL
-            wants_outlines = cps.NO if save_outlines == cps.DO_NOT_USE else cps.YES
+            wants_outlines = "No" if save_outlines == "Do not use" else "Yes"
             setting_values = [
                 grid_name,
                 new_object_name,

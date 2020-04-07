@@ -102,7 +102,7 @@ class CalculateMath(cpm.Module):
 
                 self.__operand_objects = cps.ObjectNameSubscriber(
                     self.operand_objects_text(),
-                    cps.NONE,
+                    "None",
                     doc="""Choose the objects you want to measure for this operation.""",
                 )
 
@@ -778,7 +778,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
         if not from_matlab and variable_revision_number == 1:
             # Added a final addition number as well as options to constrain
             # the result to an upper and/or lower bound.
-            setting_values += ["0", cps.NO, "0", cps.NO, "1"]
+            setting_values += ["0", "No", "0", "No", "1"]
             variable_revision_number = 2
         if variable_revision_number == 2:
             clip_values = setting_values[-4:]

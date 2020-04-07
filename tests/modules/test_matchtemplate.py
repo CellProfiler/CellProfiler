@@ -8,7 +8,7 @@ import skimage.io
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.matchtemplate
+import cellprofiler.modules.matchtemplate
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -31,7 +31,7 @@ def measurements():
 
 @pytest.fixture()
 def module():
-    return cellprofiler.modules.plugins.matchtemplate.MatchTemplate()
+    return cellprofiler.modules.matchtemplate.MatchTemplate()
 
 
 @pytest.fixture()

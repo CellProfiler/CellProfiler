@@ -79,7 +79,7 @@ class DisplayDataOnImage(cellprofiler_core.module.Module):
 
         self.objects_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input objects",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only when displaying object measurements)*
 
@@ -119,7 +119,7 @@ to display the measurements on a black background.""",
 
         self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image on which to display the measurements",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 Choose the image to be displayed behind the measurements.
 This can be any image created or loaded by a previous module.
@@ -408,7 +408,7 @@ color map.
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        from cellprofilder_core.modules import loadimages as LI
+        from cellprofiler_core.modules import loadimages as LI
         import os.path
 
         im_id = self.image_name.value
@@ -472,7 +472,7 @@ color map.
             if pixel_data.ndim == 3:
                 pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
             colormap_name = self.colormap.value
-            if colormap_name == cellprofiler_core.setting.DEFAULT:
+            if colormap_name == "Default":
                 colormap_name = cellprofiler_core.preferences.get_default_colormap()
             colormap = matplotlib.cm.get_cmap(colormap_name)
             values = workspace.display_data.values
@@ -571,7 +571,7 @@ color map.
 
         if variable_revision_number == 4:
             # added wants_image
-            setting_values = setting_values + [cellprofiler_core.setting.YES]
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 5
         if variable_revision_number == 5:
             # added color_map_scale_choice and color_map_scale

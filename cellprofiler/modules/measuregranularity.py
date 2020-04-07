@@ -89,7 +89,7 @@ class MeasureGranularity(cpm.Module):
             "image_name",
             cps.ImageNameSubscriber(
                 "Select an image to measure",
-                cps.NONE,
+                "None",
                 doc="Select the grayscale images whose granularity you want to measure.",
             ),
         )
@@ -556,7 +556,7 @@ class GranularitySettingsGroup(cps.SettingsGroup):
             "objects_name",
             cps.ObjectNameSubscriber(
                 "Select objects to measure",
-                cps.NONE,
+                "None",
                 doc="""\
 Select the objects whose granularity will be measured. You can select
 objects from prior modules that identify objects, such as

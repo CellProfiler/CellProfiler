@@ -122,7 +122,7 @@ class IdentifyTertiaryObjects(cpm.Module):
         """
         self.secondary_objects_name = cps.ObjectNameSubscriber(
             "Select the larger identified objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the larger identified objects. This will usually be an object
 previously identified by an **IdentifySecondaryObjects** module.""",
@@ -130,7 +130,7 @@ previously identified by an **IdentifySecondaryObjects** module.""",
 
         self.primary_objects_name = cps.ObjectNameSubscriber(
             "Select the smaller identified objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the smaller identified objects. This will usually be an object
 previously identified by an **IdentifyPrimaryObjects** module.""",
@@ -483,18 +483,18 @@ but the results will be zero or not-a-number (NaN).
             # if the Matlab outlines name was "Do not use", turn
             # use_outlines off, otherwise turn it on
             #
-            if new_setting_values[3] == cps.DO_NOT_USE:
+            if new_setting_values[3] == "Do not use":
                 # The text value, "No", sets use_outlines to False
-                new_setting_values.append(cps.NO)
+                new_setting_values.append("No")
             else:
                 # The text value, "Yes", sets use_outlines to True
-                new_setting_values.append(cps.YES)
+                new_setting_values.append("Yes")
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
 
         if (not from_matlab) and variable_revision_number == 1:
-            setting_values = setting_values + [cps.YES]
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 2
 
         if variable_revision_number == 2:

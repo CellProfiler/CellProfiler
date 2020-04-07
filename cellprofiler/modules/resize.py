@@ -122,7 +122,7 @@ Enter the desired height of the final image, in pixels.""",
 
         self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only if resizing by specifying desired final dimensions using an image)*
 
@@ -165,7 +165,7 @@ The input image will be resized to the dimensions of the specified image.""",
             "input_image_name",
             cellprofiler_core.setting.ImageNameSubscriber(
                 "Select the additional image?",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""\
 What is the name of the additional image to resize? This image will be
 resized with the same settings as the first image.""",
@@ -503,7 +503,7 @@ resized with the same settings as the first image.""",
             # Add resizing to another image size
             setting_values = (
                 setting_values[:7]
-                + [C_MANUAL, cellprofiler_core.setting.NONE]
+                + [C_MANUAL, "None"]
                 + setting_values[7:]
             )
             variable_revision_number = 4

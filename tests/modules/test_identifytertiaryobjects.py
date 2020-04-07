@@ -4,7 +4,7 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.identifytertiaryobjects
+import cellprofiler.modules.identifytertiaryobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -29,7 +29,7 @@ def make_workspace(primary_labels, secondary_labels):
                         the secondary labels
     """
     isl = cellprofiler_core.image.ImageSetList()
-    module = cellprofiler.modules.plugins.identifytertiaryobjects.IdentifyTertiarySubregion()
+    module = cellprofiler.modules.identifytertiaryobjects.IdentifyTertiarySubregion()
     module.set_module_num(1)
     module.primary_objects_name.value = PRIMARY
     module.secondary_objects_name.value = SECONDARY
@@ -185,7 +185,7 @@ def test_overlapping_secondary():
     workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     assert isinstance(
-        module, cellprofiler.modules.plugins.identifytertiaryobjects.IdentifyTertiarySubregion
+        module, cellprofiler.modules.identifytertiaryobjects.IdentifyTertiarySubregion
     )
     module.run(workspace)
     measurements = workspace.measurements
@@ -223,14 +223,14 @@ def test_wrong_size():
     workspace = make_workspace(primary_labels, secondary_labels)
     module = workspace.module
     assert isinstance(
-        module, cellprofiler.modules.plugins.identifytertiaryobjects.IdentifyTertiarySubregion
+        module, cellprofiler.modules.identifytertiaryobjects.IdentifyTertiarySubregion
     )
     module.run(workspace)
 
 
 def test_get_measurement_columns():
     """Test the get_measurement_columns method"""
-    module = cellprofiler.modules.plugins.identifytertiaryobjects.IdentifyTertiarySubregion()
+    module = cellprofiler.modules.identifytertiaryobjects.IdentifyTertiarySubregion()
     module.primary_objects_name.value = PRIMARY
     module.secondary_objects_name.value = SECONDARY
     module.subregion_objects_name.value = TERTIARY
@@ -421,8 +421,8 @@ def test_no_relationships():
     workspace.module.run(workspace)
     m = workspace.measurements
     for parent, relationship in (
-        (PRIMARY, cellprofiler.modules.plugins.identifytertiaryobjects.R_REMOVED),
-        (SECONDARY, cellprofiler.modules.plugins.identifytertiaryobjects.R_PARENT),
+        (PRIMARY, cellprofiler.modules.identifytertiaryobjects.R_REMOVED),
+        (SECONDARY, cellprofiler.modules.identifytertiaryobjects.R_PARENT),
     ):
         result = m.get_relationships(
             workspace.module.module_num, relationship, parent, TERTIARY
@@ -441,8 +441,8 @@ def test_relationships():
     workspace.module.run(workspace)
     m = workspace.measurements
     for parent, relationship in (
-        (PRIMARY, cellprofiler.modules.plugins.identifytertiaryobjects.R_REMOVED),
-        (SECONDARY, cellprofiler.modules.plugins.identifytertiaryobjects.R_PARENT),
+        (PRIMARY, cellprofiler.modules.identifytertiaryobjects.R_REMOVED),
+        (SECONDARY, cellprofiler.modules.identifytertiaryobjects.R_PARENT),
     ):
         result = m.get_relationships(
             workspace.module.module_num, relationship, parent, TERTIARY

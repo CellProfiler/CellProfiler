@@ -3,7 +3,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.unmixcolors
+import cellprofiler.modules.unmixcolors
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -28,24 +28,24 @@ def test_load_v1():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.unmixcolors.UnmixColors)
+    assert isinstance(module, cellprofiler.modules.unmixcolors.UnmixColors)
     assert module.input_image_name == "Color"
     assert module.stain_count.value == 13
     assert module.outputs[0].image_name == "Hematoxylin"
     assert module.outputs[-1].image_name == "RedWine"
     for i, stain in enumerate(
         (
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_HEMATOXYLIN,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_EOSIN,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_DAB,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_FAST_RED,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_FAST_BLUE,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_METHYL_GREEN,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_AEC,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_ANILINE_BLUE,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_AZOCARMINE,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_ALICAN_BLUE,
-                cellprofiler.modules.plugins.unmixcolors.CHOICE_PAS,
+                cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN,
+                cellprofiler.modules.unmixcolors.CHOICE_EOSIN,
+                cellprofiler.modules.unmixcolors.CHOICE_DAB,
+                cellprofiler.modules.unmixcolors.CHOICE_FAST_RED,
+                cellprofiler.modules.unmixcolors.CHOICE_FAST_BLUE,
+                cellprofiler.modules.unmixcolors.CHOICE_METHYL_GREEN,
+                cellprofiler.modules.unmixcolors.CHOICE_AEC,
+                cellprofiler.modules.unmixcolors.CHOICE_ANILINE_BLUE,
+                cellprofiler.modules.unmixcolors.CHOICE_AZOCARMINE,
+                cellprofiler.modules.unmixcolors.CHOICE_ALICAN_BLUE,
+                cellprofiler.modules.unmixcolors.CHOICE_PAS,
         )
     ):
         assert module.outputs[i].stain_choice == stain
@@ -67,7 +67,7 @@ def make_workspace(pixels, choices):
 
     pipeline.add_listener(callback)
 
-    module = cellprofiler.modules.plugins.unmixcolors.UnmixColors()
+    module = cellprofiler.modules.unmixcolors.UnmixColors()
     module.input_image_name.value = INPUT_IMAGE
     module.outputs[0].image_name.value = output_image_name(0)
     module.outputs[0].stain_choice.value = choices[0]
@@ -112,7 +112,7 @@ def make_image(expected, absorbances):
 def test_zeros():
     """Test on an image of all zeros"""
     workspace, module = make_workspace(
-        numpy.zeros((10, 20, 3)), [cellprofiler.modules.plugins.unmixcolors.CHOICE_HEMATOXYLIN]
+        numpy.zeros((10, 20, 3)), [cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN]
     )
     module.run(workspace)
     image = workspace.image_set.get_image(output_image_name(0))
@@ -125,7 +125,7 @@ def test_zeros():
 def test_ones():
     """Test on an image of all ones"""
     workspace, module = make_workspace(
-        numpy.ones((10, 20, 3)), [cellprofiler.modules.plugins.unmixcolors.CHOICE_HEMATOXYLIN]
+        numpy.ones((10, 20, 3)), [cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN]
     )
     module.run(workspace)
     image = workspace.image_set.get_image(output_image_name(0))
@@ -140,9 +140,9 @@ def test_one_stain():
 
     numpy.random.seed(23)
     expected = numpy.random.uniform(size=(10, 20))
-    image = make_image(expected, cellprofiler.modules.plugins.unmixcolors.ST_HEMATOXYLIN)
+    image = make_image(expected, cellprofiler.modules.unmixcolors.ST_HEMATOXYLIN)
     workspace, module = make_workspace(
-        image, [cellprofiler.modules.plugins.unmixcolors.CHOICE_HEMATOXYLIN]
+        image, [cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN]
     )
     module.run(workspace)
     image = workspace.image_set.get_image(output_image_name(0))
@@ -158,13 +158,13 @@ def test_two_stains():
     # The absorbances should add in log space and multiply in
     # the image space
     #
-    image = make_image(expected_1, cellprofiler.modules.plugins.unmixcolors.ST_HEMATOXYLIN)
-    image *= make_image(expected_2, cellprofiler.modules.plugins.unmixcolors.ST_EOSIN)
+    image = make_image(expected_1, cellprofiler.modules.unmixcolors.ST_HEMATOXYLIN)
+    image *= make_image(expected_2, cellprofiler.modules.unmixcolors.ST_EOSIN)
     workspace, module = make_workspace(
         image,
         [
-            cellprofiler.modules.plugins.unmixcolors.CHOICE_HEMATOXYLIN,
-            cellprofiler.modules.plugins.unmixcolors.CHOICE_EOSIN,
+            cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN,
+            cellprofiler.modules.unmixcolors.CHOICE_EOSIN,
         ],
     )
     module.run(workspace)
@@ -181,7 +181,7 @@ def test_custom_stain():
     expected = numpy.random.uniform(size=(10, 20))
     image = make_image(expected, absorbance)
     workspace, module = make_workspace(
-        image, [cellprofiler.modules.plugins.unmixcolors.CHOICE_CUSTOM]
+        image, [cellprofiler.modules.unmixcolors.CHOICE_CUSTOM]
     )
     (
         module.outputs[0].red_absorbance.value,

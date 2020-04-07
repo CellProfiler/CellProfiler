@@ -4,14 +4,14 @@ import pytest
 import six.moves
 
 import cellprofiler_core.module
-import cellprofiler.modules.plugins.createbatchfiles
+import cellprofiler.modules.createbatchfiles
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 
 
 def test_test_load_version_9_please():
     assert (
-            cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles.variable_revision_number
+            cellprofiler.modules.createbatchfiles.CreateBatchFiles.variable_revision_number
             == 8
     )
 
@@ -24,7 +24,7 @@ def test_load_v7():
     pipeline.loadtxt(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles)
+    assert isinstance(module, cellprofiler.modules.createbatchfiles.CreateBatchFiles)
     assert module.wants_default_output_directory
     assert module.custom_output_directory == r"C:\foo\bar"
     assert not module.remote_host_is_windows
@@ -67,7 +67,7 @@ def test_module_must_be_last():
     # Make sure that CreateBatchFiles on its own tests valid
     #
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles()
+    module = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
     module.set_module_num(len(pipeline.modules()) + 1)
     pipeline.add_module(module)
     pipeline.test_valid()
@@ -80,7 +80,7 @@ def test_module_must_be_last():
 
 
 def test_alter_path():
-    module = cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles()
+    module = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
     module.mappings[0].local_directory.value = "foo"
     module.mappings[0].remote_directory.value = "bar"
 
@@ -89,7 +89,7 @@ def test_alter_path():
 
 
 def test_alter_path_regexp():
-    module = cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles()
+    module = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
     module.mappings[0].local_directory.value = "foo"
     module.mappings[0].remote_directory.value = "bar"
 
@@ -106,7 +106,7 @@ def test_alter_path_regexp():
 if sys.platform == "win32":
 
     def test_alter_path_windows():
-        module = cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles()
+        module = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
         module.mappings[0].local_directory.value = "\\foo"
         module.mappings[0].remote_directory.value = "\\bar"
 
@@ -115,7 +115,7 @@ if sys.platform == "win32":
         assert module.alter_path("\\baz\\bar") == "/baz/bar"
 
     def test_alter_path_windows_regexp():
-        module = cellprofiler.modules.plugins.createbatchfiles.CreateBatchFiles()
+        module = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
 

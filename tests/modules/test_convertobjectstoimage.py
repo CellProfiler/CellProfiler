@@ -5,7 +5,7 @@ import scipy.sparse.coo
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.plugins.convertobjectstoimage
+import cellprofiler.modules.convertobjectstoimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -16,7 +16,7 @@ cellprofiler_core.preferences.set_headless()
 OBJECTS_NAME = "inputobjects"
 IMAGE_NAME = "outputimage"
 
-instance = cellprofiler.modules.plugins.convertobjectstoimage.ConvertObjectsToImage()
+instance = cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage()
 
 
 @pytest.fixture(scope="function")
@@ -198,7 +198,7 @@ def test_run_uint16(workspace, module):
 
 
 def make_workspace_ijv():
-    module = cellprofiler.modules.plugins.convertobjectstoimage.ConvertToImage()
+    module = cellprofiler.modules.convertobjectstoimage.ConvertToImage()
     shape = (14, 16)
     r = numpy.random.RandomState()
     r.seed(0)
@@ -236,7 +236,7 @@ def make_workspace_ijv():
 def test_binary_ijv():
     workspace, module, ijv = make_workspace_ijv()
     assert isinstance(
-        module, cellprofiler.modules.plugins.convertobjectstoimage.ConvertObjectsToImage
+        module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
     )
     module.image_mode.value = "Binary (black & white)"
     module.run(workspace)
@@ -250,7 +250,7 @@ def test_binary_ijv():
 def test_gray_ijv():
     workspace, module, ijv = make_workspace_ijv()
     assert isinstance(
-        module, cellprofiler.modules.plugins.convertobjectstoimage.ConvertObjectsToImage
+        module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
     )
     module.image_mode.value = "Grayscale"
     module.run(workspace)
@@ -276,7 +276,7 @@ def test_gray_ijv():
 def test_color_ijv():
     workspace, module, ijv = make_workspace_ijv()
     assert isinstance(
-        module, cellprofiler.modules.plugins.convertobjectstoimage.ConvertObjectsToImage
+        module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage
     )
     module.image_mode.value = "Color"
     module.run(workspace)

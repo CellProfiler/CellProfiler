@@ -93,7 +93,7 @@ class IdentifyDeadWorms(cpm.Module):
         """
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""\
 The name of a binary image from a previous module. **IdentifyDeadWorms**
 will use this image to establish the foreground and background for the
@@ -672,6 +672,6 @@ degrees.
     ):
         """Upgrade the settings from a previous revison"""
         if variable_revision_number == 1:
-            setting_values = setting_values + [cps.YES, 5, 30]
+            setting_values = setting_values + ["Yes", 5, 30]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

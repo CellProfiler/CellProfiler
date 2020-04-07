@@ -189,7 +189,7 @@ class TestAnalysis(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.zmq_context = zmq.Context()
-        from cellprofiler.modules import fill_modules
+        from cellprofiler_core.modules import fill_modules
 
         fill_modules()
 

@@ -109,7 +109,7 @@ class MeasureObjectSkeleton(cpm.Module):
         """Create the UI settings for the module"""
         self.seed_objects_name = cps.ObjectNameSubscriber(
             "Select the seed objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the previously identified objects that you want to use as the
 seeds for measuring branches and distances. Branches and trunks are assigned
@@ -119,7 +119,7 @@ instead are usually objects of varying sizes.""",
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the skeletonized image",
-            cps.NONE,
+            "None",
             doc="""\
 Select the skeletonized image of the dendrites and/or axons as produced
 by the **Morph** module’s *Skel* operation.""",
@@ -178,7 +178,7 @@ relationships between vertices (trunks, branchpoints and endpoints)."""
 
         self.intensity_image_name = cps.ImageNameSubscriber(
             "Intensity image",
-            cps.NONE,
+            "None",
             doc="""\
 Select the image to be used to calculate
 the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""",
@@ -188,14 +188,14 @@ the total intensity along the edges between the vertices (trunks, branchpoints, 
             "File output directory",
             doc="Select the directory you want to save the graph relationships to.",
             dir_choices=[
-                cps.DEFAULT_OUTPUT_FOLDER_NAME,
-                cps.DEFAULT_INPUT_FOLDER_NAME,
-                cps.ABSOLUTE_FOLDER_NAME,
-                cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
+                cpprefs.DEFAULT_INPUT_FOLDER_NAME,
+                cpprefs.ABSOLUTE_FOLDER_NAME,
+                cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
         )
-        self.directory.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = cpprefs.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.vertex_file_name = cps.Text(
             "Vertex file name",
@@ -697,27 +697,27 @@ The file has the following columns:
             #
             # Added "Wants branchpoint image" and branchpoint image name
             #
-            setting_values = setting_values + [cps.NO, "Branchpoints"]
+            setting_values = setting_values + ["No", "Branchpoints"]
             from_matlab = False
             variable_revision_number = 1
         if not from_matlab and variable_revision_number == 1:
             #
             # Added hole size questions
             #
-            setting_values = setting_values + [cps.YES, "10"]
+            setting_values = setting_values + ["Yes", "10"]
             variable_revision_number = 2
         if not from_matlab and variable_revision_number == 2:
             #
             # Added graph stuff
             #
             setting_values = setting_values + [
-                cps.NO,
-                cps.NONE,
+                "No",
+                "None",
                 cps.DirectoryPath.static_join_string(
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE
+                    DEFAULT_OUTPUT_FOLDER_NAME, "None"
                 ),
-                cps.NONE,
-                cps.NONE,
+                "None",
+                "None",
             ]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

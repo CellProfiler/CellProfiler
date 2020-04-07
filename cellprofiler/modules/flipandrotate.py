@@ -64,7 +64,7 @@ class FlipAndRotate(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="Choose the image you want to flip or rotate.",
         )
 
@@ -595,12 +595,12 @@ negative as clockwise."""
             module_name = self.module_name
         if from_matlab and variable_revision_number == 1 and module_name == "Flip":
             image_name, output_name, left_to_right, top_to_bottom = setting_values
-            if left_to_right == cps.YES:
-                if top_to_bottom == cps.YES:
+            if left_to_right == "Yes":
+                if top_to_bottom == "Yes":
                     flip_choice = FLIP_BOTH
                 else:
                     flip_choice = FLIP_LEFT_TO_RIGHT
-            elif top_to_bottom == cps.YES:
+            elif top_to_bottom == "Yes":
                 flip_choice = FLIP_TOP_TO_BOTTOM
             else:
                 flip_choice = FLIP_NONE
@@ -609,7 +609,7 @@ negative as clockwise."""
                 output_name,
                 flip_choice,
                 ROTATE_NONE,
-                cps.NO,
+                "No",
                 "10,10",
                 "100,100",
                 C_VERTICALLY,
@@ -623,12 +623,12 @@ negative as clockwise."""
             and variable_revision_number == 1
             and module_name == self.module_name
         ):
-            if setting_values[2] == cps.YES:
-                if setting_values[3] == cps.YES:
+            if setting_values[2] == "Yes":
+                if setting_values[3] == "Yes":
                     flip_choice = FLIP_BOTH
                 else:
                     flip_choice = FLIP_LEFT_TO_RIGHT
-            elif setting_values[3] == cps.YES:
+            elif setting_values[3] == "Yes":
                 flip_choice = FLIP_TOP_TO_BOTTOM
             else:
                 flip_choice = FLIP_NONE

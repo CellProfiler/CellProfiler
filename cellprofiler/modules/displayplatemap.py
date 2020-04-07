@@ -81,7 +81,7 @@ class DisplayPlatemap(cpm.Module):
 
         self.object = cps.ObjectNameSubscriber(
             "Select the object whose measurements will be displayed",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**)
@@ -92,7 +92,7 @@ whose measurements are to be displayed.
         self.plot_measurement = cps.Measurement(
             "Select the measurement to plot",
             self.get_object,
-            cps.NONE,
+            "None",
             doc="""Choose the image or object measurement made by a previous module to plot.""",
         )
 

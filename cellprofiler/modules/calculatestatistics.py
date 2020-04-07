@@ -148,6 +148,7 @@ import numpy as np
 import scipy.optimize
 import six
 
+import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps
@@ -286,11 +287,11 @@ Leave this setting blank if you do not want a prefix.
             cps.DirectoryPath(
                 "Output file location",
                 dir_choices=[
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME,
-                    cps.DEFAULT_INPUT_FOLDER_NAME,
-                    cps.ABSOLUTE_FOLDER_NAME,
-                    cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+                    cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
+                    cpprefs.DEFAULT_INPUT_FOLDER_NAME,
+                    cpprefs.ABSOLUTE_FOLDER_NAME,
+                    cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
                 ],
                 doc="""\
 *(Used only when creating dose-response plots)*
@@ -570,7 +571,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             data_name = setting_values[0]
             logarithmic = setting_values[1]
             figure_name = setting_values[2]
-            wants_save_figure = cps.NO if figure_name == cps.DO_NOT_USE else cps.YES
+            wants_save_figure = "No" if figure_name == "Do not use" else "Yes"
             setting_values = [
                 data_name,
                 data_name,
@@ -578,7 +579,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 wants_save_figure,
                 figure_name,
                 PC_DEFAULT,
-                cps.DO_NOT_USE,
+                "Do not use",
             ]
             variable_revision_number = 1
             from_matlab = False
@@ -592,12 +593,12 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 custom_path = setting_values[offset + 5]
                 if dir_choice == PC_CUSTOM:
                     if custom_path[0] == ".":
-                        dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                        dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                     elif custom_path[0] == "&":
-                        dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                        dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                         custom_path = "." + custom_path[1:]
                     else:
-                        dir_choice = cps.ABSOLUTE_FOLDER_NAME
+                        dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                 directory = cps.DirectoryPath.static_join_string(
                     dir_choice, custom_path
                 )

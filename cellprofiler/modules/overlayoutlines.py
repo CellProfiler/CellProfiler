@@ -74,13 +74,13 @@ Select "*{YES}*" to produce an image of the outlines on a black background.
 
 Select "*{NO}*" to overlay the outlines on an image you choose.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
         self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select image on which to display outlines",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only when a blank image has not been selected)*
 
@@ -169,7 +169,7 @@ maximal brightness already occurring in the image.
             "objects_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to display",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="Choose the objects whose outlines you would like to display.",
             ),
         )
@@ -416,9 +416,9 @@ maximal brightness already occurring in the image.
             # output_image_name
             # color
             setting_values = [
-                cellprofiler_core.setting.YES
+                "Yes"
                 if setting_values[0] == "Blank"
-                else cellprofiler_core.setting.NO,
+                else "No",
                 setting_values[0],
                 setting_values[3],
                 WANTS_COLOR,
@@ -448,7 +448,7 @@ maximal brightness already occurring in the image.
                 NUM_FIXED_SETTINGS_V2, len(setting_values), NUM_OUTLINE_SETTINGS_V2
             ):
                 new_setting_values += setting_values[i : (i + NUM_OUTLINE_SETTINGS_V2)]
-                new_setting_values += [FROM_IMAGES, cellprofiler_core.setting.NONE]
+                new_setting_values += [FROM_IMAGES, "None"]
             setting_values = new_setting_values
             variable_revision_number = 3
 

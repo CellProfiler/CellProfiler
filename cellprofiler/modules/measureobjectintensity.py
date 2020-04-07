@@ -166,7 +166,7 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
             "name",
             cellprofiler_core.setting.ImageNameSubscriber(
                 "Select an image to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""\
 Select the grayscale images whose intensity you want to measure.""",
             ),
@@ -194,7 +194,7 @@ Select the grayscale images whose intensity you want to measure.""",
             "name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""\
 Select the objects whose intensities you want to measure.""",
             ),
@@ -250,16 +250,16 @@ Select the objects whose intensities you want to measure.""",
         if from_matlab and variable_revision_number == 2:
             # Old matlab-style. Erase any setting values that are
             # "Do not use"
-            new_setting_values = [setting_values[0], cellprofiler_core.setting.DO_NOT_USE]
+            new_setting_values = [setting_values[0], "Do not use"]
             for setting_value in setting_values[1:]:
-                if setting_value != cellprofiler_core.setting.DO_NOT_USE:
+                if setting_value != "Do not use":
                     new_setting_values.append(setting_value)
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 2
         if variable_revision_number == 2:
             assert not from_matlab
-            num_imgs = setting_values.index(cellprofiler_core.setting.DO_NOT_USE)
+            num_imgs = setting_values.index("Do not use")
             setting_values = (
                 [str(num_imgs)]
                 + setting_values[:num_imgs]
@@ -282,7 +282,7 @@ Select the objects whose intensities you want to measure.""",
         """
         #
         # The settings have two parts - images, then objects
-        # The parts are divided by the string, cps.DO_NOT_USE
+        # The parts are divided by the string, "Do not use"
         #
         image_count = int(setting_values[0])
         object_count = len(setting_values) - image_count - 1

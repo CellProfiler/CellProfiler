@@ -262,7 +262,7 @@ maximal child is assigned. The choices are:
 
         self.enclosing_object_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the objects that contain the filtered objects",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only if a per-object filtering method is selected)*
 
@@ -422,7 +422,7 @@ features measured.""".format(
 Select "*{YES}*" to filter the objects based on a minimum acceptable
 object measurement value. Objects which are greater than or equal to
 this value will be retained.""".format(
-                    **{"FI_LIMITS": FI_LIMITS, "YES": cellprofiler_core.setting.YES}
+                    **{"FI_LIMITS": FI_LIMITS, "YES": "Yes"}
                 ),
             ),
         )
@@ -440,7 +440,7 @@ this value will be retained.""".format(
 Select "*{YES}*" to filter the objects based on a maximum acceptable
 object measurement value. Objects which are less than or equal to this
 value will be retained.""".format(
-                    **{"FI_LIMITS": FI_LIMITS, "YES": cellprofiler_core.setting.YES}
+                    **{"FI_LIMITS": FI_LIMITS, "YES": "Yes"}
                 ),
             ),
         )
@@ -465,7 +465,7 @@ value will be retained.""".format(
         group.append(
             "object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
-                "Select additional object to relabel", cellprofiler_core.setting.NONE
+                "Select additional object to relabel", "None"
             ),
         )
 

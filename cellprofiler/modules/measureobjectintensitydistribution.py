@@ -266,7 +266,7 @@ heatmap according to the measurement value for that band.
             "image_name",
             cellprofiler_core.setting.ImageNameSubscriber(
                 "Select an image to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="Select the image whose intensity distribution you want to measure.",
             ),
         )
@@ -291,7 +291,7 @@ heatmap according to the measurement value for that band.
             "object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="Select the objects whose intensity distribution you want to measure.",
             ),
         )
@@ -336,7 +336,7 @@ previously identified Nuclei objects as the centers
             "center_object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to use as centers",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""\
 *(Used only if “{C_CENTERS_OF_OTHER}” are selected for centers)*
 
@@ -380,7 +380,7 @@ distance so that each object will have the same measurements (which
 might be zero for small objects) and so that the measurements can be
 taken without knowing the maximum object radius before the run starts.
 """.format(
-                    **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                    **{"YES": "Yes", "NO": "No"}
                 ),
             ),
         )
@@ -514,7 +514,7 @@ This setting allows you to save the heatmap display as an image that can
 be output using the **SaveImages** module. Choose *{YES}* to save the
 display or *{NO}* if the display is not needed.
 """.format(
-                    **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                    **{"YES": "Yes", "NO": "No"}
                 ),
             ),
         )
@@ -530,7 +530,7 @@ display or *{NO}* if the display is not needed.
 This setting names the heatmap image so that the name you enter here can
 be selected in a later **SaveImages** or other module.
 """.format(
-                    **{"YES": cellprofiler_core.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
@@ -730,7 +730,7 @@ be selected in a later **SaveImages** or other module.
                     if colormap == matplotlib.cm.gray.name:
                         output_pixels = heatmap_img
                     else:
-                        if colormap == cellprofiler_core.setting.DEFAULT:
+                        if colormap == "Default":
                             colormap = cellprofiler_core.preferences.get_default_colormap()
 
                         cm = matplotlib.cm.ScalarMappable(cmap=colormap)
@@ -794,7 +794,7 @@ be selected in a later **SaveImages** or other module.
 
                 colormap = heatmap.colormap.value
 
-                if colormap == cellprofiler_core.setting.DEFAULT:
+                if colormap == "Default":
                     colormap = cellprofiler_core.preferences.get_default_colormap()
 
                 if sharexy is None:
@@ -1456,7 +1456,7 @@ be selected in a later **SaveImages** or other module.
             new_setting_values = setting_values[:off_bins]
 
             for bin_count in setting_values[off_bins:]:
-                new_setting_values += [cellprofiler_core.setting.YES, bin_count, "100"]
+                new_setting_values += ["Yes", bin_count, "100"]
 
             setting_values = new_setting_values
 

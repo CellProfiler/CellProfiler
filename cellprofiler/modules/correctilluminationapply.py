@@ -34,8 +34,6 @@ import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps
 
-from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
-
 ######################################
 #
 # Choices for "Divide or subtract"?
@@ -76,7 +74,7 @@ class CorrectIlluminationApply(cpm.Module):
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
         image_name = cps.ImageNameSubscriber(
-            "Select the input image", cps.NONE, doc="Select the image to be corrected."
+            "Select the input image", "None", doc="Select the image to be corrected."
         )
 
         corrected_image_name = cps.ImageNameProvider(
@@ -87,7 +85,7 @@ class CorrectIlluminationApply(cpm.Module):
 
         illum_correct_function_image_name = cps.ImageNameSubscriber(
             "Select the illumination function",
-            cps.NONE,
+            "None",
             doc="""\
 Select the illumination correction function image that will be used to
 carry out the correction. This image is usually produced by another
@@ -112,11 +110,11 @@ somewhat empirical.
 -  *%(DOS_SUBTRACT)s:* Use this option if the background signal is
    significant relative to the real signal coming from the cells. If you
    created the illumination correction function using
-   *%(IC_BACKGROUND)s*, then you will want to choose
+   *Background*, then you will want to choose
    *%(DOS_SUBTRACT)s* here.
 -  *%(DOS_DIVIDE)s:* Choose this option if the signal to background
    ratio is high (the cells are stained very strongly). If you created
-   the illumination correction function using *%(IC_REGULAR)s*, then
+   the illumination correction function using *Regular*, then
    you will want to choose *%(DOS_DIVIDE)s* here.
 """
             % globals(),

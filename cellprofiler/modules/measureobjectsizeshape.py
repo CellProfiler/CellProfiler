@@ -242,7 +242,7 @@ first 10 Zernike polynomials (from order 0 to order 9) are calculated,
 this operation can be time consuming if the image contains a lot of
 objects. Select *{NO}* if you are measuring 3D objects with this
 module.""".format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
@@ -256,7 +256,7 @@ module.""".format(
             "name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""Select the objects that you want to measure.""",
             ),
         )
@@ -683,14 +683,14 @@ module.""".format(
         if from_matlab and variable_revision_number == 2:
             # Added Zernike question at revision # 2
             setting_values = list(setting_values)
-            setting_values.append(cellprofiler_core.setting.NO)
+            setting_values.append("No")
             variable_revision_number = 3
 
         if from_matlab and variable_revision_number == 3:
             # Remove the "Do not use" objects from the list
             setting_values = numpy.array(setting_values)
             setting_values = list(
-                setting_values[setting_values != cellprofiler_core.setting.DO_NOT_USE]
+                setting_values[setting_values != "Do not use"]
             )
             variable_revision_number = 1
             from_matlab = False

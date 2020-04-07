@@ -107,7 +107,7 @@ class SplitOrMergeObjects(cpm.Module):
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
             "Select the input objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the objects you would like to split or merge (that is,
 whose object numbers you want to reassign). You can
@@ -176,7 +176,7 @@ create an output object that is the convex hull around them all."""
 
         self.parent_object = cps.Choice(
             "Select the parent object",
-            [cps.NONE],
+            ["None"],
             choices_fn=self.get_parent_choices,
             doc="""\
 Select the parent object that will be used to merge the child objects.
@@ -224,7 +224,7 @@ objects within the grayscale image are met."""
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the grayscale image to guide merging",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 merging)*
@@ -289,7 +289,7 @@ above):
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()
-        choices = [cps.NONE]
+        choices = ["None"]
         for column in columns:
             object_name, feature, coltype = column[:3]
             if object_name == self.objects_name.value and feature.startswith(C_PARENT):
@@ -300,10 +300,10 @@ above):
         if (
             self.relabel_option == OPTION_MERGE
             and self.merge_option == UNIFY_PARENT
-            and self.parent_object.value == cps.NONE
+            and self.parent_object.value == "None"
         ):
             raise cps.ValidationError(
-                "%s is not a valid object name" % cps.NONE, self.parent_object
+                "%s is not a valid object name" % "None", self.parent_object
             )
 
     def settings(self):
@@ -626,12 +626,12 @@ above):
 
         if variable_revision_number == 1:
             # Added outline options
-            setting_values += [cps.NO, "RelabeledNucleiOutlines"]
+            setting_values += ["No", "RelabeledNucleiOutlines"]
             variable_revision_number = 2
 
         if variable_revision_number == 1:
             # Added per-parent unification
-            setting_values += [UNIFY_DISTANCE, cps.NONE]
+            setting_values += [UNIFY_DISTANCE, "None"]
             variable_revision_number = 3
 
         if variable_revision_number == 3:

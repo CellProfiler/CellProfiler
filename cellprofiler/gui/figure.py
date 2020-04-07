@@ -2300,7 +2300,7 @@ class Figure(wx.Frame):
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
         values = numpy.array(values).flatten()
-        if xscale == "log":
+        if xscale == LOG:
             values = numpy.log(values[values > 0])
             xlabel = "Log(%s)" % (xlabel or "?")
         # hist apparently doesn't like nans, need to preen them out first
@@ -2320,7 +2320,7 @@ class Figure(wx.Frame):
             bins,
             facecolor=(0.0, 0.62, 1.0),
             edgecolor="none",
-            log=(yscale == "log"),
+            log=(yscale == LOG),
             alpha=0.75,
         )
         axes.set_xlabel(xlabel)

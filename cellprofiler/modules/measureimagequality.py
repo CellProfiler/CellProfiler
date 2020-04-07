@@ -16,7 +16,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-from cellprofilder_core.modules import identify, loadimages
+from cellprofiler_core.modules import identify, loadimages
 
 __doc__ = """\
 MeasureImageQuality
@@ -273,7 +273,7 @@ metric. This value is recorded only for images loaded using the
 rescaled by the same value, given that some acquisition device vendors may
 output this value differently. See **NamesAndTypes** for more
 information.""".format(
-                    **{"YES": cellprofiler_core.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
@@ -288,7 +288,7 @@ Select *{YES}* to compute a series of blur metrics. The blur metrics
 are described in the overall help for this module (select the module in
 the pipeline and press the "?" button).
 """.format(
-                    **{"YES": cellprofiler_core.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
@@ -340,7 +340,7 @@ than usual *{F_PERCENT_MAXIMAL}* will be observed, and if there are
 no objects, the *{F_PERCENT_MINIMAL}* value will increase.
 """.format(
                     **{
-                        "YES": cellprofiler_core.setting.YES,
+                        "YES": "Yes",
                         "F_PERCENT_MAXIMAL": F_PERCENT_MAXIMAL,
                         "F_PERCENT_MINIMAL": F_PERCENT_MINIMAL,
                     }
@@ -359,7 +359,7 @@ mean, maximum, minimum, standard deviation and median absolute deviation
 of pixel intensities. These measures are identical to those calculated
 by **MeasureImageIntensity**.
 """.format(
-                    **{"YES": cellprofiler_core.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
@@ -399,7 +399,7 @@ See the **IdentifyPrimaryObjects** module for more information on
 thresholding methods.
 """.format(
                     **{
-                        "YES": cellprofiler_core.setting.YES,
+                        "YES": "Yes",
                         "TM_OTSU": centrosome.threshold.TM_OTSU,
                         "TM_MOG": centrosome.threshold.TM_MOG,
                     }
@@ -1628,7 +1628,7 @@ to the foreground pixels or the background pixels.
             # Get a dictionary of image name to (module, setting)
             #
             image_providers = pipeline.get_provider_dictionary(
-                cellprofiler_core.setting.IMAGE_GROUP, self
+                "imagegroup", self
             )
             for image_name in image_providers:
                 for module, setting in image_providers[image_name]:
@@ -1638,7 +1638,7 @@ to the foreground pixels or the background pixels.
                                 setting, cellprofiler_core.setting.ImageNameProvider
                             )
                         )
-                        or cellprofiler_core.setting.FILE_IMAGE_ATTRIBUTE
+                        or "file_image"
                         in setting.provided_attributes
                     ):
                         accepted_image_list.append(image_name)
@@ -1656,7 +1656,7 @@ to the foreground pixels or the background pixels.
         ):
             image_names = []
             for image_name in setting_values[:6]:
-                if image_name != cellprofiler_core.setting.DO_NOT_USE:
+                if image_name != "Do not use":
                     image_names.append(image_name)
             wants_blur = setting_values[-2]
             local_focus_score = setting_values[-1]
@@ -1666,11 +1666,11 @@ to the foreground pixels or the background pixels.
                     image_name,
                     wants_blur,
                     local_focus_score,
-                    cellprofiler_core.setting.YES,  # check saturation
-                    cellprofiler_core.setting.NO,  # calculate threshold
+                    "Yes",  # check saturation
+                    "No",  # calculate threshold
                     centrosome.threshold.TM_OTSU_GLOBAL,
                     0.1,  # object fraction
-                    cellprofiler_core.setting.NO,
+                    "No",
                 ]  # compute power spectrum
             variable_revision_number = 2
             from_matlab = False
@@ -1700,29 +1700,29 @@ to the foreground pixels or the background pixels.
                 saturation_image = setting_values[i]
                 threshold_image = setting_values[i + 1]
                 threshold_method = setting_values[i + 2]
-                if saturation_image != cellprofiler_core.setting.DO_NOT_USE:
+                if saturation_image != "Do not use":
                     if saturation_image not in d:
                         d[saturation_image] = {
                             "check_blur": check_blur,
-                            "check_saturation": cellprofiler_core.setting.YES,
-                            "check_threshold": cellprofiler_core.setting.NO,
+                            "check_saturation": "Yes",
+                            "check_threshold": "No",
                             "threshold_method": threshold_method,
                         }
                     else:
                         d[saturation_image]["check_blur"] = check_blur
                         d[saturation_image][
                             "check_saturation"
-                        ] = cellprofiler_core.setting.YES
-                if threshold_image != cellprofiler_core.setting.DO_NOT_USE:
+                        ] = "Yes"
+                if threshold_image != "Do not use":
                     if threshold_image not in d:
                         d[threshold_image] = {
-                            "check_blur": cellprofiler_core.setting.NO,
-                            "check_saturation": cellprofiler_core.setting.NO,
-                            "check_threshold": cellprofiler_core.setting.YES,
+                            "check_blur": "No",
+                            "check_saturation": "No",
+                            "check_threshold": "Yes",
                             "threshold_method": threshold_method,
                         }
                     else:
-                        d[threshold_image]["check_threshold"] = cellprofiler_core.setting.YES
+                        d[threshold_image]["check_threshold"] = "Yes"
                         d[threshold_image]["threshold_method"] = threshold_method
             setting_values = []
             for image_name in list(d.keys()):
@@ -1747,7 +1747,7 @@ to the foreground pixels or the background pixels.
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 7) : (idx * 7 + 7)]
-                new_settings += [cellprofiler_core.setting.YES]
+                new_settings += ["Yes"]
             setting_values = new_settings
             variable_revision_number = 2
 
@@ -1808,13 +1808,13 @@ to the foreground pixels or the background pixels.
                 # Set blur and thresholds if the user sets any of the setting groups.
                 d[image_name]["wants_saturation"] = d[image_name][
                     "wants_saturation"
-                ] or (im_settings[3] == cellprofiler_core.setting.YES)
+                ] or (im_settings[3] == "Yes")
                 d[image_name]["wants_blur"] = d[image_name]["wants_blur"] or (
-                    im_settings[1] == cellprofiler_core.setting.YES
-                    or im_settings[7] == cellprofiler_core.setting.YES
+                    im_settings[1] == "Yes"
+                    or im_settings[7] == "Yes"
                 )
                 d[image_name]["wants_threshold"] = d[image_name]["wants_threshold"] or (
-                    im_settings[4] == cellprofiler_core.setting.YES
+                    im_settings[4] == "Yes"
                 )
                 #  Collect blur scales and threshold methods
                 d[image_name]["blur_scales"] += [im_settings[2]]
@@ -1850,28 +1850,28 @@ to the foreground pixels or the background pixels.
             for image_name in unique_image_names:
                 new_settings += [
                     image_name,  # image_name
-                    cellprofiler_core.setting.YES
+                    "Yes"
                     if d[image_name]["wants_scaling"]
-                    else cellprofiler_core.setting.NO,  # include_image_scalings
-                    cellprofiler_core.setting.YES
+                    else "No",  # include_image_scalings
+                    "Yes"
                     if d[image_name]["wants_blur"]
-                    else cellprofiler_core.setting.NO,
+                    else "No",
                 ]  # check_blur
                 new_settings += [k for k in d[image_name]["blur_scales"]]  # scale
                 new_settings += [
-                    cellprofiler_core.setting.YES
+                    "Yes"
                     if d[image_name]["wants_saturation"]
-                    else cellprofiler_core.setting.NO,
+                    else "No",
                     # check_saturation
-                    cellprofiler_core.setting.YES
+                    "Yes"
                     if d[image_name]["wants_intensity"]
-                    else cellprofiler_core.setting.NO,
+                    else "No",
                     # check_intensity
-                    cellprofiler_core.setting.YES
+                    "Yes"
                     if d[image_name]["wants_threshold"]
-                    else cellprofiler_core.setting.NO,
+                    else "No",
                     # calculate_threshold,
-                    cellprofiler_core.setting.NO,
+                    "No",
                 ]  # use_all_threshold_methods
                 for k in d[image_name]["threshold_methods"]:
                     # threshold_method, object_fraction, two_class_otsu,

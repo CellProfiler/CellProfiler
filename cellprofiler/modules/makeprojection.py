@@ -92,7 +92,7 @@ class MakeProjection(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="Select the images to be made into a projection.",
         )
 
@@ -160,8 +160,8 @@ References
             "ProjectionBlue",
             doc="Enter the name for the projected image.",
             provided_attributes={
-                cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
-                cps.AVAILABLE_ON_LAST_ATTRIBUTE: True,
+                "aggregate_image": True,
+                "available_on_last": True,
             },
         )
         self.frequency = cps.Float(

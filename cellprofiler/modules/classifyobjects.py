@@ -142,7 +142,7 @@ classifications decision for each object:
         #
         self.object_name = cps.ObjectNameSubscriber(
             "Select the object name",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the object that you want to measure from the list. This should be
 an object created by a previous module such as
@@ -309,7 +309,7 @@ example, to be saved by a **SaveImages** module).
 
         self.image_name = cps.ImageNameProvider(
             "Enter the image name",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if the classified object image is to be retained for later use in the pipeline)*
 
@@ -330,7 +330,7 @@ Enter the name to be given to the classified object image.""",
             "object_name",
             cps.ObjectNameSubscriber(
                 "Select the object to be classified",
-                cps.NONE,
+                "None",
                 doc="""\
 The name of the objects to be classified. You can choose from objects
 created by any previous module. See **IdentifyPrimaryObjects**,
@@ -499,7 +499,7 @@ the measurements and the bin number.
             "bin_names",
             cps.Text(
                 "Enter the bin names separated by commas",
-                cps.NONE,
+                "None",
                 doc="""\
 *(Used only if "Give each bin a name?" is checked)*
 
@@ -1096,22 +1096,22 @@ example, to be saved by a **SaveImages** module).
                     separator[i] = TM_CUSTOM
             split_labels = [x.strip() for x in labels.split(",")]
             if len(split_labels) < 4:
-                split_labels += [cps.NONE] * (4 - len(split_labels))
+                split_labels += ["None"] * (4 - len(split_labels))
             setting_values = [
                 BY_TWO_MEASUREMENTS,
                 "1",
-                cps.NONE,
-                cps.NONE,
+                "None",
+                "None",
                 BC_EVEN,
                 "1",
-                cps.NO,
-                cps.NO,
+                "No",
+                "No",
                 "0",
                 "1",
                 "0,1",
-                cps.NO,
+                "No",
                 "First,Second,Third",
-                cps.NO,
+                "No",
                 "ClassifiedNuclei",
                 object_name,
                 measurement[0],
@@ -1120,12 +1120,12 @@ example, to be saved by a **SaveImages** module).
                 measurement[1],
                 separator[1],
                 threshold[1],
-                cps.NO if labels == cps.DO_NOT_USE else cps.YES,
+                "No" if labels == "Do not use" else "Yes",
                 split_labels[0],
                 split_labels[1],
                 split_labels[2],
                 split_labels[3],
-                cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
+                "No" if save_colored_objects == "Do not use" else "Yes",
                 save_colored_objects,
             ]
             from_matlab = False
@@ -1154,9 +1154,9 @@ example, to be saved by a **SaveImages** module).
                 measurement += "_" + size_scale
             bin_count = "1"
             low_threshold = "0"
-            wants_low_bin = cps.NO
+            wants_low_bin = "No"
             high_threshold = "1"
-            wants_high_bin = cps.NO
+            wants_high_bin = "No"
             custom_bins = "0,1"
             if bin_type == BC_EVEN:
                 pieces = bin_specifications.split(",")
@@ -1167,7 +1167,7 @@ example, to be saved by a **SaveImages** module).
                     high_threshold = pieces[2]
             else:
                 custom_bins = bin_specifications
-            wants_labels = cps.NO if labels == cps.DO_NOT_USE else cps.YES
+            wants_labels = "No" if labels == "Do not use" else "Yes"
             setting_values = [
                 BY_SINGLE_MEASUREMENT,
                 "1",
@@ -1182,21 +1182,21 @@ example, to be saved by a **SaveImages** module).
                 custom_bins,
                 wants_labels,
                 labels,
-                cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
+                "No" if save_colored_objects == "Do not use" else "Yes",
                 save_colored_objects,
                 object_name,
-                cps.NONE,
+                "None",
                 TM_MEAN,
                 ".5",
-                cps.NONE,
+                "None",
                 TM_MEAN,
                 ".5",
-                cps.NO,
+                "No",
                 "LowLow",
                 "HighLow",
                 "LowHigh",
                 "HighHigh",
-                cps.NO,
+                "No",
                 "ClassifiedNuclei",
             ]
             from_matlab = False
@@ -1220,8 +1220,8 @@ example, to be saved by a **SaveImages** module).
                 # Bin count changed: don't count the outer 2 bins
                 #
                 new_setting_values += [str(int(setting_values[3]) - 2)]
-                new_setting_values += [setting_values[4]] + [cps.YES]
-                new_setting_values += [setting_values[5]] + [cps.YES]
+                new_setting_values += [setting_values[4]] + ["Yes"]
+                new_setting_values += [setting_values[5]] + ["Yes"]
                 new_setting_values += setting_values[6:11]
                 setting_values = setting_values[11:]
             new_setting_values += setting_values

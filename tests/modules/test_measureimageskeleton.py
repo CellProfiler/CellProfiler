@@ -2,9 +2,9 @@ import numpy
 import pytest
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.measureimageskeleton
+import cellprofiler.modules.measureimageskeleton
 
-instance = cellprofiler.modules.plugins.measureimageskeleton.MeasureImageSkeleton()
+instance = cellprofiler.modules.measureimageskeleton.MeasureImageSkeleton()
 
 
 @pytest.fixture(scope="module")

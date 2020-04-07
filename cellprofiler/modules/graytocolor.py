@@ -328,7 +328,7 @@ weights.
             "image_name",
             cps.ImageNameSubscriber(
                 "Image name",
-                cps.NONE,
+                "None",
                 doc="""\
 *(Used only if "%(SCHEME_STACK)s" or "%(SCHEME_COMPOSITE)s" is chosen)*
 
@@ -633,7 +633,7 @@ pixel values are multiplied by this weight before assigning the color.
             variable_revision_number = 1
         if from_matlab and variable_revision_number == 3:
             image_names = [
-                LEAVE_THIS_BLACK if value == cps.DO_NOT_USE else value
+                LEAVE_THIS_BLACK if value == "Do not use" else value
                 for value in setting_values[:4]
             ]
             rgb_image_name = setting_values[4]
@@ -647,7 +647,7 @@ pixel values are multiplied by this weight before assigning the color.
                     + image_names[:3]
                     + [rgb_image_name]
                     + adjustment_factors[:3]
-                    + [cps.NONE] * 4
+                    + ["None"] * 4
                     + [1] * 4
                 )
             else:
@@ -656,7 +656,7 @@ pixel values are multiplied by this weight before assigning the color.
                 #
                 setting_values = (
                     [SCHEME_CMYK]
-                    + [cps.NONE] * 3
+                    + ["None"] * 3
                     + [rgb_image_name]
                     + [1] * 3
                     + image_names
@@ -668,7 +668,7 @@ pixel values are multiplied by this weight before assigning the color.
             #
             # Was RGB-only. Convert values to CYMK-style
             #
-            setting_values = [SCHEME_CMYK] + setting_values + [cps.NONE] * 4 + [1] * 4
+            setting_values = [SCHEME_CMYK] + setting_values + ["None"] * 4 + [1] * 4
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
             #

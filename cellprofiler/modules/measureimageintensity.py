@@ -129,7 +129,7 @@ class MeasureImageIntensity(cpm.Module):
             "image_name",
             cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE,
+                "None",
                 doc="""\
 Choose an image name from the drop-down menu to calculate intensity for
 that image. Use the *Add another image* button below to add additional
@@ -158,7 +158,7 @@ object individually, see **MeasureObjectIntensity** instead.
             "object_name",
             cps.ObjectNameSubscriber(
                 "Select the input objects",
-                cps.NONE,
+                "None",
                 doc="""\
 *(Used only when measuring intensity from area occupied by objects)*
 
@@ -407,8 +407,8 @@ objects.""",
         if from_matlab and variable_revision_number == 2:
             setting_values = [
                 setting_values[0],  # image name
-                cps.NO,  # wants objects
-                cps.NONE,
+                "No",  # wants objects
+                "None",
             ]  # object name
             variable_revision_number = 1
             from_matlab = False

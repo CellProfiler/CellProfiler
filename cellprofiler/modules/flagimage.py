@@ -90,7 +90,7 @@ cycle of an image group.  This behavior is usually not desired, but may be
 useful when using SaveImages 'Save on last cycle' option for an image made
 by any other module than MakeProjection, CorrectIlluminationCalculate, and Tile.
 """.format(
-            **{"YES": cps.YES}),
+            **{"YES": "Yes"}),
                                               )
 
     def add_flag(self, can_delete=True):
@@ -226,7 +226,7 @@ measures image quality and flags inappropriate images before it runs
             "object_name",
             cps.ObjectNameSubscriber(
                 "Select the object to be used for flagging",
-                cps.NONE,
+                "None",
                 doc="""\
 *(Used only when flag is based on an object measurement)*
 
@@ -881,15 +881,15 @@ image is not flagged.
                     (category, feature_num_or_name, image_name, scale)
                 )
             if min_value == "No minimum":
-                wants_minimum = cps.NO
+                wants_minimum = "No"
                 min_value = "0"
             else:
-                wants_minimum = cps.YES
+                wants_minimum = "Yes"
             if max_value == "No maximum":
-                wants_maximum = cps.NO
+                wants_maximum = "No"
                 max_value = "1"
             else:
-                wants_maximum = cps.YES
+                wants_maximum = "Yes"
             if new_or_append == "Append existing flag":
                 logger.warning(
                     "CellProfiler 3 can't combine flags from multiple FlagImageForQC modules imported from version 1.0 and 2.0"
@@ -909,7 +909,7 @@ image is not flagged.
                 flag_feature,
                 C_ANY,  # combination choice
                 S_IMAGE,  # measurement source
-                cps.NONE,  # object name
+                "None",  # object name
                 measurement_name,
                 wants_minimum,
                 min_value,
@@ -923,7 +923,7 @@ image is not flagged.
             new_setting_values = [setting_values[0]]
             idx = 1
             for flag_idx in range(int(setting_values[0])):
-                new_setting_values += setting_values[idx : idx + 4] + [cps.NO]
+                new_setting_values += setting_values[idx : idx + 4] + ["No"]
                 meas_count = int(setting_values[idx])
                 idx += 4
                 for meas_idx in range(meas_count):
@@ -960,7 +960,7 @@ image is not flagged.
                         (idx + 1) : (idx + N_SETTINGS_PER_MEASUREMENT_V2)
                     ] + [
                         cps.DirectoryPath.static_join_string(
-                            cps.DEFAULT_INPUT_FOLDER_NAME, cps.NONE
+                            DEFAULT_INPUT_FOLDER_NAME, "None"
                         ),
                         "rules.txt",
                     ]

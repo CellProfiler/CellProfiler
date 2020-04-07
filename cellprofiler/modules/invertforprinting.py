@@ -31,7 +31,6 @@ import numpy as np
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps
-from cellprofiler_core.setting import YES
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"
@@ -57,15 +56,15 @@ class InvertForPrinting(cpm.Module):
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}")*
 
-Select "*{YES}*" to specify an image to use for the red channel.
+Select "*Yes*" to specify an image to use for the red channel.
 """.format(
-                **{"CC_GRAYSCALE": CC_GRAYSCALE, "YES": YES}
+                **{"CC_GRAYSCALE": CC_GRAYSCALE}
             ),
         )
 
         self.red_input_image = cps.ImageNameSubscriber(
             "Select the red image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}" and a red image is used)*
 
@@ -81,15 +80,15 @@ Provide an image for the red channel.
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}")*
 
-Select "*{YES}*" to specify an image to use for the green channel.
+Select "*Yes*" to specify an image to use for the green channel.
 """.format(
-                **{"CC_GRAYSCALE": CC_GRAYSCALE, "YES": YES}
+                **{"CC_GRAYSCALE": CC_GRAYSCALE}
             ),
         )
 
         self.green_input_image = cps.ImageNameSubscriber(
             "Select the green image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}" and a green image is used)*
 
@@ -105,15 +104,15 @@ Provide an image for the green channel.
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}")*
 
-Select "*{YES}*" to specify an image to use for the blue channel.
+Select "*Yes*" to specify an image to use for the blue channel.
 """.format(
-                **{"CC_GRAYSCALE": CC_GRAYSCALE, "YES": YES}
+                **{"CC_GRAYSCALE": CC_GRAYSCALE}
             ),
         )
 
         self.blue_input_image = cps.ImageNameSubscriber(
             "Select the blue image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if input image type is "{CC_GRAYSCALE}" and a blue image is used)*
 
@@ -125,7 +124,7 @@ Provide an image for the blue channel.
 
         self.color_input_image = cps.ImageNameSubscriber(
             "Select the color image",
-            cps.NONE,
+            "None",
             doc="""
 *(Used only if input image type is "{CC_COLOR}")*
 
@@ -143,14 +142,14 @@ Select the color image to use.
         )
 
         self.wants_red_output = cps.Binary(
-            'Select "*{YES}*" to produce a red image.'.format(**{"YES": YES}),
+            'Select "*Yes*" to produce a red image.',
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
 
-Select "*{YES}*" to produce a grayscale image corresponding to the inverted red channel.
+Select "*Yes*" to produce a grayscale image corresponding to the inverted red channel.
 """.format(
-                **{"CC_GRAYSCALE": CC_GRAYSCALE, "YES": YES}
+                **{"CC_GRAYSCALE": CC_GRAYSCALE}
             ),
         )
 
@@ -167,14 +166,14 @@ Provide a name for the inverted red channel image.
         )
 
         self.wants_green_output = cps.Binary(
-            'Select "*{YES}*" to produce a green image.'.format(**{"YES": YES}),
+            'Select "*Yes*" to produce a green image.',
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
 
-Select "*{YES}*" to produce a grayscale image corresponding to the inverted green channel.
+Select "*Yes*" to produce a grayscale image corresponding to the inverted green channel.
 """.format(
-                **{"CC_GRAYSCALE": CC_GRAYSCALE, "YES": YES}
+                **{"CC_GRAYSCALE": CC_GRAYSCALE}
             ),
         )
 
@@ -191,14 +190,14 @@ Provide a name for the inverted green channel image.
         )
 
         self.wants_blue_output = cps.Binary(
-            'Select "*{YES}*" to produce a blue image.'.format(**{"YES": YES}),
+            'Select "*Yes*" to produce a blue image.',
             True,
             doc="""\
 *(Used only if output image type is "{CC_GRAYSCALE}")*
 
-Select "*{YES}*" to produce a grayscale image corresponding to the inverted blue channel.
+Select "*Yes*" to produce a grayscale image corresponding to the inverted blue channel.
 """.format(
-                **{"CC_GRAYSCALE": CC_GRAYSCALE, "YES": YES}
+                **{"CC_GRAYSCALE": CC_GRAYSCALE}
             ),
         )
 
@@ -388,19 +387,19 @@ Enter a name for the inverted color image.
         if from_matlab and variable_revision_number == 1:
             setting_values = [
                 CC_GRAYSCALE,  # input_color_choice
-                setting_values[0] != cps.NONE,  # wants_red_input
+                setting_values[0] != "None",  # wants_red_input
                 setting_values[0],  # red_input_image
-                setting_values[1] != cps.NONE,
+                setting_values[1] != "None",
                 setting_values[1],
-                setting_values[2] != cps.NONE,
+                setting_values[2] != "None",
                 setting_values[2],
-                cps.NONE,  # color
+                "None",  # color
                 CC_GRAYSCALE,  # output_color_choice
-                setting_values[3] != cps.NONE,
+                setting_values[3] != "None",
                 setting_values[3],
-                setting_values[4] != cps.NONE,
+                setting_values[4] != "None",
                 setting_values[4],
-                setting_values[5] != cps.NONE,
+                setting_values[5] != "None",
                 setting_values[5],
                 "InvertedColor",
             ]

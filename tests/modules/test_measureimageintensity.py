@@ -6,7 +6,7 @@ import skimage.morphology
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.plugins.measureimageintensity
+import cellprofiler.modules.measureimageintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -36,7 +36,7 @@ def measurements():
 
 @pytest.fixture(scope="function")
 def module():
-    module = cellprofiler.modules.plugins.measureimageintensity.MeasureImageIntensity()
+    module = cellprofiler.modules.measureimageintensity.MeasureImageIntensity()
 
     module.images[0].image_name.value = "image"
 
@@ -498,39 +498,39 @@ def test_get_measurement_columns(module):
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_TOTAL_INTENSITY,
+                    cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_MEAN_INTENSITY,
+                    cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_MIN_INTENSITY,
+                    cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_MAX_INTENSITY,
+                    cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_TOTAL_AREA,
+                    cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
                     cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_PERCENT_MAXIMAL,
+                    cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_MAD_INTENSITY,
+                    cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_LOWER_QUARTILE,
+                    cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.plugins.measureimageintensity.F_UPPER_QUARTILE,
+                    cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ):

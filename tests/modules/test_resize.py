@@ -7,7 +7,7 @@ import skimage.transform
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.resize
+import cellprofiler.modules.resize
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -32,28 +32,28 @@ def test_load_v3():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.resize.Resize)
+    assert isinstance(module, cellprofiler.modules.resize.Resize)
     assert module.x_name == "DNA"
     assert module.y_name == "ResizedDNA"
-    assert module.size_method == cellprofiler.modules.plugins.resize.R_TO_SIZE
+    assert module.size_method == cellprofiler.modules.resize.R_TO_SIZE
     assert round(abs(module.resizing_factor.value - 0.25), 7) == 0
     assert module.specific_width == 141
     assert module.specific_height == 169
-    assert module.interpolation == cellprofiler.modules.plugins.resize.I_BILINEAR
+    assert module.interpolation == cellprofiler.modules.resize.I_BILINEAR
     assert module.additional_image_count.value == 1
     additional_image = module.additional_images[0]
     assert additional_image.input_image_name == "Actin"
     assert additional_image.output_image_name == "ResizedActin"
 
     module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.plugins.resize.Resize)
-    assert module.interpolation == cellprofiler.modules.plugins.resize.I_BICUBIC
+    assert isinstance(module, cellprofiler.modules.resize.Resize)
+    assert module.interpolation == cellprofiler.modules.resize.I_BICUBIC
 
 
 def make_workspace(
     image, size_method, interpolation, mask=None, cropping=None, dimensions=2
 ):
-    module = cellprofiler.modules.plugins.resize.Resize()
+    module = cellprofiler.modules.resize.Resize()
     module.x_name.value = INPUT_IMAGE_NAME
     module.y_name.value = OUTPUT_IMAGE_NAME
     module.size_method.value = size_method
@@ -89,8 +89,8 @@ def test_rescale_triple_color():
     expected = skimage.exposure.rescale_intensity(1.0 * expected)
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
     module.resizing_factor.value = 3.0
     module.run(workspace)
@@ -107,8 +107,8 @@ def test_rescale_triple_bw():
     expected = skimage.exposure.rescale_intensity(1.0 * i)
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
     module.resizing_factor.value = 3.0
     module.run(workspace)
@@ -122,8 +122,8 @@ def test_third():
     expected = skimage.transform.resize(image, (10, 10), order=0, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
     module.resizing_factor.value = 1.0 / 3.0
     module.run(workspace)
@@ -137,8 +137,8 @@ def test_bilinear():
     expected = skimage.transform.resize(image, (30, 30), order=1, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
     module.resizing_factor.value = 3.0
     module.run(workspace)
@@ -152,8 +152,8 @@ def test_bicubic():
     expected = skimage.transform.resize(image, (30, 30), order=3, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_BICUBIC,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_BICUBIC,
     )
     module.resizing_factor.value = 3.0
     module.run(workspace)
@@ -168,8 +168,8 @@ def test_reshape_double():
     expected = skimage.transform.resize(image, (19, 19), order=1, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
     module.specific_width.value = 19
     module.specific_height.value = 19
@@ -185,8 +185,8 @@ def test_reshape_half():
     expected = skimage.transform.resize(image, (10, 10), order=1, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
     module.specific_width.value = 10
     module.specific_height.value = 10
@@ -202,8 +202,8 @@ def test_reshape_half_and_double():
     expected = skimage.transform.resize(image, (19, 10), order=1, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
     module.specific_width.value = 10
     module.specific_height.value = 19
@@ -219,10 +219,10 @@ def test_reshape_using_another_images_dimensions():
     expected = skimage.transform.resize(image, (19, 10), order=1, mode="symmetric")
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
     module.specific_image.value = "AnotherImage"
     workspace.image_set.add(
         module.specific_image.value, cellprofiler_core.image.Image(expected)
@@ -244,8 +244,8 @@ def test_resize_with_cropping():
     cropping[10:20, 10:30] = True
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_BILINEAR,
         mask,
         cropping,
     )
@@ -270,8 +270,8 @@ def test_resize_with_cropping_bigger():
     cropping[10:20, 10:30] = True
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_BILINEAR,
         mask,
         cropping,
     )
@@ -289,8 +289,8 @@ def test_resize_color():
     image = numpy.zeros((20, 22, 3))
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
     module.resizing_factor.value = 0.5
     module.run(workspace)
@@ -304,10 +304,10 @@ def test_resize_color_bw():
     tgt_image = numpy.zeros((5, 11))
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
     module.specific_image.value = "AnotherImage"
     workspace.image_set.add(
         module.specific_image.value, cellprofiler_core.image.Image(tgt_image)
@@ -323,10 +323,10 @@ def test_resize_color_color():
     tgt_image = numpy.zeros((10, 11, 3))
     workspace, module = make_workspace(
         image,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_BILINEAR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_BILINEAR,
     )
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
     module.specific_image.value = "AnotherImage"
     workspace.image_set.add(
         module.specific_image.value, cellprofiler_core.image.Image(tgt_image)
@@ -349,8 +349,8 @@ def test_resize_volume_factor_grayscale():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
@@ -396,8 +396,8 @@ def test_resize_volume_factor_color():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
@@ -446,14 +446,14 @@ def test_resize_volume_manual_grayscale():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
     )
 
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_MANUAL
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_MANUAL
 
     module.specific_width.value = 25
 
@@ -497,14 +497,14 @@ def test_resize_volume_manual_color():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
     )
 
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_MANUAL
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_MANUAL
 
     module.specific_width.value = 5
 
@@ -551,14 +551,14 @@ def test_resize_volume_grayscale_other_volume_grayscale():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
     )
 
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
 
     module.specific_image.value = "Other Image"
 
@@ -606,14 +606,14 @@ def test_resize_volume_grayscale_other_volume_color():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
     )
 
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
 
     module.specific_image.value = "Other Image"
 
@@ -664,14 +664,14 @@ def test_resize_volume_color_other_volume_grayscale():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
     )
 
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
 
     module.specific_image.value = "Other Image"
 
@@ -722,14 +722,14 @@ def test_resize_volume_color_other_volume_color():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_TO_SIZE,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_TO_SIZE,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
         mask=mask,
         cropping=crop_mask,
         dimensions=3,
     )
 
-    module.use_manual_or_image.value = cellprofiler.modules.plugins.resize.C_IMAGE
+    module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
 
     module.specific_image.value = "Other Image"
 
@@ -776,8 +776,8 @@ def test_resize_factor_rounding():
 
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
 
     module.resizing_factor.value = 0.25
@@ -793,8 +793,8 @@ def test_resize_float():
     expected = numpy.ones((5, 5), dtype=numpy.float32) * 2
     workspace, module = make_workspace(
         data,
-        cellprofiler.modules.plugins.resize.R_BY_FACTOR,
-        cellprofiler.modules.plugins.resize.I_NEAREST_NEIGHBOR,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
 
     module.resizing_factor.value = 0.5

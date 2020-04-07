@@ -6,7 +6,6 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 
-import cellprofiler.gui.help
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -286,7 +285,7 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
 
         self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 The selected image will be used to find the edges of the secondary
 objects. For *{M_DISTANCE_N:s}* this will not affect object
@@ -354,7 +353,7 @@ modules, but they are retained in memory as “Unedited objects”; this
 allows them to be considered in downstream modules that modify the
 segmentation.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
@@ -367,7 +366,7 @@ Select *{YES:s}* to fill any holes inside objects.
 Please note that if an object is located within a hole and this option is
 enabled, the object will be lost when the hole is filled in.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -385,7 +384,7 @@ Select *{YES:s}* to create a new set of objects that are identical to
 the original set of primary objects, minus the objects for which the
 associated secondary object touches the image edge.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 

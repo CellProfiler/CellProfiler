@@ -2,9 +2,9 @@ import numpy
 import numpy.testing
 import skimage.morphology
 
-import cellprofiler.modules.plugins.closing
+import cellprofiler.modules.closing
 
-instance = cellprofiler.modules.plugins.closing.Closing()
+instance = cellprofiler.modules.closing.Closing()
 
 
 def test_run(image, module, image_set, workspace):

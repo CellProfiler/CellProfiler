@@ -3,7 +3,7 @@ import six
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.measureimageareaoccupied
+import cellprofiler.modules.measureimageareaoccupied
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -22,7 +22,7 @@ def make_workspace(labels, parent_image=None):
     object_set.add_objects(objects, OBJECTS_NAME)
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.plugins.measureimageareaoccupied.MeasureImageAreaOccupied()
+    module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.set_module_num(1)
     module.operands[0].operand_objects.value = OBJECTS_NAME
     pipeline.add_module(module)
@@ -99,7 +99,7 @@ def test_object_with_cropping():
 
 
 def test_get_measurement_columns():
-    module = cellprofiler.modules.plugins.measureimageareaoccupied.MeasureImageAreaOccupied()
+    module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.operands[0].operand_objects.value = OBJECTS_NAME
     module.operands[0].operand_choice.value = "Objects"
     columns = module.get_measurement_columns(cellprofiler_core.pipeline.Pipeline())

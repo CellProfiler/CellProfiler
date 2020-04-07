@@ -1,9 +1,9 @@
 import numpy.testing
 import skimage.restoration
 
-import cellprofiler.modules.plugins.reducenoise
+import cellprofiler.modules.reducenoise
 
-instance = cellprofiler.modules.plugins.reducenoise.ReduceNoise()
+instance = cellprofiler.modules.reducenoise.ReduceNoise()
 
 
 def test_run(image, module, image_set, workspace):

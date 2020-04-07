@@ -3,9 +3,9 @@ import skimage.color
 import skimage.morphology
 
 import cellprofiler_core.image
-import cellprofiler.modules.plugins.medialaxis
+import cellprofiler.modules.medialaxis
 
-instance = cellprofiler.modules.plugins.medialaxis.MedialAxis()
+instance = cellprofiler.modules.medialaxis.MedialAxis()
 
 
 def test_run(image, module, image_set, workspace):

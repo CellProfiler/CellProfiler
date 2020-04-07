@@ -73,7 +73,7 @@ You can mask an image in two ways:
 
         self.object_name = cps.ObjectNameSubscriber(
             "Select object for mask",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if mask is to be made from objects)*
 
@@ -83,7 +83,7 @@ Select the objects you would like to use to mask the input image.
 
         self.masking_image_name = cps.ImageNameSubscriber(
             "Select image for mask",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if mask is to be made from an image)*
 
@@ -93,7 +93,7 @@ Select the image that you like to use to mask the input image.
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="Select the image that you want to mask.",
         )
 
@@ -244,7 +244,7 @@ This option reverses the foreground/background relationship of the mask.
             #
             setting_values = setting_values + [
                 IO_IMAGE if setting_values[0] == "Image" else IO_OBJECTS,
-                cps.NONE,
+                "None",
             ]
             variable_revision_number = 2
 

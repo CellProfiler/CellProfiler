@@ -3,7 +3,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.colortogray
+import cellprofiler.modules.colortogray
 import cellprofiler_core.modules.injectimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -24,17 +24,17 @@ def get_my_image():
 
 
 def test_init():
-    x = cellprofiler.modules.plugins.colortogray.ColorToGray()
+    x = cellprofiler.modules.colortogray.ColorToGray()
 
 
 def test_combine():
     img = get_my_image()
     inj = cellprofiler_core.modules.injectimage.InjectImage("my_image", img)
     inj.set_module_num(1)
-    ctg = cellprofiler.modules.plugins.colortogray.ColorToGray()
+    ctg = cellprofiler.modules.colortogray.ColorToGray()
     ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
-    ctg.combine_or_split.value = cellprofiler.modules.plugins.colortogray.COMBINE
+    ctg.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
     ctg.red_contribution.value = 1
     ctg.green_contribution.value = 2
     ctg.blue_contribution.value = 3
@@ -76,10 +76,10 @@ def test_split_all():
     img = get_my_image()
     inj = cellprofiler_core.modules.injectimage.InjectImage("my_image", img)
     inj.set_module_num(1)
-    ctg = cellprofiler.modules.plugins.colortogray.ColorToGray()
+    ctg = cellprofiler.modules.colortogray.ColorToGray()
     ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
-    ctg.combine_or_split.value = cellprofiler.modules.plugins.colortogray.SPLIT
+    ctg.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
     ctg.use_red.value = True
     ctg.use_blue.value = True
     ctg.use_green.value = True
@@ -140,12 +140,12 @@ def test_combine_channels():
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(image))
 
-    module = cellprofiler.modules.plugins.colortogray.ColorToGray()
+    module = cellprofiler.modules.colortogray.ColorToGray()
     module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
-    module.combine_or_split.value = cellprofiler.modules.plugins.colortogray.COMBINE
+    module.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
     module.grayscale_name.value = OUTPUT_IMAGE_F % 1
-    module.rgb_or_channels.value = cellprofiler.modules.plugins.colortogray.CH_CHANNELS
+    module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS
     module.add_channel()
     module.add_channel()
 
@@ -187,11 +187,11 @@ def test_split_channels():
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(image))
 
-    module = cellprofiler.modules.plugins.colortogray.ColorToGray()
+    module = cellprofiler.modules.colortogray.ColorToGray()
     module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
-    module.combine_or_split.value = cellprofiler.modules.plugins.colortogray.SPLIT
-    module.rgb_or_channels.value = cellprofiler.modules.plugins.colortogray.CH_CHANNELS
+    module.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
+    module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS
     module.add_channel()
     module.add_channel()
     module.add_channel()
@@ -241,7 +241,7 @@ def test_load_split():
     data = "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"
     pipeline = tests.modules.load_pipeline(None, data)
     module = pipeline.module(1)
-    assert isinstance(module, cellprofiler.modules.plugins.colortogray.ColorToGray)
+    assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
     assert module.image_name.value == "TestInput"
     assert module.should_split
     assert module.use_red.value
@@ -249,7 +249,7 @@ def test_load_split():
     assert module.use_green.value
     assert module.green_name.value == "TestGreen"
     assert not module.use_blue.value
-    assert module.rgb_or_channels == cellprofiler.modules.plugins.colortogray.CH_RGB
+    assert module.rgb_or_channels == cellprofiler.modules.colortogray.CH_RGB
 
 
 def test_load_v2():
@@ -265,10 +265,10 @@ def test_load_v2():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.colortogray.ColorToGray)
+    assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
     assert module.image_name == "DNA"
-    assert module.combine_or_split == cellprofiler.modules.plugins.colortogray.COMBINE
-    assert module.rgb_or_channels == cellprofiler.modules.plugins.colortogray.CH_CHANNELS
+    assert module.combine_or_split == cellprofiler.modules.colortogray.COMBINE
+    assert module.rgb_or_channels == cellprofiler.modules.colortogray.CH_CHANNELS
     assert module.grayscale_name == "OrigGrayw"
     assert module.red_contribution == 1
     assert module.green_contribution == 3
@@ -313,7 +313,7 @@ def test_load_v3():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.colortogray.ColorToGray)
+    assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
     assert module.image_name == "DNA"
     assert module.channel_count.value == 8
     for i in range(module.channel_count.value):

@@ -6,11 +6,11 @@ import uuid
 import zmq
 
 import cellprofiler.knime_bridge
-import cellprofiler.modules.plugins.flagimage
-import cellprofiler.modules.plugins.identifyprimaryobjects
-import cellprofiler.modules.plugins.measureobjectsizeshape
-import cellprofiler.modules.plugins.saveimages
-import cellprofiler.modules.plugins.threshold
+import cellprofiler.modules.flagimage
+import cellprofiler.modules.identifyprimaryobjects
+import cellprofiler.modules.measureobjectsizeshape
+import cellprofiler.modules.saveimages
+import cellprofiler.modules.threshold
 import cellprofiler.worker
 
 

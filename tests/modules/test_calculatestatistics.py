@@ -6,7 +6,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.calculatestatistics
+import cellprofiler.modules.calculatestatistics
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
@@ -31,7 +31,7 @@ def test_load_v2():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.calculatestatistics.CalculateStatistics
+        module, cellprofiler.modules.calculatestatistics.CalculateStatistics
     )
     assert module.grouping_values == "Metadata_Controls"
     assert len(module.dose_values) == 1
@@ -40,7 +40,7 @@ def test_load_v2():
     assert not dv.log_transform
     assert dv.wants_save_figure
     assert dv.figure_name == "DoseResponsePlot"
-    assert dv.pathname.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
+    assert dv.pathname.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
     assert dv.pathname.custom_path == "Test"
 
 
@@ -385,7 +385,7 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
             for the measurement M1 with values for 3 image sets
     controls_measurement - the name of the controls measurement
     """
-    module = cellprofiler.modules.plugins.calculatestatistics.CalculateStatistics()
+    module = cellprofiler.modules.calculatestatistics.CalculateStatistics()
     module.set_module_num(1)
     module.grouping_values.value = controls_measurement
 
@@ -468,7 +468,7 @@ def test_make_path():
     }
     workspace, module = make_workspace(mdict, "Metadata_Controls", ["Metadata_Doses"])
     assert isinstance(
-        module, cellprofiler.modules.plugins.calculatestatistics.CalculateStatistics
+        module, cellprofiler.modules.calculatestatistics.CalculateStatistics
     )
     my_dir = tempfile.mkdtemp()
     my_subdir = os.path.join(my_dir, "foo")

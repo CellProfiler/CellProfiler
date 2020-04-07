@@ -9,7 +9,7 @@ import skimage.util
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.plugins.imagemath
+import cellprofiler.modules.imagemath
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -22,7 +22,7 @@ MEASUREMENT_NAME = "mymeasurement"
 
 @pytest.fixture(scope="function")
 def module():
-    return cellprofiler.modules.plugins.imagemath.ImageMath()
+    return cellprofiler.modules.imagemath.ImageMath()
 
 
 @pytest.fixture(scope="function")
@@ -295,8 +295,8 @@ def test_load_v3():
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.imagemath.ImageMath)
-    assert module.operation == cellprofiler.modules.plugins.imagemath.O_LOG_TRANSFORM_LEGACY
+    assert isinstance(module, cellprofiler.modules.imagemath.ImageMath)
+    assert module.operation == cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY
     assert module.exponent == 1.5
     assert module.after_factor == 0.5
     assert module.addend == 0.1
@@ -305,13 +305,13 @@ def test_load_v3():
     assert module.ignore_mask
     assert module.output_image_name == "LogTransformed"
     assert (
-            module.images[0].image_or_measurement == cellprofiler.modules.plugins.imagemath.IM_IMAGE
+            module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
     )
     assert module.images[0].image_name == "DNA"
     assert module.images[0].factor == 1.2
     assert (
             module.images[1].image_or_measurement
-            == cellprofiler.modules.plugins.imagemath.IM_MEASUREMENT
+            == cellprofiler.modules.imagemath.IM_MEASUREMENT
     )
     assert module.images[1].measurement == "Count_Nuclei"
     assert module.images[1].factor == 1.5
@@ -329,8 +329,8 @@ def test_load_v4():
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.imagemath.ImageMath)
-    assert module.operation == cellprofiler.modules.plugins.imagemath.O_LOG_TRANSFORM
+    assert isinstance(module, cellprofiler.modules.imagemath.ImageMath)
+    assert module.operation == cellprofiler.modules.imagemath.O_LOG_TRANSFORM
     assert module.exponent == 1.5
     assert module.after_factor == 0.5
     assert module.addend == 0.1
@@ -339,13 +339,13 @@ def test_load_v4():
     assert module.ignore_mask
     assert module.output_image_name == "LogTransformed"
     assert (
-            module.images[0].image_or_measurement == cellprofiler.modules.plugins.imagemath.IM_IMAGE
+            module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
     )
     assert module.images[0].image_name == "DNA"
     assert module.images[0].factor == 1.2
     assert (
             module.images[1].image_or_measurement
-            == cellprofiler.modules.plugins.imagemath.IM_MEASUREMENT
+            == cellprofiler.modules.imagemath.IM_MEASUREMENT
     )
     assert module.images[1].measurement == "Count_Nuclei"
     assert module.images[1].factor == 1.5
@@ -364,7 +364,7 @@ def run_imagemath(images, modify_module_fn=None, measurement=None):
     """
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    module = cellprofiler.modules.plugins.imagemath.ImageMath()
+    module = cellprofiler.modules.imagemath.ImageMath()
     module.set_module_num(1)
     for i, image in enumerate(images):
         pixel_data = image["pixel_data"]
@@ -421,7 +421,7 @@ def test_exponent():
 
     def fn(module):
         module.exponent.value = 2
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_NONE
+        module.operation.value = cellprofiler.modules.imagemath.O_NONE
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
@@ -435,7 +435,7 @@ def test_factor():
 
     def fn(module):
         module.after_factor.value = 0.5
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_NONE
+        module.operation.value = cellprofiler.modules.imagemath.O_NONE
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(10, 10))
@@ -449,7 +449,7 @@ def test_addend():
 
     def fn(module):
         module.addend.value = 0.5
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_NONE
+        module.operation.value = cellprofiler.modules.imagemath.O_NONE
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(10, 10)) * 0.5
@@ -463,7 +463,7 @@ def test_mask():
     """Test a mask in the first image"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_NONE
+        module.operation.value = cellprofiler.modules.imagemath.O_NONE
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
@@ -476,7 +476,7 @@ def test_add():
     """Test adding"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_ADD
+        module.operation.value = cellprofiler.modules.imagemath.O_ADD
         module.truncate_high.value = False
 
     numpy.random.seed(0)
@@ -495,7 +495,7 @@ def test_add_mask():
     """Test adding"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_ADD
+        module.operation.value = cellprofiler.modules.imagemath.O_ADD
         module.truncate_high.value = False
 
     numpy.random.seed(0)
@@ -515,7 +515,7 @@ def test_add_mask():
 
 def test_add_mask_truncate():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_ADD
+        module.operation.value = cellprofiler.modules.imagemath.O_ADD
         module.truncate_high.value = True
 
     numpy.random.seed(0)
@@ -538,7 +538,7 @@ def test_add_crop():
     """Add images, cropping to border"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_ADD
+        module.operation.value = cellprofiler.modules.imagemath.O_ADD
         module.truncate_high.value = False
 
     numpy.random.seed(0)
@@ -578,7 +578,7 @@ def test_add_factors():
         )
 
         def fn(module):
-            module.operation.value = cellprofiler.modules.plugins.imagemath.O_ADD
+            module.operation.value = cellprofiler.modules.imagemath.O_ADD
             module.truncate_high.value = False
             for i in range(n):
                 module.images[i].factor.value = factors[i]
@@ -591,7 +591,7 @@ def test_ignore_mask():
     """Test adding images with masks, but ignoring the masks"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_ADD
+        module.operation.value = cellprofiler.modules.imagemath.O_ADD
         module.truncate_high.value = False
         module.ignore_mask.value = True
 
@@ -614,7 +614,7 @@ def test_subtract():
     """Test subtracting"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_SUBTRACT
+        module.operation.value = cellprofiler.modules.imagemath.O_SUBTRACT
         module.truncate_low.value = False
 
     numpy.random.seed(0)
@@ -632,7 +632,7 @@ def test_subtract_truncate():
     """Test subtracting with truncation"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_SUBTRACT
+        module.operation.value = cellprofiler.modules.imagemath.O_SUBTRACT
         module.truncate_low.value = True
 
     numpy.random.seed(0)
@@ -649,7 +649,7 @@ def test_subtract_truncate():
 
 def test_multiply():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_MULTIPLY
+        module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY
         module.truncate_low.value = False
 
     numpy.random.seed(0)
@@ -669,7 +669,7 @@ def test_multiply_binary():
     # Multiplying two binary images should yield a binary image
     #
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_MULTIPLY
+        module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY
         module.truncate_low.value = False
 
     r = numpy.random.RandomState()
@@ -683,7 +683,7 @@ def test_multiply_binary():
 
 def test_divide():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_DIVIDE
+        module.operation.value = cellprofiler.modules.imagemath.O_DIVIDE
         module.truncate_low.value = False
 
     numpy.random.seed(0)
@@ -702,7 +702,7 @@ def test_divide():
 
 def test_average():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_AVERAGE
+        module.operation.value = cellprofiler.modules.imagemath.O_AVERAGE
         module.truncate_low.value = False
 
     numpy.random.seed(0)
@@ -731,7 +731,7 @@ def test_average_factors():
         expected /= numpy.sum(factors)
 
         def fn(module):
-            module.operation.value = cellprofiler.modules.plugins.imagemath.O_AVERAGE
+            module.operation.value = cellprofiler.modules.imagemath.O_AVERAGE
             module.truncate_high.value = False
             for i in range(n):
                 module.images[i].factor.value = factors[i]
@@ -744,7 +744,7 @@ def test_invert():
     """Test invert of an image"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_INVERT
+        module.operation.value = cellprofiler.modules.imagemath.O_INVERT
 
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
@@ -757,7 +757,7 @@ def test_log_transform():
     """Test log transform of an image"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_LOG_TRANSFORM
+        module.operation.value = cellprofiler.modules.imagemath.O_LOG_TRANSFORM
         module.truncate_low.value = False
 
     numpy.random.seed(0)
@@ -769,7 +769,7 @@ def test_log_transform():
 
 def test_log_transform_legacy():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_LOG_TRANSFORM_LEGACY
+        module.operation.value = cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY
         module.truncate_low.value = False
 
     numpy.random.seed(0)
@@ -783,10 +783,10 @@ def test_with_measurement():
     """Test multiplying an image by a measurement"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_MULTIPLY
+        module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY
         module.images[
             1
-        ].image_or_measurement.value = cellprofiler.modules.plugins.imagemath.IM_MEASUREMENT
+        ].image_or_measurement.value = cellprofiler.modules.imagemath.IM_MEASUREMENT
         module.images[1].measurement.value = MEASUREMENT_NAME
 
     numpy.random.seed(101)
@@ -803,10 +803,10 @@ def test_with_measurement_and_mask():
     """Test a measurement operation on a masked image"""
 
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_MULTIPLY
+        module.operation.value = cellprofiler.modules.imagemath.O_MULTIPLY
         module.images[
             1
-        ].image_or_measurement.value = cellprofiler.modules.plugins.imagemath.IM_MEASUREMENT
+        ].image_or_measurement.value = cellprofiler.modules.imagemath.IM_MEASUREMENT
         module.images[1].measurement.value = MEASUREMENT_NAME
 
     numpy.random.seed(102)
@@ -832,10 +832,10 @@ def test_add_and_do_nothing():
     m = cellprofiler_core.measurement.Measurements()
     pixel_data = r.uniform(size=(20, 20))
     m.add("inputimage", cellprofiler_core.image.Image(pixel_data))
-    module = cellprofiler.modules.plugins.imagemath.ImageMath()
+    module = cellprofiler.modules.imagemath.ImageMath()
     module.images[0].image_name.value = "inputimage"
     module.output_image_name.value = "outputimage"
-    module.operation.value = cellprofiler.modules.plugins.imagemath.O_NONE
+    module.operation.value = cellprofiler.modules.imagemath.O_NONE
     module.addend.value = 0.5
     module.set_module_num(1)
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -856,17 +856,17 @@ def test_invert_binary_invert():
     m = cellprofiler_core.measurement.Measurements()
     pixel_data = r.uniform(size=(20, 20)) > 0.5
     m.add("inputimage", cellprofiler_core.image.Image(pixel_data))
-    module = cellprofiler.modules.plugins.imagemath.ImageMath()
+    module = cellprofiler.modules.imagemath.ImageMath()
     module.images[0].image_name.value = "inputimage"
     module.output_image_name.value = "intermediateimage"
-    module.operation.value = cellprofiler.modules.plugins.imagemath.O_INVERT
+    module.operation.value = cellprofiler.modules.imagemath.O_INVERT
     module.set_module_num(1)
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    module = cellprofiler.modules.plugins.imagemath.ImageMath()
+    module = cellprofiler.modules.imagemath.ImageMath()
     module.images[0].image_name.value = "intermediateimage"
     module.output_image_name.value = "outputimage"
-    module.operation.value = cellprofiler.modules.plugins.imagemath.O_INVERT
+    module.operation.value = cellprofiler.modules.imagemath.O_INVERT
     module.set_module_num(2)
     pipeline = cellprofiler_core.pipeline.Pipeline()
     workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
@@ -879,7 +879,7 @@ def test_invert_binary_invert():
 
 def test_or_binary():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_OR
+        module.operation.value = cellprofiler.modules.imagemath.O_OR
 
     numpy.random.seed(1201)
     for n in range(2, 5):
@@ -893,7 +893,7 @@ def test_or_binary():
 
 def test_or_numeric():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_OR
+        module.operation.value = cellprofiler.modules.imagemath.O_OR
 
     numpy.random.seed(1201)
     images = []
@@ -908,7 +908,7 @@ def test_or_numeric():
 
 def test_and_binary():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_AND
+        module.operation.value = cellprofiler.modules.imagemath.O_AND
 
     numpy.random.seed(1301)
     for n in range(2, 5):
@@ -924,7 +924,7 @@ def test_and_binary():
 
 def test_not():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_NOT
+        module.operation.value = cellprofiler.modules.imagemath.O_NOT
 
     numpy.random.seed(4201)
     pixel_data = numpy.random.uniform(size=(10, 10)) > 0.5
@@ -935,7 +935,7 @@ def test_not():
 
 def test_equals_binary():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_EQUALS
+        module.operation.value = cellprofiler.modules.imagemath.O_EQUALS
 
     numpy.random.seed(1501)
 
@@ -953,7 +953,7 @@ def test_equals_binary():
 
 def test_equals_numeric():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_EQUALS
+        module.operation.value = cellprofiler.modules.imagemath.O_EQUALS
 
     numpy.random.seed(1502)
 
@@ -968,7 +968,7 @@ def test_equals_numeric():
 
 def test_minimum():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_MINIMUM
+        module.operation.value = cellprofiler.modules.imagemath.O_MINIMUM
 
     numpy.random.seed(1502)
 
@@ -986,7 +986,7 @@ def test_minimum():
 
 def test_maximum():
     def fn(module):
-        module.operation.value = cellprofiler.modules.plugins.imagemath.O_MAXIMUM
+        module.operation.value = cellprofiler.modules.imagemath.O_MAXIMUM
 
     numpy.random.seed(1502)
 

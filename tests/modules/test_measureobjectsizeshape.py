@@ -7,7 +7,7 @@ import skimage.io
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.injectimage
-import cellprofiler.modules.plugins.measureobjectsizeshape
+import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -26,7 +26,7 @@ def make_workspace(labels):
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
     m = cellprofiler_core.measurement.Measurements()
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
     module.object_groups[0].name.value = OBJECTS_NAME
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -58,7 +58,7 @@ def test_01_load_v1():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectSizeShape
+        module, cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape
     )
     assert len(module.object_groups) == 2
     for og, expected in zip(module.object_groups, ("Nuclei", "Cells")):
@@ -73,7 +73,7 @@ def test_zeros():
     objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
@@ -92,26 +92,26 @@ def test_zeros():
     module.run(workspace)
 
     for f in (
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_AREA,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_X,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_Y,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_ECCENTRICITY,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_EULER_NUMBER,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_EXTENT,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_FORM_FACTOR,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_ORIENTATION,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_PERIMETER,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_SOLIDITY,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_COMPACTNESS,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MAXIMUM_RADIUS,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MEAN_RADIUS,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MEDIAN_RADIUS,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
-            cellprofiler.modules.plugins.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
+            cellprofiler.modules.measureobjectsizeshape.F_AREA,
+            cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
+            cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+            cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY,
+            cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
+            cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
+            cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
+            cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
+            cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
+            cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION,
+            cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
+            cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY,
+            cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
+            cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
+            cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
+            cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
+            cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
+            cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
     ):
-        m = cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE + "_" + f
+        m = cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + f
         a = measurements.get_current_measurement("SomeObjects", m)
         assert len(a) == 0
 
@@ -132,7 +132,7 @@ def test_run():
     objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "OtherObjects")
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
@@ -183,7 +183,7 @@ def test_run():
 
 
 def test_categories():
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     for object_name in settings[:-1]:
@@ -194,30 +194,30 @@ def test_categories():
 
 
 def test_measurements_zernike():
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     pipeline = cellprofiler_core.pipeline.Pipeline()
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-                cellprofiler.modules.plugins.measureobjectsizeshape.F_STANDARD
-                + cellprofiler.modules.plugins.measureobjectsizeshape.F_STD_2D
+                cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+                + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
         ):
             assert measurement in measurements
         assert "Zernike_3_1" in measurements
 
 
 def test_measurements_no_zernike():
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "No"]
     module.set_settings_from_values(settings, 1, module.module_class())
     pipeline = cellprofiler_core.pipeline.Pipeline()
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-                cellprofiler.modules.plugins.measureobjectsizeshape.F_STANDARD
-                + cellprofiler.modules.plugins.measureobjectsizeshape.F_STD_2D
+                cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+                + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
         ):
             assert measurement in measurements
         assert not ("Zernike_3_1" in measurements)
@@ -225,7 +225,7 @@ def test_measurements_no_zernike():
 
 def test_non_contiguous():
     """make sure MeasureObjectAreaShape doesn't crash if fed non-contiguous objects"""
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
     object_set = cellprofiler_core.object.ObjectSet()
@@ -273,7 +273,7 @@ def test_zernikes_are_different():
     objects.segmented = labels
     object_set = cellprofiler_core.object.ObjectSet()
     object_set.add_objects(objects, "SomeObjects")
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
     module.set_module_num(1)
@@ -307,7 +307,7 @@ def test_zernikes_are_different():
 
 
 def test_extent():
-    module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+    module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
     object_set = cellprofiler_core.object.ObjectSet()
@@ -341,8 +341,8 @@ def test_extent():
         "SomeObjects",
         "_".join(
             (
-                cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE,
-                cellprofiler.modules.plugins.measureobjectsizeshape.F_EXTENT,
+                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
+                cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
             )
         ),
     )
@@ -374,7 +374,7 @@ def test_overlapping():
     objects.ijv = ijv
     olist.append(objects)
     for objects in olist:
-        module = cellprofiler.modules.plugins.measureobjectsizeshape.MeasureObjectAreaShape()
+        module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
         object_set = cellprofiler_core.object.ObjectSet()
@@ -428,9 +428,9 @@ def test_max_radius():
     m = workspace.measurements
     max_radius = m.get_current_measurement(
         OBJECTS_NAME,
-        cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE
+        cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE
         + "_"
-        + cellprofiler.modules.plugins.measureobjectsizeshape.F_MAXIMUM_RADIUS,
+        + cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
     )
     assert len(max_radius) == 2
     assert max_radius[0] == 2
@@ -460,23 +460,23 @@ def test_run_volume():
     module.run(workspace)
 
     for feature in [
-        cellprofiler.modules.plugins.measureobjectsizeshape.F_VOLUME,
-        cellprofiler.modules.plugins.measureobjectsizeshape.F_EXTENT,
-        cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_X,
-        cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_Y,
-        cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_Z,
-        cellprofiler.modules.plugins.measureobjectsizeshape.F_SURFACE_AREA,
+        cellprofiler.modules.measureobjectsizeshape.F_VOLUME,
+        cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
+        cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
+        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Z,
+        cellprofiler.modules.measureobjectsizeshape.F_SURFACE_AREA,
     ]:
         assert workspace.measurements.has_current_measurements(
             OBJECTS_NAME,
-            cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE + "_" + feature,
+            cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature,
         )
 
         assert (
             len(
                 workspace.measurements.get_current_measurement(
                     OBJECTS_NAME,
-                    cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE
+                    cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE
                     + "_"
                     + feature,
                 )
@@ -490,8 +490,8 @@ def test_run_volume():
         OBJECTS_NAME,
         "_".join(
             [
-                cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE,
-                cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_X,
+                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
+                cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
             ]
         ),
     )[0]
@@ -502,8 +502,8 @@ def test_run_volume():
         OBJECTS_NAME,
         "_".join(
             [
-                cellprofiler.modules.plugins.measureobjectsizeshape.AREA_SHAPE,
-                cellprofiler.modules.plugins.measureobjectsizeshape.F_CENTER_Y,
+                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
+                cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
             ]
         ),
     )[0]

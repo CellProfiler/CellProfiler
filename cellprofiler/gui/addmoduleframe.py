@@ -4,7 +4,7 @@ import cellprofiler.gui
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.help.search
 import cellprofiler_core.module
-import cellprofiler_core.modules
+import cellprofiler.modules
 import cellprofiler_core.preferences
 
 

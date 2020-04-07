@@ -2,7 +2,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.labelimages
+import cellprofiler.modules.labelimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -21,25 +21,25 @@ def test_load_v1():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.labelimages.LabelImages)
+    assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     assert module.site_count == 3
     assert module.row_count == 32
     assert module.column_count == 48
-    assert module.order == cellprofiler.modules.plugins.labelimages.O_COLUMN
+    assert module.order == cellprofiler.modules.labelimages.O_COLUMN
 
     module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.plugins.labelimages.LabelImages)
+    assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     assert module.site_count == 1
     assert module.row_count == 8
     assert module.column_count == 12
-    assert module.order == cellprofiler.modules.plugins.labelimages.O_ROW
+    assert module.order == cellprofiler.modules.labelimages.O_ROW
 
 
 def make_workspace(image_set_count):
     image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(image_set_count):
         image_set = image_set_list.get_image_set(i)
-    module = cellprofiler.modules.plugins.labelimages.LabelImages()
+    module = cellprofiler.modules.labelimages.LabelImages()
     pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
@@ -67,10 +67,10 @@ def test_label_plate_by_row():
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
-    assert isinstance(module, cellprofiler.modules.plugins.labelimages.LabelImages)
+    assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 8
     module.column_count.value = 12
-    module.order.value = cellprofiler.modules.plugins.labelimages.O_ROW
+    module.order.value = cellprofiler.modules.labelimages.O_ROW
     module.site_count.value = nsites
     for i in range(nimagesets):
         if i != 0:
@@ -108,10 +108,10 @@ def test_label_plate_by_column():
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
-    assert isinstance(module, cellprofiler.modules.plugins.labelimages.LabelImages)
+    assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 8
     module.column_count.value = 12
-    module.order.value = cellprofiler.modules.plugins.labelimages.O_COLUMN
+    module.order.value = cellprofiler.modules.labelimages.O_COLUMN
     module.site_count.value = nsites
     for i in range(nimagesets):
         if i != 0:
@@ -149,10 +149,10 @@ def test_label_many_plates():
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
-    assert isinstance(module, cellprofiler.modules.plugins.labelimages.LabelImages)
+    assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 8
     module.column_count.value = 12
-    module.order.value = cellprofiler.modules.plugins.labelimages.O_ROW
+    module.order.value = cellprofiler.modules.labelimages.O_ROW
     module.site_count.value = nsites
     for i in range(nimagesets):
         if i != 0:
@@ -188,10 +188,10 @@ def test_multichar_row_names():
     workspace, module = make_workspace(nimagesets)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
-    assert isinstance(module, cellprofiler.modules.plugins.labelimages.LabelImages)
+    assert isinstance(module, cellprofiler.modules.labelimages.LabelImages)
     module.row_count.value = 1000
     module.column_count.value = 1
-    module.order.value = cellprofiler.modules.plugins.labelimages.O_ROW
+    module.order.value = cellprofiler.modules.labelimages.O_ROW
     module.site_count.value = 1
     for i in range(nimagesets):
         if i != 0:

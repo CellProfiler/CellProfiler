@@ -2,7 +2,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.invertforprinting
+import cellprofiler.modules.invertforprinting
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -30,7 +30,7 @@ def run_module(
     """
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    module = cellprofiler.modules.plugins.invertforprinting.InvertForPrinting()
+    module = cellprofiler.modules.invertforprinting.InvertForPrinting()
     module.set_module_num(1)
     for image, name, setting, check in (
         (color_image, I_COLOR_IN, module.color_input_image, None),
@@ -83,13 +83,13 @@ def test_color_to_color():
 
     def fn(module):
         assert isinstance(
-            module, cellprofiler.modules.plugins.invertforprinting.InvertForPrinting
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
         )
         module.input_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_COLOR
+            cellprofiler.modules.invertforprinting.CC_COLOR
         )
         module.output_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_COLOR
+            cellprofiler.modules.invertforprinting.CC_COLOR
         )
 
     d = run_module(color_image=color_image, fn=fn)
@@ -109,13 +109,13 @@ def test_color_to_bw():
 
     def fn(module):
         assert isinstance(
-            module, cellprofiler.modules.plugins.invertforprinting.InvertForPrinting
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
         )
         module.input_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_COLOR
+            cellprofiler.modules.invertforprinting.CC_COLOR
         )
         module.output_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_GRAYSCALE
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
         )
 
     d = run_module(color_image=color_image, fn=fn)
@@ -135,13 +135,13 @@ def test_bw_to_color():
 
     def fn(module):
         assert isinstance(
-            module, cellprofiler.modules.plugins.invertforprinting.InvertForPrinting
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
         )
         module.input_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_GRAYSCALE
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
         )
         module.output_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_COLOR
+            cellprofiler.modules.invertforprinting.CC_COLOR
         )
 
     d = run_module(
@@ -165,13 +165,13 @@ def test_bw_to_bw():
 
     def fn(module):
         assert isinstance(
-            module, cellprofiler.modules.plugins.invertforprinting.InvertForPrinting
+            module, cellprofiler.modules.invertforprinting.InvertForPrinting
         )
         module.input_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_GRAYSCALE
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
         )
         module.output_color_choice.value = (
-            cellprofiler.modules.plugins.invertforprinting.CC_GRAYSCALE
+            cellprofiler.modules.invertforprinting.CC_GRAYSCALE
         )
 
     d = run_module(
@@ -205,13 +205,13 @@ def test_missing_image():
 
         def fn(module):
             assert isinstance(
-                module, cellprofiler.modules.plugins.invertforprinting.InvertForPrinting
+                module, cellprofiler.modules.invertforprinting.InvertForPrinting
             )
             module.input_color_choice.value = (
-                cellprofiler.modules.plugins.invertforprinting.CC_GRAYSCALE
+                cellprofiler.modules.invertforprinting.CC_GRAYSCALE
             )
             module.output_color_choice.value = (
-                cellprofiler.modules.plugins.invertforprinting.CC_GRAYSCALE
+                cellprofiler.modules.invertforprinting.CC_GRAYSCALE
             )
 
         d = run_module(

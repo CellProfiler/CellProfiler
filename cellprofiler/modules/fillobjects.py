@@ -58,7 +58,7 @@ This may be helpful for removing seed artifacts that
 are the result of segmentation.
 **Note**: Planewise operations will be considerably slower.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 

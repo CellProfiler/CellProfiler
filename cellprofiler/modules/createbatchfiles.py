@@ -299,7 +299,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         pass
 
     def clear_old_matlab(self):
-        self.from_old_matlab.value = cps.NO
+        self.from_old_matlab.value = "No"
 
     def validate_module(self, pipeline):
         """Make sure the module settings are valid"""
@@ -464,17 +464,17 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
                 "which could not be made compatible with this version of CellProfiler.",
                 "For reference, previous values were:",
             ] + [str(x) for x in setting_values]
-            setting_values = [cps.NO, "", cps.NO, cps.NO, cps.NO, "", 0, cps.YES]
+            setting_values = ["No", "", "No", "No", "No", "", 0, "Yes"]
             variable_revision_number = 6
             from_matlab = False
 
         if from_matlab and variable_revision_number == 8:
             batch_save_path, old_pathname, new_pathname = setting_values[:3]
             if batch_save_path == ".":
-                wants_default_output_directory = cps.YES
+                wants_default_output_directory = "Yes"
                 batch_save_path = cpprefs.get_default_output_directory()
             else:
-                wants_default_output_directory = cps.NO
+                wants_default_output_directory = "No"
             old_pathnames = old_pathname.split(",")
             new_pathnames = new_pathname.split(",")
             if len(old_pathnames) != len(new_pathnames):
@@ -486,8 +486,8 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             setting_values = [
                 wants_default_output_directory,
                 batch_save_path,
-                cps.NO,
-                cps.NO,
+                "No",
+                "No",
                 "",
             ]
             for old_pathname, new_pathname in zip(old_pathnames, new_pathnames):

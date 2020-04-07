@@ -17,7 +17,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.plugins.exporttodatabase
+import cellprofiler.modules.exporttodatabase
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -173,7 +173,7 @@ def mysql_has_median():
 def get_sqlite_cursor(module):
     import sqlite3
 
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     file_name = os.path.join(
         module.directory.get_absolute_path(), module.sqlite_file.value
     )
@@ -188,7 +188,7 @@ def test_00_write_load_test():
     # number change.
     #
     assert (
-            cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase.variable_revision_number
+            cellprofiler.modules.exporttodatabase.ExportToDatabase.variable_revision_number
             == 27
     )
 
@@ -206,8 +206,8 @@ def test_load_v11():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
     assert (
         module.directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -230,8 +230,8 @@ def test_load_v12():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert (
         module.directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -255,8 +255,8 @@ def test_load_v13():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert (
         module.directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -280,8 +280,8 @@ def test_load_v15():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
     assert module.db_name == "Heel"
     assert not module.want_table_prefix
     assert module.table_prefix == "Ouch"
@@ -299,11 +299,11 @@ def test_load_v15():
     assert module.wants_agg_mean_well
     assert module.wants_agg_median_well
     assert not module.wants_agg_std_dev_well
-    assert module.objects_choice == cellprofiler.modules.plugins.exporttodatabase.O_ALL
+    assert module.objects_choice == cellprofiler.modules.exporttodatabase.O_ALL
     assert module.max_column_size == 62
     assert (
             module.separate_object_tables
-            == cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
     )
     assert not module.wants_properties_image_url_prepend
 
@@ -321,8 +321,8 @@ def test_load_v22():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert module.db_name == "Gamma"
     assert module.want_table_prefix
     assert module.table_prefix == "Delta_"
@@ -424,8 +424,8 @@ def test_load_v23():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert module.db_name == "Gamma"
     assert module.want_table_prefix
     assert module.table_prefix == "Delta_"
@@ -529,8 +529,8 @@ def test_load_v24():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert module.db_name == "Gamma"
     assert module.want_table_prefix
     assert module.table_prefix == "Delta_"
@@ -620,7 +620,7 @@ def test_load_v24():
     assert g.filter_name == "Site1Filter"
     assert g.filter_statement == "Image_Metadata_Plate = '1'"
     assert (
-            module.allow_overwrite == cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_DATA
+            module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
     )
 
 
@@ -637,8 +637,8 @@ def test_load_v25():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert module.db_name == "Gamma"
     assert module.want_table_prefix
     assert module.table_prefix == "Delta_"
@@ -729,7 +729,7 @@ def test_load_v25():
     assert g.filter_name == "Site1Filter"
     assert g.filter_statement == "Image_Metadata_Plate = '1'"
     assert (
-            module.allow_overwrite == cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_NEVER
+            module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
     )
 
 
@@ -746,8 +746,8 @@ def test_load_v26():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL
     assert module.db_name == "Gamma"
     assert module.want_table_prefix
     assert module.table_prefix == "Delta_"
@@ -772,7 +772,7 @@ def test_load_v26():
     assert module.wants_relationship_table
     assert (
             module.properties_classification_type
-            == cellprofiler.modules.plugins.exporttodatabase.CT_OBJECT
+            == cellprofiler.modules.exporttodatabase.CT_OBJECT
     )
     assert len(module.image_groups) == 2
     for image_group, input_image_name, output_image_name, color in (
@@ -842,7 +842,7 @@ def test_load_v26():
     assert g.filter_name == "Site1Filter"
     assert g.filter_statement == "Image_Metadata_Plate = '1'"
     assert (
-            module.allow_overwrite == cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_NEVER
+            module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
     )
 
 
@@ -853,10 +853,10 @@ def test_load_v27():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.load(six.moves.StringIO(data))
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert (
             module.properties_classification_type
-            == cellprofiler.modules.plugins.exporttodatabase.CT_IMAGE
+            == cellprofiler.modules.exporttodatabase.CT_IMAGE
     )
     assert len(module.workspace_measurement_groups) == 1
     g = module.workspace_measurement_groups[0]
@@ -1149,7 +1149,7 @@ def make_workspace(
 
     pipeline.add_listener(callback_handler)
     pipeline.add_module(test_module)
-    module = cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase()
+    module = cellprofiler.modules.exporttodatabase.ExportToDatabase()
     module.set_module_num(2)
     table_prefix = "T_%s" % str(uuid.uuid4()).replace("-", "")
     module.table_prefix.value = table_prefix
@@ -1186,7 +1186,7 @@ def make_workspace(
 
 def load_database(output_dir, module, image_set_count=1):
     """Load a database written by DB_MYSQL_CSV"""
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     curdir = os.path.abspath(os.curdir)
     os.chdir(output_dir)
     try:
@@ -1197,7 +1197,7 @@ def load_database(output_dir, module, image_set_count=1):
         )
         if (
             module.separate_object_tables
-            == cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         ):
             object_file = os.path.join(
                 output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
@@ -1221,8 +1221,8 @@ def load_database(output_dir, module, image_set_count=1):
 
 def tteesstt_no_relationships(module, cursor):
     for t in (
-            cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIPS,
-            cellprofiler.modules.plugins.exporttodatabase.V_RELATIONSHIPS,
+            cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
+            cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS,
     ):
         statement = "select count('x') from %s" % module.get_table_name(t)
         cursor.execute(statement)
@@ -1231,7 +1231,7 @@ def tteesstt_no_relationships(module, cursor):
 
 def tteesstt_relate(measurements, module, cursor):
     v_name = module.get_table_name(
-        cellprofiler.modules.plugins.exporttodatabase.V_RELATIONSHIPS
+        cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS
     )
     statement = (
         "select count('x') from %s "
@@ -1239,16 +1239,16 @@ def tteesstt_relate(measurements, module, cursor):
         "and %s = %%d and %s = %%d and %s = %%d and %s = %%d"
     ) % (
         v_name,
-        cellprofiler.modules.plugins.exporttodatabase.COL_MODULE_NUMBER,
+        cellprofiler.modules.exporttodatabase.COL_MODULE_NUMBER,
         1,
-        cellprofiler.modules.plugins.exporttodatabase.COL_RELATIONSHIP,
+        cellprofiler.modules.exporttodatabase.COL_RELATIONSHIP,
         RELATIONSHIP_NAME,
-        cellprofiler.modules.plugins.exporttodatabase.COL_OBJECT_NAME1,
-        cellprofiler.modules.plugins.exporttodatabase.COL_OBJECT_NAME2,
-        cellprofiler.modules.plugins.exporttodatabase.COL_IMAGE_NUMBER1,
-        cellprofiler.modules.plugins.exporttodatabase.COL_OBJECT_NUMBER1,
-        cellprofiler.modules.plugins.exporttodatabase.COL_IMAGE_NUMBER2,
-        cellprofiler.modules.plugins.exporttodatabase.COL_OBJECT_NUMBER2,
+        cellprofiler.modules.exporttodatabase.COL_OBJECT_NAME1,
+        cellprofiler.modules.exporttodatabase.COL_OBJECT_NAME2,
+        cellprofiler.modules.exporttodatabase.COL_IMAGE_NUMBER1,
+        cellprofiler.modules.exporttodatabase.COL_OBJECT_NUMBER1,
+        cellprofiler.modules.exporttodatabase.COL_IMAGE_NUMBER2,
+        cellprofiler.modules.exporttodatabase.COL_OBJECT_NUMBER2,
     )
     for rk in measurements.get_relationship_groups():
         module_num = rk.module_number
@@ -1300,17 +1300,17 @@ def test_write_mysql_db():
     workspace, module, output_dir, finally_fn = make_workspace(True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         load_database(output_dir, module)
@@ -1358,8 +1358,8 @@ def test_write_mysql_db():
         #
         assert not module.wants_relationship_table
         for t in (
-                cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIPS,
-                cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES,
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES,
         ):
             statement = "select count('x') from INFORMATION_SCHEMA.TABLES "
             statement += "where table_schema=%s and table_name=%s"
@@ -1375,19 +1375,19 @@ def test_write_mysql_db_filter_objs():
     workspace, module, output_dir, finally_fn = make_workspace(True, True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_SELECT
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_SELECT
         module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
         module.objects_list.value = OBJECT_NAME
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
@@ -1463,17 +1463,17 @@ def test_write_mysql_db_dont_filter_objs():
     workspace, module, output_dir, finally_fn = make_workspace(True, True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
@@ -1567,15 +1567,15 @@ def test_mysql_direct():
     workspace, module = make_workspace(False)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         if not __test_mysql:
             skipTest("Skipping actual DB work, not at the Broad.")
@@ -1632,15 +1632,15 @@ def test_00_write_direct_long_colname():
     workspace, module = make_workspace(False, long_measurement=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -1713,17 +1713,17 @@ def test_01_write_csv_long_colname():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -1804,17 +1804,17 @@ def test_01_write_nulls():
     m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
@@ -1902,17 +1902,17 @@ def test_02_write_inf():
     m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
@@ -2001,15 +2001,15 @@ def test_mysql_direct_null():
     m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2066,15 +2066,15 @@ def test_write_direct_wierd_colname():
     workspace, module = make_workspace(False, wierd_measurement=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2142,16 +2142,16 @@ def test_write_direct_50_char_colname():
     workspace, module = make_workspace(False, long_measurement=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.max_column_size.value = 50
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2218,8 +2218,8 @@ def test_write_direct_backslash():
     """
     backslash_string = "\\Why worry?"
     workspace, module = make_workspace(False)
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_NONE
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
@@ -2246,18 +2246,18 @@ def test_mysql_as_data_tool():
     workspace, module = make_workspace(False, image_set_count=2)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.allow_overwrite.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_DATA
+            cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2338,17 +2338,17 @@ def test_write_sqlite_direct():
         connection = None
         try:
             assert isinstance(
-                module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+                module, cellprofiler.modules.exporttodatabase.ExportToDatabase
             )
-            module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+            module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
-            module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+            module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
             module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
-                cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+                cellprofiler.modules.exporttodatabase.OT_COMBINE
             )
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
@@ -2417,13 +2417,13 @@ def test_write_sqlite_backslash():
     connection = None
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_NONE
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.prepare_run(workspace)
@@ -2474,17 +2474,17 @@ def test_numpy_float32():
     connection = None
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2547,20 +2547,20 @@ def test_sqlite_data_tool():
     connection = None
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.allow_overwrite.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_DATA
+            cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
         )
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2621,7 +2621,7 @@ def test_sqlite_data_tool():
 
 def test_stable_column_mapper():
     """Make sure the column mapper always yields the same output"""
-    mapping = cellprofiler.modules.plugins.exporttodatabase.ColumnNameMapping()
+    mapping = cellprofiler.modules.exporttodatabase.ColumnNameMapping()
     k1 = "abcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
     k2 = "ebcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
     mapping.add(k1)
@@ -2639,7 +2639,7 @@ def test_stable_column_mapper():
 
 def test_leave_start_intact():
     """The column mapper should leave stuff before the first _ alone"""
-    mapping = cellprofiler.modules.plugins.exporttodatabase.ColumnNameMapping(25)
+    mapping = cellprofiler.modules.exporttodatabase.ColumnNameMapping(25)
     k1 = "leaveme_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS"
     k2 = "keepmee_EVEN_THOUGH_WE_LIKE_REMOVING_LOWER_CASE_VOWELS"
     mapping.add(k1)
@@ -2704,17 +2704,17 @@ def test_write_mysql_db():
     workspace, module, output_dir, finally_fn = make_workspace(True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.post_run(workspace)
         load_database(output_dir, module)
@@ -2764,19 +2764,19 @@ def test_write_mysql_db_filter_objs():
     workspace, module, output_dir, finally_fn = make_workspace(True, True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_SELECT
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_SELECT
         module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
         module.objects_list.value = OBJECT_NAME
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.post_run(workspace)
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
@@ -2841,15 +2841,15 @@ def test_mysql_direct():
     workspace, module = make_workspace(False)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2899,15 +2899,15 @@ def test_write_direct_long_colname():
     workspace, module = make_workspace(False, long_measurement=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -2978,17 +2978,17 @@ def test_write_nulls():
     m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.post_run(workspace)
         sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
@@ -3071,15 +3071,15 @@ def test_01_mysql_direct_null():
     m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3143,15 +3143,15 @@ def test_02_mysql_direct_inf():
     m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3204,15 +3204,15 @@ def test_write_direct_wierd_colname():
     workspace, module = make_workspace(False, wierd_measurement=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3273,16 +3273,16 @@ def test_write_direct_50_char_colname():
     workspace, module = make_workspace(False, long_measurement=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.max_column_size.value = 50
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3344,16 +3344,16 @@ def test_01_write_two_object_tables_direct():
     workspace, module = make_workspace(False, alt_object=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.max_column_size.value = 50
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3395,18 +3395,18 @@ def test_02_write_two_object_tables_csv():
     workspace, module, output_dir, finally_fn = make_workspace(True, alt_object=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.max_column_size.value = 50
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3453,17 +3453,17 @@ def test_write_mysql_db_as_data_tool():
     workspace, module, output_dir, finally_fn = make_workspace(True, image_set_count=2)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.run_as_data_tool(workspace)
         load_database(output_dir, module, image_set_count=2)
@@ -3520,13 +3520,13 @@ def test_data_tool_and_get_measurement_columns():
         False, image_set_count=2, long_measurement=MISSING_FROM_MEASUREMENTS
     )
     try:
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.run_as_data_tool(workspace)
         #
@@ -3585,13 +3585,13 @@ def test_data_tool_and_get_measurement_columns():
         False, image_set_count=2, long_measurement=MISSING_FROM_MODULE
     )
     try:
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.run_as_data_tool(workspace)
         mappings = module.get_column_name_mappings(
@@ -3655,17 +3655,17 @@ def test_write_sqlite_direct():
     connection = None
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -3749,16 +3749,16 @@ def test_well_single_objtable():
         aggs.append(("median", numpy.median))
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.max_column_size.value = 50
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.wants_agg_mean_well.value = True
         module.wants_agg_median_well.value = mysql_has_median
@@ -3809,16 +3809,16 @@ def test_well_two_objtables():
         aggs.append(("median", numpy.median))
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.max_column_size.value = 50
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.wants_agg_mean_well.value = True
         module.wants_agg_median_well.value = mysql_has_median
@@ -3866,16 +3866,16 @@ def test_image_thumbnails():
     workspace, module = make_workspace(False)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_NONE
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
         module.max_column_size.value = 50
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.wants_agg_mean_well.value = False
         module.wants_agg_median_well.value = False
@@ -3908,17 +3908,17 @@ def test_image_thumbnails_sqlite():
     connection = None
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_NONE
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.want_image_thumbnails.value = True
         module.thumbnail_image_names.load_choices(workspace.pipeline)
@@ -3956,7 +3956,7 @@ def test_post_group_single_object_table():
     workspace, module = make_workspace(
         False, image_set_count=count, group_measurement=True
     )
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -3965,7 +3965,7 @@ def test_post_group_single_object_table():
     module.wants_agg_std_dev.value = False
     try:
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, numpy.arange(count) + 1)
@@ -4056,7 +4056,7 @@ def test_post_group_single_object_table_agg():
     workspace, module = make_workspace(
         False, image_set_count=count, group_measurement=True
     )
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4065,7 +4065,7 @@ def test_post_group_single_object_table_agg():
     module.wants_agg_std_dev.value = False
     try:
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, numpy.arange(count) + 1)
@@ -4156,7 +4156,7 @@ def test_post_group_separate_object_tables():
     workspace, module = make_workspace(
         False, image_set_count=count, group_measurement=True
     )
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4165,7 +4165,7 @@ def test_post_group_separate_object_tables():
     module.wants_agg_std_dev.value = False
     try:
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, numpy.arange(count) + 1)
@@ -4246,7 +4246,7 @@ def test_post_group_separate_table_agg():
     workspace, module = make_workspace(
         False, image_set_count=count, group_measurement=True
     )
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4255,7 +4255,7 @@ def test_post_group_separate_table_agg():
     module.wants_agg_std_dev.value = False
     try:
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, numpy.arange(count) + 1)
@@ -4342,12 +4342,12 @@ def test_post_group_sqlite():
                 ran_interaction_handler
             )
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.wants_agg_mean.value = False
@@ -4356,7 +4356,7 @@ def test_post_group_sqlite():
         cursor, connection = get_sqlite_cursor(module)
         try:
             module.separate_object_tables.value = (
-                cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+                cellprofiler.modules.exporttodatabase.OT_COMBINE
             )
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, numpy.arange(count) + 1)
@@ -4451,7 +4451,7 @@ def test_post_group_object_view():
     workspace, module = make_workspace(
         False, image_set_count=count, group_measurement=True
     )
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     measurements = workspace.measurements
     assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4460,7 +4460,7 @@ def test_post_group_object_view():
     module.wants_agg_std_dev.value = False
     try:
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_VIEW
+            cellprofiler.modules.exporttodatabase.OT_VIEW
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, numpy.arange(count) + 1)
@@ -4557,7 +4557,7 @@ def test_post_group_object_view():
 
 def test_properties_file():
     old_get_measurement_columns = (
-        cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase.get_measurement_columns
+        cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns
     )
 
     def get_measurement_columns(
@@ -4577,11 +4577,11 @@ def test_properties_file():
         ] + old_get_measurement_columns(pipeline)
         return result
 
-    cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase.get_measurement_columns = (
+    cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns = (
         get_measurement_columns
     )
     workspace, module, output_dir, finally_fn = make_workspace(True, alt_object=True)
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     file_name = "%s_%s.properties" % (DB_NAME, module.get_table_prefix())
     path = os.path.join(output_dir, file_name)
     #
@@ -4602,7 +4602,7 @@ def test_properties_file():
                 os.path.join(path, "img%d.tif" % image_number),
                 image_set_number=image_number,
             )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.db_name.value = DB_NAME
         module.db_host.value = DB_HOST
         module.db_user.value = DB_USER
@@ -4610,11 +4610,11 @@ def test_properties_file():
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.save_cpa_properties.value = True
         module.location_object.value = OBJECT_NAME
@@ -4668,7 +4668,7 @@ def test_properties_file():
             assert k in dictionary
             assert dictionary[k] == v
     finally:
-        cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase.get_measurement_columns = (
+        cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns = (
             old_get_measurement_columns
         )
         os.chdir(output_dir)
@@ -4681,15 +4681,15 @@ def test_experiment_table_combine():
     workspace, module = make_workspace(False, True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.location_object.value = OBJECT_NAME
         if not __test_mysql:
@@ -4736,15 +4736,15 @@ def test_experiment_table_separate():
     workspace, module = make_workspace(False, True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_PER_OBJECT
+            cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         if not __test_mysql:
             skipTest("Skipping actual DB work, not at the Broad.")
@@ -4796,17 +4796,17 @@ def test_write_no_mysql_relationships():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         load_database(output_dir, module)
@@ -4826,15 +4826,15 @@ def test_write_no_mysql_direct_relationships():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -4855,17 +4855,17 @@ def test_write_sqlite_no_relationships():
     cursor = None
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -4894,17 +4894,17 @@ def test_write_mysql_relationships():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL_CSV
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.post_run(workspace)
         load_database(output_dir, module)
@@ -4926,15 +4926,15 @@ def test_write_mysql_direct_relationships():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -4958,17 +4958,17 @@ def test_write_sqlite_relationships():
             )
         try:
             assert isinstance(
-                module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+                module, cellprofiler.modules.exporttodatabase.ExportToDatabase
             )
-            module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+            module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
-            module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+            module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
             module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
-                cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+                cellprofiler.modules.exporttodatabase.OT_COMBINE
             )
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
@@ -4998,17 +4998,17 @@ def test_write_sqlite_duplicates():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -5041,15 +5041,15 @@ def test_add_relationship_id_mysql():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -5057,12 +5057,12 @@ def test_add_relationship_id_mysql():
         # Get rid of the module dictionary entry and the table row
         #
         module.get_dictionary()[
-            cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES
+            cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
         ] = {}
         cursor.execute(
             "delete from %s"
             % module.get_table_name(
-                cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
             )
         )
         close_connection()
@@ -5086,15 +5086,15 @@ def test_get_relationship_id_mysql():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, [1])
@@ -5102,7 +5102,7 @@ def test_get_relationship_id_mysql():
         # Get rid of the module dictionary entry and the table row
         #
         module.get_dictionary()[
-            cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES
+            cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
         ] = {}
         module.run(workspace)
         tteesstt_relate(workspace.measurements, module, cursor)
@@ -5124,35 +5124,35 @@ def test_add_relationship_id_sqlite():
             )
         try:
             assert isinstance(
-                module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+                module, cellprofiler.modules.exporttodatabase.ExportToDatabase
             )
-            module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+            module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
-            module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+            module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
             module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
-                cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+                cellprofiler.modules.exporttodatabase.OT_COMBINE
             )
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
-            with cellprofiler.modules.plugins.exporttodatabase.DBContext(module) as (
+            with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                 connection,
                 cursor,
             ):
                 cursor.execute(
                     "delete from %s"
                     % module.get_table_name(
-                        cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES
+                        cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
                     )
                 )
             module.get_dictionary()[
-                cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
             ] = {}
             module.run(workspace)
-            with cellprofiler.modules.plugins.exporttodatabase.DBContext(module) as (
+            with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                 connection,
                 cursor,
             ):
@@ -5177,22 +5177,22 @@ def test_get_relationship_id_sqlite():
         connection = None
         try:
             assert isinstance(
-                module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+                module, cellprofiler.modules.exporttodatabase.ExportToDatabase
             )
-            module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+            module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
-            module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+            module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
             module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
-                cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+                cellprofiler.modules.exporttodatabase.OT_COMBINE
             )
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.get_dictionary()[
-                cellprofiler.modules.plugins.exporttodatabase.T_RELATIONSHIP_TYPES
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
             ] = {}
             module.run(workspace)
             cursor, connection = get_sqlite_cursor(module)
@@ -5223,15 +5223,15 @@ def test_write_mysql_direct_relationships():
     )
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         module.show_window = True
         module.prepare_run(workspace)
@@ -5249,18 +5249,18 @@ def test_mysql_no_overwrite():
     workspace, module = make_workspace(False)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.allow_overwrite.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_NEVER
+            cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
         )
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         assert module.prepare_run(workspace)
         assert not module.prepare_run(workspace)
@@ -5275,18 +5275,18 @@ def test_mysql_keep_schema():
     workspace, module = make_workspace(False)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.allow_overwrite.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_DATA
+            cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
         )
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         assert module.prepare_run(workspace)
         #
@@ -5322,18 +5322,18 @@ def test_mysql_drop_schema():
     workspace, module = make_workspace(False)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.allow_overwrite.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_ALL
+            cellprofiler.modules.exporttodatabase.OVERWRITE_ALL
         )
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         assert module.prepare_run(workspace)
         #
@@ -5365,17 +5365,17 @@ def test_mysql_drop_schema():
 
 def test_sqlite_no_overwrite():
     workspace, module, output_dir, finally_fn = make_workspace(True)
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
     module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
-    module.allow_overwrite.value = cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_NEVER
+    module.allow_overwrite.value = cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
     module.wants_agg_mean.value = False
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
-    module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+    module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
     module.separate_object_tables.value = (
-        cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+        cellprofiler.modules.exporttodatabase.OT_COMBINE
     )
     try:
         assert module.prepare_run(workspace)
@@ -5386,17 +5386,17 @@ def test_sqlite_no_overwrite():
 
 def test_sqlite_keep_schema():
     workspace, module, output_dir, finally_fn = make_workspace(True)
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
-    module.allow_overwrite.value = cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_DATA
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
+    module.allow_overwrite.value = cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
     module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
     module.wants_agg_mean.value = False
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
-    module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+    module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
     module.separate_object_tables.value = (
-        cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+        cellprofiler.modules.exporttodatabase.OT_COMBINE
     )
     cursor, connection = get_sqlite_cursor(module)
     try:
@@ -5430,17 +5430,17 @@ def test_sqlite_keep_schema():
 
 def test_sqlite_drop_schema():
     workspace, module, output_dir, finally_fn = make_workspace(True)
-    assert isinstance(module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase)
-    module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
-    module.allow_overwrite.value = cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_ALL
+    assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+    module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
+    module.allow_overwrite.value = cellprofiler.modules.exporttodatabase.OVERWRITE_ALL
     module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
     module.wants_agg_mean.value = False
     module.wants_agg_median.value = False
     module.wants_agg_std_dev.value = False
-    module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+    module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
     module.separate_object_tables.value = (
-        cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+        cellprofiler.modules.exporttodatabase.OT_COMBINE
     )
     cursor, connection = get_sqlite_cursor(module)
     try:
@@ -5473,13 +5473,13 @@ def test_sqlite_drop_schema():
 def test_dbcontext_mysql():
     if not __test_mysql:
         skipTest("Skipping actual DB work, not at the Broad.")
-    module = cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase()
-    module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+    module = cellprofiler.modules.exporttodatabase.ExportToDatabase()
+    module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
     module.db_host.value = MYSQL_HOST
     module.db_user.value = MYSQL_USER
     module.db_passwd.value = MYSQL_PASSWORD
     module.db_name.value = MYSQL_DATABASE
-    with cellprofiler.modules.plugins.exporttodatabase.DBContext(module) as (
+    with cellprofiler.modules.exporttodatabase.DBContext(module) as (
         connection,
         cursor,
     ):
@@ -5492,11 +5492,11 @@ def test_dbcontext_mysql():
 def test_dbcontext_sqlite():
     output_dir = tempfile.mkdtemp()
     try:
-        module = cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase()
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_SQLITE
+        module = cellprofiler.modules.exporttodatabase.ExportToDatabase()
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
-        with cellprofiler.modules.plugins.exporttodatabase.DBContext(module) as (
+        with cellprofiler.modules.exporttodatabase.DBContext(module) as (
             connection,
             cursor,
         ):
@@ -5519,18 +5519,18 @@ def test_post_run_experiment_measurement_mysql():
     workspace, module = make_workspace(False, post_run_test=True)
     try:
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttodatabase.ExportToDatabase
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
         )
-        module.db_type.value = cellprofiler.modules.plugins.exporttodatabase.DB_MYSQL
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.allow_overwrite.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OVERWRITE_ALL
+            cellprofiler.modules.exporttodatabase.OVERWRITE_ALL
         )
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
-        module.objects_choice.value = cellprofiler.modules.plugins.exporttodatabase.O_ALL
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
         module.separate_object_tables.value = (
-            cellprofiler.modules.plugins.exporttodatabase.OT_COMBINE
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
         )
         workspace.measurements[
             cellprofiler_core.measurement.EXPERIMENT, STRING_IMG_MEASUREMENT

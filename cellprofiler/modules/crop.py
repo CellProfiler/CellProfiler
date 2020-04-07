@@ -114,7 +114,7 @@ class Crop(cellprofiler_core.module.Module):
     def create_settings(self):
         self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             text="Select the input image",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
             doc="Choose the image to be cropped.",
         )
 
@@ -296,7 +296,7 @@ Specify the radius of the ellipse in the Y direction.
 
         self.image_mask_source = cellprofiler_core.setting.ImageNameSubscriber(
             text="Select the masking image",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
             doc="""\
 *(Used only if "{SH_IMAGE}" selected as cropping shape)*
 
@@ -308,7 +308,7 @@ Select the image to be use as a cropping mask.
 
         self.cropping_mask_source = cellprofiler_core.setting.CroppingNameSubscriber(
             text="Select the image with a cropping mask",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
             doc="""\
 *(Used only if "{SH_CROPPING}" selected as cropping shape)*
 
@@ -320,7 +320,7 @@ Select the image associated with the cropping mask that you want to use.
 
         self.objects_source = cellprofiler_core.setting.ObjectNameSubscriber(
             text="Select the objects",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
             doc="""\
 *(Used only if "{SH_OBJECTS}" selected as cropping shape)*
 
@@ -946,7 +946,7 @@ objects:
         if from_matlab and variable_revision_number == 4:
             # Added OFF_REMOVE_ROWS_AND_COLUMNS
             new_setting_values = list(setting_values)
-            new_setting_values.append(cellprofiler_core.setting.NO)
+            new_setting_values.append("No")
             variable_revision_number = 5
         if from_matlab and variable_revision_number == 5:
             # added image mask source, cropping mask source and reworked
@@ -954,9 +954,9 @@ objects:
             new_setting_values = list(setting_values)
             new_setting_values.extend(
                 [
-                    cellprofiler_core.setting.NONE,
-                    cellprofiler_core.setting.NONE,
-                    cellprofiler_core.setting.NONE,
+                    "None",
+                    "None",
+                    "None",
                 ]
             )
             shape = setting_values[OFF_SHAPE]
@@ -974,7 +974,7 @@ objects:
                     new_setting_values[OFF_SHAPE] = SH_IMAGE
             if (
                 new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS]
-                == cellprofiler_core.setting.YES
+                == "Yes"
             ):
                 new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] = RM_EDGES
             setting_values = new_setting_values
@@ -984,7 +984,7 @@ objects:
         if (not from_matlab) and variable_revision_number == 1:
             # Added ability to crop objects
             new_setting_values = list(setting_values)
-            new_setting_values.append(cellprofiler_core.setting.NONE)
+            new_setting_values.append("None")
             variable_revision_number = 2
 
         if variable_revision_number == 2 and not from_matlab:

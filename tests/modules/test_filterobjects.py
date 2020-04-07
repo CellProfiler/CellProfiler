@@ -8,7 +8,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.filterobjects
+import cellprofiler.modules.filterobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -25,7 +25,7 @@ TEST_FTR = "my_measurement"
 
 def make_workspace(object_dict={}, image_dict={}):
     """Make a workspace for testing FilterByObjectMeasurement"""
-    module = cellprofiler.modules.plugins.filterobjects.FilterByObjectMeasurement()
+    module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()
     pipeline = cellprofiler_core.pipeline.Pipeline()
     object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -58,7 +58,7 @@ def make_classifier(
     feature_names=["Foo_" + TEST_FTR],
 ):
     """Returns the filename of the classifier pickle"""
-    assert isinstance(module, cellprofiler.modules.plugins.filterobjects.FilterObjects)
+    assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
     if classes is None:
         classes = numpy.arange(1, numpy.max(answers) + 1)
     if class_names is None:
@@ -70,7 +70,7 @@ def make_classifier(
     os.write(fd, s)
     os.close(fd)
 
-    module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_CLASSIFIERS
+    module.mode.value = cellprofiler.modules.filterobjects.MODE_CLASSIFIERS
     module.rules_class.value = rules_class
     module.rules_directory.set_custom_path(os.path.dirname(filename))
     module.rules_file_name.value = os.path.split(filename)[1]
@@ -87,7 +87,7 @@ def test_zeros_single():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.zeros((0,)))
     module.run(workspace)
@@ -108,7 +108,7 @@ def test_zeros_per_object():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
     )
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.zeros((0,)))
@@ -123,7 +123,7 @@ def test_zeros_filter():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
     module.measurements[0].min_limit.value = 0
     module.measurements[0].max_limit.value = 1000
     m = workspace.measurements
@@ -145,7 +145,7 @@ def test_keep_single_min():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MINIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([2, 1]))
     module.run(workspace)
@@ -181,7 +181,7 @@ def test_keep_single_max():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 2]))
     module.run(workspace)
@@ -207,7 +207,7 @@ def test_keep_one_min():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MINIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
     )
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([2, 1, 3, 4]))
@@ -234,7 +234,7 @@ def test_keep_one_max():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
     )
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 2, 4, 3]))
@@ -260,10 +260,10 @@ def test_keep_maximal_most_overlap():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
     )
     module.per_object_assignment.value = (
-        cellprofiler.modules.plugins.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
     )
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
@@ -289,10 +289,10 @@ def test_keep_minimal_most_overlap():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MINIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
     )
     module.per_object_assignment.value = (
-        cellprofiler.modules.plugins.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
     )
     m = workspace.measurements
     m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([4, 2, 3]))
@@ -321,7 +321,7 @@ def test_filter():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
     module.measurements[0].wants_minimum.value = True
     module.measurements[0].min_limit.value = my_min
     module.measurements[0].wants_maximum.value = True
@@ -352,7 +352,7 @@ def test_filter():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
     module.measurements[0].min_limit.value = my_min
     module.measurements[0].max_limit.value = 0.7
     module.measurements[0].wants_maximum.value = False
@@ -382,7 +382,7 @@ def test_filter():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
     module.measurements[0].min_limit.value = 0.3
     module.measurements[0].wants_minimum.value = False
     module.measurements[0].max_limit.value = my_max
@@ -417,7 +417,7 @@ def test_filter_two():
     for i in range(2):
         measurement_name = "measurement%d" % (i + 1)
         module.measurements[i].measurement.value = measurement_name
-        module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+        module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
         module.measurements[i].min_limit.value = 0.3
         module.measurements[i].wants_minimum.value = False
         module.measurements[i].max_limit.value = my_max[i]
@@ -453,7 +453,7 @@ def test_renumber_other():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
     module.measurements[0].min_limit.value = my_min
     module.measurements[0].max_limit.value = my_max
     module.add_additional_object()
@@ -481,17 +481,17 @@ def test_load_v3():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.filterobjects.FilterObjects)
+    assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
     assert module.x_name == "Things"
     assert module.y_name == "FilteredThings"
-    assert module.mode == cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
+    assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
     assert (
         module.rules_directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.rules_file_name == "myrules.txt"
     assert module.measurements[0].measurement == "Intensity_MeanIntensity_DNA"
-    assert module.filter_choice == cellprofiler.modules.plugins.filterobjects.FI_MINIMAL
+    assert module.filter_choice == cellprofiler.modules.filterobjects.FI_MINIMAL
 
 
 def test_load_v4():
@@ -507,11 +507,11 @@ def test_load_v4():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.filterobjects.FilterObjects)
+    assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
     assert module.y_name == "MyFilteredObjects"
     assert module.x_name == "MyObjects"
-    assert module.mode == cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
-    assert module.filter_choice == cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+    assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
         module.rules_directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
@@ -548,11 +548,11 @@ def test_load_v5():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.filterobjects.FilterObjects)
+    assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
     assert module.y_name == "MyFilteredObjects"
     assert module.x_name == "MyObjects"
-    assert module.mode == cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
-    assert module.filter_choice == cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+    assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
         module.rules_directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
@@ -590,12 +590,12 @@ def test_load_v6():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.filterobjects.FilterObjects)
+    assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
     assert module.y_name == "MyFilteredObjects"
     assert module.x_name == "MyObjects"
-    assert module.mode == cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
-    assert module.filter_choice == cellprofiler.modules.plugins.filterobjects.FI_LIMITS
-    assert module.per_object_assignment == cellprofiler.modules.plugins.filterobjects.PO_BOTH
+    assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+    assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
+    assert module.per_object_assignment == cellprofiler.modules.filterobjects.PO_BOTH
     assert (
         module.rules_directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
@@ -633,14 +633,14 @@ def test_load_v7():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.plugins.filterobjects.FilterObjects)
+    assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)
     assert module.y_name == "MyFilteredObjects"
     assert module.x_name == "MyObjects"
-    assert module.mode == cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
-    assert module.filter_choice == cellprofiler.modules.plugins.filterobjects.FI_LIMITS
+    assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
+    assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
             module.per_object_assignment
-            == cellprofiler.modules.plugins.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+            == cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
     )
     assert (
         module.rules_directory.dir_choice
@@ -673,7 +673,7 @@ def test_filter_by_rule():
     labels[4:9, 14:18] = 3
     workspace, module = make_workspace({"MyObjects": labels})
     assert isinstance(
-        module, cellprofiler.modules.plugins.filterobjects.FilterByObjectMeasurement
+        module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement
     )
     m = workspace.measurements
     m.add_measurement("MyObjects", "MyMeasurement", numpy.array([1.5, 2.3, 1.8]))
@@ -685,7 +685,7 @@ def test_filter_by_rule():
         fd.close()
         rules_dir, rules_file = os.path.split(rules_path)
         module.x_name.value = "MyObjects"
-        module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_RULES
+        module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
         module.rules_file_name.value = rules_file
         module.rules_directory.dir_choice = (
             cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -719,7 +719,7 @@ def test_filter_by_3_class_rule():
             labels[4:9, 14:18] = 3
             workspace, module = make_workspace({"MyObjects": labels})
             assert isinstance(
-                module, cellprofiler.modules.plugins.filterobjects.FilterByObjectMeasurement
+                module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement
             )
             m = workspace.measurements
             m.add_measurement(
@@ -727,7 +727,7 @@ def test_filter_by_3_class_rule():
             )
             rules_dir, rules_file = os.path.split(rules_path)
             module.x_name.value = "MyObjects"
-            module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_RULES
+            module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
             module.rules_file_name.value = rules_file
             module.rules_directory.dir_choice = (
                 cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -758,7 +758,7 @@ def test_discard_border_objects():
     workspace, module = make_workspace({INPUT_OBJECTS: labels})
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
-    module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_BORDER
+    module.mode.value = cellprofiler.modules.filterobjects.MODE_BORDER
     module.run(workspace)
     output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
     assert numpy.all(expected == output_objects.segmented)
@@ -786,7 +786,7 @@ def test_discard_mask_objects():
 
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
-    module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_BORDER
+    module.mode.value = cellprofiler.modules.filterobjects.MODE_BORDER
     module.run(workspace)
     output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
     assert numpy.all(expected == output_objects.segmented)
@@ -811,9 +811,9 @@ def test_unedited_segmented():
     input_objects.unedited_segmented = unedited
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
-    module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
+    module.mode.value = cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MINIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL
     m = workspace.measurements
     m[INPUT_OBJECTS, TEST_FTR] = numpy.array([2, 1])
     module.run(workspace)
@@ -842,9 +842,9 @@ def test_small_removed_segmented():
     workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
-    module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_MEASUREMENTS
+    module.mode.value = cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MINIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MINIMAL
     m = workspace.measurements
     m[INPUT_OBJECTS, TEST_FTR] = numpy.array([2, 1])
     module.run(workspace)
@@ -929,7 +929,7 @@ def test_measurements():
 
     module.measurements[0].measurement.value = TEST_FTR
 
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
 
     measurements = workspace.measurements
 
@@ -983,7 +983,7 @@ def test_discard_border_objects_volume():
 
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
-    module.mode.value = cellprofiler.modules.plugins.filterobjects.MODE_BORDER
+    module.mode.value = cellprofiler.modules.filterobjects.MODE_BORDER
 
     module.run(workspace)
 
@@ -1013,10 +1013,10 @@ def test_keep_maximal_per_object_most_overlap_volume():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
     )
     module.per_object_assignment.value = (
-        cellprofiler.modules.plugins.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
     )
 
     m = workspace.measurements
@@ -1053,9 +1053,9 @@ def test_keep_minimal_per_object_both_parents_image():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MINIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MINIMAL_PER_OBJECT
     )
-    module.per_object_assignment.value = cellprofiler.modules.plugins.filterobjects.PO_BOTH
+    module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_BOTH
 
     m = workspace.measurements
 
@@ -1090,9 +1090,9 @@ def test_keep_maximal_both_parents_volume():
     module.enclosing_object_name.value = ENCLOSING_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
     module.filter_choice.value = (
-        cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL_PER_OBJECT
+        cellprofiler.modules.filterobjects.FI_MAXIMAL_PER_OBJECT
     )
-    module.per_object_assignment.value = cellprofiler.modules.plugins.filterobjects.PO_BOTH
+    module.per_object_assignment.value = cellprofiler.modules.filterobjects.PO_BOTH
 
     m = workspace.measurements
 
@@ -1119,7 +1119,7 @@ def test_keep_maximal_volume():
     module.x_name.value = INPUT_OBJECTS
     module.y_name.value = OUTPUT_OBJECTS
     module.measurements[0].measurement.value = TEST_FTR
-    module.filter_choice.value = cellprofiler.modules.plugins.filterobjects.FI_MAXIMAL
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
 
     m = workspace.measurements
 

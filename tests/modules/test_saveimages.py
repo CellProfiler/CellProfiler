@@ -10,11 +10,11 @@ import skimage.data
 import skimage.util
 
 import cellprofiler_core.image
-import cellprofiler.modules.plugins.saveimages
+import cellprofiler.modules.saveimages
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 
-instance = cellprofiler.modules.plugins.saveimages.SaveImages()
+instance = cellprofiler.modules.saveimages.SaveImages()
 
 
 @pytest.fixture(
@@ -149,12 +149,12 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
     module = pipeline.modules()[0]
 
-    assert module.save_image_or_figure.value == cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    assert module.save_image_or_figure.value == cellprofiler.modules.saveimages.IF_IMAGE
 
     assert module.image_name.value == "DNA"
 
     assert (
-            module.file_name_method.value == cellprofiler.modules.plugins.saveimages.FN_FROM_IMAGE
+            module.file_name_method.value == cellprofiler.modules.saveimages.FN_FROM_IMAGE
     )
 
     assert module.file_image_name.value == "DNA"
@@ -169,11 +169,11 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
     assert module.pathname.value == "Default Output Folder|"
 
-    assert module.bit_depth.value == cellprofiler.modules.plugins.saveimages.BIT_DEPTH_8
+    assert module.bit_depth.value == cellprofiler.modules.saveimages.BIT_DEPTH_8
 
     assert module.overwrite.value == False
 
-    assert module.when_to_save.value == cellprofiler.modules.plugins.saveimages.WS_EVERY_CYCLE
+    assert module.when_to_save.value == cellprofiler.modules.saveimages.WS_EVERY_CYCLE
 
     assert module.update_file_names.value == False
 
@@ -197,11 +197,11 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
 def test_save_image_png_8(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example"
 
@@ -209,9 +209,9 @@ def test_save_image_png_8(tmpdir, image, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_PNG
+    module.file_format.value = cellprofiler.modules.saveimages.FF_PNG
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_8
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
 
     module.run(workspace)
 
@@ -227,11 +227,11 @@ def test_save_image_png_8(tmpdir, image, module, workspace):
 def test_save_image_jpeg_8(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example"
 
@@ -239,9 +239,9 @@ def test_save_image_jpeg_8(tmpdir, image, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_JPEG
+    module.file_format.value = cellprofiler.modules.saveimages.FF_JPEG
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_8
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
 
     module.run(workspace)
 
@@ -257,11 +257,11 @@ def test_save_image_jpeg_8(tmpdir, image, module, workspace):
 def test_save_image_tiff_uint8(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example"
 
@@ -269,9 +269,9 @@ def test_save_image_tiff_uint8(tmpdir, image, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_8
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
 
     module.run(workspace)
 
@@ -287,11 +287,11 @@ def test_save_image_tiff_uint8(tmpdir, image, module, workspace):
 def test_save_image_tiff_uint16(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example"
 
@@ -299,9 +299,9 @@ def test_save_image_tiff_uint16(tmpdir, image, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_16
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
 
     module.run(workspace)
 
@@ -317,11 +317,11 @@ def test_save_image_tiff_uint16(tmpdir, image, module, workspace):
 def test_save_image_tiff_float32(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example"
 
@@ -329,9 +329,9 @@ def test_save_image_tiff_float32(tmpdir, image, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_FLOAT
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT
 
     module.run(workspace)
 
@@ -347,11 +347,11 @@ def test_save_image_tiff_float32(tmpdir, image, module, workspace):
 def test_save_image_npy(tmpdir, image, module, workspace):
     directory = str(tmpdir.mkdir("images"))
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example"
 
@@ -359,7 +359,7 @@ def test_save_image_npy(tmpdir, image, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_NPY
+    module.file_format.value = cellprofiler.modules.saveimages.FF_NPY
 
     module.run(workspace)
 
@@ -375,11 +375,11 @@ def test_save_volume_tiff_uint8(tmpdir, volume, module, workspace):
 
     workspace.image_set.add("example_volume", volume)
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example_volume"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example_volume"
 
@@ -387,9 +387,9 @@ def test_save_volume_tiff_uint8(tmpdir, volume, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_8
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_8
 
     module.run(workspace)
 
@@ -407,11 +407,11 @@ def test_save_volume_tiff_uint16(tmpdir, volume, module, workspace):
 
     workspace.image_set.add("example_volume", volume)
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example_volume"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example_volume"
 
@@ -419,9 +419,9 @@ def test_save_volume_tiff_uint16(tmpdir, volume, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_16
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_16
 
     module.run(workspace)
 
@@ -439,11 +439,11 @@ def test_save_volume_tiff_float32(tmpdir, volume, module, workspace):
 
     workspace.image_set.add("example_volume", volume)
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example_volume"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example_volume"
 
@@ -451,9 +451,9 @@ def test_save_volume_tiff_float32(tmpdir, volume, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_TIFF
+    module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
 
-    module.bit_depth.value = cellprofiler.modules.plugins.saveimages.BIT_DEPTH_FLOAT
+    module.bit_depth.value = cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT
 
     module.run(workspace)
 
@@ -471,11 +471,11 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 
     workspace.image_set.add("example_volume", volume)
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example_volume"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example_volume"
 
@@ -483,7 +483,7 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_NPY
+    module.file_format.value = cellprofiler.modules.saveimages.FF_NPY
 
     module.run(workspace)
 
@@ -512,11 +512,11 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 @pytest.mark.parametrize(
     "bit_depth,dtype,convfun",
     [
-        (cellprofiler.modules.plugins.saveimages.BIT_DEPTH_16, numpy.uint16,
+        (cellprofiler.modules.saveimages.BIT_DEPTH_16, numpy.uint16,
          skimage.util.img_as_uint),
-        (cellprofiler.modules.plugins.saveimages.BIT_DEPTH_8, numpy.uint8,
+        (cellprofiler.modules.saveimages.BIT_DEPTH_8, numpy.uint8,
          skimage.util.img_as_ubyte),
-        (cellprofiler.modules.plugins.saveimages.BIT_DEPTH_FLOAT, numpy.float32,
+        (cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT, numpy.float32,
          lambda x: x)
 
 ]
@@ -526,11 +526,11 @@ def test_save_hdf5_saving(tmpdir, volume, module, workspace,
     directory = str(tmpdir.mkdir("images"))
     workspace.image_set.add("example_volume", volume)
 
-    module.save_image_or_figure.value = cellprofiler.modules.plugins.saveimages.IF_IMAGE
+    module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
 
     module.image_name.value = "example_volume"
 
-    module.file_name_method.value = cellprofiler.modules.plugins.saveimages.FN_SINGLE_NAME
+    module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
 
     module.single_file_name.value = "example_volume"
 
@@ -538,7 +538,7 @@ def test_save_hdf5_saving(tmpdir, volume, module, workspace,
         cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
-    module.file_format.value = cellprofiler.modules.plugins.saveimages.FF_H5
+    module.file_format.value = cellprofiler.modules.saveimages.FF_H5
 
     module.bit_depth.value = bit_depth
 

@@ -436,7 +436,7 @@ class MergeOutputFiles(cpm.Module):
 
 
 if __name__ == "__main__":
-    import cellprofiler.modules
+    import cellprofiler_core.modules
     import wx
 
     app = wx.PySimpleApp(False)

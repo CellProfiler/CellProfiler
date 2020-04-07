@@ -2,7 +2,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.crop
+import cellprofiler.modules.crop
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -18,7 +18,7 @@ def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=No
     """Return a workspace with the given images installed and the crop module"""
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    module = cellprofiler.modules.plugins.crop.Crop()
+    module = cellprofiler.modules.crop.Crop()
     module.set_module_num(1)
     image_set.add(INPUT_IMAGE, cellprofiler_core.image.Image(input_pixels))
     module.image_name.value = INPUT_IMAGE
@@ -69,8 +69,8 @@ def test_zeros():
     workspace, module = make_workspace(
         numpy.zeros((10, 10)), crop_image=numpy.zeros((10, 10), bool)
     )
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_IMAGE
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_NO
+    module.shape.value = cellprofiler.modules.crop.SH_IMAGE
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_NO
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == 0)
@@ -99,8 +99,8 @@ def test_zeros_and_remove_all():
     workspace, module = make_workspace(
         numpy.zeros((10, 10)), crop_image=numpy.zeros((10, 10), bool)
     )
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_IMAGE
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_ALL
+    module.shape.value = cellprofiler.modules.crop.SH_IMAGE
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_ALL
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.product(output_image.pixel_data.shape) == 0
@@ -117,8 +117,8 @@ def test_crop_edges_with_image():
     expected_image[0, 0] = input_image[2, 3]
     expected_image[5, 2] = input_image[7, 5]
     workspace, module = make_workspace(input_image, crop_image=crop_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_IMAGE
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.shape.value = cellprofiler.modules.crop.SH_IMAGE
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -135,8 +135,8 @@ def test_crop_all_with_image():
     expected_image[1, 0] = 0
     expected_image[0, 1] = 0
     workspace, module = make_workspace(input_image, crop_image=crop_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_IMAGE
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_ALL
+    module.shape.value = cellprofiler.modules.crop.SH_IMAGE
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_ALL
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -153,8 +153,8 @@ def test_crop_edges_with_cropping():
     expected_image[0, 0] = input_image[2, 3]
     expected_image[5, 2] = input_image[7, 5]
     workspace, module = make_workspace(input_image, cropping=crop_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_CROPPING
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.shape.value = cellprofiler.modules.crop.SH_CROPPING
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -165,8 +165,8 @@ def test_crop_with_ellipse_x_major():
     x, y = numpy.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_ELLIPSE
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.shape.value = cellprofiler.modules.crop.SH_ELLIPSE
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.ellipse_center.set_value((4, 5))
     module.ellipse_x_radius.value = 3
     module.ellipse_y_radius.value = 2
@@ -185,8 +185,8 @@ def test_crop_with_ellipse_y_major():
     x, y = numpy.mgrid[0:10, 0:10]
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_ELLIPSE
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.shape.value = cellprofiler.modules.crop.SH_ELLIPSE
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.ellipse_center.set_value((5, 4))
     module.ellipse_x_radius.value = 2
     module.ellipse_y_radius.value = 3
@@ -206,10 +206,10 @@ def test_crop_with_rectangle():
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     expected_image = input_image[2:8, 1:9]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((2, 8))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -220,10 +220,10 @@ def test_crop_with_rectangle_unbounded_xmin():
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     expected_image = input_image[2:8, :9]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((0, 9))
     module.vertical_limits.set_value((2, 8))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -234,10 +234,10 @@ def test_crop_with_rectangle_unbounded_xmax():
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     expected_image = input_image[2:8, 1:]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((1, "end"))
     module.vertical_limits.set_value((2, 8))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -248,10 +248,10 @@ def test_crop_with_rectangle_unbounded_ymin():
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     expected_image = input_image[:8, 1:9]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((0, 8))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -262,10 +262,10 @@ def test_crop_with_rectangle_unbounded_ymax():
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     expected_image = input_image[2:, 1:9]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((2, "end"))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -277,10 +277,10 @@ def test_crop_color_with_rectangle():
     input_image = (i / 1000.0 + j / 100.0 + k).astype(numpy.float32)
     expected_image = input_image[2:8, 1:9, :]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((1, 9))
     module.vertical_limits.set_value((2, 8))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -291,10 +291,10 @@ def test_crop_with_rectangle_float_bounds():
     input_image = (x / 100.0 + y / 10.0).astype(numpy.float32)
     expected_image = input_image[2:8, 1:9]
     workspace, module = make_workspace(input_image)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_RECTANGLE
+    module.shape.value = cellprofiler.modules.crop.SH_RECTANGLE
     module.horizontal_limits.set_value((1.2, 9.0000003))
     module.vertical_limits.set_value((2.5, 8.999999))
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert numpy.all(output_image.pixel_data == expected_image)
@@ -307,9 +307,9 @@ def test_mask_with_objects():
     input_objects[2:7, 3:8] = 1
     input_objects[12:17, 3:8] = 2
     workspace, module = make_workspace(input_image, crop_objects=input_objects)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_OBJECTS
+    module.shape.value = cellprofiler.modules.crop.SH_OBJECTS
     module.objects_source.value = CROP_OBJECTS
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_NO
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_NO
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert output_image.has_masking_objects
@@ -324,9 +324,9 @@ def test_crop_with_objects():
     input_objects[2:7, 3:8] = 1
     input_objects[12:17, 3:8] = 2
     workspace, module = make_workspace(input_image, crop_objects=input_objects)
-    module.shape.value = cellprofiler.modules.plugins.crop.SH_OBJECTS
+    module.shape.value = cellprofiler.modules.crop.SH_OBJECTS
     module.objects_source.value = CROP_OBJECTS
-    module.remove_rows_and_columns.value = cellprofiler.modules.plugins.crop.RM_EDGES
+    module.remove_rows_and_columns.value = cellprofiler.modules.crop.RM_EDGES
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
     assert output_image.has_masking_objects

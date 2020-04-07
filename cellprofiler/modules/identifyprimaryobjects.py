@@ -12,7 +12,6 @@ import scipy.sparse
 import skimage.morphology
 
 import cellprofiler.gui.help
-import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler_core.object
 import cellprofiler_core.setting
@@ -403,9 +402,9 @@ desired.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(
                 **{
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                     "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
-                    "NO": cellprofiler_core.setting.NO,
+                    "NO": "No",
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
             ),
@@ -431,8 +430,8 @@ partial object would not be accurate.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
             """.format(
                 **{
-                    "YES": cellprofiler_core.setting.YES,
-                    "NO": cellprofiler_core.setting.NO,
+                    "YES": "Yes",
+                    "NO": "No",
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
             ),
@@ -602,8 +601,8 @@ objects merged that ought to be separate or too many objects split up
 that ought to be merged, you may want to override the automatically
 calculated value.""".format(
                 **{
-                    "YES": cellprofiler_core.setting.YES,
-                    "NO": cellprofiler_core.setting.NO,
+                    "YES": "Yes",
+                    "NO": "No",
                     "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 }
             ),
@@ -665,8 +664,8 @@ but if you see too many objects merged that ought to be separate, or too
 many objects split up that ought to be merged, you may want to override
 the automatically calculated value.""".format(
                 **{
-                    "YES": cellprofiler_core.setting.YES,
-                    "NO": cellprofiler_core.setting.NO,
+                    "YES": "Yes",
+                    "NO": "No",
                     "SMOOTHING_FILTER_SIZE_SETTING_TEXT": SMOOTHING_FILTER_SIZE_SETTING_TEXT,
                     "SIZE_RANGE_SETTING_TEXT": SIZE_RANGE_SETTING_TEXT,
                 }
@@ -714,7 +713,7 @@ helpful for saving processing time on large images.
 
 Note that if you have entered a minimum object diameter of 10 or less,
 checking this box will have no effect.""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -790,7 +789,7 @@ documentation for the previous setting for details.""",
             
             For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
             If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -831,7 +830,7 @@ If "*{NO}*" is selected, the following settings are used:
                     "LIMIT_CHOICE_TEXT": self.limit_choice.get_text(),
                     "LIMIT_CHOICE_VALUE": LIMIT_NONE,
                     "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
-                    "NO": cellprofiler_core.setting.NO,
+                    "NO": "No",
                     "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold.threshold_correction_factor.get_text(),
                     "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
                     "THRESHOLD_METHOD_TEXT": self.threshold.global_operation.get_text(),
@@ -847,7 +846,7 @@ If "*{NO}*" is selected, the following settings are used:
                     "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
                     "WATERSHED_METHOD_TEXT": self.watershed_method.get_text(),
                     "WATERSHED_METHOD_VALUE": WA_INTENSITY,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
@@ -901,9 +900,9 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 10:
             setting_values = list(setting_values)
-            if setting_values[OFF_FILL_HOLES_V10] == cellprofiler_core.setting.NO:
+            if setting_values[OFF_FILL_HOLES_V10] == "No":
                 setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
-            elif setting_values[OFF_FILL_HOLES_V10] == cellprofiler_core.setting.YES:
+            elif setting_values[OFF_FILL_HOLES_V10] == "Yes":
                 setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
             variable_revision_number = 11
 
@@ -928,7 +927,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 12:
             new_setting_values = setting_values[: N_SETTINGS - 1]
-            new_setting_values += [cellprofiler_core.setting.YES]
+            new_setting_values += ["Yes"]
             new_setting_values += setting_values[N_SETTINGS - 1 :]
 
             setting_values = new_setting_values
@@ -937,7 +936,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 13:
             new_setting_values = setting_values[: N_SETTINGS - 3]
-            new_setting_values += [cellprofiler_core.setting.NO, DEFAULT_MAXIMA_COLOR]
+            new_setting_values += ["No", DEFAULT_MAXIMA_COLOR]
             new_setting_values += setting_values[N_SETTINGS - 3 :]
 
             setting_values = new_setting_values

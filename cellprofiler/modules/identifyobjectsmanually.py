@@ -43,7 +43,7 @@ import numpy as np
 
 import cellprofiler_core.object as cpo
 import cellprofiler_core.setting as cps
-from cellprofilder_core.modules import identify as I
+from cellprofiler_core.modules import identify as I
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
@@ -58,7 +58,7 @@ class IdentifyObjectsManually(I.Identify):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""Choose the name of the image to display in the object selection user interface.""",
         )
 
@@ -159,7 +159,7 @@ refer to your objects in subsequent modules.""",
         if from_matlab and variable_revision_number == 2:
             image_name, object_name, max_resolution, save_outlines = setting_values
             wants_outlines = (
-                cps.YES if save_outlines.lower() == cps.DO_NOT_USE.lower() else cps.NO
+                "Yes" if save_outlines.lower() == "Do not use".lower() else "No"
             )
             setting_values = [image_name, object_name, wants_outlines, save_outlines]
             variable_revision_number = 1

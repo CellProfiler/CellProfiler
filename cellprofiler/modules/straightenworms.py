@@ -112,10 +112,11 @@ from cellprofiler_core.modules.identify import get_object_measurement_columns
 from scipy.interpolate import interp1d
 from scipy.ndimage import map_coordinates, extrema
 
-from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from .untangleworms import F_LENGTH
-from .untangleworms import read_params
-from .untangleworms import recalculate_single_worm_control_points
+from cellprofiler.modules.untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from cellprofiler.modules.untangleworms import F_LENGTH
+from cellprofiler.modules.untangleworms import read_params
+from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -303,7 +304,7 @@ always at the same end of the worm.
 
         self.flip_image = cps.Choice(
             "Alignment image",
-            [cps.NONE],
+            ["None"],
             choices_fn=image_choices_fn,
             doc="""
 (*Only used if aligning worms*)
@@ -332,7 +333,7 @@ You must use one of the straightened images below.""",
             "image_name",
             cps.ImageNameSubscriber(
                 "Select an input image to straighten",
-                cps.NONE,
+                "None",
                 doc="""\
 This is the name of an image that will be straightened
 similarly to the worm. The straightened image and objects can
@@ -1294,7 +1295,7 @@ of the straightened worms.""",
             #
             setting_values = (
                 setting_values[:FIXED_SETTINGS_COUNT_V1]
-                + [cps.NO, "4", cps.NO, "None"]
+                + ["No", "4", "No", "None"]
                 + setting_values[FIXED_SETTINGS_COUNT_V1:]
             )
             variable_revision_number = 2

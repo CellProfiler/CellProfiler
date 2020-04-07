@@ -170,7 +170,7 @@ and colocalization algorithms on your images and/or objects;
 otherwise select *{NO}* to pick which correlation and 
 colocalization algorithms to run.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
@@ -180,7 +180,7 @@ colocalization algorithms to run.
             doc="""\
 Select *{YES}* to run the Pearson correlation and slope metrics.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -190,7 +190,7 @@ Select *{YES}* to run the Pearson correlation and slope metrics.
             doc="""\
 Select *{YES}* to run the Manders coefficients.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -200,7 +200,7 @@ Select *{YES}* to run the Manders coefficients.
             doc="""\
 Select *{YES}* to run the Rank Weighted Coloalization coefficients.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -210,7 +210,7 @@ Select *{YES}* to run the Rank Weighted Coloalization coefficients.
             doc="""\
 Select *{YES}* to run the Overlap coefficients.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -220,7 +220,7 @@ Select *{YES}* to run the Overlap coefficients.
             doc="""\
 Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -237,7 +237,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             "image_name",
             cellprofiler_core.setting.ImageNameSubscriber(
                 "Select an image to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="Select an image to measure the correlation/colocalization in.",
             ),
         )
@@ -267,7 +267,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             "object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select an object to measure",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""\
 *(Used only when "Within objects" or "Both" are selected)*
 

@@ -325,7 +325,7 @@ class Morph(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""\
 Select the image that you want to perform a morphological operation on.
 A grayscale image can be converted to binary using the **Threshold**
@@ -645,7 +645,7 @@ input for a measurement module."""
             # (function, count) repeated 6 times
             new_setting_values = [setting_values[0], setting_values[1]]
             for i in range(6):
-                if setting_values[i * 2 + 2] != cps.DO_NOT_USE:
+                if setting_values[i * 2 + 2] != "Do not use":
                     new_setting_values.append(setting_values[i * 2 + 2])
                     if (
                         setting_values[i * 2 + 3].isdigit()
@@ -680,7 +680,7 @@ input for a measurement module."""
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V3):
                 new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V3]
-                new_setting_values += [cps.YES]
+                new_setting_values += ["Yes"]
             setting_values = new_setting_values
             variable_revision_number = 4
 

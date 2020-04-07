@@ -477,7 +477,7 @@ purposes.
 Whether you chose to use a prefix or not, CellProfiler will warn you if
 your choice entails overwriting an existing table.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
@@ -550,13 +550,13 @@ many entries as possible based on the pipeline’s settings, including the
 server name, username, and password if MySQL is used. Keep in mind you
 should not share the resulting file because it contains your password.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
         self.location_object = cellprofiler_core.setting.ObjectNameSubscriber(
             "Which objects should be used for locations?",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only if creating a properties file)*
 
@@ -686,7 +686,7 @@ images. This option will do the following:
 
 Select "*{NO}*" to specify which images should be included or to
 override the automatic values.""".format(
-                **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
@@ -730,7 +730,7 @@ Classifier function within CellProfiler Analyst.
 It will also provide new options in the Classifier fetch menu so you can
 fetch objects from images with specific values for the group columns.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -754,7 +754,7 @@ defining a *filter*. Filters are useful, for example, for fetching and
 scoring objects in Classifier within CellProfiler Analyst or making graphs using the plotting tools
 that satisfy a specific metadata constraint.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -767,7 +767,7 @@ that satisfy a specific metadata constraint.
 If you have specified a plate metadata tag, select "*{YES}*" to
 create a set of filters in the properties file, one for each plate.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -914,7 +914,7 @@ Mean\_Nuclei\_AreaShape\_Area column:
 Mean_Nuclei_AreaShape_Area = (SELECT AVG(Nuclei_AreaShape_Area) FROM Per_Object
 WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` 
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -935,7 +935,7 @@ per-object measurements; doing so might exceed database column limits.
 However, unlike population means and standard deviations, there is no
 built in median operation in MySQL to create these values manually.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -961,7 +961,7 @@ StDev\_Nuclei\_AreaShape\_Area column:
 StDev_Nuclei_AreaShape_Area = (SELECT STDDEV(Nuclei_AreaShape_Area) FROM Per_Object
 WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` 
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -993,7 +993,7 @@ create the Per\_Well table, regardless of the option chosen above.
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
             ),
@@ -1028,7 +1028,7 @@ create the Per\_Well table, regardless of the option chosen above.
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
             ),
@@ -1063,7 +1063,7 @@ create the Per\_Well table, regardless of the option chosen above.
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
             ),
@@ -1125,7 +1125,7 @@ This view has the following columns:
    and object number of the second object in the relationship
 """.format(
                 **{
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                     "COL_MODULE_NUMBER": COL_MODULE_NUMBER,
                     "COL_RELATIONSHIP": COL_RELATIONSHIP,
                     "COL_OBJECT_NAME1": COL_OBJECT_NAME1,
@@ -1212,7 +1212,7 @@ dropdown.""".format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_SQLITE": DB_SQLITE,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
@@ -1230,7 +1230,7 @@ dropdown.""".format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_SQLITE": DB_SQLITE,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
@@ -1248,7 +1248,7 @@ is white/saturated. """.format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_SQLITE": DB_SQLITE,
-                    "YES": cellprofiler_core.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
@@ -1301,7 +1301,7 @@ You can choose from three options to control overwriting behavior:
             "image_cols",
             cellprofiler_core.setting.Choice(
                 "Select an image to include",
-                [cellprofiler_core.setting.NONE],
+                ["None"],
                 choices_fn=self.get_property_file_image_choices,
                 doc="""\
 *(Used only if creating a properties file and specifying the image information)*
@@ -1332,7 +1332,7 @@ displayed name.
 
 Select "*{NO}*" to name the image yourself.
 """.format(
-                    **{"YES": cellprofiler_core.setting.YES, "NO": cellprofiler_core.setting.NO}
+                    **{"YES": "Yes", "NO": "No"}
                 ),
             ),
         )
@@ -1588,7 +1588,7 @@ available:
             "x_object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Enter the object name",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc=object_name_help(),
             ),
         )
@@ -1636,7 +1636,7 @@ available:
             "y_object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
                 "Enter the object name",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc=object_name_help(),
             ),
         )
@@ -2221,7 +2221,7 @@ available:
             elif self.objects_choice == O_ALL:
                 selected_objs = list(
                     pipeline.get_provider_dictionary(
-                        cellprofiler_core.setting.OBJECT_GROUP
+                        "objectgroup"
                     ).keys()
                 )
 
@@ -5301,31 +5301,31 @@ CP version : %d\n""" % int(
         DIR_DEFAULT_IMAGE = "Default input folder"
 
         if from_matlab and variable_revision_number == 4:
-            setting_values = setting_values + [cellprofiler_core.setting.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 5
         if from_matlab and variable_revision_number == 5:
-            if setting_values[-1] == cellprofiler_core.setting.YES:
+            if setting_values[-1] == "Yes":
                 setting_values = setting_values[:-1] + ["Yes - V1.0 format"]
             variable_revision_number = 6
         if from_matlab and variable_revision_number == 6:
             new_setting_values = [setting_values[0], setting_values[1]]
-            if setting_values[2] == cellprofiler_core.setting.DO_NOT_USE:
-                new_setting_values.append(cellprofiler_core.setting.NO)
+            if setting_values[2] == "Do not use":
+                new_setting_values.append("No")
                 new_setting_values.append("MyExpt_")
             else:
-                new_setting_values.append(cellprofiler_core.setting.YES)
+                new_setting_values.append("Yes")
                 new_setting_values.append(setting_values[2])
             new_setting_values.append(setting_values[3])
             if setting_values[4] == ".":
-                new_setting_values.append(cellprofiler_core.setting.YES)
+                new_setting_values.append("Yes")
                 new_setting_values.append(setting_values[4])
             else:
-                new_setting_values.append(cellprofiler_core.setting.NO)
+                new_setting_values.append("No")
                 new_setting_values.append(setting_values[4])
-            if setting_values[5][:3] == cellprofiler_core.setting.YES:
-                new_setting_values.append(cellprofiler_core.setting.YES)
+            if setting_values[5][:3] == "Yes":
+                new_setting_values.append("Yes")
             else:
-                new_setting_values.append(cellprofiler_core.setting.NO)
+                new_setting_values.append("No")
             from_matlab = False
             variable_revision_number = 6
             setting_values = new_setting_values
@@ -5336,7 +5336,7 @@ CP version : %d\n""" % int(
             setting_values = (
                 setting_values[:-1]
                 + [cellprofiler_core.measurement.IMAGE]
-                + [cellprofiler_core.setting.DO_NOT_USE] * 3
+                + ["Do not use"] * 3
                 + setting_values[-1:]
             )
             variable_revision_number = 8
@@ -5347,7 +5347,7 @@ CP version : %d\n""" % int(
             #
             setting_values = (
                 setting_values[:-1]
-                + [cellprofiler_core.setting.DO_NOT_USE] * 3
+                + ["Do not use"] * 3
                 + setting_values[-1:]
             )
             variable_revision_number = 9
@@ -5358,36 +5358,36 @@ CP version : %d\n""" % int(
             setting_values = (
                 setting_values[:-1]
                 + [
-                    cellprofiler_core.setting.NO,
-                    cellprofiler_core.setting.DO_NOT_USE,
-                    cellprofiler_core.setting.DO_NOT_USE,
+                    "No",
+                    "Do not use",
+                    "Do not use",
                 ]
                 + setting_values[-1:]
             )
             variable_revision_number = 10
         if from_matlab and variable_revision_number == 10:
             new_setting_values = setting_values[0:2]
-            if setting_values[2] == cellprofiler_core.setting.DO_NOT_USE:
-                new_setting_values.append(cellprofiler_core.setting.NO)
+            if setting_values[2] == "Do not use":
+                new_setting_values.append("No")
                 new_setting_values.append("MyExpt_")
             else:
-                new_setting_values.append(cellprofiler_core.setting.YES)
+                new_setting_values.append("Yes")
                 new_setting_values.append(setting_values[2])
             new_setting_values.append(setting_values[3])
             if setting_values[4] == ".":
-                new_setting_values.append(cellprofiler_core.setting.YES)
+                new_setting_values.append("Yes")
                 new_setting_values.append(setting_values[4])
             else:
-                new_setting_values.append(cellprofiler_core.setting.NO)
+                new_setting_values.append("No")
                 new_setting_values.append(setting_values[4])
-            if setting_values[18][:3] == cellprofiler_core.setting.YES:
-                new_setting_values.append(cellprofiler_core.setting.YES)
+            if setting_values[18][:3] == "Yes":
+                new_setting_values.append("Yes")
             else:
-                new_setting_values.append(cellprofiler_core.setting.NO)
+                new_setting_values.append("No")
             #
             # store_csvs
             #
-            new_setting_values.append(cellprofiler_core.setting.YES)
+            new_setting_values.append("Yes")
             #
             # DB host / user / password
             #
@@ -5398,16 +5398,16 @@ CP version : %d\n""" % int(
             new_setting_values += ["DefaultDB.db"]
             #
             # Aggregate mean, median & std dev
-            wants_mean = cellprofiler_core.setting.NO
-            wants_std_dev = cellprofiler_core.setting.NO
-            wants_median = cellprofiler_core.setting.NO
+            wants_mean = "No"
+            wants_std_dev = "No"
+            wants_median = "No"
             for setting in setting_values[5:8]:
                 if setting == "Median":
-                    wants_median = cellprofiler_core.setting.YES
+                    wants_median = "Yes"
                 elif setting == "Mean":
-                    wants_mean = cellprofiler_core.setting.YES
+                    wants_mean = "Yes"
                 elif setting == "Standard deviation":
-                    wants_std_dev = cellprofiler_core.setting.YES
+                    wants_std_dev = "Yes"
             new_setting_values += [wants_mean, wants_median, wants_std_dev]
             #
             # Object export
@@ -5419,7 +5419,7 @@ CP version : %d\n""" % int(
                 for setting in setting_values[8:15]:
                     if setting not in (
                         cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.setting.DO_NOT_USE,
+                        "Do not use",
                     ):
                         objects_list.append(setting)
                 if len(objects_list) > 0:
@@ -5460,7 +5460,7 @@ CP version : %d\n""" % int(
             #
             # Added a directory choice instead of a checkbox
             #
-            if setting_values[5] == cellprofiler_core.setting.NO or setting_values[6] == ".":
+            if setting_values[5] == "No" or setting_values[6] == ".":
                 directory_choice = DIR_DEFAULT_OUTPUT
             elif setting_values[6] == "&":
                 directory_choice = DIR_DEFAULT_IMAGE
@@ -5477,7 +5477,7 @@ CP version : %d\n""" % int(
             # "store_csvs" setting
             #
             db_type = setting_values[0]
-            store_csvs = setting_values[8] == cellprofiler_core.setting.YES
+            store_csvs = setting_values[8] == "Yes"
             if db_type == DB_MYSQL and store_csvs:
                 db_type = DB_MYSQL_CSV
             setting_values = [db_type] + setting_values[1:8] + setting_values[9:]
@@ -5531,14 +5531,14 @@ CP version : %d\n""" % int(
             #
             # Added 3 new args: url_prepend and thumbnail options
             #
-            setting_values = setting_values + ["", cellprofiler_core.setting.NO, ""]
+            setting_values = setting_values + ["", "No", ""]
             variable_revision_number = 16
 
         if (not from_matlab) and variable_revision_number == 16:
             #
             # Added binary choice for auto-scaling thumbnail intensities
             #
-            setting_values = setting_values + [cellprofiler_core.setting.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 17
 
         if (not from_matlab) and variable_revision_number == 17:
@@ -5560,25 +5560,25 @@ CP version : %d\n""" % int(
             # Added configuration of image information, groups, filters in properties file
             #
             setting_values = setting_values + [
-                cellprofiler_core.setting.YES,
+                "Yes",
                 "1",
                 "1",
                 "0",
             ]  # Hidden counts
             setting_values = setting_values + [
                 "None",
-                cellprofiler_core.setting.YES,
+                "Yes",
                 "None",
                 "gray",
             ]  # Image info
             setting_values = setting_values + [
-                cellprofiler_core.setting.NO,
+                "No",
                 "",
                 "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well",
             ]  # Group specifications
             setting_values = setting_values + [
-                cellprofiler_core.setting.NO,
-                cellprofiler_core.setting.NO,
+                "No",
+                "No",
             ]  # Filter specifications
             variable_revision_number = 20
 
@@ -5591,7 +5591,7 @@ CP version : %d\n""" % int(
                 + ["1"]
                 + setting_values[SETTING_WORKSPACE_GROUP_COUNT:]
             )  # workspace_measurement_count
-            setting_values += [cellprofiler_core.setting.NO]  # create_workspace_file
+            setting_values += ["No"]  # create_workspace_file
             setting_values += [
                 W_SCATTERPLOT,  # measurement_display
                 cellprofiler_core.measurement.IMAGE,
@@ -5612,7 +5612,7 @@ CP version : %d\n""" % int(
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V21]
-                + ["MyExpt", cellprofiler_core.setting.NONE]
+                + ["MyExpt", "None"]
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V21:]
             )
             variable_revision_number = 22
@@ -5634,7 +5634,7 @@ CP version : %d\n""" % int(
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V23]
-                + [cellprofiler_core.setting.NO]
+                + ["No"]
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V23:]
             )
             variable_revision_number = 24
@@ -5659,7 +5659,7 @@ CP version : %d\n""" % int(
             )
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V25]
-                + [cellprofiler_core.setting.YES if wants_urls else cellprofiler_core.setting.NO]
+                + ["Yes" if wants_urls else "No"]
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V25:]
             )
             variable_revision_number = 26

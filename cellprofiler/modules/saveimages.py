@@ -44,7 +44,7 @@ import skimage.util
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules.loadimages
-import cellprofiler_core.preferences
+import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
@@ -183,7 +183,7 @@ Several choices are available for constructing the image file name:
 
         self.file_image_name = cellprofiler_core.setting.FileImageNameSubscriber(
             "Select image name for file prefix",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only when “{FN_FROM_IMAGE}” is selected for constructing the filename)*
 
@@ -235,7 +235,7 @@ will override the value entered.""".format(
 Select "*{YES}*" to add a suffix to the image’s file name. Select "*{NO}*"
 to use the image name as-is.
             """.format(
-                **{"NO": cellprofiler_core.setting.NO, "YES": cellprofiler_core.setting.YES}
+                **{"NO": "No", "YES": "Yes"}
             ),
         )
 
@@ -353,7 +353,7 @@ Select "*{NO}*" to be prompted for confirmation first.
 If you are running the pipeline on a computing cluster, select "*{YES}*"
 since you will not be able to intervene and answer the confirmation
 prompt.""".format(
-                **{"NO": cellprofiler_core.setting.NO, "YES": cellprofiler_core.setting.YES}
+                **{"NO": "No", "YES": "Yes"}
             ),
         )
 
@@ -399,7 +399,7 @@ Instances in which this information may be useful include:
    CellProfiler Analyst, for example, you will want to enable this
    setting if you want the saved images to be displayed along with the
    original images.""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -407,7 +407,7 @@ Instances in which this information may be useful include:
             "Create subfolders in the output folder?",
             False,
             doc="""Select "*{YES}*" to create subfolders to match the input image folder structure.""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -953,7 +953,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
                 pipeline, self.image_name
             ):
                 if setting.provided_attributes.get(
-                    cellprofiler_core.setting.AVAILABLE_ON_LAST_ATTRIBUTE
+                    "available_on_last"
                 ):
                     #
                     # If we fell through, then you can only save on the last cycle
@@ -1003,12 +1003,12 @@ class SaveImagesDirectoryPath(cellprofiler_core.setting.DirectoryPath):
         super(SaveImagesDirectoryPath, self).__init__(
             text,
             dir_choices=[
-                cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-                cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME,
+                cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
+                cpprefs.DEFAULT_INPUT_FOLDER_NAME,
                 PC_WITH_IMAGE,
-                cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME,
-                cellprofiler_core.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cellprofiler_core.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cpprefs.ABSOLUTE_FOLDER_NAME,
+                cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
             doc=doc,
         )

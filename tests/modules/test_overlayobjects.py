@@ -1,6 +1,6 @@
-import cellprofiler.modules.plugins.overlayobjects
+import cellprofiler.modules.overlayobjects
 
-instance = cellprofiler.modules.plugins.overlayobjects.OverlayObjects()
+instance = cellprofiler.modules.overlayobjects.OverlayObjects()
 
 
 def test_run(image, module, image_set, object_with_data, object_set, workspace):

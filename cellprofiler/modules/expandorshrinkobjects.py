@@ -85,7 +85,7 @@ class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
     def create_settings(self):
         self.object_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input objects",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="Select the objects that you want to expand or shrink.",
         )
 
@@ -169,7 +169,7 @@ erode an object with a hole to a ring in order to keep the hole. An
 object with two holes will be shrunk to two rings connected by a line in
 order to keep from breaking up the object or breaking the hole.
 """.format(
-                **{"NO": cellprofiler_core.setting.NO, "YES": cellprofiler_core.setting.YES}
+                **{"NO": "No", "YES": "Yes"}
             ),
         )
 
@@ -337,13 +337,13 @@ order to keep from breaking up the object or breaking the hole.
 
             iterations = "1" if inf else setting_values[4]
 
-            wants_outlines = setting_values[5] != cellprofiler_core.setting.DO_NOT_USE
+            wants_outlines = setting_values[5] != "Do not use"
 
             setting_values = setting_values[:2] + [
                 operation,
                 iterations,
-                cellprofiler_core.setting.NO,
-                cellprofiler_core.setting.YES if wants_outlines else cellprofiler_core.setting.NO,
+                "No",
+                "Yes" if wants_outlines else "No",
                 setting_values[5],
             ]
 

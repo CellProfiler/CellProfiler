@@ -57,7 +57,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
         """
         self.object = cellprofiler_core.setting.ObjectNameSubscriber(
             text="Select the object whose measurements will be displayed",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
             doc=textwrap.dedent(
                 """\
                 Choose the name of objects identified by some previous module (such as
@@ -70,7 +70,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
         self.x_axis = cellprofiler_core.setting.Measurement(
             text="Select the object measurement to plot",
             object_fn=self.get_object,
-            value=cellprofiler_core.setting.NONE,
+            value="None",
             doc="Choose the object measurement made by a previous module to plot.",
         )
 
@@ -84,7 +84,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
 
         self.xscale = cellprofiler_core.setting.Choice(
             text="How should the X-axis be scaled?",
-            choices=[cellprofiler_core.setting.LINEAR, cellprofiler_core.setting.LOG],
+            choices=["linear", "log"],
             value=None,
             doc=textwrap.dedent(
                 """\
@@ -96,15 +96,15 @@ class DisplayHistogram(cellprofiler_core.module.Module):
                 measurements that would not easily be seen if the measurement is plotted
                 linearly.
                 """.format(
-                    LINEAR=cellprofiler_core.setting.LINEAR,
-                    LOG_NATURAL=cellprofiler_core.setting.LOG,
+                    LINEAR="linear",
+                    LOG_NATURAL="log",
                 )
             ),
         )
 
         self.yscale = cellprofiler_core.setting.Choice(
             text="How should the Y-axis be scaled?",
-            choices=[cellprofiler_core.setting.LINEAR, cellprofiler_core.setting.LOG],
+            choices=["linear", "log"],
             value=None,
             doc=textwrap.dedent(
                 """\
@@ -116,8 +116,8 @@ class DisplayHistogram(cellprofiler_core.module.Module):
                 measurements that would not easily be seen if the measurement is plotted
                 linearly.
                 """.format(
-                    LINEAR=cellprofiler_core.setting.LINEAR,
-                    LOG_NATURAL=cellprofiler_core.setting.LOG,
+                    LINEAR="linear",
+                    LOG_NATURAL="log",
                 )
             ),
         )
@@ -143,7 +143,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
                 the X-axis. This is helpful if an outlier bin skews the plot such that
                 the bins of interest are no longer visible.
                 """.format(
-                    YES=cellprofiler_core.setting.YES
+                    YES="Yes"
                 )
             ),
         )
@@ -231,6 +231,6 @@ class DisplayHistogram(cellprofiler_core.module.Module):
         if variable_revision_number == 3:
             # Changed linear scaling name
             if setting_values[3] == "no":
-                setting_values[3] = cellprofiler_core.setting.LINEAR
+                setting_values[3] = "linear"
             variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab

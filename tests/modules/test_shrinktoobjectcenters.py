@@ -4,10 +4,10 @@ import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.shrinktoobjectcenters
+import cellprofiler.modules.shrinktoobjectcenters
 import cellprofiler_core.object
 
-instance = cellprofiler.modules.plugins.shrinktoobjectcenters.ShrinkToObjectCenters()
+instance = cellprofiler.modules.shrinktoobjectcenters.ShrinkToObjectCenters()
 
 
 @pytest.fixture(scope="module")

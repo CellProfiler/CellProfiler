@@ -106,7 +106,7 @@ class MaskObjects(I.Identify):
         """Create the settings that control this module"""
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to be masked",
-            cps.NONE,
+            "None",
             doc="""\
 Select the objects that will be masked (that is, excluded in whole or in
 part based on the other settings in the module). You can choose from any
@@ -140,7 +140,7 @@ previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
 
         self.masking_objects = cps.ObjectNameSubscriber(
             "Select the masking object",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if mask is to be made from objects)*
 
@@ -153,7 +153,7 @@ module, such as **IdentifyPrimaryObjects**,
 
         self.masking_image = cps.ImageNameSubscriber(
             "Select the masking image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if mask is to be made from an image)*
 
@@ -517,7 +517,7 @@ controls how remaining objects are associated with their predecessors:
                 setting_values
             )
             wants_outlines = (
-                cps.NO if save_outlines.lower() == cps.DO_NOT_USE.lower() else cps.YES
+                "No" if save_outlines.lower() == "Do not use".lower() else "Yes"
             )
             renumber = (
                 R_RENUMBER
@@ -551,7 +551,7 @@ controls how remaining objects are associated with their predecessors:
 
         if variable_revision_number == 1 and not from_matlab:
             # Added "wants_inverted_mask"
-            setting_values = setting_values + [cps.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 2
 
         if variable_revision_number == 2:

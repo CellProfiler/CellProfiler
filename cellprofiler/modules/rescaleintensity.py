@@ -248,7 +248,7 @@ output image will be rescaled to the maximum output image intensity.
 
         self.matching_image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select image to match in maximum intensity",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""\
 *(Used only if “%(M_SCALE_BY_IMAGE_MAXIMUM)s” is selected)*
 
@@ -597,7 +597,7 @@ Select the measurement value to use as the divisor for the final image.
             setting_values = list(setting_values)
 
             for i, automatic in ((3, LOW_EACH_IMAGE), (4, HIGH_EACH_IMAGE)):
-                if setting_values[i] == cellprofiler_core.setting.YES:
+                if setting_values[i] == "Yes":
                     setting_values[i] = automatic
                 else:
                     setting_values[i] = CUSTOM_VALUE

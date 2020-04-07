@@ -55,7 +55,7 @@ class Smooth(cellprofiler_core.module.Module):
     def create_settings(self):
         self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image",
-            cellprofiler_core.setting.NONE,
+            "None",
             doc="""Select the image to be smoothed.""",
         )
 
@@ -296,8 +296,8 @@ the output image.
                 smoothed_image_name,
                 "Smooth Keeping Edges",
                 "Automatic",
-                cellprofiler_core.setting.DO_NOT_USE,
-                cellprofiler_core.setting.NO,
+                "Do not use",
+                "No",
                 spatial_radius,
                 intensity_radius,
             ]
@@ -327,9 +327,9 @@ the output image.
                 setting_values[0],  # image name
                 setting_values[1],  # result name
                 setting_values[2],  # smoothing method
-                cellprofiler_core.setting.YES
+                "Yes"
                 if setting_values[3] == "Automatic"
-                else cellprofiler_core.setting.NO,  # wants smoothing
+                else "No",  # wants smoothing
                 "16.0"
                 if setting_values[3] == "Automatic"
                 else (
@@ -343,6 +343,6 @@ the output image.
             from_matlab = False
             variable_revision_number = 1
         if variable_revision_number == 1 and not from_matlab:
-            setting_values = setting_values + [cellprofiler_core.setting.YES]
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

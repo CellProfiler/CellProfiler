@@ -7,7 +7,7 @@ import wx.html
 import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
-import cellprofiler_core.modules
+import cellprofiler.modules
 import cellprofiler_core.preferences
 
 MENU_HELP = {

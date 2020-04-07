@@ -2,10 +2,10 @@ import numpy
 import skimage.morphology
 
 import cellprofiler_core.image
-import cellprofiler.modules.plugins.removeholes
+import cellprofiler.modules.removeholes
 import cellprofiler_core.workspace
 
-instance = cellprofiler.modules.plugins.removeholes.RemoveHoles()
+instance = cellprofiler.modules.removeholes.RemoveHoles()
 
 
 def test_run(image, module, workspace):

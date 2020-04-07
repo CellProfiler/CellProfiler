@@ -210,7 +210,7 @@ setting controls how the grid is defined:
 
         self.object_name = cps.ObjectNameSubscriber(
             "Select the previously identified objects",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if you selected "%(AM_AUTOMATIC)s" to define the grid)*
 
@@ -244,7 +244,7 @@ entering the coordinates of the cells.
 
         self.manual_image = cps.ImageNameSubscriber(
             "Select the image to display when drawing",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_MOUSE)s" to define
 the grid)*
@@ -368,7 +368,7 @@ be saved using the **SaveImages** module.
 
         self.display_image_name = cps.ImageNameSubscriber(
             "Select the image on which to display the grid",
-            cps.LEAVE_BLANK,
+            "Leave blank",
             can_be_blank=True,
             doc="""\
 *(Used only if saving an image of the grid)*
@@ -573,7 +573,7 @@ first image.
     def get_background_image(self, workspace, gridding):
         if self.auto_or_manual == AM_MANUAL and self.manual_choice == MAN_MOUSE and gridding is None:
             image = workspace.image_set.get_image(self.manual_image.value).pixel_data
-        elif self.display_image_name.value == cps.LEAVE_BLANK:
+        elif self.display_image_name.value == "Leave blank":
             if gridding is None:
                 return None
             image = np.zeros(
@@ -812,7 +812,7 @@ first image.
         status_bar.SetStatusText(SELECT_FIRST_CELL)
         status = [wx.OK]
         gridding = [None]
-        if self.display_image_name == cps.LEAVE_BLANK:
+        if self.display_image_name == "Leave blank":
             image_shape = None
         else:
             image_shape = background_image.shape[:2]
@@ -1183,7 +1183,7 @@ first image.
                 "%d,%d" % (second_x, second_y),
                 str(rows),
                 str(cols),
-                cps.NO if rgb_name == cps.DO_NOT_USE else cps.YES,
+                "No" if rgb_name == "Do not use" else "Yes",
                 rgb_name,
                 image_name,
                 failed_grid_choice,

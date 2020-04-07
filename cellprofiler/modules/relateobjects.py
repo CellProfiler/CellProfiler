@@ -162,7 +162,7 @@ to cells and then measure distances to nuclei and cytoplasm. You could
 not use **RelateObjects** to relate speckles to cytoplasm and then
 measure distances to nuclei, because nuclei are neither a direct parent
 nor child of cytoplasm.""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -184,7 +184,7 @@ measurement for the parent; the nomenclature of this new measurement is
 “Mean_<child>_<category>_<feature>”. This module
 must be placed *after* all **Measure** modules that make measurements
 of the children objects.""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -194,7 +194,7 @@ of the children objects.""".format(
             doc="""\
 Select "*{YES}*" to save the children objects that do have parents as new
 object set. Objects with no parents will be discarded""".format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -212,7 +212,7 @@ Enter the name you want to call the object produced by this module. """,
             "step_parent_name",
             cellprofiler_core.setting.Choice(
                 "Parent name",
-                [cellprofiler_core.setting.NONE],
+                ["None"],
                 choices_fn=self.get_step_parents,
                 doc="""\
 *(Used only if calculating distances to another parent)*
@@ -989,15 +989,15 @@ parents or children of the parent object.""",
             #
             # Added other distance parents
             #
-            if setting_values[2] == cellprofiler_core.setting.DO_NOT_USE:
+            if setting_values[2] == "Do not use":
                 find_parent_distances = D_NONE
             else:
                 find_parent_distances = setting_values[2]
 
-            if setting_values[3].upper() == cellprofiler_core.setting.DO_NOT_USE.upper():
-                wants_step_parent_distances = cellprofiler_core.setting.NO
+            if setting_values[3].upper() == "Do not use".upper():
+                wants_step_parent_distances = "No"
             else:
-                wants_step_parent_distances = cellprofiler_core.setting.YES
+                wants_step_parent_distances = "Yes"
 
             setting_values = setting_values[:2] + [
                 find_parent_distances,
@@ -1015,7 +1015,7 @@ parents or children of the parent object.""",
 
         if variable_revision_number == 3:
             setting_values = (
-                setting_values[:5] + [cellprofiler_core.setting.NO] + setting_values[5:]
+                setting_values[:5] + ["No"] + setting_values[5:]
             )
 
             variable_revision_number = 5
@@ -1024,7 +1024,7 @@ parents or children of the parent object.""",
             setting_values = (
                 setting_values[0:2]
                 + setting_values[3:6]
-                + [cellprofiler_core.setting.YES]
+                + ["Yes"]
                 + [setting_values[2]]
                 + setting_values[6:]
             )

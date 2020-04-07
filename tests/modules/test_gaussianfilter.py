@@ -1,9 +1,9 @@
 import numpy.testing
 import skimage.filters
 
-import cellprofiler.modules.plugins.gaussianfilter
+import cellprofiler.modules.gaussianfilter
 
-instance = cellprofiler.modules.plugins.gaussianfilter.GaussianFilter()
+instance = cellprofiler.modules.gaussianfilter.GaussianFilter()
 
 
 def test_run(image, module, image_set, workspace):

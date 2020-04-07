@@ -12,7 +12,7 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules
-import cellprofiler.modules.plugins.exporttospreadsheet
+import cellprofiler.modules.exporttospreadsheet
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -56,7 +56,7 @@ def test_load_v3():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
     assert module.delimiter_char == "\t"
     assert not module.add_metadata
@@ -66,7 +66,7 @@ def test_load_v3():
     assert not module.wants_aggregate_std
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
     )
     assert module.directory.custom_path == r"./\<?Plate>"
     assert len(module.object_groups) == 2
@@ -92,9 +92,9 @@ def test_load_v4():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_COMMA
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert not module.add_metadata
     assert not module.pick_columns
     assert not module.wants_aggregate_means
@@ -102,7 +102,7 @@ def test_load_v4():
     assert not module.wants_aggregate_std
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert not module.wants_everything
     for group, object_name in zip(
@@ -136,12 +136,12 @@ def test_load_v5():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_TAB
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_TAB
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.directory.custom_path == "//iodine/imaging_analysis/People/Lee"
     assert not module.add_metadata
@@ -201,12 +201,12 @@ def test_load_v6():
     assert len(pipeline.modules()) == 5
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_TAB
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_TAB
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.directory.custom_path == "//iodine/imaging_analysis/People/Lee"
     assert not module.add_metadata
@@ -253,12 +253,12 @@ def test_load_v6():
 
     module = pipeline.modules()[1]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_COMMA
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_INPUT_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.directory.custom_path == "//iodine/imaging_analysis/People/Lee"
     assert module.add_metadata
@@ -274,18 +274,18 @@ def test_load_v6():
     for module, dir_choice in zip(
         pipeline.modules()[2:],
         (
-                cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_INPUT_SUBFOLDER_NAME,
-                cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME,
+                cellprofiler.modules.exporttospreadsheet.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME,
         ),
     ):
         assert isinstance(
-            module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+            module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
         )
         assert module.directory.dir_choice == dir_choice
     assert (
             module.nan_representation
-            == cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NANS
+            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
     )
 
 
@@ -303,28 +303,28 @@ def test_load_v8():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_COMMA
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert not module.add_metadata
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
             module.how_to_specify_gene_name
-            == cellprofiler.modules.plugins.exporttospreadsheet.GP_NAME_FILENAME
+            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
             module.nan_representation
-            == cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NULLS
+            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -346,28 +346,28 @@ def test_load_v9():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_COMMA
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert not module.add_metadata
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
             module.how_to_specify_gene_name
-            == cellprofiler.modules.plugins.exporttospreadsheet.GP_NAME_FILENAME
+            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
             module.nan_representation
-            == cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NULLS
+            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -391,28 +391,28 @@ def test_load_v10():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_COMMA
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert not module.add_metadata
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
             module.how_to_specify_gene_name
-            == cellprofiler.modules.plugins.exporttospreadsheet.GP_NAME_FILENAME
+            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
             module.nan_representation
-            == cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NULLS
+            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -437,28 +437,28 @@ def test_load_v11():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet
+        module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet
     )
-    assert module.delimiter == cellprofiler.modules.plugins.exporttospreadsheet.DELIMITER_COMMA
+    assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert not module.add_metadata
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
             module.directory.dir_choice
-            == cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
             module.how_to_specify_gene_name
-            == cellprofiler.modules.plugins.exporttospreadsheet.GP_NAME_FILENAME
+            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
             module.nan_representation
-            == cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NULLS
+            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -472,7 +472,7 @@ def test_load_v11():
 def test_no_measurements(output_dir):
     """Test an image set with objects but no measurements"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.object_groups[0].name.value = "my_object"
@@ -511,7 +511,7 @@ def test_no_measurements(output_dir):
 def test_experiment_measurement(output_dir):
     """Test writing one experiment measurement"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -532,8 +532,8 @@ def test_experiment_measurement(output_dir):
         reader = csv.reader(fd, delimiter=module.delimiter_char)
         header = next(reader)
         assert len(header) == 2
-        assert header[0] == cellprofiler.modules.plugins.exporttospreadsheet.EH_KEY
-        assert header[1] == cellprofiler.modules.plugins.exporttospreadsheet.EH_VALUE
+        assert header[0] == cellprofiler.modules.exporttospreadsheet.EH_KEY
+        assert header[1] == cellprofiler.modules.exporttospreadsheet.EH_VALUE
         row = next(reader)
         assert len(row) == 2
         assert row[0] == "my_measurement"
@@ -548,10 +548,10 @@ def test_experiment_measurement(output_dir):
 def test_two_experiment_measurements(output_dir):
     """Test writing two experiment measurements"""
     path = os.path.join(output_dir, "%s.csv" % cellprofiler_core.measurement.EXPERIMENT)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     module.wants_everything.value = False
@@ -594,12 +594,12 @@ def test_img_887_no_experiment_file(output_dir):
     the only measurements are Exit_Status or Complete.
     """
     numpy.random.seed(14887)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     module.wants_everything.value = True
@@ -626,13 +626,13 @@ def test_prefix(output_dir):
     # Use a prefix, check that file name exists
     prefix = "Foo_"
     numpy.random.seed(14887)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = True
     module.prefix.value = prefix
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     module.wants_everything.value = True
@@ -655,7 +655,7 @@ def test_prefix(output_dir):
 def test_image_measurement(output_dir):
     """Test writing an image measurement"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -690,7 +690,7 @@ def test_image_measurement(output_dir):
 def test_three_by_two_image_measurements(output_dir):
     """Test writing three image measurements over two image sets"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -737,7 +737,7 @@ def test_three_by_two_image_measurements(output_dir):
 def test_object_measurement(output_dir):
     """Test getting a single object measurement"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -777,7 +777,7 @@ def test_object_measurement(output_dir):
 def test_three_by_two_object_measurements(output_dir):
     """Test getting three measurements from two objects"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -823,7 +823,7 @@ def test_three_by_two_object_measurements(output_dir):
 def test_get_measurements_from_two_objects(output_dir):
     """Get three measurements from four cells and two objects"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -888,7 +888,7 @@ def test_get_measurements_from_two_objects(output_dir):
 
 def test_nan_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -896,7 +896,7 @@ def test_nan_measurements(output_dir):
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.nan_representation.value = (
-        cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NANS
+        cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
     )
     m = cellprofiler_core.measurement.Measurements()
     numpy.random.seed(0)
@@ -934,7 +934,7 @@ def test_nan_measurements(output_dir):
 
 def test_null_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -942,7 +942,7 @@ def test_null_measurements(output_dir):
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.nan_representation.value = (
-        cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NULLS
+        cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     m = cellprofiler_core.measurement.Measurements()
     numpy.random.seed(0)
@@ -980,7 +980,7 @@ def test_null_measurements(output_dir):
 
 def test_nan_image_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -989,7 +989,7 @@ def test_nan_image_measurements(output_dir):
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = True
     module.nan_representation.value = (
-        cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NANS
+        cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
     )
     m = cellprofiler_core.measurement.Measurements()
     m.add_measurement(
@@ -1051,7 +1051,7 @@ def test_nan_image_measurements(output_dir):
 
 def test_null_image_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1060,7 +1060,7 @@ def test_null_image_measurements(output_dir):
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = True
     module.nan_representation.value = (
-        cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NULLS
+        cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     m = cellprofiler_core.measurement.Measurements()
     m.add_measurement(
@@ -1122,7 +1122,7 @@ def test_null_image_measurements(output_dir):
 
 def test_blob_image_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1161,7 +1161,7 @@ def test_blob_image_measurements(output_dir):
 
 def test_blob_experiment_measurements():
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1207,7 +1207,7 @@ def test_01_object_with_metadata(output_dir):
     path = os.path.join(output_dir, "+++backslash+++g<tag>.csv")
     path = path.replace("\\", "\\\\")
     path = path.replace("+++backslash+++", "\\")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1265,12 +1265,12 @@ def test_02_object_with_path_metadata(output_dir):
     path = os.path.join(output_dir, "+++backslash+++g<tag>")
     path = path.replace("\\", "\\\\")
     path = path.replace("+++backslash+++", "\\")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = True
     module.wants_prefix.value = False
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = path
     m = cellprofiler_core.measurement.Measurements()
@@ -1319,7 +1319,7 @@ def test_image_with_metadata(output_dir):
     path = os.path.join(output_dir, "+++backslash+++g<tag>.csv")
     path = path.replace("\\", "\\\\")
     path = path.replace("+++backslash+++", "\\")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1378,12 +1378,12 @@ def test_image_with_path_metadata(output_dir):
     path = os.path.join(output_dir, "+++backslash+++g<tag>")
     path = path.replace("\\", "\\\\")
     path = path.replace("+++backslash+++", "\\")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = path
     module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
@@ -1439,12 +1439,12 @@ def test_image_measurement_custom_directory(output_dir):
     path = os.path.join(output_dir, "my_dir", "my_file.csv")
     cellprofiler_core.preferences.set_headless()
     cellprofiler_core.preferences.set_default_output_directory(output_dir)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
     )
     module.directory.custom_path = "./my_dir"
     module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
@@ -1480,12 +1480,12 @@ def test_unicode_image_metadata(output_dir):
     path = os.path.join(output_dir, "my_dir", "my_file.csv")
     cellprofiler_core.preferences.set_headless()
     cellprofiler_core.preferences.set_default_output_directory(output_dir)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
     )
     module.directory.custom_path = "./my_dir"
     module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
@@ -1528,10 +1528,10 @@ def test_overwrite_files_everything(output_dir):
     idp.y_name.value = OBJECTS_NAME
     pipeline.add_module(idp)
 
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.wants_everything.value = True
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.cps.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     module.set_module_num(2)
@@ -1565,10 +1565,10 @@ def test_overwrite_files_group(output_dir):
     idp.y_name.value = OBJECTS_NAME
     pipeline.add_module(idp)
 
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.wants_everything.value = False
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.cps.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     g = module.object_groups[0]
@@ -1597,7 +1597,7 @@ def test_overwrite_files_group(output_dir):
 def test_aggregate_image_columns(output_dir):
     """Test output of aggregate object data for images"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1656,7 +1656,7 @@ def test_aggregate_image_columns(output_dir):
 def test_no_aggregate_image_columns(output_dir):
     """Test output of aggregate object data for images"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1705,7 +1705,7 @@ def test_aggregate_and_filtered(output_dir):
     """
     image_path = os.path.join(output_dir, "my_image_file.csv")
     object_path = os.path.join(output_dir, "my_object_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1812,7 +1812,7 @@ def test_image_number(output_dir):
     # Always output the ImageNumber column in Image.csv
 
     image_path = os.path.join(output_dir, "my_image_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1857,7 +1857,7 @@ def test_image_number(output_dir):
 def test_image_index_columns(output_dir):
     """Test presence of index column"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1886,7 +1886,7 @@ def test_image_index_columns(output_dir):
         reader = csv.reader(fd, delimiter=module.delimiter_char)
         header = next(reader)
         assert len(header) == 2
-        assert header[0] == cellprofiler.modules.plugins.exporttospreadsheet.IMAGE_NUMBER
+        assert header[0] == cellprofiler.modules.exporttospreadsheet.IMAGE_NUMBER
         assert header[1] == "quotation"
         for i in range(len(data)):
             row = next(reader)
@@ -1901,7 +1901,7 @@ def test_image_index_columns(output_dir):
 def test_object_index_columns(output_dir):
     """Test presence of image and object index columns"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -1930,8 +1930,8 @@ def test_object_index_columns(output_dir):
         reader = csv.reader(fd, delimiter=module.delimiter_char)
         header = next(reader)
         assert len(header) == 3
-        assert header[0] == cellprofiler.modules.plugins.exporttospreadsheet.IMAGE_NUMBER
-        assert header[1] == cellprofiler.modules.plugins.exporttospreadsheet.OBJECT_NUMBER
+        assert header[0] == cellprofiler.modules.exporttospreadsheet.IMAGE_NUMBER
+        assert header[1] == cellprofiler.modules.exporttospreadsheet.OBJECT_NUMBER
         assert header[2] == "my_measurement"
         for image_idx in range(mvalues.shape[0]):
             for object_idx in range(mvalues.shape[1]):
@@ -1951,7 +1951,7 @@ def test_object_index_columns(output_dir):
 def test_object_metadata_columns(output_dir):
     """Test addition of image metadata columns to an object metadata file"""
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -2019,7 +2019,7 @@ def test_missing_measurements(output_dir):
     from the middle one.
     """
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -2092,13 +2092,13 @@ def test_missing_column_measurements(output_dir):
     pipeline.add_module(module)
     module.x_name.value = "my_image"
     module.y_name.value = OBJECTS_NAME
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(2)
     pipeline.add_module(module)
     module.wants_everything.value = False
     module.wants_prefix.value = False
     module.nan_representation.value = (
-        cellprofiler.modules.plugins.exporttospreadsheet.NANS_AS_NANS
+        cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
     )
     module.object_groups[0].name.value = OBJECTS_NAME
     module.object_groups[0].file_name.value = path
@@ -2145,7 +2145,7 @@ def test_missing_column_measurements(output_dir):
 
 
 def make_pipeline(csv_text):
-    import cellprofiler.modules.plugins.loaddata as L
+    import cellprofiler.modules.loaddata as L
 
     handle, name = tempfile.mkstemp("csv")
     fd = os.fdopen(handle, "w")
@@ -2230,7 +2230,7 @@ def make_measurements(d=None):
 
 
 def add_gct_settings(output_csv_filename):
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(2)
     module.wants_everything.value = False
     module.wants_prefix.value = False
@@ -2414,10 +2414,10 @@ def test_test_overwrite_gct_file(output_dir):
     )
     m = make_measurements()
     pipeline = make_measurements_pipeline(m)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.wants_genepattern_file.value = True
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.cps.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     module.wants_prefix.value = False
@@ -2437,13 +2437,13 @@ def test_relationships_file(output_dir):
     r = numpy.random.RandomState()
     r.seed(91)
     path = os.path.join(output_dir, "my_file.csv")
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
     module.object_groups[
         0
-    ].name.value = cellprofiler.modules.plugins.exporttospreadsheet.OBJECT_RELATIONSHIPS
+    ].name.value = cellprofiler.modules.exporttospreadsheet.OBJECT_RELATIONSHIPS
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -2532,15 +2532,15 @@ def test_test_overwrite_relationships_file(output_dir):
     output_csv_filename = os.path.join(output_dir, "my_file.csv")
     m = make_measurements()
     pipeline = make_measurements_pipeline(m)
-    module = cellprofiler.modules.plugins.exporttospreadsheet.ExportToSpreadsheet()
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.directory.dir_choice = (
-        cellprofiler.modules.plugins.exporttospreadsheet.cps.ABSOLUTE_FOLDER_NAME
+        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = output_dir
     module.wants_prefix.value = False
     module.wants_everything.value = False
     g = module.object_groups[0]
-    g.name.value = cellprofiler.modules.plugins.exporttospreadsheet.OBJECT_RELATIONSHIPS
+    g.name.value = cellprofiler.modules.exporttospreadsheet.OBJECT_RELATIONSHIPS
     g.wants_automatic_file_name.value = False
     g.file_name.value = "my_file.csv"
     module.set_module_num(1)

@@ -4,7 +4,7 @@ import pytest
 import cellprofiler.grid
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.definegrid
+import cellprofiler.modules.definegrid
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -16,7 +16,7 @@ OBJECTS_NAME = "objects"
 
 
 def make_workspace(image, labels):
-    module = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    module = cellprofiler.modules.definegrid.DefineGrid()
     module.set_module_num(1)
     module.grid_image.value = GRID_NAME
     module.manual_image.value = INPUT_IMAGE_NAME
@@ -66,12 +66,12 @@ def test_grid_automatic():
                 i * columns + j + 1
             )
     workspace, module = make_workspace(image, labels)
-    assert isinstance(module, cellprofiler.modules.plugins.definegrid.DefineGrid)
+    assert isinstance(module, cellprofiler.modules.definegrid.DefineGrid)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.grid_rows.value = rows
     module.grid_columns.value = columns
-    module.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
-    module.auto_or_manual.value = cellprofiler.modules.plugins.definegrid.AM_AUTOMATIC
+    module.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    module.auto_or_manual.value = cellprofiler.modules.definegrid.AM_AUTOMATIC
     module.wants_image.value = True
     module.run(workspace)
     gridding = workspace.get_grid(GRID_NAME)
@@ -91,15 +91,15 @@ def test_grid_automatic():
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, value in (
-        (cellprofiler.modules.plugins.definegrid.F_COLUMNS, columns),
-        (cellprofiler.modules.plugins.definegrid.F_ROWS, rows),
-        (cellprofiler.modules.plugins.definegrid.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
-        (cellprofiler.modules.plugins.definegrid.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
-        (cellprofiler.modules.plugins.definegrid.F_X_SPACING, spacing_x),
-        (cellprofiler.modules.plugins.definegrid.F_Y_SPACING, spacing_y),
+        (cellprofiler.modules.definegrid.F_COLUMNS, columns),
+        (cellprofiler.modules.definegrid.F_ROWS, rows),
+        (cellprofiler.modules.definegrid.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
+        (cellprofiler.modules.definegrid.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
+        (cellprofiler.modules.definegrid.F_X_SPACING, spacing_x),
+        (cellprofiler.modules.definegrid.F_Y_SPACING, spacing_y),
     ):
         measurement = "_".join(
-            (cellprofiler.modules.plugins.definegrid.M_CATEGORY, GRID_NAME, feature)
+            (cellprofiler.modules.definegrid.M_CATEGORY, GRID_NAME, feature)
         )
         assert m.has_feature(cellprofiler_core.measurement.IMAGE, measurement)
         assert m.get_current_image_measurement(measurement) == value
@@ -113,10 +113,10 @@ def test_fail():
     labels = np.zeros((50, 100), int)
     labels[20:40, 51:62] = 1
     workspace, module = make_workspace(image, labels)
-    assert isinstance(module, cellprofiler.modules.plugins.definegrid.DefineGrid)
+    assert isinstance(module, cellprofiler.modules.definegrid.DefineGrid)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
-    module.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
-    module.auto_or_manual.value = cellprofiler.modules.plugins.definegrid.AM_AUTOMATIC
+    module.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    module.auto_or_manual.value = cellprofiler.modules.definegrid.AM_AUTOMATIC
     module.wants_image.value = True
     with pytest.raises(RuntimeError):
         module.run(workspace)
@@ -132,13 +132,13 @@ def test_coordinates_plus_savedimagesize():
     spacing_y = 10
     spacing_x = 9
     workspace, module = make_workspace(image, labels)
-    assert isinstance(module, cellprofiler.modules.plugins.definegrid.DefineGrid)
+    assert isinstance(module, cellprofiler.modules.definegrid.DefineGrid)
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.grid_rows.value = rows
     module.grid_columns.value = columns
-    module.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
-    module.auto_or_manual.value = cellprofiler.modules.plugins.definegrid.AM_MANUAL
-    module.manual_choice.value = cellprofiler.modules.plugins.definegrid.MAN_COORDINATES
+    module.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    module.auto_or_manual.value = cellprofiler.modules.definegrid.AM_MANUAL
+    module.manual_choice.value = cellprofiler.modules.definegrid.MAN_COORDINATES
     module.first_spot_coordinates.value = "%d,%d" % (first_x, first_y)
     module.second_spot_coordinates.value = "%d,%d" % (second_x, second_y)
     module.first_spot_col.value = 1
@@ -166,15 +166,15 @@ def test_coordinates_plus_savedimagesize():
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, value in (
-        (cellprofiler.modules.plugins.definegrid.F_COLUMNS, columns),
-        (cellprofiler.modules.plugins.definegrid.F_ROWS, rows),
-        (cellprofiler.modules.plugins.definegrid.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
-        (cellprofiler.modules.plugins.definegrid.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
-        (cellprofiler.modules.plugins.definegrid.F_X_SPACING, spacing_x),
-        (cellprofiler.modules.plugins.definegrid.F_Y_SPACING, spacing_y),
+        (cellprofiler.modules.definegrid.F_COLUMNS, columns),
+        (cellprofiler.modules.definegrid.F_ROWS, rows),
+        (cellprofiler.modules.definegrid.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
+        (cellprofiler.modules.definegrid.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
+        (cellprofiler.modules.definegrid.F_X_SPACING, spacing_x),
+        (cellprofiler.modules.definegrid.F_Y_SPACING, spacing_y),
     ):
         measurement = "_".join(
-            (cellprofiler.modules.plugins.definegrid.M_CATEGORY, GRID_NAME, feature)
+            (cellprofiler.modules.definegrid.M_CATEGORY, GRID_NAME, feature)
         )
         assert m.has_feature(cellprofiler_core.measurement.IMAGE, measurement)
         assert m.get_current_image_measurement(measurement) == value

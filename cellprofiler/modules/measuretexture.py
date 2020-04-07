@@ -265,7 +265,7 @@ measurements, per-object measurements or both.
         image = cellprofiler_core.setting.ImageNameSubscriber(
             doc="Select the grayscale images whose texture you want to measure.",
             text="Select an image to measure",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
         )
 
         group.append("image_name", image)
@@ -307,7 +307,7 @@ are unnecessary. If you do not want this behavior, use multiple
 measures that you want.
 """,
             text="Select objects to measure",
-            value=cellprofiler_core.setting.NONE,
+            value="None",
         )
 
         group.append("object_name", object_subscriber)
@@ -710,7 +710,7 @@ measured and will result in a undefined value in the output file.
             # Added "wants_gabor"
             #
             setting_values = (
-                setting_values[:-1] + [cellprofiler_core.setting.YES] + setting_values[-1:]
+                setting_values[:-1] + ["Yes"] + setting_values[-1:]
             )
 
             variable_revision_number = 2

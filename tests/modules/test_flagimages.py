@@ -7,7 +7,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.flagimage
+import cellprofiler.modules.flagimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -45,11 +45,11 @@ def test_load_v2():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.flagimage.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     expected = (
         (
             "QCFlag",
-            cellprofiler.modules.plugins.flagimage.C_ANY,
+            cellprofiler.modules.flagimage.C_ANY,
             False,
             (
                 ("Intensity_MaxIntensity_DNA", None, 0.95),
@@ -79,7 +79,7 @@ def test_load_v2():
             flag.measurement_settings, measurements
         ):
             assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-            assert measurement.source_choice == cellprofiler.modules.plugins.flagimage.S_IMAGE
+            assert measurement.source_choice == cellprofiler.modules.flagimage.S_IMAGE
             assert measurement.measurement == measurement_name
             assert measurement.wants_minimum.value == (min_value is not None)
             if measurement.wants_minimum.value:
@@ -102,11 +102,11 @@ def test_load_v3():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.flagimage.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     expected = (
         (
             "QCFlag",
-            cellprofiler.modules.plugins.flagimage.C_ANY,
+            cellprofiler.modules.flagimage.C_ANY,
             False,
             (
                 ("Intensity_MaxIntensity_DNA", None, 0.95, "foo.txt"),
@@ -136,7 +136,7 @@ def test_load_v3():
             flag.measurement_settings, measurements
         ):
             assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-            assert measurement.source_choice == cellprofiler.modules.plugins.flagimage.S_IMAGE
+            assert measurement.source_choice == cellprofiler.modules.flagimage.S_IMAGE
             assert measurement.measurement == measurement_name
             assert measurement.wants_minimum.value == (min_value is not None)
             if measurement.wants_minimum.value:
@@ -161,11 +161,11 @@ def test_load_v4():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.plugins.flagimage.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     expected = (
         (
             "QCFlag",
-            cellprofiler.modules.plugins.flagimage.C_ANY,
+            cellprofiler.modules.flagimage.C_ANY,
             False,
             (
                 ("Intensity_MaxIntensity_DNA", None, 0.95, "foo.txt", "4"),
@@ -196,7 +196,7 @@ def test_load_v4():
             (measurement_name, min_value, max_value, rules_file, rules_class),
         ) in zip(flag.measurement_settings, measurements):
             assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-            assert measurement.source_choice == cellprofiler.modules.plugins.flagimage.S_IMAGE
+            assert measurement.source_choice == cellprofiler.modules.flagimage.S_IMAGE
             assert measurement.measurement == measurement_name
             assert measurement.wants_minimum.value == (min_value is not None)
             if measurement.wants_minimum.value:
@@ -221,7 +221,7 @@ def make_workspace(image_measurements, object_measurements):
 
     returns module, workspace
     """
-    module = cellprofiler.modules.plugins.flagimage.FlagImage()
+    module = cellprofiler.modules.flagimage.FlagImage()
     measurements = cellprofiler_core.measurement.Measurements()
     for i in range(len(image_measurements)):
         measurements.add_image_measurement(
@@ -266,7 +266,7 @@ def make_classifier(
     name="Classifier",
     n_features=1,
 ):
-    assert isinstance(module, cellprofiler.modules.plugins.flagimage.FlagImage)
+    assert isinstance(module, cellprofiler.modules.flagimage.FlagImage)
     feature_names = [image_measurement_name(i) for i in range(n_features)]
     if classes is None:
         classes = numpy.arange(1, max(3, answer + 1))
@@ -281,7 +281,7 @@ def make_classifier(
     os.write(fd, s)
     os.close(fd)
     measurement = module.flags[0].measurement_settings[0]
-    measurement.source_choice.value = cellprofiler.modules.plugins.flagimage.S_CLASSIFIER
+    measurement.source_choice.value = cellprofiler.modules.flagimage.S_CLASSIFIER
     measurement.rules_directory.set_custom_path(os.path.dirname(filename))
     measurement.rules_file_name.value = os.path.split(filename)[1]
     measurement.rules_class.value = rules_classes
@@ -335,7 +335,7 @@ def test_no_ave_object_measurement():
         measurement = flag.measurement_settings[0]
         assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
         measurement.source_choice.value = (
-            cellprofiler.modules.plugins.flagimage.S_AVERAGE_OBJECT
+            cellprofiler.modules.flagimage.S_AVERAGE_OBJECT
         )
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
@@ -362,7 +362,7 @@ def test_positive_ave_object_measurement():
         measurement = flag.measurement_settings[0]
         assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
         measurement.source_choice.value = (
-            cellprofiler.modules.plugins.flagimage.S_AVERAGE_OBJECT
+            cellprofiler.modules.flagimage.S_AVERAGE_OBJECT
         )
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
@@ -389,7 +389,7 @@ def test_negative_ave_object_measurement():
         measurement = flag.measurement_settings[0]
         assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
         measurement.source_choice.value = (
-            cellprofiler.modules.plugins.flagimage.S_AVERAGE_OBJECT
+            cellprofiler.modules.flagimage.S_AVERAGE_OBJECT
         )
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
@@ -415,7 +415,7 @@ def test_no_object_measurements():
         assert isinstance(flag, cellprofiler_core.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
         assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-        measurement.source_choice.value = cellprofiler.modules.plugins.flagimage.S_ALL_OBJECTS
+        measurement.source_choice.value = cellprofiler.modules.flagimage.S_ALL_OBJECTS
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "maximum":
@@ -440,7 +440,7 @@ def test_positive_object_measurement():
         assert isinstance(flag, cellprofiler_core.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
         assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-        measurement.source_choice.value = cellprofiler.modules.plugins.flagimage.S_ALL_OBJECTS
+        measurement.source_choice.value = cellprofiler.modules.flagimage.S_ALL_OBJECTS
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "maximum":
@@ -465,7 +465,7 @@ def test_negative_object_measurement():
         assert isinstance(flag, cellprofiler_core.setting.SettingsGroup)
         measurement = flag.measurement_settings[0]
         assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-        measurement.source_choice.value = cellprofiler.modules.plugins.flagimage.S_ALL_OBJECTS
+        measurement.source_choice.value = cellprofiler.modules.flagimage.S_ALL_OBJECTS
         measurement.object_name.value = OBJECT_NAME
         measurement.measurement.value = object_measurement_name(0)
         if case == "maximum":
@@ -488,7 +488,7 @@ def test_two_measurements_any():
         module, workspace = make_workspace(measurements, [])
         flag = module.flags[0]
         assert isinstance(flag, cellprofiler_core.setting.SettingsGroup)
-        flag.combination_choice.value = cellprofiler.modules.plugins.flagimage.C_ANY
+        flag.combination_choice.value = cellprofiler.modules.flagimage.C_ANY
         module.add_measurement(flag)
         for i in range(2):
             measurement = flag.measurement_settings[i]
@@ -509,7 +509,7 @@ def test_two_measurements_all():
         module, workspace = make_workspace(measurements, [])
         flag = module.flags[0]
         assert isinstance(flag, cellprofiler_core.setting.SettingsGroup)
-        flag.combination_choice.value = cellprofiler.modules.plugins.flagimage.C_ALL
+        flag.combination_choice.value = cellprofiler.modules.flagimage.C_ALL
         module.add_measurement(flag)
         for i in range(2):
             measurement = flag.measurement_settings[i]
@@ -526,7 +526,7 @@ def test_two_measurements_all():
 
 
 def test_get_measurement_columns():
-    module = cellprofiler.modules.plugins.flagimage.FlagImage()
+    module = cellprofiler.modules.flagimage.FlagImage()
     module.add_flag()
     module.flags[0].category.value = "Foo"
     module.flags[0].feature_name.value = "Bar"
@@ -621,7 +621,7 @@ def test_filter_by_rule():
             flag.wants_skip.value = False
             measurement = flag.measurement_settings[0]
             assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-            measurement.source_choice.value = cellprofiler.modules.plugins.flagimage.S_RULES
+            measurement.source_choice.value = cellprofiler.modules.flagimage.S_RULES
             measurement.rules_file_name.value = rules_file
             measurement.rules_directory.dir_choice = (
                 cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -663,7 +663,7 @@ def test_filter_by_3class_rule():
                 flag.wants_skip.value = False
                 measurement = flag.measurement_settings[0]
                 assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
-                measurement.source_choice.value = cellprofiler.modules.plugins.flagimage.S_RULES
+                measurement.source_choice.value = cellprofiler.modules.flagimage.S_RULES
                 measurement.rules_file_name.value = rules_file
                 measurement.rules_directory.dir_choice = (
                     cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -735,7 +735,7 @@ def test_batch():
         assert path == orig_path
         return "/imaging/analysis"
 
-    module = cellprofiler.modules.plugins.flagimage.FlagImage()
+    module = cellprofiler.modules.flagimage.FlagImage()
     rd = module.flags[0].measurement_settings[0].rules_directory
     rd.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     rd.custom_path = orig_path

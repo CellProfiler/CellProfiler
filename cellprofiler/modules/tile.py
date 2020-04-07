@@ -104,7 +104,7 @@ class Tile(cpm.Module):
     def create_settings(self):
         self.input_image = cps.ImageNameSubscriber(
             "Select an input image",
-            cps.NONE,
+            "None",
             doc="""Select the image to be tiled. Additional images within the cycle can be
 added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
 """
@@ -257,7 +257,7 @@ create a grid that has roughly the same number of rows and columns.
             "input_image_name",
             cps.ImageNameSubscriber(
                 "Select an additional image to tile",
-                cps.NONE,
+                "None",
                 doc="""Select an additional image to tile?""",
             ),
         )
@@ -568,14 +568,14 @@ create a grid that has roughly the same number of rows and columns.
 
             tile_style = S_ROW if row_or_column.lower() == "row" else S_COL
 
-            wants_automatic_rows = cps.NO
-            wants_automatic_columns = cps.NO
-            if number_rows == cps.AUTOMATIC:
+            wants_automatic_rows = "No"
+            wants_automatic_columns = "No"
+            if number_rows == "Automatic":
                 number_rows = 8
-                wants_automatic_rows = cps.YES
-            if number_columns == cps.AUTOMATIC:
+                wants_automatic_rows = "Yes"
+            if number_columns == "Automatic":
                 number_columns = 12
-                wants_automatic_columns = cps.YES
+                wants_automatic_columns = "Yes"
             setting_values = [
                 image_name,
                 tiled_image,
@@ -598,19 +598,19 @@ create a grid that has roughly the same number of rows and columns.
             and variable_revision_number == 3
         ):
             image_names = [
-                s for s in setting_values[:6] if s.lower() != cps.DO_NOT_USE.lower()
+                s for s in setting_values[:6] if s.lower() != "Do not use".lower()
             ]
             adjacent_image_name = setting_values[6]
             horizontal_or_vertical = setting_values[7]
             delete_pipeline = setting_values[8]
-            if delete_pipeline == cps.YES:
+            if delete_pipeline == "Yes":
                 logger.warning(
                     "Ignoring memory option when importing PlaceAdjacent "
                     "into Tile. Use the ConserveMemory module to remove "
                     "the image from memory if desired.\n"
                 )
             if len(image_names) == 0:
-                image_names.append(cps.DO_NOT_USE)
+                image_names.append("Do not use")
             if horizontal_or_vertical.lower() == "horizontal":
                 tile_style = S_ROW
                 number_rows = "1"
@@ -628,9 +628,9 @@ create a grid that has roughly the same number of rows and columns.
                 number_columns,
                 P_TOP_LEFT,
                 tile_style,
-                cps.NO,
-                cps.NO,
-                cps.NO,
+                "No",
+                "No",
+                "No",
             ]
             setting_values += image_names[1:]
             variable_revision_number = 1

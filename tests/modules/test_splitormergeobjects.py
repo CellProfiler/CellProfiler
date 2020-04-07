@@ -4,7 +4,7 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-import cellprofiler.modules.plugins.splitormergeobjects
+import cellprofiler.modules.splitormergeobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -55,12 +55,12 @@ def test_load_v4():
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.plugins.splitormergeobjects.SplitOrMergeObjects
+        module, cellprofiler.modules.splitormergeobjects.SplitOrMergeObjects
     )
     assert module.objects_name == "blobs"
     assert module.output_objects_name == "RelabeledBlobs"
     assert (
-            module.relabel_option == cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE
+            module.relabel_option == cellprofiler.modules.splitormergeobjects.OPTION_MERGE
     )
     assert module.distance_threshold == 2
     assert not module.wants_image
@@ -68,39 +68,39 @@ def test_load_v4():
     assert module.minimum_intensity_fraction == 0.8
     assert (
             module.where_algorithm
-            == cellprofiler.modules.plugins.splitormergeobjects.CA_CLOSEST_POINT
+            == cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT
     )
-    assert module.merge_option == cellprofiler.modules.plugins.splitormergeobjects.UNIFY_PARENT
+    assert module.merge_option == cellprofiler.modules.splitormergeobjects.UNIFY_PARENT
     assert module.parent_object == "Nuclei"
     assert (
-            module.merging_method == cellprofiler.modules.plugins.splitormergeobjects.UM_CONVEX_HULL
+            module.merging_method == cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL
     )
 
     module = pipeline.modules()[1]
     assert (
-            module.relabel_option == cellprofiler.modules.plugins.splitormergeobjects.OPTION_SPLIT
+            module.relabel_option == cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
     )
     assert module.wants_image
     assert (
-            module.where_algorithm == cellprofiler.modules.plugins.splitormergeobjects.CA_CENTROIDS
+            module.where_algorithm == cellprofiler.modules.splitormergeobjects.CA_CENTROIDS
     )
     assert (
-            module.merge_option == cellprofiler.modules.plugins.splitormergeobjects.UNIFY_DISTANCE
+            module.merge_option == cellprofiler.modules.splitormergeobjects.UNIFY_DISTANCE
     )
     assert (
             module.merging_method
-            == cellprofiler.modules.plugins.splitormergeobjects.UM_DISCONNECTED
+            == cellprofiler.modules.splitormergeobjects.UM_DISCONNECTED
     )
 
 
 def rruunn(
     input_labels,
     relabel_option,
-    merge_option=cellprofiler.modules.plugins.splitormergeobjects.UNIFY_DISTANCE,
-    unify_method=cellprofiler.modules.plugins.splitormergeobjects.UM_DISCONNECTED,
+    merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_DISTANCE,
+    unify_method=cellprofiler.modules.splitormergeobjects.UM_DISCONNECTED,
     distance_threshold=5,
     minimum_intensity_fraction=0.9,
-    where_algorithm=cellprofiler.modules.plugins.splitormergeobjects.CA_CLOSEST_POINT,
+    where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT,
     image=None,
     parent_object="Parent_object",
     parents_of=None,
@@ -109,7 +109,7 @@ def rruunn(
 
     returns the labels matrix and the workspace.
     """
-    module = cellprofiler.modules.plugins.splitormergeobjects.SplitOrMergeObjects()
+    module = cellprofiler.modules.splitormergeobjects.SplitOrMergeObjects()
     module.set_module_num(1)
     module.objects_name.value = INPUT_OBJECTS_NAME
     module.output_objects_name.value = OUTPUT_OBJECTS_NAME
@@ -162,7 +162,7 @@ def rruunn(
 def test_split_zero():
     labels, workspace = rruunn(
         numpy.zeros((10, 20), int),
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_SPLIT,
+        cellprofiler.modules.splitormergeobjects.OPTION_SPLIT,
     )
     assert numpy.all(labels == 0)
     assert labels.shape[0] == 10
@@ -184,7 +184,7 @@ def test_split_zero():
 
     module = workspace.module
     assert isinstance(
-        module, cellprofiler.modules.plugins.splitormergeobjects.SplitOrMergeObjects
+        module, cellprofiler.modules.splitormergeobjects.SplitOrMergeObjects
     )
     columns = module.get_measurement_columns(workspace.pipeline)
     assert len(columns) == 6
@@ -264,7 +264,7 @@ def test_split_one():
     labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels_out, workspace = rruunn(
-        labels, cellprofiler.modules.plugins.splitormergeobjects.OPTION_SPLIT
+        labels, cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
     )
     assert numpy.all(labels == labels_out)
 
@@ -297,7 +297,7 @@ def test_split_one_into_two():
     labels[2:5, 3:8] = 1
     labels[2:5, 13:18] = 1
     labels_out, workspace = rruunn(
-        labels, cellprofiler.modules.plugins.splitormergeobjects.OPTION_SPLIT
+        labels, cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
     )
     index = numpy.array([labels_out[3, 5], labels_out[3, 15]])
     assert index[0] != index[1]
@@ -323,7 +323,7 @@ def test_split_one_into_two():
 def test_unify_zero():
     labels, workspace = rruunn(
         numpy.zeros((10, 20), int),
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
     )
     assert numpy.all(labels == 0)
     assert labels.shape[0] == 10
@@ -334,7 +334,7 @@ def test_unify_one():
     labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1
     labels_out, workspace = rruunn(
-        labels, cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE
+        labels, cellprofiler.modules.splitormergeobjects.OPTION_MERGE
     )
     assert numpy.all(labels == labels_out)
 
@@ -345,7 +345,7 @@ def test_unify_two_to_one():
     labels[2:5, 13:18] = 2
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=6,
     )
     assert numpy.all(labels_out[labels != 0] == 1)
@@ -358,7 +358,7 @@ def test_unify_two_stays_two():
     labels[2:5, 13:18] = 2
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=4,
     )
     assert numpy.all(labels_out == labels)
@@ -373,11 +373,11 @@ def test_unify_image_centroids():
     image[3, 5] = 0.6
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=6,
         image=image,
         minimum_intensity_fraction=0.8,
-        where_algorithm=cellprofiler.modules.plugins.splitormergeobjects.CA_CENTROIDS,
+        where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CENTROIDS,
     )
     assert numpy.all(labels_out[labels != 0] == 1)
     assert numpy.all(labels_out[labels == 0] == 0)
@@ -393,11 +393,11 @@ def test_dont_unify_image_centroids():
     image[3, 15] = 0.6
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=6,
         image=image,
         minimum_intensity_fraction=0.8,
-        where_algorithm=cellprofiler.modules.plugins.splitormergeobjects.CA_CENTROIDS,
+        where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CENTROIDS,
     )
     assert numpy.all(labels_out == labels)
 
@@ -412,11 +412,11 @@ def test_unify_image_closest_point():
     image[2, 13] = 0.5
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=6,
         image=image,
         minimum_intensity_fraction=0.8,
-        where_algorithm=cellprofiler.modules.plugins.splitormergeobjects.CA_CLOSEST_POINT,
+        where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT,
     )
     assert numpy.all(labels_out[labels != 0] == 1)
     assert numpy.all(labels_out[labels == 0] == 0)
@@ -431,11 +431,11 @@ def test_dont_unify_image_closest_point():
     image[2, 7] = 0.5
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
         distance_threshold=6,
         image=image,
         minimum_intensity_fraction=0.8,
-        where_algorithm=cellprofiler.modules.plugins.splitormergeobjects.CA_CLOSEST_POINT,
+        where_algorithm=cellprofiler.modules.splitormergeobjects.CA_CLOSEST_POINT,
     )
     assert numpy.all(labels_out == labels)
 
@@ -447,8 +447,8 @@ def test_unify_per_parent():
 
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
-        merge_option=cellprofiler.modules.plugins.splitormergeobjects.UNIFY_PARENT,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
+        merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
         parent_object="Parent_object",
         parents_of=numpy.array([1, 1]),
     )
@@ -464,9 +464,9 @@ def test_unify_convex_hull():
 
     labels_out, workspace = rruunn(
         labels,
-        cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
-        merge_option=cellprofiler.modules.plugins.splitormergeobjects.UNIFY_PARENT,
-        unify_method=cellprofiler.modules.plugins.splitormergeobjects.UM_CONVEX_HULL,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
+        merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
+        unify_method=cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL,
         parent_object="Parent_object",
         parents_of=numpy.array([1, 1]),
     )
@@ -476,14 +476,14 @@ def test_unify_convex_hull():
 def test_unify_nothing():
     labels = numpy.zeros((10, 20), int)
     for um in (
-            cellprofiler.modules.plugins.splitormergeobjects.UM_DISCONNECTED,
-            cellprofiler.modules.plugins.splitormergeobjects.UM_CONVEX_HULL,
+            cellprofiler.modules.splitormergeobjects.UM_DISCONNECTED,
+            cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL,
     ):
         labels_out, workspace = rruunn(
             labels,
-            cellprofiler.modules.plugins.splitormergeobjects.OPTION_MERGE,
-            merge_option=cellprofiler.modules.plugins.splitormergeobjects.UNIFY_PARENT,
-            unify_method=cellprofiler.modules.plugins.splitormergeobjects.UM_CONVEX_HULL,
+            cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
+            merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
+            unify_method=cellprofiler.modules.splitormergeobjects.UM_CONVEX_HULL,
             parent_object="Parent_object",
             parents_of=numpy.zeros(0, int),
         )

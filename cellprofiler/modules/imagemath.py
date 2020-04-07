@@ -273,7 +273,7 @@ use the median intensity measurement as the denominator.
             "image_name",
             cellprofiler_core.setting.ImageNameSubscriber(
                 "Select the image",
-                cellprofiler_core.setting.NONE,
+                "None",
                 doc="""\
 Select the image that you want to use for this operation.""",
             ),
@@ -676,7 +676,7 @@ is applied before other operations.""",
                 1,  # post-multiply factor
                 0,  # addend
                 truncate,  # truncate low
-                cellprofiler_core.setting.NO,  # truncate high
+                "No",  # truncate high
                 resulting_image_name,
                 basic_image_name,
                 multiply_factor_2,
@@ -690,7 +690,7 @@ is applied before other operations.""",
             names_and_weights = [
                 (name, weight)
                 for name, weight in zip(setting_values[:3], setting_values[4:])
-                if name.lower() != cellprofiler_core.setting.DO_NOT_USE.lower()
+                if name.lower() != "Do not use".lower()
             ]
 
             multiplier = 1.0 / sum(
@@ -702,8 +702,8 @@ is applied before other operations.""",
                 "1",  # Exponent
                 str(multiplier),  # Post-operation multiplier
                 "0",  # Post-operation offset
-                cellprofiler_core.setting.NO,  # Truncate low
-                cellprofiler_core.setting.NO,  # Truncate high
+                "No",  # Truncate low
+                "No",  # Truncate high
                 output_image,
             ]
             for name, weight in names_and_weights:
@@ -719,16 +719,16 @@ is applied before other operations.""",
             image_name, output_image = setting_values
             setting_values = [
                 image_name,
-                cellprofiler_core.setting.DO_NOT_USE,
-                cellprofiler_core.setting.DO_NOT_USE,
+                "Do not use",
+                "Do not use",
                 "Invert",
                 1,
                 1,
                 1,
                 1,
                 1,
-                cellprofiler_core.setting.NO,
-                cellprofiler_core.setting.NO,
+                "No",
+                "No",
                 output_image,
             ]
             module_name = "ImageMath"
@@ -738,15 +738,15 @@ is applied before other operations.""",
             setting_values = [
                 image1,
                 image2,
-                cellprofiler_core.setting.DO_NOT_USE,
+                "Do not use",
                 "Multiply",
                 1,
                 1,
                 1,
                 1,
                 1,
-                cellprofiler_core.setting.NO,
-                cellprofiler_core.setting.NO,
+                "No",
+                "No",
                 output_image,
             ]
             module_name = "ImageMath"
@@ -761,7 +761,7 @@ is applied before other operations.""",
             try:
                 factors += [float(setting_values[2]) * float(setting_values[5])]
             except ValueError:
-                if setting_values[2] != cellprofiler_core.setting.DO_NOT_USE:
+                if setting_values[2] != "Do not use":
                     image_names += [setting_values[2]]
                     input_factors += [float(setting_values[5])]
             exponent = 1.0
@@ -811,7 +811,7 @@ is applied before other operations.""",
                 try:
                     factors += [float(setting_values[i]) * float(setting_values[i + 4])]
                 except ValueError:
-                    if setting_values[i] != cellprofiler_core.setting.DO_NOT_USE:
+                    if setting_values[i] != "Do not use":
                         image_names += [setting_values[i]]
                         input_factors += [float(setting_values[i + 4])]
 

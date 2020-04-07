@@ -3,9 +3,9 @@ import numpy.testing
 import pytest
 import skimage.morphology
 
-import cellprofiler.modules.plugins.fillobjects
+import cellprofiler.modules.fillobjects
 
-instance = cellprofiler.modules.plugins.fillobjects.FillObjects()
+instance = cellprofiler.modules.fillobjects.FillObjects()
 
 
 @pytest.fixture(scope="module")

@@ -117,14 +117,14 @@ class MeasureObjectNeighbors(cpm.Module):
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to measure",
-            cps.NONE,
+            "None",
             doc="""\
 Select the objects whose neighbors you want to measure.""",
         )
 
         self.neighbors_name = cps.ObjectNameSubscriber(
             "Select neighboring objects to measure",
-            cps.NONE,
+            "None",
             doc="""\
 This is the name of the objects that are potential
 neighbors of the above objects. You can find the neighbors
@@ -254,7 +254,7 @@ the image borders will be considered as potential object neighbours in this
 analysis. You may want to disable this if using object sets which were
 further filtered, since those filters won't have been applied to the
 previously discarded objects.""".format(
-                **{"YES": cps.YES}),
+                **{"YES": "Yes"}),
         )
 
     def settings(self):
@@ -910,6 +910,6 @@ previously discarded objects.""".format(
 
 def get_colormap(name):
     """Get colormap, accounting for possible request for default"""
-    if name == cps.DEFAULT:
+    if name == "Default":
         name = cpprefs.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

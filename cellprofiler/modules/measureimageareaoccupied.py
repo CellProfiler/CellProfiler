@@ -116,7 +116,7 @@ The area can be measured in two ways:
 
                 self.__operand_objects = cellprofiler_core.setting.ObjectNameSubscriber(
                     "Select objects to measure",
-                    cellprofiler_core.setting.NONE,
+                    "None",
                     doc="""\
 *(Used only if ‘{O_OBJECTS}’ are to be measured)*
 
@@ -128,7 +128,7 @@ Select the previously identified objects you would like to measure.
 
                 self.__binary_name = cellprofiler_core.setting.ImageNameSubscriber(
                     "Select a binary image to measure",
-                    cellprofiler_core.setting.NONE,
+                    "None",
                     doc="""\
 *(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
 
@@ -491,7 +491,7 @@ like to measure the area occupied by the foreground in the image.
                     setting_values[(i * 3)],
                     setting_values[(i * 3) + 1],
                     setting_values[(i * 3) + 2],
-                    cellprofiler_core.setting.NONE,
+                    "None",
                 ]
 
             setting_values = new_setting_values

@@ -115,7 +115,7 @@ import cellprofiler_core.object as cpo
 import cellprofiler_core.setting as cps
 import centrosome.cpmorphology as morph
 import cellprofiler_core.preferences as cpprefs
-from cellprofilder_core.modules import identify as I
+from cellprofiler_core.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
@@ -131,7 +131,7 @@ purposes by overlaying them on your image of choice using the
 **OverlayOutlines** module and then saving the overlay image with the
 **SaveImages** module.
 """.format(
-    **{"YES": cps.YES}
+    **{"YES": "Yes"}
 )
 
 OO_WITH_OVERLAP = "With overlap"
@@ -246,7 +246,7 @@ class UntangleWorms(cpm.Module):
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the input binary image",
-            cps.NONE,
+            "None",
             doc="""\
 A binary image where the foreground indicates the worm
 shapes. The binary image can be produced by the **ApplyThreshold**
@@ -1157,7 +1157,7 @@ should be processed.
                 from matplotlib.cm import ScalarMappable
 
                 colormap = self.overlapping_outlines_colormap.value
-                if colormap == cps.DEFAULT:
+                if colormap == "Default":
                     colormap = cpprefs.get_default_colormap()
                 if len(ijv) == 0:
                     ishape = image.pixel_data.shape

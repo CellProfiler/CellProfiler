@@ -63,7 +63,7 @@ By default, this module will re-label the input image.
 Setting this to *{YES}* will ensure that the original labels 
 (i.e. pixel values of the objects) are preserved.
 """.format(
-                **{"YES": cellprofiler_core.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 

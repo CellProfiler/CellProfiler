@@ -33,7 +33,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Install a bogus display_post_group method in FlipAndRotate
         # to elicit a post-group interaction request
         #
-        from cellprofiler.modules.flipandrotate import FlipAndRotate
+        from cellprofiler.modules.plugins.flipandrotate import FlipAndRotate
 
         def bogus_display_post_group(self, workspace, figure):
             pass

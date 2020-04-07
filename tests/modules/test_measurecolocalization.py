@@ -3,7 +3,7 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.measurecolocalization
+import cellprofiler.modules.plugins.measurecolocalization
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -15,7 +15,7 @@ OBJECTS_NAME = "objects"
 
 def make_workspace(image1, image2, objects=None):
     """Make a workspace for testing Threshold"""
-    module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+    module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     for image_group, name, image in zip(
@@ -26,11 +26,11 @@ def make_workspace(image1, image2, objects=None):
     object_set = cellprofiler_core.object.ObjectSet()
     if objects is None:
         module.images_or_objects.value = (
-            cellprofiler.modules.measurecolocalization.M_IMAGES
+            cellprofiler.modules.plugins.measurecolocalization.M_IMAGES
         )
     else:
         module.images_or_objects.value = (
-            cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+            cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS
         )
         module.object_groups[0].object_name.value = OBJECTS_NAME
         object_set.add_objects(objects, OBJECTS_NAME)
@@ -61,8 +61,8 @@ def test_load_v2():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
     assert (
-        module.images_or_objects.value
-        == cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+            module.images_or_objects.value
+            == cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
     assert module.image_count.value == 2
     assert module.thr == 15.0
@@ -89,8 +89,8 @@ def test_load_v3():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[-1]
     assert (
-        module.images_or_objects.value
-        == cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+            module.images_or_objects.value
+            == cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
     assert module.image_count.value == 2
     assert module.thr == 25.0
@@ -103,31 +103,31 @@ def test_load_v3():
 
 
 all_object_measurement_formats = [
-    cellprofiler.modules.measurecolocalization.F_CORRELATION_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_COSTES_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_K_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_MANDERS_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_OVERLAP_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_RWC_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_CORRELATION_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_COSTES_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_K_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_MANDERS_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_OVERLAP_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_RWC_FORMAT,
 ]
 all_image_measurement_formats = all_object_measurement_formats + [
-    cellprofiler.modules.measurecolocalization.F_SLOPE_FORMAT
+    cellprofiler.modules.plugins.measurecolocalization.F_SLOPE_FORMAT
 ]
 asymmetrical_measurement_formats = [
-    cellprofiler.modules.measurecolocalization.F_COSTES_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_K_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_MANDERS_FORMAT,
-    cellprofiler.modules.measurecolocalization.F_RWC_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_COSTES_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_K_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_MANDERS_FORMAT,
+    cellprofiler.modules.plugins.measurecolocalization.F_RWC_FORMAT,
 ]
 
 
 def test_get_categories():
     """Test the get_categories function for some different cases"""
-    module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+    module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
     module.object_groups[0].object_name.value = OBJECTS_NAME
-    module.images_or_objects.value = cellprofiler.modules.measurecolocalization.M_IMAGES
+    module.images_or_objects.value = cellprofiler.modules.plugins.measurecolocalization.M_IMAGES
 
     def cat(name):
         return module.get_categories(None, name) == ["Correlation"]
@@ -135,12 +135,12 @@ def test_get_categories():
     assert cat("Image")
     assert not cat(OBJECTS_NAME)
     module.images_or_objects.value = (
-        cellprofiler.modules.measurecolocalization.M_OBJECTS
+        cellprofiler.modules.plugins.measurecolocalization.M_OBJECTS
     )
     assert not cat("Image")
     assert cat(OBJECTS_NAME)
     module.images_or_objects.value = (
-        cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+        cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
     assert cat("Image")
     assert cat(OBJECTS_NAME)
@@ -148,11 +148,11 @@ def test_get_categories():
 
 def test_get_measurements():
     """Test the get_measurements function for some different cases"""
-    module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+    module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
     module.object_groups[0].object_name.value = OBJECTS_NAME
-    module.images_or_objects.value = cellprofiler.modules.measurecolocalization.M_IMAGES
+    module.images_or_objects.value = cellprofiler.modules.plugins.measurecolocalization.M_IMAGES
 
     def meas(name):
         ans = list(module.get_measurements(None, name, "Correlation"))
@@ -167,12 +167,12 @@ def test_get_measurements():
     assert meas("Image")
     assert not meas(OBJECTS_NAME)
     module.images_or_objects.value = (
-        cellprofiler.modules.measurecolocalization.M_OBJECTS
+        cellprofiler.modules.plugins.measurecolocalization.M_OBJECTS
     )
     assert not meas("Image")
     assert meas(OBJECTS_NAME)
     module.images_or_objects.value = (
-        cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+        cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
     assert meas("Image")
     assert meas(OBJECTS_NAME)
@@ -182,16 +182,16 @@ def test_get_measurement_images():
     """Test the get_measurment_images function for some different cases"""
     for iocase, names in (
         (
-            cellprofiler.modules.measurecolocalization.M_IMAGES,
-            [cellprofiler_core.measurement.IMAGE],
+                cellprofiler.modules.plugins.measurecolocalization.M_IMAGES,
+                [cellprofiler_core.measurement.IMAGE],
         ),
-        (cellprofiler.modules.measurecolocalization.M_OBJECTS, [OBJECTS_NAME]),
+        (cellprofiler.modules.plugins.measurecolocalization.M_OBJECTS, [OBJECTS_NAME]),
         (
-            cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS,
-            [cellprofiler_core.measurement.IMAGE, OBJECTS_NAME],
+                cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS,
+                [cellprofiler_core.measurement.IMAGE, OBJECTS_NAME],
         ),
     ):
-        module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+        module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
@@ -219,11 +219,11 @@ def test_get_measurement_images():
 
 
 def test_01_get_measurement_columns_images():
-    module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+    module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
     module.object_groups[0].object_name.value = OBJECTS_NAME
-    module.images_or_objects.value = cellprofiler.modules.measurecolocalization.M_IMAGES
+    module.images_or_objects.value = cellprofiler.modules.plugins.measurecolocalization.M_IMAGES
     columns = module.get_measurement_columns(None)
     expected = [
         (
@@ -246,12 +246,12 @@ def test_01_get_measurement_columns_images():
 
 
 def test_02_get_measurement_columns_objects():
-    module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+    module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
     module.object_groups[0].object_name.value = OBJECTS_NAME
     module.images_or_objects.value = (
-        cellprofiler.modules.measurecolocalization.M_OBJECTS
+        cellprofiler.modules.plugins.measurecolocalization.M_OBJECTS
     )
     columns = module.get_measurement_columns(None)
     expected = [
@@ -275,12 +275,12 @@ def test_02_get_measurement_columns_objects():
 
 
 def test_03_get_measurement_columns_both():
-    module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
+    module = cellprofiler.modules.plugins.measurecolocalization.MeasureColocalization()
     module.image_groups[0].image_name.value = IMAGE1_NAME
     module.image_groups[1].image_name.value = IMAGE2_NAME
     module.object_groups[0].object_name.value = OBJECTS_NAME
     module.images_or_objects.value = (
-        cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+        cellprofiler.modules.plugins.measurecolocalization.M_IMAGES_AND_OBJECTS
     )
     columns = module.get_measurement_columns(None)
     expected = (
@@ -578,7 +578,7 @@ def test_last_object_masked():
         )
         module.run(workspace)
         m = workspace.measurements
-        feature = cellprofiler.modules.measurecolocalization.F_CORRELATION_FORMAT % (
+        feature = cellprofiler.modules.plugins.measurecolocalization.F_CORRELATION_FORMAT % (
             IMAGE1_NAME,
             IMAGE2_NAME,
         )
@@ -609,7 +609,7 @@ def test_zero_valued_intensity():
 
     m = workspace.measurements
 
-    feature = cellprofiler.modules.measurecolocalization.F_CORRELATION_FORMAT % (
+    feature = cellprofiler.modules.plugins.measurecolocalization.F_CORRELATION_FORMAT % (
         IMAGE1_NAME,
         IMAGE2_NAME,
     )
@@ -640,7 +640,7 @@ def test_non_overlapping_object_intensity():
 
     m = workspace.measurements
 
-    feature = cellprofiler.modules.measurecolocalization.F_OVERLAP_FORMAT % (
+    feature = cellprofiler.modules.plugins.measurecolocalization.F_OVERLAP_FORMAT % (
         IMAGE1_NAME,
         IMAGE2_NAME,
     )

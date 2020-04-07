@@ -2,7 +2,7 @@ import numpy as np
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.maskimage
+import cellprofiler.modules.plugins.maskimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -29,8 +29,8 @@ def test_mask_with_objects():
     image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.maskimage.MaskImage()
-    module.source_choice.value = cellprofiler.modules.maskimage.IO_OBJECTS
+    module = cellprofiler.modules.plugins.maskimage.MaskImage()
+    module.source_choice.value = cellprofiler.modules.plugins.maskimage.IO_OBJECTS
     module.object_name.value = OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.masked_image_name.value = MASKED_IMAGE_NAME
@@ -70,8 +70,8 @@ def test_mask_invert():
     image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(pixel_data))
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.maskimage.MaskImage()
-    module.source_choice.value = cellprofiler.modules.maskimage.IO_OBJECTS
+    module = cellprofiler.modules.plugins.maskimage.MaskImage()
+    module.source_choice.value = cellprofiler.modules.plugins.maskimage.IO_OBJECTS
     module.object_name.value = OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.masked_image_name.value = MASKED_IMAGE_NAME
@@ -114,8 +114,8 @@ def test_double_mask():
     expected_mask = mask & (labels > 0)
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.maskimage.MaskImage()
-    module.source_choice.value = cellprofiler.modules.maskimage.IO_OBJECTS
+    module = cellprofiler.modules.plugins.maskimage.MaskImage()
+    module.source_choice.value = cellprofiler.modules.plugins.maskimage.IO_OBJECTS
     module.object_name.value = OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.masked_image_name.value = MASKED_IMAGE_NAME
@@ -150,8 +150,8 @@ def test_binary_mask():
     image_set.add(MASKING_IMAGE_NAME, cellprofiler_core.image.Image(masking_image))
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.maskimage.MaskImage()
-    module.source_choice.value = cellprofiler.modules.maskimage.IO_IMAGE
+    module = cellprofiler.modules.plugins.maskimage.MaskImage()
+    module.source_choice.value = cellprofiler.modules.plugins.maskimage.IO_IMAGE
     module.object_name.value = OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.masking_image_name.value = MASKING_IMAGE_NAME
@@ -188,8 +188,8 @@ def test_gray_mask():
     masking_image = masking_image > 0.5
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.maskimage.MaskImage()
-    module.source_choice.value = cellprofiler.modules.maskimage.IO_IMAGE
+    module = cellprofiler.modules.plugins.maskimage.MaskImage()
+    module.source_choice.value = cellprofiler.modules.plugins.maskimage.IO_IMAGE
     module.object_name.value = OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.masking_image_name.value = MASKING_IMAGE_NAME
@@ -227,8 +227,8 @@ def test_color_mask():
     expected_mask = masking_image > 0.5
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    module = cellprofiler.modules.maskimage.MaskImage()
-    module.source_choice.value = cellprofiler.modules.maskimage.IO_IMAGE
+    module = cellprofiler.modules.plugins.maskimage.MaskImage()
+    module.source_choice.value = cellprofiler.modules.plugins.maskimage.IO_IMAGE
     module.object_name.value = OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.masking_image_name.value = MASKING_IMAGE_NAME

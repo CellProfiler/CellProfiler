@@ -4,9 +4,9 @@ import skimage.data
 import skimage.morphology
 
 import cellprofiler_core.image
-import cellprofiler.modules.morphologicalskeleton
+import cellprofiler.modules.plugins.morphologicalskeleton
 
-instance = cellprofiler.modules.morphologicalskeleton.MorphologicalSkeleton()
+instance = cellprofiler.modules.plugins.morphologicalskeleton.MorphologicalSkeleton()
 
 
 @pytest.fixture(

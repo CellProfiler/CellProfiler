@@ -1,12 +1,9 @@
-import base64
-import zlib
-
 import numpy
 import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.graytocolor
+import cellprofiler.modules.plugins.graytocolor
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -15,16 +12,16 @@ OUTPUT_IMAGE_NAME = "outputimage"
 
 
 def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
-    module = cellprofiler.modules.graytocolor.GrayToColor()
+    module = cellprofiler.modules.plugins.graytocolor.GrayToColor()
     module.scheme_choice.value = scheme
     if scheme not in (
-        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
-        cellprofiler.modules.graytocolor.SCHEME_STACK,
+            cellprofiler.modules.plugins.graytocolor.SCHEME_COMPOSITE,
+            cellprofiler.modules.plugins.graytocolor.SCHEME_STACK,
     ):
         image_names = [
             "image%d" % i
             if images[i] is not None
-            else cellprofiler.modules.graytocolor.LEAVE_THIS_BLACK
+            else cellprofiler.modules.plugins.graytocolor.LEAVE_THIS_BLACK
             for i in range(7)
         ]
         for image_name_setting, image_name, adjustment_setting, adjustment in zip(
@@ -59,8 +56,8 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
             weights = [1.0] * len(images)
         if colors is None:
             colors = [
-                cellprofiler.modules.graytocolor.DEFAULT_COLORS[
-                    i % len(cellprofiler.modules.graytocolor.DEFAULT_COLORS)
+                cellprofiler.modules.plugins.graytocolor.DEFAULT_COLORS[
+                    i % len(cellprofiler.modules.plugins.graytocolor.DEFAULT_COLORS)
                 ]
                 for i in range(len(images))
             ]
@@ -109,8 +106,8 @@ def test_load_v3():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.graytocolor.GrayToColor)
-    assert module.scheme_choice == cellprofiler.modules.graytocolor.SCHEME_COMPOSITE
+    assert isinstance(module, cellprofiler.modules.plugins.graytocolor.GrayToColor)
+    assert module.scheme_choice == cellprofiler.modules.plugins.graytocolor.SCHEME_COMPOSITE
     assert module.rgb_image_name == "myimage"
     assert module.red_image_name == "1"
     assert module.green_image_name == "2"
@@ -151,7 +148,7 @@ def test_rgb():
         ]
         images += [None] * 4
         workspace, module = make_workspace(
-            cellprofiler.modules.graytocolor.SCHEME_RGB, images, adjustments
+            cellprofiler.modules.plugins.graytocolor.SCHEME_RGB, images, adjustments
         )
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -178,7 +175,7 @@ def test_cmyk():
         ]
         images = [None] * 3 + images
         workspace, module = make_workspace(
-            cellprofiler.modules.graytocolor.SCHEME_CMYK, images, adjustments
+            cellprofiler.modules.plugins.graytocolor.SCHEME_CMYK, images, adjustments
         )
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -209,7 +206,7 @@ def test_stack():
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
     workspace, module = make_workspace(
-        cellprofiler.modules.graytocolor.SCHEME_STACK, images
+        cellprofiler.modules.plugins.graytocolor.SCHEME_STACK, images
     )
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
@@ -227,7 +224,7 @@ def test_composite():
     weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
     color_names = ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
     workspace, module = make_workspace(
-        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        cellprofiler.modules.plugins.graytocolor.SCHEME_COMPOSITE,
         images,
         colors=color_names,
         weights=weights,

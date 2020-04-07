@@ -1,7 +1,3 @@
-import base64
-import io
-import zlib
-
 import numpy
 import pytest
 import skimage.data
@@ -11,7 +7,7 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules.injectimage
-import cellprofiler.modules.rescaleintensity
+import cellprofiler.modules.plugins.rescaleintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -47,7 +43,7 @@ def mask(image):
 
 @pytest.fixture(scope="function")
 def module():
-    module = cellprofiler.modules.rescaleintensity.RescaleIntensity()
+    module = cellprofiler.modules.plugins.rescaleintensity.RescaleIntensity()
 
     module.x_name.value = "input"
 

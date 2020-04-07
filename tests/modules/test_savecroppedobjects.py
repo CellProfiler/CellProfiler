@@ -8,11 +8,11 @@ import skimage.measure
 import skimage.morphology
 
 import cellprofiler_core.image
-import cellprofiler.modules.savecroppedobjects
+import cellprofiler.modules.plugins.savecroppedobjects
 import cellprofiler_core.object
 import cellprofiler_core.setting
 
-instance = cellprofiler.modules.savecroppedobjects.SaveCroppedObjects()
+instance = cellprofiler.modules.plugins.savecroppedobjects.SaveCroppedObjects()
 
 
 def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
@@ -68,7 +68,7 @@ def test_defaults(module):
 
     assert (
         module.directory.get_dir_choice()
-        == cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME
+        == DEFAULT_OUTPUT_FOLDER_NAME
     )
 
 

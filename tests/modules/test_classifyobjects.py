@@ -2,7 +2,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.classifyobjects
+import cellprofiler.modules.plugins.classifyobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -20,7 +20,7 @@ def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None
     object_set.add_objects(objects, OBJECTS_NAME)
 
     measurements = cellprofiler_core.measurement.Measurements()
-    module = cellprofiler.modules.classifyobjects.ClassifyObjects()
+    module = cellprofiler.modules.plugins.classifyobjects.ClassifyObjects()
     m_names = []
     if measurement1 is not None:
         measurements.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME_1, measurement1)
@@ -35,7 +35,7 @@ def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None
     module.contrast_choice.value = contrast_choice
     if (
         module.contrast_choice
-        == cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT
+        == cellprofiler.modules.plugins.classifyobjects.BY_SINGLE_MEASUREMENT
     ):
         for i, m in enumerate(m_names):
             group = module.single_measurements[i]
@@ -65,7 +65,7 @@ def test_classify_single_none():
     """Make sure the single measurement mode can handle no objects"""
     workspace, module = make_workspace(
         numpy.zeros((10, 10), int),
-        cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT,
+        cellprofiler.modules.plugins.classifyobjects.BY_SINGLE_MEASUREMENT,
         numpy.zeros((0,), float),
     )
     module.run(workspace)
@@ -86,11 +86,11 @@ def test_classify_single_even():
     labels[6:11, 5:9] = 3
     labels[16:19, 5:9] = 4
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT, m
+        labels, cellprofiler.modules.plugins.classifyobjects.BY_SINGLE_MEASUREMENT, m
     )
     module.single_measurements[
         0
-    ].bin_choice.value = cellprofiler.modules.classifyobjects.BC_EVEN
+    ].bin_choice.value = cellprofiler.modules.plugins.classifyobjects.BC_EVEN
     module.single_measurements[0].low_threshold.value = 0.2
     module.single_measurements[0].high_threshold.value = 0.7
     module.single_measurements[0].bin_count.value = 1
@@ -141,7 +141,7 @@ def test_classify_single_even():
             assert (
                 column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                 if column[1].endswith(
-                    cellprofiler.modules.classifyobjects.F_NUM_PER_BIN
+                    cellprofiler.modules.plugins.classifyobjects.F_NUM_PER_BIN
                 )
                 else cellprofiler_core.measurement.COLTYPE_FLOAT
             )
@@ -152,26 +152,26 @@ def test_classify_single_even():
 
     categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 1
-    assert categories[0] == cellprofiler.modules.classifyobjects.M_CATEGORY
+    assert categories[0] == cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     names = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "foo")
     assert len(names) == 0
     categories = module.get_categories(None, OBJECTS_NAME)
     assert len(categories) == 1
-    assert categories[0] == cellprofiler.modules.classifyobjects.M_CATEGORY
+    assert categories[0] == cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     names = module.get_measurements(None, OBJECTS_NAME, "foo")
     assert len(names) == 0
     names = module.get_measurements(
-        None, "foo", cellprofiler.modules.classifyobjects.M_CATEGORY
+        None, "foo", cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     )
     assert len(names) == 0
     names = module.get_measurements(
-        None, OBJECTS_NAME, cellprofiler.modules.classifyobjects.M_CATEGORY
+        None, OBJECTS_NAME, cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     )
     assert len(names) == 3
     assert len(set(names)) == 3
     assert all(
         [
-            "_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
+            "_".join((cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name))
             in list(expected_obj.keys())
             for name in names
         ]
@@ -179,13 +179,13 @@ def test_classify_single_even():
     names = module.get_measurements(
         None,
         cellprofiler_core.measurement.IMAGE,
-        cellprofiler.modules.classifyobjects.M_CATEGORY,
+        cellprofiler.modules.plugins.classifyobjects.M_CATEGORY,
     )
     assert len(names) == 6
     assert len(set(names)) == 6
     assert all(
         [
-            "_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
+            "_".join((cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name))
             in list(expected_img.keys())
             for name in names
         ]
@@ -200,11 +200,11 @@ def test_classify_single_custom():
     labels[6:11, 5:9] = 3
     labels[16:19, 5:9] = 4
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT, m
+        labels, cellprofiler.modules.plugins.classifyobjects.BY_SINGLE_MEASUREMENT, m
     )
     module.single_measurements[
         0
-    ].bin_choice.value = cellprofiler.modules.classifyobjects.BC_CUSTOM
+    ].bin_choice.value = cellprofiler.modules.plugins.classifyobjects.BC_CUSTOM
     module.single_measurements[0].custom_thresholds.value = ".2,.7"
     module.single_measurements[0].bin_count.value = 14  # should ignore
     module.single_measurements[0].wants_custom_names.value = True
@@ -255,7 +255,7 @@ def test_classify_single_custom():
             assert (
                 column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                 if column[1].endswith(
-                    cellprofiler.modules.classifyobjects.F_NUM_PER_BIN
+                    cellprofiler.modules.plugins.classifyobjects.F_NUM_PER_BIN
                 )
                 else cellprofiler_core.measurement.COLTYPE_FLOAT
             )
@@ -268,21 +268,21 @@ def test_classify_single_custom():
     assert len(categories) == 1
     categories = module.get_categories(None, OBJECTS_NAME)
     assert len(categories) == 1
-    assert categories[0] == cellprofiler.modules.classifyobjects.M_CATEGORY
+    assert categories[0] == cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     names = module.get_measurements(None, OBJECTS_NAME, "foo")
     assert len(names) == 0
     names = module.get_measurements(
-        None, "foo", cellprofiler.modules.classifyobjects.M_CATEGORY
+        None, "foo", cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     )
     assert len(names) == 0
     names = module.get_measurements(
-        None, OBJECTS_NAME, cellprofiler.modules.classifyobjects.M_CATEGORY
+        None, OBJECTS_NAME, cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
     )
     assert len(names) == 3
     assert len(set(names)) == 3
     assert all(
         [
-            "_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
+            "_".join((cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name))
             in list(expected_obj.keys())
             for name in names
         ]
@@ -290,13 +290,13 @@ def test_classify_single_custom():
     names = module.get_measurements(
         None,
         cellprofiler_core.measurement.IMAGE,
-        cellprofiler.modules.classifyobjects.M_CATEGORY,
+        cellprofiler.modules.plugins.classifyobjects.M_CATEGORY,
     )
     assert len(names) == 6
     assert len(set(names)) == 6
     assert all(
         [
-            "_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
+            "_".join((cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name))
             in list(expected_img.keys())
             for name in names
         ]
@@ -320,11 +320,11 @@ def test_last_is_nan():
         labels[6:11, 5:9] = 3
         labels[16:19, 5:9] = 4
         workspace, module = make_workspace(
-            labels, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT, m
+            labels, cellprofiler.modules.plugins.classifyobjects.BY_SINGLE_MEASUREMENT, m
         )
         module.single_measurements[
             0
-        ].bin_choice.value = cellprofiler.modules.classifyobjects.BC_CUSTOM
+        ].bin_choice.value = cellprofiler.modules.plugins.classifyobjects.BC_CUSTOM
         module.single_measurements[0].custom_thresholds.value = ".2,.7"
         module.single_measurements[0].bin_count.value = 14  # should ignore
         module.single_measurements[0].wants_custom_names.value = True
@@ -369,7 +369,7 @@ def test_last_is_nan():
 def test_two_none():
     workspace, module = make_workspace(
         numpy.zeros((10, 10), int),
-        cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
+        cellprofiler.modules.plugins.classifyobjects.BY_TWO_MEASUREMENTS,
         numpy.zeros((0,), float),
         numpy.zeros((0,), float),
     )
@@ -395,23 +395,23 @@ def test_two():
     m2 = numpy.random.permutation(exps)
     for wants_custom_names in (False, True):
         for tm1 in (
-            cellprofiler.modules.classifyobjects.TM_MEAN,
-            cellprofiler.modules.classifyobjects.TM_MEDIAN,
-            cellprofiler.modules.classifyobjects.TM_CUSTOM,
+                cellprofiler.modules.plugins.classifyobjects.TM_MEAN,
+                cellprofiler.modules.plugins.classifyobjects.TM_MEDIAN,
+                cellprofiler.modules.plugins.classifyobjects.TM_CUSTOM,
         ):
             for tm2 in (
-                cellprofiler.modules.classifyobjects.TM_MEAN,
-                cellprofiler.modules.classifyobjects.TM_MEDIAN,
-                cellprofiler.modules.classifyobjects.TM_CUSTOM,
+                    cellprofiler.modules.plugins.classifyobjects.TM_MEAN,
+                    cellprofiler.modules.plugins.classifyobjects.TM_MEDIAN,
+                    cellprofiler.modules.plugins.classifyobjects.TM_CUSTOM,
             ):
                 workspace, module = make_workspace(
                     labels,
-                    cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
+                    cellprofiler.modules.plugins.classifyobjects.BY_TWO_MEASUREMENTS,
                     m1,
                     m2,
                 )
                 assert isinstance(
-                    module, cellprofiler.modules.classifyobjects.ClassifyObjects
+                    module, cellprofiler.modules.plugins.classifyobjects.ClassifyObjects
                 )
                 module.first_threshold_method.value = tm1
                 module.first_threshold.value = 8
@@ -420,9 +420,9 @@ def test_two():
                 module.wants_image.value = True
 
                 def cutoff(method, custom_cutoff):
-                    if method == cellprofiler.modules.classifyobjects.TM_MEAN:
+                    if method == cellprofiler.modules.plugins.classifyobjects.TM_MEAN:
                         return numpy.mean(exps)
-                    elif method == cellprofiler.modules.classifyobjects.TM_MEDIAN:
+                    elif method == cellprofiler.modules.plugins.classifyobjects.TM_MEDIAN:
                         return numpy.median(exps)
                     else:
                         return custom_cutoff
@@ -446,7 +446,7 @@ def test_two():
                         "Measurement1_high_Measurement2_high",
                     )
                 m_names = [
-                    "_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
+                    "_".join((cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name))
                     for name in f_names
                 ]
 
@@ -458,7 +458,7 @@ def test_two():
                         assert (
                             column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
                             if column[1].endswith(
-                                cellprofiler.modules.classifyobjects.F_NUM_PER_BIN
+                                cellprofiler.modules.plugins.classifyobjects.F_NUM_PER_BIN
                             )
                             else cellprofiler_core.measurement.COLTYPE_FLOAT
                         )
@@ -475,15 +475,15 @@ def test_two():
                 assert len(categories) == 1
                 categories = module.get_categories(None, OBJECTS_NAME)
                 assert len(categories) == 1
-                assert categories[0] == cellprofiler.modules.classifyobjects.M_CATEGORY
+                assert categories[0] == cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
                 names = module.get_measurements(None, OBJECTS_NAME, "foo")
                 assert len(names) == 0
                 names = module.get_measurements(
-                    None, "foo", cellprofiler.modules.classifyobjects.M_CATEGORY
+                    None, "foo", cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
                 )
                 assert len(names) == 0
                 names = module.get_measurements(
-                    None, OBJECTS_NAME, cellprofiler.modules.classifyobjects.M_CATEGORY
+                    None, OBJECTS_NAME, cellprofiler.modules.plugins.classifyobjects.M_CATEGORY
                 )
                 assert len(names) == 4
 
@@ -499,14 +499,14 @@ def test_two():
                     m = workspace.measurements.get_current_measurement(
                         cellprofiler_core.measurement.IMAGE,
                         "_".join(
-                            (m_name, cellprofiler.modules.classifyobjects.F_NUM_PER_BIN)
+                            (m_name, cellprofiler.modules.plugins.classifyobjects.F_NUM_PER_BIN)
                         ),
                     )
                     assert m == expected.astype(int).sum()
                     m = workspace.measurements.get_current_measurement(
                         cellprofiler_core.measurement.IMAGE,
                         "_".join(
-                            (m_name, cellprofiler.modules.classifyobjects.F_PCT_PER_BIN)
+                            (m_name, cellprofiler.modules.plugins.classifyobjects.F_PCT_PER_BIN)
                         ),
                     )
                     assert m == 100.0 * float(expected.astype(int).sum()) / num_labels
@@ -517,7 +517,7 @@ def test_two():
                     assert m_name in [column[1] for column in columns]
                     assert m_name in [
                         "_".join(
-                            (cellprofiler.modules.classifyobjects.M_CATEGORY, name)
+                            (cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name)
                         )
                         for name in names
                     ]
@@ -546,17 +546,17 @@ def test_nans():
         end = numpy.max(labels) - 1 if leave_last_out else numpy.max(labels)
         workspace, module = make_workspace(
             labels,
-            cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
+            cellprofiler.modules.plugins.classifyobjects.BY_TWO_MEASUREMENTS,
             m1[:end],
             m2[:end],
         )
-        assert isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.classifyobjects.ClassifyObjects)
         module.first_threshold_method.value = (
-            cellprofiler.modules.classifyobjects.TM_MEAN
+            cellprofiler.modules.plugins.classifyobjects.TM_MEAN
         )
         module.first_threshold.value = 2
         module.second_threshold_method.value = (
-            cellprofiler.modules.classifyobjects.TM_MEAN
+            cellprofiler.modules.plugins.classifyobjects.TM_MEAN
         )
         module.second_threshold.value = 2
         module.wants_image.value = True
@@ -569,7 +569,7 @@ def test_nans():
             "Measurement1_high_Measurement2_high",
         )
         m_names = [
-            "_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
+            "_".join((cellprofiler.modules.plugins.classifyobjects.M_CATEGORY, name))
             for name in f_names
         ]
         m = workspace.measurements
@@ -595,12 +595,12 @@ def test_nan_offset_by_1():
     m1 = numpy.array((4, numpy.NaN))
     m2 = numpy.array((4, 4))
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS, m1, m2
+        labels, cellprofiler.modules.plugins.classifyobjects.BY_TWO_MEASUREMENTS, m1, m2
     )
-    assert isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects)
-    module.first_threshold_method.value = cellprofiler.modules.classifyobjects.TM_MEAN
+    assert isinstance(module, cellprofiler.modules.plugins.classifyobjects.ClassifyObjects)
+    module.first_threshold_method.value = cellprofiler.modules.plugins.classifyobjects.TM_MEAN
     module.first_threshold.value = 2
-    module.second_threshold_method.value = cellprofiler.modules.classifyobjects.TM_MEAN
+    module.second_threshold_method.value = cellprofiler.modules.plugins.classifyobjects.TM_MEAN
     module.second_threshold.value = 2
     module.wants_image.value = True
     module.wants_custom_names.value = False

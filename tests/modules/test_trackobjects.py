@@ -6,7 +6,7 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-import cellprofiler.modules.trackobjects
+import cellprofiler.modules.plugins.trackobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -26,7 +26,7 @@ def test_load_v3():
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     assert module.tracking_method == "LAP"
     assert module.object_name.value == "Nuclei"
     assert module.pixel_radius.value == 80
@@ -59,20 +59,20 @@ def test_load_v4():
         pipeline.modules(),
         ("Measurements", "Overlap", "Distance"),
         (
-            cellprofiler.modules.trackobjects.M_BOTH,
-            cellprofiler.modules.trackobjects.M_RANDOM,
-            cellprofiler.modules.trackobjects.M_VELOCITY,
+                cellprofiler.modules.plugins.trackobjects.M_BOTH,
+                cellprofiler.modules.plugins.trackobjects.M_RANDOM,
+                cellprofiler.modules.plugins.trackobjects.M_VELOCITY,
         ),
         (True, False, True),
         (True, False, True),
         ("Slothfulness", "Prescience", "Trepidation"),
         (
-            cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER,
-            cellprofiler.modules.trackobjects.DT_COLOR_ONLY,
-            cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER,
+                cellprofiler.modules.plugins.trackobjects.DT_COLOR_AND_NUMBER,
+                cellprofiler.modules.plugins.trackobjects.DT_COLOR_ONLY,
+                cellprofiler.modules.plugins.trackobjects.DT_COLOR_AND_NUMBER,
         ),
     ):
-        assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
         assert module.tracking_method == tracking_method
         assert module.model == model
         assert module.wants_image.value == save_img
@@ -106,15 +106,15 @@ def test_load_v5():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     m = pipeline.modules()[0]
-    assert isinstance(m, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(m, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     assert m.tracking_method == "LAP"
     assert m.object_name == "Turtles"
     assert m.measurement == "Steadiness"
     assert m.pixel_radius == 44
-    assert m.display_type == cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER
+    assert m.display_type == cellprofiler.modules.plugins.trackobjects.DT_COLOR_AND_NUMBER
     assert not m.wants_image
     assert m.image_name == "TrackedTurtles"
-    assert m.model == cellprofiler.modules.trackobjects.M_BOTH
+    assert m.model == cellprofiler.modules.plugins.trackobjects.M_BOTH
     assert m.radius_std == 3
     assert m.radius_limit.min == 3
     assert m.radius_limit.max == 11
@@ -142,15 +142,15 @@ def test_load_v6():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     m = pipeline.modules()[0]
-    assert isinstance(m, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(m, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     assert m.tracking_method == "LAP"
     assert m.object_name == "Turtles"
     assert m.measurement == "Steadiness"
     assert m.pixel_radius == 44
-    assert m.display_type == cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER
+    assert m.display_type == cellprofiler.modules.plugins.trackobjects.DT_COLOR_AND_NUMBER
     assert not m.wants_image
     assert m.image_name == "TrackedTurtles"
-    assert m.model == cellprofiler.modules.trackobjects.M_BOTH
+    assert m.model == cellprofiler.modules.plugins.trackobjects.M_BOTH
     assert m.radius_std == 3
     assert m.radius_limit.min == 3
     assert m.radius_limit.max == 11
@@ -179,7 +179,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
 
     returns the measurements
     """
-    module = cellprofiler.modules.trackobjects.TrackObjects()
+    module = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     module.set_module_num(1)
     module.object_name.value = OBJECT_NAME
     module.pixel_radius.value = 50
@@ -247,13 +247,13 @@ def test_track_nothing():
     features = [
         feature
         for feature in measurements.get_feature_names(OBJECT_NAME)
-        if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
+        if feature.startswith(cellprofiler.modules.plugins.trackobjects.F_PREFIX)
     ]
     assert all(
         [column[1] in features for column in columns if column[0] == OBJECT_NAME]
     )
-    for feature in cellprofiler.modules.trackobjects.F_ALL:
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "50"))
+    for feature in cellprofiler.modules.plugins.trackobjects.F_ALL:
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "50"))
         assert name in features
         value = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(value) == 0
@@ -261,7 +261,7 @@ def test_track_nothing():
     features = [
         feature
         for feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
-        if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
+        if feature.startswith(cellprofiler.modules.plugins.trackobjects.F_PREFIX)
     ]
     assert all(
         [
@@ -270,9 +270,9 @@ def test_track_nothing():
             if column[0] == cellprofiler_core.measurement.IMAGE
         ]
     )
-    for feature in cellprofiler.modules.trackobjects.F_IMAGE_ALL:
+    for feature in cellprofiler.modules.plugins.trackobjects.F_IMAGE_ALL:
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")
         )
         assert name in features
         value = measurements.get_current_image_measurement(name)
@@ -289,8 +289,8 @@ def test_00_track_one_then_nothing():
     measurements = runTrackObjects((labels, numpy.zeros((10, 10), int)))
     feature = "_".join(
         (
-            cellprofiler.modules.trackobjects.F_PREFIX,
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT,
+            cellprofiler.modules.plugins.trackobjects.F_PREFIX,
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT,
             OBJECT_NAME,
             "50",
         )
@@ -312,35 +312,35 @@ def test_track_one_distance():
     measurements = runTrackObjects((labels, labels), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "1"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "1"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_X) - 0), 7) == 0
-    assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_Y) - 0), 7) == 0
+    assert round(abs(m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X) - 0), 7) == 0
+    assert round(abs(m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y) - 0), 7) == 0
     assert (
-        round(abs(m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
+            round(abs(m(cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
     )
     assert (
-        round(abs(m(cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE) - 0), 7)
+        round(abs(m(cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE) - 0), 7)
         == 0
     )
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 1
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER) == 1
-    assert m(cellprofiler.modules.trackobjects.F_LIFETIME) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LIFETIME) == 2
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
         )
         return measurements.get_current_image_measurement(name)
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
     check_relationships(measurements, [1], [1], [2], [1])
 
 
@@ -365,34 +365,34 @@ def test_track_one_moving():
     measurements = runTrackObjects(labels_list, fn)
 
     def m(feature, expected):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "3"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "3"))
         value_set = measurements.get_all_measurements(OBJECT_NAME, name)
         assert len(expected) == len(value_set)
         for values, x in zip(value_set, expected):
             assert len(values) == 1
             assert round(abs(values[0] - x), 7) == 0
 
-    m(cellprofiler.modules.trackobjects.F_TRAJECTORY_X, [0, 0, 1, 0])
-    m(cellprofiler.modules.trackobjects.F_TRAJECTORY_Y, [0, 2, 0, -2])
-    m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED, [0, 2, 1, 2])
-    m(cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE, [0, 2, 3, 5])
-    m(cellprofiler.modules.trackobjects.F_LABEL, [1, 1, 1, 1])
-    m(cellprofiler.modules.trackobjects.F_LIFETIME, [1, 2, 3, 4])
+    m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X, [0, 0, 1, 0])
+    m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y, [0, 2, 0, -2])
+    m(cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED, [0, 2, 1, 2])
+    m(cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE, [0, 2, 3, 5])
+    m(cellprofiler.modules.plugins.trackobjects.F_LABEL, [1, 1, 1, 1])
+    m(cellprofiler.modules.plugins.trackobjects.F_LIFETIME, [1, 2, 3, 4])
     m(
-        cellprofiler.modules.trackobjects.F_LINEARITY,
+        cellprofiler.modules.plugins.trackobjects.F_LINEARITY,
         [1, 1, numpy.sqrt(5) / 3, 1.0 / 5.0],
     )
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "3")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "3")
         )
         return measurements.get_current_image_measurement(name)
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
     image_numbers = numpy.arange(1, len(labels_list) + 1)
     object_numbers = numpy.ones(len(image_numbers))
     check_relationships(
@@ -420,33 +420,33 @@ def test_track_split():
     measurements = runTrackObjects((labels1, labels2, labels2), fn)
 
     def m(feature, idx):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "5"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "5"))
         values = measurements.get_measurement(OBJECT_NAME, name, idx + 1)
         assert len(values) == 2
         return values
 
-    labels = m(cellprofiler.modules.trackobjects.F_LABEL, 2)
+    labels = m(cellprofiler.modules.plugins.trackobjects.F_LABEL, 2)
     assert len(labels) == 2
     assert numpy.all(labels == 1)
-    parents = m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER, 1)
+    parents = m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER, 1)
     assert numpy.all(parents == 1)
-    assert numpy.all(m(cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER, 1) == 1)
-    parents = m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER, 2)
+    assert numpy.all(m(cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER, 1) == 1)
+    parents = m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER, 2)
     assert numpy.all(parents == numpy.array([1, 2]))
-    assert numpy.all(m(cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER, 2) == 2)
+    assert numpy.all(m(cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER, 2) == 2)
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "5")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "5")
         )
         return measurements.get_all_measurements(cellprofiler_core.measurement.IMAGE, name)[
             1
         ]
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 1
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
     check_relationships(
         measurements, [1, 1, 2, 2], [1, 1, 1, 2], [2, 2, 3, 3], [1, 2, 1, 2]
     )
@@ -467,24 +467,24 @@ def test_track_negative():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "1"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "1"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
         )
         return measurements.get_current_image_measurement(name)
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 1
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 1
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
 
 
 def test_track_ambiguous():
@@ -503,13 +503,13 @@ def test_track_ambiguous():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "20"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "20"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
 
 
 def test_overlap_positive():
@@ -527,13 +527,13 @@ def test_overlap_positive():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "2"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "2"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 1
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
 
 
 def test_overlap_negative():
@@ -551,13 +551,13 @@ def test_overlap_negative():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "2"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "2"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
 
 
 def test_overlap_ambiguous():
@@ -576,13 +576,13 @@ def test_overlap_ambiguous():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "2"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "2"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
 
 
 def test_measurement_positive():
@@ -600,13 +600,13 @@ def test_measurement_positive():
     measurements = runTrackObjects((labels1, labels2), fn, [[1], [1]])
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "2"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "2"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 1
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
 
 
 def test_measurement_negative():
@@ -624,13 +624,13 @@ def test_measurement_negative():
     measurements = runTrackObjects((labels1, labels2), fn, [[1], [1]])
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "2"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "2"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
 
 
 def test_ambiguous():
@@ -649,13 +649,13 @@ def test_ambiguous():
     measurements = runTrackObjects((labels1, labels2), fn, [[1, 10], [9]])
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "4"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "4"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
 
 
 def test_cross_numbered_objects():
@@ -672,21 +672,21 @@ def test_cross_numbered_objects():
     measurements = runTrackObjects([numpy.array(p)[labels] for p in pp], fn)
 
     def m(feature, i):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature))
         values = measurements[OBJECT_NAME, name, i + 1]
         assert len(values) == 4
         return values
 
     for i, p in enumerate(pp):
-        l = m(cellprofiler.modules.trackobjects.F_LABEL, i)
+        l = m(cellprofiler.modules.plugins.trackobjects.F_LABEL, i)
         numpy.testing.assert_array_equal(numpy.arange(1, 5), p[l - 1])
         if i > 0:
             p_prev = pp[i - 1]
             order = numpy.lexsort([p])
             expected_po = p_prev[order]
-            po = m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER, i)
+            po = m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER, i)
             numpy.testing.assert_array_equal(po, expected_po)
-            pi = m(cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER, i)
+            pi = m(cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER, i)
             numpy.testing.assert_array_equal(pi, i)
     image_numbers, _ = numpy.mgrid[1 : (len(pp) + 1), 0:4]
     check_relationships(
@@ -700,27 +700,27 @@ def test_cross_numbered_objects():
 
 def test_measurement_columns():
     """Test get_measurement_columns function"""
-    module = cellprofiler.modules.trackobjects.TrackObjects()
+    module = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     module.object_name.value = OBJECT_NAME
     module.tracking_method.value = "Distance"
     module.pixel_radius.value = 10
     columns = module.get_measurement_columns(None)
-    assert len(columns) == len(cellprofiler.modules.trackobjects.F_ALL) + len(
-        cellprofiler.modules.trackobjects.F_IMAGE_ALL
+    assert len(columns) == len(cellprofiler.modules.plugins.trackobjects.F_ALL) + len(
+        cellprofiler.modules.plugins.trackobjects.F_IMAGE_ALL
     )
     for object_name, features in (
-        (OBJECT_NAME, cellprofiler.modules.trackobjects.F_ALL),
-        (cellprofiler_core.measurement.IMAGE, cellprofiler.modules.trackobjects.F_IMAGE_ALL),
+        (OBJECT_NAME, cellprofiler.modules.plugins.trackobjects.F_ALL),
+        (cellprofiler_core.measurement.IMAGE, cellprofiler.modules.plugins.trackobjects.F_IMAGE_ALL),
     ):
         for feature in features:
             if object_name == OBJECT_NAME:
                 name = "_".join(
-                    (cellprofiler.modules.trackobjects.F_PREFIX, feature, "10")
+                    (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "10")
                 )
             else:
                 name = "_".join(
                     (
-                        cellprofiler.modules.trackobjects.F_PREFIX,
+                        cellprofiler.modules.plugins.trackobjects.F_PREFIX,
                         feature,
                         OBJECT_NAME,
                         "10",
@@ -734,13 +734,13 @@ def test_measurement_columns():
 
 def test_measurement_columns_lap():
     """Test get_measurement_columns function for LAP"""
-    module = cellprofiler.modules.trackobjects.TrackObjects()
+    module = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     module.object_name.value = OBJECT_NAME
     module.tracking_method.value = "LAP"
-    module.model.value = cellprofiler.modules.trackobjects.M_BOTH
+    module.model.value = cellprofiler.modules.plugins.trackobjects.M_BOTH
     second_phase = [
-        cellprofiler.modules.trackobjects.F_LINKING_DISTANCE,
-        cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
+        cellprofiler.modules.plugins.trackobjects.F_LINKING_DISTANCE,
+        cellprofiler.modules.plugins.trackobjects.F_MOVEMENT_MODEL,
     ]
     for wants in (True, False):
         module.wants_second_phase.value = wants
@@ -748,24 +748,24 @@ def test_measurement_columns_lap():
         # 2, 2, 4 for the static model
         # 4, 4, 16 for the velocity model
         other_features = [
-            cellprofiler.modules.trackobjects.F_AREA,
-            cellprofiler.modules.trackobjects.F_LINKING_DISTANCE,
-            cellprofiler.modules.trackobjects.F_LINK_TYPE,
-            cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
-            cellprofiler.modules.trackobjects.F_STANDARD_DEVIATION,
+            cellprofiler.modules.plugins.trackobjects.F_AREA,
+            cellprofiler.modules.plugins.trackobjects.F_LINKING_DISTANCE,
+            cellprofiler.modules.plugins.trackobjects.F_LINK_TYPE,
+            cellprofiler.modules.plugins.trackobjects.F_MOVEMENT_MODEL,
+            cellprofiler.modules.plugins.trackobjects.F_STANDARD_DEVIATION,
         ]
         if wants:
             other_features += [
-                cellprofiler.modules.trackobjects.F_GAP_LENGTH,
-                cellprofiler.modules.trackobjects.F_GAP_SCORE,
-                cellprofiler.modules.trackobjects.F_MERGE_SCORE,
-                cellprofiler.modules.trackobjects.F_SPLIT_SCORE,
-                cellprofiler.modules.trackobjects.F_MITOSIS_SCORE,
+                cellprofiler.modules.plugins.trackobjects.F_GAP_LENGTH,
+                cellprofiler.modules.plugins.trackobjects.F_GAP_SCORE,
+                cellprofiler.modules.plugins.trackobjects.F_MERGE_SCORE,
+                cellprofiler.modules.plugins.trackobjects.F_SPLIT_SCORE,
+                cellprofiler.modules.plugins.trackobjects.F_MITOSIS_SCORE,
             ]
         assert (
             len(columns)
-            == len(cellprofiler.modules.trackobjects.F_ALL)
-            + len(cellprofiler.modules.trackobjects.F_IMAGE_ALL)
+            == len(cellprofiler.modules.plugins.trackobjects.F_ALL)
+            + len(cellprofiler.modules.plugins.trackobjects.F_IMAGE_ALL)
             + len(other_features)
             + 2
             + 2
@@ -775,208 +775,208 @@ def test_measurement_columns_lap():
             + 16
         )
         kalman_features = [
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_STATE,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STATE,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_STATE,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STATE,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_STATE,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STATE,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_STATE,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STATE,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_STATE,
-                cellprofiler.modules.trackobjects.F_VX,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STATE,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_STATE,
-                cellprofiler.modules.trackobjects.F_VY,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STATE,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_NOISE,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_NOISE,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_NOISE,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_NOISE,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_NOISE,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_NOISE,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_NOISE,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_NOISE,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_NOISE,
-                cellprofiler.modules.trackobjects.F_VX,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_NOISE,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_NOISE,
-                cellprofiler.modules.trackobjects.F_VY,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_NOISE,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_Y,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_STATIC_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_STATIC_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_VX,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_X,
-                cellprofiler.modules.trackobjects.F_VY,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_X,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_Y,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_Y,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_Y,
-                cellprofiler.modules.trackobjects.F_VX,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_Y,
-                cellprofiler.modules.trackobjects.F_VY,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VX,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VX,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VX,
-                cellprofiler.modules.trackobjects.F_VX,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VX,
-                cellprofiler.modules.trackobjects.F_VY,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VY,
-                cellprofiler.modules.trackobjects.F_X,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
+                cellprofiler.modules.plugins.trackobjects.F_X,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VY,
-                cellprofiler.modules.trackobjects.F_Y,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
+                cellprofiler.modules.plugins.trackobjects.F_Y,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VY,
-                cellprofiler.modules.trackobjects.F_VX,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
+                cellprofiler.modules.plugins.trackobjects.F_VX,
             ),
-            cellprofiler.modules.trackobjects.kalman_feature(
-                cellprofiler.modules.trackobjects.F_VELOCITY_MODEL,
-                cellprofiler.modules.trackobjects.F_COV,
-                cellprofiler.modules.trackobjects.F_VY,
-                cellprofiler.modules.trackobjects.F_VY,
+            cellprofiler.modules.plugins.trackobjects.kalman_feature(
+                cellprofiler.modules.plugins.trackobjects.F_VELOCITY_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_COV,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
+                cellprofiler.modules.plugins.trackobjects.F_VY,
             ),
         ]
         for object_name, features in (
             (
-                OBJECT_NAME,
-                cellprofiler.modules.trackobjects.F_ALL
-                + kalman_features
-                + other_features,
+                    OBJECT_NAME,
+                    cellprofiler.modules.plugins.trackobjects.F_ALL
+                    + kalman_features
+                    + other_features,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler.modules.trackobjects.F_IMAGE_ALL,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler.modules.plugins.trackobjects.F_IMAGE_ALL,
             ),
         ):
             for feature in features:
                 if object_name == OBJECT_NAME:
                     name = "_".join(
-                        (cellprofiler.modules.trackobjects.F_PREFIX, feature)
+                        (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature)
                     )
                 else:
                     name = "_".join(
                         (
-                            cellprofiler.modules.trackobjects.F_PREFIX,
+                            cellprofiler.modules.plugins.trackobjects.F_PREFIX,
                             feature,
                             OBJECT_NAME,
                         )
@@ -1008,7 +1008,7 @@ def test_measurement_columns_lap():
 
 def test_measurements():
     """Test the different measurement pieces"""
-    module = cellprofiler.modules.trackobjects.TrackObjects()
+    module = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     module.object_name.value = OBJECT_NAME
     module.image_name.value = "image"
     module.pixel_radius.value = 10
@@ -1016,25 +1016,25 @@ def test_measurements():
     assert len(categories) == 0
     categories = module.get_categories(None, OBJECT_NAME)
     assert len(categories) == 1
-    assert categories[0] == cellprofiler.modules.trackobjects.F_PREFIX
+    assert categories[0] == cellprofiler.modules.plugins.trackobjects.F_PREFIX
     features = module.get_measurements(None, OBJECT_NAME, "Foo")
     assert len(features) == 0
     features = module.get_measurements(
-        None, OBJECT_NAME, cellprofiler.modules.trackobjects.F_PREFIX
+        None, OBJECT_NAME, cellprofiler.modules.plugins.trackobjects.F_PREFIX
     )
-    assert len(features) == len(cellprofiler.modules.trackobjects.F_ALL)
+    assert len(features) == len(cellprofiler.modules.plugins.trackobjects.F_ALL)
     assert all(
-        [feature in cellprofiler.modules.trackobjects.F_ALL for feature in features]
+        [feature in cellprofiler.modules.plugins.trackobjects.F_ALL for feature in features]
     )
     scales = module.get_measurement_scales(
-        None, OBJECT_NAME, cellprofiler.modules.trackobjects.F_PREFIX, "Foo", "image"
+        None, OBJECT_NAME, cellprofiler.modules.plugins.trackobjects.F_PREFIX, "Foo", "image"
     )
     assert len(scales) == 0
-    for feature in cellprofiler.modules.trackobjects.F_ALL:
+    for feature in cellprofiler.modules.plugins.trackobjects.F_ALL:
         scales = module.get_measurement_scales(
             None,
             OBJECT_NAME,
-            cellprofiler.modules.trackobjects.F_PREFIX,
+            cellprofiler.modules.plugins.trackobjects.F_PREFIX,
             feature,
             "image",
         )
@@ -1058,7 +1058,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     group_numbers - group numbers for each image set, defaults to all 1
     group_indexes - group indexes for each image set, defaults to range
     """
-    module = cellprofiler.modules.trackobjects.TrackObjects()
+    module = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     module.set_module_num(1)
     module.object_name.value = OBJECT_NAME
     module.tracking_method.value = "LAP"
@@ -1089,20 +1089,20 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
         for index, feature, dtype in (
             (
                 1,
-                module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL),
+                module.measurement_name(cellprofiler.modules.plugins.trackobjects.F_LABEL),
                 int,
             ),
             (
                 2,
                 module.measurement_name(
-                    cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER
+                    cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER
                 ),
                 int,
             ),
             (
                 3,
                 module.measurement_name(
-                    cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER
+                    cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER
                 ),
                 int,
             ),
@@ -1110,7 +1110,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
             (5, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, float),
             (
                 6,
-                module.measurement_name(cellprofiler.modules.trackobjects.F_AREA),
+                module.measurement_name(cellprofiler.modules.plugins.trackobjects.F_AREA),
                 float,
             ),
         ):
@@ -1139,28 +1139,28 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
             i + 1,
         )
         for feature in (
-            cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED,
-            cellprofiler.modules.trackobjects.F_DISPLACEMENT,
-            cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE,
-            cellprofiler.modules.trackobjects.F_TRAJECTORY_X,
-            cellprofiler.modules.trackobjects.F_TRAJECTORY_Y,
-            cellprofiler.modules.trackobjects.F_LINEARITY,
-            cellprofiler.modules.trackobjects.F_LIFETIME,
-            cellprofiler.modules.trackobjects.F_FINAL_AGE,
-            cellprofiler.modules.trackobjects.F_LINKING_DISTANCE,
-            cellprofiler.modules.trackobjects.F_LINK_TYPE,
-            cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
-            cellprofiler.modules.trackobjects.F_STANDARD_DEVIATION,
+                cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED,
+                cellprofiler.modules.plugins.trackobjects.F_DISPLACEMENT,
+                cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE,
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X,
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y,
+                cellprofiler.modules.plugins.trackobjects.F_LINEARITY,
+                cellprofiler.modules.plugins.trackobjects.F_LIFETIME,
+                cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE,
+                cellprofiler.modules.plugins.trackobjects.F_LINKING_DISTANCE,
+                cellprofiler.modules.plugins.trackobjects.F_LINK_TYPE,
+                cellprofiler.modules.plugins.trackobjects.F_MOVEMENT_MODEL,
+                cellprofiler.modules.plugins.trackobjects.F_STANDARD_DEVIATION,
         ):
             dtype = (
                 int
                 if feature
                 in (
-                    cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER,
-                    cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER,
-                    cellprofiler.modules.trackobjects.F_LIFETIME,
-                    cellprofiler.modules.trackobjects.F_LINK_TYPE,
-                    cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
+                       cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER,
+                       cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER,
+                       cellprofiler.modules.plugins.trackobjects.F_LIFETIME,
+                       cellprofiler.modules.plugins.trackobjects.F_LINK_TYPE,
+                       cellprofiler.modules.plugins.trackobjects.F_MOVEMENT_MODEL,
                 )
                 else float
             )
@@ -1168,13 +1168,13 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
                 OBJECT_NAME,
                 module.measurement_name(feature),
                 numpy.NaN * numpy.ones(nobjects[i], dtype)
-                if feature == cellprofiler.modules.trackobjects.F_FINAL_AGE
+                if feature == cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE
                 else numpy.zeros(nobjects[i], dtype),
                 i + 1,
             )
         for feature in (
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT,
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT,
+                cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT,
+                cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT,
         ):
             m.add_measurement(
                 cellprofiler_core.measurement.IMAGE,
@@ -1209,7 +1209,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
         m.add_measurement(
             cellprofiler_core.measurement.IMAGE,
             module.image_measurement_name(
-                cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT
+                cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT
             ),
             new_objects,
             True,
@@ -1218,7 +1218,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
         m.add_measurement(
             cellprofiler_core.measurement.IMAGE,
             module.image_measurement_name(
-                cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT
+                cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT
             ),
             lost_objects,
             True,
@@ -1244,7 +1244,7 @@ def check_measurements(workspace, d):
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     module = workspace.module
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     for feature, expected in list(d.items()):
         if numpy.isscalar(expected[0]):
             mname = module.image_measurement_name(feature)
@@ -1285,7 +1285,7 @@ def check_relationships(
     expected_child_object_numbers = numpy.atleast_1d(expected_child_object_numbers)
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     r = m.get_relationships(
-        1, cellprofiler.modules.trackobjects.R_PARENT, OBJECT_NAME, OBJECT_NAME
+        1, cellprofiler.modules.plugins.trackobjects.R_PARENT, OBJECT_NAME, OBJECT_NAME
     )
     actual_parent_image_numbers = r[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER]
     actual_parent_object_numbers = r[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER]
@@ -1333,23 +1333,23 @@ def test_lap_none():
     """Run the second part of LAP on one image of nothing"""
     with MonkeyPatchedDelete():
         workspace, module = make_lap2_workspace(numpy.zeros((0, 7)), 1)
-        assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
         module.run_as_data_tool(workspace)
         check_measurements(
             workspace,
             {
-                cellprofiler.modules.trackobjects.F_LABEL: [numpy.zeros(0, int)],
-                cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED: [numpy.zeros(0)],
-                cellprofiler.modules.trackobjects.F_DISPLACEMENT: [numpy.zeros(0)],
-                cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE: [
+                cellprofiler.modules.plugins.trackobjects.F_LABEL: [numpy.zeros(0, int)],
+                cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED: [numpy.zeros(0)],
+                cellprofiler.modules.plugins.trackobjects.F_DISPLACEMENT: [numpy.zeros(0)],
+                cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE: [
                     numpy.zeros(0)
                 ],
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_X: [numpy.zeros(0)],
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_Y: [numpy.zeros(0)],
-                cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [0],
-                cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0],
-                cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0],
-                cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X: [numpy.zeros(0)],
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y: [numpy.zeros(0)],
+                cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0],
             },
         )
 
@@ -1360,28 +1360,28 @@ def test_lap_one():
         workspace, module = make_lap2_workspace(
             numpy.array([[0, 1, 0, 0, 100, 100, 25]]), 1
         )
-        assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
         module.run_as_data_tool(workspace)
         check_measurements(
             workspace,
             {
-                cellprofiler.modules.trackobjects.F_LABEL: [numpy.array([1])],
-                cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_LABEL: [numpy.array([1])],
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                     numpy.array([0])
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                     numpy.array([0])
                 ],
-                cellprofiler.modules.trackobjects.F_DISPLACEMENT: [numpy.zeros(1)],
-                cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE: [
+                cellprofiler.modules.plugins.trackobjects.F_DISPLACEMENT: [numpy.zeros(1)],
+                cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE: [
                     numpy.zeros(1)
                 ],
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_X: [numpy.zeros(1)],
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_Y: [numpy.zeros(1)],
-                cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1],
-                cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0],
-                cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0],
-                cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X: [numpy.zeros(1)],
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y: [numpy.zeros(1)],
+                cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1],
+                cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0],
+                cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0],
             },
         )
 
@@ -1392,7 +1392,7 @@ def test_bridge_gap():
         workspace, module = make_lap2_workspace(
             numpy.array([[0, 1, 0, 0, 1, 2, 25], [2, 2, 0, 0, 101, 102, 25]]), 3
         )
-        assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
         #
         # The cost of bridging the gap should be 141. We set the alternative
         # score to 142 so that bridging wins.
@@ -1404,60 +1404,60 @@ def test_bridge_gap():
         check_measurements(
             workspace,
             {
-                cellprofiler.modules.trackobjects.F_LABEL: [
+                cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                     numpy.array([1]),
                     numpy.zeros(0),
                     numpy.array([1]),
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                     numpy.array([0]),
                     numpy.zeros(0, int),
                     numpy.array([1]),
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                     numpy.array([0]),
                     numpy.zeros(0, int),
                     numpy.array([1]),
                 ],
-                cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED: [
+                cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED: [
                     numpy.zeros(1),
                     numpy.zeros(0),
                     distance,
                 ],
-                cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE: [
+                cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE: [
                     numpy.zeros(1),
                     numpy.zeros(0),
                     distance,
                 ],
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_X: [
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X: [
                     numpy.zeros(1),
                     numpy.zeros(0),
                     numpy.array([100]),
                 ],
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_Y: [
+                cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y: [
                     numpy.zeros(1),
                     numpy.zeros(0),
                     numpy.array([100]),
                 ],
-                cellprofiler.modules.trackobjects.F_LINEARITY: [
+                cellprofiler.modules.plugins.trackobjects.F_LINEARITY: [
                     numpy.array([numpy.nan]),
                     numpy.zeros(0),
                     numpy.array([1]),
                 ],
-                cellprofiler.modules.trackobjects.F_LIFETIME: [
+                cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                     numpy.ones(1),
                     numpy.zeros(0),
                     numpy.array([2]),
                 ],
-                cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+                cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                     numpy.array([numpy.nan]),
                     numpy.zeros(0),
                     numpy.array([2]),
                 ],
-                cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 0],
-                cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
-                cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-                cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+                cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 0],
+                cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
+                cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+                cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
             },
         )
         check_relationships(workspace.measurements, [1], [1], [3], [1])
@@ -1469,7 +1469,7 @@ def test_maintain_gap():
         workspace, module = make_lap2_workspace(
             numpy.array([[0, 1, 0, 0, 1, 2, 25], [2, 2, 0, 0, 101, 102, 25]]), 3
         )
-        assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
         #
         # The cost of creating the gap should be 140 and the cost of
         # bridging the gap should be 141.
@@ -1480,25 +1480,25 @@ def test_maintain_gap():
         check_measurements(
             workspace,
             {
-                cellprofiler.modules.trackobjects.F_LABEL: [
+                cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                     numpy.array([1]),
                     numpy.zeros(0),
                     numpy.array([2]),
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                     numpy.array([0]),
                     numpy.zeros(0),
                     numpy.array([0]),
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                     numpy.array([0]),
                     numpy.zeros(0),
                     numpy.array([0]),
                 ],
-                cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 1],
-                cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 1, 0],
-                cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-                cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+                cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 1],
+                cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 1, 0],
+                cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+                cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
             },
         )
 
@@ -1509,7 +1509,7 @@ def test_filter_gap():
         workspace, module = make_lap2_workspace(
             numpy.array([[0, 1, 0, 0, 1, 2, 25], [2, 2, 0, 0, 101, 102, 25]]), 3
         )
-        assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+        assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
         #
         # The cost of creating the gap should be 142 and the cost of
         # bridging the gap should be 141. However, the gap should be filtered
@@ -1521,17 +1521,17 @@ def test_filter_gap():
         check_measurements(
             workspace,
             {
-                cellprofiler.modules.trackobjects.F_LABEL: [
+                cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                     numpy.array([1]),
                     numpy.zeros(0),
                     numpy.array([2]),
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                     numpy.array([0]),
                     numpy.zeros(0),
                     numpy.array([0]),
                 ],
-                cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+                cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                     numpy.array([0]),
                     numpy.zeros(0),
                     numpy.array([0]),
@@ -1554,7 +1554,7 @@ def test_split():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The split score should be 20*sqrt(2) more than the null so a split
     # alternative cost of 15 is too much and 14 too little. Values
@@ -1569,65 +1569,65 @@ def test_split():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([1, 1]),
                 numpy.array([1, 1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 1]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 1]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED: [
+            cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED: [
                 numpy.zeros(1),
                 numpy.ones(2) * d200,
                 numpy.array([5, 5]),
             ],
-            cellprofiler.modules.trackobjects.F_DISPLACEMENT: [
+            cellprofiler.modules.plugins.trackobjects.F_DISPLACEMENT: [
                 numpy.zeros(1),
                 numpy.ones(2) * d200,
                 numpy.array([tot, tot]),
             ],
-            cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE: [
+            cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE: [
                 numpy.zeros(1),
                 numpy.ones(2) * d200,
                 numpy.ones(2) * d200 + 5,
             ],
-            cellprofiler.modules.trackobjects.F_TRAJECTORY_X: [
+            cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X: [
                 numpy.zeros(1),
                 numpy.array([10, -10]),
                 numpy.array([3, -4]),
             ],
-            cellprofiler.modules.trackobjects.F_TRAJECTORY_Y: [
+            cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y: [
                 numpy.zeros(1),
                 numpy.array([10, -10]),
                 numpy.array([4, -3]),
             ],
-            cellprofiler.modules.trackobjects.F_LINEARITY: [
+            cellprofiler.modules.plugins.trackobjects.F_LINEARITY: [
                 numpy.array([numpy.nan]),
                 numpy.array([1, 1]),
                 numpy.array([lin, lin]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.ones(1),
                 numpy.array([2, 2]),
                 numpy.array([3, 3]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([3, 3]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 1, 0],
         },
     )
 
@@ -1646,42 +1646,42 @@ def test_dont_split():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     module.split_cost.value = 28
     module.max_split_score.value = 30
     module.run_as_data_tool(workspace)
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([1, 2]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 0]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 0]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.ones(1),
                 numpy.array([2, 1]),
                 numpy.array([3, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([3, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 1, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
         },
     )
 
@@ -1700,42 +1700,42 @@ def test_split_filter():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     module.split_cost.value = 30
     module.max_split_score.value = 28
     module.run_as_data_tool(workspace)
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([1, 2]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 0]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 0]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.array([1]),
                 numpy.array([2, 1]),
                 numpy.array([3, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([3, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 1, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
         },
     )
 
@@ -1754,42 +1754,42 @@ def test_merge():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     module.merge_cost.value = 30
     module.max_merge_score.value = 30
     module.run_as_data_tool(workspace)
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1, 1]),
                 numpy.array([1, 1]),
                 numpy.array([1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0, 0]),
                 numpy.array([1, 1]),
                 numpy.array([2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0, 0]),
                 numpy.array([1, 2]),
                 numpy.array([1]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.array([1, 1]),
                 numpy.array([2, 2]),
                 numpy.array([3]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([3]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [2, 0, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 1],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [2, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 1],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
         },
     )
 
@@ -1808,7 +1808,7 @@ def test_dont_merge():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
     #
@@ -1816,7 +1816,7 @@ def test_dont_merge():
     module.max_merge_score.value = 30
     module.run_as_data_tool(workspace)
     labels = workspace.measurements.get_all_measurements(
-        OBJECT_NAME, module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL)
+        OBJECT_NAME, module.measurement_name(cellprofiler.modules.plugins.trackobjects.F_LABEL)
     )
     assert len(labels) == 3
     assert len(labels[0]) == 2
@@ -1843,7 +1843,7 @@ def test_filter_merge():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
     #
@@ -1851,7 +1851,7 @@ def test_filter_merge():
     module.max_merge_score.value = 28
     module.run_as_data_tool(workspace)
     labels = workspace.measurements.get_all_measurements(
-        OBJECT_NAME, module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL)
+        OBJECT_NAME, module.measurement_name(cellprofiler.modules.plugins.trackobjects.F_LABEL)
     )
     assert len(labels) == 3
     assert len(labels[0]) == 2
@@ -1946,7 +1946,7 @@ def test_multi_group():
         group_numbers=[1, 1, 1, 2, 2, 2, 3, 3, 3],
         group_indexes=[1, 2, 3, 1, 2, 3, 1, 2, 3],
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The cost of bridging the gap should be 141. We set the alternative
     # score to 142 so that bridging wins.
@@ -1965,7 +1965,7 @@ def test_multi_group():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.zeros(0),
                 numpy.array([1]),
@@ -1976,7 +1976,7 @@ def test_multi_group():
                 numpy.array([1, 1]),
                 numpy.array([1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.zeros(0),
                 numpy.array([1]),
@@ -1987,7 +1987,7 @@ def test_multi_group():
                 numpy.array([7, 7]),
                 numpy.array([8]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.zeros(0),
                 numpy.array([1]),
@@ -1998,7 +1998,7 @@ def test_multi_group():
                 numpy.array([1, 2]),
                 numpy.array([1]),
             ],
-            cellprofiler.modules.trackobjects.F_DISPLACEMENT: [
+            cellprofiler.modules.plugins.trackobjects.F_DISPLACEMENT: [
                 numpy.zeros(1),
                 numpy.zeros(0),
                 distance,
@@ -2009,7 +2009,7 @@ def test_multi_group():
                 numpy.zeros(2),
                 numpy.array([10]),
             ],
-            cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE: [
+            cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE: [
                 numpy.zeros(1),
                 numpy.zeros(0),
                 distance,
@@ -2020,7 +2020,7 @@ def test_multi_group():
                 numpy.zeros(2),
                 numpy.array([10]),
             ],
-            cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED: [
+            cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED: [
                 numpy.zeros(1),
                 numpy.zeros(0),
                 distance,
@@ -2031,7 +2031,7 @@ def test_multi_group():
                 numpy.zeros(2),
                 numpy.array([10]),
             ],
-            cellprofiler.modules.trackobjects.F_TRAJECTORY_X: [
+            cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X: [
                 numpy.zeros(1),
                 numpy.zeros(0),
                 numpy.array([100]),
@@ -2042,7 +2042,7 @@ def test_multi_group():
                 numpy.zeros(2),
                 numpy.array([-6]),
             ],
-            cellprofiler.modules.trackobjects.F_TRAJECTORY_Y: [
+            cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y: [
                 numpy.zeros(1),
                 numpy.zeros(0),
                 numpy.array([100]),
@@ -2053,7 +2053,7 @@ def test_multi_group():
                 numpy.zeros(2),
                 numpy.array([-8]),
             ],
-            cellprofiler.modules.trackobjects.F_LINEARITY: [
+            cellprofiler.modules.plugins.trackobjects.F_LINEARITY: [
                 numpy.array([numpy.nan]),
                 numpy.zeros(0),
                 numpy.array([1]),
@@ -2064,7 +2064,7 @@ def test_multi_group():
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.ones(1),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.ones(1),
                 numpy.zeros(0),
                 numpy.array([2]),
@@ -2075,7 +2075,7 @@ def test_multi_group():
                 numpy.array([2, 2]),
                 numpy.array([3]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan]),
                 numpy.zeros(0),
                 numpy.array([2]),
@@ -2086,7 +2086,7 @@ def test_multi_group():
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([3]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [
                 1,
                 0,
                 0,
@@ -2097,7 +2097,7 @@ def test_multi_group():
                 0,
                 0,
             ],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [
                 0,
                 0,
                 0,
@@ -2108,7 +2108,7 @@ def test_multi_group():
                 0,
                 0,
             ],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [
                 0,
                 0,
                 0,
@@ -2119,7 +2119,7 @@ def test_multi_group():
                 0,
                 1,
             ],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [
                 0,
                 0,
                 0,
@@ -2147,7 +2147,7 @@ def test_filter_by_final_age():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The split score should be between 14 and 15.  Set the split
     # alternative cost to 28 so that the split is inhibited.
@@ -2168,35 +2168,35 @@ def test_filter_by_final_age():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([1, numpy.NaN]),
                 numpy.array([1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 0]),
                 numpy.array([2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 0]),
                 numpy.array([1]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.array([1]),
                 numpy.array([2, 1]),
                 numpy.array([3]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan]),
                 numpy.array([numpy.nan, 1]),
                 numpy.array([3]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 1, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 1],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 1],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
         },
     )
 
@@ -2215,7 +2215,7 @@ def test_mitosis():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The parent is off by np.sqrt(3*3+4*4) = 5, so an alternative of
     # 4 loses and 6 wins
@@ -2228,55 +2228,55 @@ def test_mitosis():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([1, 1]),
                 numpy.array([1, 1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 1]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 1]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.ones(1),
                 numpy.array([2, 2]),
                 numpy.array([3, 3]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([numpy.nan]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([3, 3]),
             ],
-            cellprofiler.modules.trackobjects.F_LINK_TYPE: [
-                numpy.array([cellprofiler.modules.trackobjects.LT_NONE]),
+            cellprofiler.modules.plugins.trackobjects.F_LINK_TYPE: [
+                numpy.array([cellprofiler.modules.plugins.trackobjects.LT_NONE]),
                 numpy.array(
                     [
-                        cellprofiler.modules.trackobjects.LT_MITOSIS,
-                        cellprofiler.modules.trackobjects.LT_MITOSIS,
+                        cellprofiler.modules.plugins.trackobjects.LT_MITOSIS,
+                        cellprofiler.modules.plugins.trackobjects.LT_MITOSIS,
                     ]
                 ),
                 numpy.array(
                     [
-                        cellprofiler.modules.trackobjects.LT_NONE,
-                        cellprofiler.modules.trackobjects.LT_NONE,
+                        cellprofiler.modules.plugins.trackobjects.LT_NONE,
+                        cellprofiler.modules.plugins.trackobjects.LT_NONE,
                     ]
                 ),
             ],
-            cellprofiler.modules.trackobjects.F_MITOSIS_SCORE: [
+            cellprofiler.modules.plugins.trackobjects.F_MITOSIS_SCORE: [
                 numpy.array([numpy.nan]),
                 numpy.array([5, 5]),
                 numpy.array([numpy.nan, numpy.nan]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 1, 0],
         },
     )
 
@@ -2295,7 +2295,7 @@ def test_no_mitosis():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The parent is off by np.sqrt(3*3+4*4) = 5, so an alternative of
     # 4 loses and 6 wins
@@ -2308,35 +2308,35 @@ def test_no_mitosis():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([2, 3]),
                 numpy.array([2, 3]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([0, 0]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([0, 0]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.ones(1),
                 numpy.array([1, 1]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([1]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 2, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 1, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 2, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
         },
     )
 
@@ -2355,7 +2355,7 @@ def test_mitosis_distance_filter():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     #
     # The parent is off by np.sqrt(3*3+4*4) = 5, so an alternative of
     # 4 loses and 6 wins
@@ -2368,35 +2368,35 @@ def test_mitosis_distance_filter():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([2, 3]),
                 numpy.array([2, 3]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([0, 0]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([0, 0]),
                 numpy.array([1, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_LIFETIME: [
+            cellprofiler.modules.plugins.trackobjects.F_LIFETIME: [
                 numpy.ones(1),
                 numpy.array([1, 1]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_FINAL_AGE: [
+            cellprofiler.modules.plugins.trackobjects.F_FINAL_AGE: [
                 numpy.array([1]),
                 numpy.array([numpy.nan, numpy.nan]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT: [1, 2, 0],
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT: [0, 1, 0],
-            cellprofiler.modules.trackobjects.F_MERGE_COUNT: [0, 0, 0],
-            cellprofiler.modules.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT: [1, 2, 0],
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT: [0, 1, 0],
+            cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT: [0, 0, 0],
+            cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT: [0, 0, 0],
         },
     )
 
@@ -2416,7 +2416,7 @@ def test_alternate_child_mitoses():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     module.merge_cost.value = 1
     module.gap_cost.value = 1
     module.mitosis_cost.value = 6
@@ -2425,17 +2425,17 @@ def test_alternate_child_mitoses():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1]),
                 numpy.array([1, 1, 2]),
                 numpy.array([1, 1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 1, 0]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0]),
                 numpy.array([1, 1, 0]),
                 numpy.array([1, 2]),
@@ -2459,7 +2459,7 @@ def test_alternate_parent_mitoses():
         ),
         3,
     )
-    assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.trackobjects.TrackObjects)
     module.merge_cost.value = 1
     module.gap_cost.value = 1
     module.mitosis_cost.value = 6
@@ -2468,17 +2468,17 @@ def test_alternate_parent_mitoses():
     check_measurements(
         workspace,
         {
-            cellprofiler.modules.trackobjects.F_LABEL: [
+            cellprofiler.modules.plugins.trackobjects.F_LABEL: [
                 numpy.array([1, 2]),
                 numpy.array([1, 1]),
                 numpy.array([1, 1]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER: [
                 numpy.array([0, 0]),
                 numpy.array([1, 1]),
                 numpy.array([2, 2]),
             ],
-            cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER: [
+            cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER: [
                 numpy.array([0, 0]),
                 numpy.array([1, 1]),
                 numpy.array([1, 2]),
@@ -2514,7 +2514,7 @@ class MonkeyPatchedDelete(object):
 
 
 def test_save_image():
-    module = cellprofiler.modules.trackobjects.TrackObjects()
+    module = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     module.set_module_num(1)
     module.object_name.value = OBJECT_NAME
     module.pixel_radius.value = 50
@@ -2555,7 +2555,7 @@ def test_get_no_gap_pair_scores():
         (numpy.ones((1, 3)), numpy.ones((1, 3)), 1),
         (numpy.ones((2, 3)), numpy.ones((2, 3)), 1),
     ):
-        t = cellprofiler.modules.trackobjects.TrackObjects()
+        t = cellprofiler.modules.plugins.trackobjects.TrackObjects()
         a, d = t.get_gap_pair_scores(F, L, max_gap)
         assert tuple(a.shape) == (0, 2)
         assert len(d) == 0
@@ -2587,7 +2587,7 @@ def test_get_gap_pair_scores():
         numpy.sum((L[expected[:, 0], :2] - F[expected[:, 1], :2]) ** 2, 1)
     )
     expected_rho = numpy.array([1, 2, 2, 1, 1])
-    t = cellprofiler.modules.trackobjects.TrackObjects()
+    t = cellprofiler.modules.plugins.trackobjects.TrackObjects()
     a, d = t.get_gap_pair_scores(F, L, 4)
     order = numpy.lexsort((a[:, 1], a[:, 0]))
     a, d = a[order], d[order]
@@ -2612,13 +2612,13 @@ def test_neighbour_track_nothing():
     features = [
         feature
         for feature in measurements.get_feature_names(OBJECT_NAME)
-        if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
+        if feature.startswith(cellprofiler.modules.plugins.trackobjects.F_PREFIX)
     ]
     assert all(
         [column[1] in features for column in columns if column[0] == OBJECT_NAME]
     )
-    for feature in cellprofiler.modules.trackobjects.F_ALL:
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "50"))
+    for feature in cellprofiler.modules.plugins.trackobjects.F_ALL:
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "50"))
         assert name in features
         value = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(value) == 0
@@ -2626,7 +2626,7 @@ def test_neighbour_track_nothing():
     features = [
         feature
         for feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
-        if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
+        if feature.startswith(cellprofiler.modules.plugins.trackobjects.F_PREFIX)
     ]
     assert all(
         [
@@ -2635,9 +2635,9 @@ def test_neighbour_track_nothing():
             if column[0] == cellprofiler_core.measurement.IMAGE
         ]
     )
-    for feature in cellprofiler.modules.trackobjects.F_IMAGE_ALL:
+    for feature in cellprofiler.modules.plugins.trackobjects.F_IMAGE_ALL:
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")
         )
         assert name in features
         value = measurements.get_current_image_measurement(name)
@@ -2659,8 +2659,8 @@ def test_00_neighbour_track_one_then_nothing():
     measurements = runTrackObjects((labels, numpy.zeros((10, 10), int)), fn)
     feature = "_".join(
         (
-            cellprofiler.modules.trackobjects.F_PREFIX,
-            cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT,
+            cellprofiler.modules.plugins.trackobjects.F_PREFIX,
+            cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT,
             OBJECT_NAME,
             "50",
         )
@@ -2682,35 +2682,35 @@ def test_neighbour_track_one_by_distance():
     measurements = runTrackObjects((labels, labels), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "1"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "1"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_X) - 0), 7) == 0
-    assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_Y) - 0), 7) == 0
+    assert round(abs(m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X) - 0), 7) == 0
+    assert round(abs(m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y) - 0), 7) == 0
     assert (
-        round(abs(m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
+            round(abs(m(cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
     )
     assert (
-        round(abs(m(cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE) - 0), 7)
+        round(abs(m(cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE) - 0), 7)
         == 0
     )
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 1
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER) == 1
-    assert m(cellprofiler.modules.trackobjects.F_LIFETIME) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_IMAGE_NUMBER) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LIFETIME) == 2
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
         )
         return measurements.get_current_image_measurement(name)
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
     check_relationships(measurements, [1], [1], [2], [1])
 
 
@@ -2735,34 +2735,34 @@ def test_neighbour_track_one_moving():
     measurements = runTrackObjects(labels_list, fn)
 
     def m(feature, expected):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "3"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "3"))
         value_set = measurements.get_all_measurements(OBJECT_NAME, name)
         assert len(expected) == len(value_set)
         for values, x in zip(value_set, expected):
             assert len(values) == 1
             assert round(abs(values[0] - x), 7) == 0
 
-    m(cellprofiler.modules.trackobjects.F_TRAJECTORY_X, [0, 0, 1, 0])
-    m(cellprofiler.modules.trackobjects.F_TRAJECTORY_Y, [0, 2, 0, -2])
-    m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED, [0, 2, 1, 2])
-    m(cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE, [0, 2, 3, 5])
-    m(cellprofiler.modules.trackobjects.F_LABEL, [1, 1, 1, 1])
-    m(cellprofiler.modules.trackobjects.F_LIFETIME, [1, 2, 3, 4])
+    m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_X, [0, 0, 1, 0])
+    m(cellprofiler.modules.plugins.trackobjects.F_TRAJECTORY_Y, [0, 2, 0, -2])
+    m(cellprofiler.modules.plugins.trackobjects.F_DISTANCE_TRAVELED, [0, 2, 1, 2])
+    m(cellprofiler.modules.plugins.trackobjects.F_INTEGRATED_DISTANCE, [0, 2, 3, 5])
+    m(cellprofiler.modules.plugins.trackobjects.F_LABEL, [1, 1, 1, 1])
+    m(cellprofiler.modules.plugins.trackobjects.F_LIFETIME, [1, 2, 3, 4])
     m(
-        cellprofiler.modules.trackobjects.F_LINEARITY,
+        cellprofiler.modules.plugins.trackobjects.F_LINEARITY,
         [1, 1, numpy.sqrt(5) / 3, 1.0 / 5.0],
     )
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "3")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "3")
         )
         return measurements.get_current_image_measurement(name)
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
     image_numbers = numpy.arange(1, len(labels_list) + 1)
     object_numbers = numpy.ones(len(image_numbers))
     check_relationships(
@@ -2789,24 +2789,24 @@ def test_neighbour_track_negative():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "1"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "1"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 0
 
     def m(feature):
         name = "_".join(
-            (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
+            (cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, OBJECT_NAME, "1")
         )
         return measurements.get_current_image_measurement(name)
 
-    assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 1
-    assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 1
-    assert m(cellprofiler.modules.trackobjects.F_SPLIT_COUNT) == 0
-    assert m(cellprofiler.modules.trackobjects.F_MERGE_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_NEW_OBJECT_COUNT) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LOST_OBJECT_COUNT) == 1
+    assert m(cellprofiler.modules.plugins.trackobjects.F_SPLIT_COUNT) == 0
+    assert m(cellprofiler.modules.plugins.trackobjects.F_MERGE_COUNT) == 0
 
 
 def test_neighbour_track_ambiguous():
@@ -2825,13 +2825,13 @@ def test_neighbour_track_ambiguous():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "20"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "20"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]
 
-    assert m(cellprofiler.modules.trackobjects.F_LABEL) == 2
-    assert m(cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_LABEL) == 2
+    assert m(cellprofiler.modules.plugins.trackobjects.F_PARENT_OBJECT_NUMBER) == 2
 
 
 def test_neighbour_track_group_with_drop():
@@ -2858,7 +2858,7 @@ def test_neighbour_track_group_with_drop():
     measurements = runTrackObjects((labels1, labels2), fn)
 
     def m(feature):
-        name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "20"))
+        name = "_".join((cellprofiler.modules.plugins.trackobjects.F_PREFIX, feature, "20"))
         values = measurements.get_current_measurement(OBJECT_NAME, name)
         assert len(values) == 1
         return values[0]

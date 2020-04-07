@@ -7,7 +7,7 @@ import wx.html
 import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
-import cellprofiler.modules
+import cellprofiler_core.modules
 import cellprofiler_core.preferences
 
 MENU_HELP = {
@@ -271,8 +271,8 @@ def search_module_help(text):
 
             count += len(matches)
 
-    for module_name in cellprofiler.modules.get_module_names():
-        module = cellprofiler.modules.instantiate_module(module_name)
+    for module_name in cellprofiler_core.modules.get_module_names():
+        module = cellprofiler_core.modules.instantiate_module(module_name)
 
         location = os.path.split(module.create_settings.__func__.__code__.co_filename)[
             0

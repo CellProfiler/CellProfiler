@@ -14,9 +14,9 @@ import skimage.transform
 import skimage.util
 
 import cellprofiler_core.image
-import cellprofiler.modules.watershed
+import cellprofiler.modules.plugins.watershed
 
-instance = cellprofiler.modules.watershed.Watershed()
+instance = cellprofiler.modules.plugins.watershed.Watershed()
 
 
 @pytest.fixture(scope="module", params=[1, 2], ids=["1connectivity", "2connectivity"])

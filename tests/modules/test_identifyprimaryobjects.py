@@ -9,8 +9,8 @@ import scipy.ndimage
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
-import cellprofiler.modules.identifyprimaryobjects
-import cellprofiler.modules.threshold
+import cellprofiler.modules.plugins.identifyprimaryobjects
+import cellprofiler.modules.plugins.threshold
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
@@ -36,7 +36,7 @@ def make_workspace(image, mask=None, labels=None):
 
     labels - if thresholding per-object, the labels matrix needed
     """
-    module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    module = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     module.set_module_num(1)
     module.x_name.value = IMAGE_NAME
     module.y_name.value = OBJECTS_NAME
@@ -58,16 +58,16 @@ def make_workspace(image, mask=None, labels=None):
 
 
 def test_init():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
 
 
 def test_test_zero_objects():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.threshold.threshold_range.min = 0.1
     x.threshold.threshold_range.max = 1
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     img = numpy.zeros((25, 25))
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -111,13 +111,13 @@ def test_test_zero_objects():
 
 
 def test_test_zero_objects_wa_in_lo_in():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.threshold.threshold_range.min = 0.1
     x.threshold.threshold_range.max = 1
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
     img = numpy.zeros((25, 25))
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -141,13 +141,13 @@ def test_test_zero_objects_wa_in_lo_in():
 
 
 def test_test_zero_objects_wa_di_lo_in():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.threshold.threshold_range.min = 0.1
     x.threshold.threshold_range.max = 1
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
     img = numpy.zeros((25, 25))
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -171,13 +171,13 @@ def test_test_zero_objects_wa_di_lo_in():
 
 
 def test_test_zero_objects_wa_in_lo_sh():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.threshold.threshold_range.min = 0.1
     x.threshold.threshold_range.max = 1
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_SHAPE
     img = numpy.zeros((25, 25))
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -201,13 +201,13 @@ def test_test_zero_objects_wa_in_lo_sh():
 
 
 def test_test_zero_objects_wa_di_lo_sh():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.threshold.threshold_range.min = 0.1
     x.threshold.threshold_range.max = 1
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_SHAPE
     img = numpy.zeros((25, 25))
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -231,12 +231,12 @@ def test_test_zero_objects_wa_di_lo_sh():
 
 
 def test_test_one_object():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -298,12 +298,12 @@ def test_test_one_object():
 
 
 def test_test_two_objects():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -360,7 +360,7 @@ def test_test_two_objects():
 
 
 def test_test_threshold_range():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -368,9 +368,9 @@ def test_test_threshold_range():
     x.threshold.threshold_range.max = 1
     x.threshold.threshold_correction_factor.value = 0.95
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
     x.exclude_size.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     img = two_cell_image()
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -421,13 +421,13 @@ def test_test_threshold_range():
 
 
 def test_fill_holes():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.fill_holes.value = True
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -456,7 +456,7 @@ def test_fill_holes():
 
 
 def test_dont_fill_holes():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -466,7 +466,7 @@ def test_dont_fill_holes():
     x.fill_holes.value = False
     x.smoothing_filter_size.value = 0
     x.automatic_smoothing.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     img = numpy.zeros((40, 40))
     draw_circle(img, (10, 10), 7, 0.5)
     draw_circle(img, (30, 30), 7, 0.5)
@@ -493,15 +493,15 @@ def test_dont_fill_holes():
 
 def test_01_fill_holes_within_holes():
     "Regression test of img-1431"
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.size_range.min = 1
     x.size_range.max = 2
     x.exclude_size.value = False
-    x.fill_holes.value = cellprofiler.modules.identifyprimaryobjects.FH_DECLUMP
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.fill_holes.value = cellprofiler.modules.plugins.identifyprimaryobjects.FH_DECLUMP
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -535,7 +535,7 @@ def test_test_watershed_shape_shape():
     Create an object whose intensity is high near the middle
     but has an hourglass shape, then segment it using shape/shape
     """
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -544,8 +544,8 @@ def test_test_watershed_shape_shape():
     x.fill_holes.value = False
     x.maxima_suppression_size.value = 3
     x.automatic_suppression.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_SHAPE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -598,7 +598,7 @@ def test_test_watershed_shape_intensity():
     Create an object with an hourglass shape to get two maxima, but
     set the intensities so that one maximum gets the middle portion
     """
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -607,8 +607,8 @@ def test_test_watershed_shape_intensity():
     x.fill_holes.value = False
     x.maxima_suppression_size.value = 3
     x.automatic_suppression.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_SHAPE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -662,7 +662,7 @@ def test_test_watershed_intensity_distance_single():
     Create an object with an hourglass shape and a peak in the middle.
     It should be segmented into a single object.
     """
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -671,8 +671,8 @@ def test_test_watershed_intensity_distance_single():
     x.fill_holes.value = False
     x.maxima_suppression_size.value = 3.6
     x.automatic_suppression.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -728,7 +728,7 @@ def test_test_watershed_intensity_distance_triple():
     Create an object with an hourglass shape and a peak in the middle.
     It should be segmented into a single object.
     """
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -739,8 +739,8 @@ def test_test_watershed_intensity_distance_triple():
     x.automatic_smoothing.value = False
     x.maxima_suppression_size.value = 7.1
     x.automatic_suppression.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -793,7 +793,7 @@ def test_test_watershed_intensity_distance_filter():
     Create an object with an hourglass shape and a peak in the middle.
     It should be segmented into a single object.
     """
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -804,8 +804,8 @@ def test_test_watershed_intensity_distance_filter():
     x.automatic_smoothing.value = 1
     x.maxima_suppression_size.value = 3.6
     x.automatic_suppression.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
@@ -861,7 +861,7 @@ def test_test_watershed_intensity_distance_double():
     should be shared because the watershed is done using the distance
     transform.
     """
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -872,8 +872,8 @@ def test_test_watershed_intensity_distance_double():
     x.automatic_smoothing.value = 0
     x.maxima_suppression_size.value = 3.6
     x.automatic_suppression.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
     img = numpy.array(
         [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -923,7 +923,7 @@ def test_test_watershed_intensity_distance_double():
 
 def test_propagate():
     """Test the propagate unclump method"""
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.x_name.value = "my_image"
     x.y_name.value = "my_object"
@@ -935,10 +935,10 @@ def test_propagate():
     x.maxima_suppression_size.value = 7
     x.automatic_suppression.value = False
     x.threshold.manual_threshold.value = 0.3
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_PROPAGATE
     x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
         [
@@ -1011,7 +1011,7 @@ def test_fly():
     pipeline.load(io.StringIO(data))
     x = pipeline.modules()[0]
     assert isinstance(
-        x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        x, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
 
     img = fly_image()
@@ -1025,14 +1025,14 @@ def test_fly():
         #
         x.size_range.min = min_size
         for unclump_method in (
-            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
-            cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
+                cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY,
+                cellprofiler.modules.plugins.identifyprimaryobjects.UN_SHAPE,
         ):
             x.unclump_method.value = unclump_method
             for watershed_method in (
-                cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
-                cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
-                cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
+                    cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY,
+                    cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE,
+                    cellprofiler.modules.plugins.identifyprimaryobjects.WA_PROPAGATE,
             ):
                 x.watershed_method.value = watershed_method
                 image_set_list = cellprofiler_core.image.ImageSetList()
@@ -1071,7 +1071,7 @@ def test_maxima_suppression_zero():
         ]
     )
     for distance in (0, 1):
-        x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+        x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
         x.use_advanced.value = True
         x.x_name.value = "my_image"
         x.y_name.value = "my_object"
@@ -1084,13 +1084,13 @@ def test_maxima_suppression_zero():
         x.automatic_suppression.value = False
         x.threshold.manual_threshold.value = 0.05
         x.unclump_method.value = (
-            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+            cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
         )
         x.watershed_method.value = (
-            cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+            cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY
         )
-        x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-        x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+        x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+        x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
         x.threshold.threshold_smoothing_scale.value = 0
         pipeline = cellprofiler_core.pipeline.Pipeline()
         x.set_module_num(1)
@@ -1126,7 +1126,7 @@ def test_load_v10():
     pipeline.load(io.StringIO(data))
     module = pipeline.modules()[4]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
     assert module.x_name == "Channel0"
     assert module.y_name == "Cells"
@@ -1135,12 +1135,12 @@ def test_load_v10():
     assert module.exclude_size
     assert module.exclude_border_objects
     assert (
-        module.unclump_method
-        == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+            module.unclump_method
+            == cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
     )
     assert (
-        module.watershed_method
-        == cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+            module.watershed_method
+            == cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY
     )
     assert module.automatic_smoothing
     assert module.smoothing_filter_size == 11
@@ -1148,9 +1148,9 @@ def test_load_v10():
     assert module.maxima_suppression_size == 9
     assert module.low_res_maxima
     assert (
-        module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING
+            module.fill_holes == cellprofiler.modules.plugins.identifyprimaryobjects.FH_THRESHOLDING
     )
-    assert module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
+    assert module.limit_choice == cellprofiler.modules.plugins.identifyprimaryobjects.LIMIT_NONE
     assert module.maximum_object_count == 499
     #
     assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_ADAPTIVE
@@ -1172,27 +1172,27 @@ def test_load_v10():
     #
     module = pipeline.modules()[5]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
     assert not module.exclude_size
     assert not module.exclude_border_objects
     assert (
-        module.unclump_method
-        == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+            module.unclump_method
+            == cellprofiler.modules.plugins.identifyprimaryobjects.UN_INTENSITY
     )
     assert (
-        module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_NONE
+            module.watershed_method == cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     )
     assert not module.automatic_smoothing
     assert not module.automatic_suppression
     assert not module.low_res_maxima
-    assert module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_NEVER
+    assert module.fill_holes == cellprofiler.modules.plugins.identifyprimaryobjects.FH_NEVER
     assert (
-        module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
+            module.limit_choice == cellprofiler.modules.plugins.identifyprimaryobjects.LIMIT_ERASE
     )
     assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
-        module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
+            module.threshold.global_operation.value == cellprofiler.modules.plugins.threshold.TM_LI
     )
     assert (
         module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
@@ -1205,12 +1205,12 @@ def test_load_v10():
 
     module = pipeline.modules()[6]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
-    assert module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_NONE
+    assert module.unclump_method == cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
     assert (
-        module.watershed_method
-        == cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+            module.watershed_method
+            == cellprofiler.modules.plugins.identifyprimaryobjects.WA_PROPAGATE
     )
     assert module.limit_choice == "None"
     assert module.threshold.global_operation.value == "None"
@@ -1219,11 +1219,11 @@ def test_load_v10():
 
     module = pipeline.modules()[7]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
-    assert module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
+    assert module.unclump_method == cellprofiler.modules.plugins.identifyprimaryobjects.UN_SHAPE
     assert (
-        module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+            module.watershed_method == cellprofiler.modules.plugins.identifyprimaryobjects.WA_SHAPE
     )
     assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
@@ -1242,29 +1242,29 @@ def test_load_v10():
 
     module = pipeline.modules()[8]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
-    assert module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler.modules.plugins.threshold.TS_GLOBAL
     assert (
-        module.threshold.global_operation.value
-        == cellprofiler.modules.threshold.TM_MANUAL
+            module.threshold.global_operation.value
+            == cellprofiler.modules.plugins.threshold.TM_MANUAL
     )
     assert module.use_advanced.value
 
     module = pipeline.modules()[9]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
-    assert module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler.modules.plugins.threshold.TS_GLOBAL
     assert (
-        module.threshold.global_operation.value
-        == cellprofiler.modules.threshold.TM_MEASUREMENT
+            module.threshold.global_operation.value
+            == cellprofiler.modules.plugins.threshold.TM_MEASUREMENT
     )
     assert module.use_advanced.value
 
     module = pipeline.modules()[10]
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
     assert module.threshold.threshold_scope == "None"
     assert (
@@ -1310,7 +1310,7 @@ def test_01_load_new_robust_background():
         ),
     ):
         assert isinstance(
-            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+            module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
         )
         assert module.threshold.lower_outlier_fraction == 0.1
         assert module.threshold.upper_outlier_fraction == 0.2
@@ -1321,16 +1321,16 @@ def test_01_load_new_robust_background():
 
 
 def test_discard_large():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = True
     x.size_range.min = 10
     x.size_range.max = 40
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.3
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
@@ -1372,16 +1372,16 @@ def test_discard_large():
 
 
 def test_keep_large():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.size_range.min = 10
     x.size_range.max = 40
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.3
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
@@ -1417,16 +1417,16 @@ def test_keep_large():
 
 
 def test_discard_small():
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = True
     x.size_range.min = 40
     x.size_range.max = 60
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.3
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
@@ -1469,16 +1469,16 @@ def test_discard_small():
 
 def test_regression_diagonal():
     """Regression test - was using one-connected instead of 3-connected structuring element"""
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.smoothing_filter_size.value = 0
     x.automatic_smoothing.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.threshold_smoothing_scale.value = 0
     x.threshold.manual_threshold.value = 0.5
     img = numpy.zeros((10, 10))
@@ -1508,7 +1508,7 @@ def test_regression_diagonal():
 
 def test_regression_adaptive_mask():
     """Regression test - mask all but one pixel / adaptive"""
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
@@ -1552,7 +1552,7 @@ def test_regression_adaptive_mask():
 
 def test_get_measurement_columns():
     """Test the get_measurement_columns method"""
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     oname = "my_object"
     x.y_name.value = oname
     x.x_name.value = "my_image"
@@ -1697,9 +1697,9 @@ def test_regression_holes():
     x.size_range.max = 50
     x.maxima_suppression_size.value = 3
     x.automatic_suppression.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_INTENSITY
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.threshold_smoothing_scale.value = 0
     x.threshold.manual_threshold.value = 0.05
     x.threshold.threshold_correction_factor.value = 1
@@ -1800,7 +1800,7 @@ def test_regression_holes():
     image_set.add("my_image", image)
     object_set = cellprofiler_core.object.ObjectSet()
 
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
@@ -1809,7 +1809,7 @@ def test_regression_holes():
     x.size_range.max = 50
     x.maxima_suppression_size.value = 3
     x.automatic_suppression.value = False
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     x.threshold.local_operation.value = centrosome.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.1
     x.threshold.threshold_correction_factor.value = 1
@@ -1840,18 +1840,18 @@ def test_erase_objects():
     image_set.add("my_image", image)
     object_set = cellprofiler_core.object.ObjectSet()
 
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.25
     x.threshold.threshold_correction_factor.value = 1
-    x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
+    x.limit_choice.value = cellprofiler.modules.plugins.identifyprimaryobjects.LIMIT_ERASE
     x.maximum_object_count.value = maximum_object_count
     x.set_module_num(1)
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1881,18 +1881,18 @@ def test_dont_erase_objects():
     image_set.add("my_image", image)
     object_set = cellprofiler_core.object.ObjectSet()
 
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "my_object"
     x.x_name.value = "my_image"
     x.exclude_size.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.25
     x.threshold.threshold_correction_factor.value = 1
-    x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
+    x.limit_choice.value = cellprofiler.modules.plugins.identifyprimaryobjects.LIMIT_ERASE
     x.maximum_object_count.value = maximum_object_count
     x.set_module_num(1)
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1922,15 +1922,15 @@ def test_threshold_by_measurement():
     measurements = cellprofiler_core.measurement.Measurements()
     measurements.add_image_measurement("MeanIntensity_MyImage", numpy.mean(pixels))
 
-    x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
+    x = cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
     x.y_name.value = "MyObject"
     x.x_name.value = "MyImage"
     x.exclude_size.value = False
-    x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-    x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MEASUREMENT
+    x.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
+    x.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
+    x.threshold.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MEASUREMENT
     x.threshold.threshold_smoothing_scale.value = 0
     x.threshold.thresholding_measurement.value = "MeanIntensity_MyImage"
     x.threshold.threshold_correction_factor.value = 1
@@ -1972,16 +1972,16 @@ def test_threshold_smoothing_automatic():
     )
     workspace, module = make_workspace(image)
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
     module.use_advanced.value = True
     module.exclude_size.value = False
-    module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-    module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    module.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
+    module.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     # MCT on this image is zero, so set the threshold at .225
     # with the threshold minimum (manual = no smoothing)
     module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
-    module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
     module.threshold.threshold_range.min = 0.225
     module.run(workspace)
     labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
@@ -2013,14 +2013,14 @@ def test_threshold_smoothing_manual():
     )
     workspace, module = make_workspace(image)
     assert isinstance(
-        module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+        module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
     )
     module.use_advanced.value = True
     module.exclude_size.value = False
-    module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
-    module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
+    module.unclump_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
+    module.watershed_method.value = cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
     module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
-    module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.threshold.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
     module.threshold.threshold_range.min = 0.125
     module.threshold.threshold_smoothing_scale.value = 3
     module.run(workspace)
@@ -2057,18 +2057,18 @@ def test_threshold_no_smoothing():
     ):
         workspace, module = make_workspace(image)
         assert isinstance(
-            module, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects
+            module, cellprofiler.modules.plugins.identifyprimaryobjects.IdentifyPrimaryObjects
         )
         module.use_advanced.value = True
         module.exclude_size.value = False
         module.unclump_method.value = (
-            cellprofiler.modules.identifyprimaryobjects.UN_NONE
+            cellprofiler.modules.plugins.identifyprimaryobjects.UN_NONE
         )
         module.watershed_method.value = (
-            cellprofiler.modules.identifyprimaryobjects.WA_NONE
+            cellprofiler.modules.plugins.identifyprimaryobjects.WA_NONE
         )
         module.threshold.threshold_scope.value = (
-            cellprofiler.modules.threshold.TS_GLOBAL
+            cellprofiler.modules.plugins.threshold.TS_GLOBAL
         )
         module.threshold.global_operation.value = tm
         module.threshold.manual_threshold.value = 0.125

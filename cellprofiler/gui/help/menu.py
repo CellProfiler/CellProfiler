@@ -6,7 +6,7 @@ import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
 import cellprofiler.gui.menu
-import cellprofiler.modules
+import cellprofiler_core.modules
 
 
 class Menu(cellprofiler.gui.menu.Menu):

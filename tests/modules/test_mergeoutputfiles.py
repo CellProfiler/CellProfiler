@@ -5,7 +5,7 @@ import numpy
 
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.loadimages
-import cellprofiler.modules.mergeoutputfiles
+import cellprofiler.modules.plugins.mergeoutputfiles
 import cellprofiler_core.pipeline
 
 
@@ -22,7 +22,7 @@ def execute_merge_files(mm):
         pipeline.save_measurements(input_file, m)
         input_files.append((input_fd, input_file))
 
-    cellprofiler.modules.mergeoutputfiles.MergeOutputFiles.merge_files(
+    cellprofiler.modules.plugins.mergeoutputfiles.MergeOutputFiles.merge_files(
         output_file, [x[1] for x in input_files]
     )
     m = cellprofiler_core.measurement.load_measurements(output_file)
@@ -58,7 +58,7 @@ def write_experiment_measurement(m, feature):
 
 def test_nothing():
     """Make sure merge_files doesn't crash if no inputs"""
-    cellprofiler.modules.mergeoutputfiles.MergeOutputFiles.merge_files("nope", [])
+    cellprofiler.modules.plugins.mergeoutputfiles.MergeOutputFiles.merge_files("nope", [])
 
 
 def test_one():

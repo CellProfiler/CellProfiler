@@ -1,7 +1,7 @@
 import six.moves
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.editobjectsmanually
+import cellprofiler.modules.plugins.editobjectsmanually
 import cellprofiler_core.pipeline
 
 INPUT_OBJECTS_NAME = "inputobjects"
@@ -22,11 +22,11 @@ def test_load_v1():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.editobjectsmanually.EditObjectsManually
+        module, cellprofiler.modules.plugins.editobjectsmanually.EditObjectsManually
     )
     assert module.object_name == "Nuclei"
     assert module.filtered_objects == "EditedNuclei"
-    assert module.renumber_choice == cellprofiler.modules.editobjectsmanually.R_RENUMBER
+    assert module.renumber_choice == cellprofiler.modules.plugins.editobjectsmanually.R_RENUMBER
     assert not module.wants_image_display
 
 
@@ -44,11 +44,11 @@ def test_load_v2():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.editobjectsmanually.EditObjectsManually
+        module, cellprofiler.modules.plugins.editobjectsmanually.EditObjectsManually
     )
     assert module.object_name == "Nuclei"
     assert module.filtered_objects == "EditedNuclei"
-    assert module.renumber_choice == cellprofiler.modules.editobjectsmanually.R_RETAIN
+    assert module.renumber_choice == cellprofiler.modules.plugins.editobjectsmanually.R_RETAIN
     assert module.wants_image_display
     assert module.image_name == "DNA"
     assert not module.allow_overlap
@@ -68,11 +68,11 @@ def test_load_v3():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.editobjectsmanually.EditObjectsManually
+        module, cellprofiler.modules.plugins.editobjectsmanually.EditObjectsManually
     )
     assert module.object_name == "Nuclei"
     assert module.filtered_objects == "EditedNuclei"
-    assert module.renumber_choice == cellprofiler.modules.editobjectsmanually.R_RETAIN
+    assert module.renumber_choice == cellprofiler.modules.plugins.editobjectsmanually.R_RETAIN
     assert module.wants_image_display
     assert module.image_name == "DNA"
     assert module.allow_overlap
@@ -100,7 +100,7 @@ def test_load_v4():
 
 
 def test_measurements():
-    module = cellprofiler.modules.editobjectsmanually.EditObjectsManually()
+    module = cellprofiler.modules.plugins.editobjectsmanually.EditObjectsManually()
     module.object_name.value = INPUT_OBJECTS_NAME
     module.filtered_objects.value = OUTPUT_OBJECTS_NAME
 

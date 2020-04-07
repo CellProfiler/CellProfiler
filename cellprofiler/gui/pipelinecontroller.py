@@ -2379,7 +2379,7 @@ class PipelineController(object):
 
     def populate_edit_menu(self, menu):
         """Display a menu of modules to add"""
-        from cellprofiler.modules import get_module_names
+        from cellprofiler_core.modules import get_module_names
 
         #
         # Get a two-level dictionary of categories and names
@@ -2387,7 +2387,7 @@ class PipelineController(object):
         d = {"All": []}
         for module_name in get_module_names():
             try:
-                module = cellprofiler.modules.get_module_class(module_name)
+                module = cellprofiler_core.modules.get_module_class(module_name)
                 if module.is_input_module():
                     continue
                 category = module.category
@@ -2446,7 +2446,7 @@ class PipelineController(object):
         self.__module_view.set_selection(module_num)
 
     def on_menu_add_module(self, event):
-        from cellprofiler.modules import instantiate_module
+        from cellprofiler_core.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
 
         assert isinstance(event, wx.CommandEvent)

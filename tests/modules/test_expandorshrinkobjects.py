@@ -5,7 +5,7 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.expandorshrinkobjects
+import cellprofiler.modules.plugins.expandorshrinkobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -25,7 +25,7 @@ def make_workspace(
     objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, INPUT_NAME)
-    module = cellprofiler.modules.expandorshrinkobjects.ExpandOrShrink()
+    module = cellprofiler.modules.plugins.expandorshrinkobjects.ExpandOrShrink()
     module.object_name.value = INPUT_NAME
     module.output_object_name.value = OUTPUT_NAME
     module.operation.value = operation
@@ -53,7 +53,7 @@ def test_expand():
     expected = numpy.zeros((10, 10), int)
     expected[numpy.array([4, 3, 4, 5, 4], int), numpy.array([3, 4, 4, 4, 5], int)] = 1
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_EXPAND
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_EXPAND
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -80,7 +80,7 @@ def test_expand_twice():
     i, j = numpy.mgrid[0:10, 0:10] - 4
     expected = (i ** 2 + j ** 2 <= 4).astype(int)
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_EXPAND, 2
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_EXPAND, 2
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -97,7 +97,7 @@ def test_expand_two():
         (i - 6) ** 2 + (j - 5) ** 2 <= 1
     ).astype(int) * 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_EXPAND, 1
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_EXPAND, 1
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -112,7 +112,7 @@ def test_expand_inf():
     i, j = numpy.mgrid[0:10, 0:10]
     distance = ((i - 2) ** 2 + (j - 3) ** 2) - ((i - 6) ** 2 + (j - 5) ** 2)
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_EXPAND_INF
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_EXPAND_INF
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -127,7 +127,7 @@ def test_divide():
     expected = labels.copy()
     expected[4:6, :] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_DIVIDE
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_DIVIDE
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -143,7 +143,7 @@ def test_dont_divide():
     expected[8, 8] = 0
     expected[9, 8] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_DIVIDE
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_DIVIDE
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -156,7 +156,7 @@ def test_shrink():
     labels[1:9, 1:9] = 1
     expected = centrosome.cpmorphology.thin(labels, iterations=1)
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_SHRINK, 1
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_SHRINK, 1
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -170,7 +170,7 @@ def test_shrink_inf():
     expected = numpy.zeros((10, 10), int)
     expected[4, 4] = 1
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_SHRINK_INF
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_SHRINK_INF
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -186,7 +186,7 @@ def test_shrink_inf_fill_holes():
     expected[4, 4] = 1
     # Test failure without filling the hole
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.expandorshrinkobjects.O_SHRINK_INF
+        labels, cellprofiler.modules.plugins.expandorshrinkobjects.O_SHRINK_INF
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -194,7 +194,7 @@ def test_shrink_inf_fill_holes():
     # Test success after filling the hole
     workspace, module = make_workspace(
         labels,
-        cellprofiler.modules.expandorshrinkobjects.O_SHRINK_INF,
+        cellprofiler.modules.plugins.expandorshrinkobjects.O_SHRINK_INF,
         wants_fill_holes=True,
     )
     module.run(workspace)

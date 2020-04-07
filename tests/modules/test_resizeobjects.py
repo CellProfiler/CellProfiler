@@ -4,10 +4,10 @@ import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.resizeobjects
+import cellprofiler.modules.plugins.resizeobjects
 import cellprofiler_core.object
 
-instance = cellprofiler.modules.resizeobjects.ResizeObjects()
+instance = cellprofiler.modules.plugins.resizeobjects.ResizeObjects()
 
 
 @pytest.fixture(scope="module")

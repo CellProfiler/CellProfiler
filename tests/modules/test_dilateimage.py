@@ -2,9 +2,9 @@ import numpy
 import numpy.testing
 import skimage.morphology
 
-import cellprofiler.modules.dilateimage
+import cellprofiler.modules.plugins.dilateimage
 
-instance = cellprofiler.modules.dilateimage.DilateImage()
+instance = cellprofiler.modules.plugins.dilateimage.DilateImage()
 
 
 def test_run(image, module, image_set, workspace):

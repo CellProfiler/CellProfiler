@@ -8,7 +8,7 @@ import scipy.ndimage
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.morph
+import cellprofiler.modules.plugins.morph
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
@@ -27,27 +27,27 @@ def test_load_v2():
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
     ops = [
-        cellprofiler.modules.morph.F_BRANCHPOINTS,
-        cellprofiler.modules.morph.F_BRIDGE,
-        cellprofiler.modules.morph.F_CLEAN,
-        cellprofiler.modules.morph.F_CONVEX_HULL,
-        cellprofiler.modules.morph.F_DIAG,
-        cellprofiler.modules.morph.F_DISTANCE,
-        cellprofiler.modules.morph.F_ENDPOINTS,
-        cellprofiler.modules.morph.F_FILL,
-        cellprofiler.modules.morph.F_HBREAK,
-        cellprofiler.modules.morph.F_MAJORITY,
-        cellprofiler.modules.morph.F_REMOVE,
-        cellprofiler.modules.morph.F_SHRINK,
-        cellprofiler.modules.morph.F_SKELPE,
-        cellprofiler.modules.morph.F_SPUR,
-        cellprofiler.modules.morph.F_THICKEN,
-        cellprofiler.modules.morph.F_THIN,
-        cellprofiler.modules.morph.F_VBREAK,
+        cellprofiler.modules.plugins.morph.F_BRANCHPOINTS,
+        cellprofiler.modules.plugins.morph.F_BRIDGE,
+        cellprofiler.modules.plugins.morph.F_CLEAN,
+        cellprofiler.modules.plugins.morph.F_CONVEX_HULL,
+        cellprofiler.modules.plugins.morph.F_DIAG,
+        cellprofiler.modules.plugins.morph.F_DISTANCE,
+        cellprofiler.modules.plugins.morph.F_ENDPOINTS,
+        cellprofiler.modules.plugins.morph.F_FILL,
+        cellprofiler.modules.plugins.morph.F_HBREAK,
+        cellprofiler.modules.plugins.morph.F_MAJORITY,
+        cellprofiler.modules.plugins.morph.F_REMOVE,
+        cellprofiler.modules.plugins.morph.F_SHRINK,
+        cellprofiler.modules.plugins.morph.F_SKELPE,
+        cellprofiler.modules.plugins.morph.F_SPUR,
+        cellprofiler.modules.plugins.morph.F_THICKEN,
+        cellprofiler.modules.plugins.morph.F_THIN,
+        cellprofiler.modules.plugins.morph.F_VBREAK,
     ]
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.morph.Morph)
+    assert isinstance(module, cellprofiler.modules.plugins.morph.Morph)
     assert module.image_name == "InputImage"
     assert module.output_image_name == "MorphImage"
     assert len(module.functions) == len(ops)
@@ -77,16 +77,16 @@ def execute(image, function, mask=None, custom_repeats=None, scale=None, module=
     INPUT_IMAGE_NAME = "input"
     OUTPUT_IMAGE_NAME = "output"
     if module is None:
-        module = cellprofiler.modules.morph.Morph()
+        module = cellprofiler.modules.plugins.morph.Morph()
     module.functions[0].function.value = function
     module.image_name.value = INPUT_IMAGE_NAME
     module.output_image_name.value = OUTPUT_IMAGE_NAME
     if custom_repeats is None:
-        module.functions[0].repeats_choice.value = cellprofiler.modules.morph.R_ONCE
+        module.functions[0].repeats_choice.value = cellprofiler.modules.plugins.morph.R_ONCE
     elif custom_repeats == -1:
-        module.functions[0].repeats_choice.value = cellprofiler.modules.morph.R_FOREVER
+        module.functions[0].repeats_choice.value = cellprofiler.modules.plugins.morph.R_FOREVER
     else:
-        module.functions[0].repeats_choice.value = cellprofiler.modules.morph.R_CUSTOM
+        module.functions[0].repeats_choice.value = cellprofiler.modules.plugins.morph.R_CUSTOM
         module.functions[0].custom_repeats.value = custom_repeats
     if scale is not None:
         module.functions[0].scale.value = scale

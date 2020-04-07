@@ -3,8 +3,8 @@ import numpy
 import cellprofiler.grid
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.definegrid
-import cellprofiler.modules.identifyobjectsingrid
+import cellprofiler.modules.plugins.definegrid
+import cellprofiler.modules.plugins.identifyobjectsingrid
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -15,7 +15,7 @@ GUIDING_OBJECTS_NAME = "inputobjects"
 
 
 def make_workspace(gridding, labels=None):
-    module = cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid()
+    module = cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid()
     module.set_module_num(1)
     module.grid_name.value = GRID_NAME
     module.output_objects_name.value = OUTPUT_OBJECTS_NAME
@@ -64,8 +64,8 @@ def make_rectangular_grid(gridding):
 
 
 def test_forced_location():
-    d = cellprofiler.modules.definegrid.DefineGrid()
-    d.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    d = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    d.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
     #
     # Grid with x spacing = 10, y spacing = 20
     #
@@ -83,12 +83,12 @@ def test_forced_location():
     expected[idist ** 2 + jdist ** 2 > (float(diameter + 1) / 2) ** 2] = 0
     workspace, module = make_workspace(gridding)
     assert isinstance(
-        module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid
+        module, cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid
     )
-    module.diameter_choice.value = cellprofiler.modules.identifyobjectsingrid.AM_MANUAL
+    module.diameter_choice.value = cellprofiler.modules.plugins.identifyobjectsingrid.AM_MANUAL
     module.diameter.value = diameter
     module.shape_choice.value = (
-        cellprofiler.modules.identifyobjectsingrid.SHAPE_CIRCLE_FORCED
+        cellprofiler.modules.plugins.identifyobjectsingrid.SHAPE_CIRCLE_FORCED
     )
     module.run(workspace)
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
@@ -157,8 +157,8 @@ def test_forced_location_auto():
     #
     # Automatic diameter
     #
-    d = cellprofiler.modules.definegrid.DefineGrid()
-    d.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    d = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    d.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
     diameter = 7
     gridding = d.build_grid_info(15, 25, 1, 1, 25, 45, 2, 2)
     expected = make_rectangular_grid(gridding)
@@ -190,13 +190,13 @@ def test_forced_location_auto():
     guide_labels = p[guide_labels]
     workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(
-        module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid
+        module, cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid
     )
     module.diameter_choice.value = (
-        cellprofiler.modules.identifyobjectsingrid.AM_AUTOMATIC
+        cellprofiler.modules.plugins.identifyobjectsingrid.AM_AUTOMATIC
     )
     module.shape_choice.value = (
-        cellprofiler.modules.identifyobjectsingrid.SHAPE_CIRCLE_FORCED
+        cellprofiler.modules.plugins.identifyobjectsingrid.SHAPE_CIRCLE_FORCED
     )
     module.run(workspace)
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
@@ -206,8 +206,8 @@ def test_forced_location_auto():
 
 
 def test_natural_circle():
-    d = cellprofiler.modules.definegrid.DefineGrid()
-    d.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    d = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    d.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
     #
     # Grid with x spacing = 10, y spacing = 20
     #
@@ -236,12 +236,12 @@ def test_natural_circle():
     ] = 0
     workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(
-        module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid
+        module, cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid
     )
-    module.diameter_choice.value = cellprofiler.modules.identifyobjectsingrid.AM_MANUAL
+    module.diameter_choice.value = cellprofiler.modules.plugins.identifyobjectsingrid.AM_MANUAL
     module.diameter.value = diameter
     module.shape_choice.value = (
-        cellprofiler.modules.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL
+        cellprofiler.modules.plugins.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL
     )
     module.run(workspace)
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
@@ -261,8 +261,8 @@ def test_natural_circle_edges():
     # Put objects near the edges of the circle and make sure
     # they are filtered out
     #
-    d = cellprofiler.modules.definegrid.DefineGrid()
-    d.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    d = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    d.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
     #
     # Grid with x spacing = 10, y spacing = 20
     #
@@ -309,12 +309,12 @@ def test_natural_circle_edges():
     #
     workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(
-        module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid
+        module, cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid
     )
-    module.diameter_choice.value = cellprofiler.modules.identifyobjectsingrid.AM_MANUAL
+    module.diameter_choice.value = cellprofiler.modules.plugins.identifyobjectsingrid.AM_MANUAL
     module.diameter.value = diameter
     module.shape_choice.value = (
-        cellprofiler.modules.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL
+        cellprofiler.modules.plugins.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL
     )
     module.run(workspace)
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
@@ -331,8 +331,8 @@ def test_natural_circle_edges():
 
 def test_img_891():
     """Regression test of img-891, last spot filtered out"""
-    d = cellprofiler.modules.definegrid.DefineGrid()
-    d.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    d = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    d.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
     #
     # Grid with x spacing = 10, y spacing = 20
     #
@@ -366,12 +366,12 @@ def test_img_891():
     guide_labels[guide_labels == numpy.max(guide_labels)] = 0
     workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(
-        module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid
+        module, cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid
     )
-    module.diameter_choice.value = cellprofiler.modules.identifyobjectsingrid.AM_MANUAL
+    module.diameter_choice.value = cellprofiler.modules.plugins.identifyobjectsingrid.AM_MANUAL
     module.diameter.value = diameter
     module.shape_choice.value = (
-        cellprofiler.modules.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL
+        cellprofiler.modules.plugins.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL
     )
     module.run(workspace)
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
@@ -397,8 +397,8 @@ def test_natural():
     # Randomly distribute points in objects to keep between
     # two different groups of objects.
     #
-    d = cellprofiler.modules.definegrid.DefineGrid()
-    d.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+    d = cellprofiler.modules.plugins.definegrid.DefineGrid()
+    d.ordering.value = cellprofiler.modules.plugins.definegrid.NUM_BY_COLUMNS
     #
     # Grid with x spacing = 10, y spacing = 20
     #
@@ -460,11 +460,11 @@ def test_natural():
     #
     workspace, module = make_workspace(gridding, guide_labels)
     assert isinstance(
-        module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid
+        module, cellprofiler.modules.plugins.identifyobjectsingrid.IdentifyObjectsInGrid
     )
-    module.diameter_choice.value = cellprofiler.modules.identifyobjectsingrid.AM_MANUAL
+    module.diameter_choice.value = cellprofiler.modules.plugins.identifyobjectsingrid.AM_MANUAL
     module.diameter.value = diameter
-    module.shape_choice.value = cellprofiler.modules.identifyobjectsingrid.SHAPE_NATURAL
+    module.shape_choice.value = cellprofiler.modules.plugins.identifyobjectsingrid.SHAPE_NATURAL
     module.run(workspace)
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
     assert numpy.all(labels == expected[0 : labels.shape[0], 0 : labels.shape[1]])

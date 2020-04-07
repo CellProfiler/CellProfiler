@@ -5,7 +5,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler.modules.enhanceedges
+import cellprofiler.modules.plugins.enhanceedges
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -16,7 +16,7 @@ OUTPUT_IMAGE_NAME = "outputimage"
 
 def make_workspace(image, mask=None):
     """Make a workspace for testing FindEdges"""
-    module = cellprofiler.modules.enhanceedges.FindEdges()
+    module = cellprofiler.modules.plugins.enhanceedges.FindEdges()
     module.image_name.value = INPUT_IMAGE_NAME
     module.output_image_name.value = OUTPUT_IMAGE_NAME
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -45,8 +45,8 @@ def test_sobel_horizontal():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
-    module.direction.value = cellprofiler.modules.enhanceedges.E_HORIZONTAL
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_SOBEL
+    module.direction.value = cellprofiler.modules.plugins.enhanceedges.E_HORIZONTAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.hsobel(image))
@@ -57,8 +57,8 @@ def test_sobel_vertical():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
-    module.direction.value = cellprofiler.modules.enhanceedges.E_VERTICAL
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_SOBEL
+    module.direction.value = cellprofiler.modules.plugins.enhanceedges.E_VERTICAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.vsobel(image))
@@ -69,8 +69,8 @@ def test_sobel_all():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
-    module.direction.value = cellprofiler.modules.enhanceedges.E_ALL
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_SOBEL
+    module.direction.value = cellprofiler.modules.plugins.enhanceedges.E_ALL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.sobel(image))
@@ -81,8 +81,8 @@ def test_prewitt_horizontal():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
-    module.direction.value = cellprofiler.modules.enhanceedges.E_HORIZONTAL
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_PREWITT
+    module.direction.value = cellprofiler.modules.plugins.enhanceedges.E_HORIZONTAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.hprewitt(image))
@@ -93,8 +93,8 @@ def test_prewitt_vertical():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
-    module.direction.value = cellprofiler.modules.enhanceedges.E_VERTICAL
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_PREWITT
+    module.direction.value = cellprofiler.modules.plugins.enhanceedges.E_VERTICAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.vprewitt(image))
@@ -105,8 +105,8 @@ def test_prewitt_all():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
-    module.direction.value = cellprofiler.modules.enhanceedges.E_ALL
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_PREWITT
+    module.direction.value = cellprofiler.modules.plugins.enhanceedges.E_ALL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.prewitt(image))
@@ -117,7 +117,7 @@ def test_roberts():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_ROBERTS
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_ROBERTS
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output.pixel_data == centrosome.filter.roberts(image))
@@ -128,7 +128,7 @@ def test_log_automatic():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_LOG
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_LOG
     module.sigma.value = 20
     module.wants_automatic_sigma.value = True
     module.run(workspace)
@@ -146,7 +146,7 @@ def test_log_manual():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_LOG
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_LOG
     module.sigma.value = 4
     module.wants_automatic_sigma.value = False
     module.run(workspace)
@@ -167,7 +167,7 @@ def test_canny():
     image = image * 0.5 + numpy.random.uniform(size=image.shape) * 0.3
     image = numpy.ascontiguousarray(image, numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_CANNY
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_CANNY
     module.wants_automatic_threshold.value = True
     module.wants_automatic_low_threshold.value = True
     module.wants_automatic_sigma.value = True
@@ -184,7 +184,7 @@ def test_kirsch():
     image = (numpy.sqrt(i * i + j * j) <= 10).astype(float) * 0.5
     image = image + r.uniform(size=image.shape) * 0.1
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_KIRSCH
+    module.method.value = cellprofiler.modules.plugins.enhanceedges.M_KIRSCH
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     result = centrosome.kirsch.kirsch(image)

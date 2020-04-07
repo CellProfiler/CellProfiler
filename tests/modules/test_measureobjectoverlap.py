@@ -5,7 +5,7 @@ import scipy.ndimage
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.measureobjectoverlap
+import cellprofiler.modules.plugins.measureobjectoverlap
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -28,7 +28,7 @@ def make_obj_workspace(ground_truth_obj, id_obj, ground_truth, id):
     j - j component of pixel coordinates
     l - label """
 
-    module = cellprofiler.modules.measureobjectoverlap.MeasureObjectOverlap()
+    module = cellprofiler.modules.plugins.measureobjectoverlap.MeasureObjectOverlap()
     module.set_module_num(1)
     module.object_name_GT.value = GROUND_TRUTH_OBJ
     module.object_name_ID.value = ID_OBJ
@@ -85,10 +85,10 @@ def test_get_measurement_columns():
     x = columns[-1]
     assert all([x[0] == cellprofiler_core.measurement.IMAGE])
     assert all([x[2] == cellprofiler_core.measurement.COLTYPE_FLOAT])
-    for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
+    for feature in cellprofiler.modules.plugins.measureobjectoverlap.FTR_ALL:
         field = "_".join(
             (
-                cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
+                cellprofiler.modules.plugins.measureobjectoverlap.C_IMAGE_OVERLAP,
                 feature,
                 GROUND_TRUTH_OBJ,
                 ID_OBJ,
@@ -108,8 +108,8 @@ def test_get_measurement_scales():
     scales = module.get_measurement_scales(
         workspace.pipeline,
         cellprofiler_core.measurement.IMAGE,
-        cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-        cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
+        cellprofiler.modules.plugins.measureobjectoverlap.C_IMAGE_OVERLAP,
+        cellprofiler.modules.plugins.measureobjectoverlap.FTR_RAND_INDEX,
         None,
     )
 
@@ -127,12 +127,12 @@ def test_test_measure_overlap_no_objects():
     )
     module.run(workspace)
     m = workspace.measurements
-    for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
+    for feature in cellprofiler.modules.plugins.measureobjectoverlap.FTR_ALL:
         mname = module.measurement_name(feature)
         value = m[cellprofiler_core.measurement.IMAGE, mname, 1]
-        if feature == cellprofiler.modules.measureobjectoverlap.FTR_TRUE_NEG_RATE:
+        if feature == cellprofiler.modules.plugins.measureobjectoverlap.FTR_TRUE_NEG_RATE:
             assert value == 1
-        elif feature == cellprofiler.modules.measureobjectoverlap.FTR_FALSE_POS_RATE:
+        elif feature == cellprofiler.modules.plugins.measureobjectoverlap.FTR_FALSE_POS_RATE:
             assert value == 0
         else:
             assert numpy.isnan(value), "%s was %f. not nan" % (mname, value)
@@ -201,8 +201,8 @@ def test_test_objects_rand_index():
     measurements = workspace.measurements
     mname = "_".join(
         (
-            cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-            cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
+            cellprofiler.modules.plugins.measureobjectoverlap.C_IMAGE_OVERLAP,
+            cellprofiler.modules.plugins.measureobjectoverlap.FTR_RAND_INDEX,
             GROUND_TRUTH_OBJ,
             ID_OBJ,
         )
@@ -212,8 +212,8 @@ def test_test_objects_rand_index():
     assert round(abs(rand_index - expected_rand_index), 7) == 0
     mname = "_".join(
         (
-            cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-            cellprofiler.modules.measureobjectoverlap.FTR_ADJUSTED_RAND_INDEX,
+            cellprofiler.modules.plugins.measureobjectoverlap.C_IMAGE_OVERLAP,
+            cellprofiler.modules.plugins.measureobjectoverlap.FTR_ADJUSTED_RAND_INDEX,
             GROUND_TRUTH_OBJ,
             ID_OBJ,
         )

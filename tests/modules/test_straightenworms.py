@@ -5,7 +5,7 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-import cellprofiler.modules.straightenworms
+import cellprofiler.modules.plugins.straightenworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
@@ -32,13 +32,13 @@ def test_load_v1():
     pipeline.load(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     assert module.objects_name == "OverlappingWorms"
     assert module.straightened_objects_name == "StraightenedWorms"
     assert module.width == 20
     assert (
         module.training_set_directory.dir_choice
-        == cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME
+        == DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.training_set_file_name == "TrainingSet.xml"
     assert module.image_count.value == 2
@@ -64,19 +64,19 @@ def test_load_v2():
     assert len(pipeline.modules()) == 3
     for alignment, module in zip(
         (
-            cellprofiler.modules.straightenworms.FLIP_TOP,
-            cellprofiler.modules.straightenworms.FLIP_BOTTOM,
-            cellprofiler.modules.straightenworms.FLIP_NONE,
+                cellprofiler.modules.plugins.straightenworms.FLIP_TOP,
+                cellprofiler.modules.plugins.straightenworms.FLIP_BOTTOM,
+                cellprofiler.modules.plugins.straightenworms.FLIP_NONE,
         ),
         pipeline.modules(),
     ):
-        assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+        assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
         assert module.objects_name == "OverlappingWorms"
         assert module.straightened_objects_name == "StraightenedWorms"
         assert module.width == 20
         assert (
             module.training_set_directory.dir_choice
-            == cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME
+            == DEFAULT_INPUT_FOLDER_NAME
         )
         assert module.training_set_file_name == "TrainingSet.mat"
         assert len(module.images) == 1
@@ -100,7 +100,7 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
     mask - the mask associated with the image (default = no mask)
     auximage - a second image to be straightnened (default = no second image)
     """
-    module = cellprofiler.modules.straightenworms.StraightenWorms()
+    module = cellprofiler.modules.plugins.straightenworms.StraightenWorms()
     module.objects_name.value = OBJECTS_NAME
     module.straightened_objects_name.value = STRAIGHTENED_OBJECTS_NAME
     module.images[0].image_name.value = IMAGE_NAME
@@ -130,17 +130,17 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
     m = cellprofiler_core.measurement.Measurements()
     for i, (y, x) in enumerate(control_points):
         for v, f in (
-            (x, cellprofiler.modules.straightenworms.F_CONTROL_POINT_X),
-            (y, cellprofiler.modules.straightenworms.F_CONTROL_POINT_Y),
+            (x, cellprofiler.modules.plugins.straightenworms.F_CONTROL_POINT_X),
+            (y, cellprofiler.modules.plugins.straightenworms.F_CONTROL_POINT_Y),
         ):
             feature = "_".join(
-                (cellprofiler.modules.straightenworms.C_WORM, f, str(i + 1))
+                (cellprofiler.modules.plugins.straightenworms.C_WORM, f, str(i + 1))
             )
             m.add_measurement(OBJECTS_NAME, feature, v)
     feature = "_".join(
         (
-            cellprofiler.modules.straightenworms.C_WORM,
-            cellprofiler.modules.straightenworms.F_LENGTH,
+            cellprofiler.modules.plugins.straightenworms.C_WORM,
+            cellprofiler.modules.plugins.straightenworms.F_LENGTH,
         )
     )
     m.add_measurement(OBJECTS_NAME, feature, lengths)
@@ -309,7 +309,7 @@ def test_straighten_straight_worm():
     lengths = numpy.array([8])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = False
     module.run(workspace)
@@ -355,7 +355,7 @@ def test_straighten_diagonal_worm():
     lengths = numpy.array([20])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.run(workspace)
     image_set = workspace.image_set
@@ -385,7 +385,7 @@ def test_straighten_two_worms():
     lengths = numpy.array([8, 20])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.run(workspace)
     image_set = workspace.image_set
@@ -415,7 +415,7 @@ def test_straighten_missing_worm():
     lengths = numpy.array([8, 0, 20])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.run(workspace)
     image_set = workspace.image_set
@@ -435,7 +435,7 @@ def test_get_measurement_columns():
     workspace, module = make_workspace(
         numpy.zeros((5, 2, 0)), numpy.zeros(0), numpy.zeros(5), numpy.zeros((20, 10))
     )
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.wants_measurements.value = False
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name, feature_name in (
@@ -492,7 +492,7 @@ def test_get_measurement_columns_wants_images_vertical():
         numpy.zeros((20, 10)),
         auximage=numpy.zeros((20, 10)),
     )
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.wants_measurements.value = True
     module.number_of_segments.value = 5
     module.number_of_stripes.value = 1
@@ -502,7 +502,7 @@ def test_get_measurement_columns_wants_images_vertical():
             OBJECTS_NAME,
             "_".join(
                 (
-                    cellprofiler.modules.straightenworms.C_WORM,
+                    cellprofiler.modules.plugins.straightenworms.C_WORM,
                     ftr,
                     image,
                     module.get_scale_name(None, segno),
@@ -511,8 +511,8 @@ def test_get_measurement_columns_wants_images_vertical():
             cellprofiler_core.measurement.COLTYPE_FLOAT,
         )
         for ftr, image, segno in zip(
-            [cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY] * 10
-            + [cellprofiler.modules.straightenworms.FTR_STD_INTENSITY] * 10,
+            [cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY] * 10
+            + [cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY] * 10,
             ([STRAIGHTENED_IMAGE_NAME] * 5 + [AUX_STRAIGHTENED_IMAGE_NAME] * 5) * 2,
             list(range(5)) * 4,
         )
@@ -536,23 +536,23 @@ def test_get_measurement_columns_wants_images_vertical():
         )
 
     categories = module.get_categories(workspace.pipeline, OBJECTS_NAME)
-    assert cellprofiler.modules.straightenworms.C_WORM in categories
+    assert cellprofiler.modules.plugins.straightenworms.C_WORM in categories
 
     features = module.get_measurements(
-        workspace.pipeline, OBJECTS_NAME, cellprofiler.modules.straightenworms.C_WORM
+        workspace.pipeline, OBJECTS_NAME, cellprofiler.modules.plugins.straightenworms.C_WORM
     )
     assert len(features) == 2
-    assert cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY in features
-    assert cellprofiler.modules.straightenworms.FTR_STD_INTENSITY in features
+    assert cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY in features
+    assert cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY in features
 
     for ftr in (
-        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-        cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY,
     ):
         images = module.get_measurement_images(
             workspace.pipeline,
             OBJECTS_NAME,
-            cellprofiler.modules.straightenworms.C_WORM,
+            cellprofiler.modules.plugins.straightenworms.C_WORM,
             ftr,
         )
         assert len(images) == 2
@@ -561,8 +561,8 @@ def test_get_measurement_columns_wants_images_vertical():
 
     for ftr, image in zip(
         [
-            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY,
         ]
         * 2,
         [STRAIGHTENED_IMAGE_NAME] * 2 + [AUX_STRAIGHTENED_IMAGE_NAME] * 2,
@@ -570,7 +570,7 @@ def test_get_measurement_columns_wants_images_vertical():
         scales = module.get_measurement_scales(
             workspace.pipeline,
             OBJECTS_NAME,
-            cellprofiler.modules.straightenworms.C_WORM,
+            cellprofiler.modules.plugins.straightenworms.C_WORM,
             ftr,
             image,
         )
@@ -587,7 +587,7 @@ def test_get_measurement_columns_horizontal():
         numpy.zeros((20, 10)),
         auximage=numpy.zeros((20, 10)),
     )
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.wants_measurements.value = True
     module.number_of_segments.value = 1
     module.number_of_stripes.value = 5
@@ -596,7 +596,7 @@ def test_get_measurement_columns_horizontal():
             OBJECTS_NAME,
             "_".join(
                 (
-                    cellprofiler.modules.straightenworms.C_WORM,
+                    cellprofiler.modules.plugins.straightenworms.C_WORM,
                     ftr,
                     image,
                     module.get_scale_name(segno, None),
@@ -605,8 +605,8 @@ def test_get_measurement_columns_horizontal():
             cellprofiler_core.measurement.COLTYPE_FLOAT,
         )
         for ftr, image, segno in zip(
-            [cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY] * 10
-            + [cellprofiler.modules.straightenworms.FTR_STD_INTENSITY] * 10,
+            [cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY] * 10
+            + [cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY] * 10,
             ([STRAIGHTENED_IMAGE_NAME] * 5 + [AUX_STRAIGHTENED_IMAGE_NAME] * 5) * 2,
             list(range(5)) * 4,
         )
@@ -630,23 +630,23 @@ def test_get_measurement_columns_horizontal():
         )
 
     categories = module.get_categories(workspace.pipeline, OBJECTS_NAME)
-    assert cellprofiler.modules.straightenworms.C_WORM in categories
+    assert cellprofiler.modules.plugins.straightenworms.C_WORM in categories
 
     features = module.get_measurements(
-        workspace.pipeline, OBJECTS_NAME, cellprofiler.modules.straightenworms.C_WORM
+        workspace.pipeline, OBJECTS_NAME, cellprofiler.modules.plugins.straightenworms.C_WORM
     )
     assert len(features) == 2
-    assert cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY in features
-    assert cellprofiler.modules.straightenworms.FTR_STD_INTENSITY in features
+    assert cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY in features
+    assert cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY in features
 
     for ftr in (
-        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-        cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY,
     ):
         images = module.get_measurement_images(
             workspace.pipeline,
             OBJECTS_NAME,
-            cellprofiler.modules.straightenworms.C_WORM,
+            cellprofiler.modules.plugins.straightenworms.C_WORM,
             ftr,
         )
         assert len(images) == 2
@@ -655,8 +655,8 @@ def test_get_measurement_columns_horizontal():
 
     for ftr, image in zip(
         [
-            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY,
         ]
         * 2,
         [STRAIGHTENED_IMAGE_NAME] * 2 + [AUX_STRAIGHTENED_IMAGE_NAME] * 2,
@@ -664,7 +664,7 @@ def test_get_measurement_columns_horizontal():
         scales = module.get_measurement_scales(
             workspace.pipeline,
             OBJECTS_NAME,
-            cellprofiler.modules.straightenworms.C_WORM,
+            cellprofiler.modules.plugins.straightenworms.C_WORM,
             ftr,
             image,
         )
@@ -681,7 +681,7 @@ def test_get_measurement_columns_both():
         numpy.zeros((20, 10)),
         auximage=numpy.zeros((20, 10)),
     )
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.wants_measurements.value = True
     module.number_of_segments.value = 2
     module.number_of_stripes.value = 3
@@ -690,8 +690,8 @@ def test_get_measurement_columns_both():
     hscales = (None, 0, 1, 2)
     for image in (STRAIGHTENED_IMAGE_NAME, AUX_STRAIGHTENED_IMAGE_NAME):
         for ftr in (
-            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+                cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+                cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY,
         ):
             for vscale in vscales:
                 for hscale in hscales:
@@ -699,7 +699,7 @@ def test_get_measurement_columns_both():
                         continue
                     meas = "_".join(
                         (
-                            cellprofiler.modules.straightenworms.C_WORM,
+                            cellprofiler.modules.plugins.straightenworms.C_WORM,
                             ftr,
                             image,
                             module.get_scale_name(hscale, vscale),
@@ -725,14 +725,14 @@ def test_get_measurement_columns_both():
             ]
         )
     for ftr in (
-        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-        cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+            cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY,
     ):
         for image in (STRAIGHTENED_IMAGE_NAME, AUX_STRAIGHTENED_IMAGE_NAME):
             scales = module.get_measurement_scales(
                 workspace.pipeline,
                 OBJECTS_NAME,
-                cellprofiler.modules.straightenworms.C_WORM,
+                cellprofiler.modules.plugins.straightenworms.C_WORM,
                 ftr,
                 image,
             )
@@ -755,12 +755,12 @@ def test_measure_no_worms():
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for i in range(5):
         for ftr, function in (
-            (cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY, numpy.mean),
-            (cellprofiler.modules.straightenworms.FTR_STD_INTENSITY, numpy.std),
+            (cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY, numpy.mean),
+            (cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY, numpy.std),
         ):
             mname = "_".join(
                 (
-                    cellprofiler.modules.straightenworms.C_WORM,
+                    cellprofiler.modules.plugins.straightenworms.C_WORM,
                     ftr,
                     STRAIGHTENED_IMAGE_NAME,
                     module.get_scale_name(None, i),
@@ -780,7 +780,7 @@ def test_measure_one_worm():
     lengths = numpy.array([12])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
     module.number_of_segments.value = 4
@@ -829,12 +829,12 @@ def test_measure_one_worm():
 
     for i, segment in enumerate(segments):
         for ftr, function in (
-            (cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY, weighted_mean),
-            (cellprofiler.modules.straightenworms.FTR_STD_INTENSITY, weighted_std),
+            (cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY, weighted_mean),
+            (cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY, weighted_std),
         ):
             mname = "_".join(
                 (
-                    cellprofiler.modules.straightenworms.C_WORM,
+                    cellprofiler.modules.plugins.straightenworms.C_WORM,
                     ftr,
                     STRAIGHTENED_IMAGE_NAME,
                     module.get_scale_name(None, i),
@@ -856,7 +856,7 @@ def test_measure_checkerboarded_worm():
     lengths = numpy.array([12])
     radii = numpy.array([1, 4, 7, 4, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 21
     module.wants_measurements.value = True
     module.number_of_segments.value = 4
@@ -1012,14 +1012,14 @@ def test_measure_checkerboarded_worm():
     )
     for i in range(4):
         for ftr, expected in (
-            (cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY, expected_means),
-            (cellprofiler.modules.straightenworms.FTR_STD_INTENSITY, expected_sds),
+            (cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY, expected_means),
+            (cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY, expected_sds),
         ):
             value = m.get_current_measurement(
                 OBJECTS_NAME,
                 "_".join(
                     (
-                        cellprofiler.modules.straightenworms.C_WORM,
+                        cellprofiler.modules.plugins.straightenworms.C_WORM,
                         ftr,
                         STRAIGHTENED_IMAGE_NAME,
                         module.get_scale_name(None, i),
@@ -1046,14 +1046,14 @@ def test_measure_checkerboarded_worm():
     )
     for i in range(3):
         for ftr, expected in (
-            (cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY, expected_means),
-            (cellprofiler.modules.straightenworms.FTR_STD_INTENSITY, expected_sds),
+            (cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY, expected_means),
+            (cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY, expected_sds),
         ):
             value = m.get_current_measurement(
                 OBJECTS_NAME,
                 "_".join(
                     (
-                        cellprofiler.modules.straightenworms.C_WORM,
+                        cellprofiler.modules.plugins.straightenworms.C_WORM,
                         ftr,
                         STRAIGHTENED_IMAGE_NAME,
                         module.get_scale_name(i, None),
@@ -1084,14 +1084,14 @@ def test_measure_checkerboarded_worm():
         for segment in range(4):
             for ftr, expected in (
                 (
-                    cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-                    expected_means,
+                        cellprofiler.modules.plugins.straightenworms.FTR_MEAN_INTENSITY,
+                        expected_means,
                 ),
-                (cellprofiler.modules.straightenworms.FTR_STD_INTENSITY, expected_sds),
+                (cellprofiler.modules.plugins.straightenworms.FTR_STD_INTENSITY, expected_sds),
             ):
                 mname = "_".join(
                     (
-                        cellprofiler.modules.straightenworms.C_WORM,
+                        cellprofiler.modules.plugins.straightenworms.C_WORM,
                         ftr,
                         STRAIGHTENED_IMAGE_NAME,
                         module.get_scale_name(stripe, segment),
@@ -1106,10 +1106,10 @@ def test_flip_no_worms():
     workspace, module = make_workspace(
         numpy.zeros((5, 2, 0)), numpy.zeros(0), numpy.zeros(5), numpy.zeros((20, 10))
     )
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.wants_measurements.value = True
     module.number_of_segments.value = 5
-    module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_TOP
+    module.flip_worms.value = cellprofiler.modules.plugins.straightenworms.FLIP_TOP
     module.run(workspace)
 
 
@@ -1124,11 +1124,11 @@ def test_flip_dont_flip_top():
     lengths = numpy.array([8])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
     module.number_of_segments.value = 3
-    module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_TOP
+    module.flip_worms.value = cellprofiler.modules.plugins.straightenworms.FLIP_TOP
     module.run(workspace)
     image_set = workspace.image_set
     assert isinstance(image_set, cellprofiler_core.image.ImageSet)
@@ -1149,11 +1149,11 @@ def test_flip_top():
     lengths = numpy.array([8])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
     module.number_of_segments.value = 3
-    module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_TOP
+    module.flip_worms.value = cellprofiler.modules.plugins.straightenworms.FLIP_TOP
     module.run(workspace)
     image_set = workspace.image_set
     assert isinstance(image_set, cellprofiler_core.image.ImageSet)
@@ -1175,11 +1175,11 @@ def test_flip_dont_flip_bottom():
     lengths = numpy.array([8])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
     module.number_of_segments.value = 3
-    module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_BOTTOM
+    module.flip_worms.value = cellprofiler.modules.plugins.straightenworms.FLIP_BOTTOM
     module.run(workspace)
     image_set = workspace.image_set
     assert isinstance(image_set, cellprofiler_core.image.ImageSet)
@@ -1200,11 +1200,11 @@ def test_flip_bottom():
     lengths = numpy.array([8])
     radii = numpy.array([1, 3, 5, 3, 1])
     workspace, module = make_workspace(control_points, lengths, radii, image)
-    assert isinstance(module, cellprofiler.modules.straightenworms.StraightenWorms)
+    assert isinstance(module, cellprofiler.modules.plugins.straightenworms.StraightenWorms)
     module.width.value = 11
     module.wants_measurements.value = True
     module.number_of_segments.value = 3
-    module.flip_worms.value = cellprofiler.modules.straightenworms.FLIP_BOTTOM
+    module.flip_worms.value = cellprofiler.modules.plugins.straightenworms.FLIP_BOTTOM
     module.run(workspace)
     image_set = workspace.image_set
     assert isinstance(image_set, cellprofiler_core.image.ImageSet)

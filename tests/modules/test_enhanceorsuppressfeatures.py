@@ -12,7 +12,7 @@ import skimage.transform
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.enhanceorsuppressfeatures
+import cellprofiler.modules.plugins.enhanceorsuppressfeatures
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -28,7 +28,7 @@ def image():
 
 @pytest.fixture(scope="function")
 def module():
-    module = cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures()
+    module = cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures()
 
     module.x_name.value = "input"
 
@@ -692,10 +692,10 @@ def test_enhance_circles_masked_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    module.method.value = cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE
 
     module.enhance_method.value = (
-        cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
+        cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_CIRCLES
     )
 
     module.object_size.value = 12
@@ -969,45 +969,45 @@ def test_load_v2():
             (
                 "Initial",
                 "EnhancedSpeckles",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE,
                 11,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_SPECKLES,
                 1,
                 10,
             ),
             (
                 "EnhancedSpeckles",
                 "EnhancedNeurites",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE,
                 9,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_NEURITES,
                 1,
                 10,
             ),
             (
                 "EnhancedNeurites",
                 "EnhancedDarkHoles",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE,
                 9,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_DARK_HOLES,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_DARK_HOLES,
                 4,
                 11,
             ),
             (
                 "EnhancedDarkHoles",
                 "EnhancedCircles",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE,
                 9,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_CIRCLES,
                 4,
                 11,
             ),
             (
                 "EnhancedCircles",
                 "Suppressed",
-                cellprofiler.modules.enhanceorsuppressfeatures.SUPPRESS,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.SUPPRESS,
                 13,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES,
+                cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_CIRCLES,
                 4,
                 11,
             ),
@@ -1016,7 +1016,7 @@ def test_load_v2():
         assert module.module_name == "EnhanceOrSuppressFeatures"
         assert isinstance(
             module,
-            cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures,
+            cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures,
         )
         assert module.x_name == input_name
         assert module.y_name == output_name
@@ -1043,14 +1043,14 @@ def test_test_load_v3():
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+        module, cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert module.x_name == "DNA"
     assert module.y_name == "EnhancedTexture"
-    assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    assert module.method == cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE
     assert (
-        module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
+            module.enhance_method
+            == cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_TEXTURE
     )
     assert module.smoothing == 3.5
     assert module.object_size == 10
@@ -1059,14 +1059,14 @@ def test_test_load_v3():
     assert module.angle == 45
     assert module.decay == 0.9
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+            module.speckle_accuracy == cellprofiler.modules.plugins.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]
     assert isinstance(
-        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+        module, cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
-    assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_DIC
+    assert module.enhance_method == cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_DIC
 
 
 def test_load_v4():
@@ -1085,14 +1085,14 @@ def test_load_v4():
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+        module, cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert module.x_name == "Dendrite"
     assert module.y_name == "EnhancedDendrite"
-    assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    assert module.method == cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE
     assert (
-        module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+            module.enhance_method
+            == cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_NEURITES
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1101,17 +1101,17 @@ def test_load_v4():
     assert module.angle == 0
     assert module.decay == 0.95
     assert (
-        module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+            module.neurite_choice
+            == cellprofiler.modules.plugins.enhanceorsuppressfeatures.N_TUBENESS
     )
 
     module = pipeline.modules()[1]
     assert isinstance(
-        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+        module, cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-        module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
+            module.neurite_choice
+            == cellprofiler.modules.plugins.enhanceorsuppressfeatures.N_GRADIENT
     )
 
 
@@ -1131,14 +1131,14 @@ def test_load_v5():
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[0]
     assert isinstance(
-        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+        module, cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert module.x_name == "Dendrite"
     assert module.y_name == "EnhancedDendrite"
-    assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    assert module.method == cellprofiler.modules.plugins.enhanceorsuppressfeatures.ENHANCE
     assert (
-        module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+            module.enhance_method
+            == cellprofiler.modules.plugins.enhanceorsuppressfeatures.E_NEURITES
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1147,17 +1147,17 @@ def test_load_v5():
     assert module.angle == 0
     assert module.decay == 0.95
     assert (
-        module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+            module.neurite_choice
+            == cellprofiler.modules.plugins.enhanceorsuppressfeatures.N_TUBENESS
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+            module.speckle_accuracy == cellprofiler.modules.plugins.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]
     assert isinstance(
-        module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
+        module, cellprofiler.modules.plugins.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
+            module.speckle_accuracy == cellprofiler.modules.plugins.enhanceorsuppressfeatures.S_FAST
     )

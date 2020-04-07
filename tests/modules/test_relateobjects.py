@@ -4,7 +4,7 @@ import unittest
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.relateobjects
+import cellprofiler.modules.plugins.relateobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -42,11 +42,11 @@ class TestRelateObjects(unittest.TestCase):
             module = FakeModule()
             module.set_module_num(1)
             pipeline.add_module(module)
-        module = cellprofiler.modules.relateobjects.Relate()
+        module = cellprofiler.modules.plugins.relateobjects.Relate()
         module.x_name.value = PARENT_OBJECTS
         module.y_name.value = CHILD_OBJECTS
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_NONE
+            cellprofiler.modules.plugins.relateobjects.D_NONE
         )
         module.wants_child_objects_saved.value = False
         new_module_num = 2 if fake_measurement else 1
@@ -249,17 +249,17 @@ class TestRelateObjects(unittest.TestCase):
         ):
             workspace, module = self.make_workspace(parent_labels, child_labels)
             self.assertTrue(
-                isinstance(module, cellprofiler.modules.relateobjects.Relate)
+                isinstance(module, cellprofiler.modules.plugins.relateobjects.Relate)
             )
             module.find_parent_child_distances.value = (
-                cellprofiler.modules.relateobjects.D_BOTH
+                cellprofiler.modules.plugins.relateobjects.D_BOTH
             )
             module.run(workspace)
             self.features_and_columns_match(workspace)
             meas = workspace.measurements
             for feature in (
-                cellprofiler.modules.relateobjects.FF_CENTROID,
-                cellprofiler.modules.relateobjects.FF_MINIMUM,
+                    cellprofiler.modules.plugins.relateobjects.FF_CENTROID,
+                    cellprofiler.modules.plugins.relateobjects.FF_MINIMUM,
             ):
                 m = feature % PARENT_OBJECTS
                 v = meas.get_current_measurement(CHILD_OBJECTS, m)
@@ -289,15 +289,15 @@ class TestRelateObjects(unittest.TestCase):
         )
 
         workspace, module = self.make_workspace(parent_labels, child_labels)
-        self.assertTrue(isinstance(module, cellprofiler.modules.relateobjects.Relate))
+        self.assertTrue(isinstance(module, cellprofiler.modules.plugins.relateobjects.Relate))
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_BOTH
+            cellprofiler.modules.plugins.relateobjects.D_BOTH
         )
         module.run(workspace)
         self.features_and_columns_match(workspace)
         meas = workspace.measurements
         v = meas.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
+            CHILD_OBJECTS, cellprofiler.modules.plugins.relateobjects.FF_CENTROID % PARENT_OBJECTS
         )
         assert v.shape[0] == 12
         assert numpy.all(numpy.abs(v - expected) < 0.0001)
@@ -316,7 +316,7 @@ class TestRelateObjects(unittest.TestCase):
         workspace, module = self.make_workspace(parents, children)
 
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_MINIMUM
+            cellprofiler.modules.plugins.relateobjects.D_MINIMUM
         )
 
         module.run(workspace)
@@ -324,7 +324,7 @@ class TestRelateObjects(unittest.TestCase):
         expected = [1, 4]
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+            CHILD_OBJECTS, cellprofiler.modules.plugins.relateobjects.FF_MINIMUM % PARENT_OBJECTS
         )
 
         numpy.testing.assert_array_equal(actual, expected)
@@ -359,20 +359,20 @@ class TestRelateObjects(unittest.TestCase):
         )
 
         workspace, module = self.make_workspace(parent_labels, child_labels)
-        assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
+        assert isinstance(module, cellprofiler.modules.plugins.relateobjects.Relate)
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_CENTROID
+            cellprofiler.modules.plugins.relateobjects.D_CENTROID
         )
         module.wants_per_parent_means.value = True
         mnames = module.get_measurements(
             workspace.pipeline,
             PARENT_OBJECTS,
-            "_".join((cellprofiler.modules.relateobjects.C_MEAN, CHILD_OBJECTS)),
+            "_".join((cellprofiler.modules.plugins.relateobjects.C_MEAN, CHILD_OBJECTS)),
         )
-        assert cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
-        feat_mean = cellprofiler.modules.relateobjects.FF_MEAN % (
+        assert cellprofiler.modules.plugins.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
+        feat_mean = cellprofiler.modules.plugins.relateobjects.FF_MEAN % (
             CHILD_OBJECTS,
-            cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
+            cellprofiler.modules.plugins.relateobjects.FF_CENTROID % PARENT_OBJECTS,
         )
         mcolumns = module.get_measurement_columns(workspace.pipeline)
         assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
@@ -409,7 +409,7 @@ class TestRelateObjects(unittest.TestCase):
         workspace, module = self.make_workspace(parents, children)
 
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_CENTROID
+            cellprofiler.modules.plugins.relateobjects.D_CENTROID
         )
 
         module.run(workspace)
@@ -417,7 +417,7 @@ class TestRelateObjects(unittest.TestCase):
         expected = [3, numpy.sqrt(8)]
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
+            CHILD_OBJECTS, cellprofiler.modules.plugins.relateobjects.FF_CENTROID % PARENT_OBJECTS
         )
 
         numpy.testing.assert_array_equal(actual, expected)
@@ -437,7 +437,7 @@ class TestRelateObjects(unittest.TestCase):
         workspace, module = self.make_workspace(parents, children)
 
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_MINIMUM
+            cellprofiler.modules.plugins.relateobjects.D_MINIMUM
         )
 
         module.run(workspace)
@@ -445,7 +445,7 @@ class TestRelateObjects(unittest.TestCase):
         expected = [1, 2]
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+            CHILD_OBJECTS, cellprofiler.modules.plugins.relateobjects.FF_MINIMUM % PARENT_OBJECTS
         )
 
         numpy.testing.assert_array_equal(actual, expected)
@@ -476,7 +476,7 @@ class TestRelateObjects(unittest.TestCase):
         module.wants_step_parent_distances.value = True
 
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_MINIMUM
+            cellprofiler.modules.plugins.relateobjects.D_MINIMUM
         )
 
         module.run(workspace)
@@ -484,7 +484,7 @@ class TestRelateObjects(unittest.TestCase):
         expected = []
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % "Step"
+            CHILD_OBJECTS, cellprofiler.modules.plugins.relateobjects.FF_MINIMUM % "Step"
         )
         numpy.testing.assert_array_equal(actual, expected)
 

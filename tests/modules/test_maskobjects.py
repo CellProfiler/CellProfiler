@@ -4,7 +4,7 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-import cellprofiler.modules.maskobjects
+import cellprofiler.modules.plugins.maskobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -30,51 +30,51 @@ def test_load_v1():
     assert len(pipeline.modules()) == 4
 
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.maskobjects.MaskObjects)
     assert module.object_name.value == "Nuclei"
-    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.plugins.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Wells"
     assert module.remaining_objects.value == "MaskedNuclei"
     assert (
-        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+            module.retain_or_renumber.value == cellprofiler.modules.plugins.maskobjects.R_RENUMBER
     )
-    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_MASK
+    assert module.overlap_choice.value == cellprofiler.modules.plugins.maskobjects.P_MASK
     assert not module.wants_inverted_mask
 
     module = pipeline.modules()[1]
-    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.maskobjects.MaskObjects)
     assert module.object_name.value == "Cells"
-    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_IMAGE
+    assert module.mask_choice.value == cellprofiler.modules.plugins.maskobjects.MC_IMAGE
     assert module.masking_image.value == "WellBoundary"
     assert module.remaining_objects.value == "MaskedCells"
-    assert module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RETAIN
-    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_KEEP
+    assert module.retain_or_renumber.value == cellprofiler.modules.plugins.maskobjects.R_RETAIN
+    assert module.overlap_choice.value == cellprofiler.modules.plugins.maskobjects.P_KEEP
     assert not module.wants_inverted_mask
 
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.maskobjects.MaskObjects)
     assert module.object_name.value == "Cytoplasm"
-    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.plugins.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Cells"
     assert module.remaining_objects.value == "MaskedCytoplasm"
     assert (
-        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+            module.retain_or_renumber.value == cellprofiler.modules.plugins.maskobjects.R_RENUMBER
     )
-    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_REMOVE
+    assert module.overlap_choice.value == cellprofiler.modules.plugins.maskobjects.P_REMOVE
     assert not module.wants_inverted_mask
 
     module = pipeline.modules()[3]
-    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.maskobjects.MaskObjects)
     assert module.object_name.value == "Speckles"
-    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.plugins.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Cells"
     assert module.remaining_objects.value == "MaskedSpeckles"
     assert (
-        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+            module.retain_or_renumber.value == cellprofiler.modules.plugins.maskobjects.R_RENUMBER
     )
     assert (
-        module.overlap_choice.value
-        == cellprofiler.modules.maskobjects.P_REMOVE_PERCENTAGE
+            module.overlap_choice.value
+            == cellprofiler.modules.plugins.maskobjects.P_REMOVE_PERCENTAGE
     )
     assert round(abs(module.overlap_fraction.value - 0.3), 7) == 0
     assert not module.wants_inverted_mask
@@ -94,15 +94,15 @@ def test_load_v2():
     assert len(pipeline.modules()) == 1
 
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.maskobjects.MaskObjects)
     assert module.object_name.value == "Nuclei"
-    assert module.mask_choice.value == cellprofiler.modules.maskobjects.MC_OBJECTS
+    assert module.mask_choice.value == cellprofiler.modules.plugins.maskobjects.MC_OBJECTS
     assert module.masking_objects.value == "Wells"
     assert module.remaining_objects.value == "MaskedNuclei"
     assert (
-        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+            module.retain_or_renumber.value == cellprofiler.modules.plugins.maskobjects.R_RENUMBER
     )
-    assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_MASK
+    assert module.overlap_choice.value == cellprofiler.modules.plugins.maskobjects.P_MASK
     assert module.wants_inverted_mask
 
 
@@ -133,21 +133,21 @@ def test_load_v3():
 def make_workspace(
     labels, overlap_choice, masking_objects=None, masking_image=None, renumber=True
 ):
-    module = cellprofiler.modules.maskobjects.MaskObjects()
+    module = cellprofiler.modules.plugins.maskobjects.MaskObjects()
     module.set_module_num(1)
     module.object_name.value = INPUT_OBJECTS
     module.remaining_objects.value = OUTPUT_OBJECTS
     module.mask_choice.value = (
-        cellprofiler.modules.maskobjects.MC_OBJECTS
+        cellprofiler.modules.plugins.maskobjects.MC_OBJECTS
         if masking_objects is not None
-        else cellprofiler.modules.maskobjects.MC_IMAGE
+        else cellprofiler.modules.plugins.maskobjects.MC_IMAGE
     )
     module.masking_image.value = MASKING_IMAGE
     module.masking_objects.value = MASKING_OBJECTS
     module.retain_or_renumber.value = (
-        cellprofiler.modules.maskobjects.R_RENUMBER
+        cellprofiler.modules.plugins.maskobjects.R_RENUMBER
         if renumber
-        else cellprofiler.modules.maskobjects.R_RETAIN
+        else cellprofiler.modules.plugins.maskobjects.R_RETAIN
     )
     module.overlap_choice.value = overlap_choice
 
@@ -190,7 +190,7 @@ def test_measurement_columns():
     """Test get_measurement_columns"""
     workspace, module = make_workspace(
         numpy.zeros((20, 10), int),
-        cellprofiler.modules.maskobjects.P_MASK,
+        cellprofiler.modules.plugins.maskobjects.P_MASK,
         numpy.zeros((20, 10), int),
     )
     columns = module.get_measurement_columns(workspace.pipeline)
@@ -235,7 +235,7 @@ def test_measurement_columns():
 def test_measurement_categories():
     workspace, module = make_workspace(
         numpy.zeros((20, 10), int),
-        cellprofiler.modules.maskobjects.MC_OBJECTS,
+        cellprofiler.modules.plugins.maskobjects.MC_OBJECTS,
         numpy.zeros((20, 10), int),
     )
     categories = module.get_categories(workspace.pipeline, "Foo")
@@ -267,7 +267,7 @@ def test_measurement_categories():
 def test_measurements():
     workspace, module = make_workspace(
         numpy.zeros((20, 10), int),
-        cellprofiler.modules.maskobjects.P_MASK,
+        cellprofiler.modules.plugins.maskobjects.P_MASK,
         numpy.zeros((20, 10), int),
     )
     ftr_count = (cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split(
@@ -307,7 +307,7 @@ def test_measurements():
 def test_mask_nothing():
     workspace, module = make_workspace(
         numpy.zeros((20, 10), int),
-        cellprofiler.modules.maskobjects.MC_OBJECTS,
+        cellprofiler.modules.plugins.maskobjects.MC_OBJECTS,
         numpy.zeros((20, 10), int),
     )
     module.run(workspace)
@@ -339,7 +339,7 @@ def test_mask_with_objects():
     expected = labels.copy()
     expected[mask == 0] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_MASK, mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_MASK, mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -388,7 +388,7 @@ def test_mask_with_image():
     expected = labels.copy()
     expected[~mask] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_MASK, masking_image=mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -439,7 +439,7 @@ def test_mask_renumber():
     expected[~mask] = 0
     expected[expected == 3] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_MASK, masking_image=mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -490,7 +490,7 @@ def test_mask_retain():
     expected[~mask] = 0
     workspace, module = make_workspace(
         labels,
-        cellprofiler.modules.maskobjects.P_MASK,
+        cellprofiler.modules.plugins.maskobjects.P_MASK,
         masking_image=mask,
         renumber=False,
     )
@@ -550,9 +550,9 @@ def test_mask_invert():
     expected[labels != 1] = 0
     expected[2, 3] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_MASK, masking_image=mask
     )
-    assert isinstance(module, cellprofiler.modules.maskobjects.MaskObjects)
+    assert isinstance(module, cellprofiler.modules.plugins.maskobjects.MaskObjects)
     module.wants_inverted_mask.value = True
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -570,7 +570,7 @@ def test_keep():
     expected[expected == 2] = 0
     expected[expected == 3] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_KEEP, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_KEEP, masking_image=mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -586,7 +586,7 @@ def test_remove():
     expected = labels.copy()
     expected[labels == 2] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_REMOVE, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_REMOVE, masking_image=mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -604,7 +604,7 @@ def test_remove_percent():
     expected = labels.copy()
     expected[labels == 2] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_REMOVE_PERCENTAGE, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_REMOVE_PERCENTAGE, masking_image=mask
     )
     module.overlap_fraction.value = 0.75
     module.run(workspace)
@@ -621,7 +621,7 @@ def test_different_object_sizes():
     expected = labels.copy()
     expected[:20, :][mask[:, :10] == 0] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_MASK, mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_MASK, mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
@@ -637,7 +637,7 @@ def test_different_image_sizes():
     expected = labels.copy()
     expected[:20, :][mask[:, :10] == 0] = 0
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.maskobjects.P_MASK, masking_image=mask
+        labels, cellprofiler.modules.plugins.maskobjects.P_MASK, masking_image=mask
     )
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)

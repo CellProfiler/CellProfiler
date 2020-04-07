@@ -1,9 +1,9 @@
 import numpy.testing
 import scipy.signal
 
-import cellprofiler.modules.medianfilter
+import cellprofiler.modules.plugins.medianfilter
 
-instance = cellprofiler.modules.medianfilter.MedianFilter()
+instance = cellprofiler.modules.plugins.medianfilter.MedianFilter()
 
 
 def test_run(image, module, image_set, workspace):

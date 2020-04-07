@@ -1,22 +1,16 @@
 """test_knime_bridge.py - test the Knime bridge"""
 
-import json
 import unittest
 import uuid
 
-import numpy
-import six.moves
 import zmq
 
 import cellprofiler.knime_bridge
-import cellprofiler_core.measurement
-import cellprofiler.modules.flagimage
-import cellprofiler.modules.identifyprimaryobjects
-import cellprofiler_core.modules.loadimages
-import cellprofiler.modules.measureobjectsizeshape
-import cellprofiler.modules.saveimages
-import cellprofiler.modules.threshold
-import cellprofiler_core.pipeline
+import cellprofiler.modules.plugins.flagimage
+import cellprofiler.modules.plugins.identifyprimaryobjects
+import cellprofiler.modules.plugins.measureobjectsizeshape
+import cellprofiler.modules.plugins.saveimages
+import cellprofiler.modules.plugins.threshold
 import cellprofiler.worker
 
 

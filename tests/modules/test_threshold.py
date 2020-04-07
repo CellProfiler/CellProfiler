@@ -12,7 +12,7 @@ import skimage.morphology
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.threshold
+import cellprofiler.modules.plugins.threshold
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -26,7 +26,7 @@ OUTPUT_IMAGE_NAME = "outputimage"
 
 def make_workspace(image, mask=None, dimensions=2):
     """Make a workspace for testing Threshold"""
-    module = cellprofiler.modules.threshold.Threshold()
+    module = cellprofiler.modules.plugins.threshold.Threshold()
     module.x_name.value = INPUT_IMAGE_NAME
     module.y_name.value = OUTPUT_IMAGE_NAME
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -51,7 +51,7 @@ def make_workspace(image, mask=None, dimensions=2):
 
 
 def test_write_a_test_for_the_new_variable_revision_please():
-    assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 10
+    assert cellprofiler.modules.plugins.threshold.Threshold.variable_revision_number == 10
 
 
 def test_load_v7():
@@ -62,21 +62,21 @@ def test_load_v7():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+    assert isinstance(module, cellprofiler.modules.plugins.threshold.Threshold)
     assert module.x_name.value == "RainbowPony"
     assert module.y_name.value == "GrayscalePony"
-    assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_scope.value == cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.plugins.threshold.TM_LI
     assert module.threshold_smoothing_scale.value == 1.3488
     assert module.threshold_correction_factor.value == 1.1
     assert module.threshold_range.min == 0.07
     assert module.threshold_range.max == 0.99
     assert module.manual_threshold.value == 0.1
     assert module.thresholding_measurement.value == "Pony_Perimeter"
-    assert module.two_class_otsu.value == cellprofiler.modules.threshold.O_TWO_CLASS
+    assert module.two_class_otsu.value == cellprofiler.modules.plugins.threshold.O_TWO_CLASS
     assert (
-        module.assign_middle_to_foreground.value
-        == cellprofiler.modules.threshold.O_FOREGROUND
+            module.assign_middle_to_foreground.value
+            == cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size.value == 13
 
@@ -89,21 +89,21 @@ def test_load_v8():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+    assert isinstance(module, cellprofiler.modules.plugins.threshold.Threshold)
     assert module.x_name == "DNA"
     assert module.y_name == "ThreshBlue"
-    assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_scope == cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.plugins.threshold.TM_LI
     assert module.threshold_smoothing_scale == 0
     assert module.threshold_correction_factor == 1.0
     assert module.threshold_range.min == 0.0
     assert module.threshold_range.max == 1.0
     assert module.manual_threshold == 0.0
     assert module.thresholding_measurement == "None"
-    assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+    assert module.two_class_otsu == cellprofiler.modules.plugins.threshold.O_TWO_CLASS
     assert (
-        module.assign_middle_to_foreground
-        == cellprofiler.modules.threshold.O_FOREGROUND
+            module.assign_middle_to_foreground
+            == cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size == 50
 
@@ -116,35 +116,35 @@ def test_load_v9():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[4]
-    assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+    assert isinstance(module, cellprofiler.modules.plugins.threshold.Threshold)
     assert module.x_name == "DNA"
     assert module.y_name == "Threshold"
-    assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_scope == cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.plugins.threshold.TM_LI
     assert module.threshold_smoothing_scale == 0
     assert module.threshold_correction_factor == 1.0
     assert module.threshold_range.min == 0.0
     assert module.threshold_range.max == 1.0
     assert module.manual_threshold == 0.0
     assert module.thresholding_measurement == "None"
-    assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+    assert module.two_class_otsu == cellprofiler.modules.plugins.threshold.O_TWO_CLASS
     assert (
-        module.assign_middle_to_foreground
-        == cellprofiler.modules.threshold.O_FOREGROUND
+            module.assign_middle_to_foreground
+            == cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size == 50
 
     module = pipeline.modules()[5]
-    assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_MANUAL
+    assert module.threshold_scope.value == cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.plugins.threshold.TM_MANUAL
 
     module = pipeline.modules()[6]
-    assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
+    assert module.threshold_scope.value == cellprofiler.modules.plugins.threshold.TS_GLOBAL
     assert module.global_operation.value == centrosome.threshold.TM_ROBUST_BACKGROUND
 
     module = pipeline.modules()[7]
-    assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_scope.value == cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.plugins.threshold.TM_LI
 
 
 def test_load_v10():
@@ -155,21 +155,21 @@ def test_load_v10():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(fd)
     module = pipeline.modules()[-1]
-    assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+    assert isinstance(module, cellprofiler.modules.plugins.threshold.Threshold)
     assert module.x_name == "DNA"
     assert module.y_name == "Threshold"
-    assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_scope == cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.plugins.threshold.TM_LI
     assert module.threshold_smoothing_scale == 0
     assert module.threshold_correction_factor == 1.0
     assert module.threshold_range.min == 0.0
     assert module.threshold_range.max == 1.0
     assert module.manual_threshold == 0.0
     assert module.thresholding_measurement == "None"
-    assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+    assert module.two_class_otsu == cellprofiler.modules.plugins.threshold.O_TWO_CLASS
     assert (
-        module.assign_middle_to_foreground
-        == cellprofiler.modules.threshold.O_FOREGROUND
+            module.assign_middle_to_foreground
+            == cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size == 50
     assert module.local_operation.value == centrosome.threshold.TM_OTSU
@@ -181,8 +181,8 @@ def test_binary_manual():
     image = numpy.random.uniform(size=(20, 20))
     expected = image > 0.5
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     module.manual_threshold.value = 0.5
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -196,7 +196,7 @@ def test_binary_global():
     threshold = skimage.filters.threshold_otsu(image)
     expected = image > threshold
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -210,7 +210,7 @@ def test_binary_correction():
     threshold = skimage.filters.threshold_otsu(image) * 0.5
     expected = image > threshold
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.threshold_correction_factor.value = 0.5
     module.run(workspace)
@@ -226,7 +226,7 @@ def test_low_bounds():
     image[(image > 0.4) & (image < 0.6)] = 0.5
     expected = image > 0.7
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.threshold_range.min = 0.7
     module.run(workspace)
@@ -241,7 +241,7 @@ def test_high_bounds():
     image = numpy.random.uniform(size=(40, 40))
     expected = image > 0.1
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
     module.threshold_range.max = 0.1
     module.run(workspace)
@@ -254,16 +254,16 @@ def test_threshold_from_measurement():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20))
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     module.manual_threshold.value = 0.5
     module.run(workspace)
 
-    module2 = cellprofiler.modules.threshold.Threshold()
+    module2 = cellprofiler.modules.plugins.threshold.Threshold()
     module2.x_name.value = OUTPUT_IMAGE_NAME
     module2.y_name.value = OUTPUT_IMAGE_NAME + "new"
-    module2.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    module2.global_operation.value = cellprofiler.modules.threshold.TM_MEASUREMENT
+    module2.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    module2.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MEASUREMENT
     module2.thresholding_measurement.value = (
         "Threshold_FinalThreshold_" + OUTPUT_IMAGE_NAME
     )
@@ -286,11 +286,11 @@ def test_otsu3_low():
     t1, t2 = centrosome.otsu.otsu3(limage)
     threshold = centrosome.threshold.inverse_log_transform(t2, d)
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_THREE_CLASS
     module.assign_middle_to_foreground.value = (
-        cellprofiler.modules.threshold.O_BACKGROUND
+        cellprofiler.modules.plugins.threshold.O_BACKGROUND
     )
     module.run(workspace)
     m = workspace.measurements
@@ -317,11 +317,11 @@ def test_otsu3_high():
     t1, t2 = centrosome.otsu.otsu3(limage)
     threshold = centrosome.threshold.inverse_log_transform(t1, d)
     workspace, module = make_workspace(image)
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
     module.global_operation.value = centrosome.threshold.TM_OTSU
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_THREE_CLASS
     module.assign_middle_to_foreground.value = (
-        cellprofiler.modules.threshold.O_FOREGROUND
+        cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
     module.run(workspace)
     m = workspace.measurements
@@ -399,9 +399,9 @@ def test_small_images():
     ii, jj = ii.flatten(), jj.flatten()
 
     for threshold_method in (
-        cellprofiler.modules.threshold.TM_LI,
-        centrosome.threshold.TM_OTSU,
-        centrosome.threshold.TM_ROBUST_BACKGROUND,
+            cellprofiler.modules.plugins.threshold.TM_LI,
+            centrosome.threshold.TM_OTSU,
+            centrosome.threshold.TM_ROBUST_BACKGROUND,
     ):
         for i in range(11):
             mask = numpy.zeros(image.shape, bool)
@@ -426,9 +426,9 @@ def test_small_images():
 def test_test_manual_background():
     """Test manual background"""
     workspace, x = make_workspace(numpy.zeros((10, 10)))
-    x = cellprofiler.modules.threshold.Threshold()
-    x.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    x.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x = cellprofiler.modules.plugins.threshold.Threshold()
+    x.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
+    x.global_operation.value = cellprofiler.modules.plugins.threshold.TM_MANUAL
     x.manual_threshold.value = 0.5
     local_threshold, threshold = x.get_threshold(
         cellprofiler_core.image.Image(
@@ -445,9 +445,9 @@ def test_threshold_li_uniform_image():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
 
     t_local, t_global = module.get_threshold(image, workspace)
 
@@ -471,9 +471,9 @@ def test_threshold_li_uniform_partial_mask():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
 
     t_local, t_global = module.get_threshold(image, workspace)
 
@@ -493,9 +493,9 @@ def test_threshold_li_full_mask():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
 
     t_local, t_global = module.get_threshold(image, workspace)
 
@@ -513,9 +513,9 @@ def test_threshold_li_image():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
 
     t_local, t_global = module.get_threshold(image, workspace)
 
@@ -535,9 +535,9 @@ def test_threshold_li_image_automatic():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
 
     module.threshold_range.maximum = 0.0  # expected to be ignored
 
@@ -563,9 +563,9 @@ def test_threshold_li_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+    module.global_operation.value = cellprofiler.modules.plugins.threshold.TM_LI
 
     t_local, t_global = module.get_threshold(image, workspace)
 
@@ -585,19 +585,19 @@ def test_threshold_robust_background_mean_sd_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
     module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-    module.averaging_method.value = cellprofiler.modules.threshold.RB_MEAN
+    module.averaging_method.value = cellprofiler.modules.plugins.threshold.RB_MEAN
 
-    module.variance_method.value = cellprofiler.modules.threshold.RB_SD
+    module.variance_method.value = cellprofiler.modules.plugins.threshold.RB_SD
 
     t_local, t_global = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_ROBUST_BACKGROUND,
-        cellprofiler.modules.threshold.TS_GLOBAL,
+        cellprofiler.modules.plugins.threshold.TS_GLOBAL,
         data,
         threshold_range_min=0.0,
         threshold_range_max=1.0,
@@ -623,19 +623,19 @@ def test_threshold_robust_background_median_sd_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
     module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-    module.averaging_method.value = cellprofiler.modules.threshold.RB_MEDIAN
+    module.averaging_method.value = cellprofiler.modules.plugins.threshold.RB_MEDIAN
 
-    module.variance_method.value = cellprofiler.modules.threshold.RB_SD
+    module.variance_method.value = cellprofiler.modules.plugins.threshold.RB_SD
 
     t_local, t_global = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_ROBUST_BACKGROUND,
-        cellprofiler.modules.threshold.TS_GLOBAL,
+        cellprofiler.modules.plugins.threshold.TS_GLOBAL,
         data,
         threshold_range_min=0.0,
         threshold_range_max=1.0,
@@ -661,19 +661,19 @@ def test_threshold_robust_background_mode_sd_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
     module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-    module.averaging_method.value = cellprofiler.modules.threshold.RB_MODE
+    module.averaging_method.value = cellprofiler.modules.plugins.threshold.RB_MODE
 
-    module.variance_method.value = cellprofiler.modules.threshold.RB_SD
+    module.variance_method.value = cellprofiler.modules.plugins.threshold.RB_SD
 
     t_local, t_global = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_ROBUST_BACKGROUND,
-        cellprofiler.modules.threshold.TS_GLOBAL,
+        cellprofiler.modules.plugins.threshold.TS_GLOBAL,
         data,
         threshold_range_min=0.0,
         threshold_range_max=1.0,
@@ -699,19 +699,19 @@ def test_threshold_robust_background_mean_mad_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_GLOBAL
 
     module.global_operation.value = centrosome.threshold.TM_ROBUST_BACKGROUND
 
-    module.averaging_method.value = cellprofiler.modules.threshold.RB_MEAN
+    module.averaging_method.value = cellprofiler.modules.plugins.threshold.RB_MEAN
 
-    module.variance_method.value = cellprofiler.modules.threshold.RB_MAD
+    module.variance_method.value = cellprofiler.modules.plugins.threshold.RB_MAD
 
     t_local, t_global = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_ROBUST_BACKGROUND,
-        cellprofiler.modules.threshold.TS_GLOBAL,
+        cellprofiler.modules.plugins.threshold.TS_GLOBAL,
         data,
         threshold_range_min=0.0,
         threshold_range_max=1.0,
@@ -739,11 +739,11 @@ def test_threshold_otsu_full_mask():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
@@ -773,11 +773,11 @@ def test_threshold_otsu_partial_mask_uniform_data():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
@@ -801,11 +801,11 @@ def test_threshold_otsu_uniform_data():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
@@ -833,11 +833,11 @@ def test_threshold_otsu_image():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
@@ -877,11 +877,11 @@ def test_threshold_otsu_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
@@ -924,14 +924,14 @@ def test_threshold_otsu3_full_mask():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_THREE_CLASS
 
     module.assign_middle_to_foreground.value = (
-        cellprofiler.modules.threshold.O_FOREGROUND
+        cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
 
     module.adaptive_window_size.value = 3
@@ -940,7 +940,7 @@ def test_threshold_otsu3_full_mask():
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_OTSU,
-        cellprofiler.modules.threshold.TS_ADAPTIVE,
+        cellprofiler.modules.plugins.threshold.TS_ADAPTIVE,
         data,
         mask=mask,
         adaptive_window_size=3,
@@ -969,14 +969,14 @@ def test_threshold_otsu3_image():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_THREE_CLASS
 
     module.assign_middle_to_foreground.value = (
-        cellprofiler.modules.threshold.O_FOREGROUND
+        cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
 
     module.adaptive_window_size.value = 3
@@ -985,7 +985,7 @@ def test_threshold_otsu3_image():
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_OTSU,
-        cellprofiler.modules.threshold.TS_ADAPTIVE,
+        cellprofiler.modules.plugins.threshold.TS_ADAPTIVE,
         data,
         mask=mask,
         adaptive_window_size=3,
@@ -1014,14 +1014,14 @@ def test_threshold_otsu3_volume():
 
     image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+    module.threshold_scope.value = cellprofiler.modules.plugins.threshold.TS_ADAPTIVE
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
 
-    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+    module.two_class_otsu.value = cellprofiler.modules.plugins.threshold.O_THREE_CLASS
 
     module.assign_middle_to_foreground.value = (
-        cellprofiler.modules.threshold.O_FOREGROUND
+        cellprofiler.modules.plugins.threshold.O_FOREGROUND
     )
 
     module.adaptive_window_size.value = 3

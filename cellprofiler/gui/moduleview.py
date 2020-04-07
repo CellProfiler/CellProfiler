@@ -784,7 +784,7 @@ class ModuleView(object):
         if not control:
             control = wx.RadioBox(
                 self.__module_panel,
-                choices=[cellprofiler_core.setting.YES, cellprofiler_core.setting.NO],
+                choices=["Yes", "No"],
                 name=control_name,
             )
 
@@ -1145,7 +1145,7 @@ class ModuleView(object):
         style        - one of the CB_ styles
         """
         try:
-            if v.value == cellprofiler_core.setting.DEFAULT:
+            if v.value == "Default":
                 cmap_name = cellprofiler_core.preferences.get_default_colormap()
             else:
                 cmap_name = v.value
@@ -1607,8 +1607,8 @@ class ModuleView(object):
             if not browse_ctrl.IsShown():
                 browse_ctrl.Show()
             if v.dir_choice in (
-                cellprofiler_core.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
-                cellprofiler_core.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME,
             ):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
@@ -1627,15 +1627,15 @@ class ModuleView(object):
             custom_ctrl.Hide()
             browse_ctrl.Hide()
         if v.dir_choice in (
-            cellprofiler_core.setting.DEFAULT_INPUT_FOLDER_NAME,
-            cellprofiler_core.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+            DEFAULT_INPUT_FOLDER_NAME,
+            DEFAULT_INPUT_SUBFOLDER_NAME,
         ):
             folder_label.Label = (
                 "( %s )" % cellprofiler_core.preferences.get_default_image_directory()
             )
         elif v.dir_choice in (
-            cellprofiler_core.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-            cellprofiler_core.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            DEFAULT_OUTPUT_FOLDER_NAME,
+            DEFAULT_OUTPUT_SUBFOLDER_NAME,
         ):
             folder_label.Label = (
                 "( %s )" % cellprofiler_core.preferences.get_default_output_directory()

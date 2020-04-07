@@ -89,11 +89,6 @@ import functools
 import itertools
 import os
 
-import centrosome.index as INDEX
-import numpy as np
-from scipy.interpolate import interp1d
-from scipy.ndimage import map_coordinates, extrema
-
 import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
@@ -101,6 +96,8 @@ import cellprofiler_core.object as cpo
 import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting as cps
 import cellprofiler_core.utilities.legacy
+import centrosome.index as INDEX
+import numpy as np
 from cellprofiler_core.measurement import (
     C_LOCATION,
     C_NUMBER,
@@ -109,17 +106,16 @@ from cellprofiler_core.measurement import (
     FTR_CENTER_Y,
     FTR_OBJECT_NUMBER,
 )
-from .identify import add_object_count_measurements
-from .identify import add_object_location_measurements
-from .identify import get_object_measurement_columns
+from cellprofiler_core.modules.identify import add_object_count_measurements
+from cellprofiler_core.modules.identify import add_object_location_measurements
+from cellprofiler_core.modules.identify import get_object_measurement_columns
+from scipy.interpolate import interp1d
+from scipy.ndimage import map_coordinates, extrema
+
 from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
 from .untangleworms import F_LENGTH
 from .untangleworms import read_params
 from .untangleworms import recalculate_single_worm_control_points
-from cellprofiler.modules._help import (
-    USING_METADATA_GROUPING_HELP_REF,
-    IO_FOLDER_CHOICE_HELP_TEXT,
-)
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"

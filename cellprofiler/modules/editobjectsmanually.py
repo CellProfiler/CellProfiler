@@ -66,7 +66,7 @@ import cellprofiler_core.object as cpo
 import cellprofiler_core.setting as cps
 
 from cellprofiler_core.modules.loadimages import pathname2url
-from cellprofiler.modules import identify as I
+from cellprofilder_core.modules import identify as I
 
 ###########################################
 #

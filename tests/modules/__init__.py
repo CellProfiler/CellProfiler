@@ -15,7 +15,7 @@ import tempfile
 import functools
 
 import scipy.io.matlab.mio
-import cellprofiler.utilities.legacy
+import cellprofilder_core.utilities.legacy
 
 __temp_example_images_folder = None
 
@@ -209,7 +209,7 @@ def make_12_bit_image(folder, filename, shape):
     ifds = sorted(
         ifds,
         key=functools.cmp_to_key(
-            lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())
+            lambda a, b: cellprofilder_core.utilities.legacy.cmp(a.tolist(), b.tolist())
         ),
     )
     old_end = offset + 2 + nentries * 12

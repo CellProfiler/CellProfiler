@@ -11,14 +11,14 @@ import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
-import cellprofiler.utilities.cpjvm
+import cellprofiler_core.utilities.java
 import cellprofiler_core.workspace
 
 
 def pytest_sessionstart(session):
     cellprofiler_core.preferences.set_headless()
 
-    cellprofiler.utilities.cpjvm.cp_start_vm()
+    cellprofiler_core.utilities.java.start_java()
 
 
 def pytest_sessionfinish(session, exitstatus):

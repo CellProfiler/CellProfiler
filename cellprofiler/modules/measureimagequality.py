@@ -16,7 +16,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-from cellprofiler.modules import identify, loadimages
+from cellprofilder_core.modules import identify, loadimages
 
 __doc__ = """\
 MeasureImageQuality

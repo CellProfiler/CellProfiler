@@ -43,7 +43,7 @@ import numpy as np
 
 import cellprofiler_core.object as cpo
 import cellprofiler_core.setting as cps
-from cellprofiler.modules import identify as I
+from cellprofilder_core.modules import identify as I
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"

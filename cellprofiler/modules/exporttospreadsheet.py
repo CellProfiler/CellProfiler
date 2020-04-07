@@ -1112,7 +1112,7 @@ desired.
         """
         from .loaddata import is_path_name_feature, is_file_name_feature
         from cellprofiler_core.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
-        from .loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+        from cellprofiler_core.modules.loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         file_name = self.make_gct_file_name(
             workspace, image_set_numbers[0], settings_group

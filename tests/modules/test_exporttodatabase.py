@@ -22,7 +22,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler.utilities.legacy
+import cellprofilder_core.utilities.legacy
 import cellprofiler_core.workspace
 
 if hasattr(unittest, "SkipTest"):

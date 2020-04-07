@@ -18,7 +18,7 @@ import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
-from cellprofiler.modules import identify, loadimages
+from cellprofilder_core.modules import identify, loadimages
 
 logger = logging.getLogger(__name__)
 from io import StringIO

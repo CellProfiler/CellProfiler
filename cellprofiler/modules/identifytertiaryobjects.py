@@ -8,7 +8,8 @@ import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler_core.object as cpo
 import cellprofiler_core.setting as cps
-from cellprofiler.modules import _help, identify as cpmi
+from cellprofiler.modules import _help
+from cellprofiler_core.modules import identify as cpmi
 
 __doc__ = """\
 IdentifyTertiaryObjects

@@ -408,7 +408,7 @@ color map.
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        from cellprofiler.modules import loadimages as LI
+        from cellprofilder_core.modules import loadimages as LI
         import os.path
 
         im_id = self.image_name.value

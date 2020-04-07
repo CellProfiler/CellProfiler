@@ -26,10 +26,10 @@ def plugin_list():
 
 class PluginImporter(object):
     def find_module(self, fullname, path=None):
-        if not fullname.startswith("cellprofiler_core.modules.plugins"):
+        if not fullname.startswith("cellprofiler.modules.plugins"):
             return None
         prefix, modname = fullname.rsplit(".", 1)
-        if prefix != "cellprofiler_core.modules.plugins":
+        if prefix != "cellprofiler.modules.plugins":
             return None
         if os.path.exists(
             os.path.join(cellprofiler_core.preferences.get_plugin_directory(), modname + ".py")

@@ -2832,7 +2832,7 @@ class PipelineController(object):
 
             self.__frame.preferences_view.on_analyze_images()
 
-            with cellprofiler.gui.pipeline.Pipeline.PipelineListener(
+            with cellprofiler_core.pipeline.Listener(
                 self.__pipeline, self.on_prepare_run_error_event
             ):
                 if not self.__pipeline.prepare_run(self.__workspace):
@@ -3401,7 +3401,7 @@ class PipelineController(object):
         self.__pipeline_list_view.set_debug_mode(True)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.show_test_controls()
-        with cellprofiler.gui.pipeline.Pipeline.PipelineListener(
+        with cellprofiler_core.pipeline.Listener(
             self.__pipeline, self.on_prepare_run_error_event
         ):
             if not self.__workspace.refresh_image_set():

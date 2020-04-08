@@ -380,30 +380,3 @@ Enter a name for the inverted color image.
         figure.subplot_imshow(
             1, 0, inverted_color, "Color-inverted image", sharexy=figure.subplot(0, 0)
         )
-
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
-        if from_matlab and variable_revision_number == 1:
-            setting_values = [
-                CC_GRAYSCALE,  # input_color_choice
-                setting_values[0] != "None",  # wants_red_input
-                setting_values[0],  # red_input_image
-                setting_values[1] != "None",
-                setting_values[1],
-                setting_values[2] != "None",
-                setting_values[2],
-                "None",  # color
-                CC_GRAYSCALE,  # output_color_choice
-                setting_values[3] != "None",
-                setting_values[3],
-                setting_values[4] != "None",
-                setting_values[4],
-                setting_values[5] != "None",
-                setting_values[5],
-                "InvertedColor",
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        return setting_values, variable_revision_number, from_matlab

@@ -1440,7 +1440,7 @@ be selected in a later **SaveImages** or other module.
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             n_images, n_objects, n_bins = [
@@ -1497,7 +1497,7 @@ be selected in a later **SaveImages** or other module.
 
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class MORDObjectNameSubscriber(cellprofiler_core.setting.ObjectNameSubscriber):

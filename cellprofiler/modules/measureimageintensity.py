@@ -397,24 +397,11 @@ objects.""",
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        """Account for prior versions when loading
-
-        We handle Matlab revision # 2 here. We don't support thresholding
-        because it was generally unused. The first setting is the image name.
-        """
-        if from_matlab and variable_revision_number == 2:
-            setting_values = [
-                setting_values[0],  # image name
-                "No",  # wants objects
-                "None",
-            ]  # object name
-            variable_revision_number = 1
-            from_matlab = False
         if variable_revision_number == 1:
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

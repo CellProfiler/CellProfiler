@@ -281,68 +281,9 @@ the output image.
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if (
-            module_name == "SmoothKeepingEdges"
-            and from_matlab
-            and variable_revision_number == 1
-        ):
-            image_name, smoothed_image_name, spatial_radius, intensity_radius = (
-                setting_values
-            )
-            setting_values = [
-                image_name,
-                smoothed_image_name,
-                "Smooth Keeping Edges",
-                "Automatic",
-                "Do not use",
-                "No",
-                spatial_radius,
-                intensity_radius,
-            ]
-            module_name = "SmoothOrEnhance"
-            variable_revision_number = 5
-        if (
-            module_name == "SmoothOrEnhance"
-            and from_matlab
-            and variable_revision_number == 4
-        ):
-            # Added spatial radius
-            setting_values = setting_values + ["0.1"]
-            variable_revision_number = 5
-        if (
-            module_name == "SmoothOrEnhance"
-            and from_matlab
-            and variable_revision_number == 5
-        ):
-            if setting_values[2] in (
-                "Remove BrightRoundSpeckles",
-                "Enhance BrightRoundSpeckles (Tophat Filter)",
-            ):
-                raise ValueError(
-                    "The Smooth module does not support speckles operations. Please use EnhanceOrSuppressFeatures with the Speckles feature type instead"
-                )
-            setting_values = [
-                setting_values[0],  # image name
-                setting_values[1],  # result name
-                setting_values[2],  # smoothing method
-                "Yes"
-                if setting_values[3] == "Automatic"
-                else "No",  # wants smoothing
-                "16.0"
-                if setting_values[3] == "Automatic"
-                else (
-                    setting_values[6]
-                    if setting_values[2] == SMOOTH_KEEPING_EDGES
-                    else setting_values[3]
-                ),
-                setting_values[7],
-            ]
-            module_name = "Smooth"
-            from_matlab = False
-            variable_revision_number = 1
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             setting_values = setting_values + ["Yes"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

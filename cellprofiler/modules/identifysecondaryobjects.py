@@ -471,13 +471,8 @@ segmentation.""",
         return help_settings
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MatLab pipelines."
-            )
-
         if variable_revision_number < 9:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3."
@@ -501,11 +496,10 @@ segmentation.""",
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version, _ = self.threshold.upgrade_settings(
+        threshold_upgrade_settings, threshold_settings_version = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
             "Threshold",
-            False,
         )
 
         threshold_upgrade_settings = [
@@ -514,7 +508,7 @@ segmentation.""",
 
         setting_values = setting_values[:N_SETTING_VALUES] + threshold_upgrade_settings
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number
 
     def run(self, workspace):
         image_name = self.image_name.value

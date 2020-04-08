@@ -983,7 +983,7 @@ parents or children of the parent object.""",
             self.add_step_parent()
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             #
@@ -1031,7 +1031,7 @@ parents or children of the parent object.""",
 
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 Relate = RelateObjects

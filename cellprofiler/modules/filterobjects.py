@@ -1083,9 +1083,9 @@ value will be retained.""".format(
         return True
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added CPA rules
             #
@@ -1099,13 +1099,13 @@ value will be retained.""".format(
                 + setting_values[11:]
             )
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Forgot file name (???!!!)
             #
             setting_values = setting_values[:14] + ["rules.txt"] + setting_values[14:]
             variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             #
             # Allowed multiple measurements
             # Structure changed substantially.
@@ -1136,7 +1136,7 @@ value will be retained.""".format(
                 maximum_value,
             ] + additional_object_settings
             variable_revision_number = 4
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             #
             # Used DirectoryPath to combine directory choice & custom path
             #
@@ -1160,14 +1160,14 @@ value will be retained.""".format(
             setting_values = setting_values[:7] + [rules_directory] + setting_values[9:]
             variable_revision_number = 5
 
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             #
             # added rules class
             #
             setting_values = setting_values[:9] + ["1"] + setting_values[9:]
             variable_revision_number = 6
 
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             #
             # Added per-object assignment
             #
@@ -1179,7 +1179,7 @@ value will be retained.""".format(
 
             variable_revision_number = 7
 
-        if not from_matlab and variable_revision_number == 7:
+        if variable_revision_number == 7:
             x_name = setting_values[1]
 
             y_name = setting_values[0]
@@ -1223,7 +1223,7 @@ value will be retained.""".format(
             setting_values[slot_directory]
         )
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 #

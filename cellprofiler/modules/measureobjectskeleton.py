@@ -684,29 +684,21 @@ The file has the following columns:
             return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Provide backwards compatibility for old pipelines
 
         setting_values - the strings to be fed to settings
         variable_revision_number - the version number at time of saving
         module_name - name of original module
-        from_matlab - true if a matlab pipeline, false if pyCP
         """
-        if from_matlab and variable_revision_number == 1:
-            #
-            # Added "Wants branchpoint image" and branchpoint image name
-            #
-            setting_values = setting_values + ["No", "Branchpoints"]
-            from_matlab = False
-            variable_revision_number = 1
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added hole size questions
             #
             setting_values = setting_values + ["Yes", "10"]
             variable_revision_number = 2
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added graph stuff
             #
@@ -714,13 +706,13 @@ The file has the following columns:
                 "No",
                 "None",
                 cps.DirectoryPath.static_join_string(
-                    DEFAULT_OUTPUT_FOLDER_NAME, "None"
+                    cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, "None"
                 ),
                 "None",
                 "None",
             ]
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def make_objskeleton_graph(
         self, skeleton, skeleton_labels, trunks, branchpoints, endpoints, image

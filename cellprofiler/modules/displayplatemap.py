@@ -311,11 +311,11 @@ executed.
     def run_as_data_tool(self, workspace):
         return self.run(workspace)
 
-    def backwards_compatibilize(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # Add the wellformat setting
             setting_values += [WF_NAME]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

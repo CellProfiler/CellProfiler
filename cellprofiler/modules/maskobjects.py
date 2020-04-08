@@ -510,46 +510,9 @@ controls how remaining objects are associated with their predecessors:
         pass
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            object_name, mask_region_name, remaining_object_name, renumber, save_outlines, remove_overlapping = (
-                setting_values
-            )
-            wants_outlines = (
-                "No" if save_outlines.lower() == "Do not use".lower() else "Yes"
-            )
-            renumber = (
-                R_RENUMBER
-                if renumber == "Renumber"
-                else R_RETAIN
-                if renumber == "Retain"
-                else renumber
-            )
-            overlap_choice = (
-                P_MASK
-                if remove_overlapping == "Retain"
-                else P_REMOVE
-                if remove_overlapping == "Remove"
-                else remove_overlapping
-            )
-
-            setting_values = [
-                object_name,
-                remaining_object_name,
-                MC_OBJECTS,
-                mask_region_name,
-                mask_region_name,
-                overlap_choice,
-                ".5",
-                renumber,
-                wants_outlines,
-                save_outlines,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             # Added "wants_inverted_mask"
             setting_values = setting_values + ["No"]
             variable_revision_number = 2
@@ -562,4 +525,4 @@ controls how remaining objects are associated with their predecessors:
         setting_values = list(setting_values)
         setting_values[5] = s_lookup(setting_values[5])
         setting_values[7] = s_lookup(setting_values[7])
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

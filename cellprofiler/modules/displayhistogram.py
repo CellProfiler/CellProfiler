@@ -218,7 +218,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # Add bins=100 to second position
@@ -233,4 +233,4 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             if setting_values[3] == "no":
                 setting_values[3] = "linear"
             variable_revision_number = 4
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

@@ -406,29 +406,9 @@ maximal brightness already occurring in the image.
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            # Order is
-            # image_name
-            # outline name
-            # max intensity
-            # output_image_name
-            # color
-            setting_values = [
-                "Yes"
-                if setting_values[0] == "Blank"
-                else "No",
-                setting_values[0],
-                setting_values[3],
-                WANTS_COLOR,
-                setting_values[2],
-                setting_values[1],
-                setting_values[4],
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added line width
             #
@@ -439,7 +419,7 @@ maximal brightness already occurring in the image.
             )
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added overlay image / objects choice
             #
@@ -452,7 +432,7 @@ maximal brightness already occurring in the image.
             setting_values = new_setting_values
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             new_setting_values = setting_values[: NUM_FIXED_SETTINGS_V3 - 1]
 
             new_setting_values += ["Inner"]
@@ -470,7 +450,7 @@ maximal brightness already occurring in the image.
 
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

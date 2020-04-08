@@ -1036,7 +1036,7 @@ example, to be saved by a **SaveImages** module).
                 group.validate_group()
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust setting values if they came from a previous revision
 
@@ -1049,161 +1049,8 @@ example, to be saved by a **SaveImages** module).
         module_name - the name of the module that did the saving. This can be
                       used to import the settings from another module if
                       that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
         """
-        if (
-            from_matlab
-            and module_name == "ClassifyObjectsByTwoMeasurements"
-            and variable_revision_number == 2
-        ):
-            category = [None, None]
-            feature_name = [None, None]
-            image_name = [None, None]
-            size_scale = [None, None]
-            separator = [None, None]
-            threshold = [None, None]
-            measurement = [None, None]
-            (
-                object_name,
-                category[0],
-                feature_name[0],
-                image_name[0],
-                size_scale[0],
-                category[1],
-                feature_name[1],
-                image_name[1],
-                size_scale[1],
-                separator[0],
-                separator[1],
-                labels,
-                save_colored_objects,
-            ) = setting_values
-            for i in range(2):
-                measurement[i] = category[i] + "_" + feature_name[i]
-                if len(image_name[i]) > 0:
-                    measurement[i] += "_" + image_name[i]
-                if len(size_scale[i]) > 0:
-                    measurement[i] += "_" + size_scale[i]
-                threshold[i] = ".5"
-                if separator[i] not in (TM_MEAN, TM_MEDIAN):
-                    threshold[i] = separator[i]
-                    separator[i] = TM_CUSTOM
-            split_labels = [x.strip() for x in labels.split(",")]
-            if len(split_labels) < 4:
-                split_labels += ["None"] * (4 - len(split_labels))
-            setting_values = [
-                BY_TWO_MEASUREMENTS,
-                "1",
-                "None",
-                "None",
-                BC_EVEN,
-                "1",
-                "No",
-                "No",
-                "0",
-                "1",
-                "0,1",
-                "No",
-                "First,Second,Third",
-                "No",
-                "ClassifiedNuclei",
-                object_name,
-                measurement[0],
-                separator[0],
-                threshold[0],
-                measurement[1],
-                separator[1],
-                threshold[1],
-                "No" if labels == "Do not use" else "Yes",
-                split_labels[0],
-                split_labels[1],
-                split_labels[2],
-                split_labels[3],
-                "No" if save_colored_objects == "Do not use" else "Yes",
-                save_colored_objects,
-            ]
-            from_matlab = False
-            module_name = self.module_name
-            variable_revision_number = 2
-        if (
-            from_matlab
-            and module_name == "ClassifyObjects"
-            and variable_revision_number == 8
-        ):
-            (
-                object_name,
-                category,
-                feature_name,
-                image_name,
-                size_scale,
-                bin_type,
-                bin_specifications,
-                labels,
-                save_colored_objects,
-            ) = setting_values
-            measurement = category + "_" + feature_name
-            if len(image_name) > 0:
-                measurement += "_" + image_name
-            if len(size_scale) > 0:
-                measurement += "_" + size_scale
-            bin_count = "1"
-            low_threshold = "0"
-            wants_low_bin = "No"
-            high_threshold = "1"
-            wants_high_bin = "No"
-            custom_bins = "0,1"
-            if bin_type == BC_EVEN:
-                pieces = bin_specifications.split(",")
-                bin_count = pieces[0]
-                if len(pieces) > 1:
-                    low_threshold = pieces[1]
-                if len(pieces) > 2:
-                    high_threshold = pieces[2]
-            else:
-                custom_bins = bin_specifications
-            wants_labels = "No" if labels == "Do not use" else "Yes"
-            setting_values = [
-                BY_SINGLE_MEASUREMENT,
-                "1",
-                object_name,
-                measurement,
-                bin_type,
-                bin_count,
-                low_threshold,
-                wants_low_bin,
-                high_threshold,
-                wants_high_bin,
-                custom_bins,
-                wants_labels,
-                labels,
-                "No" if save_colored_objects == "Do not use" else "Yes",
-                save_colored_objects,
-                object_name,
-                "None",
-                TM_MEAN,
-                ".5",
-                "None",
-                TM_MEAN,
-                ".5",
-                "No",
-                "LowLow",
-                "HighLow",
-                "LowHigh",
-                "HighHigh",
-                "No",
-                "ClassifiedNuclei",
-            ]
-            from_matlab = False
-            variable_revision_number = 2
-
         if variable_revision_number == 1:
-            assert not from_matlab
             # we modified this in the code but didn't want to bump the variable revision number.
             if BY_SINGLE_MEASUREMENT in setting_values[0]:
                 contrast_choice = BY_SINGLE_MEASUREMENT
@@ -1228,7 +1075,7 @@ example, to be saved by a **SaveImages** module).
             setting_values = new_setting_values
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         columns = []

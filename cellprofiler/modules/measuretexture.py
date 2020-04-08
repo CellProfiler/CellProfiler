@@ -703,7 +703,7 @@ measured and will result in a undefined value in the output file.
         return [statistics]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             #
@@ -763,7 +763,7 @@ measured and will result in a undefined value in the output file.
             setting_values = new_setting_values
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

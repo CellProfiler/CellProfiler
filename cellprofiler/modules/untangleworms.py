@@ -2940,13 +2940,13 @@ should be processed.
         return True
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # Added complexity
             setting_values = setting_values + [C_ALL, "400"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def read_params(training_set_directory, training_set_file_name, d):

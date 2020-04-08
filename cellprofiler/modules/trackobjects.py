@@ -3626,7 +3626,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
@@ -3663,4 +3663,4 @@ Enter a name to give the color-coded image of tracked labels.""",
             # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight
             variable_revision_number = 7
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number

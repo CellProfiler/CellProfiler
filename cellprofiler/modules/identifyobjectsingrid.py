@@ -469,7 +469,7 @@ depending on the method chosen.
                 axes.add_line(line)
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust setting values if they came from a previous revision
 
@@ -482,38 +482,8 @@ depending on the method chosen.
         module_name - the name of the module that did the saving. This can be
                       used to import the settings from another module if
                       that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
         """
-        if from_matlab and variable_revision_number == 2:
-            grid_name, new_object_name, shape, old_object_name, diameter, save_outlines, failed_grid_choice = (
-                setting_values
-            )
-            if diameter == AM_AUTOMATIC:
-                diameter = "40"
-                diameter_choice = AM_AUTOMATIC
-            else:
-                diameter_choice = AM_MANUAL
-            wants_outlines = "No" if save_outlines == "Do not use" else "Yes"
-            setting_values = [
-                grid_name,
-                new_object_name,
-                shape,
-                diameter_choice,
-                diameter,
-                old_object_name,
-                wants_outlines,
-                save_outlines,
-            ]
-            variable_revision_number = 1
-            from_matlab = False
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Change shape_choice names: Rectangle > Rectangle Forced Location, Natural Shape > Natural Shape and Location
             if setting_values[2] == "Rectangle":
                 setting_values[2] = SHAPE_RECTANGLE
@@ -525,7 +495,7 @@ depending on the method chosen.
             setting_values = setting_values[:-2]
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         """Column definitions for measurements made by IdentifyPrimaryObjects"""

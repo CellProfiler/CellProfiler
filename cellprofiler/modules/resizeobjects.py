@@ -3,6 +3,7 @@
 import numpy
 import scipy.ndimage
 
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
@@ -179,12 +180,12 @@ Enter the desired height of the final objects, in pixels.""",
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             setting_values += ["None"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def resize(data, size):

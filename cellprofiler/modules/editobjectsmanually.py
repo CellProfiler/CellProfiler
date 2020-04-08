@@ -543,34 +543,8 @@ supplied by a previous module.
         return measurements
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            object_name, filtered_object_name, outlines_name, renumber_or_retain = (
-                setting_values
-            )
-
-            if renumber_or_retain == "Renumber":
-                renumber_or_retain = R_RENUMBER
-            else:
-                renumber_or_retain = R_RETAIN
-
-            if outlines_name == "Do not use":
-                wants_outlines = "No"
-            else:
-                wants_outlines = "Yes"
-
-            setting_values = [
-                object_name,
-                filtered_object_name,
-                wants_outlines,
-                outlines_name,
-                renumber_or_retain,
-            ]
-            variable_revision_number = 1
-            from_matlab = False
-            module_name = self.module_name
-
         if variable_revision_number == 1:
             # Added wants image + image
             setting_values = setting_values + ["No", "None"]
@@ -586,4 +560,4 @@ supplied by a previous module.
             setting_values = setting_values[:2] + setting_values[4:]
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

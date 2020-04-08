@@ -666,36 +666,6 @@ module.""".format(
                 ]
         return cols
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
-        """Adjust the setting_values for older save file versions
-
-        setting_values - a list of strings representing the settings for
-                         this module.
-        variable_revision_number - the variable revision number of the module
-                                   that saved the settings
-        module_name - the name of the module that saved the settings
-        from_matlab - true if it was a Matlab module that saved the settings
-
-        returns the modified settings, revision number and "from_matlab" flag
-        """
-        if from_matlab and variable_revision_number == 2:
-            # Added Zernike question at revision # 2
-            setting_values = list(setting_values)
-            setting_values.append("No")
-            variable_revision_number = 3
-
-        if from_matlab and variable_revision_number == 3:
-            # Remove the "Do not use" objects from the list
-            setting_values = numpy.array(setting_values)
-            setting_values = list(
-                setting_values[setting_values != "Do not use"]
-            )
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
-
     def volumetric(self):
         return True
 

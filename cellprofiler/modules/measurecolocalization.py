@@ -1518,14 +1518,9 @@ Select the objects to be measured.""",
         return result
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting values for pipelines saved under old revisions"""
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MatLab pipelines."
-            )
-
         if variable_revision_number < 2:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3."
@@ -1539,7 +1534,7 @@ Select the objects to be measured.""",
             )
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

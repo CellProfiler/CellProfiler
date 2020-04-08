@@ -272,10 +272,10 @@ executed.
         self.run(workspace)
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting_values to upgrade from a previous version"""
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             if setting_values[0] == cpmeas.IMAGE:
                 # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title
                 new_setting_values = [
@@ -294,4 +294,4 @@ executed.
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

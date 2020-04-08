@@ -519,12 +519,8 @@ object at the requested scales.""",
         return result
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 1:
-            # Matlab and pyCP v1 are identical
-            from_matlab = False
-            variable_revision_number = 1
         if variable_revision_number == 1:
             # changed to use cps.SettingsGroup() but did not change the
             # ordering of any of the settings
@@ -540,7 +536,7 @@ object at the requested scales.""",
                 setting_values = setting_values[IMAGE_SETTING_COUNT_V2:]
             setting_values = new_setting_values
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

@@ -1043,13 +1043,8 @@ Often a good choice is some multiple of the largest expected object size.
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MatLab pipelines."
-            )
-
         if variable_revision_number < 7:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3.0."
@@ -1089,7 +1084,7 @@ Often a good choice is some multiple of the largest expected object size.
             else:
                 setting_values += [centrosome.threshold.TM_OTSU]
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number
 
     def upgrade_threshold_settings(self, setting_values):
         """Upgrade the threshold settings to the current version

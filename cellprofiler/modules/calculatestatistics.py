@@ -561,29 +561,13 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
 
         PC_DEFAULT = "Default output folder"
         PC_WITH_IMAGE = "Same folder as image"
 
-        if from_matlab and variable_revision_number == 3:
-            data_name = setting_values[0]
-            logarithmic = setting_values[1]
-            figure_name = setting_values[2]
-            wants_save_figure = "No" if figure_name == "Do not use" else "Yes"
-            setting_values = [
-                data_name,
-                data_name,
-                logarithmic,
-                wants_save_figure,
-                figure_name,
-                PC_DEFAULT,
-                "Do not use",
-            ]
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             #
             # Minor change: Default output directory -> folder
             #
@@ -614,7 +598,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 setting_values[offset]
             )
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 ########################################################

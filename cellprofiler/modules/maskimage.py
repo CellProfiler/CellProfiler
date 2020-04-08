@@ -229,16 +229,12 @@ This option reverses the foreground/background relationship of the mask.
             )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting_values to upgrade from a previous version
 
         """
-        if from_matlab and variable_revision_number == 3:
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added ability to select an image
             #
@@ -248,7 +244,7 @@ This option reverses the foreground/background relationship of the mask.
             ]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Reordering setting values so the settings order and Help makes sense
             setting_values = [
                 setting_values[1],  # Input image name
@@ -260,7 +256,7 @@ This option reverses the foreground/background relationship of the mask.
             ]  # Invert image?
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

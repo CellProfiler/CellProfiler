@@ -1631,44 +1631,17 @@ safe to press it.""",
         return False
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
 
         dir_default_image = "Default input folder"
         dir_default_output = "Default Output Folder"
 
-        if from_matlab and variable_revision_number == 2:
-            logging.warning(
-                "Warning: the format and purpose of LoadText "
-                "has changed substantially."
-            )
-            text_file_name = setting_values[0]
-            field_name = setting_values[1]
-            path_name = setting_values[2]
-            if path_name == ".":
-                path_choice = dir_default_image
-            elif path_name == "&":
-                path_choice = dir_default_output
-            else:
-                path_choice = DIR_OTHER
-            setting_values = [
-                path_choice,
-                path_name,
-                text_file_name,
-                "No",
-                dir_default_image,
-                ".",
-                "No",
-                "1,100000",
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-            module_name = self.module_name
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             setting_values = setting_values + ["No", ""]
             variable_revision_number = 2
 
-        if variable_revision_number == 2 and (not from_matlab):
+        if variable_revision_number == 2:
             if setting_values[0].startswith("Default Image"):
                 setting_values = [dir_default_image] + setting_values[1:]
             elif setting_values[0].startswith("Default Output"):
@@ -1682,10 +1655,10 @@ safe to press it.""",
                     setting_values[:4] + [dir_default_output] + setting_values[5:]
                 )
             variable_revision_number = 3
-        if variable_revision_number == 3 and (not from_matlab):
+        if variable_revision_number == 3:
             module_name = self.module_name
 
-        if variable_revision_number == 3 and (not from_matlab):
+        if variable_revision_number == 3:
             # directory choice, custom directory merged
             # input_directory_choice, custom_input_directory merged
             csv_directory_choice, csv_custom_directory, csv_file_name, wants_images, image_directory_choice, image_custom_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
@@ -1716,14 +1689,14 @@ safe to press it.""",
                 setting_values[index]
             )
 
-        if variable_revision_number == 4 and (not from_matlab):
+        if variable_revision_number == 4:
             csv_directory, csv_file_name, wants_images, image_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
                 setting_values
             )
             dir_choice, custom_dir = cellprofiler_core.setting.DirectoryPath.split_string(
                 csv_directory
             )
-            if dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
+            if dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
                 csv_file_name = custom_dir + "/" + csv_file_name
                 csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
                     dir_choice, ""
@@ -1739,11 +1712,11 @@ safe to press it.""",
                 metadata_fields,
             ]
             variable_revision_number = 5
-        if variable_revision_number == 5 and (not from_matlab):
+        if variable_revision_number == 5:
             # Added rescaling option
             setting_values = setting_values + ["Yes"]
             variable_revision_number = 6
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 LoadText = LoadData

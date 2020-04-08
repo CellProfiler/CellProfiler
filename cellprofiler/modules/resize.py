@@ -469,37 +469,22 @@ resized with the same settings as the first image.""",
                 )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 1:
-            width, height = setting_values[3].split(",")
-            size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE
-            setting_values = [
-                setting_values[0],  # image name
-                setting_values[1],  # resized image name
-                size_method,
-                setting_values[2],  # resizing factor
-                width,
-                height,
-                setting_values[4],
-            ]  # interpolation method
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             if setting_values[2] == "Resize by a factor of the original size":
                 setting_values[2] = R_BY_FACTOR
             if setting_values[2] == "Resize to a size in pixels":
                 setting_values[2] = R_TO_SIZE
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Add additional images to be resized similarly, but if you only had 1,
             # the order didn't change
             setting_values = setting_values + ["0"]
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Add resizing to another image size
             setting_values = (
                 setting_values[:7]
@@ -508,4 +493,4 @@ resized with the same settings as the first image.""",
             )
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

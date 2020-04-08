@@ -635,32 +635,10 @@ input for a measurement module."""
             return pixel_data
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting_values of previous revisions to match this one"""
-        if from_matlab and variable_revision_number in (1, 2):
-            # Settings:
-            # image name
-            # resulting image name
-            # (function, count) repeated 6 times
-            new_setting_values = [setting_values[0], setting_values[1]]
-            for i in range(6):
-                if setting_values[i * 2 + 2] != "Do not use":
-                    new_setting_values.append(setting_values[i * 2 + 2])
-                    if (
-                        setting_values[i * 2 + 3].isdigit()
-                        and int(setting_values[i * 2 + 3]) == 1
-                    ):
-                        new_setting_values += [R_ONCE, "1"]
-                    elif setting_values[i * 2 + 3].lower() == "inf":
-                        new_setting_values += [R_FOREVER, "2"]
-                    else:
-                        new_setting_values += [R_CUSTOM, setting_values[i * 2 + 3]]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V1):
                 new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V1]
@@ -668,7 +646,7 @@ input for a measurement module."""
             setting_values = new_setting_values
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V2):
                 new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V2]
@@ -676,7 +654,7 @@ input for a measurement module."""
             setting_values = new_setting_values
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V3):
                 new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V3]
@@ -710,7 +688,7 @@ input for a measurement module."""
 
             variable_revision_number = 6
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class MorphSettingsGroup(cps.SettingsGroup):

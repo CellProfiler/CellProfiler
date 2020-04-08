@@ -587,7 +587,7 @@ Select the measurement value to use as the divisor for the final image.
         return src_min, src_max
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             #
@@ -613,4 +613,4 @@ Select the measurement value to use as the divisor for the final image.
 
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number

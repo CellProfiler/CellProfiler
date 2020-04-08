@@ -805,7 +805,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
         ]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # no object choice before rev 2
@@ -856,7 +856,7 @@ Please update your pipeline to use MeasureObjectOverlap to compute object measur
             setting_values = setting_values[1:]
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

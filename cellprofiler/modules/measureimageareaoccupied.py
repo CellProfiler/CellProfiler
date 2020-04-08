@@ -463,17 +463,8 @@ like to measure the area occupied by the foreground in the image.
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "The MeasureImageAreaOccupied module has changed substantially. \n"
-                "You should use this module by either:\n"
-                "(1) Thresholding your image using an Identify module\n"
-                "and then measure the resulting objects' area; or\n"
-                "(2) Create a binary image with Threshold and then measure the\n"
-                "resulting foreground image area."
-            )
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but
             # the settings for v1 miraculously map to v2
@@ -517,7 +508,7 @@ like to measure the area occupied by the foreground in the image.
 
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

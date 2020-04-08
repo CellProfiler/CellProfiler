@@ -861,65 +861,9 @@ image is not flagged.
         ]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and (
-            variable_revision_number == 1 or variable_revision_number == 2
-        ):
-
-            if variable_revision_number == 1:
-                image_name, category, feature_num_or_name, min_value, max_value, new_or_append, new_name, old_name = (
-                    setting_values
-                )
-                measurement_name = "_".join((category, feature_num_or_name, image_name))
-            elif variable_revision_number == 2:
-                image_name, category, feature_num_or_name, scale, min_value, max_value, new_or_append, new_name, old_name = (
-                    setting_values
-                )
-
-                measurement_name = "_".join(
-                    (category, feature_num_or_name, image_name, scale)
-                )
-            if min_value == "No minimum":
-                wants_minimum = "No"
-                min_value = "0"
-            else:
-                wants_minimum = "Yes"
-            if max_value == "No maximum":
-                wants_maximum = "No"
-                max_value = "1"
-            else:
-                wants_maximum = "Yes"
-            if new_or_append == "Append existing flag":
-                logger.warning(
-                    "CellProfiler 3 can't combine flags from multiple FlagImageForQC modules imported from version 1.0 and 2.0"
-                )
-
-            new_name_split = new_name.find("_")
-            if new_name_split == -1:
-                flag_category = "Metadata"
-                flag_feature = new_name
-            else:
-                flag_category = new_name[:new_name_split]
-                flag_feature = new_name[new_name_split + 1 :]
-            setting_values = [
-                "1",  # of flags in module
-                "1",  # of measurements in the flag
-                flag_category,
-                flag_feature,
-                C_ANY,  # combination choice
-                S_IMAGE,  # measurement source
-                "None",  # object name
-                measurement_name,
-                wants_minimum,
-                min_value,
-                wants_maximum,
-                max_value,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             new_setting_values = [setting_values[0]]
             idx = 1
             for flag_idx in range(int(setting_values[0])):
@@ -943,7 +887,7 @@ image is not flagged.
             setting_values = new_setting_values
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added rules
             new_setting_values = [setting_values[0]]
             idx = 1
@@ -969,7 +913,7 @@ image is not flagged.
 
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Added rules_class
             new_setting_values = setting_values[:1]
             idx = 1
@@ -988,4 +932,4 @@ image is not flagged.
             setting_values = new_setting_values
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

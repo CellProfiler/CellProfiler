@@ -617,13 +617,8 @@ above):
         return new_labels
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MATLAB pipelines."
-            )
-
         if variable_revision_number == 1:
             # Added outline options
             setting_values += ["No", "RelabeledNucleiOutlines"]
@@ -649,7 +644,7 @@ above):
 
             variable_revision_number = 6
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number
 
     def get_image(self, workspace):
         """Get the image for image-directed merging"""

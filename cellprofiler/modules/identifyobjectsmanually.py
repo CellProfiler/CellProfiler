@@ -154,23 +154,14 @@ refer to your objects in subsequent modules.""",
             return dialog_box.labels[0]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            image_name, object_name, max_resolution, save_outlines = setting_values
-            wants_outlines = (
-                "Yes" if save_outlines.lower() == "Do not use".lower() else "No"
-            )
-            setting_values = [image_name, object_name, wants_outlines, save_outlines]
-            variable_revision_number = 1
-            from_matlab = False
-
         if variable_revision_number == 1:
             setting_values = setting_values[:-2]
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         """Return database info on measurements made in module

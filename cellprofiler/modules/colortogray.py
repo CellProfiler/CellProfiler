@@ -643,30 +643,9 @@ Select the name of the output grayscale image.""",
             self.add_channel()
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 1:
-            new_setting_values = [
-                setting_values[0],  # image name
-                setting_values[1],  # combine or split
-                # blank slot for text: "Combine options"
-                setting_values[3],  # grayscale name
-                setting_values[4],  # red contribution
-                setting_values[5],  # green contribution
-                setting_values[6]  # blue contribution
-                # blank slot for text: "Split options"
-            ]
-            for i in range(3):
-                vv = setting_values[i + 8]
-                use_it = ((vv == "Do not use" or vv == "N") and "No") or "Yes"
-                new_setting_values.append(use_it)
-                new_setting_values.append(vv)
-            setting_values = new_setting_values
-            module_name = self.module_class()
-            variable_revision_number = 1
-            from_matlab = False
-
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added rgb_or_channels at position # 2, added channel count
             # at end.
@@ -679,7 +658,7 @@ Select the name of the output grayscale image.""",
             )
             variable_revision_number = 2
 
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added HSV settings
             #
@@ -702,4 +681,4 @@ Select the name of the output grayscale image.""",
                 setting_values[idx] = channel_idx + 1
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

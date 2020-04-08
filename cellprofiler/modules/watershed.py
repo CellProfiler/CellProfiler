@@ -300,7 +300,7 @@ the image is not downsampled.
             workspace.display_data.dimensions = dimensions
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
 
         if variable_revision_number == 1:
@@ -318,4 +318,4 @@ the image is not downsampled.
         else:
             __settings__ = setting_values
 
-        return __settings__, variable_revision_number, from_matlab
+        return __settings__, variable_revision_number

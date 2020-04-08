@@ -454,46 +454,9 @@ but the results will be zero or not-a-number (NaN).
         return columns
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        """Adjust the setting values to make old pipelines compatible with new
-
-        This function allows the caller to adjust the setting_values
-        (which are the text representation of the values of the settings)
-        based on the variable_revision_number, the name of the module
-        used to save the values (if two modules' functions were merged)
-        and whether the values were saved by the Matlab or Python version
-        of the module.
-
-        setting_values - a list of string setting values in the order
-                         specified by the "settings" function
-        variable_revision_number - the variable revision number at the time
-                                   of saving
-        module_name - the name of the module that did the saving
-        from_matlab - True if the matlab version of the module did the saving,
-                      False if a Python module did the saving
-
-        returns the modified setting_values, the corrected
-                variable_revision_number and the corrected from_matlab flag
-        """
-
-        if from_matlab and variable_revision_number == 1:
-            new_setting_values = list(setting_values)
-            #
-            # if the Matlab outlines name was "Do not use", turn
-            # use_outlines off, otherwise turn it on
-            #
-            if new_setting_values[3] == "Do not use":
-                # The text value, "No", sets use_outlines to False
-                new_setting_values.append("No")
-            else:
-                # The text value, "Yes", sets use_outlines to True
-                new_setting_values.append("Yes")
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             setting_values = setting_values + ["Yes"]
             variable_revision_number = 2
 
@@ -502,7 +465,7 @@ but the results will be zero or not-a-number (NaN).
 
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces

@@ -328,6 +328,12 @@ the images in any of three ways:
    values) of information; you will be prompted to specify the location
    of the CSV file. You can create such a file using a spreadsheet
    program such as Microsoft Excel.
+   
+   Please make sure your metadata file header does not contain parentheses
+   or spaces.
+   In general, avoid having spaces in your metadata file as it could cause 
+   errors in later analysis steps. You can remove spaces using a spreadsheet
+   program such as Microsoft Excel and using Find and Replace function.   
 
    |image1|  *When would you want to
    use this option?* You have information curated in software that

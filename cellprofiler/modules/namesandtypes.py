@@ -704,6 +704,9 @@ Enter the name that you want to call this image.
 After this point, this image will be referred to by this
 name, and can be selected from any drop-down menu that
 requests an image selection.
+
+Names must start with a letter or underbar ("_") followed
+by ASCII letters, underbars or digits.
 """,
             ),
         )

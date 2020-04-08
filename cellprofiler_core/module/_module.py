@@ -177,8 +177,8 @@ class Module:
         """
 
         setting_values, variable_revision_number = self.upgrade_settings(setting_values,
-                                                                                      variable_revision_number,
-                                                                                      module_name)
+                                                                         int(variable_revision_number),
+                                                                         module_name)
         self.prepare_settings(setting_values)
         for v, value in zip(self.settings(), setting_values):
             v.value = value

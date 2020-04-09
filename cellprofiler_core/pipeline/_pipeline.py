@@ -505,9 +505,12 @@ class Pipeline:
         array = numpy.array
         uint8 = numpy.uint8
         for a in attribute_strings:
+            a = a.encode('utf-8').decode('unicode_escape')
             if len(a.split(":")) != 2:
                 raise ValueError("Invalid attribute string: %s" % a)
             attribute, value = a.split(":")
+            # FIXME: This is naughty
+            value = eval(value)
             if attribute in skip_attributes:
                 continue
             # En/decode needed to read example cppipe format

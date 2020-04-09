@@ -661,12 +661,15 @@ class PipelineListView(object):
         if event.EventObject is not self.list_ctrl:
             event.Veto()
             return
-        modules_to_save = [m.module_num for m in self.get_selected_modules()]
+        modules_to_save = self.get_selected_modules()
         if len(modules_to_save) == 0:
             event.Veto()
             return
         fd = six.moves.StringIO()
-        self.__pipeline.savetxt(fd, modules_to_save, save_image_plane_details=False)
+        temp_pipeline = cellprofiler_core.pipeline.Pipeline()
+        for module in modules_to_save:
+            temp_pipeline.add_module(module)
+        cellprofiler_core.pipeline.io.dump(temp_pipeline, fd, save_image_plane_details=False, version=5)
         pipeline_data_object = PipelineDataObject()
         pipeline_data_object.SetData(fd.getvalue().encode())
 

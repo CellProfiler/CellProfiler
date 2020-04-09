@@ -62,7 +62,7 @@ setuptools.setup(
         "inflect>=2.1",
         "joblib>=0.13",
         "mahotas>=1.4",
-        "matplotlib>=3.2.1",
+        "matplotlib==3.1.3",
         "mysqlclient==1.4.5",
         "numpy>=1.18.2",
         "prokaryote==2.4.1",

@@ -145,7 +145,7 @@ import random
 import zmq
 import traceback
 from weakref import WeakSet
-import six.moves
+import io
 
 import cellprofiler_core.workspace as cpw
 import cellprofiler_core.measurement as cpmeas
@@ -370,9 +370,10 @@ class AnalysisWorker(object):
                 logger.debug("Loading pipeline")
 
                 current_pipeline = cpp.Pipeline()
-
+                pipeline_chunks = rep.pipeline_blob.tolist()
+                pipeline_io = io.StringIO("".join(pipeline_chunks))
                 current_pipeline.loadtxt(
-                    six.moves.StringIO(rep.pipeline_blob), raise_on_error=True
+                    pipeline_io, raise_on_error=True
                 )
 
                 logger.debug("Pipeline loaded")

@@ -145,7 +145,7 @@ import random
 import zmq
 import traceback
 from weakref import WeakSet
-import six.moves
+import io
 
 import cellprofiler_core.workspace as cpw
 import cellprofiler_core.measurement as cpmeas
@@ -182,14 +182,14 @@ np.seterr(all="ignore")
 # close them on exit.
 all_measurements = WeakSet()
 
-DEADMAN_START_ADDR = "inproc://deadmanstart"
-DEADMAN_START_MSG = "STARTED"
-NOTIFY_ADDR = "inproc://notify"
-NOTIFY_STOP = "STOP"
+DEADMAN_START_ADDR = b"inproc://deadmanstart"
+DEADMAN_START_MSG = b"STARTED"
+NOTIFY_ADDR = b"inproc://notify"
+NOTIFY_STOP = b"STOP"
 
-ED_STOP = "Stop"
-ED_CONTINUE = "Continue"
-ED_SKIP = "Skip"
+ED_STOP = b"Stop"
+ED_CONTINUE = b"Continue"
+ED_SKIP = b"Skip"
 
 the_zmq_context = zmq.Context.instance()
 
@@ -302,7 +302,7 @@ class AnalysisWorker(object):
         if not cpprefs.get_awt_headless():
             J.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
-        self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
+        self.notify_socket.setsockopt(zmq.SUBSCRIBE, b"")
         self.notify_socket.connect(NOTIFY_ADDR)
 
     def exit_thread(self):
@@ -330,7 +330,8 @@ class AnalysisWorker(object):
                     self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
                     # fetch a job
-                    job = self.send(WorkRequest(self.current_analysis_id))
+                    the_request = WorkRequest(self.current_analysis_id)
+                    job = self.send(the_request)
 
                     if isinstance(job, NoWorkReply):
                         time.sleep(0.25)  # avoid hammering server
@@ -369,9 +370,10 @@ class AnalysisWorker(object):
                 logger.debug("Loading pipeline")
 
                 current_pipeline = cpp.Pipeline()
-
+                pipeline_chunks = rep.pipeline_blob.tolist()
+                pipeline_io = io.StringIO("".join(pipeline_chunks))
                 current_pipeline.loadtxt(
-                    six.moves.StringIO(rep.pipeline_blob), raise_on_error=True
+                    pipeline_io, raise_on_error=True
                 )
 
                 logger.debug("Pipeline loaded")
@@ -668,7 +670,7 @@ class AnalysisWorker(object):
         poller = zmq.Poller()
         poller.register(self.notify_socket, zmq.POLLIN)
         announce_socket = the_zmq_context.socket(zmq.SUB)
-        announce_socket.setsockopt(zmq.SUBSCRIBE, "")
+        announce_socket.setsockopt(zmq.SUBSCRIBE, b"")
         announce_socket.connect(self.work_announce_address)
         try:
             poller.register(announce_socket, zmq.POLLIN)

@@ -201,11 +201,11 @@ class Communicable(object):
         if hasattr(self, "_remote"):
             assert not self._remote, "send() called on a non-local Communicable object."
         json_str, buffers = json_encode(self.__dict__)
-
+        json_str = json_str.encode('utf-8')
+        message_parts = routing + [self.__class__.__module__.encode('utf-8'), self.__class__.__name__.encode('utf-8')] + [
+            json_str]
         socket.send_multipart(
-            routing
-            + [self.__class__.__module__, self.__class__.__name__]
-            + [json_str]
+            message_parts
             + buffers,
             copy=False,
         )
@@ -216,13 +216,15 @@ class Communicable(object):
     @classmethod
     def recv(cls, socket, routed=False):
         message = socket.recv_multipart()
-        if routed:
-            split = message.index("") + 1
+\        if routed:
+            split = message.index(b"") + 1
             routing = message[:split]
             message = message[split:]
         else:
             routing = []
         module, classname = message[:2]
+        module = module.decode('unicode_escape')
+        classname = classname.decode('unicode_escape')
         buffers = message[3:]
         attribute_dict = json_decode(message[2], buffers)
         try:

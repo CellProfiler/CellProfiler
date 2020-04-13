@@ -302,7 +302,7 @@ class AnalysisWorker(object):
         if not cpprefs.get_awt_headless():
             J.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
-        self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
+        self.notify_socket.setsockopt(zmq.SUBSCRIBE, b"")
         self.notify_socket.connect(NOTIFY_ADDR)
 
     def exit_thread(self):
@@ -330,7 +330,8 @@ class AnalysisWorker(object):
                     self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
                     # fetch a job
-                    job = self.send(WorkRequest(self.current_analysis_id))
+                    the_request = WorkRequest(self.current_analysis_id)
+                    job = self.send(the_request)
 
                     if isinstance(job, NoWorkReply):
                         time.sleep(0.25)  # avoid hammering server
@@ -668,7 +669,7 @@ class AnalysisWorker(object):
         poller = zmq.Poller()
         poller.register(self.notify_socket, zmq.POLLIN)
         announce_socket = the_zmq_context.socket(zmq.SUB)
-        announce_socket.setsockopt(zmq.SUBSCRIBE, "")
+        announce_socket.setsockopt(zmq.SUBSCRIBE, b"")
         announce_socket.connect(self.work_announce_address)
         try:
             poller.register(announce_socket, zmq.POLLIN)

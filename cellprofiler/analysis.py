@@ -780,7 +780,7 @@ class AnalysisRunner:
 
     def pipeline_as_string(self):
         s = six.moves.StringIO()
-        self.pipeline.savetxt(s)
+        cellprofiler_core.pipeline.dump(self.pipeline, s, version=5)
         return s.getvalue()
 
     # Class methods for managing the worker pool

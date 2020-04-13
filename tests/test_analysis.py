@@ -298,7 +298,6 @@ class TestAnalysis(unittest.TestCase):
                 self.assertEqual(result.module_num, module.module_num)
 
     def test_01_01_start_and_stop(self):
-
         logger.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )

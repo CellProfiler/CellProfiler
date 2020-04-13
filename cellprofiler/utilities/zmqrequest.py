@@ -216,7 +216,7 @@ class Communicable(object):
     @classmethod
     def recv(cls, socket, routed=False):
         message = socket.recv_multipart()
-\        if routed:
+        if routed:
             split = message.index(b"") + 1
             routing = message[:split]
             message = message[split:]

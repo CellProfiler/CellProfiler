@@ -527,7 +527,7 @@ class Boundary(object):
         # socket for handling downward notifications
         self.selfnotify_socket = self.zmq_context.socket(zmq.SUB)
         self.selfnotify_socket.bind(NOTIFY_SOCKET_ADDR)
-        self.selfnotify_socket.setsockopt(zmq.SUBSCRIBE, "")
+        self.selfnotify_socket.setsockopt(zmq.SUBSCRIBE, b"")
         self.threadlocal = (
             threading.local()
         )  # for connecting to notification socket, and receiving replies
@@ -788,7 +788,7 @@ class Boundary(object):
             self.threadlocal.notify_socket.setsockopt(zmq.LINGER, 0)
             self.threadlocal.notify_socket.connect(NOTIFY_SOCKET_ADDR)
         self.downward_queue.put((msg, arg))
-        self.threadlocal.notify_socket.send("WAKE UP!")
+        self.threadlocal.notify_socket.send(b"WAKE UP!")
 
     def announce_analyses(self):
         with self.analysis_dictionary_lock:

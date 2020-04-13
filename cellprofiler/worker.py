@@ -182,14 +182,14 @@ np.seterr(all="ignore")
 # close them on exit.
 all_measurements = WeakSet()
 
-DEADMAN_START_ADDR = "inproc://deadmanstart"
-DEADMAN_START_MSG = "STARTED"
-NOTIFY_ADDR = "inproc://notify"
-NOTIFY_STOP = "STOP"
+DEADMAN_START_ADDR = b"inproc://deadmanstart"
+DEADMAN_START_MSG = b"STARTED"
+NOTIFY_ADDR = b"inproc://notify"
+NOTIFY_STOP = b"STOP"
 
-ED_STOP = "Stop"
-ED_CONTINUE = "Continue"
-ED_SKIP = "Skip"
+ED_STOP = b"Stop"
+ED_CONTINUE = b"Continue"
+ED_SKIP = b"Skip"
 
 the_zmq_context = zmq.Context.instance()
 

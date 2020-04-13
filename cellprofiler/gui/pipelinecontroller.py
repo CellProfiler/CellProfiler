@@ -2807,7 +2807,7 @@ class PipelineController(object):
                 self.__pipeline.test_valid()
             except cellprofiler_core.setting.ValidationError as v:
                 ok = False
-                reason = v.message
+                reason = v
         if not ok:
             if (
                 wx.MessageBox(

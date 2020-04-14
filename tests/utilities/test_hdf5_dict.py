@@ -367,29 +367,15 @@ class TestHDF5FileList(unittest.TestCase):
         os.remove(self.temp_filename_empty)
 
     def test_01_01_encode_alphanumeric(self):
-        r = np.random.RandomState()
-        r.seed(101)
-        s = r.permutation(
-            np.frombuffer(
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1"
-            )
-        ).tostring()
+        s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%="
         self.assertEqual(s, E(s))
 
     def test_01_02_decode_alphanumeric(self):
-        r = np.random.RandomState()
-        r.seed(102)
-        s = r.permutation(
-            np.frombuffer(
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1"
-            )
-        ).tostring()
+        s = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%="
         self.assertEqual(s, D(s))
 
     def test_01_03_decode_of_encode_is_same(self):
-        r = np.random.RandomState()
-        r.seed(103)
-        s = r.permutation(np.array([chr(x) for x in range(32, 127)])).tostring()
+        s = ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
         self.assertEqual(s, D(E(s)))
 
     def test_02_01_get_new_filelist_group(self):

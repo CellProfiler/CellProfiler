@@ -2165,7 +2165,7 @@ class VStringArray(object):
             if self.data.shape[0] < end:
                 self.data.resize(end, 0)
             if begin != end:
-                self.data[begin:end] = numpy.frombuffer(value, "S1")
+                self.data[begin:end] = [c.encode('utf-8') for c in value]
 
     def __getitem__(self, idx):
         """Retrieve a single string through the indexing interface.

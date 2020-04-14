@@ -554,6 +554,8 @@ class HDF5Dict(object):
         assert not numpy.isscalar(idxs[2]) or self.__is_positive_int(
             idxs[2]
         ), "Third index must be a non-negative integer"
+        if isinstance(vals[0], six.string_types) and len(vals) == 1:
+            vals = [c.encode('utf-8') for c in vals[0]]
 
         object_name, feature_name, num_idx = idxs[:3]
 

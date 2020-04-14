@@ -5,6 +5,7 @@ import logging
 import os
 import os.path
 import re
+import sys
 import tempfile
 
 import cellprofiler_core.preferences
@@ -273,6 +274,24 @@ def load_measurements(
     else:
         #FIXME - add clearer exception
         pass
+
+
+def load_measurements_from_buffer(buf):
+    dirtgt = cellprofiler_core.preferences.get_default_output_directory()
+    if not (os.path.exists(dirtgt) and os.access(dirtgt, os.W_OK)):
+        dirtgt = None
+    fd, filename = tempfile.mkstemp(prefix="Cpmeasurements", suffix=".hdf5", dir=dirtgt)
+    if sys.platform.startswith("win"):
+        # Change file descriptor mode to binary
+        import msvcrt
+
+        msvcrt.setmode(fd, os.O_BINARY)
+    os.write(fd, buf)
+    os.close(fd)
+    try:
+        return load_measurements(filename)
+    finally:
+        os.unlink(filename)
 
 
 def find_metadata_tokens(pattern):

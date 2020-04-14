@@ -381,7 +381,8 @@ class HDF5Dict(object):
         # invalid HDF if the file is flushed once then read, but with two calls
         # to flush() it works.  h5py version 2.1.0, hdf version 1.8.9
         self.hdf5_file.flush()
-        self.hdf5_file.flush()
+        # FIXME: Allen says "wtf"
+        # self.hdf5_file.flush()
 
     def file_contents(self):
         with self.lock:

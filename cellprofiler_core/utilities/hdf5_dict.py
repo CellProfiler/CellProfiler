@@ -2239,6 +2239,7 @@ class VStringArray(object):
                 self.index[:, :] = index
             for s, (begin, end) in zip(strings, index):
                 if begin < end:
+                    s = s.encode('utf-8')
                     self.data[begin:end] = numpy.frombuffer(s, "S1")
 
     def sort(self):

@@ -169,6 +169,7 @@ from cellprofiler.analysis import (
     UpstreamExit,
     OmeroLoginRequest,
 )
+from cellprofiler_core.pipeline import CancelledException
 import javabridge as J
 
 #

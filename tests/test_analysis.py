@@ -151,7 +151,7 @@ class TestAnalysis(unittest.TestCase):
 
         def listen_for_announcements(self, work_announce_address):
             self.queue.put((self.do_listen_for_announcements, work_announce_address))
-            self.notify_socket.send("Listen for announcements")
+            self.notify_socket.send(b"Listen for announcements")
             return self.recv
 
         def do_listen_for_announcements(self, work_announce_address):

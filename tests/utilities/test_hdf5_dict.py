@@ -1154,7 +1154,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(self.hdf_file["index"].shape[0], 1)
         self.assertEqual(self.hdf_file["index"][0, 0], 0)
         self.assertEqual(self.hdf_file["index"][0, 1], 3)
-        self.assertEqual(self.hdf_file["data"][:].tostring(), "foo")
+        self.assertEqual(self.hdf_file["data"][:].tostring().decode('utf-8'), "foo")
 
     def test_02_02_set_none(self):
         a = H5DICT.VStringArray(self.hdf_file)
@@ -1171,8 +1171,8 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(self.hdf_file["index"][0, 1] - self.hdf_file["index"][0, 0], 2)
         self.assertEqual(
             self.hdf_file["data"][
-                self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
-            ].tostring(),
+                self.hdf_file["index"][0, 0]: self.hdf_file["index"][0, 1]
+            ].tostring().decode('utf-8'),
             "hu",
         )
 
@@ -1185,7 +1185,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
-            ].tostring(),
+            ].tostring().decode('utf-8'),
             "whoops",
         )
 

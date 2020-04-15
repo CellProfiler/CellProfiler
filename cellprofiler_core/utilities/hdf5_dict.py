@@ -1327,9 +1327,11 @@ class HDF5FileList(object):
         g - an hdf5 object which may be a group marked as a file list group
         """
         return (
-                isinstance(g, h5py.Group)
-                and A_CLASS in g.attrs
-                and cellprofiler_core.utilities.legacy.equals(g.attrs[A_CLASS], CLASS_DIRECTORY)
+            isinstance(g, h5py.Group)
+            and A_CLASS in g.attrs
+            and cellprofiler_core.utilities.legacy.equals(
+                g.attrs[A_CLASS], CLASS_DIRECTORY
+            )
         )
 
     def get_filelist(self, root_url=None):
@@ -2070,12 +2072,12 @@ class VStringArray(object):
     @staticmethod
     def has_vstring_array(group):
         return (
-                ("index" in group)
-                and cellprofiler_core.utilities.legacy.equals(
+            ("index" in group)
+            and cellprofiler_core.utilities.legacy.equals(
                 group["index"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_INDEX
             )
-                and ("data" in group)
-                and cellprofiler_core.utilities.legacy.equals(
+            and ("data" in group)
+            and cellprofiler_core.utilities.legacy.equals(
                 group["data"].attrs[A_CLASS], CLASS_VSTRING_ARRAY_DATA
             )
         )
@@ -2146,7 +2148,7 @@ class VStringArray(object):
             elif isinstance(value, six.text_type):
                 value = value
             else:
-                value = value.decode('utf-8')
+                value = value.decode("utf-8")
             if idx >= self.index.shape[0]:
                 self.index.resize(idx + 1, 0)
                 begin = self.data.shape[0]
@@ -2166,7 +2168,7 @@ class VStringArray(object):
             if self.data.shape[0] < end:
                 self.data.resize(end, 0)
             if begin != end:
-                self.data[begin:end] = [c.encode('utf-8') for c in value]
+                self.data[begin:end] = [c.encode("utf-8") for c in value]
 
     def __getitem__(self, idx):
         """Retrieve a single string through the indexing interface.
@@ -2239,7 +2241,7 @@ class VStringArray(object):
                 self.index[:, :] = index
             for s, (begin, end) in zip(strings, index):
                 if begin < end:
-                    s = s.encode('utf-8')
+                    s = s.encode("utf-8")
                     self.data[begin:end] = numpy.frombuffer(s, "S1")
 
     def sort(self):
@@ -2275,11 +2277,13 @@ class VStringArray(object):
                     dj = self.data[(j0 + idx) : (j0 + idx_end)]
                     diff = numpy.argwhere(di != dj).flatten()
                     if len(diff) > 0:
-                        return cellprofiler_core.utilities.legacy.cmp(di[diff[0]], dj[diff[0]])
+                        return cellprofiler_core.utilities.legacy.cmp(
+                            di[diff[0]], dj[diff[0]]
+                        )
                 return cellprofiler_core.utilities.legacy.cmp(li, lj)
 
             order = list(range(len(self)))
-            order.sort(cmp=compare)
+            order.sort(key=functools.cmp_to_key(compare))
             self.index = index[order, :]
             return order
 

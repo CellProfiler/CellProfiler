@@ -70,6 +70,7 @@ import cellprofiler_core.image as cpi
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
 import cellprofiler_core.object as cpo
+import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting as cps
 from cellprofiler_core.measurement import (
     C_LOCATION,
@@ -354,7 +355,7 @@ pipeline.
     def visible_settings(self):
         result = [self.directory]
         for file_setting in self.file_settings:
-            url_based = self.directory.dir_choice == cps.URL_FOLDER_NAME
+            url_based = self.directory.dir_choice == cpprefs.URL_FOLDER_NAME
             file_setting.file_name.set_browsable(not url_based)
             file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
             result += [file_setting.file_name, file_setting.image_objects_choice]
@@ -877,17 +878,17 @@ pipeline.
         #
         if variable_revision_number == 1:
             if setting_values[0].startswith("Default image"):
-                dir_choice = cps.DEFAULT_INPUT_FOLDER_NAME
+                dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
                 custom_directory = setting_values[1]
             elif setting_values[0] in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
                 custom_directory = setting_values[1]
                 if custom_directory[0] == ".":
-                    dir_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                    dir_choice = cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif custom_directory[0] == "&":
-                    dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    dir_choice = cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     custom_directory = "." + custom_directory[1:]
                 else:
-                    dir_choice = cps.ABSOLUTE_FOLDER_NAME
+                    dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
             else:
                 dir_choice = setting_values[0]
                 custom_directory = setting_values[1]
@@ -907,7 +908,7 @@ pipeline.
             # changes to DirectoryPath and URL handling
             dir = setting_values[0]
             dir_choice, custom_dir = cps.DirectoryPath.split_string(dir)
-            if dir_choice == cps.URL_FOLDER_NAME:
+            if dir_choice == cpprefs.URL_FOLDER_NAME:
                 dir = cps.DirectoryPath.static_join_string(dir_choice, "")
 
                 filenames = setting_values[1::2]
@@ -925,7 +926,7 @@ pipeline.
             # Added rescale option
             new_setting_values = setting_values[:1]
             for i in range(1, len(setting_values), 2):
-                new_setting_values += setting_values[i : (i + 2)] + [cps.YES]
+                new_setting_values += setting_values[i : (i + 2)] + ["Yes"]
             setting_values = new_setting_values
             variable_revision_number = 4
 
@@ -938,7 +939,7 @@ pipeline.
                     IO_IMAGES,
                     setting_values[i + S_IMAGE_NAME_OFFSET_V4],
                     "Nuclei",
-                    cps.NO,
+                    "No",
                     "NucleiOutlines",
                     setting_values[i + S_RESCALE_OFFSET_V4],
                 ]

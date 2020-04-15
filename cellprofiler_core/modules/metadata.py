@@ -11,10 +11,10 @@ import six.moves
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler_core.module
 import cellprofiler_core.modules
 import cellprofiler_core.modules.images as cpmi
 import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler_core.setting
 
 logger = logging.getLogger(__name__)
@@ -1450,9 +1450,9 @@ not being applied, your choice on this setting may be the culprit.
                         for scheme in ["http:", "https:", "ftp:"]
                     ]
                 ):
-                    directory_choice = cellprofiler_core.setting.URL_FOLDER_NAME
+                    directory_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
                 else:
-                    directory_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+                    directory_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
 
                 group[6] = "{}|{}".format(directory_choice, directory)
                 group += [filename]

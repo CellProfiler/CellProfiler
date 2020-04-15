@@ -58,6 +58,8 @@ setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
 def infer_hdf5_type(val):
     if isinstance(val, str) or numpy.sctype2char(numpy.asanyarray(val).dtype) == "S":
         return h5py.special_dtype(vlen=str)
+    if all(isinstance(v, str) for v in val):
+        return h5py.string_dtype()
     val = numpy.asanyarray(val)
     if val.size == 0:
         return int
@@ -554,9 +556,6 @@ class HDF5Dict(object):
         assert not numpy.isscalar(idxs[2]) or self.__is_positive_int(
             idxs[2]
         ), "Third index must be a non-negative integer"
-        if isinstance(vals[0], six.string_types) and len(vals) == 1:
-            vals = [c.encode('utf-8') for c in vals[0]]
-
         object_name, feature_name, num_idx = idxs[:3]
 
         if numpy.isscalar(num_idx):
@@ -636,13 +635,13 @@ class HDF5Dict(object):
                 elif hdf5_type_is_string and not ds_type_is_string:
                     recast_dataset = True
             if recast_dataset:
-                kwds = dict(
-                    dtype=hdf5_type,
-                    compression="gzip",
-                    shuffle=True,
-                    chunks=(self.chunksize,),
-                    maxshape=(None,),
-                )
+                kwds = {
+                    "dtype": hdf5_type,
+                    "compression": "gzip",
+                    "shuffle": True,
+                    "chunks": (self.chunksize,),
+                    "maxshape": (None,),
+                }
                 if dataset.shape[0] > 0:
                     if hdf5_type_is_string:
                         kwds["data"] = numpy.array([str(v) for v in dataset[:]], object)
@@ -2147,7 +2146,7 @@ class VStringArray(object):
             elif isinstance(value, six.text_type):
                 value = value
             else:
-                value = str(value)
+                value = value.decode('utf-8')
             if idx >= self.index.shape[0]:
                 self.index.resize(idx + 1, 0)
                 begin = self.data.shape[0]

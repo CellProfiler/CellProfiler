@@ -160,7 +160,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = [2.5]
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = ["alfalfa"]
         data = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
-        self.assertIsInstance(data[0], six.string_types)
+        self.assertIsInstance(data[0], str)
 
     def test_02_08_write_twice(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2)] = [1.2, 3.4]
@@ -781,7 +781,7 @@ class TestHDF5FileList(unittest.TestCase):
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
-            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode('utf-8')
 
         for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
@@ -800,7 +800,7 @@ class TestHDF5FileList(unittest.TestCase):
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
-            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode('utf-8')
 
         for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
@@ -822,7 +822,7 @@ class TestHDF5FileList(unittest.TestCase):
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
-            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode('utf-8')
 
         for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)

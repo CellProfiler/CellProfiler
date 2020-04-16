@@ -111,11 +111,11 @@ class TestAnalysisWorker(unittest.TestCase):
                     try:
                         result = fn()
                         self.up_queue.put((result, None))
-                        up_queue_send_socket.send("OK")
+                        up_queue_send_socket.send(b"OK")
                     except Exception as e:
                         traceback.print_exc()
                         self.up_queue.put((None, e))
-                        up_queue_send_socket.send("EXCEPTION")
+                        up_queue_send_socket.send(b"EXCEPTION")
                 aw.exit_thread()
 
         def recv(self, work_socket, timeout=None):
@@ -238,6 +238,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.ex(self.awthread.aw.get_announcement)
         self.cancel()
         self.assertRaises(cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute)
+
 
     def test_02_01_send(self):
         self.awthread = self.AWThread(self.announce_addr)
@@ -1094,7 +1095,9 @@ DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
 
 def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
     """Get an appropriately initialized measurements structure for the good pipeline"""
-    path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    import cellprofiler_core
+    path = os.path.abspath(os.path.join(os.path.dirname(cellprofiler_core.__file__), '..', 'tests/data/ExampleSBSImages'))
+    #path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
     m = cellprofiler_core.measurement.Measurements()
     if group_numbers is None:
         group_numbers = [1] * nimages
@@ -1135,8 +1138,8 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
         ] = group_indexes[i - 1]
         jblob = javabridge.run_script(
             """
-        importPackage(Packages.org.cellprofiler_core.imageset);
-        importPackage(Packages.org.cellprofiler_core.imageset.filter);
+        importPackage(Packages.org.cellprofiler.imageset);
+        importPackage(Packages.org.cellprofiler.imageset.filter);
         var imageFile=new ImageFile(new java.net.URI(url));
         var imageFileDetails = new ImageFileDetails(imageFile);
         var imageSeries=new ImageSeries(imageFile, 0);

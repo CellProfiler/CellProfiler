@@ -397,9 +397,10 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertIsInstance(req, cellprofiler.analysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
 
-        input_dir = os.path.join(
-            tests.modules.example_images_directory(), "ExampleSBSImages"
-        )
+        import cellprofiler_core
+        input_dir = os.path.abspath(
+            os.path.join(os.path.dirname(cellprofiler_core.__file__), '..', 'tests/data/ExampleSBSImages'))
+
         cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
             cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY: cellprofiler_core.preferences.config_read(
@@ -585,10 +586,10 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
         # Possibly, this will break if someone edits FlipAndRotate. Sorry.
-        self.assertItemsEqual(
-            list(d.keys()),
-            ["vmax", "output_image_pixel_data", "image_pixel_data", "vmin"],
-        )
+        testkeys = ["vmax", "output_image_pixel_data", "image_pixel_data", "vmin"]
+        self.assertCountEqual(testkeys, list(d.keys()))
+        for item in testkeys:
+            self.assertIn(item, list(d.keys()))
         self.assertIsInstance(d["output_image_pixel_data"], numpy.ndarray)
         req.reply(cellprofiler.analysis.Ack())
         #

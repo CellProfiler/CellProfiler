@@ -996,8 +996,8 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_w
     Extraction method count:1
     Metadata extraction method:Extract from image file headers
     Metadata source:File name
-    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Regular expression:^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])
+    Regular expression:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
     Extract metadata from:All images
     Select the filtering criteria:or (file does contain "")
     Metadata file location:
@@ -1008,7 +1008,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|s
     Assign a name to:All images
     Select the image type:Grayscale image
     Name to assign these images:DNA
-    Match metadata:\x5B\x5D
+    Match metadata:[]
     Image set matching method:Order
     Set intensity range from:Manual
     Assignments count:1

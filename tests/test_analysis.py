@@ -1327,18 +1327,18 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_w
     Metadata extraction method:Extract from file/folder names
     Metadata source:File name
     Regular expression:
-    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Regular expression:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
     Extract metadata from:All images
     Select the filtering criteria:or (file does contain "")
     Metadata file location:
-    Match file and image metadata:\x5B\x5D
+    Match file and image metadata:[]
     Use case insensitive matching?:No
 
 NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Assign a name to:Images matching rules
     Select the image type:Grayscale image
     Name to assign these images:DNA
-    Match metadata:\x5B{u\'Cytoplasm\'\x3A u\'WellRow\', u\'DNACorr\'\x3A None, \'DNA\'\x3A u\'WellRow\', u\'CytoplasmCorr\'\x3A None}, {u\'Cytoplasm\'\x3A u\'WellColumn\', u\'DNACorr\'\x3A None, \'DNA\'\x3A u\'WellColumn\', u\'CytoplasmCorr\'\x3A None}\x5D
+    Match metadata:[{u'Cytoplasm': u'WellRow', u'DNACorr': None, 'DNA': u'WellRow', u'CytoplasmCorr': None}, {u'Cytoplasm': u'WellColumn', u'DNACorr': None, 'DNA': u'WellColumn', u'CytoplasmCorr': None}]
     Image set matching method:Metadata
     Set intensity range from:Yes
     Assignments count:4

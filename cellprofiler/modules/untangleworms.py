@@ -3022,7 +3022,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         ):
             return d[file_name][0]
 
-    if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
+    if training_set_directory.dir_choice == cpprefs.URL_FOLDER_NAME:
         url = file_name
         fd_or_file = six.moves.urllib.request.urlopen(url)
         is_url = True

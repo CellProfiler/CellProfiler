@@ -1611,7 +1611,7 @@ class ModuleView(object):
                 cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
             ):
                 custom_label.Label = "Sub-folder:"
-            elif v.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
+            elif v.dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
                 if v.support_urls:
                     custom_label.Label = "URL:"
                     custom_label.Show()

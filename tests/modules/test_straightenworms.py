@@ -114,7 +114,7 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
         def __init__(self):
             radii_from_training = radii
 
-    module.training_set_directory.dir_choice = cellprofiler_core.setting.URL_FOLDER_NAME
+    module.training_set_directory.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
     module.training_set_directory.custom_path = "http://www.cellprofiler.org"
     module.training_set_file_name.value = "TrainingSet.xml"
     module.training_params = {"TrainingSet.xml": (P(), "URL")}

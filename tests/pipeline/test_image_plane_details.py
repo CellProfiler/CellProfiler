@@ -11,12 +11,12 @@ class TestImagePlaneDetails(unittest.TestCase):
         jipd = cellprofiler_core.pipeline.J.run_script(
             """
             var uri = new java.net.URI(url);
-            var f = new Packages.org.cellprofiler_core.imageset.ImageFile(uri);
-            var fd = new Packages.org.cellprofiler_core.imageset.ImageFileDetails(f);
-            var s = new Packages.org.cellprofiler_core.imageset.ImageSeries(f, series);
-            var sd = new Packages.org.cellprofiler_core.imageset.ImageSeriesDetails(s, fd);
-            var p = new Packages.org.cellprofiler_core.imageset.ImagePlane(s, index, channel);
-            var ipd = new Packages.org.cellprofiler_core.imageset.ImagePlaneDetails(p, sd);
+            var f = new Packages.org.cellprofiler.imageset.ImageFile(uri);
+            var fd = new Packages.org.cellprofiler.imageset.ImageFileDetails(f);
+            var s = new Packages.org.cellprofiler.imageset.ImageSeries(f, series);
+            var sd = new Packages.org.cellprofiler.imageset.ImageSeriesDetails(s, fd);
+            var p = new Packages.org.cellprofiler.imageset.ImagePlane(s, index, channel);
+            var ipd = new Packages.org.cellprofiler.imageset.ImagePlaneDetails(p, sd);
             ipd.putAll(d);
             ipd;
             """,

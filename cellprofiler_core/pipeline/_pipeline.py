@@ -507,9 +507,9 @@ class Pipeline:
         uint8 = numpy.uint8
         for a in attribute_strings:
             a = a.encode('utf-8').decode('unicode_escape')
-            if len(a.split(":")) != 2:
+            if len(a.split(":", 1)) != 2:
                 raise ValueError("Invalid attribute string: %s" % a)
-            attribute, value = a.split(":")
+            attribute, value = a.split(":", 1)
             # FIXME: This is naughty
             value = eval(value)
             if attribute in skip_attributes:
@@ -1295,7 +1295,7 @@ class Pipeline:
                         cellprofiler_core.measurement.IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
-                evt = cellprofiler_core.pipeline.event.RunExceptionEvent(
+                evt = cellprofiler_core.pipeline.event.RunException(
                     exception, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(evt)
@@ -1598,7 +1598,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.PostRunExceptionEvent(
+                event = cellprofiler_core.pipeline.event.PostRunException(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -1650,7 +1650,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.RunExceptionEvent(
+                event = cellprofiler_core.pipeline.event.RunException(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -1758,7 +1758,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.RunExceptionEvent(
+                event = cellprofiler_core.pipeline.event.RunException(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)
@@ -1782,7 +1782,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.RunExceptionEvent(
+                event = cellprofiler_core.pipeline.event.RunException(
                     instance, module, sys.exc_info()[2]
                 )
                 self.notify_listeners(event)

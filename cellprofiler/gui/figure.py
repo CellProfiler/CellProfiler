@@ -890,7 +890,7 @@ class Figure(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
 
-                with open(path, "wb") as fd:
+                with open(path, "w", newline='') as fd:
                     csv.writer(fd).writerows(self.table)
 
     def on_file_save_subplot(self, event, x, y):

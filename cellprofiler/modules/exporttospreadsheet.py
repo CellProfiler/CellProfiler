@@ -1021,7 +1021,7 @@ desired.
         ]
         if len(feature_names) == 0:
             return
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             writer.writerow((EH_KEY, EH_VALUE))
@@ -1051,7 +1051,7 @@ desired.
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
 
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             for img_number in image_set_numbers:
@@ -1109,7 +1109,7 @@ desired.
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from .loaddata import is_path_name_feature, is_file_name_feature
+        from cellprofiler.modules.loaddata import is_path_name_feature, is_file_name_feature
         from cellprofiler_core.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
         from cellprofiler_core.modules.loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
@@ -1142,7 +1142,7 @@ desired.
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
 
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter="\t")
             for img_number in image_set_numbers:
@@ -1306,7 +1306,7 @@ desired.
             ofeatures = [(object_name, feature_name) for feature_name in ofeatures]
             ofeatures.sort()
             features += ofeatures
-        fd = open(file_name, "w")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
 
@@ -1368,7 +1368,7 @@ desired.
         )
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        fd = open(file_name, "w")
+        fd = open(file_name, "w", newline='')
         module_map = {}
         for module in workspace.pipeline.modules():
             module_map[module.module_num] = module.module_name

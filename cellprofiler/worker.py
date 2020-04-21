@@ -239,7 +239,7 @@ def main():
     try:
         stop_java()
     except:
-        logger.warn("Failed to stop the JVM", exc_info=1)
+        logger.warning("Failed to stop the JVM", exc_info=True)
 
 
 class AnalysisWorker(object):
@@ -493,7 +493,7 @@ class AnalysisWorker(object):
                     except CancelledException:
                         logging.info("Aborting job after cancellation")
                         abort = True
-                    except Exception:
+                    except Exception as e:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
                             if (

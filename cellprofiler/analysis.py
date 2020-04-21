@@ -877,6 +877,7 @@ class AnalysisRunner:
                 while True:
                     try:
                         line = workR.stdout.readline()
+                        line = line.decode('utf-8')
                         if not line:
                             break
                         logger.info("Worker %d: %s", widx, line.rstrip())

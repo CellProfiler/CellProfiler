@@ -4420,7 +4420,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 be truncated using an ellipsis.
         """
         if len(s) > field_size:
-            half = int(field_size - 3) / 2
+            half = int(field_size - 3) // 2
             s = s[:half] + "..." + s[-half:]
         return s
 

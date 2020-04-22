@@ -9,7 +9,7 @@ def dump(pipeline, fp, save_image_plane_details):
         save_image_plane_details = False
 
     date_revision = int(re.sub(r"\.|rc\d", "", cellprofiler_core.__version__))
-    module_count = len(pipeline.modules())
+    module_count = len(pipeline.modules(False))
 
     fp.write("CellProfiler Pipeline: http://www.cellprofiler.org\n")
     fp.write(f"Version:{cellprofiler_core.pipeline.NATIVE_VERSION:d}\n")
@@ -29,7 +29,7 @@ def dump(pipeline, fp, save_image_plane_details):
         "wants_pause",
     )
 
-    for module in pipeline.modules():
+    for module in pipeline.modules(False):
         fp.write("\n")
 
         module_attributes = []

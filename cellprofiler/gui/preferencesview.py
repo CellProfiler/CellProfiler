@@ -500,13 +500,12 @@ class PreferencesView(object):
 
     def on_analyze_images(self):
         # begin tracking progress
-        # self.__progress_watcher = ProgressWatcher(
-        #     self.__progress_panel,
-        #     self.update_progress,
-        #     multiprocessing=cellprofiler.analysis.use_analysis,
-        # )
-        # self.show_progress_panel()
-        pass
+        self.__progress_watcher = ProgressWatcher(
+            self.__progress_panel,
+            self.update_progress,
+            multiprocessing=cellprofiler.analysis.use_analysis,
+        )
+        self.show_progress_panel()
 
     def on_pipeline_progress(self, *args):
         if self.__progress_watcher is not None:
@@ -670,7 +669,6 @@ class ProgressWatcher(object):
 
     def __init__(self, parent, update_callback, multiprocessing=False):
         self.update_callback = update_callback
-
         # start tracking progress
         self.start_time = time.time()
         self.end_times = None
@@ -690,10 +688,10 @@ class ProgressWatcher(object):
         self.timer = wx.Timer(parent, timer_id)
         self.timer.Start(500)
         if not multiprocessing:
-            parent.Bind(wx.EVT_TIMER, timer_id, self.update)
+            parent.Bind(wx.EVT_TIMER, self.update, id=timer_id)
             self.update()
         else:
-            parent.Bind(wx.EVT_TIMER, timer_id, self.update_multiprocessing)
+            parent.Bind(wx.EVT_TIMER, self.update_multiprocessing, id=timer_id)
             self.update_multiprocessing()
 
     def stop(self):

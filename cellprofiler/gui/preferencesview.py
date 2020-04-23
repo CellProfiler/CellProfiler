@@ -140,7 +140,7 @@ class PreferencesView(object):
         sizer.AddSpacer(2)
         text_static = wx.StaticText(panel, -1, text + ":")
         sizer.Add(text_static, 0, wx.ALIGN_CENTER)
-        choices = list_fn()
+        choices = list(set(list_fn()))
         if value not in choices:
             choices.insert(0, value)
         edit_box = wx.ComboBox(panel, -1, value, choices=choices)
@@ -601,10 +601,13 @@ class PreferencesView(object):
                 filtered_items = list(
                     filter(lambda item: os.path.abspath(item) != abspath, items)
                 )
-
-                # Clear the edit_box items and re-add the filtered items
-                edit_box.Clear()
-                edit_box.AppendItems(filtered_items)
+                # Clearing the whole edit box also wipes typed text. Specifically remove items which are invalid.
+                for i in range(len(items), 0, -1):
+                    if items[i-1] not in filtered_items:
+                        edit_box.Delete(i)
+                    else:
+                        # Prevent exact duplicate entries
+                        filtered_items.remove(items[i-1])
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)

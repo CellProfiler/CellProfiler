@@ -60,8 +60,8 @@ class Workspace:
         self.__disposition = cellprofiler_core.workspace.DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = (
-            False
-        )  # controls checks for calls to create_or_find_figure()
+            False  # controls checks for calls to create_or_find_figure()
+        )
         self.__filename = None
         self.__file_list = None
         self.__loading = False
@@ -247,7 +247,7 @@ class Workspace:
                       workers.
         """
         # See also:
-        # main().interaction_handler() in worker.py
+        # main().interaction_handler() in __init__.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
         import cellprofiler_core.preferences
 
@@ -409,7 +409,9 @@ class Workspace:
                 if self.measurements.has_feature(
                     cellprofiler_core.measurement.EXPERIMENT, feature
                 ):
-                    path = self.measurements[cellprofiler_core.measurement.EXPERIMENT, feature]
+                    path = self.measurements[
+                        cellprofiler_core.measurement.EXPERIMENT, feature
+                    ]
                     if os.path.isdir(path):
                         function(path)
             if image_set_and_measurements_are_same:

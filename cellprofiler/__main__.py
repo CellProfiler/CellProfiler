@@ -24,7 +24,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.utilities.java
 import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler.utilities.zmqrequest
-import cellprofiler.worker
+import cellprofiler_core.worker
 import cellprofiler_core.workspace
 
 if sys.platform.startswith("win") and hasattr(sys, "frozen"):
@@ -70,8 +70,8 @@ def main(args=None):
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         cellprofiler_core.preferences.set_headless()
-        cellprofiler.worker.aw_parse_args()
-        cellprofiler.worker.main()
+        cellprofiler_core.worker.aw_parse_args()
+        cellprofiler_core.worker.main()
         return exit_code
 
     options, args = parse_args(args)

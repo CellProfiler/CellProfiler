@@ -8,15 +8,14 @@ import os.path
 import sys
 import threading
 
-import six.moves.queue
+import cellprofiler
 import six
 import six.moves
-
-import cellprofiler
-from cellprofiler_core.utilities.zmqrequest import UpstreamExit
+import six.moves.queue
 
 from cellprofiler_core.analysis._runner import Runner
 from cellprofiler_core.analysis.reply._image_set_success import ImageSetSuccess
+from cellprofiler_core.utilities.zmqrequest import UpstreamExit
 
 logger = logging.getLogger(__name__)
 

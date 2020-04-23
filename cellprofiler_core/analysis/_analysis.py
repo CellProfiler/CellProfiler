@@ -2,7 +2,7 @@ import threading
 import uuid
 
 import cellprofiler_core.measurement
-from cellprofiler_core.analysis._runner import Runner
+from ._runner import Runner
 
 
 class Analysis:

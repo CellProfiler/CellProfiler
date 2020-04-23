@@ -394,30 +394,3 @@ def subproc():
     print("subproc received", rep, rep.__dict__)
     rep = rep.reply(Reply(msg="FOO"), please_reply=True)
     print("subproc received", rep, rep.__dict__)
-
-
-upq = six.moves.queue.Queue()
-cv = threading.Condition()
-boundary = Boundary("tcp://127.0.0.1", upq, cv)
-s = subprocess.Popen(["python", sys.argv[0], "subproc", boundary.request_address])
-
-if __name__ == "__main__":
-
-    if "subproc" in sys.argv[1:]:
-        subproc()
-    else:
-        import subprocess
-
-        boundary = Boundary("tcp://127.0.0.1", upq, cv)
-
-        with cv:
-            while upq.empty():
-                cv.wait()
-            req = upq.get()
-            print("mainproc received", req, req.__dict__)
-            rep = Reply(this="is", your="reply")
-            rep2 = req.reply(rep, please_reply=True)
-            print("mainproc received", rep2, rep2.__dict__)
-            rep2.reply(Reply(message="done"))
-
-        s.wait()

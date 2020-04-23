@@ -6,10 +6,9 @@ import six
 import zmq
 
 import cellprofiler_core.utilities.zmq
-from .communicable.reply.upstream_exit._boundary_exited import BoundaryExited
-from .communicable.request._analysis_request import AnalysisRequest
-from .communicable.request._request import Request
-from .communicable._communicable import Communicable
+from .communicable.reply.upstream_exit import BoundaryExited
+from .communicable.request import AnalysisRequest, Request
+from .communicable import Communicable
 from cellprofiler_core.utilities.zmq._analysis_context import AnalysisContext
 
 logger = logging.getLogger(__name__)

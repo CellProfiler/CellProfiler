@@ -20,14 +20,7 @@ from cellprofiler_core.pipeline import CancelledException
 from cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit._upstream_exit import (
     UpstreamExit,
 )
-from cellprofiler_core.worker import (
-    the_zmq_context,
-    NOTIFY_ADDR,
-    logger,
-    all_measurements,
-    ED_STOP,
-    NOTIFY_STOP,
-)
+import cellprofiler_core.worker
 from cellprofiler_core.worker._pipeline_event_listener import PipelineEventListener
 
 
@@ -91,9 +84,9 @@ class Worker(object):
         J.attach()
         if not cpprefs.get_awt_headless():
             J.activate_awt()
-        self.notify_socket = the_zmq_context.socket(zmq.SUB)
+        self.notify_socket = cellprofiler_core.worker.the_zmq_context.socket(zmq.SUB)
         self.notify_socket.setsockopt(zmq.SUBSCRIBE, b"")
-        self.notify_socket.connect(NOTIFY_ADDR)
+        self.notify_socket.connect(cellprofiler_core.worker.NOTIFY_ADDR)
 
     def exit_thread(self):
         from bioformats.formatreader import clear_image_reader_cache
@@ -114,11 +107,13 @@ class Worker(object):
                         self.work_request_address,
                     ) = self.get_announcement()
                     if t0 is None or time.time() - t0 > 30:
-                        logger.debug(
+                        cellprofiler_core.worker.logger.debug(
                             "Connecting at address %s" % self.work_request_address
                         )
                         t0 = time.time()
-                    self.work_socket = the_zmq_context.socket(zmq.REQ)
+                    self.work_socket = cellprofiler_core.worker.the_zmq_context.socket(
+                        zmq.REQ
+                    )
                     self.work_socket.connect(self.work_request_address)
                     # fetch a job
                     the_request = request.Work(self.current_analysis_id)
@@ -145,27 +140,31 @@ class Worker(object):
         try:
             send_dictionary = job.wants_dictionary
 
-            logger.info("Starting job")
+            cellprofiler_core.worker.logger.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
             current_pipeline, current_preferences = self.pipelines_and_preferences.get(
                 self.current_analysis_id, (None, None)
             )
             if not current_pipeline:
-                logger.debug("Fetching pipeline and preferences")
+                cellprofiler_core.worker.logger.debug(
+                    "Fetching pipeline and preferences"
+                )
                 rep = self.send(request.PipelinePreferences(self.current_analysis_id))
-                logger.debug("Received pipeline and preferences response")
+                cellprofiler_core.worker.logger.debug(
+                    "Received pipeline and preferences response"
+                )
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 cpprefs.set_preferences_from_dict(preferences_dict)
 
-                logger.debug("Loading pipeline")
+                cellprofiler_core.worker.logger.debug("Loading pipeline")
 
                 current_pipeline = cpp.Pipeline()
                 pipeline_chunks = rep.pipeline_blob.tolist()
                 pipeline_io = io.StringIO("".join(pipeline_chunks))
                 current_pipeline.loadtxt(pipeline_io, raise_on_error=True)
 
-                logger.debug("Pipeline loaded")
+                cellprofiler_core.worker.logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipelines_and_preferences[self.current_analysis_id] = (
@@ -178,29 +177,33 @@ class Worker(object):
 
             # Reset the listener's state
             self.pipeline_listener.reset()
-            logger.debug("Getting initial measurements")
+            cellprofiler_core.worker.logger.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
             current_measurements = self.initial_measurements.get(
                 self.current_analysis_id
             )
             if current_measurements is None:
-                logger.debug("Sending initial measurements request")
+                cellprofiler_core.worker.logger.debug(
+                    "Sending initial measurements request"
+                )
                 rep = self.send(request.InitialMeasurements(self.current_analysis_id))
-                logger.debug("Got initial measurements")
+                cellprofiler_core.worker.logger.debug("Got initial measurements")
                 current_measurements = self.initial_measurements[
                     self.current_analysis_id
                 ] = cpmeas.load_measurements_from_buffer(rep.buf)
             else:
-                logger.debug("Has initial measurements")
+                cellprofiler_core.worker.logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
             current_measurements = cpmeas.Measurements(copy=current_measurements)
-            all_measurements.add(current_measurements)
+            cellprofiler_core.worker.all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 
             successful_image_set_numbers = []
             image_set_numbers = job.image_set_numbers
             worker_runs_post_group = job.worker_runs_post_group
-            logger.info("Doing job: " + ",".join(map(str, image_set_numbers)))
+            cellprofiler_core.worker.logger.info(
+                "Doing job: " + ",".join(map(str, image_set_numbers))
+            )
 
             self.pipeline_listener.image_set_number = image_set_numbers[0]
 
@@ -286,7 +289,7 @@ class Worker(object):
                             logging.error("Error in pipeline", exc_info=True)
                             if (
                                 self.handle_exception(image_set_number=image_set_number)
-                                == ED_STOP
+                                == cellprofiler_core.worker.ED_STOP
                             ):
                                 abort = True
                                 break
@@ -331,7 +334,7 @@ class Worker(object):
 
         except Exception:
             logging.error("Error in worker", exc_info=True)
-            if self.handle_exception() == ED_STOP:
+            if self.handle_exception() == cellprofiler_core.worker.ED_STOP:
                 raise CancelledException("Cancelling after user-requested stop")
         finally:
             # Clean up any measurements owned by us
@@ -413,7 +416,7 @@ class Worker(object):
             for socket, state in poller.poll():
                 if socket == self.notify_socket and state == zmq.POLLIN:
                     notify_msg = self.notify_socket.recv()
-                    if notify_msg == NOTIFY_STOP:
+                    if notify_msg == cellprofiler_core.worker.NOTIFY_STOP:
                         self.cancelled = True
                         self.raise_cancel(
                             "Received stop notification while waiting for "
@@ -439,7 +442,7 @@ class Worker(object):
         """
         from cellprofiler_core.pipeline.event import CancelledException
 
-        logger.debug(msg)
+        cellprofiler_core.worker.logger.debug(msg)
         self.cancelled = True
         if self.current_analysis_id in self.initial_measurements:
             self.initial_measurements[self.current_analysis_id].close()
@@ -458,7 +461,7 @@ class Worker(object):
         """
         poller = zmq.Poller()
         poller.register(self.notify_socket, zmq.POLLIN)
-        announce_socket = the_zmq_context.socket(zmq.SUB)
+        announce_socket = cellprofiler_core.worker.the_zmq_context.socket(zmq.SUB)
         announce_socket.setsockopt(zmq.SUBSCRIBE, b"")
         announce_socket.connect(self.work_announce_address)
         try:
@@ -467,7 +470,7 @@ class Worker(object):
                 for socket, state in poller.poll():
                     if socket == self.notify_socket and state == zmq.POLLIN:
                         msg = self.notify_socket.recv()
-                        if msg == NOTIFY_STOP:
+                        if msg == cellprofiler_core.worker.NOTIFY_STOP:
                             from cellprofiler_core.pipeline.event import (
                                 CancelledException,
                             )
@@ -496,17 +499,17 @@ class Worker(object):
         """
         if self.current_analysis_id is None:
             # Analysis has been cancelled - don't initiate server interactions
-            return ED_STOP
+            return cellprofiler_core.worker.ED_STOP
         if exc_info is None:
             t, exc, tb = sys.exc_info()
         else:
             t, exc, tb = exc_info
         filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
-        report_socket = the_zmq_context.socket(zmq.REQ)
+        report_socket = cellprofiler_core.worker.the_zmq_context.socket(zmq.REQ)
         try:
             report_socket.connect(self.work_request_address)
         except:
-            return ED_STOP  # nothing to do but give up
+            return cellprofiler_core.worker.ED_STOP  # nothing to do but give up
         try:
             req = request.ExceptionReport(
                 self.current_analysis_id,

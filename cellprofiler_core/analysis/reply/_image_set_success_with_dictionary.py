@@ -1,4 +1,4 @@
-from cellprofiler_core.analysis import ImageSetSuccess
+from ._image_set_success import ImageSetSuccess
 
 
 class ImageSetSuccessWithDictionary(ImageSetSuccess):

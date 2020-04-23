@@ -23,7 +23,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.utilities.java
 import cellprofiler_core.utilities.hdf5_dict
-import cellprofiler.utilities.zmqrequest
+import cellprofiler_core.utilities.zmq
 import cellprofiler_core.worker
 import cellprofiler_core.workspace
 
@@ -240,7 +240,7 @@ def __version__(exit_code):
 
 
 def stop_cellprofiler():
-    cellprofiler.utilities.zmqrequest.join_to_the_boundary()
+    cellprofiler_core.utilities.zmq.join_to_the_boundary()
 
     # Bioformats readers have to be properly closed.
     # This is especially important when using OmeroReaders as leaving the

@@ -9,7 +9,6 @@ import traceback
 import javabridge as J
 import zmq
 from cellprofiler_core.analysis import reply
-from cellprofiler_core.analysis import event
 from cellprofiler_core.analysis import request
 
 from cellprofiler_core import (
@@ -319,7 +318,7 @@ class Worker(object):
                     del last_workspace
 
             # send measurements back to server
-            req = MeasurementsReport(
+            req = request.MeasurementsReport(
                 self.current_analysis_id,
                 buf=current_measurements.file_contents(),
                 image_set_numbers=image_set_numbers,
@@ -509,7 +508,7 @@ class Worker(object):
         except:
             return ED_STOP  # nothing to do but give up
         try:
-            req = ExceptionReport(
+            req = request.ExceptionReport(
                 self.current_analysis_id,
                 image_set_number,
                 module_name,
@@ -530,14 +529,15 @@ class Worker(object):
                     def pc(port):
                         print("GOT PORT ", port)
                         debug_reply[0] = self.send(
-                            DebugWaiting(self.current_analysis_id, port), report_socket
+                            request.DebugWaiting(self.current_analysis_id, port),
+                            report_socket,
                         )
 
                     print("HASH", reply.verification_hash)
 
                     # We get a new reply at the end, which might be "DEBUG" again.
                     reply = self.send(
-                        DebugComplete(self.current_analysis_id), report_socket
+                        request.DebugComplete(self.current_analysis_id), report_socket
                     )
                 else:
                     return reply.disposition

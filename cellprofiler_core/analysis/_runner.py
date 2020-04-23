@@ -686,7 +686,7 @@ class Runner:
         if "CP_DEBUG_WORKER" in os.environ:
             if os.environ["CP_DEBUG_WORKER"] == "NOT_INPROC":
                 return
-            from cellprofiler.worker import AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
+            from cellprofiler_core.worker import Worker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler_core.pipeline.event import CancelledException
 
             class WorkerRunner(threading.Thread):
@@ -697,7 +697,7 @@ class Runner:
                     self.notify_socket.bind(NOTIFY_ADDR)
 
                 def run(self):
-                    with AnalysisWorker(self.work_announce_address) as aw:
+                    with Worker(self.work_announce_address) as aw:
                         try:
                             aw.run()
                         except CancelledException:

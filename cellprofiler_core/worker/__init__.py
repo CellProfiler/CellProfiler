@@ -25,7 +25,7 @@ import sys
 
 import pkg_resources
 
-from cellprofiler_core.worker._analysis_worker import AnalysisWorker
+from cellprofiler_core.worker._worker import Worker
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ def main():
 
     from cellprofiler.knime_bridge import KnimeBridgeServer
 
-    with AnalysisWorker(work_announce_address) as worker:
+    with Worker(work_announce_address) as worker:
         worker_thread = threading.Thread(target=worker.run, name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()

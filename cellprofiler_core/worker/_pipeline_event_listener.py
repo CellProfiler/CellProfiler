@@ -1,7 +1,8 @@
-from cellprofiler_core.worker import ED_STOP, ED_SKIP
+import cellprofiler_core.worker
+import cellprofiler_core.pipeline
 
 
-class PipelineEventListener(object):
+class PipelineEventListener:
     """listen for pipeline events, communicate them as necessary to the
     analysis manager."""
 
@@ -16,18 +17,16 @@ class PipelineEventListener(object):
         self.should_skip = False
 
     def handle_event(self, pipeline, event):
-        from cellprofiler_core.pipeline import RunException
-
-        if isinstance(event, RunException):
+        if isinstance(event, cellprofiler_core.pipeline.RunException):
             disposition = self.handle_exception_fn(
                 image_set_number=self.image_set_number,
                 module_name=event.module.module_name,
                 exc_info=(type(event.error), event.error, event.tb),
             )
-            if disposition == ED_STOP:
+            if disposition == cellprofiler_core.worker.ED_STOP:
                 self.should_abort = True
                 event.cancel_run = True
-            elif disposition == ED_SKIP:
+            elif disposition == cellprofiler_core.worker.ED_SKIP:
                 self.should_skip = True
                 event.cancel_run = False
                 event.skip_thisset = True

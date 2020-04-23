@@ -45,7 +45,7 @@ from cellprofiler_core.worker import (
 from cellprofiler_core.worker._pipeline_event_listener import PipelineEventListener
 
 
-class AnalysisWorker(object):
+class Worker(object):
     """An analysis worker processing work at a given address
 
     """

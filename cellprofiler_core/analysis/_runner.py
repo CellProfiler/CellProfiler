@@ -9,7 +9,7 @@ import threading
 import numpy
 import six.moves
 import zmq
-from cellprofiler.utilities.zmqrequest import (
+from cellprofiler_core.utilities.zmqrequest import (
     register_analysis,
     Reply,
     get_announcer_address,

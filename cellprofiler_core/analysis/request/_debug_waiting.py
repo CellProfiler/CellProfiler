@@ -1,4 +1,4 @@
-from cellprofiler.utilities.zmqrequest import AnalysisRequest
+from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
 
 
 class DebugWaiting(AnalysisRequest):

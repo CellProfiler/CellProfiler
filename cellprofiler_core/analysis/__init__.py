@@ -13,7 +13,7 @@ import six
 import six.moves
 
 import cellprofiler
-from cellprofiler.utilities.zmqrequest import UpstreamExit
+from cellprofiler_core.utilities.zmqrequest import UpstreamExit
 
 from cellprofiler_core.analysis._runner import Runner
 from cellprofiler_core.analysis.reply._image_set_success import ImageSetSuccess

@@ -1,4 +1,4 @@
-from cellprofiler.utilities.zmqrequest import Reply
+from cellprofiler_core.utilities.zmqrequest import Reply
 
 
 class Ack(Reply):

@@ -26,7 +26,7 @@ from cellprofiler.analysis import (
     DebugWaiting,
     DebugComplete,
 )
-from cellprofiler.utilities.zmqrequest import UpstreamExit
+from cellprofiler_core.utilities.zmqrequest import UpstreamExit
 
 from cellprofiler_core import (
     preferences as cpprefs,

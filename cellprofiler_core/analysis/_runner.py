@@ -13,11 +13,8 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.analysis import *
-from cellprofiler_core.utilities.zmqrequest import (
-    register_analysis,
-    Reply,
-    get_announcer_address,
-)
+from ..utilities.zmq import get_announcer_address, register_analysis
+from ..utilities.zmq.communicable.reply._reply import Reply
 from .event import *
 from .reply import *
 from .request import *

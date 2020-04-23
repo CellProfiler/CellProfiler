@@ -33,7 +33,9 @@ from cellprofiler_core import (
     workspace as cpw,
 )
 from cellprofiler_core.pipeline import CancelledException
-from cellprofiler_core.utilities.zmqrequest import UpstreamExit
+from cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit._upstream_exit import (
+    UpstreamExit,
+)
 from cellprofiler_core.worker import (
     the_zmq_context,
     NOTIFY_ADDR,

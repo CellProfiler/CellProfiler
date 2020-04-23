@@ -1,5 +1,7 @@
-import cellprofiler_core.utilities.zmqrequest
+import cellprofiler_core.utilities.zmq.communicable.request._analysis_request
 
 
-class Display(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
+class Display(
+    cellprofiler_core.utilities.zmq.communicable.request._analysis_request.AnalysisRequest
+):
     pass

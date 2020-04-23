@@ -1,7 +1,9 @@
-import cellprofiler_core.utilities.zmqrequest
+import cellprofiler_core.utilities.zmq.communicable.request._analysis_request
 
 
-class ExceptionReport(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
+class ExceptionReport(
+    cellprofiler_core.utilities.zmq.communicable.request._analysis_request.AnalysisRequest
+):
     def __init__(
         self,
         analysis_id,
@@ -13,7 +15,7 @@ class ExceptionReport(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
         filename,
         line_number,
     ):
-        cellprofiler_core.utilities.zmqrequest.AnalysisRequest.__init__(
+        cellprofiler_core.utilities.zmq.communicable.request._analysis_request.AnalysisRequest.__init__(
             self,
             analysis_id,
             image_set_number=image_set_number,

@@ -73,9 +73,11 @@ def find_worker_env(idx):
 
 def find_analysis_worker_source():
     # import here to break circular dependency.
-    import cellprofiler.analysis  # used to get the path to the code
+    import cellprofiler_core.analysis  # used to get the path to the code
 
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "__init__.py")
+    return os.path.join(
+        os.path.dirname(cellprofiler_core.analysis.__file__), "__init__.py"
+    )
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
@@ -88,12 +90,6 @@ def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
 ###############################
 # Request, Replies, Events
 ###############################
-
-
-class ImageSetSuccessWithDictionary(ImageSetSuccess):
-    def __init__(self, analysis_id, image_set_number, shared_dicts):
-        ImageSetSuccess.__init__(self, analysis_id, image_set_number=image_set_number)
-        self.shared_dicts = shared_dicts
 
 
 class ServerExited(UpstreamExit):
@@ -125,9 +121,9 @@ if __name__ == "__main__":
     # This is an ugly hack, but it's necesary to unify the Request/Reply
     # classes above, so that regardless of whether this is the current module,
     # or a separately imported one, they see the same classes.
-    import cellprofiler.analysis
+    import cellprofiler_core.analysis
 
-    globals().update(cellprofiler.analysis.__dict__)
+    globals().update(cellprofiler_core.analysis.__dict__)
 
     Runner.start_workers(2)
     Runner.stop_workers()

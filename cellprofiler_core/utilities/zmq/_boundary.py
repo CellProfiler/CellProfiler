@@ -1,19 +1,17 @@
+import logging
 import socket
 import threading
 
 import six
 import zmq
 
-from cellprofiler_core.utilities.zmq import logger, NOTIFY_SOCKET_ADDR
-from cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit._boundary_exited import (
-    BoundaryExited,
-)
-from cellprofiler_core.utilities.zmq.communicable.request._analysis_request import (
-    AnalysisRequest,
-)
-from cellprofiler_core.utilities.zmq.communicable.request._request import Request
-from cellprofiler_core.utilities.zmq.communicable._communicable import Communicable
+import cellprofiler_core.utilities.zmq
+from .communicable.reply.upstream_exit import BoundaryExited
+from .communicable.request import AnalysisRequest, Request
+from .communicable import Communicable
 from cellprofiler_core.utilities.zmq._analysis_context import AnalysisContext
+
+logger = logging.getLogger(__name__)
 
 
 class Boundary:
@@ -47,7 +45,7 @@ class Boundary:
 
         # socket for handling downward notifications
         self.selfnotify_socket = self.zmq_context.socket(zmq.SUB)
-        self.selfnotify_socket.bind(NOTIFY_SOCKET_ADDR)
+        self.selfnotify_socket.bind(cellprofiler_core.utilities.zmq.NOTIFY_SOCKET_ADDR)
         self.selfnotify_socket.setsockopt(zmq.SUBSCRIBE, b"")
         self.threadlocal = (
             threading.local()

@@ -1,5 +1,4 @@
 import cellprofiler_core.utilities.zmq.communicable.reply._reply
-import cellprofiler_core.utilities.zmq
 
 
 class Ack(cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply):

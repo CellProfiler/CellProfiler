@@ -13,7 +13,6 @@ import six
 import six.moves
 import zmq
 
-from cellprofiler_core.utilities.zmq import Boundary, LockStatusRequest, LockStatusReply
 from cellprofiler_core.utilities.zmq._boundary import Boundary
 from cellprofiler_core.utilities.zmq.communicable.reply import LockStatusReply, Reply
 from cellprofiler_core.utilities.zmq.communicable.request import (

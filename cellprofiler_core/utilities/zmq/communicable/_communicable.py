@@ -1,6 +1,6 @@
 import sys
 
-from cellprofiler_core.utilities.zmq import json_encode, json_decode
+import cellprofiler_core.utilities.zmq
 
 
 class Communicable:
@@ -15,7 +15,7 @@ class Communicable:
             routing = []
         if hasattr(self, "_remote"):
             assert not self._remote, "send() called on a non-local Communicable object."
-        json_str, buffers = json_encode(self.__dict__)
+        json_str, buffers = cellprofiler_core.utilities.zmq.json_encode(self.__dict__)
         json_str = json_str.encode("utf-8")
         message_parts = (
             routing
@@ -45,7 +45,9 @@ class Communicable:
         module = module.decode("unicode_escape")
         classname = classname.decode("unicode_escape")
         buffers = message[3:]
-        attribute_dict = json_decode(message[2], buffers)
+        attribute_dict = cellprofiler_core.utilities.zmq.json_decode(
+            message[2], buffers
+        )
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:

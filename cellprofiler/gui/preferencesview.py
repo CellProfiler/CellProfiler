@@ -9,7 +9,7 @@ import time
 import numpy
 import wx
 
-import cellprofiler.analysis
+import cellprofiler_core.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
@@ -503,7 +503,7 @@ class PreferencesView(object):
         self.__progress_watcher = ProgressWatcher(
             self.__progress_panel,
             self.update_progress,
-            multiprocessing=cellprofiler.analysis.use_analysis,
+            multiprocessing=cellprofiler_core.analysis.use_analysis,
         )
         self.show_progress_panel()
 

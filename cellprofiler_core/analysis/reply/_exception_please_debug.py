@@ -1,8 +1,8 @@
-from cellprofiler_core.utilities.zmqrequest import Reply
+import cellprofiler_core.utilities.zmqrequest
 
 
-class ExceptionPleaseDebug(Reply):
+class ExceptionPleaseDebug(cellprofiler_core.utilities.zmqrequest.Reply):
     def __init__(self, disposition, verification_hash=None):
-        Reply.__init__(
+        cellprofiler_core.utilities.zmqrequest.Reply.__init__(
             self, disposition=disposition, verification_hash=verification_hash
         )

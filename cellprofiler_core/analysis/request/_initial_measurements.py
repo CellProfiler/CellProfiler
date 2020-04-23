@@ -1,5 +1,5 @@
-from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
+import cellprofiler_core.utilities.zmqrequest
 
 
-class InitialMeasurements(AnalysisRequest):
+class InitialMeasurements(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
     pass

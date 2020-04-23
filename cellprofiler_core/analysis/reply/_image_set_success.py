@@ -1,6 +1,8 @@
-from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
+import cellprofiler_core.utilities.zmqrequest
 
 
-class ImageSetSuccess(AnalysisRequest):
+class ImageSetSuccess(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, image_set_number=None):
-        AnalysisRequest.__init__(self, analysis_id, image_set_number=image_set_number)
+        cellprofiler_core.utilities.zmqrequest.AnalysisRequest.__init__(
+            self, analysis_id, image_set_number=image_set_number
+        )

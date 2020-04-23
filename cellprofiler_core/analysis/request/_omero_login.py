@@ -1,5 +1,5 @@
-from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
+import cellprofiler_core.utilities.zmqrequest
 
 
-class OmeroLogin(AnalysisRequest):
+class OmeroLogin(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
     pass

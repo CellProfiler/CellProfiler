@@ -1,5 +1,5 @@
-from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
+import cellprofiler_core.utilities.zmqrequest
 
 
-class Work(AnalysisRequest):
+class Work(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
     pass

@@ -1,5 +1,5 @@
-from cellprofiler_core.utilities.zmqrequest import Reply
+import cellprofiler_core.utilities.zmqrequest
 
 
-class Work(Reply):
+class Work(cellprofiler_core.utilities.zmqrequest.Reply):
     pass

@@ -1,6 +1,6 @@
-from cellprofiler_core.utilities.zmqrequest import Reply
+import cellprofiler_core.utilities.zmqrequest
 
 
-class Ack(Reply):
+class Ack(cellprofiler_core.utilities.zmqrequest.Reply):
     def __init__(self, message="THANKS"):
-        Reply.__init__(self, message=message)
+        cellprofiler_core.utilities.zmqrequest.Reply.__init__(self, message=message)

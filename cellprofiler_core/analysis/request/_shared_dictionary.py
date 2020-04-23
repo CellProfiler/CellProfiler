@@ -1,6 +1,8 @@
-from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
+import cellprofiler_core.utilities.zmqrequest
 
 
-class SharedDictionary(AnalysisRequest):
+class SharedDictionary(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, module_num=-1):
-        AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
+        cellprofiler_core.utilities.zmqrequest.AnalysisRequest.__init__(
+            self, analysis_id, module_num=module_num
+        )

@@ -1,8 +1,10 @@
-from cellprofiler_core.utilities.zmqrequest import Reply
+import cellprofiler_core.utilities.zmqrequest
 
 
-class SharedDictionary(Reply):
+class SharedDictionary(cellprofiler_core.utilities.zmqrequest.Reply):
     def __init__(self, dictionaries=None):
-        Reply.__init__(self, dictionaries=dictionaries)
+        cellprofiler_core.utilities.zmqrequest.Reply.__init__(
+            self, dictionaries=dictionaries
+        )
         if dictionaries is None:
             dictionaries = [{}]

@@ -1,8 +1,10 @@
-from cellprofiler_core.utilities.zmqrequest import AnalysisRequest
+import cellprofiler_core.utilities.zmqrequest
 
 
-class DebugWaiting(AnalysisRequest):
+class DebugWaiting(cellprofiler_core.utilities.zmqrequest.AnalysisRequest):
     """Communicate the debug port to the server and wait for server OK to attach"""
 
     def __init__(self, analysis_id, port):
-        AnalysisRequest.__init__(self, analysis_id=analysis_id, port=port)
+        cellprofiler_core.utilities.zmqrequest.AnalysisRequest.__init__(
+            self, analysis_id=analysis_id, port=port
+        )

@@ -1,5 +1,5 @@
-from cellprofiler_core.utilities.zmqrequest import Reply
+import cellprofiler_core.utilities.zmqrequest
 
 
-class DebugCancel(Reply):
+class DebugCancel(cellprofiler_core.utilities.zmqrequest.Reply):
     """If sent in response to DebugWaiting, the user has changed his/her mind"""

@@ -2,7 +2,7 @@ import threading
 import uuid
 
 import cellprofiler_core.measurement
-from cellprofiler_core.analysis._analysis_runner import AnalysisRunner
+from cellprofiler_core.analysis._runner import Runner
 
 
 class Analysis:
@@ -66,7 +66,7 @@ class Analysis:
             assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
 
-            self.runner = AnalysisRunner(
+            self.runner = Runner(
                 self.analysis_in_progress,
                 self.pipeline,
                 self.initial_measurements_buf,

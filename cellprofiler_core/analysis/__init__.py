@@ -15,7 +15,7 @@ import six.moves
 import cellprofiler
 from cellprofiler.utilities.zmqrequest import UpstreamExit
 
-from cellprofiler_core.analysis._analysis_runner import AnalysisRunner
+from cellprofiler_core.analysis._runner import Runner
 from cellprofiler_core.analysis.reply._image_set_success import ImageSetSuccess
 
 logger = logging.getLogger(__name__)
@@ -128,5 +128,5 @@ if __name__ == "__main__":
 
     globals().update(cellprofiler.analysis.__dict__)
 
-    AnalysisRunner.start_workers(2)
-    AnalysisRunner.stop_workers()
+    Runner.start_workers(2)
+    Runner.stop_workers()

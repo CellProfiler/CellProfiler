@@ -29,48 +29,34 @@ from cellprofiler_core.analysis import (
     find_python,
     find_analysis_worker_source,
 )
-from cellprofiler_core.analysis.request._interaction_request import InteractionRequest
-from cellprofiler_core.analysis.request._analysis_cancel_request import (
-    AnalysisCancelRequest,
-)
-from cellprofiler_core.analysis.request._display_request import DisplayRequest
-from cellprofiler_core.analysis.request._display_post_run_request import (
-    DisplayPostRunRequest,
-)
-from cellprofiler_core.analysis.request._display_post_group_request import (
-    DisplayPostGroupRequest,
-)
-from cellprofiler_core.analysis.request._shared_dictionary_request import (
-    SharedDictionaryRequest,
-)
-from cellprofiler_core.analysis.reply._shared_dictionary_reply import (
-    SharedDictionaryReply,
-)
+from cellprofiler_core.analysis.request._interaction import Interaction
+from cellprofiler_core.analysis.request._analysis_cancel import AnalysisCancel
+from cellprofiler_core.analysis.request._display import Display
+from cellprofiler_core.analysis.request._display_post_run import DisplayPostRun
+from cellprofiler_core.analysis.request._display_post_group import DisplayPostGroup
+from cellprofiler_core.analysis.request._shared_dictionary import SharedDictionary
+from cellprofiler_core.analysis.reply._shared_dictionary import SharedDictionary
 from cellprofiler_core.analysis.request._exception_report import ExceptionReport
 from cellprofiler_core.analysis.request._debug_waiting import DebugWaiting
 from cellprofiler_core.analysis.request._debug_complete import DebugComplete
-from cellprofiler_core.analysis.reply._work_reply import WorkReply
-from cellprofiler_core.analysis.reply._no_work_reply import NoWorkReply
-from cellprofiler_core.analysis.request._omero_login_request import OmeroLoginRequest
+from cellprofiler_core.analysis.reply._work import Work
+from cellprofiler_core.analysis.reply._no_work import NoWork
+from cellprofiler_core.analysis.request._omero_login import OmeroLogin
 from cellprofiler_core.analysis.reply._ack import Ack
 from cellprofiler_core.analysis.request._measurements_report import MeasurementsReport
 from cellprofiler_core.analysis.reply._image_set_success import ImageSetSuccess
-from cellprofiler_core.analysis.request._work_request import WorkRequest
-from cellprofiler_core.analysis.request._initial_measurements_request import (
-    InitialMeasurementsRequest,
-)
-from cellprofiler_core.analysis.request._pipeline_preferences_request import (
-    PipelinePreferencesRequest,
-)
-from cellprofiler_core.analysis.event._analysis_finished import AnalysisFinished
-from cellprofiler_core.analysis.event._analysis_resumed import AnalysisResumed
-from cellprofiler_core.analysis.event._analysis_paused import AnalysisPaused
-from cellprofiler_core.analysis.event._analysis_progress import AnalysisProgress
-from cellprofiler_core.analysis.event._analysis_started import AnalysisStarted
+from cellprofiler_core.analysis.request._work import Work
+from cellprofiler_core.analysis.request._initial_measurements import InitialMeasurements
+from cellprofiler_core.analysis.request._pipeline_preferences import PipelinePreferences
+from cellprofiler_core.analysis.event._finished import Finished
+from cellprofiler_core.analysis.event._resumed import Resumed
+from cellprofiler_core.analysis.event._paused import Paused
+from cellprofiler_core.analysis.event._progress import Progress
+from cellprofiler_core.analysis.event._started import Started
 
 
-class AnalysisRunner:
-    """The AnalysisRunner manages two threads (per instance) and all of the
+class Runner:
+    """The Runner manages two threads (per instance) and all of the
     workers (per class, i.e., singletons).
 
     The two threads run interface() and jobserver(), below.
@@ -232,7 +218,7 @@ class AnalysisRunner:
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRunRequest(module.module_num, workspace.display_data)
+        event = DisplayPostRun(module.module_num, workspace.display_data)
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
@@ -304,7 +290,7 @@ class AnalysisRunner:
                 )
             )
 
-            self.post_event(AnalysisStarted())
+            self.post_event(Started())
             posted_analysis_started = True
 
             # reset the status of every image set that needs to be processed
@@ -475,7 +461,7 @@ class AnalysisRunner:
                     ]
                     for image_set_number in image_sets_to_process
                 )
-                self.post_event(AnalysisProgress(counts))
+                self.post_event(Progress(counts))
 
                 # Are we finished?
                 if counts[self.STATUS_DONE] == len(image_sets_to_process):
@@ -510,7 +496,7 @@ class AnalysisRunner:
                 start_signal.release()
             if posted_analysis_started:
                 was_cancelled = self.cancelled
-                self.post_event(AnalysisFinished(measurements, was_cancelled))
+                self.post_event(Finished(measurements, was_cancelled))
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
@@ -592,7 +578,7 @@ class AnalysisRunner:
 
             with self.jobserver_work_cv:
                 if self.paused and not i_was_paused_before:
-                    self.post_event(AnalysisPaused())
+                    self.post_event(Paused())
                     i_was_paused_before = True
                 if self.paused or request_queue.empty():
                     self.jobserver_work_cv.wait(
@@ -601,7 +587,7 @@ class AnalysisRunner:
                     continue  # back to while... check that we're still running
 
             if i_was_paused_before:
-                self.post_event(AnalysisResumed())
+                self.post_event(Resumed())
                 i_was_paused_before = False
 
             try:
@@ -609,7 +595,7 @@ class AnalysisRunner:
             except six.moves.queue.Empty:
                 continue
 
-            if isinstance(req, PipelinePreferencesRequest):
+            if isinstance(req, PipelinePreferences):
                 logger.debug("Received pipeline preferences request")
                 req.reply(
                     Reply(
@@ -618,11 +604,11 @@ class AnalysisRunner:
                     )
                 )
                 logger.debug("Replied to pipeline preferences request")
-            elif isinstance(req, InitialMeasurementsRequest):
+            elif isinstance(req, InitialMeasurements):
                 logger.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
-            elif isinstance(req, WorkRequest):
+            elif isinstance(req, Work):
                 if not self.work_queue.empty():
                     logger.debug("Received work request")
                     (
@@ -631,7 +617,7 @@ class AnalysisRunner:
                         wants_dictionary,
                     ) = self.work_queue.get()
                     req.reply(
-                        WorkReply(
+                        Work(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
                             wants_dictionary=wants_dictionary,
@@ -645,23 +631,23 @@ class AnalysisRunner:
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(NoWorkReply())
+                    req.reply(NoWork())
             elif isinstance(req, ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
                 logger.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
                 logger.debug("Enqueued ImageSetSuccess")
-            elif isinstance(req, SharedDictionaryRequest):
+            elif isinstance(req, SharedDictionary):
                 logger.debug("Received shared dictionary request")
-                req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
+                req.reply(SharedDictionary(dictionaries=self.shared_dicts))
                 logger.debug("Sent shared dictionary reply")
             elif isinstance(req, MeasurementsReport):
                 logger.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
                 req.reply(Ack())
                 logger.debug("Acknowledged measurements report")
-            elif isinstance(req, AnalysisCancelRequest):
+            elif isinstance(req, AnalysisCancel):
                 # Signal the interface that we are cancelling
                 logger.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
@@ -671,13 +657,13 @@ class AnalysisRunner:
             elif isinstance(
                 req,
                 (
-                    InteractionRequest,
-                    DisplayRequest,
-                    DisplayPostGroupRequest,
+                    Interaction,
+                    Display,
+                    DisplayPostGroup,
                     ExceptionReport,
                     DebugWaiting,
                     DebugComplete,
-                    OmeroLoginRequest,
+                    OmeroLogin,
                 ),
             ):
                 logger.debug("Enqueueing interactive request")

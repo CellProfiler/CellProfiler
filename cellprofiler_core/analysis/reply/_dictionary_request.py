@@ -1,5 +1,5 @@
 from cellprofiler.utilities.zmqrequest import Reply
 
 
-class InteractionReply(Reply):
+class DictionaryRequest(Reply):
     pass

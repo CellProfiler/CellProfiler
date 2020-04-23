@@ -1,5 +1,5 @@
 from cellprofiler.utilities.zmqrequest import AnalysisRequest
 
 
-class PipelinePreferencesRequest(AnalysisRequest):
+class InitialMeasurements(AnalysisRequest):
     pass

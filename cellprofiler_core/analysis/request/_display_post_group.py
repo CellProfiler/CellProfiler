@@ -1,7 +1,7 @@
 from cellprofiler.utilities.zmqrequest import AnalysisRequest
 
 
-class DisplayPostGroupRequest(AnalysisRequest):
+class DisplayPostGroup(AnalysisRequest):
     """Request a post-group display
 
     This is a message sent to the UI from the analysis worker"""

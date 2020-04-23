@@ -1,4 +1,4 @@
-class DisplayPostRunRequest:
+class DisplayPostRun:
     """Request a post-run display
 
     This is a message sent to the UI from the analysis worker"""

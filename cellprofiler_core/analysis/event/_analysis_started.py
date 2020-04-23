@@ -1,2 +1,0 @@
-class AnalysisStarted:
-    pass

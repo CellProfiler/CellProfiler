@@ -1,5 +1,5 @@
 from cellprofiler.utilities.zmqrequest import AnalysisRequest
 
 
-class WorkRequest(AnalysisRequest):
+class AnalysisCancel(AnalysisRequest):
     pass

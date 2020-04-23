@@ -1,5 +1,5 @@
 from cellprofiler.utilities.zmqrequest import AnalysisRequest
 
 
-class DisplayRequest(AnalysisRequest):
+class PipelinePreferences(AnalysisRequest):
     pass

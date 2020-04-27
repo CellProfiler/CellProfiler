@@ -1148,7 +1148,7 @@ to the foreground pixels or the background pixels.
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
-                if image.dimensions is 2:
+                if image.dimensions == 2:
                     i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float)
                     m, n = (numpy.array(shape) + scale - 1) // scale
                     i = (i * float(m) / float(shape[0])).astype(int)
@@ -1392,7 +1392,7 @@ to the foreground pixels or the background pixels.
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-            if image.dimensions is 3:
+            if image.dimensions == 3:
                 # TODO: calculate "radial power spectrum" for volumes.
                 continue
 

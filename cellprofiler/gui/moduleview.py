@@ -4850,7 +4850,7 @@ def validation_queue_handler():
             request = validation_queue.get()
             if not isinstance(request, ValidationRequest) or request.cancelled:
                 continue
-            start = time.clock()
+            start = time.perf_counter()
             try:
                 validate_module(
                     request.pipeline,
@@ -4861,7 +4861,7 @@ def validation_queue_handler():
             except:
                 pass
             # Make sure this thread utilizes less than 1/2 of GIL clock
-            wait_for = max(0.25, time.clock() - start)
+            wait_for = max(0.25, time.perf_counter() - start)
             time.sleep(wait_for)
     finally:
         detach()

@@ -4565,7 +4565,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         else:
             name = self.db_name.value
         tbl_prefix = self.get_table_prefix()
-        if tbl_prefix is not "":
+        if tbl_prefix != "":
             if tbl_prefix.endswith("_"):
                 tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))
@@ -5071,7 +5071,7 @@ check_tables = yes
         else:
             name = self.db_name.value
         tbl_prefix = self.get_table_prefix()
-        if tbl_prefix is not "":
+        if tbl_prefix != "":
             if tbl_prefix.endswith("_"):
                 tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))

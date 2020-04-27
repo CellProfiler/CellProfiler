@@ -278,7 +278,7 @@ object at the requested scales.""",
         new_shape = np.array(im.pixel_data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                     / image.subsample_size.value
@@ -302,7 +302,7 @@ object at the requested scales.""",
         #
         if image.image_sample_size.value < 1:
             back_shape = new_shape * image.image_sample_size.value
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
                     / image.image_sample_size.value
@@ -323,7 +323,7 @@ object at the requested scales.""",
             back_mask = mask
             back_shape = new_shape
         radius = image.element_size.value
-        if im.dimensions is 2:
+        if im.dimensions == 2:
             selem = skimage.morphology.disk(radius, dtype=bool)
         else:
             selem = skimage.morphology.ball(radius, dtype=bool)
@@ -334,7 +334,7 @@ object at the requested scales.""",
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
         back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
         if image.image_sample_size.value < 1:
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
@@ -394,7 +394,7 @@ object at the requested scales.""",
         currentmean = startmean
         startmean = max(startmean, np.finfo(float).eps)
 
-        if im.dimensions is 2:
+        if im.dimensions == 2:
             footprint = skimage.morphology.disk(1, dtype=bool)
         else:
             footprint = skimage.morphology.ball(1, dtype=bool)
@@ -415,7 +415,7 @@ object at the requested scales.""",
             # original image so we can match against object labels
             #
             orig_shape = im.pixel_data.shape
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = np.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of

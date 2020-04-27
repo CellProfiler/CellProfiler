@@ -28,7 +28,6 @@ import wx.lib.buttons
 import wx.lib.mixins.listctrl
 
 import cellprofiler
-import cellprofiler_core.analysis
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
@@ -44,6 +43,7 @@ import cellprofiler.gui.runmultiplepipelinesdialog
 import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
+import cellprofiler_core.analysis
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -2910,17 +2910,17 @@ class PipelineController(object):
     def analysis_event_handler(self, evt):
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
-        if isinstance(evt, cellprofiler_core.analysis.AnalysisStarted):
+        if isinstance(evt, cellprofiler_core.analysis.event.Started):
             wx.CallAfter(self.show_analysis_controls)
-        elif isinstance(evt, cellprofiler_core.analysis.AnalysisProgress):
+        elif isinstance(evt, cellprofiler_core.analysis.event.Progress):
             print("Progress", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(
                 map(
                     (lambda status: evt.counts.get(status, 0)),
                     (
-                        cellprofiler_core.analysis.AnalysisRunner.STATUS_DONE,
-                        cellprofiler_core.analysis.AnalysisRunner.STATUS_FINISHED_WAITING,
+                        cellprofiler_core.analysis.Runner.STATUS_DONE,
+                        cellprofiler_core.analysis.Runner.STATUS_FINISHED_WAITING,
                     ),
                 )
             )
@@ -2929,7 +2929,7 @@ class PipelineController(object):
                 total_jobs,
                 completed,
             )
-        elif isinstance(evt, cellprofiler_core.analysis.AnalysisFinished):
+        elif isinstance(evt, cellprofiler_core.analysis.event.Finished):
             print(("Cancelled!" if evt.cancelled else "Finished!"))
             # drop any interaction/display requests or exceptions
             while True:
@@ -2941,30 +2941,30 @@ class PipelineController(object):
                 self.pipeline_list = []
 
             wx.CallAfter(self.on_stop_analysis, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.DisplayRequest):
+        elif isinstance(evt, cellprofiler_core.analysis.request.Display):
             wx.CallAfter(self.module_display_request, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.DisplayPostRunRequest):
+        elif isinstance(evt, cellprofiler_core.analysis.request.DisplayPostRun):
             wx.CallAfter(self.module_display_post_run_request, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.DisplayPostGroupRequest):
+        elif isinstance(evt, cellprofiler_core.analysis.request.DisplayPostGroup):
             wx.CallAfter(self.module_display_post_group_request, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.InteractionRequest):
+        elif isinstance(evt, cellprofiler_core.analysis.request.Interaction):
             self.interaction_request_queue.put(
                 (PRI_INTERACTION, self.module_interaction_request, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler_core.analysis.OmeroLoginRequest):
+        elif isinstance(evt, cellprofiler_core.analysis.request.OmeroLogin):
             self.interaction_request_queue.put(
                 (PRI_INTERACTION, self.omero_login_request, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler_core.analysis.ExceptionReport):
+        elif isinstance(evt, cellprofiler_core.analysis.request.ExceptionReport):
             self.interaction_request_queue.put(
                 (PRI_EXCEPTION, self.analysis_exception, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(
             evt,
-            (cellprofiler_core.analysis.DebugWaiting, cellprofiler_core.analysis.DebugComplete),
+            (cellprofiler_core.analysis.request.DebugWaiting, cellprofiler_core.analysis.request.DebugComplete),
         ):
             # These are handled by the dialog reading the debug
             # request queue
@@ -2975,9 +2975,9 @@ class PipelineController(object):
                 evt.reply(cellprofiler_core.analysis.ServerExited())
             else:
                 self.debug_request_queue.put(evt)
-        elif isinstance(evt, cellprofiler_core.analysis.AnalysisPaused):
+        elif isinstance(evt, cellprofiler_core.analysis.event.Paused):
             wx.CallAfter(self.show_resume_button)
-        elif isinstance(evt, cellprofiler_core.analysis.AnalysisResumed):
+        elif isinstance(evt, cellprofiler_core.analysis.event.Resumed):
             wx.CallAfter(self.show_pause_button)
         elif isinstance(evt, cellprofiler_core.pipeline.event.RunException):
             # exception in (prepare/post)_(run/group)
@@ -3142,14 +3142,14 @@ class PipelineController(object):
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
-            evt.reply(cellprofiler_core.analysis.InteractionReply(result=result))
+            evt.reply(cellprofiler_core.analysis.reply.Interaction(result=result))
 
     @staticmethod
     def omero_login_request(evt):
         """Handle retrieval of the Omero credentials"""
         from bioformats.formatreader import get_omero_credentials
 
-        evt.reply(cellprofiler_core.analysis.OmeroLoginReply(get_omero_credentials()))
+        evt.reply(cellprofiler_core.analysis.reply.OmeroLogin(get_omero_credentials()))
 
     def analysis_exception(self, evt):
         """Report an error in analysis to the user, giving options for
@@ -3173,7 +3173,7 @@ class PipelineController(object):
             evt = evtlist[0]
             # Request debugging.  We get back a port.
             evt.reply(
-                cellprofiler_core.analysis.ExceptionPleaseDebugReply(
+                cellprofiler_core.analysis.reply.ExceptionPleaseDebug(
                 cellprofiler_core.analysis.DEBUG, hashlib.sha1(verification).hexdigest()
             )
             )
@@ -3186,7 +3186,7 @@ class PipelineController(object):
                 wx.OK | wx.CANCEL | wx.ICON_INFORMATION,
             )
             if result == wx.ID_CANCEL:
-                evt.reply(cellprofiler_core.analysis.DebugCancel())
+                evt.reply(cellprofiler_core.analysis.reply.DebugCancel())
                 return False
             # Acknowledge the port request, and we'll get back a
             # DebugComplete(), which we use as a new evt to reply with the
@@ -3229,7 +3229,8 @@ class PipelineController(object):
         else:
             disposition = ED_CONTINUE
 
-        evtlist[0].reply(cellprofiler_core.analysis.Reply(disposition=disposition))
+        evtlist[0].reply(cellprofiler_core.cellprofiler_core.utilities.zmq.communicable.reply.Reply(
+            disposition=disposition))
 
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
@@ -3351,11 +3352,11 @@ class PipelineController(object):
             m = event.measurements
             status = m[
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.analysis.AnalysisRunner.STATUS,
+                cellprofiler_core.analysis.Runner.STATUS,
                 m.get_image_numbers(),
             ]
             n_image_sets = sum(
-                [x == cellprofiler_core.analysis.AnalysisRunner.STATUS_DONE for x in status]
+                [x == cellprofiler_core.analysis.Runner.STATUS_DONE for x in status]
             )
             self.stop_running()
             if cellprofiler_core.preferences.get_show_analysis_complete_dlg():

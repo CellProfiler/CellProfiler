@@ -305,7 +305,7 @@ class Boundary:
         if not hasattr(self.threadlocal, "notify_socket"):
             self.threadlocal.notify_socket = self.zmq_context.socket(zmq.PUB)
             self.threadlocal.notify_socket.setsockopt(zmq.LINGER, 0)
-            self.threadlocal.notify_socket.connect(NOTIFY_SOCKET_ADDR)
+            self.threadlocal.notify_socket.connect(cellprofiler_core.utilities.zmq.NOTIFY_SOCKET_ADDR)
         self.downward_queue.put((msg, arg))
         self.threadlocal.notify_socket.send(b"WAKE UP!")
 

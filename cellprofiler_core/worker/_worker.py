@@ -2,7 +2,6 @@ import io
 import logging
 import random
 import sys
-import threading
 import time
 import traceback
 
@@ -132,7 +131,7 @@ class Worker(object):
     def do_job(self, job):
         """Handle a work request to its completion
 
-        job - WorkRequest
+        job - request.Work
         """
         import cellprofiler_core.pipeline as cpp
 
@@ -480,7 +479,7 @@ class Worker(object):
                     elif socket == announce_socket and state == zmq.POLLIN:
                         announcement = dict(announce_socket.recv_json())
                         if len(announcement) == 0:
-                            threading._sleep(0.25)
+                            time.sleep(0.25)
                             continue
                         if self.current_analysis_id in announcement:
                             analysis_id = self.current_analysis_id

@@ -3370,7 +3370,7 @@ to store the image.
         if not use_cached:
             import time
 
-            start_time = time.clock()
+            start_time = time.perf_counter()
 
             def listdir(path):
                 return [
@@ -3413,7 +3413,7 @@ to store the image.
                         ]
             else:
                 files = [(file_name, file_name) for file_name in sorted(listdir(root))]
-            how_long = time.clock() - start_time
+            how_long = time.perf_counter() - start_time
             cached_file_lists[self.image_directory()] = (how_long, files)
 
         if self.load_choice() == MS_EXACT_MATCH:

@@ -1,4 +1,5 @@
 import collections
+import logging
 import multiprocessing
 import subprocess
 import tempfile
@@ -20,6 +21,7 @@ from .event import *
 from .reply import *
 from .request import *
 
+logger = logging.getLogger(__name__)
 
 class Runner:
     """The Runner manages two threads (per instance) and all of the
@@ -119,7 +121,7 @@ class Runner:
         self.stop_workers()
 
         start_signal = threading.Semaphore(0)
-        self.interface_thread = start_daemon_thread(
+        self.interface_thread = cellprofiler_core.analysis.start_daemon_thread(
             target=self.interface,
             args=(start_signal,),
             kwargs=dict(overwrite=overwrite),
@@ -129,7 +131,7 @@ class Runner:
         # Wait for signal on interface started.
         #
         start_signal.acquire()
-        self.jobserver_thread = start_daemon_thread(
+        self.jobserver_thread = cellprofiler_core.analysis.start_daemon_thread(
             target=self.jobserver,
             args=(self.analysis_id, start_signal),
             name="AnalysisRunner.jobserver",
@@ -743,7 +745,7 @@ class Runner:
 
                 worker = subprocess.Popen(
                     args,
-                    env=find_worker_env(idx),
+                    env=cellprofiler_core.analysis.find_worker_env(idx),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -751,9 +753,10 @@ class Runner:
                 )
             else:
                 worker = subprocess.Popen(
-                    [find_python(), "-u", find_analysis_worker_source()]  # unbuffered
+                    [cellprofiler_core.analysis.find_python(), "-u",
+                     cellprofiler_core.analysis.find_analysis_worker_source()]  # unbuffered
                     + aw_args,
-                    env=find_worker_env(idx),
+                    env=cellprofiler_core.analysis.find_worker_env(idx),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -771,7 +774,7 @@ class Runner:
                     except:
                         break
 
-            start_daemon_thread(
+            cellprofiler_core.analysis.start_daemon_thread(
                 target=run_logger, args=(worker, idx), name="worker stdout logger"
             )
 

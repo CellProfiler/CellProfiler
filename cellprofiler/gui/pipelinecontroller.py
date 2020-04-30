@@ -44,6 +44,9 @@ import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler_core.analysis
+import cellprofiler_core.analysis.event
+import cellprofiler_core.analysis.reply
+import cellprofiler_core.analysis.request
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -54,6 +57,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
+import cellprofiler_core.utilities.zmq
 import cellprofiler_core.workspace
 
 logger = logging.getLogger(__name__)
@@ -2460,7 +2464,7 @@ class PipelineController(object):
 
             self.on_add_to_pipeline(self, AddToPipelineEvent(module_name, loader))
         else:
-            logger.warn(
+            logger.warning(
                 "Could not find module associated with ID = %d, module = %s"
                 % (event.GetId(), event.GetString())
             )
@@ -2623,12 +2627,12 @@ class PipelineController(object):
             return
 
         if active_module is None:
-            logger.warn(
+            logger.warning(
                 "User managed to fire the enable/disable module event and no module was active"
             )
             return
         if active_module.is_input_module():
-            logger.warn(
+            logger.warning(
                 "User managed to fire the enable/disable module event when an input module was active"
             )
             return
@@ -2884,7 +2888,7 @@ class PipelineController(object):
         This is called if the pipeline is misconfigured - an unrecoverable
         error that's the user's fault.
         """
-        if isinstance(event, cellprofiler_core.pipelineevent.PrepareRunError):
+        if isinstance(event, cellprofiler_core.pipeline.event.PrepareRunError):
             if event.module is None:
                 caption = "Cannot run pipeline"
                 message = (
@@ -3229,7 +3233,7 @@ class PipelineController(object):
         else:
             disposition = ED_CONTINUE
 
-        evtlist[0].reply(cellprofiler_core.cellprofiler_core.utilities.zmq.communicable.reply.Reply(
+        evtlist[0].reply(cellprofiler_core.utilities.zmq.communicable.reply.Reply(
             disposition=disposition))
 
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.

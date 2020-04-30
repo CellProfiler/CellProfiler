@@ -11,7 +11,7 @@ import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler.modules.saveimages
 import cellprofiler.modules.threshold
-import cellprofiler.worker
+import cellprofiler_core.worker
 
 
 class TestKnimeBridge(unittest.TestCase):

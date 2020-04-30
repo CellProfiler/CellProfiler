@@ -2382,6 +2382,7 @@ class VStringArray(object):
             i0, i1 = self.index[mid]
             l = min(slen, i1 - i0)
             for s0, s1 in zip(s, self.data[i0:i1]):
+                s0 = s0.encode("utf-8")
                 if s0 != s1:
                     break
             if s0 == s1:
@@ -2579,6 +2580,7 @@ class StringReferencer(object):
             s = s
         elif not isinstance(s, str):
             s = str(s)
+        s = s.encode("utf-8")
         result = numpy.zeros(len(s), numpy.uint8)
         result.data[:] = s
         return result
@@ -2599,7 +2601,7 @@ class StringReferencer(object):
         data_off, data_len = self.blocks[
             i, j, self.SR_BLOCK_OFF : (self.SR_BLOCK_LEN + 1)
         ]
-        s = str(self.data[i, data_off : (data_off + data_len)].data)
+        s = self.data[i, data_off : (data_off + data_len)].data.obj.tostring().decode("utf-8")
         return s
 
     def get_string_refs(self, strings):

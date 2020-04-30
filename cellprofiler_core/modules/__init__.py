@@ -55,7 +55,7 @@ class PluginImporter(object):
             exec(compile(contents, mod.__file__, "exec"), mod.__dict__)
             return mod
         except:
-            if fullname in sys.module:
+            if fullname in sys.modules:
                 del sys.modules[fullname]
 
 

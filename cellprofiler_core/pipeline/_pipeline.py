@@ -442,9 +442,9 @@ class Pipeline:
                         break
                     if len(line.strip()) == 0:
                         break
-                    if len(line.split(":")) != 2:
+                    if len(line.split(":", 1)) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
-                    text, setting = line.split(":")
+                    text, setting = line.split(":", 1)
                     setting = setting.encode('utf-8').decode('unicode_escape')
                     # TODO: remove en/decode when example cppipe no longer has \x__ characters
                     # En/decode needed to read example cppipe format

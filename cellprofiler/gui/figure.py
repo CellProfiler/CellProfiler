@@ -2147,7 +2147,8 @@ class Figure(wx.Frame):
                 title = "Per-image means"
             ystart += 0.1
             axes = self.subplot(x, y)
-            self.figure.tight_layout()
+            if not self.figure.get_constrained_layout():
+                self.figure.tight_layout()
             axes.axis('off')
             axes.annotate(title, xy=(0.5, 1.0), ha='center', va='top', fontsize=9)
 

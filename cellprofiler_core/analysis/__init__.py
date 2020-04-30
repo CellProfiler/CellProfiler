@@ -74,10 +74,10 @@ def find_worker_env(idx):
 
 def find_analysis_worker_source():
     # import here to break circular dependency.
-    import cellprofiler_core.analysis  # used to get the path to the code
+    import cellprofiler_core.worker  # used to get the path to the code
 
     return os.path.join(
-        os.path.dirname(cellprofiler_core.analysis.__file__), "__init__.py"
+        os.path.dirname(cellprofiler_core.worker.__file__), "__init__.py"
     )
 
 

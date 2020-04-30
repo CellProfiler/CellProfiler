@@ -18,8 +18,8 @@ from .reply._image_set_success_with_dictionary import ImageSetSuccessWithDiction
 from ..utilities.zmq import get_announcer_address, register_analysis
 from ..utilities.zmq.communicable.reply._reply import Reply
 from .event import *
-from .reply import *
-from .request import *
+import cellprofiler_core.analysis.reply
+import cellprofiler_core.analysis.request
 
 logger = logging.getLogger(__name__)
 
@@ -410,7 +410,7 @@ class Runner:
                         int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
-                        assert isinstance(finished_req, ImageSetSuccessWithDictionary)
+                        assert isinstance(finished_req, cellprofiler_core.analysis.reply.ImageSetSuccessWithDictionary)
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
@@ -418,7 +418,7 @@ class Runner:
                         # queue them now that the shared state is available.
                         for job in job_groups:
                             self.work_queue.put((job, worker_runs_post_group, False))
-                    finished_req.reply(Ack())
+                    finished_req.reply(cellprofiler_core.analysis.reply.Ack())
 
                 # check progress and report
                 counts = collections.Counter(
@@ -563,7 +563,7 @@ class Runner:
             except six.moves.queue.Empty:
                 continue
 
-            if isinstance(req, PipelinePreferences):
+            if isinstance(req, cellprofiler_core.analysis.request.PipelinePreferences):
                 logger.debug("Received pipeline preferences request")
                 req.reply(
                     Reply(
@@ -572,11 +572,11 @@ class Runner:
                     )
                 )
                 logger.debug("Replied to pipeline preferences request")
-            elif isinstance(req, InitialMeasurements):
+            elif isinstance(req, cellprofiler_core.analysis.request.InitialMeasurements):
                 logger.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
-            elif isinstance(req, Work):
+            elif isinstance(req, cellprofiler_core.analysis.request.Work):
                 if not self.work_queue.empty():
                     logger.debug("Received work request")
                     (
@@ -585,7 +585,7 @@ class Runner:
                         wants_dictionary,
                     ) = self.work_queue.get()
                     req.reply(
-                        Work(
+                        cellprofiler_core.analysis.reply.Work(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
                             wants_dictionary=wants_dictionary,
@@ -599,39 +599,39 @@ class Runner:
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(NoWork())
-            elif isinstance(req, ImageSetSuccess):
+                    req.reply(cellprofiler_core.analysis.reply.NoWork())
+            elif isinstance(req, cellprofiler_core.analysis.reply.ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
                 logger.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
                 logger.debug("Enqueued ImageSetSuccess")
-            elif isinstance(req, SharedDictionary):
+            elif isinstance(req, cellprofiler_core.analysis.request.SharedDictionary):
                 logger.debug("Received shared dictionary request")
-                req.reply(SharedDictionary(dictionaries=self.shared_dicts))
+                req.reply(cellprofiler_core.analysis.reply.SharedDictionary(dictionaries=self.shared_dicts))
                 logger.debug("Sent shared dictionary reply")
-            elif isinstance(req, MeasurementsReport):
+            elif isinstance(req, cellprofiler_core.analysis.request.MeasurementsReport):
                 logger.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
-                req.reply(Ack())
+                req.reply(cellprofiler_core.analysis.reply.Ack())
                 logger.debug("Acknowledged measurements report")
-            elif isinstance(req, AnalysisCancel):
+            elif isinstance(req, cellprofiler_core.analysis.request.AnalysisCancel):
                 # Signal the interface that we are cancelling
                 logger.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
-                req.reply(Ack())
+                req.reply(cellprofiler_core.analysis.reply.Ack())
             elif isinstance(
                 req,
                 (
-                    Interaction,
-                    Display,
-                    DisplayPostGroup,
-                    ExceptionReport,
-                    DebugWaiting,
-                    DebugComplete,
-                    OmeroLogin,
+                    cellprofiler_core.analysis.request.Interaction,
+                    cellprofiler_core.analysis.request.Display,
+                    cellprofiler_core.analysis.request.DisplayPostGroup,
+                    cellprofiler_core.analysis.request.ExceptionReport,
+                    cellprofiler_core.analysis.request.DebugWaiting,
+                    cellprofiler_core.analysis.request.DebugComplete,
+                    cellprofiler_core.analysis.request.OmeroLogin,
                 ),
             ):
                 logger.debug("Enqueueing interactive request")

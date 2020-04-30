@@ -9,7 +9,6 @@ import traceback
 import unittest
 import uuid
 import cellprofiler_core.analysis
-
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
 import cellprofiler_core.modules.loadimages
@@ -142,7 +141,7 @@ class TestAnalysisWorker(unittest.TestCase):
                             "Unexpected exit during recv"
                         )
                 if socket == work_socket and state == zmq.POLLIN:
-                    return cellprofiler_core.utilities.zmq.Communicable.recv(
+                    return cellprofiler_core.utilities.zmq.communicable.Communicable.recv(
                         work_socket
                     )
             raise six.moves.queue.Empty
@@ -355,7 +354,7 @@ class TestAnalysisWorker(unittest.TestCase):
         cellprofiler_core.preferences.set_default_output_directory(
             tests.modules.example_images_directory()
         )
-        rep = cellprofiler_core.analysis.Reply(
+        rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(GOOD_PIPELINE), preferences=preferences
         )
         req.reply(rep)
@@ -388,22 +387,21 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(
-            self.awthread.aw.do_job,
-            cellprofiler_core.analysis.WorkReply(
+        work_reply = cellprofiler_core.analysis.reply.Work(
                 image_set_numbers=[1],
                 worker_runs_post_group=False,
                 wants_dictionary=True,
-            ),
+            )
+        self.awthread.ex(
+            self.awthread.aw.do_job,
+            work_reply,
         )
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.PipelinePreferencesRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.PipelinePreferences)
         self.assertEqual(req.analysis_id, self.analysis_id)
-
-        import cellprofiler_core
 
         input_dir = os.path.abspath(
             os.path.join(
@@ -420,7 +418,7 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         }
 
-        rep = cellprofiler_core.analysis.Reply(
+        rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(GOOD_PIPELINE), preferences=preferences
         )
         req.reply(rep)
@@ -428,11 +426,11 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker asks for the initial measurements.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.InitialMeasurementsRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.InitialMeasurements)
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline()
         try:
-            req.reply(cellprofiler_core.analysis.Reply(buf=m.file_contents()))
+            req.reply(cellprofiler_core.utilities.zmq.Reply(buf=m.file_contents()))
             req = self.awthread.recv(self.work_socket)
             #
             # Check that they were installed
@@ -467,14 +465,14 @@ class TestAnalysisWorker(unittest.TestCase):
 
     def test_03_04_shared_dictionary_request(self):
         #
-        # The SharedDictionaryRequest
+        # The request.SharedDictionary
         #
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(
             self.awthread.aw.do_job,
-            cellprofiler_core.analysis.WorkReply(
+            cellprofiler_core.analysis.reply.Work(
                 image_set_numbers=[1],
                 worker_runs_post_group=False,
                 wants_dictionary=True,
@@ -484,7 +482,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.PipelinePreferencesRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.PipelinePreferences)
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
@@ -497,7 +495,7 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         }
 
-        rep = cellprofiler_core.analysis.Reply(
+        rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(DISPLAY_PIPELINE), preferences=preferences
         )
         req.reply(rep)
@@ -505,19 +503,19 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker asks for the initial measurements.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.InitialMeasurementsRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.InitialMeasurements)
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline()
         try:
-            req.reply(cellprofiler_core.analysis.Reply(buf=m.file_contents()))
+            req.reply(cellprofiler_core.utilities.zmq.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
         # Next, the worker asks for the shared dictionary
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.SharedDictionaryRequest)
-        rep = cellprofiler_core.analysis.SharedDictionaryReply(
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.SharedDictionary)
+        rep = cellprofiler_core.analysis.reply.SharedDictionary(
             dictionaries=[{("foo%d" % i): "bar%d" % i} for i in range(1, 8)]
         )
         req.reply(rep)
@@ -545,7 +543,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.set_work_socket()
         self.awthread.ex(
             self.awthread.aw.do_job,
-            cellprofiler_core.analysis.WorkReply(
+            cellprofiler_core.analysis.reply.Work(
                 image_set_numbers=[1],
                 worker_runs_post_group=False,
                 wants_dictionary=True,
@@ -555,7 +553,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.PipelinePreferencesRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.PipelinePreferences)
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
@@ -568,7 +566,7 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         }
 
-        rep = cellprofiler_core.analysis.Reply(
+        rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(DISPLAY_PIPELINE), preferences=preferences
         )
         req.reply(rep)
@@ -576,20 +574,20 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker asks for the initial measurements.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.InitialMeasurementsRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.InitialMeasurements)
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline()
         try:
-            req.reply(cellprofiler_core.analysis.Reply(buf=m.file_contents()))
+            req.reply(cellprofiler_core.utilities.zmq.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
         # Next, the worker asks for the shared dictionary
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.SharedDictionaryRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.SharedDictionary)
         shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in range(1, 8)]
-        rep = cellprofiler_core.analysis.SharedDictionaryReply(
+        rep = cellprofiler_core.analysis.reply.SharedDictionary(
             dictionaries=shared_dictionaries
         )
         req.reply(rep)
@@ -597,7 +595,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker sends a display request for FlipAndRotate
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.DisplayRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.Display)
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
         # Possibly, this will break if someone edits FlipAndRotate. Sorry.
@@ -606,21 +604,22 @@ class TestAnalysisWorker(unittest.TestCase):
         for item in testkeys:
             self.assertIn(item, list(d.keys()))
         self.assertIsInstance(d["output_image_pixel_data"], numpy.ndarray)
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         #
         # The worker sends ImageSetSuccessWithDictionary.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.ImageSetSuccessWithDictionary)
+        print(req)
+        self.assertIsInstance(req, cellprofiler_core.analysis.reply.ImageSetSuccessWithDictionary)
         self.assertEqual(req.image_set_number, 1)
         for expected, actual in zip(shared_dictionaries, req.shared_dicts):
             self.assertDictEqual(expected, actual)
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         #
         # The worker sends the measurement report
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.MeasurementsReport)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.MeasurementsReport)
         self.assertSequenceEqual(req.image_set_numbers, [1])
         m = cellprofiler_core.measurement.load_measurements_from_buffer(req.buf)
         #
@@ -636,7 +635,7 @@ class TestAnalysisWorker(unittest.TestCase):
             m.has_feature("Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X)
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         self.awthread.ecute()
 
     def test_03_06_the_happy_path_chapter_2(self):
@@ -648,7 +647,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.set_work_socket()
         self.awthread.ex(
             self.awthread.aw.do_job,
-            cellprofiler_core.analysis.WorkReply(
+            cellprofiler_core.analysis.reply.Work(
                 image_set_numbers=[2, 3],
                 worker_runs_post_group=True,
                 wants_dictionary=False,
@@ -658,7 +657,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.PipelinePreferencesRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.PipelinePreferences)
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
@@ -671,7 +670,7 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         }
 
-        rep = cellprofiler_core.analysis.Reply(
+        rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(DISPLAY_PIPELINE), preferences=preferences
         )
         req.reply(rep)
@@ -679,11 +678,11 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker asks for the initial measurements.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.InitialMeasurementsRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.InitialMeasurements)
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline(nimages=3)
         try:
-            req.reply(cellprofiler_core.analysis.Reply(buf=m.file_contents()))
+            req.reply(cellprofiler_core.utilities.zmq.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -695,27 +694,27 @@ class TestAnalysisWorker(unittest.TestCase):
             # The worker sends a display request for FlipAndRotate
             #
             req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cellprofiler_core.analysis.DisplayRequest)
-            req.reply(cellprofiler_core.analysis.Ack())
+            self.assertIsInstance(req, cellprofiler_core.analysis.request.Display)
+            req.reply(cellprofiler_core.analysis.reply.Ack())
             #
             # The worker sends ImageSetSuccess.
             #
             req = self.awthread.recv(self.work_socket)
             self.assertIsInstance(req, cellprofiler_core.analysis.ImageSetSuccess)
             self.assertEqual(req.image_set_number, image_number)
-            req.reply(cellprofiler_core.analysis.Ack())
+            req.reply(cellprofiler_core.analysis.reply.Ack())
         #
         # The worker sends a DisplayPostGroup request for FlipAndRotate
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.DisplayPostGroupRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.DisplayPostGroup)
         self.assertEqual(req.image_set_number, 3)
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         #
         # The worker sends a measurement report for image sets 2 and 3
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.MeasurementsReport)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.MeasurementsReport)
         self.assertSequenceEqual(req.image_set_numbers, [2, 3])
         m = cellprofiler_core.measurement.load_measurements_from_buffer(req.buf)
         #
@@ -731,7 +730,7 @@ class TestAnalysisWorker(unittest.TestCase):
             m.has_feature("Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X)
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         self.awthread.ecute()
 
     def test_03_08_a_sad_moment(self):
@@ -744,7 +743,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.set_work_socket()
         self.awthread.ex(
             self.awthread.aw.do_job,
-            cellprofiler_core.analysis.WorkReply(
+            cellprofiler_core.analysis.reply.Work(
                 image_set_numbers=[2, 3],
                 worker_runs_post_group=False,
                 wants_dictionary=False,
@@ -754,7 +753,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.PipelinePreferencesRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.PipelinePreferences)
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
@@ -767,7 +766,7 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         }
 
-        rep = cellprofiler_core.analysis.Reply(
+        rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(GOOD_PIPELINE), preferences=preferences
         )
         req.reply(rep)
@@ -775,7 +774,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker asks for the initial measurements.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.InitialMeasurementsRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.InitialMeasurements)
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline(nimages=3)
         m[
@@ -784,16 +783,16 @@ class TestAnalysisWorker(unittest.TestCase):
             2,
         ] = numpy.zeros(100, numpy.uint8)
         try:
-            req.reply(cellprofiler_core.analysis.Reply(buf=m.file_contents()))
+            req.reply(cellprofiler_core.utilities.zmq.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
         # Next, the worker asks for the shared dictionary
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.SharedDictionaryRequest)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.SharedDictionary)
         shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in range(1, 8)]
-        rep = cellprofiler_core.analysis.SharedDictionaryReply(
+        rep = cellprofiler_core.analysis.reply.SharedDictionary(
             dictionaries=shared_dictionaries
         )
         req.reply(rep)
@@ -802,27 +801,27 @@ class TestAnalysisWorker(unittest.TestCase):
         # tell the worker to skip the rest of the imageset.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.ExceptionReport)
-        req.reply(cellprofiler_core.analysis.ExceptionPleaseDebugReply(disposition="Skip"))
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.ExceptionReport)
+        req.reply(cellprofiler_core.analysis.reply.ExceptionPleaseDebug(disposition="Skip"))
         #
         # The worker should send ImageSetSuccess for image set 2 anyway.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cellprofiler_core.analysis.ImageSetSuccess)
         self.assertEqual(req.image_set_number, 2)
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         #
         # And then it tells us about image set 3
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cellprofiler_core.analysis.ImageSetSuccess)
         self.assertEqual(req.image_set_number, 3)
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         #
         # The worker should then report the measurements for both 2 and 3
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cellprofiler_core.analysis.MeasurementsReport)
+        self.assertIsInstance(req, cellprofiler_core.analysis.request.MeasurementsReport)
         self.assertSequenceEqual(req.image_set_numbers, [2, 3])
         m = cellprofiler_core.measurement.load_measurements_from_buffer(req.buf)
         #
@@ -854,7 +853,7 @@ class TestAnalysisWorker(unittest.TestCase):
         ]
         center_x = m["Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X, 3]
         self.assertEqual(count, len(center_x))
-        req.reply(cellprofiler_core.analysis.Ack())
+        req.reply(cellprofiler_core.analysis.reply.Ack())
         self.awthread.ecute()
 
     # def test_03_09_flag_image_abort(self):
@@ -946,7 +945,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             # The worker should ask for the pipeline and preferences next.
     #             #
     #             req = self.awthread.recv(self.work_socket)
-    #             self.assertIsInstance(req, cellprofiler_core.analysis.PipelinePreferencesRequest)
+    #             self.assertIsInstance(req, cellprofiler_core.analysis.request.PipelinePreferences)
     #             self.assertEqual(req.analysis_id, self.analysis_id)
     #
     #             input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
@@ -962,7 +961,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             # The worker asks for the initial measurements.
     #             #
     #             req = self.awthread.recv(self.work_socket)
-    #             self.assertIsInstance(req, cellprofiler_core.analysis.InitialMeasurementsRequest)
+    #             self.assertIsInstance(req, cellprofiler_core.analysis.request.InitialMeasurements)
     #             self.assertEqual(req.analysis_id, self.analysis_id)
     #             m = get_measurements_for_good_pipeline()
     #             pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -977,7 +976,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             # Next, the worker asks for the shared dictionary
     #             #
     #             req = self.awthread.recv(self.work_socket)
-    #             self.assertIsInstance(req, cellprofiler_core.analysis.SharedDictionaryRequest)
+    #             self.assertIsInstance(req, cellprofiler_core.analysis.request.SharedDictionary)
     #             shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,7)]
     #             rep = cellprofiler_core.analysis.SharedDictionaryReply(
     #                 dictionaries = shared_dictionaries)
@@ -988,7 +987,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             # and we fail the test.
     #             #
     #             req = self.awthread.recv(self.work_socket)
-    #             self.assertFalse(isinstance(req, cellprofiler_core.analysis.DisplayRequest))
+    #             self.assertFalse(isinstance(req, cellprofiler_core.analysis.request.Display))
     #             self.assertFalse(isinstance(req, cellprofiler_core.analysis.ExceptionReport))
     #
 
@@ -1102,7 +1101,7 @@ MeasureObjectSizeShape:[module_num:7|svn_version:\'Unknown\'|variable_revision_n
 """This pipeline should raise an exception when NamesAndTypes is run"""
 BAD_PIPELINE = GOOD_PIPELINE.replace("Image name:DNA", "Image name:RNA")
 
-"""This pipeline should issue a DisplayRequest when FlipAndRotate is run"""
+"""This pipeline should issue a request.Display when FlipAndRotate is run"""
 DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
     r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False",
     r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True",

@@ -781,7 +781,7 @@ class TestHDF5FileList(unittest.TestCase):
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
-            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode('utf-8')
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode("utf-8")
 
         for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
@@ -800,7 +800,7 @@ class TestHDF5FileList(unittest.TestCase):
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
-            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode('utf-8')
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode("utf-8")
 
         for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
@@ -822,7 +822,7 @@ class TestHDF5FileList(unittest.TestCase):
         def fn_metadata(url):
             r = np.random.RandomState()
             r.seed(np.fromstring(url, np.uint8))
-            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode('utf-8')
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring().decode("utf-8")
 
         for filelist, cache in ((self.filelist, True), (self.filelist_nocache, False)):
             filelist.add_files_to_filelist(urls)
@@ -1154,7 +1154,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(self.hdf_file["index"].shape[0], 1)
         self.assertEqual(self.hdf_file["index"][0, 0], 0)
         self.assertEqual(self.hdf_file["index"][0, 1], 3)
-        self.assertEqual(self.hdf_file["data"][:].tostring().decode('utf-8'), "foo")
+        self.assertEqual(self.hdf_file["data"][:].tostring().decode("utf-8"), "foo")
 
     def test_02_02_set_none(self):
         a = H5DICT.VStringArray(self.hdf_file)
@@ -1172,7 +1172,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0]: self.hdf_file["index"][0, 1]
-            ].tostring().decode('utf-8'),
+            ].tostring().decode("utf-8"),
             "hu",
         )
 
@@ -1185,7 +1185,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
-            ].tostring().decode('utf-8'),
+            ].tostring().decode("utf-8"),
             "whoops",
         )
 
@@ -1323,7 +1323,7 @@ class TestVStringArray(HDF5DictTessstBase):
         lengths = r.randint(3, 10, 100)
         idx = np.hstack([[0], np.cumsum(lengths)])
         chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
-        strings = [chars[i:j].tostring() for i, j in zip(idx[:-1], idx[1:])]
+        strings = [chars[i:j].tostring().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings)
         a.sort()
@@ -1361,7 +1361,7 @@ class TestVStringArray(HDF5DictTessstBase):
         lengths = r.randint(3, 10, 100)
         idx = np.hstack([[0], np.cumsum(lengths)])
         chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
-        strings = [chars[i:j].tostring() for i, j in zip(idx[:-1], idx[1:])]
+        strings = [chars[i:j].tostring().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings[:50])
         a.sort()

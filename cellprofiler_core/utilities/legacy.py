@@ -4,7 +4,7 @@ Functions associated with legacy python
 
 
 def cmp(a, b):
-    return (a > b) - (a < b)
+    return int((a > b)) - int((a < b))
 
 
 def equals(a, b, encoding_a="utf-8", encoding_b="utf-8"):

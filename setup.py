@@ -20,7 +20,7 @@ setuptools.setup(
         "docutils==0.15.2",
         "h5py>=2.10.0",
         "python-javabridge==4.0.0rc1",
-        "matplotlib>=3.2.1",
+        "matplotlib>=3.1.3",
         "numpy>=1.18.2",
         "prokaryote==2.4.1",
         "python-bioformats>=1.5.2",

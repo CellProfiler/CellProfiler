@@ -17,11 +17,12 @@ from cellprofiler_core.analysis import *
 from .reply._image_set_success_with_dictionary import ImageSetSuccessWithDictionary
 from ..utilities.zmq import get_announcer_address, register_analysis
 from ..utilities.zmq.communicable.reply._reply import Reply
-from .event import *
+import cellprofiler_core.analysis.event
 import cellprofiler_core.analysis.reply
 import cellprofiler_core.analysis.request
 
 logger = logging.getLogger(__name__)
+
 
 class Runner:
     """The Runner manages two threads (per instance) and all of the
@@ -258,7 +259,7 @@ class Runner:
                 )
             )
 
-            self.post_event(Started())
+            self.post_event(cellprofiler_core.analysis.event.Started())
             posted_analysis_started = True
 
             # reset the status of every image set that needs to be processed
@@ -429,7 +430,7 @@ class Runner:
                     ]
                     for image_set_number in image_sets_to_process
                 )
-                self.post_event(Progress(counts))
+                self.post_event(cellprofiler_core.analysis.event.Progress(counts))
 
                 # Are we finished?
                 if counts[self.STATUS_DONE] == len(image_sets_to_process):
@@ -464,7 +465,7 @@ class Runner:
                 start_signal.release()
             if posted_analysis_started:
                 was_cancelled = self.cancelled
-                self.post_event(Finished(measurements, was_cancelled))
+                self.post_event(cellprofiler_core.analysis.event.Finished(measurements, was_cancelled))
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
@@ -546,7 +547,7 @@ class Runner:
 
             with self.jobserver_work_cv:
                 if self.paused and not i_was_paused_before:
-                    self.post_event(Paused())
+                    self.post_event(cellprofiler_core.analysis.event.Paused())
                     i_was_paused_before = True
                 if self.paused or request_queue.empty():
                     self.jobserver_work_cv.wait(
@@ -555,7 +556,7 @@ class Runner:
                     continue  # back to while... check that we're still running
 
             if i_was_paused_before:
-                self.post_event(Resumed())
+                self.post_event(cellprofiler_core.analysis.event.Resumed())
                 i_was_paused_before = False
 
             try:

@@ -1101,7 +1101,7 @@ class TestMeasurements:
     #
     #     rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
     #           for x in m.get_relationship_groups()]
-    #     self.assertItemsEqual(d.keys(), rg)
+    #     self.assertCountEqual(d.keys(), rg)
     #
     #     for key in d:
     #         image_numbers2, object_numbers2 = d[key]

@@ -521,7 +521,7 @@ class Measurements:
             cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER,
             cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER,
         )
-        dt = numpy.dtype([(feature, numpy.int32, 1) for feature in features])
+        dt = numpy.dtype([(feature, numpy.int32, ()) for feature in features])
         if (
             not (module_number, relationship, object_name1, object_name2)
             in self.__relationships

@@ -3030,7 +3030,7 @@ class PipelineController(object):
                 "Failed to display module # %d. The pipeline may have been edited during analysis"
                 % module_num
             )
-            evt.reply(cellprofiler_core.analysis.Ack())
+            evt.reply(cellprofiler_core.analysis.reply.Ack())
             return
 
         # use our shared workspace
@@ -3056,7 +3056,7 @@ class PipelineController(object):
                 cellprofiler_core.preferences.cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply
-            evt.reply(cellprofiler_core.analysis.Ack())
+            evt.reply(cellprofiler_core.analysis.reply.Ack())
 
     def module_display_post_run_request(self, evt):
         assert (
@@ -3113,7 +3113,7 @@ class PipelineController(object):
             if error.status is wx.ID_CANCEL:
                 cellprofiler_core.preferences.cancel_progress()
         finally:
-            evt.reply(cellprofiler_core.analysis.Ack())
+            evt.reply(cellprofiler_core.analysis.reply.Ack())
 
     def module_interaction_request(self, evt):
         """forward a module interaction request from the running pipeline to

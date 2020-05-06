@@ -83,7 +83,7 @@ setuptools.setup(
     package_data={"cellprofiler": find_resources("cellprofiler", "data")},
     include_package_data=True,
     packages=setuptools.find_packages(exclude=["tests*"]),
-    python_requires=">=3.7",
+    python_requires=">=3.8, <4.0",
     setup_requires=["pytest"],
     url="https://github.com/CellProfiler/CellProfiler",
     version=find_version("cellprofiler", "__init__.py"),

@@ -94,7 +94,6 @@ ID_FILE_STOP_ANALYSIS = wx.NewId()
 ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT = wx.NewId()
 ID_FILE_PLATEVIEWER = wx.NewId()
-ID_FILE_RUN_MULTIPLE_PIPELINES = wx.NewId()
 ID_FILE_NEW_CP = wx.NewId()
 
 ID_EDIT_SELECT_ALL = wx.NewId()
@@ -656,9 +655,6 @@ class CPFrame(wx.Frame):
             ID_FILE_STOP_ANALYSIS, "Stop Analysis", "Stop running the pipeline"
         )
         self.__menu_file.Append(
-            ID_FILE_RUN_MULTIPLE_PIPELINES, "Run Multiple Pipelines"
-        )
-        self.__menu_file.Append(
             ID_FILE_RESTART,
             "Resume Pipeline",
             "Resume a pipeline from a saved measurements file.",
@@ -1066,7 +1062,6 @@ class CPFrame(wx.Frame):
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
         self.__menu_file.Enable(ID_FILE_RESTART, False)
-        self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
 
         assert isinstance(startstop, wx.MenuItem)
         startstop.SetText("&Exit Test Mode\tF5")
@@ -1084,7 +1079,6 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, True)
         self.__menu_file.Enable(ID_FILE_RESTART, True)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, True)
-        self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, True)
 
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, False)
 
@@ -1093,7 +1087,6 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
         self.__menu_file.Enable(ID_FILE_RESTART, False)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, False)
-        self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
 
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)
 

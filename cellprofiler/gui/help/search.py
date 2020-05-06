@@ -69,9 +69,6 @@ MENU_HELP = {
     "Plate Viewer": cellprofiler.gui.help.content.read_content(
         "output_plateviewer.rst"
     ),
-    "Running Multiple Pipelines": cellprofiler.gui.help.content.read_content(
-        "other_multiple_pipelines.rst"
-    ),
     "Running Your Pipeline": cellprofiler.gui.help.content.read_content(
         "pipelines_running.rst"
     ),

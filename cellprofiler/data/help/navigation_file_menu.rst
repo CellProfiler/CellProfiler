@@ -36,11 +36,6 @@ and performing an analysis run.
 -  **Analyze Images:** Executes the current pipeline using the current
    pipeline and Default Input and Output folder settings.
 -  **Stop Analysis:** Stop the current analysis run.
--  **Run Multiple Pipelines:** Execute multiple pipelines in sequential
-   order. This option opens a dialog box allowing you to select the
-   pipelines you would like to run, as well as the associated input and
-   output folders. See the help in the *Run Multiple Pipelines* dialog
-   for more details.
 -  **Open a New CP Window:** You can run multiple instances of
    CellProfiler simultaneously; this is how you launch a new instance.
 -  **Resume Pipeline:** Resume a partially completed analysis run from

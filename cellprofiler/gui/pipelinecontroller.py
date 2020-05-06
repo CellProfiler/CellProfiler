@@ -26,6 +26,7 @@ import six.moves.urllib.request
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
+from wx.adv import Sound
 
 import cellprofiler
 import cellprofiler.gui.addmoduleframe
@@ -3342,6 +3343,8 @@ class PipelineController(object):
                 [x == cellprofiler_core.analysis.Runner.STATUS_DONE for x in status]
             )
             self.stop_running()
+            if cellprofiler_core.preferences.get_wants_pony():
+                Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()
             if cellprofiler_core.preferences.get_show_analysis_complete_dlg():
                 self.show_analysis_complete(n_image_sets)
             m.close()

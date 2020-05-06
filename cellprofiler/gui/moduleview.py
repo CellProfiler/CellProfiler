@@ -283,6 +283,7 @@ class ModuleView(object):
         self.notes_panel = notes_panel
         self.__frame = frame
         self.top_panel = top_panel
+        self.showing_tables = False
         background_color = cellprofiler_core.preferences.get_background_color()
         #############################################
         #
@@ -666,7 +667,14 @@ class ModuleView(object):
                 #
                 self.__frame.layout_pmi_panel()
                 self.top_panel.Layout()
-                self.module_panel.FitInside()
+                # Running FitInside interferes with text wrapping if the previous module contained a table.
+                if not self.showing_tables:
+                    self.module_panel.FitInside()
+                # Keep a note of whether the last module had a table.
+                if imageset_control or table_control or self.__module.module_num == 1:
+                    self.showing_tables = True
+                else:
+                    self.showing_tables = False
                 if self.DO_FREEZE:
                     self.module_panel.Thaw()
             else:

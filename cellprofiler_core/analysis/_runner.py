@@ -720,7 +720,7 @@ class Runner:
         # start workers
         for idx in range(num):
             if sys.platform == "darwin":
-                close_all_on_exec()
+                cellprofiler_core.analysis.close_all_on_exec()
 
             aw_args = [
                 "--work-announce",

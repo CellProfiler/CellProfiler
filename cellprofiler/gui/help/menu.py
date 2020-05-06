@@ -210,13 +210,6 @@ class Menu(cellprofiler.gui.menu.Menu):
         other_menu = cellprofiler.gui.menu.Menu(self.frame)
 
         other_menu.append(
-            "Running Multiple Pipelines",
-            contents=cellprofiler.gui.help.content.read_content(
-                "other_multiple_pipelines.rst"
-            ),
-        )
-
-        other_menu.append(
             "Configuring Logging",
             contents=cellprofiler.gui.help.content.read_content("other_logging.rst"),
         )

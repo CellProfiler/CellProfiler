@@ -39,7 +39,6 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
-import cellprofiler.gui.runmultiplepipelinesdialog
 import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
@@ -198,11 +197,6 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_stop_running,
             id=cellprofiler.gui.cpframe.ID_FILE_STOP_ANALYSIS,
-        )
-        frame.Bind(
-            wx.EVT_MENU,
-            self.on_run_multiple_pipelines,
-            id=cellprofiler.gui.cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES,
         )
         frame.Bind(
             wx.EVT_MENU, self.on_restart, id=cellprofiler.gui.cpframe.ID_FILE_RESTART
@@ -2758,21 +2752,6 @@ class PipelineController(object):
 
     def status_callback(self, *args):
         self.__frame.preferences_view.on_pipeline_progress(*args)
-
-    def on_run_multiple_pipelines(self, event):
-        """Menu handler for run multiple pipelines"""
-        dlg = cellprofiler.gui.runmultiplepipelinesdialog.RunMultplePipelinesDialog(
-            parent=self.__frame,
-            title="Run multiple pipelines",
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
-            size=(640, 480),
-        )
-        try:
-            if dlg.ShowModal() == wx.ID_OK:
-                self.pipeline_list = dlg.get_pipelines()
-                self.run_next_pipeline(event)
-        except:
-            dlg.Destroy()
 
     def run_next_pipeline(self, event):
         if len(self.pipeline_list) == 0:

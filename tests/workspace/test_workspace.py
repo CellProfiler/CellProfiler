@@ -28,7 +28,9 @@ class TestWorkspace:
         pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.init_modules()
         m = cellprofiler_core.measurement.Measurements()
-        workspace = cellprofiler_core.workspace.Workspace(pipeline, None, m, None, m, None)
+        workspace = cellprofiler_core.workspace.Workspace(
+            pipeline, None, m, None, m, None
+        )
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()
         file_list.add_files_to_filelist(
@@ -47,7 +49,7 @@ class TestWorkspace:
         assert not cellprofiler_core.workspace.is_workspace_file(__file__)
         for group in TOP_LEVEL_GROUP_NAME, FILE_LIST_GROUP:
             path = self.make_workspace_file()
-            h5file = h5py.File(path, 'r+')
+            h5file = h5py.File(path, "r+")
             del h5file[group]
             h5file.close()
             assert not cellprofiler_core.workspace.is_workspace_file(path)

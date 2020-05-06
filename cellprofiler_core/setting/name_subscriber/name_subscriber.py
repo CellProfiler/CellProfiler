@@ -1,6 +1,9 @@
 from cellprofiler_core.setting._setting import Setting
 from cellprofiler_core.setting._validation_error import ValidationError
-from cellprofiler_core.setting.text import get_name_provider_choices, OutlineNameProvider
+from cellprofiler_core.setting.text import (
+    get_name_provider_choices,
+    OutlineNameProvider,
+)
 
 
 class NameSubscriber(Setting):

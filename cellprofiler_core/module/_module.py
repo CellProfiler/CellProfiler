@@ -129,17 +129,21 @@ class Module:
                         x = x[0]
                 self.__notes.append(x)
         if cellprofiler_core.pipeline.SHOW_WINDOW in settings.dtype.fields:
-            self.__show_window = settings[cellprofiler_core.pipeline.SHOW_WINDOW][0, idx] != 0
+            self.__show_window = (
+                settings[cellprofiler_core.pipeline.SHOW_WINDOW][0, idx] != 0
+            )
         if cellprofiler_core.pipeline.BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = numpy.array(
                 settings[cellprofiler_core.pipeline.BATCH_STATE][0, idx].tostring()
             )
-        setting_count = settings[cellprofiler_core.pipeline.NUMBERS_OF_VARIABLES][0, idx]
-        variable_revision_number = settings[cellprofiler_core.pipeline.VARIABLE_REVISION_NUMBERS][
+        setting_count = settings[cellprofiler_core.pipeline.NUMBERS_OF_VARIABLES][
             0, idx
         ]
+        variable_revision_number = settings[
+            cellprofiler_core.pipeline.VARIABLE_REVISION_NUMBERS
+        ][0, idx]
         module_name = settings[cellprofiler_core.pipeline.MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
             value_cell = settings[cellprofiler_core.pipeline.VARIABLE_VALUES][idx, i]
@@ -150,7 +154,9 @@ class Module:
                     setting_values.append(str(value_cell[0]))
             else:
                 setting_values.append(value_cell)
-        self.set_settings_from_values(setting_values, variable_revision_number, module_name)
+        self.set_settings_from_values(
+            setting_values, variable_revision_number, module_name
+        )
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
@@ -166,7 +172,9 @@ class Module:
         """
         pass
 
-    def set_settings_from_values(self, setting_values, variable_revision_number, module_name):
+    def set_settings_from_values(
+        self, setting_values, variable_revision_number, module_name
+    ):
         """Set the settings in a module, given a list of values
 
         The default implementation gets all the settings and then
@@ -176,9 +184,9 @@ class Module:
         are in the list.
         """
 
-        setting_values, variable_revision_number = self.upgrade_settings(setting_values,
-                                                                         int(variable_revision_number),
-                                                                         module_name)
+        setting_values, variable_revision_number = self.upgrade_settings(
+            setting_values, int(variable_revision_number), module_name
+        )
         self.prepare_settings(setting_values)
         for v, value in zip(self.settings(), setting_values):
             v.value = value
@@ -284,7 +292,9 @@ class Module:
             shape=(len(self.notes), 1), dtype="object"
         )
         for i in range(0, len(self.notes)):
-            setting[cellprofiler_core.pipeline.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
+            setting[cellprofiler_core.pipeline.MODULE_NOTES][0, module_idx][
+                i, 0
+            ] = self.notes[i]
         setting[cellprofiler_core.pipeline.NUMBERS_OF_VARIABLES][0, module_idx] = len(
             self.settings()
         )
@@ -312,9 +322,9 @@ class Module:
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cellprofiler_core.pipeline.BATCH_STATE][0, module_idx] = numpy.fromstring(
-            self.batch_state.tostring(), numpy.uint8
-        )
+        setting[cellprofiler_core.pipeline.BATCH_STATE][
+            0, module_idx
+        ] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
 
     @staticmethod
     def in_batch_mode():

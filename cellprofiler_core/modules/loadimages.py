@@ -27,6 +27,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+
 # import cellprofiler_core.modules
 from cellprofiler_core.modules import identify
 from cellprofiler_core.utilities import generate_presigned_url
@@ -700,7 +701,9 @@ pair of fields.""",
         # Add the first image to the images list
         self.images = []
         self.add_imagecb(False)
-        self.image_count = cellprofiler_core.setting.HiddenCount(self.images, text="Image count")
+        self.image_count = cellprofiler_core.setting.HiddenCount(
+            self.images, text="Image count"
+        )
 
         # Add another image
         self.add_image = cellprofiler_core.setting.DoSomething(
@@ -1340,13 +1343,28 @@ to store the image.
                 ):
                     if fd.metadata_choice in (tag, M_BOTH):
                         choices.update(
-                            cellprofiler_core.measurement.find_metadata_tokens(setting.value)
+                            cellprofiler_core.measurement.find_metadata_tokens(
+                                setting.value
+                            )
                         )
             if (
-                any([cellprofiler_core.measurement.is_well_column_token(x) for x in choices])
-                and any([cellprofiler_core.measurement.is_well_row_token(x) for x in choices])
+                any(
+                    [
+                        cellprofiler_core.measurement.is_well_column_token(x)
+                        for x in choices
+                    ]
+                )
+                and any(
+                    [
+                        cellprofiler_core.measurement.is_well_row_token(x)
+                        for x in choices
+                    ]
+                )
                 and not any(
-                    [x.lower() == cellprofiler_core.measurement.FTR_WELL.lower() for x in choices]
+                    [
+                        x.lower() == cellprofiler_core.measurement.FTR_WELL.lower()
+                        for x in choices
+                    ]
                 )
             ):
                 choices.add(cellprofiler_core.measurement.FTR_WELL)
@@ -1672,6 +1690,7 @@ to store the image.
         # historic rewrites from CP1.0
         #
         variable_revision_number = int(variable_revision_number)
+
         def upgrade_1_to_2(setting_values):
             """Upgrade rev 1 LoadImages to rev 2
 
@@ -1800,9 +1819,13 @@ to store the image.
             location = setting_values[self.SLOT_LOCATION]
             if location == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME:
                 if custom_location.startswith("."):
-                    location = cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                    location = (
+                        cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                    )
                 elif custom_location.startswith("&"):
-                    location = cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    location = (
+                        cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    )
                     custom_location = "." + custom_location[1:]
             location = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 location, custom_location
@@ -2222,7 +2245,9 @@ to store the image.
                             features[k] = [None] * n_image_sets
                         features[k][image_number - 1] = v
         for k, v in list(features.items()):
-            workspace.measurements.add_all_measurements(cellprofiler_core.measurement.IMAGE, k, v)
+            workspace.measurements.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, k, v
+            )
 
         return True
 
@@ -2282,7 +2307,10 @@ to store the image.
             if x.startswith(cellprofiler_core.measurement.C_METADATA)
         ]
         for tag in tags:
-            if "_".join((cellprofiler_core.measurement.C_METADATA, tag)) not in metadata_features:
+            if (
+                "_".join((cellprofiler_core.measurement.C_METADATA, tag))
+                not in metadata_features
+            ):
                 message = (
                     "LoadImages needs the prior Load modules to define "
                     'the metadata tag, "%s", in order to match metadata' % tag
@@ -2618,7 +2646,10 @@ to store the image.
                                     m.add_measurement(
                                         cellprofiler_core.measurement.IMAGE,
                                         "_".join(
-                                            (cellprofiler_core.measurement.C_URL, image_name)
+                                            (
+                                                cellprofiler_core.measurement.C_URL,
+                                                image_name,
+                                            )
                                         ),
                                         url,
                                         image_set_number=image_number,
@@ -2638,7 +2669,12 @@ to store the image.
                                 for k in list(frame_metadata.keys()):
                                     m.add_measurement(
                                         cellprofiler_core.measurement.IMAGE,
-                                        "_".join((cellprofiler_core.measurement.C_METADATA, k)),
+                                        "_".join(
+                                            (
+                                                cellprofiler_core.measurement.C_METADATA,
+                                                k,
+                                            )
+                                        ),
                                         frame_metadata[k],
                                         image_set_number=image_number,
                                     )
@@ -2736,7 +2772,10 @@ to store the image.
                                         m.add_measurement(
                                             cellprofiler_core.measurement.IMAGE,
                                             "_".join(
-                                                (cellprofiler_core.measurement.C_URL, image_name)
+                                                (
+                                                    cellprofiler_core.measurement.C_URL,
+                                                    image_name,
+                                                )
                                             ),
                                             url,
                                             image_set_number=image_number,
@@ -2757,7 +2796,10 @@ to store the image.
                                         m.add_measurement(
                                             cellprofiler_core.measurement.IMAGE,
                                             "_".join(
-                                                (cellprofiler_core.measurement.C_METADATA, k)
+                                                (
+                                                    cellprofiler_core.measurement.C_METADATA,
+                                                    k,
+                                                )
                                             ),
                                             frame_metadata[k],
                                             image_set_number=image_number,
@@ -2906,15 +2948,25 @@ to store the image.
                 image_name = channel.get_image_name()
                 if wants_images:
                     feature = cellprofiler_core.measurement.C_URL + "_" + image_name
-                    path_feature = cellprofiler_core.measurement.C_PATH_NAME + "_" + image_name
-                    file_feature = cellprofiler_core.measurement.C_FILE_NAME + "_" + image_name
-                else:
-                    feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + image_name
                     path_feature = (
-                            cellprofiler_core.measurement.C_OBJECTS_PATH_NAME + "_" + image_name
+                        cellprofiler_core.measurement.C_PATH_NAME + "_" + image_name
                     )
                     file_feature = (
-                            cellprofiler_core.measurement.C_OBJECTS_FILE_NAME + "_" + image_name
+                        cellprofiler_core.measurement.C_FILE_NAME + "_" + image_name
+                    )
+                else:
+                    feature = (
+                        cellprofiler_core.measurement.C_OBJECTS_URL + "_" + image_name
+                    )
+                    path_feature = (
+                        cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
+                        + "_"
+                        + image_name
+                    )
+                    file_feature = (
+                        cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
+                        + "_"
+                        + image_name
                     )
                 row = [
                     image_name,
@@ -2928,17 +2980,20 @@ to store the image.
                 metadata = self.get_filename_metadata(fd, filename, path)
                 if self.file_types == FF_STK_MOVIES:
                     index = m.get_measurement(
-                        cellprofiler_core.measurement.IMAGE, "_".join((C_FRAME, image_name))
+                        cellprofiler_core.measurement.IMAGE,
+                        "_".join((C_FRAME, image_name)),
                     )
                     provider = LoadImagesSTKFrameProvider(
                         image_name, path, filename, index, rescale
                     )
                 elif self.file_types == FF_OTHER_MOVIES:
                     series = m.get_measurement(
-                        cellprofiler_core.measurement.IMAGE, "_".join((C_SERIES, image_name))
+                        cellprofiler_core.measurement.IMAGE,
+                        "_".join((C_SERIES, image_name)),
                     )
                     index = m.get_measurement(
-                        cellprofiler_core.measurement.IMAGE, "_".join((C_FRAME, image_name))
+                        cellprofiler_core.measurement.IMAGE,
+                        "_".join((C_FRAME, image_name)),
                     )
                     metadata[C_SERIES] = series
                     for f in (M_Z, M_T):
@@ -2951,7 +3006,8 @@ to store the image.
                     )
                 elif self.file_types == FF_AVI_MOVIES:
                     index = m.get_measurement(
-                        cellprofiler_core.measurement.IMAGE, "_".join((C_FRAME, image_name))
+                        cellprofiler_core.measurement.IMAGE,
+                        "_".join((C_FRAME, image_name)),
                     )
                     metadata[M_T] = m.get_measurement(
                         cellprofiler_core.measurement.IMAGE,
@@ -3102,12 +3158,16 @@ to store the image.
         metadata = {}
         if self.has_file_metadata(fd):
             metadata.update(
-                cellprofiler_core.measurement.extract_metadata(fd.file_metadata.value, filename)
+                cellprofiler_core.measurement.extract_metadata(
+                    fd.file_metadata.value, filename
+                )
             )
         if self.has_path_metadata(fd):
             path = os.path.abspath(os.path.join(self.image_directory(), path))
             metadata.update(
-                cellprofiler_core.measurement.extract_metadata(fd.path_metadata.value, path)
+                cellprofiler_core.measurement.extract_metadata(
+                    fd.path_metadata.value, path
+                )
             )
         if needs_well_metadata(list(metadata.keys())):
             well_row_token, well_column_token = well_metadata_tokens(
@@ -3148,9 +3208,7 @@ to store the image.
                   for this channel.
         """
         if measurements is not None:
-            assert isinstance(
-                measurements, cellprofiler_core.measurement.Measurements
-            )
+            assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
 
             def add_fn(feature, value):
                 measurements.add_measurement(
@@ -3192,7 +3250,9 @@ to store the image.
             for category, value in image_data:
                 add_fn("_".join((category, channel.get_image_name())), value)
         for key in list(metadata.keys()):
-            add_fn("_".join((cellprofiler_core.measurement.C_METADATA, key)), metadata[key])
+            add_fn(
+                "_".join((cellprofiler_core.measurement.C_METADATA, key)), metadata[key]
+            )
         if measurements is None:
             return d
 
@@ -3245,9 +3305,13 @@ to store the image.
 
         tags = []
         if self.has_file_metadata(fd):
-            tags += cellprofiler_core.measurement.find_metadata_tokens(fd.file_metadata.value)
+            tags += cellprofiler_core.measurement.find_metadata_tokens(
+                fd.file_metadata.value
+            )
         if self.has_path_metadata(fd):
-            tags += cellprofiler_core.measurement.find_metadata_tokens(fd.path_metadata.value)
+            tags += cellprofiler_core.measurement.find_metadata_tokens(
+                fd.path_metadata.value
+            )
         if self.file_types == FF_OTHER_MOVIES:
             tags += [M_Z, M_T, C_SERIES]
         elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
@@ -3294,7 +3358,10 @@ to store the image.
             # Default for Flex is to group by file name and series
             keys = (url_feature, series_feature)
             mapping = dict(
-                ((url_feature, cellprofiler_core.measurement.C_URL), (series_feature, C_SERIES))
+                (
+                    (url_feature, cellprofiler_core.measurement.C_URL),
+                    (series_feature, C_SERIES),
+                )
             )
 
         elif self.load_movies():
@@ -3598,7 +3665,10 @@ to store the image.
                     cellprofiler_core.measurement.C_COUNT,
                 ]
         elif object_name in object_names:
-            res += [cellprofiler_core.measurement.C_LOCATION, cellprofiler_core.measurement.C_NUMBER]
+            res += [
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
+            ]
         return res
 
     def get_measurements(self, pipeline, object_name, category):
@@ -3648,8 +3718,12 @@ to store the image.
                 if not self.channel_wants_images(channel):
                     name = channel.object_name.value
                     cols += identify.get_object_measurement_columns(name)
-                    path_name_category = cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
-                    file_name_category = cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
+                    path_name_category = (
+                        cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
+                    )
+                    file_name_category = (
+                        cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
+                    )
                     url_category = cellprofiler_core.measurement.C_URL
                 else:
                     name = channel.get_image_name()
@@ -3759,7 +3833,10 @@ to store the image.
                 (
                     cellprofiler_core.measurement.IMAGE,
                     "_".join(
-                        (cellprofiler_core.measurement.C_METADATA, cellprofiler_core.measurement.FTR_WELL)
+                        (
+                            cellprofiler_core.measurement.C_METADATA,
+                            cellprofiler_core.measurement.FTR_WELL,
+                        )
                     ),
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 )
@@ -3918,7 +3995,9 @@ to store the image.
                         mgroup.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
                         mgroup.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
                         mgroup.filter.build(structure)
-                        my_tags.update(cellprofiler_core.measurement.find_metadata_tokens(value))
+                        my_tags.update(
+                            cellprofiler_core.measurement.find_metadata_tokens(value)
+                        )
                 if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()

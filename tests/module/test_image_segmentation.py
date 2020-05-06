@@ -10,7 +10,9 @@ import cellprofiler_core.workspace
 
 class TestImageSegmentation:
     def test_get_categories_image(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -21,18 +23,25 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_categories_output_object(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
         actual = module.get_categories(None, "ImageSegmentation")
 
-        expected = [cellprofiler_core.measurement.C_LOCATION, cellprofiler_core.measurement.C_NUMBER]
+        expected = [
+            cellprofiler_core.measurement.C_LOCATION,
+            cellprofiler_core.measurement.C_NUMBER,
+        ]
 
         assert actual == expected
 
     def test_get_categories_other(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -43,7 +52,9 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_measurement_columns(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -80,12 +91,16 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_measurements_image_count(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
         actual = module.get_measurements(
-            None, cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_COUNT
+            None,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_COUNT,
         )
 
         expected = ["ImageSegmentation"]
@@ -93,18 +108,24 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_measurements_image_other(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
-        actual = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "foo")
+        actual = module.get_measurements(
+            None, cellprofiler_core.measurement.IMAGE, "foo"
+        )
 
         expected = []
 
         assert actual == expected
 
     def test_get_measurements_output_object_location(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -121,7 +142,9 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_measurements_output_object_number(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -134,7 +157,9 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_measurements_output_object_other(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -145,7 +170,9 @@ class TestImageSegmentation:
         assert actual == expected
 
     def test_get_measurements_other_other(self):
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -158,7 +185,9 @@ class TestImageSegmentation:
     def test_add_measurements(self):
         measurements = cellprofiler_core.measurement.Measurements()
 
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 
@@ -241,7 +270,9 @@ class TestImageSegmentation:
     def test_run(self):
         measurements = cellprofiler_core.measurement.Measurements()
 
-        module = cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        module = (
+            cellprofiler_core.module.image_segmentation._image_segmentation.ImageSegmentation()
+        )
 
         module.x_name.value = "Image"
 

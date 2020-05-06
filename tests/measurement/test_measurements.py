@@ -206,9 +206,9 @@ class TestMeasurements:
         vals = r.uniform(size=100)
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[cellprofiler_core.measurement.IMAGE, "Feature", image_number] = six.text_type(
-                vals[image_number - 1]
-            )
+            m[
+                cellprofiler_core.measurement.IMAGE, "Feature", image_number
+            ] = six.text_type(vals[image_number - 1])
         result = m[cellprofiler_core.measurement.IMAGE, "Feature", :]
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
@@ -336,7 +336,9 @@ class TestMeasurements:
         test = [None, r.randint(0, 255, 10).astype(numpy.uint8)]
         m = cellprofiler_core.measurement.Measurements()
         image_numbers = numpy.arange(1, len(test) + 1)
-        m[cellprofiler_core.measurement.IMAGE, "Feature", image_numbers, numpy.uint8] = test
+        m[
+            cellprofiler_core.measurement.IMAGE, "Feature", image_numbers, numpy.uint8
+        ] = test
         result = m[cellprofiler_core.measurement.IMAGE, "Feature", image_numbers]
         assert result[0] is None
         numpy.testing.assert_array_equal(test[1], result[1])
@@ -437,10 +439,22 @@ class TestMeasurements:
 
     def test_06_06_apply_series_and_frame_metadata(self):
         x = cellprofiler_core.measurement.Measurements()
-        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_SERIES + "_DNA"] = 1
-        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_SERIES + "_DNAIllum"] = 0
-        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_FRAME + "_DNA"] = 2
-        x[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_FRAME + "_DNAIllum"] = 0
+        x[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_SERIES + "_DNA",
+        ] = 1
+        x[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_SERIES + "_DNAIllum",
+        ] = 0
+        x[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_FRAME + "_DNA",
+        ] = 2
+        x[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_FRAME + "_DNAIllum",
+        ] = 0
         pattern = r"\g<%s>_\g<%s>" % (
             cellprofiler_core.measurement.C_SERIES,
             cellprofiler_core.measurement.C_FRAME,
@@ -532,8 +546,12 @@ class TestMeasurements:
 
     def test_10_01_remove_image_measurement(self):
         m = cellprofiler_core.measurement.Measurements()
-        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "Hello", image_set_number=1)
-        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "World", image_set_number=2)
+        m.add_measurement(
+            cellprofiler_core.measurement.IMAGE, "M", "Hello", image_set_number=1
+        )
+        m.add_measurement(
+            cellprofiler_core.measurement.IMAGE, "M", "World", image_set_number=2
+        )
         m.remove_measurement(cellprofiler_core.measurement.IMAGE, "M", 1)
         assert m.get_measurement(cellprofiler_core.measurement.IMAGE, "M", 1) is None
         assert m.get_measurement(cellprofiler_core.measurement.IMAGE, "M", 2) == "World"
@@ -550,13 +568,19 @@ class TestMeasurements:
 
     def test_10_03_remove_image_number(self):
         m = cellprofiler_core.measurement.Measurements()
-        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "Hello", image_set_number=1)
-        m.add_measurement(cellprofiler_core.measurement.IMAGE, "M", "World", image_set_number=2)
+        m.add_measurement(
+            cellprofiler_core.measurement.IMAGE, "M", "Hello", image_set_number=1
+        )
+        m.add_measurement(
+            cellprofiler_core.measurement.IMAGE, "M", "World", image_set_number=2
+        )
         numpy.testing.assert_equal(
             numpy.array(m.get_image_numbers()), numpy.arange(1, 3)
         )
         m.remove_measurement(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER, 1
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE_NUMBER,
+            1,
         )
         numpy.testing.assert_equal(numpy.array(m.get_image_numbers()), numpy.array([2]))
 
@@ -571,10 +595,16 @@ class TestMeasurements:
     def test_11_01_match_metadata_by_order(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Hello",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=2
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Hello",
+            image_set_number=2,
         )
         result = m.match_metadata(("Metadata_bar",), (numpy.zeros(2),))
         assert len(result) == 2
@@ -583,16 +613,28 @@ class TestMeasurements:
     def test_11_02_match_metadata_equal_length(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Hello",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_bar",
+            "World",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Goodbye",
+            image_set_number=2,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_bar",
+            "Phobos",
+            image_set_number=2,
         )
         result = m.match_metadata(
             ("Metadata_foo", "Metadata_bar"),
@@ -607,22 +649,40 @@ class TestMeasurements:
     def test_11_03_match_metadata_different_length(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Hello",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_bar",
+            "World",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Goodbye",
+            image_set_number=2,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_bar",
+            "Phobos",
+            image_set_number=2,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=3
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_foo",
+            "Hello",
+            image_set_number=3,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=3
+            cellprofiler_core.measurement.IMAGE,
+            "Metadata_bar",
+            "Phobos",
+            image_set_number=3,
         )
         result = m.match_metadata(("Metadata_foo",), (("Goodbye", "Hello"),))
         assert len(result) == 2
@@ -790,10 +850,14 @@ class TestMeasurements:
         m = cellprofiler_core.measurement.Measurements()
         try:
             values = ["Foo", "Bar", "Baz"]
-            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values
+            )
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE,
+                    FEATURE_NAME,
+                    image_set_number=i + 1,
                 )
                 assert expected == value
         finally:
@@ -803,10 +867,14 @@ class TestMeasurements:
         m = cellprofiler_core.measurement.Measurements()
         try:
             values = ["Foo", "Bar", "Baz", "-\\u221E < \\u221E"]
-            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values
+            )
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE,
+                    FEATURE_NAME,
+                    image_set_number=i + 1,
                 )
                 assert expected == value
         finally:
@@ -818,10 +886,14 @@ class TestMeasurements:
             r = numpy.random.RandomState()
             r.seed(1803)
             values = r.randint(0, 10, size=5)
-            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values
+            )
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE,
+                    FEATURE_NAME,
+                    image_set_number=i + 1,
                 )
                 assert expected == value
         finally:
@@ -831,10 +903,14 @@ class TestMeasurements:
         m = cellprofiler_core.measurement.Measurements()
         try:
             values = ["Foo", "Bar", None, "Baz", None, "-\\u221E < \\u221E"]
-            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, FEATURE_NAME, values
+            )
             for i, expected in enumerate(values):
                 value = m.get_measurement(
-                    cellprofiler_core.measurement.IMAGE, FEATURE_NAME, image_set_number=i + 1
+                    cellprofiler_core.measurement.IMAGE,
+                    FEATURE_NAME,
+                    image_set_number=i + 1,
                 )
                 if expected is None:
                     assert value is None
@@ -913,10 +989,14 @@ class TestMeasurements:
     def test_19_02_write_and_load_image_sets(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, [1, 1, 2]
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_NUMBER,
+            [1, 1, 2],
         )
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, [1, 2, 1]
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_INDEX,
+            [1, 2, 1],
         )
         m.add_all_measurements(
             cellprofiler_core.measurement.IMAGE,
@@ -924,7 +1004,9 @@ class TestMeasurements:
             ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"],
         )
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"]
+            cellprofiler_core.measurement.IMAGE,
+            "PathName_DNA",
+            ["/foo", "/bar", "/baz"],
         )
         m.add_all_measurements(
             cellprofiler_core.measurement.IMAGE,
@@ -960,7 +1042,8 @@ class TestMeasurements:
             if feature_name != "Dont_copy"
         ]
         unittest.TestCase().assertCountEqual(
-            expected_features, mdest.get_feature_names(cellprofiler_core.measurement.IMAGE)
+            expected_features,
+            mdest.get_feature_names(cellprofiler_core.measurement.IMAGE),
         )
         image_numbers = m.get_image_numbers()
         for feature_name in expected_features:
@@ -1295,4 +1378,3 @@ class TestMeasurements:
             numpy.testing.assert_array_equal(ri2[rorder], ei2[eorder])
             numpy.testing.assert_array_equal(ro1[rorder], eo1[eorder])
             numpy.testing.assert_array_equal(ro2[rorder], eo2[eorder])
-

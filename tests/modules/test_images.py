@@ -32,15 +32,19 @@ class TestImages:
         pipeline = cellprofiler_core.pipeline.Pipeline()
 
         def callback(caller, event):
-            assert not isinstance(event,
-                                  cellprofiler_core.pipeline.event._load_exception.LoadException)
+            assert not isinstance(
+                event, cellprofiler_core.pipeline.event._load_exception.LoadException
+            )
 
         pipeline.add_listener(callback)
         pipeline.load(io.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
         assert isinstance(module, cellprofiler_core.modules.images.Images)
-        assert module.filter_choice == cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
+        assert (
+            module.filter_choice
+            == cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
+        )
         assert (
             module.filter.value
             == 'or (directory does startwith "foo") (file does contain "bar")'
@@ -58,8 +62,10 @@ class TestImages:
             pipeline = cellprofiler_core.pipeline.Pipeline()
 
             def callback(caller, event):
-                assert not isinstance(event,
-                                      cellprofiler_core.pipeline.event._load_exception.LoadException)
+                assert not isinstance(
+                    event,
+                    cellprofiler_core.pipeline.event._load_exception.LoadException,
+                )
 
             pipeline.add_listener(callback)
             pipeline.load(io.StringIO(data % fctext))
@@ -74,7 +80,9 @@ class TestImages:
 
     def test_filter_url(self):
         module = cellprofiler_core.modules.images.Images()
-        module.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
+        module.filter_choice.value = (
+            cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
+        )
         for url, filter_value, expected in (
             (
                 "file:/TestImages/NikonTIF.tif",
@@ -107,7 +115,9 @@ class TestImages:
         module.set_module_num(1)
         pipeline.add_module(module)
         m = cellprofiler_core.measurement.Measurements()
-        workspace = cellprofiler_core.workspace.Workspace(pipeline, module, None, None, m, None)
+        workspace = cellprofiler_core.workspace.Workspace(
+            pipeline, module, None, None, m, None
+        )
         file_list = pipeline.get_filtered_file_list(workspace)
         if expected:
             assert len(file_list) == 1
@@ -117,7 +127,9 @@ class TestImages:
 
     def test_filter_standard(self):
         module = cellprofiler_core.modules.images.Images()
-        module.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES
+        module.filter_choice.value = (
+            cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES
+        )
         for url, expected in (
             ("file:/TestImages/NikonTIF.tif", True),
             ("file:/foo/.bar/baz.tif", False),

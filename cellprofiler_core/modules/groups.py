@@ -472,7 +472,7 @@ desired behavior.
                 for key in metadata_key_names
             ]
             metadata_key_names = [
-                x[(len(cellprofiler_core.measurement.C_METADATA) + 1):]
+                x[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
                 for x in metadata_feature_names
             ]
             image_set_feature_names = [
@@ -490,14 +490,14 @@ desired behavior.
 
             image_numbers = m.get_image_numbers()
             group_indexes = m[
-                                cellprofiler_core.measurement.IMAGE,
-                                cellprofiler_core.measurement.GROUP_INDEX,
-                                image_numbers,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_INDEX,
+                image_numbers,
             ][:]
             group_numbers = m[
-                                cellprofiler_core.measurement.IMAGE,
-                                cellprofiler_core.measurement.GROUP_NUMBER,
-                                image_numbers,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
+                image_numbers,
             ][:]
             counts = np.bincount(group_numbers)
             first_indexes = np.argwhere(group_indexes == 1).flatten()
@@ -529,10 +529,14 @@ desired behavior.
                 self.image_set_list.insert_column(idx + 1, "File: %s" % image_name)
                 if iscd.channel_type == iscd.CT_OBJECTS:
                     image_set_feature_names.append(
-                        cellprofiler_core.measurement.C_OBJECTS_PATH_NAME + "_" + iscd.name
+                        cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
+                        + "_"
+                        + iscd.name
                     )
                     image_set_feature_names.append(
-                        cellprofiler_core.measurement.C_OBJECTS_FILE_NAME + "_" + iscd.name
+                        cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
+                        + "_"
+                        + iscd.name
                     )
                 else:
                     image_set_feature_names.append(
@@ -574,7 +578,7 @@ desired behavior.
         for key in key_list:
             if key not in m.get_feature_names(cellprofiler_core.measurement.IMAGE):
                 if key.startswith(cellprofiler_core.measurement.C_METADATA):
-                    key = key[len(cellprofiler_core.measurement.C_METADATA) + 1:]
+                    key = key[len(cellprofiler_core.measurement.C_METADATA) + 1 :]
                 workspace.pipeline.report_prepare_run_error(
                     self,
                     (
@@ -592,7 +596,9 @@ desired behavior.
         if not self.wants_groups:
             return None
         return [
-            "_".join((cellprofiler_core.measurement.C_METADATA, g.metadata_choice.value))
+            "_".join(
+                (cellprofiler_core.measurement.C_METADATA, g.metadata_choice.value)
+            )
             for g in self.grouping_metadata
         ]
 
@@ -657,10 +663,14 @@ desired behavior.
         new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers)) + 1
         m.reorder_image_measurements(new_image_numbers)
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, group_numbers
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_NUMBER,
+            group_numbers,
         )
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, group_indexes
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_INDEX,
+            group_indexes,
         )
         m.set_grouping_tags(self.get_grouping_tags())
         return True

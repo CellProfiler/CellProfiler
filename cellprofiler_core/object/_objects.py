@@ -142,7 +142,9 @@ class Objects:
         )
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
-        self.__segmented = cellprofiler_core.object.Segmentation(sparse=sparse, shape=shape)
+        self.__segmented = cellprofiler_core.object.Segmentation(
+            sparse=sparse, shape=shape
+        )
 
     def get_ijv(self):
         """Get the segmentation in IJV object format

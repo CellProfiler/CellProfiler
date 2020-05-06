@@ -86,7 +86,10 @@ class Identify(cellprofiler_core.module.Module):
             return [cellprofiler_core.measurement.C_COUNT]
         result = []
         if object_name in object_dictionary:
-            result += [cellprofiler_core.measurement.C_LOCATION, cellprofiler_core.measurement.C_NUMBER]
+            result += [
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
+            ]
             if len(object_dictionary[object_name]) > 0:
                 result += [cellprofiler_core.measurement.C_PARENT]
         if object_name in functools.reduce(
@@ -96,9 +99,7 @@ class Identify(cellprofiler_core.module.Module):
         return result
 
     @staticmethod
-    def get_object_measurements(
-            pipleline, object_name, category, object_dictionary
-    ):
+    def get_object_measurements(pipleline, object_name, category, object_dictionary):
         """Get measurements related to creating new children
 
         pipeline - the pipeline being run (not used)
@@ -163,10 +164,14 @@ def add_object_location_measurements(
         location_center_x = numpy.zeros((0,), dtype=float)
         number = numpy.zeros((0,), dtype=int)
     measurements.add_measurement(
-        object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, location_center_x
+        object_name,
+        cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+        location_center_x,
     )
     measurements.add_measurement(
-        object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, location_center_y
+        object_name,
+        cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+        location_center_y,
     )
     measurements.add_measurement(
         object_name, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER, number

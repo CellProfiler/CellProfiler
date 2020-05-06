@@ -38,7 +38,10 @@ class TestImageSet:
     def test_must_be_gray_throws(self):
         x = cellprofiler_core.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add("image", cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20, 3))))
+        x.add(
+            "image",
+            cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20, 3))),
+        )
         with pytest.raises(ValueError):
             x.get_image("image", must_be_grayscale=True)
 
@@ -57,7 +60,9 @@ class TestImageSet:
     def test_must_be_color_throws(self):
         x = cellprofiler_core.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add("image", cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20))))
+        x.add(
+            "image", cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20)))
+        )
         with pytest.raises(ValueError):
             x.get_image("image", must_be_color=True)
 
@@ -70,14 +75,19 @@ class TestImageSet:
     def test_must_be_rgb_throws_gray(self):
         x = cellprofiler_core.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add("image", cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20))))
+        x.add(
+            "image", cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20)))
+        )
         with pytest.raises(ValueError):
             x.get_image("image", must_be_rgb=True)
 
     def test_must_be_rgb_throws_5_channel(self):
         x = cellprofiler_core.image.ImageSet(0, {}, {})
         numpy.random.seed(22)
-        x.add("image", cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20, 5))))
+        x.add(
+            "image",
+            cellprofiler_core.image.Image(numpy.random.uniform(size=(10, 20, 5))),
+        )
         with pytest.raises(ValueError):
             x.get_image("image", must_be_rgb=True)
 

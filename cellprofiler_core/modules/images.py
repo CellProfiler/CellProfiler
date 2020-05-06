@@ -168,7 +168,9 @@ class Images(cellprofiler_core.module.Module):
     category = "File Processing"
 
     MI_SHOW_IMAGE = "Show image"
-    MI_REMOVE = cellprofiler_core.setting.FileCollectionDisplay.DeleteMenuItem("Remove from list")
+    MI_REMOVE = cellprofiler_core.setting.FileCollectionDisplay.DeleteMenuItem(
+        "Remove from list"
+    )
     MI_REFRESH = "Refresh"
 
     def create_settings(self):
@@ -276,7 +278,9 @@ pass the current filter.
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
-            schema, rest = cellprofiler_core.utilities.hdf5_dict.HDF5FileList.split_url(url)
+            schema, rest = cellprofiler_core.utilities.hdf5_dict.HDF5FileList.split_url(
+                url
+            )
             return (
                 [schema]
                 + rest[0:1]
@@ -383,7 +387,7 @@ pass the current filter.
 
         Returns upgraded setting values, revision number and matlab flag
         """
-        if variable_revision_number == '1':
+        if variable_revision_number == "1":
             # Changed from yes/no for filter to a choice
             filter_choice = (
                 FILTER_CHOICE_CUSTOM
@@ -626,9 +630,9 @@ class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         "iscolor",
         "Color",
         lambda x: (
-                cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT in x.metadata
-                and x.metadata[cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT]
-                == cellprofiler_core.pipeline.ImagePlane.MD_RGB
+            cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT in x.metadata
+            and x.metadata[cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT]
+            == cellprofiler_core.pipeline.ImagePlane.MD_RGB
         ),
         [],
         doc="The image is an interleaved color image (for example, a PNG image)",
@@ -638,9 +642,9 @@ class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         "ismonochrome",
         "Monochrome",
         lambda x: (
-                cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT in x.metadata
-                and x.metadata[cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT]
-                == cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
+            cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT in x.metadata
+            and x.metadata[cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT]
+            == cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
         ),
         [],
         doc="The image is monochrome",

@@ -1,5 +1,5 @@
 from ._end_run import EndRun
-from ._event import (Event, CancelledException, PipelineLoadCancelledException)
+from ._event import Event, CancelledException, PipelineLoadCancelledException
 from ._file_walk_ended import FileWalkEnded
 from ._file_walk_started import FileWalkStarted
 from ._ipd_load_exception import IPDLoadException

@@ -589,7 +589,7 @@ a separate alignment to the first image can be calculated:
 
     @staticmethod
     def apply_alignment(
-            workspace, input_image_name, output_image_name, off_x, off_y, shape
+        workspace, input_image_name, output_image_name, off_x, off_y, shape
     ):
         """Apply an alignment to the input image to result in the output image
 

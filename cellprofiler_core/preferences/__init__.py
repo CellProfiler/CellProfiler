@@ -725,9 +725,9 @@ ALL_KEYS = [
     SHOW_SAMPLING,
     SKIPVERSION,
     # TODO: Figure out why windows hates these keys
-    #STARTUPBLURB,
-    #TELEMETRY,
-    #TELEMETRY_PROMPT,
+    # STARTUPBLURB,
+    # TELEMETRY,
+    # TELEMETRY_PROMPT,
     TABLE_FONT_NAME,
     TABLE_FONT_SIZE,
     TERTIARY_OUTLINE_COLOR,

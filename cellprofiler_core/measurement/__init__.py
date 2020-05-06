@@ -255,8 +255,10 @@ def load_measurements(
         header = fd.read(len(HDF5_HEADER))
         fd.close()
 
-    if header.decode('unicode_escape') == HDF5_HEADER:
-        f, top_level = cellprofiler_core.utilities.hdf5_dict.get_top_level_group(filename)
+    if header.decode("unicode_escape") == HDF5_HEADER:
+        f, top_level = cellprofiler_core.utilities.hdf5_dict.get_top_level_group(
+            filename
+        )
         try:
             if cellprofiler_core.utilities.hdf5_dict.VERSION in list(f.keys()):
                 if run_name is not None:
@@ -272,7 +274,7 @@ def load_measurements(
         finally:
             f.close()
     else:
-        #FIXME - add clearer exception
+        # FIXME - add clearer exception
         raise ValueError("Received HDF5 file header was invalid")
 
 

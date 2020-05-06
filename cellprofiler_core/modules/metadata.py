@@ -765,7 +765,9 @@ not being applied, your choice on this setting may be the culprit.
                 "java/io/StringReader", "(Ljava/lang/String;)V", header
             )
         elif group.csv_location.is_url():
-            url = cellprofiler_core.utilities.generate_presigned_url(self.csv_path(group))
+            url = cellprofiler_core.utilities.generate_presigned_url(
+                self.csv_path(group)
+            )
             jurl = javabridge.make_instance(
                 "java/net/URL", "(Ljava/lang/String;)V", url
             )
@@ -1241,7 +1243,9 @@ not being applied, your choice on this setting may be the culprit.
                     if group.source == XM_FILE_NAME
                     else group.folder_regexp
                 )
-                for token in cellprofiler_core.measurement.find_metadata_tokens(re_setting.value):
+                for token in cellprofiler_core.measurement.find_metadata_tokens(
+                    re_setting.value
+                ):
                     if token.upper() in [
                         reservedtag.upper()
                         for reservedtag in cellprofiler_core.measurement.RESERVED_METADATA_TAGS
@@ -1452,7 +1456,9 @@ not being applied, your choice on this setting may be the culprit.
                 ):
                     directory_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
                 else:
-                    directory_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+                    directory_choice = (
+                        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+                    )
 
                 group[6] = "{}|{}".format(directory_choice, directory)
                 group += [filename]

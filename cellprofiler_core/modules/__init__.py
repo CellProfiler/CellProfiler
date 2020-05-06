@@ -18,7 +18,9 @@ def plugin_list(plugin_dir):
     if plugin_dir is not None and os.path.isdir(plugin_dir):
         file_list = glob.glob(os.path.join(plugin_dir, "*.py"))
         return [
-            os.path.basename(f)[:-3] for f in file_list if not f.endswith(("__init__.py", "_help.py"))
+            os.path.basename(f)[:-3]
+            for f in file_list
+            if not f.endswith(("__init__.py", "_help.py"))
         ]
     return []
 
@@ -31,7 +33,9 @@ class PluginImporter(object):
         if prefix != "cellprofiler.modules.plugins":
             return None
         if os.path.exists(
-            os.path.join(cellprofiler_core.preferences.get_plugin_directory(), modname + ".py")
+            os.path.join(
+                cellprofiler_core.preferences.get_plugin_directory(), modname + ".py"
+            )
         ):
             return self
         return None
@@ -66,18 +70,19 @@ pymodule_to_cpmodule = {
     "align": "Align",
     "images": "Images",
     "loadimages": "LoadImages",
-    "measurementfixture": "MeasurementFixture"
+    "measurementfixture": "MeasurementFixture",
 }
 
 # the builtin CP modules that will be loaded from the cellprofiler_core.modules directory
-builtin_modules = ["align",
-                   "groups",
-                   "images",
-                   "loadimages",
-                   "loadsingleimage",
-                   "metadata",
-                   "namesandtypes",
-                   ]
+builtin_modules = [
+    "align",
+    "groups",
+    "images",
+    "loadimages",
+    "loadsingleimage",
+    "metadata",
+    "namesandtypes",
+]
 
 all_modules = {}
 svn_revisions = {}
@@ -116,7 +121,9 @@ def find_cpmodule(m):
     for v, val in list(m.__dict__.items()):
         if isinstance(val, type) and issubclass(val, cellprofiler_core.module.Module):
             return val
-    raise ValueError("Could not find cellprofiler_core.module.Module class in %s" % m.__file__)
+    raise ValueError(
+        "Could not find cellprofiler_core.module.Module class in %s" % m.__file__
+    )
 
 
 def fill_modules():
@@ -175,7 +182,8 @@ def fill_modules():
     # Import CellProfiler modules if CellProfiler is installed
     try:
         import cellprofiler
-        cppath = os.path.join(os.path.dirname(cellprofiler.__file__), 'modules')
+
+        cppath = os.path.join(os.path.dirname(cellprofiler.__file__), "modules")
     except ImportError:
         cellprofiler = None
         print("No CellProfiler installation detected, only base modules will be loaded")
@@ -287,4 +295,3 @@ def reload_modules():
         except:
             pass
     fill_modules()
-

@@ -32,8 +32,7 @@ def example_images_directory():
         if os.path.exists(path):
             return path
     if __temp_example_images_folder is None:
-        __temp_example_images_folder = tempfile.mkdtemp(
-            prefix="cp_exampleimages")
+        __temp_example_images_folder = tempfile.mkdtemp(prefix="cp_exampleimages")
         logger.warning(
             "Creating temporary folder %s for example images"
             % __temp_example_images_folder
@@ -68,8 +67,7 @@ def svn_mirror_url():
     Use the value of the environment variable, "CP_SVNMIRROR_URL" with
     a default of http://cellprofiler.org/svnmirror.
     """
-    return os.environ.get("CP_SVNMIRROR_URL",
-                          "https://cellprofiler.org/svnmirror")
+    return os.environ.get("CP_SVNMIRROR_URL", "https://cellprofiler.org/svnmirror")
 
 
 def testimages_url():
@@ -92,8 +90,7 @@ def maybe_download_example_image(folders, file_name, shape=None):
         *tuple([example_images_directory()] + folders + [file_name])
     )
     if not os.path.exists(local_path):
-        directory = os.path.join(
-            *tuple([example_images_directory()] + folders))
+        directory = os.path.join(*tuple([example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
         random_state = numpy.random.RandomState()

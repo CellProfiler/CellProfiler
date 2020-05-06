@@ -156,7 +156,9 @@ class InjectObjects(cellprofiler_core.module.Module):
                                   same as segmented
         """
         super(InjectObjects, self).__init__()
-        self.object_name = cellprofiler_core.setting.ObjectNameProvider("text", object_name)
+        self.object_name = cellprofiler_core.setting.ObjectNameProvider(
+            "text", object_name
+        )
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented
         self.__small_removed_segmented = small_removed_segmented

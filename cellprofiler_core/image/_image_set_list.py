@@ -83,7 +83,9 @@ class ImageSetList:
         if number >= len(self.__image_sets):
             self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
         if self.__image_sets[number] is None:
-            image_set = cellprofiler_core.image.ImageSet(number, keys, self.legacy_fields)
+            image_set = cellprofiler_core.image.ImageSet(
+                number, keys, self.legacy_fields
+            )
             self.__image_sets[number] = image_set
             self.__image_sets_by_key[k] = image_set
             if self.__associating_by_key:

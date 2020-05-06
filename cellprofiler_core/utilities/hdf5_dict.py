@@ -2601,7 +2601,11 @@ class StringReferencer(object):
         data_off, data_len = self.blocks[
             i, j, self.SR_BLOCK_OFF : (self.SR_BLOCK_LEN + 1)
         ]
-        s = self.data[i, data_off : (data_off + data_len)].data.obj.tostring().decode("utf-8")
+        s = (
+            self.data[i, data_off : (data_off + data_len)]
+            .data.obj.tostring()
+            .decode("utf-8")
+        )
         return s
 
     def get_string_refs(self, strings):

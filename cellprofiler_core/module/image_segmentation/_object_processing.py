@@ -88,7 +88,8 @@ class ObjectProcessing(ImageSegmentation):
             + [
                 (
                     input_object_name,
-                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
+                    cellprofiler_core.measurement.FF_CHILDREN_COUNT
+                    % output_object_name,
                     cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
                 (

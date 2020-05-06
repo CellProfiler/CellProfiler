@@ -280,7 +280,9 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
             (0, -15, 0, "0", -15, "15", False, False),
             (0, "-" + "end", 0, "0", "end", "end", True, False),
         ):
-            s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo", (minval, maxval))
+            s = cellprofiler_core.setting.IntegerOrUnboundedRange(
+                "foo", (minval, maxval)
+            )
             assert s.min == expected_min
             assert s.max == expected_max
             assert s.display_min == expected_min_text
@@ -335,14 +337,18 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
 class TestFilterSetting(unittest.TestCase):
     def test_01_01_simple(self):
         filters = [
-            cellprofiler_core.setting.Filter.FilterPredicate("foo", "Foo", lambda a: a == "x", [])
+            cellprofiler_core.setting.Filter.FilterPredicate(
+                "foo", "Foo", lambda a: a == "x", []
+            )
         ]
         f = cellprofiler_core.setting.Filter("", filters, "foo")
         assert f.evaluate("x")
         assert not f.evaluate("y")
 
     def test_01_02_compound(self):
-        f2 = cellprofiler_core.setting.Filter.FilterPredicate("bar", "Bar", lambda: "y", [])
+        f2 = cellprofiler_core.setting.Filter.FilterPredicate(
+            "bar", "Bar", lambda: "y", []
+        )
         f1 = cellprofiler_core.setting.Filter.FilterPredicate(
             "foo", "Foo", lambda a, b: a == b(), [f2]
         )
@@ -388,10 +394,16 @@ class TestFilterSetting(unittest.TestCase):
 
     def test_01_06_parentheses(self):
         f1 = cellprofiler_core.setting.Filter.FilterPredicate(
-            "eq", "Foo", lambda a, b: a == b, [cellprofiler_core.setting.Filter.LITERAL_PREDICATE]
+            "eq",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
         )
         f2 = cellprofiler_core.setting.Filter.FilterPredicate(
-            "ne", "Bar", lambda a, b: a != b, [cellprofiler_core.setting.Filter.LITERAL_PREDICATE]
+            "ne",
+            "Bar",
+            lambda a, b: a != b,
+            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
         )
         f = cellprofiler_core.setting.Filter("", [f1, f2], 'and (eq "x") (ne "y")')
         assert f.evaluate("x")
@@ -400,7 +412,10 @@ class TestFilterSetting(unittest.TestCase):
 
     def test_01_07_or(self):
         f1 = cellprofiler_core.setting.Filter.FilterPredicate(
-            "eq", "Foo", lambda a, b: a == b, [cellprofiler_core.setting.Filter.LITERAL_PREDICATE]
+            "eq",
+            "Foo",
+            lambda a, b: a == b,
+            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
         )
 
         f = cellprofiler_core.setting.Filter("", [f1], 'or (eq "x") (eq "y")')
@@ -435,7 +450,9 @@ class TestFilterSetting(unittest.TestCase):
             [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
         )
         f = cellprofiler_core.setting.Filter("", [f1])
-        f.build([cellprofiler_core.setting.Filter.OR_PREDICATE, [f1, "bar"], [f1, "baz"]])
+        f.build(
+            [cellprofiler_core.setting.Filter.OR_PREDICATE, [f1, "bar"], [f1, "baz"]]
+        )
         assert f.value == 'or (foo "bar") (foo "baz")'
 
     def test_02_04_build_escaped_literal(self):

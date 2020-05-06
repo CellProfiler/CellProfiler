@@ -63,9 +63,13 @@ class Measurements:
             is_temporary = True
             import traceback
 
-            cellprofiler_core.measurement.logger.debug("Created temporary file %s" % filename)
+            cellprofiler_core.measurement.logger.debug(
+                "Created temporary file %s" % filename
+            )
             for frame in traceback.extract_stack():
-                cellprofiler_core.measurement.logger.debug("{}: ({} {}): {}".format(*frame))
+                cellprofiler_core.measurement.logger.debug(
+                    "{}: ({} {}): {}".format(*frame)
+                )
 
         else:
             is_temporary = False
@@ -111,7 +115,9 @@ class Measurements:
         self.__image_number_relationships = {}
         self.__image_cache_file = None
         if cellprofiler_core.measurement.RELATIONSHIP in self.hdf5_dict.top_group:
-            rgroup = self.hdf5_dict.top_group[cellprofiler_core.measurement.RELATIONSHIP]
+            rgroup = self.hdf5_dict.top_group[
+                cellprofiler_core.measurement.RELATIONSHIP
+            ]
             for module_number in rgroup:
                 try:
                     mnum = int(module_number)
@@ -268,7 +274,9 @@ class Measurements:
 
     def create_from_handles(self, handles):
         """Load measurements from a handles structure"""
-        m = handles["handles"][0, 0][cellprofiler_core.measurement.MEASUREMENTS_GROUP_NAME][0, 0]
+        m = handles["handles"][0, 0][
+            cellprofiler_core.measurement.MEASUREMENTS_GROUP_NAME
+        ][0, 0]
         for object_name in list(m.dtype.fields.keys()):
             omeas = m[object_name][0, 0]
             object_counts = numpy.zeros(0, int)
@@ -300,9 +308,11 @@ class Measurements:
                     )
                 self.add_all_measurements(object_name, feature_name, values)
             if object_name not in (
-                    cellprofiler_core.measurement.EXPERIMENT,
-                    cellprofiler_core.measurement.IMAGE,
-            ) and not self.has_feature(object_name, cellprofiler_core.measurement.OBJECT_NUMBER):
+                cellprofiler_core.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.IMAGE,
+            ) and not self.has_feature(
+                object_name, cellprofiler_core.measurement.OBJECT_NUMBER
+            ):
                 self.add_all_measurements(
                     object_name,
                     cellprofiler_core.measurement.OBJECT_NUMBER,
@@ -332,19 +342,27 @@ class Measurements:
 
     def get_group_number(self):
         """The number of the group currently being processed"""
-        return self.get_current_image_measurement(cellprofiler_core.measurement.GROUP_NUMBER)
+        return self.get_current_image_measurement(
+            cellprofiler_core.measurement.GROUP_NUMBER
+        )
 
     def set_group_number(self, group_number):
-        self.add_image_measurement(cellprofiler_core.measurement.GROUP_NUMBER, group_number)
+        self.add_image_measurement(
+            cellprofiler_core.measurement.GROUP_NUMBER, group_number
+        )
 
     group_number = property(get_group_number, set_group_number)
 
     def get_group_index(self):
         """The within-group index of the current image set"""
-        return self.get_current_image_measurement(cellprofiler_core.measurement.GROUP_INDEX)
+        return self.get_current_image_measurement(
+            cellprofiler_core.measurement.GROUP_INDEX
+        )
 
     def set_group_index(self, group_index):
-        self.add_image_measurement(cellprofiler_core.measurement.GROUP_INDEX, group_index)
+        self.add_image_measurement(
+            cellprofiler_core.measurement.GROUP_INDEX, group_index
+        )
 
     group_index = property(get_group_index, set_group_index)
 
@@ -388,7 +406,9 @@ class Measurements:
     ):
         """Return the HDF5 group for a relationship"""
         return (
-            self.hdf5_dict.top_group.require_group(cellprofiler_core.measurement.RELATIONSHIP)
+            self.hdf5_dict.top_group.require_group(
+                cellprofiler_core.measurement.RELATIONSHIP
+            )
             .require_group(str(module_number))
             .require_group(relationship)
             .require_group(object_name1)
@@ -487,7 +507,9 @@ class Measurements:
         """
 
         return [
-            cellprofiler_core.measurement.RelationshipKey(module_number, relationship, obj1, obj2)
+            cellprofiler_core.measurement.RelationshipKey(
+                module_number, relationship, obj1, obj2
+            )
             for (module_number, relationship, obj1, obj2) in self.__relationships
         ]
 
@@ -568,8 +590,12 @@ class Measurements:
                 to_keep[image_numbers - in_min] = True
                 mask = numpy.zeros(t_max - t_min, bool)
                 for a in (
-                        grp[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER][t_min:t_max],
-                        grp[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER][t_min:t_max],
+                    grp[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER][
+                        t_min:t_max
+                    ],
+                    grp[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER][
+                        t_min:t_max
+                    ],
                 ):
                     m1 = (a >= in_min) & (a <= in_max)
                     mask[m1] = mask[m1] | to_keep[a[m1] - in_min]
@@ -664,8 +690,8 @@ class Measurements:
 
         # some code adds ImageNumber and ObjectNumber measurements explicitly
         if feature_name in (
-                cellprofiler_core.measurement.IMAGE_NUMBER,
-                cellprofiler_core.measurement.OBJECT_NUMBER,
+            cellprofiler_core.measurement.IMAGE_NUMBER,
+            cellprofiler_core.measurement.OBJECT_NUMBER,
         ):
             return
 
@@ -692,14 +718,19 @@ class Measurements:
                 for d in data
             ]
             self.hdf5_dict[
-                cellprofiler_core.measurement.IMAGE, feature_name, image_set_number, data_type
+                cellprofiler_core.measurement.IMAGE,
+                feature_name,
+                image_set_number,
+                data_type,
             ] = data
             for n in image_set_number:
                 if not self.hdf5_dict.has_data(
                     object_name, cellprofiler_core.measurement.IMAGE_NUMBER, n
                 ):
                     self.hdf5_dict[
-                        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER, n
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE_NUMBER,
+                        n,
                     ] = n
         else:
             self.hdf5_dict[
@@ -711,19 +742,23 @@ class Measurements:
                 else list(zip(image_set_number, data))
             ):
                 if not self.hdf5_dict.has_data(
-                    cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER, n
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE_NUMBER,
+                    n,
                 ):
                     self.hdf5_dict[
-                        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER, n
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE_NUMBER,
+                        n,
                     ] = n
                 if (
                     not self.hdf5_dict.has_data(
                         object_name, cellprofiler_core.measurement.OBJECT_NUMBER, n
                     )
                 ) and (d is not None):
-                    self.hdf5_dict[object_name, cellprofiler_core.measurement.IMAGE_NUMBER, n] = [
-                        n
-                    ] * len(d)
+                    self.hdf5_dict[
+                        object_name, cellprofiler_core.measurement.IMAGE_NUMBER, n
+                    ] = [n] * len(d)
                 self.hdf5_dict[
                     object_name, cellprofiler_core.measurement.OBJECT_NUMBER, n
                 ] = numpy.arange(1, len(d) + 1)
@@ -770,7 +805,8 @@ class Measurements:
         image_numbers = numpy.array(
             list(
                 self.hdf5_dict.get_indices(
-                    cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE_NUMBER,
                 ).keys()
             ),
             int,
@@ -805,7 +841,9 @@ class Measurements:
 
         feature_name - the name of the measurement feature to be returned
         """
-        return self.get_current_measurement(cellprofiler_core.measurement.IMAGE, feature_name)
+        return self.get_current_measurement(
+            cellprofiler_core.measurement.IMAGE, feature_name
+        )
 
     def get_current_measurement(self, object_name, feature_name):
         """Return the value for the named measurement for the current image set
@@ -850,7 +888,9 @@ class Measurements:
                            listed.
         """
         if object_name == cellprofiler_core.measurement.EXPERIMENT:
-            result = self.hdf5_dict[cellprofiler_core.measurement.EXPERIMENT, feature_name, 0]
+            result = self.hdf5_dict[
+                cellprofiler_core.measurement.EXPERIMENT, feature_name, 0
+            ]
             if len(result) == 1:
                 result = result[0]
             return Measurements.unwrap_string(result)
@@ -917,15 +957,27 @@ class Measurements:
                 dtype = self.hdf5_dict.get_feature_dtype(object_name, feature_name)
                 if dtype.kind in ["O", "S", "U"]:
                     result.append(
-                        (object_name, feature_name, cellprofiler_core.measurement.COLTYPE_VARCHAR)
+                        (
+                            object_name,
+                            feature_name,
+                            cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                        )
                     )
                 elif numpy.issubdtype(dtype, float):
                     result.append(
-                        (object_name, feature_name, cellprofiler_core.measurement.COLTYPE_FLOAT)
+                        (
+                            object_name,
+                            feature_name,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                        )
                     )
                 else:
                     result.append(
-                        (object_name, feature_name, cellprofiler_core.measurement.COLTYPE_INTEGER)
+                        (
+                            object_name,
+                            feature_name,
+                            cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        )
                     )
         return result
 
@@ -964,7 +1016,8 @@ class Measurements:
         ]
         if (
             not self.hdf5_dict.has_feature(
-                cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.IMAGE_NUMBER
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE_NUMBER,
             )
         ) or (numpy.max(self.get_image_numbers()) < len(values)):
             image_numbers = numpy.arange(1, len(values) + 1)
@@ -982,7 +1035,9 @@ class Measurements:
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
         """
-        result = self.get_measurement(cellprofiler_core.measurement.EXPERIMENT, feature_name)
+        result = self.get_measurement(
+            cellprofiler_core.measurement.EXPERIMENT, feature_name
+        )
         return "N/A" if result is None else result
 
     def apply_metadata(self, pattern, image_set_number=None):
@@ -1024,20 +1079,27 @@ class Measurements:
                 result += piece[: m.start()]
                 feature = m.groups()[0]
                 if feature in (
-                        cellprofiler_core.measurement.C_SERIES,
-                        cellprofiler_core.measurement.C_FRAME,
+                    cellprofiler_core.measurement.C_SERIES,
+                    cellprofiler_core.measurement.C_FRAME,
                 ):
                     max_value = 0
-                    for mname in self.get_feature_names(cellprofiler_core.measurement.IMAGE):
+                    for mname in self.get_feature_names(
+                        cellprofiler_core.measurement.IMAGE
+                    ):
                         if mname.startswith(feature + "_"):
                             value = self[
-                                cellprofiler_core.measurement.IMAGE, mname, image_set_number
+                                cellprofiler_core.measurement.IMAGE,
+                                mname,
+                                image_set_number,
                             ]
                             if value > max_value:
                                 max_value = value
                     result += str(max_value)
                 else:
-                    measurement = "%s_%s" % (cellprofiler_core.measurement.C_METADATA, feature)
+                    measurement = "%s_%s" % (
+                        cellprofiler_core.measurement.C_METADATA,
+                        feature,
+                    )
                     result += str(
                         self.get_measurement("Image", measurement, image_set_number)
                     )
@@ -1055,7 +1117,8 @@ class Measurements:
                measurement, populated after prepare_run.
         """
         if self.has_feature(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_NUMBER,
         ):
             image_numbers = self.get_image_numbers()
             if len(image_numbers) > 0:
@@ -1078,7 +1141,11 @@ class Measurements:
         """
         if len(tags) == 0:
             # if there are no tags, all image sets match each other
-            return [cellprofiler_core.measurement.MetadataGroup({}, self.get_image_numbers())]
+            return [
+                cellprofiler_core.measurement.MetadataGroup(
+                    {}, self.get_image_numbers()
+                )
+            ]
 
         #
         # The flat_dictionary has a row of tag values as a key
@@ -1102,7 +1169,9 @@ class Measurements:
         for row in list(flat_dictionary.keys()):
             tag_dictionary = dict(row)
             result.append(
-                cellprofiler_core.measurement.MetadataGroup(tag_dictionary, flat_dictionary[row])
+                cellprofiler_core.measurement.MetadataGroup(
+                    tag_dictionary, flat_dictionary[row]
+                )
             )
         return result
 
@@ -1163,7 +1232,8 @@ class Measurements:
             return x
 
         common_tags = [
-            f[(len(cellprofiler_core.measurement.C_METADATA) + 1):] for f in common_features
+            f[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
+            for f in common_features
         ]
         groupings = self.group_by_metadata(common_tags)
         groupings = dict(
@@ -1207,8 +1277,8 @@ class Measurements:
     def agg_ignore_object(object_name):
         """Ignore objects (other than 'Image') if this returns true"""
         if object_name in (
-                cellprofiler_core.measurement.EXPERIMENT,
-                cellprofiler_core.measurement.NEIGHBORS,
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.NEIGHBORS,
         ):
             return True
 
@@ -1337,7 +1407,10 @@ class Measurements:
 
         fd = fd_or_file
 
-        to_save = [cellprofiler_core.measurement.GROUP_NUMBER, cellprofiler_core.measurement.GROUP_INDEX]
+        to_save = [
+            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.measurement.GROUP_INDEX,
+        ]
         to_save_prefixes = [
             cellprofiler_core.measurement.C_URL,
             cellprofiler_core.measurement.C_PATH_NAME,
@@ -1376,7 +1449,9 @@ class Measurements:
 
         columns = [
             self.get_measurement(
-                cellprofiler_core.measurement.IMAGE, feature_name, image_set_number=image_numbers
+                cellprofiler_core.measurement.IMAGE,
+                feature_name,
+                image_set_number=image_numbers,
             )
             for feature_name in keys
         ]
@@ -1420,7 +1495,9 @@ class Measurements:
 
         all_image_numbers = self.get_image_numbers()
         urls = self.get_measurement(
-            cellprofiler_core.measurement.IMAGE, url_feature, image_set_number=all_image_numbers
+            cellprofiler_core.measurement.IMAGE,
+            url_feature,
+            image_set_number=all_image_numbers,
         )
 
         new_urls = []
@@ -1433,10 +1510,14 @@ class Measurements:
                 new_url = url
             new_urls.append(new_url)
         if any([url != new_url for url, new_url in zip(urls, new_urls)]):
-            self.add_all_measurements(cellprofiler_core.measurement.IMAGE, url_feature, new_urls)
+            self.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, url_feature, new_urls
+            )
 
         paths = self.get_measurement(
-            cellprofiler_core.measurement.IMAGE, path_feature, image_set_number=all_image_numbers
+            cellprofiler_core.measurement.IMAGE,
+            path_feature,
+            image_set_number=all_image_numbers,
         )
         new_paths = [fn_alter_path(path) for path in paths]
         if any([path != new_path for path, new_path in zip(paths, new_paths)]):
@@ -1445,7 +1526,9 @@ class Measurements:
             )
 
         filenames = self.get_measurement(
-            cellprofiler_core.measurement.IMAGE, file_feature, image_set_number=all_image_numbers
+            cellprofiler_core.measurement.IMAGE,
+            file_feature,
+            image_set_number=all_image_numbers,
         )
         new_filenames = [fn_alter_path(filename) for filename in filenames]
         if any(
@@ -1473,11 +1556,15 @@ class Measurements:
                 os.path.normcase("A") != os.path.normcase("a")
             ),
             cellprofiler_core.measurement.K_LOCAL_SEPARATOR: os.path.sep,
-            cellprofiler_core.measurement.K_PATH_MAPPINGS: tuple([tuple(m) for m in mappings]),
+            cellprofiler_core.measurement.K_PATH_MAPPINGS: tuple(
+                [tuple(m) for m in mappings]
+            ),
             cellprofiler_core.measurement.K_URL2PATHNAME_PACKAGE_NAME: six.moves.urllib.request.url2pathname.__module__,
         }
         s = json.dumps(d)
-        self.add_experiment_measurement(cellprofiler_core.measurement.M_PATH_MAPPINGS, s)
+        self.add_experiment_measurement(
+            cellprofiler_core.measurement.M_PATH_MAPPINGS, s
+        )
 
     def alter_url_post_create_batch(self, url):
         """Apply CreateBatchFiles path mappings to an unmapped URL
@@ -1493,24 +1580,31 @@ class Measurements:
         if not url.lower().startswith("file:"):
             return url
         if not self.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT, cellprofiler_core.measurement.M_PATH_MAPPINGS
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.M_PATH_MAPPINGS,
         ):
             return url
         d = json.loads(
-            self.get_experiment_measurement(cellprofiler_core.measurement.M_PATH_MAPPINGS)
+            self.get_experiment_measurement(
+                cellprofiler_core.measurement.M_PATH_MAPPINGS
+            )
         )
         os_url2pathname = __import__(
             d[cellprofiler_core.measurement.K_URL2PATHNAME_PACKAGE_NAME]
         ).url2pathname
         full_name = os_url2pathname(url[5:])
         full_name_c = (
-            full_name if d[cellprofiler_core.measurement.K_CASE_SENSITIVE] else full_name.lower()
+            full_name
+            if d[cellprofiler_core.measurement.K_CASE_SENSITIVE]
+            else full_name.lower()
         )
         if d[cellprofiler_core.measurement.K_LOCAL_SEPARATOR] != os.path.sep:
             full_name = full_name.replace(
                 d[cellprofiler_core.measurement.K_LOCAL_SEPARATOR], os.path.sep
             )
-        for local_directory, remote_directory in d[cellprofiler_core.measurement.K_PATH_MAPPINGS]:
+        for local_directory, remote_directory in d[
+            cellprofiler_core.measurement.K_PATH_MAPPINGS
+        ]:
             if d[cellprofiler_core.measurement.K_CASE_SENSITIVE]:
                 if full_name_c.startswith(local_directory):
                     full_name = remote_directory + full_name[len(local_directory) :]
@@ -1599,19 +1693,29 @@ class Measurements:
                 # Try looking up the URL in measurements
                 #
                 url_feature_name = "_".join((cellprofiler_core.measurement.C_URL, name))
-                series_feature_name = "_".join((cellprofiler_core.measurement.C_SERIES, name))
-                index_feature_name = "_".join((cellprofiler_core.measurement.C_FRAME, name))
-                if not self.has_feature(cellprofiler_core.measurement.IMAGE, url_feature_name):
+                series_feature_name = "_".join(
+                    (cellprofiler_core.measurement.C_SERIES, name)
+                )
+                index_feature_name = "_".join(
+                    (cellprofiler_core.measurement.C_FRAME, name)
+                )
+                if not self.has_feature(
+                    cellprofiler_core.measurement.IMAGE, url_feature_name
+                ):
                     raise ValueError(
                         "The %s image is missing from the pipeline." % name
                     )
                 # URL should be ASCII only
                 url = str(self.get_current_image_measurement(url_feature_name))
-                if self.has_feature(cellprofiler_core.measurement.IMAGE, series_feature_name):
+                if self.has_feature(
+                    cellprofiler_core.measurement.IMAGE, series_feature_name
+                ):
                     series = self.get_current_image_measurement(series_feature_name)
                 else:
                     series = None
-                if self.has_feature(cellprofiler_core.measurement.IMAGE, index_feature_name):
+                if self.has_feature(
+                    cellprofiler_core.measurement.IMAGE, index_feature_name
+                ):
                     index = self.get_current_image_measurement(index_feature_name)
                 else:
                     index = None
@@ -1655,7 +1759,9 @@ class Measurements:
                     )
 
                 if image.pixel_data.shape[-1] == 4:
-                    cellprofiler_core.measurement.logger.warning("Discarding alpha channel.")
+                    cellprofiler_core.measurement.logger.warning(
+                        "Discarding alpha channel."
+                    )
 
                     return RGBImage(image)
 
@@ -1738,7 +1844,9 @@ class Measurements:
                               channels in the image set.
         """
         for iscd in channel_descriptors:
-            feature = "_".join((cellprofiler_core.measurement.C_CHANNEL_TYPE, iscd.name))
+            feature = "_".join(
+                (cellprofiler_core.measurement.C_CHANNEL_TYPE, iscd.name)
+            )
             self.add_experiment_measurement(feature, iscd.channel_type)
 
     def get_channel_descriptors(self):
@@ -1751,10 +1859,12 @@ class Measurements:
 
         image_set_channel_descriptor = Pipeline.ImageSetChannelDescriptor
         iscds = []
-        for feature_name in self.get_feature_names(cellprofiler_core.measurement.EXPERIMENT):
+        for feature_name in self.get_feature_names(
+            cellprofiler_core.measurement.EXPERIMENT
+        ):
             if feature_name.startswith(cellprofiler_core.measurement.C_CHANNEL_TYPE):
                 channel_name = feature_name[
-                               (len(cellprofiler_core.measurement.C_CHANNEL_TYPE) + 1):
+                    (len(cellprofiler_core.measurement.C_CHANNEL_TYPE) + 1) :
                 ]
                 channel_type = self.get_experiment_measurement(feature_name)
                 if channel_type == image_set_channel_descriptor.CT_OBJECTS:
@@ -1762,8 +1872,12 @@ class Measurements:
                         [cellprofiler_core.measurement.C_OBJECTS_URL, channel_name]
                     )
                 else:
-                    url_feature = "_".join([cellprofiler_core.measurement.C_URL, channel_name])
-                if url_feature not in self.get_feature_names(cellprofiler_core.measurement.IMAGE):
+                    url_feature = "_".join(
+                        [cellprofiler_core.measurement.C_URL, channel_name]
+                    )
+                if url_feature not in self.get_feature_names(
+                    cellprofiler_core.measurement.IMAGE
+                ):
                     continue
                 iscds.append(image_set_channel_descriptor(channel_name, channel_type))
         return iscds
@@ -1783,7 +1897,9 @@ class Measurements:
                         write the image number feature name.
         """
         data = json.dumps(metadata_tags)
-        self.add_experiment_measurement(cellprofiler_core.measurement.M_METADATA_TAGS, data)
+        self.add_experiment_measurement(
+            cellprofiler_core.measurement.M_METADATA_TAGS, data
+        )
 
     def get_metadata_tags(self):
         """Read the metadata tags that are used to make an image set
@@ -1795,7 +1911,9 @@ class Measurements:
         ):
             return [cellprofiler_core.measurement.IMAGE_NUMBER]
         return json.loads(
-            self.get_experiment_measurement(cellprofiler_core.measurement.M_METADATA_TAGS)
+            self.get_experiment_measurement(
+                cellprofiler_core.measurement.M_METADATA_TAGS
+            )
         )
 
     def set_grouping_tags(self, grouping_tags):
@@ -1805,17 +1923,22 @@ class Measurements:
                         uniquely define a group.
         """
         data = json.dumps(grouping_tags)
-        self.add_experiment_measurement(cellprofiler_core.measurement.M_GROUPING_TAGS, data)
+        self.add_experiment_measurement(
+            cellprofiler_core.measurement.M_GROUPING_TAGS, data
+        )
 
     def get_grouping_tags(self):
         """Get the metadata tags that were used to group the image set
 
         """
         if not self.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT, cellprofiler_core.measurement.M_GROUPING_TAGS
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.M_GROUPING_TAGS,
         ):
             return self.get_metadata_tags()
 
         return json.loads(
-            self.get_experiment_measurement(cellprofiler_core.measurement.M_GROUPING_TAGS)
+            self.get_experiment_measurement(
+                cellprofiler_core.measurement.M_GROUPING_TAGS
+            )
         )

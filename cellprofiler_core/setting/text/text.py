@@ -51,7 +51,9 @@ class DirectoryPath(Text):
     ):
         if dir_choices is None:
             dir_choices = DirectoryPath.DIR_ALL
-        if support_urls and not (cellprofiler_core.preferences.URL_FOLDER_NAME in dir_choices):
+        if support_urls and not (
+            cellprofiler_core.preferences.URL_FOLDER_NAME in dir_choices
+        ):
             dir_choices = dir_choices + [cellprofiler_core.preferences.URL_FOLDER_NAME]
         if value is None:
             value = DirectoryPath.static_join_string(dir_choices[0], "")
@@ -135,10 +137,18 @@ class DirectoryPath(Text):
             return cellprofiler_core.preferences.get_default_image_directory()
         if self.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME:
             return cellprofiler_core.preferences.get_default_output_directory()
-        if self.dir_choice == cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME:
+        if (
+            self.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+        ):
             root_directory = cellprofiler_core.preferences.get_default_image_directory()
-        elif self.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME:
-            root_directory = cellprofiler_core.preferences.get_default_output_directory()
+        elif (
+            self.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        ):
+            root_directory = (
+                cellprofiler_core.preferences.get_default_output_directory()
+            )
         elif self.dir_choice == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME:
             root_directory = os.curdir
         elif self.dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
@@ -209,17 +219,25 @@ class DirectoryPath(Text):
 
         if self.dir_choice == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME:
             pass
-        elif self.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME:
+        elif (
+            self.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        ):
             pass
         elif self.dir_choice == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
-        elif self.dir_choice == cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME:
+        elif (
+            self.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+        ):
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
-        elif self.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME:
+        elif (
+            self.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        ):
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )

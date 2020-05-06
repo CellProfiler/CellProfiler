@@ -130,15 +130,21 @@ class TestImage:
     def test_spacing_volume(self):
         data = numpy.ones((5, 10, 10))
 
-        x = cellprofiler_core.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+        x = cellprofiler_core.image.Image(
+            image=data, dimensions=3, spacing=(0.77, 0.33, 0.33)
+        )
 
         assert x.spacing == (0.77 / 0.33, 1.0, 1.0)
 
     def test_spacing_volume_parent_image(self):
         data = numpy.ones((5, 10, 10))
 
-        px = cellprofiler_core.image.Image(image=data, dimensions=3, spacing=(0.77, 0.33, 0.33))
+        px = cellprofiler_core.image.Image(
+            image=data, dimensions=3, spacing=(0.77, 0.33, 0.33)
+        )
 
-        x = cellprofiler_core.image.Image(image=data, parent_image=px, spacing=(0.77, 0.33, 0.33))
+        x = cellprofiler_core.image.Image(
+            image=data, parent_image=px, spacing=(0.77, 0.33, 0.33)
+        )
 
         assert x.spacing == (0.77 / 0.33, 1.0, 1.0)

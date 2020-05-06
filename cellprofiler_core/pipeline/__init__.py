@@ -24,9 +24,12 @@ from cellprofiler_core.pipeline.event._event import (
     CancelledException,
     PipelineLoadCancelledException,
 )
-from cellprofiler_core.pipeline.event.run_exception._post_run_exception import PostRunException
-from cellprofiler_core.pipeline.event.run_exception._prepare_run_exception import \
-    PrepareRunException
+from cellprofiler_core.pipeline.event.run_exception._post_run_exception import (
+    PostRunException,
+)
+from cellprofiler_core.pipeline.event.run_exception._prepare_run_exception import (
+    PrepareRunException,
+)
 from cellprofiler_core.pipeline.event._end_run import EndRun
 from cellprofiler_core.pipeline.event._module_enabled import ModuleEnabled
 from cellprofiler_core.pipeline.event._module_disabled import ModuleDisabled
@@ -45,14 +48,17 @@ from cellprofiler_core.pipeline.event._pipeline_cleared import PipelineCleared
 from cellprofiler_core.pipeline.event._module_moved import ModuleMoved
 from cellprofiler_core.pipeline.event._module_added import ModuleAdded
 from cellprofiler_core.pipeline.event._pipeline_loaded import PipelineLoaded
-from cellprofiler_core.pipeline.dependency._measurement_dependency import MeasurementDependency
+from cellprofiler_core.pipeline.dependency._measurement_dependency import (
+    MeasurementDependency,
+)
 from cellprofiler_core.pipeline.dependency._image_dependency import ImageDependency
 from cellprofiler_core.pipeline.dependency._object_dependency import ObjectDependency
 from cellprofiler_core.pipeline.dependency._dependency import Dependency
 from cellprofiler_core.pipeline._image_plane import ImagePlane
 from cellprofiler_core.pipeline._pipeline import Pipeline
-from cellprofiler_core.pipeline._image_set_channel_descriptor import \
-    ImageSetChannelDescriptor
+from cellprofiler_core.pipeline._image_set_channel_descriptor import (
+    ImageSetChannelDescriptor,
+)
 from cellprofiler_core.pipeline._listener import Listener
 
 future.standard_library.install_aliases()
@@ -210,9 +216,7 @@ H_MESSAGE_FOR_USER = "MessageForUser"
 COOKIE = "CellProfiler Pipeline: http://www.nucleus.org"
 
 """Sad proofpoint cookie: see issue #1318"""
-SAD_PROOFPOINT_COOKIE = (
-    r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.cellprofiler\.org"
-)
+SAD_PROOFPOINT_COOKIE = r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.cellprofiler\.org"
 
 """HDF5 file header according to the specification
 
@@ -403,7 +407,7 @@ def add_all_measurements(handles, measurements):
         for field, feature_name in list(mapping.items()):
             feature_measurements = numpy.ndarray((1, max_image_number), dtype="object")
             if type(field) == bytes:
-                field = field.decode('utf-8')
+                field = field.decode("utf-8")
             object_measurements[field][0, 0] = feature_measurements
             for i in numpy.argwhere(~has_image_number[1:]).flatten():
                 feature_measurements[0, i] = numpy.zeros(0)
@@ -421,7 +425,9 @@ def add_all_measurements(handles, measurements):
         )
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements[cellprofiler_core.measurement.EXPERIMENT][0, 0] = experiment_measurements
+        npy_measurements[cellprofiler_core.measurement.EXPERIMENT][
+            0, 0
+        ] = experiment_measurements
         for field, feature_name in list(mapping.items()):
             feature_measurements = numpy.ndarray((1, 1), dtype="object")
             feature_measurements[0, 0] = measurements.get_experiment_measurement(

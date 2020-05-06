@@ -11,7 +11,9 @@ import cellprofiler_core.workspace
 
 class TestObjectProcessing:
     def test_get_categories_image(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -22,7 +24,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_categories_input_object(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -33,7 +37,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_categories_output_object(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -48,7 +54,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_categories_other(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -59,7 +67,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurement_columns(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -106,7 +116,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurement_columns_additional_objects(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -190,12 +202,16 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_image_count(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_COUNT
+            None,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.C_COUNT,
         )
 
         expected = ["ObjectProcessing"]
@@ -203,18 +219,24 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_image_other(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
-        actual = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "foo")
+        actual = module.get_measurements(
+            None, cellprofiler_core.measurement.IMAGE, "foo"
+        )
 
         expected = []
 
         assert actual == expected
 
     def test_get_measurements_input_object_children(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -227,7 +249,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_input_object_other(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -238,7 +262,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_location(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -255,7 +281,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_number(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -268,7 +296,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_parent(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -281,7 +311,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_output_object_other(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -292,7 +324,9 @@ class TestObjectProcessing:
         assert actual == expected
 
     def test_get_measurements_other_other(self):
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -305,7 +339,9 @@ class TestObjectProcessing:
     def test_add_measurements(self):
         measurements = cellprofiler_core.measurement.Measurements()
 
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -382,7 +418,8 @@ class TestObjectProcessing:
         expected_count = [2.0]
 
         actual_count = measurements.get_measurement(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing"
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
         )
 
         numpy.testing.assert_array_equal(actual_count, expected_count)
@@ -390,7 +427,8 @@ class TestObjectProcessing:
         expected_children_count = [2]
 
         actual_children_count = measurements.get_measurement(
-            "Objects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
+            "Objects",
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
         )
 
         numpy.testing.assert_array_equal(actual_children_count, expected_children_count)
@@ -406,7 +444,9 @@ class TestObjectProcessing:
     def test_run(self):
         measurements = cellprofiler_core.measurement.Measurements()
 
-        module = cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        module = (
+            cellprofiler_core.module.image_segmentation._object_processing.ObjectProcessing()
+        )
 
         module.x_name.value = "Objects"
 
@@ -448,11 +488,13 @@ class TestObjectProcessing:
         )
 
         assert measurements.has_feature(
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing"
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
         )
 
         assert measurements.has_feature(
-            "Objects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing"
+            "Objects",
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
         )
 
         assert measurements.has_feature(

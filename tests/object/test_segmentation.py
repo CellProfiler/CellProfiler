@@ -22,8 +22,16 @@ class TestSegmentation:
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
+                    numpy.uint32,
+                    1,
+                ),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
+                    numpy.uint32,
+                    1,
+                ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -58,8 +66,16 @@ class TestSegmentation:
         ijv = numpy.core.records.fromarrays(
             [numpy.hstack(x) for x in (ii, jj, vv)],
             [
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
+                    numpy.uint32,
+                    1,
+                ),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
+                    numpy.uint32,
+                    1,
+                ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -81,7 +97,9 @@ class TestSegmentation:
         ]
         matches = (
             retrieval
-            == ijv[cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][None, :]
+            == ijv[cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][
+                None, :
+            ]
         )
         assert numpy.all(numpy.sum(matches, 0) == 1)
 
@@ -113,7 +131,9 @@ class TestSegmentation:
         ]
         matches = (
             retrieval
-            == ijv[cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][None, :]
+            == ijv[cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][
+                None, :
+            ]
         )
         assert numpy.all(numpy.sum(matches, 0) == 1)
 
@@ -132,8 +152,16 @@ class TestSegmentation:
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
+                    numpy.uint32,
+                    1,
+                ),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
+                    numpy.uint32,
+                    1,
+                ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -152,8 +180,16 @@ class TestSegmentation:
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
+                    numpy.uint32,
+                    1,
+                ),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
+                    numpy.uint32,
+                    1,
+                ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
@@ -175,8 +211,16 @@ class TestSegmentation:
         ijv = numpy.core.records.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                (cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
+                    numpy.uint32,
+                    1,
+                ),
+                (
+                    cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
+                    numpy.uint32,
+                    1,
+                ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,

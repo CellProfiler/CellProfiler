@@ -411,7 +411,10 @@ class Runner:
                         int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
-                        assert isinstance(finished_req, cellprofiler_core.analysis.reply.ImageSetSuccessWithDictionary)
+                        assert isinstance(
+                            finished_req,
+                            cellprofiler_core.analysis.reply.ImageSetSuccessWithDictionary,
+                        )
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
@@ -465,7 +468,11 @@ class Runner:
                 start_signal.release()
             if posted_analysis_started:
                 was_cancelled = self.cancelled
-                self.post_event(cellprofiler_core.analysis.event.Finished(measurements, was_cancelled))
+                self.post_event(
+                    cellprofiler_core.analysis.event.Finished(
+                        measurements, was_cancelled
+                    )
+                )
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
@@ -573,7 +580,9 @@ class Runner:
                     )
                 )
                 logger.debug("Replied to pipeline preferences request")
-            elif isinstance(req, cellprofiler_core.analysis.request.InitialMeasurements):
+            elif isinstance(
+                req, cellprofiler_core.analysis.request.InitialMeasurements
+            ):
                 logger.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
@@ -609,7 +618,11 @@ class Runner:
                 logger.debug("Enqueued ImageSetSuccess")
             elif isinstance(req, cellprofiler_core.analysis.request.SharedDictionary):
                 logger.debug("Received shared dictionary request")
-                req.reply(cellprofiler_core.analysis.reply.SharedDictionary(dictionaries=self.shared_dicts))
+                req.reply(
+                    cellprofiler_core.analysis.reply.SharedDictionary(
+                        dictionaries=self.shared_dicts
+                    )
+                )
                 logger.debug("Sent shared dictionary reply")
             elif isinstance(req, cellprofiler_core.analysis.request.MeasurementsReport):
                 logger.debug("Received measurements report")
@@ -754,8 +767,11 @@ class Runner:
                 )
             else:
                 worker = subprocess.Popen(
-                    [cellprofiler_core.analysis.find_python(), "-u",
-                     cellprofiler_core.analysis.find_analysis_worker_source()]  # unbuffered
+                    [
+                        cellprofiler_core.analysis.find_python(),
+                        "-u",
+                        cellprofiler_core.analysis.find_analysis_worker_source(),
+                    ]  # unbuffered
                     + aw_args,
                     env=cellprofiler_core.analysis.find_worker_env(idx),
                     stdin=subprocess.PIPE,

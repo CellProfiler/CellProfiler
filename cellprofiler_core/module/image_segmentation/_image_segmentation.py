@@ -91,7 +91,10 @@ class ImageSegmentation(Module):
             return [cellprofiler_core.measurement.C_COUNT]
 
         if object_name == self.y_name.value:
-            return [cellprofiler_core.measurement.C_LOCATION, cellprofiler_core.measurement.C_NUMBER]
+            return [
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
+            ]
 
         return []
 

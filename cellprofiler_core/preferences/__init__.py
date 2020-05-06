@@ -412,13 +412,13 @@ IJ_2 = "ImageJ 2.0"
 EXT_PIPELINE = "cppipe"
 
 """Possible CellProfiler pipeline extensions"""
-EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj", "h5", "mat"]
+EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj"]
 
 """Default project extension"""
 EXT_PROJECT = "cpproj"
 
 """Possible CellProfiler project extensions"""
-EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi", "h5"]
+EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi"]
 
 """Preference key for the JVM heap size in megabytes"""
 JVM_HEAP_MB = "JVMHeapMB"
